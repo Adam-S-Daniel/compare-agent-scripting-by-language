@@ -1092,6 +1092,17 @@ def main():
     all_metrics = []
     run_count = 0
 
+    # When resuming, load ALL existing metrics (not just ones matching current filters)
+    # so that results.md reflects the full picture
+    if args.resume:
+        for mf in sorted((run_dir / "tasks").rglob("metrics.json")):
+            try:
+                all_metrics.append(json.loads(mf.read_text()))
+            except Exception:
+                pass
+        if all_metrics:
+            log(f"Loaded {len(all_metrics)} previously completed run(s) from {run_dir}")
+
     # Detect git branch for periodic pushing
     try:
         branch_result = subprocess.run(
@@ -1115,10 +1126,6 @@ def main():
                 existing_metrics = run_dir / "tasks" / task["id"] / f"{mode}-{model_short}" / "metrics.json"
                 if existing_metrics.exists():
                     log(f"Run {run_count}/{total_runs} — SKIPPED (already completed): {task['id']} | {mode} | {model_short}")
-                    try:
-                        all_metrics.append(json.loads(existing_metrics.read_text()))
-                    except Exception:
-                        pass
                     pusher.update(run_count, all_metrics)
                     continue
                 log(f"Run {run_count}/{total_runs}")
