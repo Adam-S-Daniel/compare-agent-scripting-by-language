@@ -12,6 +12,7 @@ import shutil
 import subprocess
 import sys
 import time
+import threading
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -314,9 +315,66 @@ MODES = list(PROMPT_TEMPLATES.keys())
 # Helpers
 # ---------------------------------------------------------------------------
 
+PUSH_INTERVAL = 60  # seconds between incremental git pushes
+
+
 def log(msg: str) -> None:
     """Print progress to stderr."""
     print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}", file=sys.stderr, flush=True)
+
+
+def git_push_results(repo_root: Path, branch: str, run_count: int, total_runs: int) -> None:
+    """Commit and push any new results to the remote branch."""
+    try:
+        status = subprocess.run(
+            ["git", "status", "--porcelain", "results/"],
+            cwd=str(repo_root), capture_output=True, text=True, timeout=10,
+        )
+        if not status.stdout.strip():
+            return  # nothing new
+
+        subprocess.run(
+            ["git", "add", "results/"],
+            cwd=str(repo_root), capture_output=True, timeout=10,
+        )
+        msg = f"Incremental benchmark results: {run_count}/{total_runs} runs completed"
+        subprocess.run(
+            ["git", "commit", "-m", msg],
+            cwd=str(repo_root), capture_output=True, timeout=30,
+        )
+        subprocess.run(
+            ["git", "push", "-u", "origin", branch],
+            cwd=str(repo_root), capture_output=True, timeout=60,
+        )
+        log(f"  [push] Pushed results ({run_count}/{total_runs} done)")
+    except Exception as e:
+        log(f"  [push] Warning: push failed: {e}")
+
+
+class PeriodicPusher:
+    """Background thread that periodically pushes results to git."""
+
+    def __init__(self, repo_root: Path, branch: str, total_runs: int):
+        self.repo_root = repo_root
+        self.branch = branch
+        self.total_runs = total_runs
+        self.run_count = 0
+        self._stop = threading.Event()
+        self._thread = threading.Thread(target=self._run, daemon=True)
+
+    def start(self):
+        self._thread.start()
+
+    def update_count(self, count: int):
+        self.run_count = count
+
+    def stop(self):
+        self._stop.set()
+        self._thread.join(timeout=120)
+
+    def _run(self):
+        while not self._stop.wait(PUSH_INTERVAL):
+            git_push_results(self.repo_root, self.branch, self.run_count, self.total_runs)
 
 
 def capture_workspace_listing(workspace: Path) -> str:
@@ -844,6 +902,21 @@ def main():
     all_metrics = []
     run_count = 0
 
+    # Detect git branch for periodic pushing
+    try:
+        branch_result = subprocess.run(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+            cwd=str(repo_root), capture_output=True, text=True, timeout=5,
+        )
+        git_branch = branch_result.stdout.strip() or "main"
+    except Exception:
+        git_branch = "main"
+
+    # Start periodic pusher
+    pusher = PeriodicPusher(repo_root, git_branch, total_runs)
+    pusher.start()
+    log(f"Periodic git push enabled every {PUSH_INTERVAL}s to branch {git_branch}")
+
     for task in selected_tasks:
         for model_short, model_id in selected_models:
             for mode in selected_modes:
@@ -863,6 +936,7 @@ def main():
                     log(f"  FATAL ERROR in {task['id']} | {mode} | {model_short}: {e}")
                     import traceback
                     traceback.print_exc(file=sys.stderr)
+                pusher.update_count(run_count)
                 log("")
 
     # Finalize manifest
@@ -917,6 +991,11 @@ def main():
 
     # Print summary
     print_summary_table(all_metrics)
+
+    # Final push
+    pusher.stop()
+    git_push_results(repo_root, git_branch, run_count, total_runs)
+    log(f"Final results pushed to {git_branch}")
 
     log(f"\nResults saved to: {run_dir}")
     log(f"Total cost: ${manifest['total_cost_usd']:.4f}")
