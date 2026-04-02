@@ -599,7 +599,8 @@ def run_single_task(
         "-p", prompt,
         "--model", model_id,
         "--output-format", "stream-json",
-        "--dangerously-skip-permissions",
+        "--permission-mode", "acceptEdits",
+        "--allowedTools", "Bash(command:*)",
         "--verbose",
     ]
 
