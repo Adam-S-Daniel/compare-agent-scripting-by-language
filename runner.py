@@ -851,6 +851,10 @@ def main():
         "--modes", default="default,powershell,powershell-strict,csharp-script",
         help="Comma-separated language modes (default: default,powershell,powershell-strict,csharp-script)"
     )
+    parser.add_argument(
+        "--resume", default=None,
+        help="Resume a previous run by providing its timestamp directory name (e.g., 2026-04-02_181500). Skips runs that already have metrics.json."
+    )
     args = parser.parse_args()
 
     # Parse tasks
@@ -870,10 +874,18 @@ def main():
         print("Error: No valid tasks, models, or modes selected.", file=sys.stderr)
         sys.exit(1)
 
-    # Create run directory
+    # Create or resume run directory
     repo_root = Path(__file__).parent.resolve()
-    run_timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
-    run_dir = repo_root / "results" / run_timestamp
+    if args.resume:
+        run_timestamp = args.resume
+        run_dir = repo_root / "results" / run_timestamp
+        if not run_dir.exists():
+            print(f"Error: Resume directory {run_dir} does not exist.", file=sys.stderr)
+            sys.exit(1)
+        log(f"Resuming run from {run_dir}")
+    else:
+        run_timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
+        run_dir = repo_root / "results" / run_timestamp
     run_dir.mkdir(parents=True, exist_ok=True)
 
     total_runs = len(selected_tasks) * len(selected_models) * len(selected_modes)
@@ -921,6 +933,16 @@ def main():
         for model_short, model_id in selected_models:
             for mode in selected_modes:
                 run_count += 1
+                # Check if already completed (for --resume)
+                existing_metrics = run_dir / "tasks" / task["id"] / f"{mode}-{model_short}" / "metrics.json"
+                if existing_metrics.exists():
+                    log(f"Run {run_count}/{total_runs} — SKIPPED (already completed): {task['id']} | {mode} | {model_short}")
+                    try:
+                        all_metrics.append(json.loads(existing_metrics.read_text()))
+                    except Exception:
+                        pass
+                    pusher.update_count(run_count)
+                    continue
                 log(f"Run {run_count}/{total_runs}")
                 try:
                     metrics = run_single_task(
