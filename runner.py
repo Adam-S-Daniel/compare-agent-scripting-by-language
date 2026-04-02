@@ -1094,6 +1094,8 @@ def main():
 
     # When resuming, load ALL existing metrics (not just ones matching current filters)
     # so that results.md reflects the full picture
+    # Also use the full task count for total_runs in results.md reporting
+    total_runs_for_report = total_runs
     if args.resume:
         for mf in sorted((run_dir / "tasks").rglob("metrics.json")):
             try:
@@ -1102,6 +1104,8 @@ def main():
                 pass
         if all_metrics:
             log(f"Loaded {len(all_metrics)} previously completed run(s) from {run_dir}")
+        # Use full benchmark size for reporting, not the filtered subset
+        total_runs_for_report = len(TASKS) * len(MODELS) * len(PROMPT_TEMPLATES)
 
     # Detect git branch for periodic pushing
     try:
@@ -1113,8 +1117,9 @@ def main():
     except Exception:
         git_branch = "main"
 
-    # Start periodic pusher
-    pusher = PeriodicPusher(repo_root, git_branch, total_runs, run_dir)
+    # Start periodic pusher — seed with already-loaded metrics
+    pusher = PeriodicPusher(repo_root, git_branch, total_runs_for_report, run_dir)
+    pusher.update(len(all_metrics), all_metrics)
     pusher.start()
     log(f"Periodic git push enabled every {PUSH_INTERVAL}s to branch {git_branch}")
 
