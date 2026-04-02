@@ -354,19 +354,22 @@ def git_push_results(repo_root: Path, branch: str, run_count: int, total_runs: i
 class PeriodicPusher:
     """Background thread that periodically pushes results to git."""
 
-    def __init__(self, repo_root: Path, branch: str, total_runs: int):
+    def __init__(self, repo_root: Path, branch: str, total_runs: int, run_dir: Path):
         self.repo_root = repo_root
         self.branch = branch
         self.total_runs = total_runs
+        self.run_dir = run_dir
         self.run_count = 0
+        self.all_metrics: list[dict] = []
         self._stop = threading.Event()
         self._thread = threading.Thread(target=self._run, daemon=True)
 
     def start(self):
         self._thread.start()
 
-    def update_count(self, count: int):
+    def update(self, count: int, all_metrics: list[dict]):
         self.run_count = count
+        self.all_metrics = list(all_metrics)
 
     def stop(self):
         self._stop.set()
@@ -374,6 +377,10 @@ class PeriodicPusher:
 
     def _run(self):
         while not self._stop.wait(PUSH_INTERVAL):
+            try:
+                generate_results_md(self.run_dir, self.all_metrics, self.total_runs, self.run_count)
+            except Exception as e:
+                log(f"  [push] Warning: results.md generation failed: {e}")
             git_push_results(self.repo_root, self.branch, self.run_count, self.total_runs)
 
 
@@ -474,6 +481,177 @@ def get_all_code_text(directory: Path) -> str:
             except Exception:
                 pass
     return "\n".join(texts)
+
+
+def generate_results_md(run_dir: Path, all_metrics: list[dict], total_runs: int, run_count: int) -> None:
+    """Generate/update a results.md file with tables, commentary, and status."""
+    from zoneinfo import ZoneInfo
+
+    et = ZoneInfo("America/New_York")
+    now_et = datetime.now(et).strftime("%Y-%m-%d %I:%M:%S %p ET")
+
+    completed = len(all_metrics)
+    remaining = total_runs - run_count
+    in_progress = run_count - completed
+
+    total_cost = sum(m["cost"]["total_cost_usd"] for m in all_metrics)
+    total_duration = sum(m["timing"]["grand_total_duration_ms"] for m in all_metrics) / 1000
+
+    lines = []
+    lines.append("# Benchmark Results: PowerShell vs Default Language")
+    lines.append("")
+    lines.append(f"**Last updated:** {now_et}")
+    lines.append("")
+    lines.append(f"**Status:** {completed}/{total_runs} runs completed, {remaining} remaining")
+    lines.append(f"**Total cost so far:** ${total_cost:.4f}")
+    lines.append(f"**Total agent time so far:** {total_duration:.0f}s ({total_duration/60:.1f} min)")
+    lines.append("")
+
+    if not all_metrics:
+        lines.append("*No completed runs yet.*")
+        (run_dir / "results.md").write_text("\n".join(lines))
+        return
+
+    # ── Per-run detail table ──
+    lines.append("## Per-Run Results")
+    lines.append("")
+    lines.append("| Task | Mode | Model | Duration | Turns | Lines | Errors | Cost | Language |")
+    lines.append("|------|------|-------|----------|-------|-------|--------|------|----------|")
+
+    for m in all_metrics:
+        dur = m["timing"]["grand_total_duration_ms"] / 1000
+        lines.append(
+            f"| {m['task_name'][:30]} "
+            f"| {m['language_mode']} "
+            f"| {m['model_short']} "
+            f"| {dur:.0f}s "
+            f"| {m['timing']['num_turns']} "
+            f"| {m['code_metrics']['total_lines']} "
+            f"| {m['quality']['error_count']} "
+            f"| ${m['cost']['total_cost_usd']:.4f} "
+            f"| {m['language_chosen']} |"
+        )
+
+    lines.append("")
+
+    # ── Comparison by mode ──
+    modes_seen = sorted(set(m["language_mode"] for m in all_metrics))
+    if len(modes_seen) > 1:
+        lines.append("## Comparison by Language Mode")
+        lines.append("")
+        lines.append("| Mode | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Total Cost |")
+        lines.append("|------|------|-------------|-----------|------------|-----------|------------|")
+        for mode in modes_seen:
+            mm = [m for m in all_metrics if m["language_mode"] == mode]
+            n = len(mm)
+            avg_dur = sum(m["timing"]["grand_total_duration_ms"] for m in mm) / n / 1000
+            avg_lines = sum(m["code_metrics"]["total_lines"] for m in mm) / n
+            avg_errors = sum(m["quality"]["error_count"] for m in mm) / n
+            avg_turns = sum(m["timing"]["num_turns"] for m in mm) / n
+            cost = sum(m["cost"]["total_cost_usd"] for m in mm)
+            lines.append(f"| {mode} | {n} | {avg_dur:.0f}s | {avg_lines:.0f} | {avg_errors:.1f} | {avg_turns:.0f} | ${cost:.4f} |")
+        lines.append("")
+
+    # ── Comparison by model ──
+    models_seen = sorted(set(m["model_short"] for m in all_metrics))
+    if len(models_seen) > 1:
+        lines.append("## Comparison by Model")
+        lines.append("")
+        lines.append("| Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Total Cost |")
+        lines.append("|-------|------|-------------|-----------|------------|-----------|------------|")
+        for model in models_seen:
+            mm = [m for m in all_metrics if m["model_short"] == model]
+            n = len(mm)
+            avg_dur = sum(m["timing"]["grand_total_duration_ms"] for m in mm) / n / 1000
+            avg_lines = sum(m["code_metrics"]["total_lines"] for m in mm) / n
+            avg_errors = sum(m["quality"]["error_count"] for m in mm) / n
+            avg_turns = sum(m["timing"]["num_turns"] for m in mm) / n
+            cost = sum(m["cost"]["total_cost_usd"] for m in mm)
+            lines.append(f"| {model} | {n} | {avg_dur:.0f}s | {avg_lines:.0f} | {avg_errors:.1f} | {avg_turns:.0f} | ${cost:.4f} |")
+        lines.append("")
+
+    # ── Head-to-head: same task, different modes ──
+    tasks_seen = sorted(set(m["task_id"] for m in all_metrics))
+    h2h_rows = []
+    for task_id in tasks_seen:
+        task_metrics = [m for m in all_metrics if m["task_id"] == task_id]
+        task_modes = {m["language_mode"]: m for m in task_metrics}
+        if "default" in task_modes and any(k != "default" for k in task_modes):
+            default = task_modes["default"]
+            for mode, m in task_modes.items():
+                if mode == "default":
+                    continue
+                d_dur = default["timing"]["grand_total_duration_ms"] / 1000
+                m_dur = m["timing"]["grand_total_duration_ms"] / 1000
+                dur_delta = ((m_dur - d_dur) / d_dur * 100) if d_dur > 0 else 0
+                d_err = default["quality"]["error_count"]
+                m_err = m["quality"]["error_count"]
+                err_delta = m_err - d_err
+                d_lines = default["code_metrics"]["total_lines"]
+                m_lines = m["code_metrics"]["total_lines"]
+                h2h_rows.append({
+                    "task": default["task_name"][:25],
+                    "model": m["model_short"],
+                    "mode": mode,
+                    "default_lang": default["language_chosen"],
+                    "def_dur": d_dur, "mode_dur": m_dur, "dur_delta": dur_delta,
+                    "def_err": d_err, "mode_err": m_err, "err_delta": err_delta,
+                    "def_lines": d_lines, "mode_lines": m_lines,
+                })
+
+    if h2h_rows:
+        lines.append("## Head-to-Head: Default vs Constrained Language")
+        lines.append("")
+        lines.append("| Task | Model | Mode | Default Lang | Def Dur | Mode Dur | Dur Delta | Def Err | Mode Err | Err Delta | Def Lines | Mode Lines |")
+        lines.append("|------|-------|------|-------------|---------|----------|-----------|---------|----------|-----------|-----------|------------|")
+        for r in h2h_rows:
+            sign = "+" if r["dur_delta"] >= 0 else ""
+            esign = "+" if r["err_delta"] >= 0 else ""
+            lines.append(
+                f"| {r['task']} | {r['model']} | {r['mode']} | {r['default_lang']} "
+                f"| {r['def_dur']:.0f}s | {r['mode_dur']:.0f}s | {sign}{r['dur_delta']:.0f}% "
+                f"| {r['def_err']} | {r['mode_err']} | {esign}{r['err_delta']} "
+                f"| {r['def_lines']} | {r['mode_lines']} |"
+            )
+        lines.append("")
+
+    # ── Commentary ──
+    lines.append("## Observations")
+    lines.append("")
+
+    if completed >= 2:
+        # Find most/least errors
+        most_err = max(all_metrics, key=lambda m: m["quality"]["error_count"])
+        least_err = min(all_metrics, key=lambda m: m["quality"]["error_count"])
+        slowest = max(all_metrics, key=lambda m: m["timing"]["grand_total_duration_ms"])
+        fastest = min(all_metrics, key=lambda m: m["timing"]["grand_total_duration_ms"])
+
+        lines.append(f"- **Fastest run:** {fastest['task_name']} / {fastest['language_mode']} / {fastest['model_short']} — {fastest['timing']['grand_total_duration_ms']/1000:.0f}s")
+        lines.append(f"- **Slowest run:** {slowest['task_name']} / {slowest['language_mode']} / {slowest['model_short']} — {slowest['timing']['grand_total_duration_ms']/1000:.0f}s")
+        lines.append(f"- **Most errors:** {most_err['task_name']} / {most_err['language_mode']} / {most_err['model_short']} — {most_err['quality']['error_count']} errors")
+        lines.append(f"- **Fewest errors:** {least_err['task_name']} / {least_err['language_mode']} / {least_err['model_short']} — {least_err['quality']['error_count']} errors")
+        lines.append("")
+
+        # Avg cost by model
+        for model in models_seen:
+            mm = [m for m in all_metrics if m["model_short"] == model]
+            avg_cost = sum(m["cost"]["total_cost_usd"] for m in mm) / len(mm)
+            lines.append(f"- **Avg cost per run ({model}):** ${avg_cost:.4f}")
+        lines.append("")
+
+    if completed < total_runs:
+        if total_duration > 0 and completed > 0:
+            est_remaining_s = (total_duration / completed) * (total_runs - run_count)
+            est_remaining_h = est_remaining_s / 3600
+            lines.append(f"- **Estimated time remaining:** {est_remaining_h:.1f} hours (based on avg {total_duration/completed:.0f}s per run)")
+            est_total_cost = (total_cost / completed) * total_runs
+            lines.append(f"- **Estimated total cost:** ${est_total_cost:.2f}")
+
+    lines.append("")
+    lines.append("---")
+    lines.append(f"*Generated by runner.py, instructions version {INSTRUCTIONS_VERSION}*")
+
+    (run_dir / "results.md").write_text("\n".join(lines))
 
 # ---------------------------------------------------------------------------
 # Stream Parsing
@@ -925,7 +1103,7 @@ def main():
         git_branch = "main"
 
     # Start periodic pusher
-    pusher = PeriodicPusher(repo_root, git_branch, total_runs)
+    pusher = PeriodicPusher(repo_root, git_branch, total_runs, run_dir)
     pusher.start()
     log(f"Periodic git push enabled every {PUSH_INTERVAL}s to branch {git_branch}")
 
@@ -941,7 +1119,7 @@ def main():
                         all_metrics.append(json.loads(existing_metrics.read_text()))
                     except Exception:
                         pass
-                    pusher.update_count(run_count)
+                    pusher.update(run_count, all_metrics)
                     continue
                 log(f"Run {run_count}/{total_runs}")
                 try:
@@ -958,7 +1136,7 @@ def main():
                     log(f"  FATAL ERROR in {task['id']} | {mode} | {model_short}: {e}")
                     import traceback
                     traceback.print_exc(file=sys.stderr)
-                pusher.update_count(run_count)
+                pusher.update(run_count, all_metrics)
                 log("")
 
     # Finalize manifest
@@ -1014,8 +1192,9 @@ def main():
     # Print summary
     print_summary_table(all_metrics)
 
-    # Final push
+    # Final results.md and push
     pusher.stop()
+    generate_results_md(run_dir, all_metrics, total_runs, run_count)
     git_push_results(repo_root, git_branch, run_count, total_runs)
     log(f"Final results pushed to {git_branch}")
 
