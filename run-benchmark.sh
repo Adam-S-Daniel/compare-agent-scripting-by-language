@@ -7,7 +7,7 @@
 #
 # Prerequisites: python3, claude CLI (with API key configured)
 
-set -euo pipefail
+set -eo pipefail
 cd "$(dirname "$0")"
 
 echo "=== Benchmark Runner Setup ==="
