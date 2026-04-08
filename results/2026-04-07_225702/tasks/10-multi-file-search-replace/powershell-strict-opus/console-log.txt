@@ -1,0 +1,457 @@
+[Assistant] 
+
+I'll start by understanding the task and then follow TDD methodology to build a recursive search-and-replace tool in PowerShell with strict mode.
+
+Let me first check the current working directory.
+[Tool: Bash] ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/
+[Result] total 28
+drwxr-xr-x 2 passp passp  4096 Apr  8 03:08 .
+drwxr-xr-x 5 passp passp  4096 Apr  8 03:08 ..
+-rw-r--r-- 1 passp passp 17086 Apr  7 22:53 benchmark-instructions-v2.md
+[Tool: Bash] which pwsh && pwsh --version
+[Result] /snap/bin/pwsh
+PowerShell 7.6.0
+[Assistant] Good. Let me start with TDD — first failing test, then implementation, repeat.
+
+## Step 1: Write the first failing test — file searching by glob pattern
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.Tests.ps1", "content": "Set-StrictMo
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Run the failing test:
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./SearchReplace.Tests.ps1 -Output Detailed" 2>&1 | tail -30
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[91m[-] Discovery in /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.Tests.ps1 failed with:[0m
+[91mSystem.Management.Automation.ParameterBindingException: A parameter cannot be found that matches parameter name 'Latest'.
+[91m   at System.Management.Automation.ExceptionHandlingOps.CheckActionPreference(FunctionContext funcContext, Exception exception) in /root/parts/powershell/build/src/System.Management.Automation/engine/runtime/Operations/MiscOps.cs:line 1786
+[91m   at System.Management.Automation.Interpreter.ActionCallInstruction`2.Run(InterpretedFrame frame) in /root/parts/powershell/build/src/System.Management.Automation/engine/interpreter/CallInstruction.Generated.cs:line 504
+[91m   at System.Management.Automation.Interpreter.EnterTryCatchFinallyInstruction.Run(InterpretedFrame frame) in /root/parts/powershe
+[Assistant] The correct syntax is `-Version Latest`, not `-Latest`. Let me fix the test file and also create the module stub.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.Tests.ps1", "o
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Now create a minimal stub so the file can be sourced (but tests still fail):
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.ps1", "content": "Set-StrictMode -Ve
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./SearchReplace.Tests.ps1 -Output Detailed" 2>&1 | tail -25
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 3 tests in 130ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.Tests.ps1'[0m
+[92mDescribing Find-MatchingFiles[0m
+[91m  [-] Should find all .txt files recursively[0m[90m 132ms (108ms|24ms)[0m
+[91m   CommandNotFoundException: The term 'Find-MatchingFiles' is not recognized as a name of a cmdlet, function, script file, or executable program.
+[91m   Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+[91m   at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.Tests.ps1:30[0m
+[91m  [-] Should find all .log files recursively[0m[90m 91ms (90ms|1ms)[0m
+[91m   Comm
+[Assistant] 3 failing tests (RED). Now implement `Find-MatchingFiles` to make them pass (GREEN):
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.ps1", "old_str
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./SearchReplace.Tests.ps1 -Output Detailed" 2>&1 | tail -20
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 3 tests in 125ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.Tests.ps1'[0m
+[92mDescribing Find-MatchingFiles[0m
+[32m  [+] Should find all .txt files recursively[0m[90m 83ms (61ms|22ms)[0m
+[32m  [+] Should find all .log files recursively[0m[90m 4ms (3ms|1ms)[0m
+[91m  [-] Should return empty for non-matching pattern[0m[90m 18ms (17ms|2ms)[0m
+[91m   PropertyNotFoundException: The property 'Count' cannot be found on this object. Verify that the property exists.
+[91m   at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.Tests.ps1:41[0m
+[97mTests completed in 465ms[0m
+[97mTests Passed: 2, [0m[91mFailed: 1,
+[Assistant] Strict mode issue with empty array. Let me fix the test to use `Should -HaveCount`:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.Tests.ps1", "o
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./SearchReplace.Tests.ps1 -Output Detailed" 2>&1 | tail -15
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 3 tests in 124ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.Tests.ps1'[0m
+[92mDescribing Find-MatchingFiles[0m
+[32m  [+] Should find all .txt files recursively[0m[90m 83ms (62ms|22ms)[0m
+[32m  [+] Should find all .log files recursively[0m[90m 4ms (3ms|1ms)[0m
+[32m  [+] Should return empty for non-matching pattern[0m[90m 9ms (8ms|1ms)[0m
+[97mTests completed in 411ms[0m
+[32mTests Passed: 3, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Assistant] All 3 GREEN. Now **Step 2: Search for regex matches with context (preview mode)**. Write failing tests first:
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.Tests.ps1"}
+[Result] 1	Set-StrictMode -Version Latest
+2	$ErrorActionPreference = 'Stop'
+3	
+4	# Import the module under test
+5	BeforeAll {
+6	    . "$PSScriptRoot/SearchReplace.ps1"
+7	}
+8	
+9	Describe 'Find-MatchingFiles' {
+10	    BeforeAll {
+11	        # Create a temporary directory structure for testing
+12	        $script:TestRoot = Join-Path ([System.IO.Path]::GetTempPath()) "sr-test-$([guid]::NewGuid().ToString('N'))"
+13	        New-Item -ItemType Directory -Path $script:TestRoot -Force | Out-Null
+14	        New-Item -ItemType Directory -Path (Join-Path $script:TestRoot 'sub1') -Force | Out-Null
+15	        New-Item -ItemType Directory -Path (Join-Path $script:TestRoot 'sub2') -Force | Out-Null
+16	
+17	        # Create test files
+18	        Set-Content -Path (Join-Path $script:TestRoot 'file1.txt') -Value 'hello world'
+19	        Set-Content -Path (Join-Path $script:TestRoot 'file2.log') -Value 'log entry'
+20	        Set-Content -Path (Join-Path $script:TestRoot 'sub1/file3.txt') -Value 'nested hello'
+21	  
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.Tests.ps1", "o
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./SearchReplace.Tests.ps1 -Output Detailed" 2>&1 | tail -25
+[Result] [95mDiscovery found 7 tests in 126ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.Tests.ps1'[0m
+[92mDescribing Find-MatchingFiles[0m
+[32m  [+] Should find all .txt files recursively[0m[90m 99ms (75ms|23ms)[0m
+[32m  [+] Should find all .log files recursively[0m[90m 5ms (3ms|1ms)[0m
+[32m  [+] Should return empty for non-matching pattern[0m[90m 4ms (3ms|1ms)[0m
+[32m  [+] Should throw for non-existent directory[0m[90m 33ms (32ms|1ms)[0m
+[0m
+[92mDescribing Search-FileContent (preview mode)[0m
+[91m  [-] Should find all regex matches with line numbers[0m[90m 88ms (85ms|2ms)[0m
+[91m   CommandNotFoundException: The term 'Search-FileContent' is not recognized as a name of a cmdlet, function, script file, or executable program.
+[91m   Check the spelling of the name, or if a path was included, verify that th
+[Assistant] 4 pass, 3 fail (RED). Now implement `Search-FileContent`:
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.ps1"}
+[Result] 1	Set-StrictMode -Version Latest
+2	$ErrorActionPreference = 'Stop'
+3	
+4	# SearchReplace.ps1 — Recursive search-and-replace with preview, backup, and reporting.
+5	# Built incrementally via red/green TDD.
+6	
+7	function Find-MatchingFiles {
+8	    <#
+9	    .SYNOPSIS
+10	        Recursively finds files matching a glob pattern under a given path.
+11	    #>
+12	    [CmdletBinding()]
+13	    [OutputType([System.IO.FileInfo[]])]
+14	    param(
+15	        [Parameter(Mandatory)]
+16	        [string]$Path,
+17	
+18	        [Parameter(Mandatory)]
+19	        [string]$GlobPattern
+20	    )
+21	
+22	    if (-not (Test-Path -LiteralPath $Path -PathType Container)) {
+23	        throw "Directory not found: $Path"
+24	    }
+25	
+26	    [System.IO.FileInfo[]]$files = @(Get-ChildItem -Path $Path -Filter $GlobPattern -Recurse -File)
+27	    return $files
+28	}
+29	
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.ps1", "old_str
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./SearchReplace.Tests.ps1 -Output Detailed" 2>&1 | tail -20
+[Result] [95mStarting discovery in 1 files.[0m
+[95mDiscovery found 7 tests in 127ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.Tests.ps1'[0m
+[92mDescribing Find-MatchingFiles[0m
+[32m  [+] Should find all .txt files recursively[0m[90m 86ms (61ms|24ms)[0m
+[32m  [+] Should find all .log files recursively[0m[90m 4ms (3ms|1ms)[0m
+[32m  [+] Should return empty for non-matching pattern[0m[90m 4ms (3ms|1ms)[0m
+[32m  [+] Should throw for non-existent directory[0m[90m 31ms (31ms|1ms)[0m
+[0m
+[92mDescribing Search-FileContent (preview mode)[0m
+[91m  [-] Should find all regex matches with line numbers[0m[90m 26ms (24ms|2ms)[0m
+[91m   IndexOutOfRangeException: Index was outside the bounds of the array.
+[91m   at Search-FileContent, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/1
+[Assistant] Array slice edge case when `$i - 1` is -1. Let me fix the context logic:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.ps1", "old_str
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./SearchReplace.Tests.ps1 -Output Detailed" 2>&1 | tail -18
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 7 tests in 132ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.Tests.ps1'[0m
+[92mDescribing Find-MatchingFiles[0m
+[32m  [+] Should find all .txt files recursively[0m[90m 90ms (68ms|23ms)[0m
+[32m  [+] Should find all .log files recursively[0m[90m 4ms (3ms|1ms)[0m
+[32m  [+] Should return empty for non-matching pattern[0m[90m 6ms (5ms|1ms)[0m
+[32m  [+] Should throw for non-existent directory[0m[90m 32ms (31ms|1ms)[0m
+[0m
+[92mDescribing Search-FileContent (preview mode)[0m
+[32m  [+] Should find all regex matches with line numbers[0m[90m 29ms (27ms|2ms)[0m
+[32m  [+] Should include context lines around matches[0m[90m 17ms (16ms|1ms)[0m
+[32m  [+] Should return empty for no matches[0m[90m 4ms (3ms|1ms)[0m
+[97mTests completed in 548ms
+[Assistant] All 7 GREEN. **Step 3: Backup creation and search-and-replace**. Write failing tests:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.Tests.ps1", "o
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Run to confirm failures (RED):
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./SearchReplace.Tests.ps1 -Output Detailed" 2>&1 | tail -35
+[Result] [32m  [+] Should include context lines around matches[0m[90m 21ms (19ms|1ms)[0m
+[32m  [+] Should return empty for no matches[0m[90m 4ms (3ms|1ms)[0m
+[0m
+[92mDescribing Backup-File[0m
+[91m  [-] Should create a .bak copy of the file[0m[90m 102ms (99ms|3ms)[0m
+[91m   CommandNotFoundException: The term 'Backup-File' is not recognized as a name of a cmdlet, function, script file, or executable program.
+[91m   Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+[91m   at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.Tests.ps1:110[0m
+[91m  [-] Should preserve original file after backup[0m[90m 87ms (86ms|1ms)[0m
+[91m   CommandNotFoundException: The term 'Backup-File' is not recognized as a name of a cmdlet, function, script file, or executable program.
+[91m   Check the spelling of the name, or if a p
+[Assistant] 7 pass, 6 fail (RED). Now implement `Backup-File` and `Invoke-SearchReplace`:
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.ps1"}
+[Result] 1	Set-StrictMode -Version Latest
+2	$ErrorActionPreference = 'Stop'
+3	
+4	# SearchReplace.ps1 — Recursive search-and-replace with preview, backup, and reporting.
+5	# Built incrementally via red/green TDD.
+6	
+7	function Find-MatchingFiles {
+8	    <#
+9	    .SYNOPSIS
+10	        Recursively finds files matching a glob pattern under a given path.
+11	    #>
+12	    [CmdletBinding()]
+13	    [OutputType([System.IO.FileInfo[]])]
+14	    param(
+15	        [Parameter(Mandatory)]
+16	        [string]$Path,
+17	
+18	        [Parameter(Mandatory)]
+19	        [string]$GlobPattern
+20	    )
+21	
+22	    if (-not (Test-Path -LiteralPath $Path -PathType Container)) {
+23	        throw "Directory not found: $Path"
+24	    }
+25	
+26	    [System.IO.FileInfo[]]$files = @(Get-ChildItem -Path $Path -Filter $GlobPattern -Recurse -File)
+27	    return $files
+28	}
+29	
+30	function Search-FileContent {
+31	    <#
+32	    .SYNOPSIS
+33	        Searches a file for lines matching a regex, returning match objects with context.
+34	    
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.ps1", "old_str
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./SearchReplace.Tests.ps1 -Output Detailed" 2>&1 | tail -30
+[Result] [95mStarting discovery in 1 files.[0m
+[95mDiscovery found 13 tests in 163ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.Tests.ps1'[0m
+[92mDescribing Find-MatchingFiles[0m
+[32m  [+] Should find all .txt files recursively[0m[90m 80ms (53ms|27ms)[0m
+[32m  [+] Should find all .log files recursively[0m[90m 6ms (4ms|2ms)[0m
+[32m  [+] Should return empty for non-matching pattern[0m[90m 5ms (4ms|1ms)[0m
+[32m  [+] Should throw for non-existent directory[0m[90m 38ms (37ms|1ms)[0m
+[0m
+[92mDescribing Search-FileContent (preview mode)[0m
+[32m  [+] Should find all regex matches with line numbers[0m[90m 36ms (34ms|2ms)[0m
+[32m  [+] Should include context lines around matches[0m[90m 18ms (15ms|2ms)[0m
+[32m  [+] Should return empty for no matches[0m[90m 4ms (3ms|1ms)[0m
+[0m
+[92mDescribing Backup-File[
+[Assistant] All 13 GREEN. Now **Step 4: Add edge case tests** — regex special chars, multi-match lines, nested directories, and error handling:
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.Tests.ps1"}
+[Result] 1	Set-StrictMode -Version Latest
+2	$ErrorActionPreference = 'Stop'
+3	
+4	# Import the module under test
+5	BeforeAll {
+6	    . "$PSScriptRoot/SearchReplace.ps1"
+7	}
+8	
+9	Describe 'Find-MatchingFiles' {
+10	    BeforeAll {
+11	        # Create a temporary directory structure for testing
+12	        $script:TestRoot = Join-Path ([System.IO.Path]::GetTempPath()) "sr-test-$([guid]::NewGuid().ToString('N'))"
+13	        New-Item -ItemType Directory -Path $script:TestRoot -Force | Out-Null
+14	        New-Item -ItemType Directory -Path (Join-Path $script:TestRoot 'sub1') -Force | Out-Null
+15	        New-Item -ItemType Directory -Path (Join-Path $script:TestRoot 'sub2') -Force | Out-Null
+16	
+17	        # Create test files
+18	        Set-Content -Path (Join-Path $script:TestRoot 'file1.txt') -Value 'hello world'
+19	        Set-Content -Path (Join-Path $script:TestRoot 'file2.log') -Value 'log entry'
+20	        Set-Content -Path (Join-Path $script:TestRoot 'sub1/file3.txt') -Value 'nested hello'
+21	  
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.Tests.ps1", "o
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./SearchReplace.Tests.ps1 -Output Detailed" 2>&1 | tail -40
+[Result] [95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.Tests.ps1'[0m
+[92mDescribing Find-MatchingFiles[0m
+[32m  [+] Should find all .txt files recursively[0m[90m 95ms (69ms|25ms)[0m
+[32m  [+] Should find all .log files recursively[0m[90m 6ms (4ms|1ms)[0m
+[32m  [+] Should return empty for non-matching pattern[0m[90m 11ms (9ms|2ms)[0m
+[32m  [+] Should throw for non-existent directory[0m[90m 42ms (41ms|1ms)[0m
+[0m
+[92mDescribing Search-FileContent (preview mode)[0m
+[32m  [+] Should find all regex matches with line numbers[0m[90m 36ms (28ms|7ms)[0m
+[32m  [+] Should include context lines around matches[0m[90m 13ms (12ms|1ms)[0m
+[32m  [+] Should return empty for no matches[0m[90m 13ms (4ms|10ms)[0m
+[0m
+[92mDescribing Backup-File[0m
+[32m  [+] Should create a .bak copy of the file[0m[90m 17ms (15ms|2ms)[0m
+
+[Assistant] 16 pass, 1 fail (RED — `Format-PreviewReport`). Implement it:
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.ps1", "offset": 130}
+[Result] 130	        [switch]$Preview,
+131	
+132	        [Parameter()]
+133	        [int]$ContextLines = 0
+134	    )
+135	
+136	    [System.IO.FileInfo[]]$files = @(Find-MatchingFiles -Path $Path -GlobPattern $GlobPattern)
+137	    [regex]$regex = [regex]::new($SearchPattern)
+138	    [System.Collections.Generic.List[pscustomobject]]$report = [System.Collections.Generic.List[pscustomobject]]::new()
+139	
+140	    foreach ($file in $files) {
+141	        [string]$filePath = $file.FullName
+142	        [string[]]$lines = @(Get-Content -LiteralPath $filePath)
+143	        [bool]$fileHasMatch = $false
+144	
+145	        for ([int]$i = 0; $i -lt $lines.Count; $i++) {
+146	            if ($regex.IsMatch($lines[$i])) {
+147	                [string]$oldLine = $lines[$i]
+148	                [string]$newLine = $regex.Replace($oldLine, $ReplaceWith)
+149	
+150	                [pscustomobject]$entry = [pscustomobject]@{
+151	                    File       = [string]$filePath
+152	                    LineNumber = [int]($i + 1
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.ps1", "old_str
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./SearchReplace.Tests.ps1 -Output Detailed" 2>&1 | tail -30
+[Result] [32m  [+] Should throw for non-existent directory[0m[90m 41ms (40ms|1ms)[0m
+[0m
+[92mDescribing Search-FileContent (preview mode)[0m
+[32m  [+] Should find all regex matches with line numbers[0m[90m 33ms (28ms|6ms)[0m
+[32m  [+] Should include context lines around matches[0m[90m 13ms (12ms|1ms)[0m
+[32m  [+] Should return empty for no matches[0m[90m 5ms (4ms|1ms)[0m
+[0m
+[92mDescribing Backup-File[0m
+[32m  [+] Should create a .bak copy of the file[0m[90m 19ms (17ms|2ms)[0m
+[32m  [+] Should preserve original file after backup[0m[90m 12ms (10ms|1ms)[0m
+[0m
+[92mDescribing Invoke-SearchReplace[0m
+[96m Context Preview mode[0m
+[32m   [+] Should show matches without modifying the file[0m[90m 43ms (37ms|6ms)[0m
+[96m Context Actual replacement with backup[0m
+[32m   [+] Should replace matches and create backups[0m[90m 20ms (18ms|2ms)[0m
+[32m   [+] Should return a summary report with file, line, old, new[0m[90m 22ms (20ms|2ms)[0m
+[96m Context No matche
+[Assistant] All 17 GREEN. Let me do a final review of both files to make sure everything is clean and strict-mode compliant.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.ps1"}
+[Result] 1	Set-StrictMode -Version Latest
+2	$ErrorActionPreference = 'Stop'
+3	
+4	# SearchReplace.ps1 — Recursive search-and-replace with preview, backup, and reporting.
+5	# Built incrementally via red/green TDD.
+6	
+7	function Find-MatchingFiles {
+8	    <#
+9	    .SYNOPSIS
+10	        Recursively finds files matching a glob pattern under a given path.
+11	    #>
+12	    [CmdletBinding()]
+13	    [OutputType([System.IO.FileInfo[]])]
+14	    param(
+15	        [Parameter(Mandatory)]
+16	        [string]$Path,
+17	
+18	        [Parameter(Mandatory)]
+19	        [string]$GlobPattern
+20	    )
+21	
+22	    if (-not (Test-Path -LiteralPath $Path -PathType Container)) {
+23	        throw "Directory not found: $Path"
+24	    }
+25	
+26	    [System.IO.FileInfo[]]$files = @(Get-ChildItem -Path $Path -Filter $GlobPattern -Recurse -File)
+27	    return $files
+28	}
+29	
+30	function Search-FileContent {
+31	    <#
+32	    .SYNOPSIS
+33	        Searches a file for lines matching a regex, returning match objects with context.
+34	    
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.Tests.ps1"}
+[Result] 1	Set-StrictMode -Version Latest
+2	$ErrorActionPreference = 'Stop'
+3	
+4	# Import the module under test
+5	BeforeAll {
+6	    . "$PSScriptRoot/SearchReplace.ps1"
+7	}
+8	
+9	Describe 'Find-MatchingFiles' {
+10	    BeforeAll {
+11	        # Create a temporary directory structure for testing
+12	        $script:TestRoot = Join-Path ([System.IO.Path]::GetTempPath()) "sr-test-$([guid]::NewGuid().ToString('N'))"
+13	        New-Item -ItemType Directory -Path $script:TestRoot -Force | Out-Null
+14	        New-Item -ItemType Directory -Path (Join-Path $script:TestRoot 'sub1') -Force | Out-Null
+15	        New-Item -ItemType Directory -Path (Join-Path $script:TestRoot 'sub2') -Force | Out-Null
+16	
+17	        # Create test files
+18	        Set-Content -Path (Join-Path $script:TestRoot 'file1.txt') -Value 'hello world'
+19	        Set-Content -Path (Join-Path $script:TestRoot 'file2.log') -Value 'log entry'
+20	        Set-Content -Path (Join-Path $script:TestRoot 'sub1/file3.txt') -Value 'nested hello'
+21	  
+[Assistant] Everything looks solid. Let me run the full suite one final time to confirm:
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./SearchReplace.Tests.ps1 -Output Detailed" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 17 tests in 144ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-strict-opus/SearchReplace.Tests.ps1'[0m
+[92mDescribing Find-MatchingFiles[0m
+[32m  [+] Should find all .txt files recursively[0m[90m 77ms (57ms|20ms)[0m
+[32m  [+] Should find all .log files recursively[0m[90m 6ms (5ms|2ms)[0m
+[32m  [+] Should return empty for non-matching pattern[0m[90m 11ms (9ms|1ms)[0m
+[32m  [+] Should throw for non-existent directory[0m[90m 36ms (35ms|1ms)[0m
+[0m
+[92mDescribing Search-FileContent (preview mode)[0m
+[32m  [+] Should find all regex matches with line numbers[0m[90m 32ms (26ms|6ms)[0m
+[32m  [+] Should include context lines around matches[0m[90m 14ms (13ms|1ms)[0m
+[32m  [+] Should return empty for no matches[0m[90m 5ms (4ms|1ms)[0m
+[0m
+[Assistant] All **17 tests pass**. Here's a summary of what was built:
+
+## Files
+
+- **`SearchReplace.ps1`** — Module with 5 functions, all strict-mode compliant (`Set-StrictMode -Version Latest`, `$ErrorActionPreference = 'Stop'`, `[CmdletBinding()]`, `[OutputType()]`, explicitly typed parameters)
+- **`SearchReplace.Tests.ps1`** — 17 Pester tests across 5 `Describe` blocks
+
+## Functions
+
+| Function | Purpose |
+|---|---|
+| `Find-MatchingFiles` | Recursively finds files by glob pattern |
+| `Search-FileContent` | Searches a file for regex matches, returns line numbers + context |
+| `Backup-File` | Creates `.bak` copy before modification |
+| `Invoke-SearchReplace` | Orchestrator: find files, search/replace, backup, report. `-Preview` switch shows matches without modifying |
+| `Format-PreviewReport` | Formats report entries into human-readable summary grouped by file |
+
+## TDD progression
+
+1. RED: 3 tests for `Find-MatchingFiles` → GREEN
+2. RED: 3 tests for `Search-FileContent` (matches, context, no-match) → GREEN
+3. RED: 6 tests for `Backup-File` + `Invoke-SearchReplace` (preview, replace+backup, report, no-match, regex groups, multi-match, deep nesting) → GREEN
+4. RED: 1 test for `Format-PreviewReport` → GREEN
