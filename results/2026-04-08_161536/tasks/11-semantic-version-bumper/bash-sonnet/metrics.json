@@ -1,0 +1,313 @@
+{
+  "task_id": "11-semantic-version-bumper",
+  "task_name": "Semantic Version Bumper",
+  "task_category": "GitHub Actions / Release Automation",
+  "language_mode": "bash",
+  "language_chosen": "bash",
+  "language_breakdown": {
+    "bash": 100.0
+  },
+  "interpreter_versions": {},
+  "powershell_version": "",
+  "dotnet_version": "",
+  "model": "claude-sonnet-4-6",
+  "model_short": "sonnet",
+  "claude_code_version": "2.1.96",
+  "instructions_version": "v3",
+  "timestamp_start": "2026-04-08T21:00:47.272546+00:00",
+  "timestamp_end": "2026-04-08T21:03:30.757002+00:00",
+  "prompt_text": "You are completing a scripting task. You MUST use Bash as your implementation language.\n\nTASK: Parse a version file (or package.json) containing a semantic version string, determine the next version based on conventional commit messages (feat -> minor, fix -> patch, breaking -> major), update the version file, generate a changelog entry from the commits, and output the new version. Create mock commit logs as test fixtures.\n\nREQUIREMENTS:\n1. Use red/green TDD methodology: write a failing test FIRST, then write the minimum code to make it pass, then refactor. Repeat for each piece of functionality.\n2. Create mocks and test fixtures as necessary for testability. Use bats-core (bats) as the testing framework.\n3. All tests must be runnable with `bats` and must pass at the end.\n4. Include clear comments explaining your approach.\n5. Handle errors gracefully with meaningful error messages.\n6. Use `#!/usr/bin/env bash` shebang. Scripts must pass `shellcheck` and `bash -n` syntax validation.\n\nCreate your solution in the current working directory. Start by writing your first failing test.\n\nGITHUB ACTIONS REQUIREMENT:\nIn addition to the script and tests, create a GitHub Actions workflow file at\n.github/workflows/semantic-version-bumper.yml that uses your script in a real CI/CD pipeline.\nThe workflow must:\n- Use appropriate trigger events (push, pull_request, schedule, workflow_dispatch, etc.)\n- Reference your script correctly\n- Pass actionlint validation (valid YAML, valid action references, correct syntax)\n- Include appropriate permissions, environment variables, and job dependencies\n- Actually run successfully when executed locally with `act` (nektos/act)\n\nThe workflow WILL be executed in a Docker container via `act push` after you finish.\nIt must complete without errors. Design your workflow so that its steps work in an\nisolated container environment \u2014 use `actions/checkout@v4`, install any dependencies\nyour script needs, and run the script. Avoid steps that require external services or\nsecrets unless they have sensible defaults/fallbacks.\n\nWORKFLOW VALIDATION:\nYou MUST validate your workflow file by running `actionlint .github/workflows/semantic-version-bumper.yml`\nand fix any errors it reports. actionlint is pre-installed. Iterate until it passes cleanly.\n\nWORKFLOW TESTS:\nWrite tests that verify your workflow file:\n- Parse the YAML and check that it has the expected structure (triggers, jobs, steps)\n- Verify the workflow references your script files correctly (paths exist)\n- Verify step outputs, environment variables, and job dependencies are wired up correctly\n- Verify actionlint passes (run it as a subprocess in your test and assert exit code 0)\nThese tests should be part of your main test suite and must pass at the end.\n",
+  "exit_code": 0,
+  "session": {
+    "session_id": "a3aeddef-dc00-4a79-9d6f-2d14e166f238",
+    "stop_reason": "end_turn",
+    "terminal_reason": "completed",
+    "fast_mode_state": "off",
+    "service_tier": "standard",
+    "speed": "standard",
+    "inference_geo": "",
+    "context_window": 200000,
+    "max_output_tokens": 32000,
+    "permission_mode": "bypassPermissions",
+    "output_style": "default",
+    "tools_available_count": 31,
+    "mcp_servers": [
+      {
+        "name": "claude.ai Microsoft Learn",
+        "status": "connected"
+      },
+      {
+        "name": "claude.ai Gmail",
+        "status": "needs-auth"
+      },
+      {
+        "name": "claude.ai Google Calendar",
+        "status": "needs-auth"
+      }
+    ],
+    "permission_denials": []
+  },
+  "model_usage_detail": {
+    "claude-sonnet-4-6": {
+      "inputTokens": 20,
+      "outputTokens": 11675,
+      "cacheReadInputTokens": 469517,
+      "cacheCreationInputTokens": 21845,
+      "webSearchRequests": 0,
+      "costUSD": 0.39795885,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "effort_level": null,
+  "timing": {
+    "grand_total_duration_ms": 163484,
+    "total_api_duration_ms": 154300,
+    "total_execution_duration_ms": 6590,
+    "num_turns": 24
+  },
+  "tokens": {
+    "input_tokens": 20,
+    "output_tokens": 11675,
+    "cache_read_tokens": 469517,
+    "cache_creation_tokens": 21845,
+    "total_context_consumed": 491382,
+    "compaction_count": 0
+  },
+  "cost": {
+    "total_cost_usd": 0.39795885,
+    "assumed_input_cost_per_mtok": 3.0,
+    "assumed_output_cost_per_mtok": 15.0,
+    "assumed_cache_read_cost_per_mtok": 0.3,
+    "assumed_cache_write_cost_per_mtok": 3.75
+  },
+  "code_metrics": {
+    "total_lines": 586,
+    "total_tokens_estimate": 4676,
+    "file_count": 9,
+    "files": [
+      "version-bumper.sh",
+      ".github/workflows/semantic-version-bumper.yml",
+      "tests/version-bumper.bats",
+      "tests/fixtures/commits-breaking-footer.txt",
+      "tests/fixtures/commits-chore.txt",
+      "tests/fixtures/commits-major.txt",
+      "tests/fixtures/commits-minor.txt",
+      "tests/fixtures/commits-mixed.txt",
+      "tests/fixtures/commits-patch.txt"
+    ]
+  },
+  "quality": {
+    "tests_pass": null,
+    "error_count": 3,
+    "error_details": [
+      "Exit code 2\nversion-bumper.sh: line 88: syntax error in conditional expression: unexpected token `)'\nversion-bumper.sh: line 88: syntax error near `^[a-zA-Z]+(\\([^)]*\\))?'\nversion-bumper.sh: line 88: ",
+      "Exit code 2\nversion-bumper.sh: line 200: syntax error in conditional expression: unexpected token `)'\nversion-bumper.sh: line 200: syntax error near `^[a-zA-Z]+(\\([^)]*\\))?'\nversion-bumper.sh: line 20",
+      "Exit code 1\n1..34\nok 1 parse_version reads version from version.txt\nok 2 parse_version reads version from package.json\nok 3 parse_version fails with meaningful error for missing file\nok 4 parse_versio"
+    ],
+    "actionlint_pass": true,
+    "actionlint_errors": 0,
+    "actionlint_results": [
+      {
+        "file": ".github/workflows/semantic-version-bumper.yml",
+        "passed": true,
+        "errors": ""
+      }
+    ],
+    "act_ran": true,
+    "act_pass": false,
+    "act_duration_ms": 25465,
+    "act_output": "in test file tests/version-bumper.bats, line 212)\n[Semantic Version Bumper/Validate and Test]   \u274c  Failure - Main Run bats test suite [1.798211909s]\n[Semantic Version Bumper/Validate and Test] exitcode '1': failure\n[Semantic Version Bumper/Validate and Test] \u2b50 Run Complete job\n[Semantic Version Bumper/Validate and Test] Cleaning up container for job Validate and Test\n[Semantic Version Bumper/Validate and Test]   \u2705  Success - Complete job\n[Semantic Version Bumper/Validate and Test] \ud83c\udfc1  Job failed\n",
+    "act_error": "time=\"2026-04-08T17:03:30-04:00\" level=info msg=\"Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'\"\nError: Job 'Validate and Test' failed\n",
+    "areas_of_difficulty": [],
+    "observations": ""
+  },
+  "tool_install": {
+    "tool_install_duration_ms": 0,
+    "tools_installed": [],
+    "install_commands_count": 0
+  },
+  "hooks": {
+    "hook_fires": 11,
+    "hook_errors_caught": 2,
+    "hook_failures": 0,
+    "hook_events": [
+      {
+        "subtype": "hook_started",
+        "hook_id": "a78085a7-931c-44d1-aa38-f712f548ff40",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "a78085a7-931c-44d1-aa38-f712f548ff40",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "de04ff31-15e3-4204-993d-25e1657e9061",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "de04ff31-15e3-4204-993d-25e1657e9061",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "e58582cf-c372-4ec0-ad70-24e466a65c70",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "e58582cf-c372-4ec0-ad70-24e466a65c70",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "dfaf024a-2ec6-47d9-933f-152aff4d9d76",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "dfaf024a-2ec6-47d9-933f-152aff4d9d76",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "351f08b8-9d26-48e3-b028-5a3e2e4a6241",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "351f08b8-9d26-48e3-b028-5a3e2e4a6241",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "e8653777-4d21-4752-b524-ea44bda9c769",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "e8653777-4d21-4752-b524-ea44bda9c769",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "eecb545c-2436-42c7-a32f-12446682e162",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "eecb545c-2436-42c7-a32f-12446682e162",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "d271c055-b09f-43b6-9c5d-6e9e25c744dd",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "d271c055-b09f-43b6-9c5d-6e9e25c744dd",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\n/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_161536/11-semantic-version-bumper/bash-sonnet/version-bumper.sh: line 88: syntax error in conditional expression: unexpected token `)'\\n/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_161536/11-semantic-version-bumper/bash-sonnet/version-bumper.sh: line 88: syntax error near `",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "7982ad0e-dfeb-46de-b83a-aad05ea1c3a1",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "7982ad0e-dfeb-46de-b83a-aad05ea1c3a1",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\n/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_161536/11-semantic-version-bumper/bash-sonnet/version-bumper.sh: line 200: syntax error in conditional expression: unexpected token `)'\\n/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_161536/11-semantic-version-bumper/bash-sonnet/version-bumper.sh: line 200: syntax error near",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "ab279592-dd50-4c7d-87f8-713e2e80ceb4",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "ab279592-dd50-4c7d-87f8-713e2e80ceb4",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "eec74f0c-78de-4c14-bd31-642f22c0fe3d",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "eec74f0c-78de-4c14-bd31-642f22c0fe3d",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  }
+}
