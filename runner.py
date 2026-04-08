@@ -330,6 +330,18 @@ The workflow must:
 
 The workflow does NOT need to actually run — it just needs to be syntactically valid
 and demonstrate how your script would be integrated into a CI/CD pipeline.
+
+WORKFLOW VALIDATION:
+You MUST validate your workflow file by running `actionlint .github/workflows/{task_slug}.yml`
+and fix any errors it reports. actionlint is pre-installed. Iterate until it passes cleanly.
+
+WORKFLOW TESTS:
+Write tests that verify your workflow file:
+- Parse the YAML and check that it has the expected structure (triggers, jobs, steps)
+- Verify the workflow references your script files correctly (paths exist)
+- Verify step outputs, environment variables, and job dependencies are wired up correctly
+- Verify actionlint passes (run it as a subprocess in your test and assert exit code 0)
+These tests should be part of your main test suite and must pass at the end.
 """
 
 # ---------------------------------------------------------------------------

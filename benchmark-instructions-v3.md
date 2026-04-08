@@ -55,6 +55,20 @@ For every task, the agent must also create a GitHub Actions workflow file at `.g
 
 The workflow does NOT need to actually run -- it just needs to be syntactically valid and demonstrate how the script would be integrated into a CI/CD pipeline.
 
+### Workflow Validation
+
+You MUST validate your workflow file by running `actionlint .github/workflows/<task-name>.yml` and fixing any errors it reports. `actionlint` is pre-installed. Iterate until it passes cleanly.
+
+### Workflow Tests
+
+Write tests that verify your workflow file as part of your main test suite:
+- Parse the YAML and check that it has the expected structure (triggers, jobs, steps)
+- Verify the workflow references your script files correctly (paths exist)
+- Verify step outputs, environment variables, and job dependencies are wired up correctly
+- Verify actionlint passes (run it as a subprocess in your test and assert exit code 0)
+
+These workflow tests must pass alongside your script logic tests.
+
 ### Pre-installed Tools
 
 The following tools are pre-installed in the benchmark environment:
@@ -213,8 +227,20 @@ The workflow must:
 - Pass actionlint validation (valid YAML, valid action references, correct syntax)
 - Include appropriate permissions, environment variables, and job dependencies
 
-The workflow does NOT need to actually run -- it just needs to be syntactically valid
+The workflow does NOT need to actually run — it just needs to be syntactically valid
 and demonstrate how your script would be integrated into a CI/CD pipeline.
+
+WORKFLOW VALIDATION:
+You MUST validate your workflow file by running `actionlint .github/workflows/<task-name>.yml`
+and fix any errors it reports. actionlint is pre-installed. Iterate until it passes cleanly.
+
+WORKFLOW TESTS:
+Write tests that verify your workflow file:
+- Parse the YAML and check that it has the expected structure (triggers, jobs, steps)
+- Verify the workflow references your script files correctly (paths exist)
+- Verify step outputs, environment variables, and job dependencies are wired up correctly
+- Verify actionlint passes (run it as a subprocess in your test and assert exit code 0)
+These tests should be part of your main test suite and must pass at the end.
 ```
 
 ---
