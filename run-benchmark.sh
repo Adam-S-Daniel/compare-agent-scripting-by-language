@@ -6,7 +6,7 @@
 #   ./run-benchmark.sh --resume <dir>     # Resume a previous run
 #
 # Prerequisites: python3, claude CLI (with API key configured)
-# This script will install: pwsh (PowerShell), .NET 10 SDK
+# This script will install: pwsh (PowerShell), actionlint, shellcheck, bats-core
 
 set -eo pipefail
 cd "$(dirname "$0")"
@@ -68,57 +68,60 @@ else
     echo "WARNING: PowerShell not available — PS modes will fail"
 fi
 
-# Install .NET 10 SDK if not present
-if ! command -v dotnet &>/dev/null || ! dotnet --list-sdks 2>/dev/null | grep -q "^10\."; then
-    echo "Installing .NET 10 SDK..."
-    if [ -f /etc/os-release ]; then
-        # Use the official install script
-        wget -q https://dot.net/v1/dotnet-install.sh -O /tmp/dotnet-install.sh
-        chmod +x /tmp/dotnet-install.sh
-        /tmp/dotnet-install.sh --channel 10.0 --install-dir "$HOME/.dotnet"
-        rm /tmp/dotnet-install.sh
-        export DOTNET_ROOT="$HOME/.dotnet"
-        export PATH="$DOTNET_ROOT:$PATH"
-        # Persist for the agent subprocesses
-        if ! grep -q 'DOTNET_ROOT' "$HOME/.bashrc" 2>/dev/null; then
-            echo 'export DOTNET_ROOT="$HOME/.dotnet"' >> "$HOME/.bashrc"
-            echo 'export PATH="$DOTNET_ROOT:$PATH"' >> "$HOME/.bashrc"
-        fi
-    else
-        echo "WARNING: Cannot auto-install .NET SDK on this OS. Install manually."
-    fi
+# Install actionlint if not present
+if ! command -v actionlint &>/dev/null; then
+    echo "Installing actionlint..."
+    mkdir -p ~/.local/bin
+    curl -sL "https://github.com/rhysd/actionlint/releases/latest/download/actionlint_$(uname -s)_amd64.tar.gz" | tar xz -C ~/.local/bin actionlint
+    chmod +x ~/.local/bin/actionlint
+    export PATH="$HOME/.local/bin:$PATH"
 fi
+echo "actionlint: $(actionlint --version 2>&1 | head -1)"
 
-if command -v dotnet &>/dev/null; then
-    echo ".NET SDK: $(dotnet --version)"
-    # Verify file-based apps work
-    echo 'Console.WriteLine("dotnet-ok");' > /tmp/_dotnet_test.cs
-    if dotnet run /tmp/_dotnet_test.cs 2>/dev/null | grep -q "dotnet-ok"; then
-        echo ".NET 10 file-based apps: OK"
-    else
-        echo "WARNING: dotnet run file.cs not working — C# mode may have issues"
-    fi
-    rm -f /tmp/_dotnet_test.cs
+# Install shellcheck if not present
+if ! command -v shellcheck &>/dev/null; then
+    echo "Installing shellcheck..."
+    mkdir -p ~/.local/bin
+    curl -sL "https://github.com/koalaman/shellcheck/releases/download/v0.10.0/shellcheck-v0.10.0.linux.x86_64.tar.xz" -o /tmp/shellcheck.tar.xz
+    tar xf /tmp/shellcheck.tar.xz -C /tmp
+    cp /tmp/shellcheck-v0.10.0/shellcheck ~/.local/bin/shellcheck
+    chmod +x ~/.local/bin/shellcheck
+    rm -rf /tmp/shellcheck.tar.xz /tmp/shellcheck-v0.10.0
+    export PATH="$HOME/.local/bin:$PATH"
+fi
+echo "shellcheck: $(shellcheck --version 2>&1 | grep '^version:' | head -1)"
+
+# Install bats-core if not present
+if ! command -v bats &>/dev/null; then
+    echo "Installing bats-core..."
+    npm install -g bats
+fi
+echo "bats: $(bats --version)"
+
+# Verify bun is present (should be pre-installed)
+if command -v bun &>/dev/null; then
+    echo "bun: $(bun --version)"
 else
-    echo "WARNING: .NET SDK not available — C# mode will fail"
+    echo "WARNING: bun not available — typescript-bun mode will fail"
 fi
 
 echo ""
-echo "=== Starting Benchmark (v2) ==="
-echo "Tasks: 18 scripting tasks"
+echo "=== Starting Benchmark (v3 — GHA) ==="
+echo "Tasks: 11-18 (GitHub Actions workflow tasks)"
 echo "Models: claude-opus-4-6, claude-sonnet-4-6"
-echo "Modes: default, powershell, powershell-strict, csharp-script"
-echo "Total runs: 144"
+echo "Modes: default, powershell, bash, typescript-bun"
+echo "Total runs: 64"
 echo "Permission mode: --dangerously-skip-permissions"
+echo "Hooks: syntax/lint checking enabled on all modes"
 echo ""
 echo "Results will be pushed to git every 60 seconds."
-echo "Expected duration: ~8-16 hours"
-echo "Expected cost: ~$80-160"
+echo "Expected duration: ~4-8 hours"
+echo "Expected cost: ~$24-32"
 echo ""
 
 # Run the benchmark
 exec python3 runner.py \
     "$@" \
-    --tasks all \
+    --tasks 11,12,13,14,15,16,17,18 \
     --models opus,sonnet \
-    --modes default,powershell,powershell-strict,csharp-script
+    --modes default,powershell,bash,typescript-bun
