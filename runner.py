@@ -320,51 +320,46 @@ GHA_TASK_IDS = {
 
 GHA_WORKFLOW_ADDENDUM = """
 GITHUB ACTIONS REQUIREMENT:
-In addition to the script and tests, create a GitHub Actions workflow file at
-.github/workflows/{task_slug}.yml that uses your script in a real CI/CD pipeline.
-The workflow must:
+Create a GitHub Actions workflow file at .github/workflows/{task_slug}.yml that uses
+your script in a real CI/CD pipeline. The workflow must:
 - Use appropriate trigger events (push, pull_request, schedule, workflow_dispatch, etc.)
 - Reference your script correctly
 - Pass actionlint validation (valid YAML, valid action references, correct syntax)
 - Include appropriate permissions, environment variables, and job dependencies
 - Actually run successfully when executed locally with `act` (nektos/act)
 
-The workflow WILL be executed in a Docker container via `act push` after you finish.
-It must complete without errors. Design your workflow so that its steps work in an
-isolated container environment — use `actions/checkout@v4`, install any dependencies
-your script needs, and run the script. Avoid steps that require external services or
-secrets unless they have sensible defaults/fallbacks.
+Design your workflow so its steps work in an isolated Docker container — use
+`actions/checkout@v4`, install dependencies your script needs, and run it.
+Avoid steps requiring external services or secrets without sensible defaults.
 
 WORKFLOW VALIDATION:
-You MUST validate your workflow file by running `actionlint .github/workflows/{task_slug}.yml`
-and fix any errors it reports. actionlint is pre-installed. Iterate until it passes cleanly.
+Run `actionlint .github/workflows/{task_slug}.yml` and fix any errors. actionlint is
+pre-installed. Iterate until it passes cleanly.
 
-WORKFLOW EXECUTION TEST (MANDATORY):
-Your workflow must actually run in Docker via `act`. You MUST include a test that:
-1. Initializes a git repo in a temp directory and copies your project files into it
-2. Runs: git add -A && git commit -m "test" && act push --rm 2>&1
-3. Saves the full output to a file called `act-result.txt` in the current working directory
-4. Asserts that the act command exited with code 0
-5. Parses `act-result.txt` and asserts the workflow produced correct results:
-   - Assert that each job shows "Job succeeded"
-   - Assert that your script's outputs have the correct expected values — not just that
-     they appear, but that they match known-good values. For example, if the workflow
-     runs your version bumper with fixture data, assert the exact version string
-     (e.g. "1.2.0") appears in the output, not just "some version was printed"
-   - If the workflow sets step outputs, assert their values match expectations
-   - Use your test fixtures as the input data for the workflow run so you know exactly
-     what the correct output should be
+ALL TESTS MUST RUN THROUGH ACT:
+Every single test case must execute through the GitHub Actions workflow via `act`.
+Do NOT test your script directly — all testing goes through the pipeline.
 
-The `act-result.txt` file MUST exist when your tests finish. It is a required artifact.
-If act fails, debug the workflow until it passes — check the output for errors.
+Structure your workflow to accept test fixture data and produce verifiable output.
+Your test harness must:
+1. For each test case: set up a temp git repo with your project files + that case's
+   fixture data, run `act push --rm`, capture the output
+2. Save all act output to `act-result.txt` in the current working directory (append
+   each test case's output, clearly delimited)
+3. Assert that act exited with code 0 for each case
+4. Parse the act output and assert on EXACT EXPECTED VALUES — not just that output
+   appeared, but that it matches the known-good result for that test case's input.
+   For example: if your workflow bumps version 1.1.0 with a feat commit, assert
+   the output contains exactly "1.2.0", not just "a version number"
+5. Assert every job shows "Job succeeded"
+
+The `act-result.txt` file MUST exist when done. It is a required artifact.
 `act` and Docker are pre-installed.
 
-WORKFLOW STRUCTURE TESTS:
-Also write tests that verify your workflow file:
-- Parse the YAML and check that it has the expected structure (triggers, jobs, steps)
+WORKFLOW STRUCTURE TESTS (also required):
+- Parse the YAML and check expected structure (triggers, jobs, steps)
 - Verify the workflow references your script files correctly (paths exist)
-- Verify actionlint passes (run it as a subprocess in your test and assert exit code 0)
-These tests should be part of your main test suite and must pass at the end.
+- Verify actionlint passes (assert exit code 0)
 """
 
 # ---------------------------------------------------------------------------
