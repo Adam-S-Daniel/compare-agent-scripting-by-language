@@ -1,0 +1,370 @@
+[Assistant] 
+
+Looking at the task, I'll use Python — it has excellent regex support, filesystem utilities, and a built-in `unittest` framework. Let me start with red/green TDD.
+[Tool: Bash] ls /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/07-batch-file-renamer/default-opus/
+[Result] benchmark-instructions-v2.md
+[Assistant] Starting with the first failing test — the core rename logic.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/07-batch-file-renamer/default-opus/test_renamer.py", "content": "\"\"\"Tests for the batch file rename
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/07-batch-file-renamer/default-opus/test_renamer.py (file state is current in your context — no need to Read it back)
+[Tool: Bash] python -m pytest test_renamer.py -v 2>&1 | tail -20
+[Result] /bin/bash: line 1: python: command not found
+[Tool: Bash] which python3 && python3 --version
+[Result] /usr/bin/python3
+Python 3.12.3
+[Tool: Bash] python3 -m pytest test_renamer.py -v 2>&1 | tail -20
+[Result] platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/07-batch-file-renamer/default-opus
+collecting ... collected 0 items / 1 error
+
+==================================== ERRORS ====================================
+_______________________ ERROR collecting test_renamer.py _______________________
+ImportError while importing test module '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/07-batch-file-renamer/default-opus/test_renamer.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test_renamer.py:8: in <module>
+    from renamer import compute_renames
+E   ModuleNotFoundError: No module named 'ren
+[Assistant] RED confirmed. Now write the minimum code to make these pass.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/07-batch-file-renamer/default-opus/renamer.py", "content": "\"\"\"Batch file renamer: rename files usi
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/07-batch-file-renamer/default-opus/renamer.py (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 -m pytest test_renamer.py -v 2>&1
+[Result] ============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/07-batch-file-renamer/default-opus
+collecting ... collected 3 items
+
+test_renamer.py::TestComputeRenames::test_full_name_replacement PASSED   [ 33%]
+test_renamer.py::TestComputeRenames::test_no_matches PASSED              [ 66%]
+test_renamer.py::TestComputeRenames::test_simple_regex_rename PASSED     [100%]
+
+============================== 3 passed in 0.00s ===============================
+[Assistant] GREEN. Now add tests for conflict detection.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/07-batch-file-renamer/default-opus/test_renamer.py"}
+[Result] 1	"""Tests for the batch file renamer, written test-first using red/green TDD."""
+2	
+3	import os
+4	import tempfile
+5	import shutil
+6	import unittest
+7	
+8	from renamer import compute_renames
+9	
+10	
+11	class TestComputeRenames(unittest.TestCase):
+12	    """RED: compute_renames doesn't exist yet. This test should fail on import."""
+13	
+14	    def test_simple_regex_rename(self):
+15	        """A basic regex substitution renames matching files."""
+16	        files = ["photo_001.jpg", "photo_002.jpg", "notes.txt"]
+17	        result = compute_renames(files, r"photo_(\d+)", r"img_\1")
+18	        self.assertEqual(result, {
+19	            "photo_001.jpg": "img_001.jpg",
+20	            "photo_002.jpg": "img_002.jpg",
+21	        })
+22	
+23	    def test_no_matches(self):
+24	        """Files that don't match the pattern are left untouched."""
+25	        files = ["readme.md", "notes.txt"]
+26	        result = compute_renames(files, r"photo_(\d+)", r"img_\1")
+27	        self.assertEqual(result, {})
+28	
+2
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/07-batch-file-renamer/default-opus/test_renamer.py", "old_string": "\"\"\"Tests 
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/07-batch-file-renamer/default-opus/test_renamer.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 -m pytest test_renamer.py -v 2>&1 | tail -20
+[Result] platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/07-batch-file-renamer/default-opus
+collecting ... collected 0 items / 1 error
+
+==================================== ERRORS ====================================
+_______________________ ERROR collecting test_renamer.py _______________________
+ImportError while importing test module '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/07-batch-file-renamer/default-opus/test_renamer.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test_renamer.py:9: in <module>
+    from renamer import compute_renames, detect_conflicts
+E   ImportError: cannot imp
+[Assistant] RED. Now implement `detect_conflicts`.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/07-batch-file-renamer/default-opus/renamer.py"}
+[Result] 1	"""Batch file renamer: rename files using regex patterns with preview, undo, and conflict detection."""
+2	
+3	import re
+4	
+5	
+6	def compute_renames(files, pattern, replacement):
+7	    """Compute a mapping of old_name -> new_name for files matching the regex pattern.
+8	
+9	    Only includes files where the name actually changes.
+10	    The regex is applied to the filename (not the full path).
+11	    """
+12	    renames = {}
+13	    regex = re.compile(pattern)
+14	    for filename in files:
+15	        new_name = regex.sub(replacement, filename)
+16	        if new_name != filename:
+17	            renames[filename] = new_name
+18	    return renames
+19	
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/07-batch-file-renamer/default-opus/renamer.py", "old_string": "    return rename
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/07-batch-file-renamer/default-opus/renamer.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 -m pytest test_renamer.py -v 2>&1
+[Result] ============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/07-batch-file-renamer/default-opus
+collecting ... collected 7 items
+
+test_renamer.py::TestComputeRenames::test_full_name_replacement PASSED   [ 14%]
+test_renamer.py::TestComputeRenames::test_no_matches PASSED              [ 28%]
+test_renamer.py::TestComputeRenames::test_simple_regex_rename PASSED     [ 42%]
+test_renamer.py::TestDetectConflicts::test_conflict_with_existing_file PASSED [ 57%]
+test_renamer.py::TestDetectConflicts::test_no_conflict_when_existing_is_also_renamed PASSED [ 71%]
+test_renamer.py::TestDetectConflicts::test_no_conflicts PASSED           [ 85%]
+test_renamer.py::TestDetectConflicts::test_two_files_same_target PASSED  [100%]
+
+============================== 7 passed in 0.01s ====================
+[Assistant] GREEN. Now add tests for preview mode and undo script generation.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/07-batch-file-renamer/default-opus/test_renamer.py"}
+[Result] 1	"""Tests for the batch file renamer, written test-first using red/green TDD."""
+2	
+3	import os
+4	import tempfile
+5	import shutil
+6	import stat
+7	import unittest
+8	
+9	from renamer import compute_renames, detect_conflicts
+10	
+11	
+12	class TestComputeRenames(unittest.TestCase):
+13	    """Test the core rename-computation logic."""
+14	
+15	    def test_simple_regex_rename(self):
+16	        """A basic regex substitution renames matching files."""
+17	        files = ["photo_001.jpg", "photo_002.jpg", "notes.txt"]
+18	        result = compute_renames(files, r"photo_(\d+)", r"img_\1")
+19	        self.assertEqual(result, {
+20	            "photo_001.jpg": "img_001.jpg",
+21	            "photo_002.jpg": "img_002.jpg",
+22	        })
+23	
+24	    def test_no_matches(self):
+25	        """Files that don't match the pattern are left untouched."""
+26	        files = ["readme.md", "notes.txt"]
+27	        result = compute_renames(files, r"photo_(\d+)", r"img_\1")
+28	        self.assertEqual(result, {})
+29	
+3
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/07-batch-file-renamer/default-opus/test_renamer.py", "old_string": "from renamer
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/07-batch-file-renamer/default-opus/test_renamer.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/07-batch-file-renamer/default-opus/test_renamer.py", "old_string": "if __name__ 
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/07-batch-file-renamer/default-opus/test_renamer.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 -m pytest test_renamer.py -v 2>&1 | tail -10
+[Result] /usr/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test_renamer.py:9: in <module>
+    from renamer import (
+E   ImportError: cannot import name 'preview_renames' from 'renamer' (/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/07-batch-file-renamer/default-opus/renamer.py)
+=========================== short test summary info ============================
+ERROR test_renamer.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+=============================== 1 error in 0.08s ===============================
+[Assistant] RED. Now implement all three new functions.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/07-batch-file-renamer/default-opus/renamer.py"}
+[Result] 1	"""Batch file renamer: rename files using regex patterns with preview, undo, and conflict detection."""
+2	
+3	import re
+4	
+5	
+6	def compute_renames(files, pattern, replacement):
+7	    """Compute a mapping of old_name -> new_name for files matching the regex pattern.
+8	
+9	    Only includes files where the name actually changes.
+10	    The regex is applied to the filename (not the full path).
+11	    """
+12	    renames = {}
+13	    regex = re.compile(pattern)
+14	    for filename in files:
+15	        new_name = regex.sub(replacement, filename)
+16	        if new_name != filename:
+17	            renames[filename] = new_name
+18	    return renames
+19	
+20	
+21	def detect_conflicts(renames, existing_files=None):
+22	    """Detect naming conflicts in a proposed rename plan.
+23	
+24	    Checks two kinds of conflict:
+25	    1. Multiple source files mapping to the same target name.
+26	    2. A target name colliding with an existing file that isn't itself being renamed.
+27	
+28	    Returns a dict: {targe
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/07-batch-file-renamer/default-opus/renamer.py", "old_string": "\"\"\"Batch file 
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/07-batch-file-renamer/default-opus/renamer.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/07-batch-file-renamer/default-opus/renamer.py", "old_string": "    return confli
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/07-batch-file-renamer/default-opus/renamer.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 -m pytest test_renamer.py -v 2>&1
+[Result ERROR] Exit code 1
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/07-batch-file-renamer/default-opus
+collecting ... collected 16 items
+
+test_renamer.py::TestComputeRenames::test_full_name_replacement PASSED   [  6%]
+test_renamer.py::TestComputeRenames::test_no_matches PASSED              [ 12%]
+test_renamer.py::TestComputeRenames::test_simple_regex_rename PASSED     [ 18%]
+test_renamer.py::TestDetectConflicts::test_conflict_with_existing_file PASSED [ 25%]
+test_renamer.py::TestDetectConflicts::test_no_conflict_when_existing_is_also_renamed PASSED [ 31%]
+test_renamer.py::TestDetectConflicts::test_no_conflicts PASSED           [ 37%]
+test_renamer.py::TestDetectConflicts::test_two_files_same_target PASSED  [ 43%]
+test_renamer.py::TestPreviewRenames::test_preview_empty P
+[Assistant] Missing import in the test file. Let me fix that.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/07-batch-file-renamer/default-opus/test_renamer.py", "old_string": "import os\ni
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/07-batch-file-renamer/default-opus/test_renamer.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 -m pytest test_renamer.py -v 2>&1
+[Result] ============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/07-batch-file-renamer/default-opus
+collecting ... collected 16 items
+
+test_renamer.py::TestComputeRenames::test_full_name_replacement PASSED   [  6%]
+test_renamer.py::TestComputeRenames::test_no_matches PASSED              [ 12%]
+test_renamer.py::TestComputeRenames::test_simple_regex_rename PASSED     [ 18%]
+test_renamer.py::TestDetectConflicts::test_conflict_with_existing_file PASSED [ 25%]
+test_renamer.py::TestDetectConflicts::test_no_conflict_when_existing_is_also_renamed PASSED [ 31%]
+test_renamer.py::TestDetectConflicts::test_no_conflicts PASSED           [ 37%]
+test_renamer.py::TestDetectConflicts::test_two_files_same_target PASSED  [ 43%]
+test_renamer.py::TestPreviewRenames::test_preview_empty PASSED       
+[Assistant] All 16 GREEN. Now add the final piece: an end-to-end test that uses the undo script to actually reverse renames, plus a CLI entry point.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/07-batch-file-renamer/default-opus/test_renamer.py"}
+[Result] 1	"""Tests for the batch file renamer, written test-first using red/green TDD."""
+2	
+3	import os
+4	import re
+5	import tempfile
+6	import shutil
+7	import stat
+8	import unittest
+9	
+10	from renamer import (
+11	    compute_renames,
+12	    detect_conflicts,
+13	    preview_renames,
+14	    generate_undo_script,
+15	    execute_renames,
+16	)
+17	
+18	
+19	class TestComputeRenames(unittest.TestCase):
+20	    """Test the core rename-computation logic."""
+21	
+22	    def test_simple_regex_rename(self):
+23	        """A basic regex substitution renames matching files."""
+24	        files = ["photo_001.jpg", "photo_002.jpg", "notes.txt"]
+25	        result = compute_renames(files, r"photo_(\d+)", r"img_\1")
+26	        self.assertEqual(result, {
+27	            "photo_001.jpg": "img_001.jpg",
+28	            "photo_002.jpg": "img_002.jpg",
+29	        })
+30	
+31	    def test_no_matches(self):
+32	        """Files that don't match the pattern are left untouched."""
+33	        files = ["readme.md", "notes.txt"]
+34	
+[Assistant] Now add the end-to-end undo test and a CLI integration test.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/07-batch-file-renamer/default-opus/test_renamer.py", "old_string": "class TestIn
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/07-batch-file-renamer/default-opus/test_renamer.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 -m pytest test_renamer.py -v 2>&1
+[Result ERROR] Exit code 1
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/07-batch-file-renamer/default-opus
+collecting ... collected 20 items
+
+test_renamer.py::TestComputeRenames::test_full_name_replacement PASSED   [  5%]
+test_renamer.py::TestComputeRenames::test_no_matches PASSED              [ 10%]
+test_renamer.py::TestComputeRenames::test_simple_regex_rename PASSED     [ 15%]
+test_renamer.py::TestDetectConflicts::test_conflict_with_existing_file PASSED [ 20%]
+test_renamer.py::TestDetectConflicts::test_no_conflict_when_existing_is_also_renamed PASSED [ 25%]
+test_renamer.py::TestDetectConflicts::test_no_conflicts PASSED           [ 30%]
+test_renamer.py::TestDetectConflicts::test_two_files_same_target PASSED  [ 35%]
+test_renamer.py::TestPreviewRenames::test_preview_empty P
+[Assistant] RED — CLI tests fail because there's no `__main__` block yet. Let me add it.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/07-batch-file-renamer/default-opus/renamer.py"}
+[Result] 1	"""Batch file renamer: rename files using regex patterns with preview, undo, and conflict detection."""
+2	
+3	import os
+4	import re
+5	import shlex
+6	import stat
+7	
+8	
+9	def compute_renames(files, pattern, replacement):
+10	    """Compute a mapping of old_name -> new_name for files matching the regex pattern.
+11	
+12	    Only includes files where the name actually changes.
+13	    The regex is applied to the filename (not the full path).
+14	    """
+15	    renames = {}
+16	    regex = re.compile(pattern)
+17	    for filename in files:
+18	        new_name = regex.sub(replacement, filename)
+19	        if new_name != filename:
+20	            renames[filename] = new_name
+21	    return renames
+22	
+23	
+24	def detect_conflicts(renames, existing_files=None):
+25	    """Detect naming conflicts in a proposed rename plan.
+26	
+27	    Checks two kinds of conflict:
+28	    1. Multiple source files mapping to the same target name.
+29	    2. A target name colliding with an existing file that isn't itself bein
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/07-batch-file-renamer/default-opus/renamer.py", "old_string": "    os.chmod(undo
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/07-batch-file-renamer/default-opus/renamer.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 -m pytest test_renamer.py -v 2>&1
+[Result] ============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/07-batch-file-renamer/default-opus
+collecting ... collected 20 items
+
+test_renamer.py::TestComputeRenames::test_full_name_replacement PASSED   [  5%]
+test_renamer.py::TestComputeRenames::test_no_matches PASSED              [ 10%]
+test_renamer.py::TestComputeRenames::test_simple_regex_rename PASSED     [ 15%]
+test_renamer.py::TestDetectConflicts::test_conflict_with_existing_file PASSED [ 20%]
+test_renamer.py::TestDetectConflicts::test_no_conflict_when_existing_is_also_renamed PASSED [ 25%]
+test_renamer.py::TestDetectConflicts::test_no_conflicts PASSED           [ 30%]
+test_renamer.py::TestDetectConflicts::test_two_files_same_target PASSED  [ 35%]
+test_renamer.py::TestPreviewRenames::test_preview_empty PASSED       
+[Assistant] All 20 tests GREEN. Here's a summary of what was built:
+
+**Files created:**
+- `renamer.py` — library + CLI for batch regex file renaming
+- `test_renamer.py` — 20 tests covering all functionality
+
+**TDD cycles:**
+1. **RED** → `compute_renames` import fails → **GREEN** → implemented core regex rename logic (3 tests)
+2. **RED** → `detect_conflicts` import fails → **GREEN** → implemented conflict detection: duplicate targets + existing file collisions (4 tests)
+3. **RED** → `preview_renames`, `generate_undo_script`, `execute_renames` import fails → **GREEN** → implemented preview mode, undo script generation, and disk execution with safety checks (5 tests)
+4. **RED** → CLI integration tests fail (no `__main__`) → **GREEN** → added argparse CLI with `--preview` flag (3 tests + 1 undo end-to-end + 1 invalid regex + 3 CLI tests)
+
+**Features:**
+- **Regex rename**: `compute_renames()` applies `re.sub` to filenames, returns `{old: new}` mapping
+- **Conflict detection**: catches both duplicate targets and collisions with existing non-renamed files
+- **Preview mode**: `--preview` flag shows planned renames without touching disk
+- **Undo capability**: every execution writes an executable `undo_renames.sh` with reverse `mv` commands (shell-safe via `shlex.quote`)
+- **Error handling**: invalid regex, missing source files, and conflicts all produce clear errors
