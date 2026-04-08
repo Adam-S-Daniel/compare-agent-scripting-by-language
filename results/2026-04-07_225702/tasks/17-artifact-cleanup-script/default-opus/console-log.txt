@@ -1,0 +1,361 @@
+[Assistant] 
+
+Looking at this task, I'll use Python — it's well-suited for data processing, has excellent built-in testing support, and datetime handling.
+
+Let me start by understanding the working directory, then follow strict red/green TDD.
+[Tool: Bash] ls /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus/
+[Result] benchmark-instructions-v2.md
+[Assistant] Empty workspace (aside from instructions). I'll build the solution with TDD — one failing test at a time.
+
+**Cycle 1: Parse artifacts and apply max-age policy**
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus/test_artifact_cleanup.py", "content": "\"\"\"Tests for artifac
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus/test_artifact_cleanup.py (file state is current in your context — no need to Read it back)
+[Tool: Bash] python -m pytest test_artifact_cleanup.py -v 2>&1 | tail -20
+[Result] /bin/bash: line 1: python: command not found
+[Tool: Bash] which python3 && python3 -m pytest test_artifact_cleanup.py -v 2>&1 | tail -20
+[Result] /usr/bin/python3
+platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus
+collecting ... collected 0 items / 1 error
+
+==================================== ERRORS ====================================
+__________________ ERROR collecting test_artifact_cleanup.py ___________________
+ImportError while importing test module '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus/test_artifact_cleanup.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test_artifact_cleanup.py:5: in <module>
+    from artifact_cleanup import apply_r
+[Assistant] RED. Now write the minimum code to make these pass.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus/artifact_cleanup.py", "content": "\"\"\"\nArtifact retention p
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus/artifact_cleanup.py (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 -m pytest test_artifact_cleanup.py -v 2>&1 | tail -15
+[Result] ============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus
+collecting ... collected 2 items
+
+test_artifact_cleanup.py::TestMaxAgePolicy::test_old_artifacts_are_deleted PASSED [ 50%]
+test_artifact_cleanup.py::TestMaxAgePolicy::test_no_max_age_keeps_everything PASSED [100%]
+
+============================== 2 passed in 0.00s ===============================
+[Assistant] GREEN. **Cycle 2: keep-latest-N per workflow**
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus/test_artifact_cleanup.py", "old_string":
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus/test_artifact_cleanup.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 -m pytest test_artifact_cleanup.py -v 2>&1 | tail -15
+[Result]             _make_artifact("test-1", 5, age_days=4, workflow_run_id="test"),
+        ]
+        policy = RetentionPolicy(keep_latest_n_per_workflow=2)
+        result = apply_retention_policies(artifacts, policy, now=NOW)
+    
+        deleted_names = {a["name"] for a in result.to_delete}
+        retained_names = {a["name"] for a in result.to_retain}
+        # oldest deploy artifact should be deleted; newest 2 kept
+>       assert "build-1" in deleted_names
+E       AssertionError: assert 'build-1' in set()
+
+test_artifact_cleanup.py:67: AssertionError
+=========================== short test summary info ============================
+FAILED test_artifact_cleanup.py::TestKeepLatestNPerWorkflow::test_keeps_latest_2_per_workflow
+========================= 1 failed, 3 passed in 0.02s ==========================
+[Assistant] RED. Now implement the keep-latest-N policy.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus/artifact_cleanup.py", "old_string": "   
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus/artifact_cleanup.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 -m pytest test_artifact_cleanup.py -v 2>&1 | tail -12
+[Result] ============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus
+collecting ... collected 4 items
+
+test_artifact_cleanup.py::TestMaxAgePolicy::test_old_artifacts_are_deleted PASSED [ 25%]
+test_artifact_cleanup.py::TestMaxAgePolicy::test_no_max_age_keeps_everything PASSED [ 50%]
+test_artifact_cleanup.py::TestKeepLatestNPerWorkflow::test_keeps_latest_2_per_workflow PASSED [ 75%]
+test_artifact_cleanup.py::TestKeepLatestNPerWorkflow::test_no_keep_latest_n_keeps_all PASSED [100%]
+
+============================== 4 passed in 0.01s ===============================
+[Assistant] GREEN. **Cycle 3: max total size policy**
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus/test_artifact_cleanup.py", "old_string":
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus/test_artifact_cleanup.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 -m pytest test_artifact_cleanup.py::TestMaxTotalSize -v 2>&1 | tail -12
+[Result]         policy = RetentionPolicy(max_total_size_bytes=150 * MB)
+        result = apply_retention_policies(artifacts, policy, now=NOW)
+    
+        deleted_names = {a["name"] for a in result.to_delete}
+        retained_names = {a["name"] for a in result.to_retain}
+>       assert "big-old" in deleted_names
+E       AssertionError: assert 'big-old' in set()
+
+test_artifact_cleanup.py:103: AssertionError
+=========================== short test summary info ============================
+FAILED test_artifact_cleanup.py::TestMaxTotalSize::test_drops_oldest_to_fit_size_budget
+========================= 1 failed, 1 passed in 0.02s ==========================
+[Assistant] RED. Implement max total size.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus/artifact_cleanup.py", "old_string": "   
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus/artifact_cleanup.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 -m pytest test_artifact_cleanup.py -v 2>&1 | tail -12
+[Result] cachedir: .pytest_cache
+rootdir: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus
+collecting ... collected 6 items
+
+test_artifact_cleanup.py::TestMaxAgePolicy::test_old_artifacts_are_deleted PASSED [ 16%]
+test_artifact_cleanup.py::TestMaxAgePolicy::test_no_max_age_keeps_everything PASSED [ 33%]
+test_artifact_cleanup.py::TestKeepLatestNPerWorkflow::test_keeps_latest_2_per_workflow PASSED [ 50%]
+test_artifact_cleanup.py::TestKeepLatestNPerWorkflow::test_no_keep_latest_n_keeps_all PASSED [ 66%]
+test_artifact_cleanup.py::TestMaxTotalSize::test_drops_oldest_to_fit_size_budget PASSED [ 83%]
+test_artifact_cleanup.py::TestMaxTotalSize::test_no_max_size_keeps_all PASSED [100%]
+
+============================== 6 passed in 0.01s ===============================
+[Assistant] GREEN. **Cycle 4: combined policies**
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus/test_artifact_cleanup.py", "old_string":
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus/test_artifact_cleanup.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 -m pytest test_artifact_cleanup.py -v 2>&1 | tail -15
+[Result] platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus
+collecting ... collected 8 items
+
+test_artifact_cleanup.py::TestMaxAgePolicy::test_old_artifacts_are_deleted PASSED [ 12%]
+test_artifact_cleanup.py::TestMaxAgePolicy::test_no_max_age_keeps_everything PASSED [ 25%]
+test_artifact_cleanup.py::TestKeepLatestNPerWorkflow::test_keeps_latest_2_per_workflow PASSED [ 37%]
+test_artifact_cleanup.py::TestKeepLatestNPerWorkflow::test_no_keep_latest_n_keeps_all PASSED [ 50%]
+test_artifact_cleanup.py::TestMaxTotalSize::test_drops_oldest_to_fit_size_budget PASSED [ 62%]
+test_artifact_cleanup.py::TestMaxTotalSize::test_no_max_size_keeps_all PASSED [ 75%]
+test_artifact_cleanup.py::TestCombinedPolicies::test_all_policies_together PASSED [ 87%]
+test_artifact_cleanup.py::TestCombinedPolicies::test_empty_artifacts_list PASSED
+[Assistant] GREEN. **Cycle 5: summary generation**
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus/test_artifact_cleanup.py", "old_string":
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus/test_artifact_cleanup.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus/test_artifact_cleanup.py", "old_string":
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus/test_artifact_cleanup.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 -m pytest test_artifact_cleanup.py::TestSummary -v 2>&1 | tail -12
+[Result] ImportError while importing test module '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus/test_artifact_cleanup.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test_artifact_cleanup.py:5: in <module>
+    from artifact_cleanup import apply_retention_policies, RetentionPolicy, generate_summary
+E   ImportError: cannot import name 'generate_summary' from 'artifact_cleanup' (/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus/artifact_cleanup.py)
+=========================== short test summary info ============================
+ERROR test_artifact_cleanup.py
+=============================== 1 error in 0.03s =====================
+[Assistant] RED. Implement `generate_summary`.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus/artifact_cleanup.py", "old_string": "   
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus/artifact_cleanup.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 -m pytest test_artifact_cleanup.py -v 2>&1 | tail -18
+[Result] ============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus
+collecting ... collected 10 items
+
+test_artifact_cleanup.py::TestMaxAgePolicy::test_old_artifacts_are_deleted PASSED [ 10%]
+test_artifact_cleanup.py::TestMaxAgePolicy::test_no_max_age_keeps_everything PASSED [ 20%]
+test_artifact_cleanup.py::TestKeepLatestNPerWorkflow::test_keeps_latest_2_per_workflow PASSED [ 30%]
+test_artifact_cleanup.py::TestKeepLatestNPerWorkflow::test_no_keep_latest_n_keeps_all PASSED [ 40%]
+test_artifact_cleanup.py::TestMaxTotalSize::test_drops_oldest_to_fit_size_budget PASSED [ 50%]
+test_artifact_cleanup.py::TestMaxTotalSize::test_no_max_size_keeps_all PASSED [ 60%]
+test_artifact_cleanup.py::TestCombinedPolicies::test_all_policies_together PASSED [ 70%
+[Assistant] GREEN. **Cycle 6: dry-run mode + error handling + CLI**
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus/test_artifact_cleanup.py", "old_string":
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus/test_artifact_cleanup.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus/test_artifact_cleanup.py", "offset": 130}
+[Result] 130	            _make_artifact("deploy-mid", 40, age_days=5, workflow_run_id="deploy"),
+131	            _make_artifact("deploy-new", 40, age_days=1, workflow_run_id="deploy"),
+132	            # test workflow: small, recent
+133	            _make_artifact("test-1", 10, age_days=2, workflow_run_id="test"),
+134	        ]
+135	        policy = RetentionPolicy(
+136	            max_age_days=30,
+137	            keep_latest_n_per_workflow=2,
+138	            max_total_size_bytes=100 * MB,  # 100 MB budget
+139	        )
+140	        result = apply_retention_policies(artifacts, policy, now=NOW)
+141	
+142	        deleted_names = {a["name"] for a in result.to_delete}
+143	        retained_names = {a["name"] for a in result.to_retain}
+144	
+145	        # "ancient" removed by age policy
+146	        assert "ancient" in deleted_names
+147	        # "deploy-old" removed by keep-latest-2 policy
+148	        assert "deploy-old" in deleted_names
+149	        # After age + keep-latest-N: deploy-mid(40), deploy-new(4
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus/test_artifact_cleanup.py", "old_string":
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus/test_artifact_cleanup.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 -m pytest test_artifact_cleanup.py -v 2>&1 | tail -25
+[Result] ============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus
+collecting ... collected 0 items / 1 error
+
+==================================== ERRORS ====================================
+__________________ ERROR collecting test_artifact_cleanup.py ___________________
+ImportError while importing test module '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus/test_artifact_cleanup.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test_artifact_cl
+[Assistant] RED. Now implement `run_cleanup`, `validate()`, and input validation.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus/artifact_cleanup.py"}
+[Result] 1	"""
+2	Artifact retention policy engine.
+3	
+4	Applies configurable retention policies to a list of CI/CD artifacts and
+5	produces a deletion plan showing what to remove and what to keep, along
+6	with a human-readable summary.
+7	"""
+8	
+9	from dataclasses import dataclass, field
+10	from datetime import datetime
+11	from typing import Optional
+12	
+13	
+14	@dataclass
+15	class RetentionPolicy:
+16	    """Configurable retention rules. All fields are optional — omitted rules are not enforced."""
+17	    max_age_days: Optional[int] = None        # delete artifacts older than this
+18	    max_total_size_bytes: Optional[int] = None # cap on total retained size
+19	    keep_latest_n_per_workflow: Optional[int] = None  # keep N newest per workflow_run_id
+20	
+21	
+22	@dataclass
+23	class CleanupResult:
+24	    """Outcome of applying retention policies."""
+25	    to_delete: list = field(default_factory=list)
+26	    to_retain: list = field(default_factory=list)
+27	
+28	
+29	def apply_retention_policies(
+30	   
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus/artifact_cleanup.py", "content": "\"\"\"\nArtifact retention p
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus/artifact_cleanup.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 -m pytest test_artifact_cleanup.py -v 2>&1 | tail -25
+[Result] ============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus
+collecting ... collected 17 items
+
+test_artifact_cleanup.py::TestMaxAgePolicy::test_old_artifacts_are_deleted PASSED [  5%]
+test_artifact_cleanup.py::TestMaxAgePolicy::test_no_max_age_keeps_everything PASSED [ 11%]
+test_artifact_cleanup.py::TestKeepLatestNPerWorkflow::test_keeps_latest_2_per_workflow PASSED [ 17%]
+test_artifact_cleanup.py::TestKeepLatestNPerWorkflow::test_no_keep_latest_n_keeps_all PASSED [ 23%]
+test_artifact_cleanup.py::TestMaxTotalSize::test_drops_oldest_to_fit_size_budget PASSED [ 29%]
+test_artifact_cleanup.py::TestMaxTotalSize::test_no_max_size_keeps_all PASSED [ 35%]
+test_artifact_cleanup.py::TestCombinedPolicies::test_all_policies_together PASSED [ 41%
+[Assistant] All 17 tests GREEN. Now I'll add a CLI entrypoint with mock data so the script is runnable end-to-end.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus/artifact_cleanup.py", "offset": 155}
+[Result] 155	            )
+156	
+157	    return "\n".join(lines)
+158	
+159	
+160	def run_cleanup(
+161	    artifacts: list[dict],
+162	    policy: RetentionPolicy,
+163	    delete_fn: Optional[Callable[[dict], None]] = None,
+164	    dry_run: bool = True,
+165	    now: Optional[datetime] = None,
+166	) -> str:
+167	    """Top-level orchestrator: apply policies, optionally execute deletions, return summary.
+168	
+169	    Args:
+170	        artifacts: List of artifact dicts with name/size_bytes/created_at/workflow_run_id.
+171	        policy: Retention policy to apply.
+172	        delete_fn: Callback invoked for each artifact to delete (skipped in dry-run).
+173	        dry_run: If True (default), no deletions are performed — only a plan is generated.
+174	        now: Override for "current time" (useful for testing).
+175	    """
+176	    result = apply_retention_policies(artifacts, policy, now=now)
+177	
+178	    # Execute deletions unless in dry-run mode
+179	    if not dry_run and delete_fn is not None:
+180	    
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus/artifact_cleanup.py", "old_string": "   
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus/artifact_cleanup.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 -m pytest test_artifact_cleanup.py -v 2>&1 | tail -25
+[Result] ============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/default-opus
+collecting ... collected 17 items
+
+test_artifact_cleanup.py::TestMaxAgePolicy::test_old_artifacts_are_deleted PASSED [  5%]
+test_artifact_cleanup.py::TestMaxAgePolicy::test_no_max_age_keeps_everything PASSED [ 11%]
+test_artifact_cleanup.py::TestKeepLatestNPerWorkflow::test_keeps_latest_2_per_workflow PASSED [ 17%]
+test_artifact_cleanup.py::TestKeepLatestNPerWorkflow::test_no_keep_latest_n_keeps_all PASSED [ 23%]
+test_artifact_cleanup.py::TestMaxTotalSize::test_drops_oldest_to_fit_size_budget PASSED [ 29%]
+test_artifact_cleanup.py::TestMaxTotalSize::test_no_max_size_keeps_all PASSED [ 35%]
+test_artifact_cleanup.py::TestCombinedPolicies::test_all_policies_together PASSED [ 41%
+[Assistant] All 17 tests pass. Let me also verify the CLI works with the mock data.
+[Tool: Bash] python3 artifact_cleanup.py --max-age-days 45 --keep-latest-n 2 --max-total-size-mb 600
+[Result] === Artifact Cleanup Plan (DRY RUN) ===
+  6 artifact(s) to delete
+  4 artifact(s) to retain
+  Space reclaimed: 812.00 MB
+
+Artifacts to DELETE:
+  - deploy-v1.0.0.tar.gz  (250.0 MB, workflow: deploy-pipeline, created: 2026-01-08T05:52:20.193610)
+  - deploy-v1.1.0.tar.gz  (260.0 MB, workflow: deploy-pipeline, created: 2026-02-07T05:52:20.193610)
+  - coverage-report-feb.html  (15.0 MB, workflow: test-suite, created: 2026-02-02T05:52:20.193610)
+  - lint-results-old.json  (1.0 MB, workflow: lint, created: 2025-12-09T05:52:20.193610)
+  - deploy-v1.2.0.tar.gz  (270.0 MB, workflow: deploy-pipeline, created: 2026-03-09T05:52:20.193610)
+  - coverage-report-mar.html  (16.0 MB, workflow: test-suite, created: 2026-03-04T05:52:20.193610)
+
+Artifacts to RETAIN:
+  - deploy-v1.4.0.tar.gz  (290.0 MB, workflow: deploy-pipeline, created: 2026-04-07T05:52:20.193610)
+  - lint-results-recent.json  (1.0 MB, workflow: lint, created: 2026-04-06T05:52:20.193610)
+  - coverage-report-apr.html  (17.0 MB, workflow: te
+[Tool: Bash] python3 artifact_cleanup.py --max-age-days 45 --execute 2>&1
+[Result]   [mock] Deleting artifact: deploy-v1.0.0.tar.gz
+  [mock] Deleting artifact: deploy-v1.1.0.tar.gz
+  [mock] Deleting artifact: coverage-report-feb.html
+  [mock] Deleting artifact: lint-results-old.json
+=== Artifact Cleanup Plan ===
+  4 artifact(s) to delete
+  6 artifact(s) to retain
+  Space reclaimed: 526.00 MB
+
+Artifacts to DELETE:
+  - deploy-v1.0.0.tar.gz  (250.0 MB, workflow: deploy-pipeline, created: 2026-01-08T05:52:23.363377)  [DELETED]
+  - deploy-v1.1.0.tar.gz  (260.0 MB, workflow: deploy-pipeline, created: 2026-02-07T05:52:23.363377)  [DELETED]
+  - coverage-report-feb.html  (15.0 MB, workflow: test-suite, created: 2026-02-02T05:52:23.363377)  [DELETED]
+  - lint-results-old.json  (1.0 MB, workflow: lint, created: 2025-12-09T05:52:23.363377)  [DELETED]
+
+Artifacts to RETAIN:
+  - deploy-v1.2.0.tar.gz  (270.0 MB, workflow: deploy-pipeline, created: 2026-03-09T05:52:23.363377)
+  - deploy-v1.3.0.tar.gz  (280.0 MB, workflow: deploy-pipeline, created: 2026-04-01T05:52:23.363377)
+  - depl
+[Assistant] Everything works. Here's a summary of what was built:
+
+## Solution: `artifact_cleanup.py` + `test_artifact_cleanup.py`
+
+**TDD cycles followed (red → green → refactor):**
+
+| Cycle | Feature | Tests |
+|-------|---------|-------|
+| 1 | Max-age policy | 2 |
+| 2 | Keep-latest-N per workflow | 2 |
+| 3 | Max total size budget | 2 |
+| 4 | Combined policies + empty input | 2 |
+| 5 | Summary generation | 2 |
+| 6 | Dry-run vs live mode | 2 |
+| 7 | Error handling (bad policy, missing fields, delete failures) | 5 |
+
+**17 tests total, all passing.**
+
+**Key design decisions:**
+- Policies compose in order: age → keep-latest-N → size cap. Each stage can only move artifacts from retain→delete.
+- `run_cleanup()` takes an injectable `delete_fn` callback, making it fully testable without real API calls.
+- Dry-run is the default — `--execute` must be explicitly passed to perform deletions.
+- Delete failures are caught and reported in the summary (not swallowed, not crashing).
+- CLI uses argparse with `--max-age-days`, `--keep-latest-n`, `--max-total-size-mb`, `--dry-run`/`--execute`.
