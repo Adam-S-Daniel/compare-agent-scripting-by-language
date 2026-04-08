@@ -1209,7 +1209,7 @@ def run_single_task(
             "observations": "",
         },
         "tool_install": {
-            "tool_install_duration_ms": 0,  # Approximate — see install_commands
+            "tool_install_duration_ms": None,  # Not measurable — CLI stream lacks per-event timestamps
             "tools_installed": parsed["tools_installed"][:20],
             "install_commands_count": len(parsed["install_commands"]),
         },
