@@ -1,0 +1,59 @@
+name: Update README docs index
+
+on:
+  push:
+    branches: [main]
+    paths: ['*.md']
+
+permissions:
+  contents: write
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate docs index
+        shell: bash
+        run: |
+          INDEX=""
+          for fp in ./*.md; do
+            f="$(basename "$fp")"
+            [ "$f" = "README.md" ] && continue
+            DATE=$(git log -1 --format='%ai' -- "$f" 2>/dev/null | cut -d' ' -f1)
+            if [ -z "$DATE" ]; then
+              DATE=$(date -r "$f" '+%Y-%m-%d')
+            fi
+            TITLE=$(head -5 "$f" | grep -m1 '^#' | sed 's/^#\+ *//')
+            if [ -z "$TITLE" ]; then
+              TITLE="$f"
+            fi
+            INDEX="${INDEX}- [${TITLE}](${f}) -- ${DATE}"$'\n'
+          done
+
+          if grep -q 'DOCS-INDEX-START' README.md; then
+            python3 -c "
+          import re, sys
+          readme = open('README.md').read()
+          index = sys.argv[1]
+          pattern = r'(<!-- DOCS-INDEX-START -->\n).*?(<!-- DOCS-INDEX-END -->)'
+          replacement = r'\1' + index + r'\2'
+          result = re.sub(pattern, replacement, readme, flags=re.DOTALL)
+          open('README.md', 'w').write(result)
+          " "$INDEX"
+          else
+            printf '\n## Documentation\n\n<!-- DOCS-INDEX-START -->\n%s<!-- DOCS-INDEX-END -->\n' "$INDEX" >> README.md
+          fi
+
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git diff --quiet README.md || {
+            git add README.md
+            git commit -m "docs: update README docs index [skip ci]"
+            git push
+          }
