@@ -1,0 +1,126 @@
+[Tool: Bash] ls /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-sonnet/
+[Result] benchmark-instructions-v2.md
+[Assistant] Starting with the first failing test for tag sanitization.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-sonnet/DockerTagGenerator.Tests.ps1", "content": "# Do
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-sonnet/DockerTagGenerator.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Now run the tests to confirm they fail (RED phase):
+[Tool: Bash] pwsh -Command "Invoke-Pester ./DockerTagGenerator.Tests.ps1 -Output Normal" 2>&1 | head -40
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[91m[-] Discovery in /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-sonnet/DockerTagGenerator.Tests.ps1 failed with:[0m
+[91mSystem.Management.Automation.ParameterBindingException: A parameter cannot be found that matches parameter name 'Latest'.
+[91m   at System.Management.Automation.ExceptionHandlingOps.CheckActionPreference(FunctionContext funcContext, Exception exception) in /root/parts/powershell/build/src/System.Management.Automation/engine/runtime/Operations/MiscOps.cs:line 1786
+[91m   at System.Management.Automation.Interpreter.ActionCallInstruction`2.Run(InterpretedFrame frame) in /root/parts/powershell/build/src/System.Management.Automation/engine/interpreter/CallInstruction.Generated.cs:line 504
+[91m   at System.Management.Automation.Interpreter.EnterTryCatchFinallyInstruction.Run(InterpretedFrame frame) in /root/parts/powershell/build/src/Sy
+[Assistant] The `-Latest` flag is wrong syntax — it should be `-Version Latest`. Let me fix the test file:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-sonnet/DockerTagGenerator.Tests.
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-sonnet/DockerTagGenerator.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester ./DockerTagGenerator.Tests.ps1 -Output Normal" 2>&1 | head -20
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[91m[-] Discovery in /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-sonnet/DockerTagGenerator.Tests.ps1 failed with:[0m
+[91mSystem.IO.FileNotFoundException: The specified module '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-sonnet/DockerTagGenerator.psm1' was not loaded because no valid module file was found in any module directory.
+[91mat <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-sonnet/DockerTagGenerator.Tests.ps1: line 10
+[91mat <ScriptBlock>, /home/passp/.local/share/powershell/Modules/Pester/5.7.1/Pester.psm1: line 3090
+[91mat Invoke-File, /home/passp/.local/share/powershell/Modules/Pester/5.7.1/Pester.psm1: line 3099
+[91mat Invoke-BlockContainer, /home/passp/
+[Assistant] Tests fail because the module doesn't exist — correct RED state. Now writing the implementation (GREEN phase):
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-sonnet/DockerTagGenerator.psm1", "content": "# DockerT
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-sonnet/DockerTagGenerator.psm1 (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester ./DockerTagGenerator.Tests.ps1 -Output Normal" 2>&1
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 22 tests in 169ms.[0m
+[95mRunning tests.[0m
+[91m[-] Get-ShortSha.Given an empty SHA.throws a meaningful error[0m[90m 70ms (59ms|12ms)[0m
+[91m Expected an exception with message like '*CommitSha cannot be empty*' to be thrown, but the message was 'Cannot bind argument to parameter 'CommitSha' because it is an empty string.'. from /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-sonnet/DockerTagGenerator.Tests.ps1:64 char:39
+[91m     +             { Get-ShortSha -CommitSha '' } | Should -Throw '*CommitSh …
+[91m     +                                       ~~
+[91m at { Get-ShortSha -CommitSha '' } | Should -Throw '*CommitSha cannot be empty*', /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-sonnet/DockerTagGenerator.Tests.ps1:64
+[91m at <ScriptBlock>
+[Assistant] Two issues to fix: (1) Pester 5 doesn't share variables from `Describe` scope into `It` blocks — need `BeforeEach`; (2) empty-string param binding intercepts before our guard. Let me fix both:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-sonnet/DockerTagGenerator.Tests.
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-sonnet/DockerTagGenerator.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Now fix the Pester 5 scoping issue by converting to `BeforeEach`:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-sonnet/DockerTagGenerator.Tests.
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-sonnet/DockerTagGenerator.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester ./DockerTagGenerator.Tests.ps1 -Output Normal" 2>&1
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 22 tests in 178ms.[0m
+[95mRunning tests.[0m
+[32m[+] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-sonnet/DockerTagGenerator.Tests.ps1[0m[90m 732ms (225ms|355ms)[0m
+[97mTests completed in 749ms[0m
+[32mTests Passed: 22, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Assistant] All 22 tests pass. Now let me add a small demo script to make the solution runnable as a standalone tool:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-sonnet/Invoke-DockerTagGenerator.ps1", "content": "# I
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-sonnet/Invoke-DockerTagGenerator.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "./Invoke-DockerTagGenerator.ps1" 2>&1
+[Result] === Main branch push ===
+  Branch : main
+  SHA    : a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0
+  GitTags: 
+  PR     : 
+  => Docker tags:
+       latest
+       main-a1b2c3d
+
+=== Pull request #42 ===
+  Branch : feature/my-new-feature
+  SHA    : deadbeefcafe1234567890abcdef1234567890ab
+  GitTags: 
+  PR     : 42
+  => Docker tags:
+       pr-42
+
+=== Semver release tag v1.3.0 ===
+  Branch : main
+  SHA    : 1111222233334444555566667777888899990000
+  GitTags: v1.3.0, v1.3
+  PR     : 
+  => Docker tags:
+       latest
+       main-1111222
+       v1.3.0
+       v1.3
+
+=== Feature branch (no PR) ===
+  Branch : feature/My_Awesome-Branch
+  SHA    : cafebabe1234567890abcdef1234567890abcdef
+  GitTags: 
+  PR     : 
+  => Docker tags:
+       feature-my-awesome-branch-cafebab
+[Assistant] All 22 tests pass and the demo script produces correct output. Here's a summary of what was built:
+
+---
+
+## Solution overview
+
+**Files created:**
+
+- `DockerTagGenerator.psm1` — the module with 3 exported functions
+- `DockerTagGenerator.Tests.ps1` — 22 Pester tests (TDD, red→green)
+- `Invoke-DockerTagGenerator.ps1` — demo script with mock scenarios
+
+**TDD cycle followed:**
+1. Wrote all failing tests first (module didn't exist → RED)
+2. Created the module to pass them → GREEN
+3. Fixed Pester 5 scoping quirk (`BeforeEach` for shared fixtures) and empty-string binding behavior
+
+**Functions:**
+
+| Function | Purpose |
+|---|---|
+| `ConvertTo-SanitizedTag` | Lowercases, replaces `[^a-z0-9-]` with `-`, collapses/trims hyphens |
+| `Get-ShortSha` | Returns first 7 chars of a commit SHA |
+| `New-DockerImageTags` | Orchestrates all tag rules, returns deduplicated `[string[]]` |
+
+**Tag rules (by priority):**
+
+1. PR present → `pr-{number}` only
+2. `main`/`master` → `latest` + `main-{short-sha}`
+3. Feature branch → `{sanitized-branch}-{short-sha}`
+4. Semver git tags (any scenario) → `v{semver}` appended
+
+**Strict mode compliance:** every function has `[CmdletBinding()]`, `[OutputType()]`, explicitly typed parameters, `Set-StrictMode -Version Latest`, and `$ErrorActionPreference = 'Stop'`.
