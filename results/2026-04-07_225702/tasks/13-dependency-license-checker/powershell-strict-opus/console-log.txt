@@ -1,0 +1,701 @@
+[Assistant] 
+
+I'll start by understanding the task and then follow TDD methodology. Let me check the current directory first.
+[Tool: Bash] ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/
+[Result] total 28
+drwxr-xr-x 2 passp passp  4096 Apr  8 04:15 .
+drwxr-xr-x 5 passp passp  4096 Apr  8 04:15 ..
+-rw-r--r-- 1 passp passp 17086 Apr  7 22:53 benchmark-instructions-v2.md
+[Tool: Bash] which pwsh && pwsh --version
+[Result] /snap/bin/pwsh
+PowerShell 7.6.0
+[Assistant] Good. Let me plan the approach:
+
+1. **Parse dependency manifests** (package.json, requirements.txt)
+2. **License config** with allow-list and deny-list
+3. **License lookup** (mockable)
+4. **Compliance report** generation
+
+I'll build this incrementally with TDD. Starting with the first failing test.
+
+## Step 1: First failing test — parsing package.json
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.Tests.ps1", "content": "
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Run the test — it should fail (no implementation yet):
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./DependencyLicenseChecker.Tests.ps1 -Output Detailed" 2>&1 | tail -20
+[Result] [91m   at System.Management.Automation.Interpreter.EnterTryCatchFinallyInstruction.Run(InterpretedFrame frame) in /root/parts/powershell/build/src/System.Management.Automation/engine/interpreter/ControlFlowInstructions.cs:line 389
+[91m   at System.Management.Automation.Interpreter.EnterTryCatchFinallyInstruction.Run(InterpretedFrame frame) in /root/parts/powershell/build/src/System.Management.Automation/engine/interpreter/ControlFlowInstructions.cs:line 355
+[91m   at System.Management.Automation.Interpreter.Interpreter.Run(InterpretedFrame frame) in /root/parts/powershell/build/src/System.Management.Automation/engine/interpreter/Interpreter.cs:line 105
+[91m   at System.Management.Automation.Interpreter.LightLambda.RunVoid1[T0](T0 arg0) in /root/parts/powershell/build/src/System.Management.Automation/engine/interpreter/LightLambda.Generated.cs:line 81
+[91m   at System.Management.Automation.PSScriptCmdlet.RunClause(Action`1 clause, Object dollarUnderbar, Object inputToProcess) in /r
+[Assistant] RED — fails because the implementation file doesn't exist. Now write the minimum code to make it pass:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.ps1", "content": "Set-St
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./DependencyLicenseChecker.Tests.ps1 -Output Detailed" 2>&1 | tail -15
+[Result] [91m   at System.Management.Automation.CommandProcessorBase.Complete() in /root/parts/powershell/build/src/System.Management.Automation/engine/CommandProcessorBase.cs:line 601
+[91mat <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.Tests.ps1: line 1
+[91mat <ScriptBlock>, /home/passp/.local/share/powershell/Modules/Pester/5.7.1/Pester.psm1: line 3090
+[91mat Invoke-File, /home/passp/.local/share/powershell/Modules/Pester/5.7.1/Pester.psm1: line 3099
+[91mat Invoke-BlockContainer, /home/passp/.local/share/powershell/Modules/Pester/5.7.1/Pester.psm1: line 3008
+[91mat Discover-Test, /home/passp/.local/share/powershell/Modules/Pester/5.7.1/Pester.psm1: line 1480
+[91mat Invoke-Test, /home/passp/.local/share/powershell/Modules/Pester/5.7.1/Pester.psm1: line 2474
+[91mat Invoke-Pester<End>, /home/passp/.local/share/powershell/Modules/Pester/5.7.1/Pester.psm1: line
+[Assistant] There's an issue with the BeforeAll sourcing. Let me see the full error:
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./DependencyLicenseChecker.Tests.ps1 -Output Detailed" 2>&1 | head -30
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[91m[-] Discovery in /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.Tests.ps1 failed with:[0m
+[91mSystem.Management.Automation.ParameterBindingException: A parameter cannot be found that matches parameter name 'Latest'.
+[91m   at System.Management.Automation.ExceptionHandlingOps.CheckActionPreference(FunctionContext funcContext, Exception exception) in /root/parts/powershell/build/src/System.Management.Automation/engine/runtime/Operations/MiscOps.cs:line 1786
+[91m   at System.Management.Automation.Interpreter.ActionCallInstruction`2.Run(InterpretedFrame frame) in /root/parts/powershell/build/src/System.Management.Automation/engine/interpreter/CallInstruction.Generated.cs:line 504
+[91m   at System.Management.Automation.Interpreter.EnterTryCatchFinallyInstruction.Run(InterpretedFrame frame) in /root/pa
+[Assistant] The error is `Set-StrictMode -Latest` — it should be `Set-StrictMode -Version Latest`. Let me fix both files:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.Te
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.ps
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./DependencyLicenseChecker.Tests.ps1 -Output Detailed" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 1 tests in 124ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.Tests.ps1'[0m
+[92mDescribing Parse-PackageJson[0m
+[32m  [+] Should extract dependencies with versions from package.json[0m[90m 120ms (99ms|21ms)[0m
+[97mTests completed in 431ms[0m
+[32mTests Passed: 1, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Assistant] GREEN. Now let me add the next test — parsing requirements.txt.
+
+## Step 2: Parse requirements.txt
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.Tests.ps1"}
+[Result] 1	Set-StrictMode -Version Latest
+2	$ErrorActionPreference = 'Stop'
+3	
+4	BeforeAll {
+5	    . "$PSScriptRoot/DependencyLicenseChecker.ps1"
+6	}
+7	
+8	Describe 'Parse-PackageJson' {
+9	    It 'Should extract dependencies with versions from package.json' {
+10	        # Arrange
+11	        [string]$json = @'
+12	{
+13	    "name": "my-app",
+14	    "version": "1.0.0",
+15	    "dependencies": {
+16	        "express": "^4.18.0",
+17	        "lodash": "~4.17.21"
+18	    },
+19	    "devDependencies": {
+20	        "jest": "^29.0.0"
+21	    }
+22	}
+23	'@
+24	        [string]$tempFile = Join-Path $TestDrive 'package.json'
+25	        Set-Content -Path $tempFile -Value $json
+26	
+27	        # Act
+28	        [array]$result = Parse-DependencyManifest -Path $tempFile
+29	
+30	        # Assert
+31	        $result.Count | Should -Be 3
+32	        $result[0].Name | Should -Be 'express'
+33	        $result[0].Version | Should -Be '^4.18.0'
+34	        $result[1].Name | Should -Be 'lodash'
+35	        $result[2].Name | Should -Be 
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.Te
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./DependencyLicenseChecker.Tests.ps1 -Output Detailed" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 3 tests in 128ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.Tests.ps1'[0m
+[92mDescribing Parse-PackageJson[0m
+[32m  [+] Should extract dependencies with versions from package.json[0m[90m 116ms (94ms|22ms)[0m
+[0m
+[92mDescribing Parse-RequirementsTxt[0m
+[91m  [-] Should extract dependencies with versions from requirements.txt[0m[90m 103ms (100ms|3ms)[0m
+[91m   CommandNotFoundException: The term 'Parse-RequirementsTxt' is not recognized as a name of a cmdlet, function, script file, or executable program.
+[91m   Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+[91m   at Parse-DependencyManifest, /home/passp/repos/compare-agent-scripting-by-language/works
+[Assistant] RED — 2 failures as expected. Now implement `Parse-RequirementsTxt`:
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.ps1"}
+[Result] 1	Set-StrictMode -Version Latest
+2	$ErrorActionPreference = 'Stop'
+3	
+4	# Dependency License Checker
+5	# Parses dependency manifests (package.json, requirements.txt),
+6	# looks up licenses, and generates compliance reports against
+7	# allow/deny license lists.
+8	
+9	function Parse-DependencyManifest {
+10	    <#
+11	    .SYNOPSIS
+12	        Parses a dependency manifest file and extracts dependency names and versions.
+13	    .DESCRIPTION
+14	        Supports package.json and requirements.txt formats.
+15	        Returns an array of objects with Name and Version properties.
+16	    #>
+17	    [CmdletBinding()]
+18	    [OutputType([PSCustomObject[]])]
+19	    param(
+20	        [Parameter(Mandatory)]
+21	        [string]$Path
+22	    )
+23	
+24	    if (-not (Test-Path -Path $Path)) {
+25	        throw "Manifest file not found: $Path"
+26	    }
+27	
+28	    [string]$fileName = Split-Path -Leaf $Path
+29	
+30	    switch ($fileName) {
+31	        'package.json' {
+32	            return Parse-PackageJson -Path $Pa
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.ps
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./DependencyLicenseChecker.Tests.ps1 -Output Detailed" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 3 tests in 129ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.Tests.ps1'[0m
+[92mDescribing Parse-PackageJson[0m
+[32m  [+] Should extract dependencies with versions from package.json[0m[90m 113ms (90ms|23ms)[0m
+[0m
+[92mDescribing Parse-RequirementsTxt[0m
+[32m  [+] Should extract dependencies with versions from requirements.txt[0m[90m 17ms (15ms|2ms)[0m
+[32m  [+] Should handle lines without version specifiers[0m[90m 12ms (11ms|1ms)[0m
+[97mTests completed in 452ms[0m
+[32mTests Passed: 3, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Assistant] GREEN — all 3 pass. Now let me add tests for error handling and the license lookup.
+
+## Step 3: Error handling tests + License lookup with mock
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.Tests.ps1"}
+[Result] 1	Set-StrictMode -Version Latest
+2	$ErrorActionPreference = 'Stop'
+3	
+4	BeforeAll {
+5	    . "$PSScriptRoot/DependencyLicenseChecker.ps1"
+6	}
+7	
+8	Describe 'Parse-PackageJson' {
+9	    It 'Should extract dependencies with versions from package.json' {
+10	        # Arrange
+11	        [string]$json = @'
+12	{
+13	    "name": "my-app",
+14	    "version": "1.0.0",
+15	    "dependencies": {
+16	        "express": "^4.18.0",
+17	        "lodash": "~4.17.21"
+18	    },
+19	    "devDependencies": {
+20	        "jest": "^29.0.0"
+21	    }
+22	}
+23	'@
+24	        [string]$tempFile = Join-Path $TestDrive 'package.json'
+25	        Set-Content -Path $tempFile -Value $json
+26	
+27	        # Act
+28	        [array]$result = Parse-DependencyManifest -Path $tempFile
+29	
+30	        # Assert
+31	        $result.Count | Should -Be 3
+32	        $result[0].Name | Should -Be 'express'
+33	        $result[0].Version | Should -Be '^4.18.0'
+34	        $result[1].Name | Should -Be 'lodash'
+35	        $result[2].Name | Should -Be 
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.Te
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./DependencyLicenseChecker.Tests.ps1 -Output Detailed" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 7 tests in 144ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.Tests.ps1'[0m
+[92mDescribing Parse-PackageJson[0m
+[32m  [+] Should extract dependencies with versions from package.json[0m[90m 109ms (88ms|22ms)[0m
+[0m
+[92mDescribing Parse-RequirementsTxt[0m
+[32m  [+] Should extract dependencies with versions from requirements.txt[0m[90m 17ms (15ms|2ms)[0m
+[32m  [+] Should handle lines without version specifiers[0m[90m 11ms (9ms|1ms)[0m
+[0m
+[92mDescribing Parse-DependencyManifest error handling[0m
+[32m  [+] Should throw for missing file[0m[90m 30ms (28ms|2ms)[0m
+[32m  [+] Should throw for unsupported format[0m[90m 9ms (9ms|1ms)[0m
+[0m
+[92mDescribing Get-DependencyLicense (mock lookup)[0m
+[91m  [-]
+[Assistant] RED — 2 new failures as expected. Implement `Get-DependencyLicense`:
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.ps1", "offset": 115}
+[Result] 115	            }
+116	            $deps.Add($dep)
+117	        }
+118	    }
+119	
+120	    return [PSCustomObject[]]$deps.ToArray()
+121	}
+122	
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.ps
+[Result ERROR] <tool_use_error>Found 2 matches of the string to replace, but replace_all is false. To replace all occurrences, set replace_all to true. To replace only one occurrence, please provide more context to uniquely identify the instance.
+String:     return [PSCustomObject[]]$deps.ToArray()
+}</tool_use_error>
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.ps
+[Result ERROR] <tool_use_error>Found 2 matches of the string to replace, but replace_all is false. To replace all occurrences, set replace_all to true. To replace only one occurrence, please provide more context to uniquely identify the instance.
+String:     return [PSCustomObject[]]$deps.ToArray()
+}
+</tool_use_error>
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.ps1", "offset": 70}
+[Result] 70	            }
+71	        }
+72	    }
+73	
+74	    return [PSCustomObject[]]$deps.ToArray()
+75	}
+76	
+77	function Parse-RequirementsTxt {
+78	    <#
+79	    .SYNOPSIS
+80	        Parses a requirements.txt file for Python dependencies.
+81	    .DESCRIPTION
+82	        Handles version specifiers (==, >=, <=, ~=, !=) and skips comments/blank lines.
+83	    #>
+84	    [CmdletBinding()]
+85	    [OutputType([PSCustomObject[]])]
+86	    param(
+87	        [Parameter(Mandatory)]
+88	        [string]$Path
+89	    )
+90	
+91	    [string[]]$lines = Get-Content -Path $Path
+92	    [System.Collections.Generic.List[PSCustomObject]]$deps = [System.Collections.Generic.List[PSCustomObject]]::new()
+93	
+94	    foreach ($rawLine in $lines) {
+95	        [string]$line = $rawLine.Trim()
+96	
+97	        # Skip empty lines and comments
+98	        if ([string]::IsNullOrWhiteSpace($line) -or $line.StartsWith('#')) {
+99	            continue
+100	        }
+101	
+102	        # Split on version specifiers: ==, >=, <=, ~=, !=
+103	      
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.ps
+[Result ERROR] <tool_use_error>Found 2 matches of the string to replace, but replace_all is false. To replace all occurrences, set replace_all to true. To replace only one occurrence, please provide more context to uniquely identify the instance.
+String:     return [PSCustomObject[]]$deps.ToArray()
+}
+</tool_use_error>
+[Assistant] Both functions end identically. Let me use a more unique context:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.ps
+[Result ERROR] <tool_use_error>Found 2 matches of the string to replace, but replace_all is false. To replace all occurrences, set replace_all to true. To replace only one occurrence, please provide more context to uniquely identify the instance.
+String:         }
+    }
+
+    return [PSCustomObject[]]$deps.ToArray()
+}
+</tool_use_error>
+[Assistant] The two functions have extremely similar endings. Let me use the line 122 content (end of file):
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.ps1", "offset": 112}
+[Result] 112	            [PSCustomObject]$dep = [PSCustomObject]@{
+113	                Name    = [string]$line
+114	                Version = [string]'*'
+115	            }
+116	            $deps.Add($dep)
+117	        }
+118	    }
+119	
+120	    return [PSCustomObject[]]$deps.ToArray()
+121	}
+122	
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.ps
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./DependencyLicenseChecker.Tests.ps1 -Output Detailed" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 7 tests in 129ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.Tests.ps1'[0m
+[92mDescribing Parse-PackageJson[0m
+[32m  [+] Should extract dependencies with versions from package.json[0m[90m 110ms (86ms|24ms)[0m
+[0m
+[92mDescribing Parse-RequirementsTxt[0m
+[32m  [+] Should extract dependencies with versions from requirements.txt[0m[90m 18ms (16ms|2ms)[0m
+[32m  [+] Should handle lines without version specifiers[0m[90m 11ms (10ms|1ms)[0m
+[0m
+[92mDescribing Parse-DependencyManifest error handling[0m
+[32m  [+] Should throw for missing file[0m[90m 30ms (28ms|2ms)[0m
+[32m  [+] Should throw for unsupported format[0m[90m 10ms (9ms|1ms)[0m
+[0m
+[92mDescribing Get-DependencyLicense (mock lookup)[0m
+[32m  [
+[Assistant] GREEN — 7/7 pass. Now the core feature: compliance checking and report generation.
+
+## Step 4: License compliance checking tests
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.Tests.ps1"}
+[Result] 1	Set-StrictMode -Version Latest
+2	$ErrorActionPreference = 'Stop'
+3	
+4	BeforeAll {
+5	    . "$PSScriptRoot/DependencyLicenseChecker.ps1"
+6	}
+7	
+8	Describe 'Parse-PackageJson' {
+9	    It 'Should extract dependencies with versions from package.json' {
+10	        # Arrange
+11	        [string]$json = @'
+12	{
+13	    "name": "my-app",
+14	    "version": "1.0.0",
+15	    "dependencies": {
+16	        "express": "^4.18.0",
+17	        "lodash": "~4.17.21"
+18	    },
+19	    "devDependencies": {
+20	        "jest": "^29.0.0"
+21	    }
+22	}
+23	'@
+24	        [string]$tempFile = Join-Path $TestDrive 'package.json'
+25	        Set-Content -Path $tempFile -Value $json
+26	
+27	        # Act
+28	        [array]$result = Parse-DependencyManifest -Path $tempFile
+29	
+30	        # Assert
+31	        $result.Count | Should -Be 3
+32	        $result[0].Name | Should -Be 'express'
+33	        $result[0].Version | Should -Be '^4.18.0'
+34	        $result[1].Name | Should -Be 'lodash'
+35	        $result[2].Name | Should -Be 
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.Te
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./DependencyLicenseChecker.Tests.ps1 -Output Detailed" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 12 tests in 137ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.Tests.ps1'[0m
+[92mDescribing Parse-PackageJson[0m
+[32m  [+] Should extract dependencies with versions from package.json[0m[90m 108ms (88ms|21ms)[0m
+[0m
+[92mDescribing Parse-RequirementsTxt[0m
+[32m  [+] Should extract dependencies with versions from requirements.txt[0m[90m 26ms (23ms|3ms)[0m
+[32m  [+] Should handle lines without version specifiers[0m[90m 7ms (6ms|1ms)[0m
+[0m
+[92mDescribing Parse-DependencyManifest error handling[0m
+[32m  [+] Should throw for missing file[0m[90m 36ms (34ms|2ms)[0m
+[32m  [+] Should throw for unsupported format[0m[90m 13ms (7ms|7ms)[0m
+[0m
+[92mDescribing Get-DependencyLicense (mock lookup)[0m
+[32m  [+
+[Assistant] RED — 5 new failures. Now implement `Test-LicenseCompliance` and `New-ComplianceReport`:
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.ps1", "offset": 140}
+[Result] 140	
+141	    if ($LicenseDatabase.ContainsKey($Name)) {
+142	        return [string]$LicenseDatabase[$Name]
+143	    }
+144	
+145	    return [string]'UNKNOWN'
+146	}
+147	
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.ps
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./DependencyLicenseChecker.Tests.ps1 -Output Detailed" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 12 tests in 141ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.Tests.ps1'[0m
+[92mDescribing Parse-PackageJson[0m
+[32m  [+] Should extract dependencies with versions from package.json[0m[90m 103ms (82ms|21ms)[0m
+[0m
+[92mDescribing Parse-RequirementsTxt[0m
+[32m  [+] Should extract dependencies with versions from requirements.txt[0m[90m 22ms (20ms|2ms)[0m
+[32m  [+] Should handle lines without version specifiers[0m[90m 7ms (6ms|1ms)[0m
+[0m
+[92mDescribing Parse-DependencyManifest error handling[0m
+[32m  [+] Should throw for missing file[0m[90m 35ms (33ms|2ms)[0m
+[32m  [+] Should throw for unsupported format[0m[90m 8ms (7ms|1ms)[0m
+[0m
+[92mDescribing Get-DependencyLicense (mock lookup)[0m
+[32m  [+]
+[Assistant] Good progress — 11/12 pass. The issue is strict mode doesn't allow accessing a property that doesn't exist. The test fixture has no `devDependencies`. I need to fix `Parse-PackageJson` to check if properties exist first:
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.ps1", "offset": 55, "lim
+[Result] 55	    [string]$content = Get-Content -Path $Path -Raw
+56	    [PSCustomObject]$pkg = $content | ConvertFrom-Json
+57	
+58	    [System.Collections.Generic.List[PSCustomObject]]$deps = [System.Collections.Generic.List[PSCustomObject]]::new()
+59	
+60	    # Extract both dependencies and devDependencies
+61	    foreach ($section in @('dependencies', 'devDependencies')) {
+62	        if ($null -ne $pkg.$section) {
+63	            [PSCustomObject]$sectionObj = $pkg.$section
+64	            foreach ($prop in $sectionObj.PSObject.Properties) {
+65	                [PSCustomObject]$dep = [PSCustomObject]@{
+66	                    Name    = [string]$prop.Name
+67	                    Version = [string]$prop.Value
+68	                }
+69	                $deps.Add($dep)
+70	            }
+71	        }
+72	    }
+73	
+74	    return [PSCustomObject[]]$deps.ToArray()
+[Assistant] The issue is on line 62 — `$pkg.$section` triggers strict mode because the property doesn't exist. I need to check via `PSObject.Properties`:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.ps
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./DependencyLicenseChecker.Tests.ps1 -Output Detailed" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 12 tests in 143ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.Tests.ps1'[0m
+[92mDescribing Parse-PackageJson[0m
+[32m  [+] Should extract dependencies with versions from package.json[0m[90m 112ms (85ms|26ms)[0m
+[0m
+[92mDescribing Parse-RequirementsTxt[0m
+[32m  [+] Should extract dependencies with versions from requirements.txt[0m[90m 22ms (20ms|2ms)[0m
+[32m  [+] Should handle lines without version specifiers[0m[90m 7ms (6ms|1ms)[0m
+[0m
+[92mDescribing Parse-DependencyManifest error handling[0m
+[32m  [+] Should throw for missing file[0m[90m 34ms (32ms|2ms)[0m
+[32m  [+] Should throw for unsupported format[0m[90m 6ms (5ms|1ms)[0m
+[0m
+[92mDescribing Get-DependencyLicense (mock lookup)[0m
+[32m  [+]
+[Assistant] GREEN — 12/12 pass. Now let me add the final piece: report formatting/output and an end-to-end test with requirements.txt.
+
+## Step 5: Report formatting + requirements.txt integration test
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.Tests.ps1", "offset": 14
+[Result] 145	}
+146	
+147	Describe 'New-ComplianceReport' {
+148	    It 'Should generate a full compliance report from a manifest' {
+149	        # Arrange: create a package.json fixture
+150	        [string]$json = @'
+151	{
+152	    "name": "test-app",
+153	    "dependencies": {
+154	        "express": "^4.18.0",
+155	        "lodash": "~4.17.21",
+156	        "evil-gpl-lib": "1.0.0",
+157	        "mystery-pkg": "2.0.0"
+158	    }
+159	}
+160	'@
+161	        [string]$tempFile = Join-Path $TestDrive 'package.json'
+162	        Set-Content -Path $tempFile -Value $json
+163	
+164	        [hashtable]$mockDb = @{
+165	            'express'      = 'MIT'
+166	            'lodash'       = 'MIT'
+167	            'evil-gpl-lib' = 'GPL-3.0'
+168	        }
+169	
+170	        [hashtable]$config = @{
+171	            AllowList = [string[]]@('MIT', 'Apache-2.0')
+172	            DenyList  = [string[]]@('GPL-3.0', 'AGPL-3.0')
+173	        }
+174	
+175	        # Act
+176	        [PSCustomObject]$report = New-ComplianceReport -ManifestPath 
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.Te
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./DependencyLicenseChecker.Tests.ps1 -Output Detailed" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 15 tests in 143ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.Tests.ps1'[0m
+[92mDescribing Parse-PackageJson[0m
+[32m  [+] Should extract dependencies with versions from package.json[0m[90m 110ms (83ms|27ms)[0m
+[0m
+[92mDescribing Parse-RequirementsTxt[0m
+[32m  [+] Should extract dependencies with versions from requirements.txt[0m[90m 21ms (19ms|2ms)[0m
+[32m  [+] Should handle lines without version specifiers[0m[90m 7ms (6ms|1ms)[0m
+[0m
+[92mDescribing Parse-DependencyManifest error handling[0m
+[32m  [+] Should throw for missing file[0m[90m 32ms (30ms|2ms)[0m
+[32m  [+] Should throw for unsupported format[0m[90m 6ms (5ms|1ms)[0m
+[0m
+[92mDescribing Get-DependencyLicense (mock lookup)[0m
+[32m  [+]
+[Assistant] RED — 2 new failures. Implement `Format-ComplianceReport` and `Get-DefaultLicenseDatabase`:
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.ps1", "offset": 225}
+[Result] 225	            'Approved' { $approvedCount++ }
+226	            'Denied'   { $deniedCount++ }
+227	            'Unknown'  { $unknownCount++ }
+228	        }
+229	    }
+230	
+231	    [PSCustomObject]$report = [PSCustomObject]@{
+232	        ManifestPath      = [string]$ManifestPath
+233	        TotalDependencies = [int]$entries.Count
+234	        Approved          = [int]$approvedCount
+235	        Denied            = [int]$deniedCount
+236	        Unknown           = [int]$unknownCount
+237	        Entries           = [PSCustomObject[]]$entries.ToArray()
+238	    }
+239	
+240	    return $report
+241	}
+242	
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.ps
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./DependencyLicenseChecker.Tests.ps1 -Output Detailed" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 15 tests in 149ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.Tests.ps1'[0m
+[92mDescribing Parse-PackageJson[0m
+[32m  [+] Should extract dependencies with versions from package.json[0m[90m 115ms (88ms|27ms)[0m
+[0m
+[92mDescribing Parse-RequirementsTxt[0m
+[32m  [+] Should extract dependencies with versions from requirements.txt[0m[90m 20ms (18ms|2ms)[0m
+[32m  [+] Should handle lines without version specifiers[0m[90m 7ms (6ms|1ms)[0m
+[0m
+[92mDescribing Parse-DependencyManifest error handling[0m
+[32m  [+] Should throw for missing file[0m[90m 33ms (31ms|2ms)[0m
+[32m  [+] Should throw for unsupported format[0m[90m 7ms (5ms|1ms)[0m
+[0m
+[92mDescribing Get-DependencyLicense (mock lookup)[0m
+[32m  [+]
+[Assistant] GREEN — all 15 tests pass. Let me also add a test for loading config from a JSON file, and verify the final `Invoke-Pester` works cleanly:
+
+## Step 6: Config loading from file
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.Tests.ps1", "offset": 26
+[Result] 260	}
+261	
+262	Describe 'Get-DefaultLicenseDatabase' {
+263	    It 'Should return a hashtable with common packages' {
+264	        [hashtable]$db = Get-DefaultLicenseDatabase
+265	        $db | Should -BeOfType [hashtable]
+266	        $db.Count | Should -BeGreaterThan 0
+267	        $db['express'] | Should -Be 'MIT'
+268	    }
+269	}
+270	
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.Te
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./DependencyLicenseChecker.Tests.ps1 -Output Detailed" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 18 tests in 147ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.Tests.ps1'[0m
+[92mDescribing Parse-PackageJson[0m
+[32m  [+] Should extract dependencies with versions from package.json[0m[90m 108ms (87ms|21ms)[0m
+[0m
+[92mDescribing Parse-RequirementsTxt[0m
+[32m  [+] Should extract dependencies with versions from requirements.txt[0m[90m 20ms (14ms|6ms)[0m
+[32m  [+] Should handle lines without version specifiers[0m[90m 6ms (6ms|1ms)[0m
+[0m
+[92mDescribing Parse-DependencyManifest error handling[0m
+[32m  [+] Should throw for missing file[0m[90m 31ms (30ms|2ms)[0m
+[32m  [+] Should throw for unsupported format[0m[90m 6ms (5ms|1ms)[0m
+[0m
+[92mDescribing Get-DependencyLicense (mock lookup)[0m
+[32m  [+]
+[Assistant] RED — 3 new failures. Implement `Import-LicenseConfig`:
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.ps1", "offset": 322}
+[Result] 322	
+323	        # Python packages
+324	        'flask'      = 'BSD-3-Clause'
+325	        'django'     = 'BSD-3-Clause'
+326	        'numpy'      = 'BSD-3-Clause'
+327	        'pandas'     = 'BSD-3-Clause'
+328	        'requests'   = 'Apache-2.0'
+329	        'pytest'     = 'MIT'
+330	        'setuptools' = 'MIT'
+331	        'pip'        = 'MIT'
+332	        'scipy'      = 'BSD-3-Clause'
+333	        'pillow'     = 'MIT-CMU'
+334	    }
+335	
+336	    return $db
+337	}
+338	
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.ps
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./DependencyLicenseChecker.Tests.ps1 -Output Detailed" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 18 tests in 144ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.Tests.ps1'[0m
+[92mDescribing Parse-PackageJson[0m
+[32m  [+] Should extract dependencies with versions from package.json[0m[90m 107ms (86ms|21ms)[0m
+[0m
+[92mDescribing Parse-RequirementsTxt[0m
+[32m  [+] Should extract dependencies with versions from requirements.txt[0m[90m 20ms (14ms|6ms)[0m
+[32m  [+] Should handle lines without version specifiers[0m[90m 8ms (7ms|1ms)[0m
+[0m
+[92mDescribing Parse-DependencyManifest error handling[0m
+[32m  [+] Should throw for missing file[0m[90m 31ms (29ms|2ms)[0m
+[32m  [+] Should throw for unsupported format[0m[90m 6ms (5ms|1ms)[0m
+[0m
+[92mDescribing Get-DependencyLicense (mock lookup)[0m
+[32m  [+]
+[Assistant] All 18 tests pass. Let me do a final verification with bare `Invoke-Pester` and review the complete solution:
+[Tool: Bash] pwsh -Command "Invoke-Pester" 2>&1
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 18 tests in 173ms.[0m
+[95mRunning tests.[0m
+[32m[+] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/DependencyLicenseChecker.Tests.ps1[0m[90m 812ms (358ms|309ms)[0m
+[97mTests completed in 824ms[0m
+[32mTests Passed: 18, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Assistant] All 18 tests pass with `Invoke-Pester`. Let me verify the final files:
+[Tool: Bash] ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/13-dependency-license-checker/powershell-strict-opus/
+[Result] total 52
+drwxr-xr-x 2 passp passp  4096 Apr  8 04:20 .
+drwxr-xr-x 5 passp passp  4096 Apr  8 04:15 ..
+-rw-r--r-- 1 passp passp 10697 Apr  8 04:20 DependencyLicenseChecker.Tests.ps1
+-rw-r--r-- 1 passp passp 11372 Apr  8 04:20 DependencyLicenseChecker.ps1
+-rw-r--r-- 1 passp passp 17086 Apr  7 22:53 benchmark-instructions-v2.md
+[Assistant] Done. Here's a summary of what was built:
+
+**`DependencyLicenseChecker.ps1`** — 7 functions, all with `Set-StrictMode -Version Latest`, `$ErrorActionPreference = 'Stop'`, `[CmdletBinding()]`, `[OutputType()]`, and explicitly typed parameters:
+
+| Function | Purpose |
+|---|---|
+| `Parse-DependencyManifest` | Routes to parser based on filename |
+| `Parse-PackageJson` | Extracts deps + devDeps from package.json |
+| `Parse-RequirementsTxt` | Parses pip requirements, handles comments/blank lines |
+| `Get-DependencyLicense` | Looks up license in a mockable hashtable database |
+| `Test-LicenseCompliance` | Checks license against allow/deny lists → Approved/Denied/Unknown |
+| `New-ComplianceReport` | Orchestrates parsing → lookup → compliance → report object |
+| `Format-ComplianceReport` | Renders report as human-readable text |
+| `Import-LicenseConfig` | Loads allow/deny lists from JSON config file |
+| `Get-DefaultLicenseDatabase` | Returns built-in mock license database |
+
+**`DependencyLicenseChecker.Tests.ps1`** — 18 tests across 8 Describe blocks covering parsing, error handling, license lookup, compliance checking, formatting, config loading, and end-to-end integration. All followed red/green TDD.
