@@ -1,0 +1,624 @@
+[Assistant] 
+
+I'll start by understanding the task and then follow TDD methodology to build a process monitor script in PowerShell using Pester.
+
+Let me first check the current working directory.
+[Tool: Bash] ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/
+[Result] total 28
+drwxr-xr-x 2 passp passp  4096 Apr  8 00:56 .
+drwxr-xr-x 4 passp passp  4096 Apr  8 00:56 ..
+-rw-r--r-- 1 passp passp 17086 Apr  7 22:53 benchmark-instructions-v2.md
+[Tool: Bash] which pwsh && pwsh --version
+[Result] /snap/bin/pwsh
+PowerShell 7.6.0
+[Tool: Bash] pwsh -c 'Get-Module -ListAvailable Pester | Select-Object -Property Name,Version'
+[Result] [32;1mName  [0m[32;1m Version[0m
+[32;1m----  [0m [32;1m-------[0m
+Pester 5.7.1
+[Assistant] Good — Pester 5.7.1 is available. Now I'll follow TDD, building the solution incrementally.
+
+**Plan:**
+1. `ProcessMonitor.ps1` — the main module with functions
+2. `ProcessMonitor.Tests.ps1` — Pester tests
+
+I'll write failing tests first, then implement, cycling through each piece of functionality.
+
+**Cycle 1: Test that `Get-ProcessInfo` returns process data with expected properties.**
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.Tests.ps1", "content": "# ProcessMonitor.Tests.ps1\n
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.ps1", "content": "# ProcessMonitor.ps1\n# Process mo
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Run the test — expect RED:
+[Tool: Bash] pwsh -c 'Invoke-Pester -Path ./ProcessMonitor.Tests.ps1 -Output Detailed' 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 1 tests in 112ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.Tests.ps1'[0m
+[92mDescribing Get-ProcessInfo[0m
+[91m  [-] returns process objects with required properties (CPU, Memory, PID, Name)[0m[90m 113ms (94ms|19ms)[0m
+[91m   CommandNotFoundException: The term 'Get-ProcessInfo' is not recognized as a name of a cmdlet, function, script file, or executable program.
+[91m   Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+[91m   at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.Tests.ps1:18[0m
+[97mTests completed in 431ms[0m
+[97mTests Passed: 0, [0m[91mFailed: 1, [0m[90mSkipped: 0
+[Assistant] RED. Now implement `Get-ProcessInfo` to make it pass:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.ps1", "old_string": "# Process
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -c 'Invoke-Pester -Path ./ProcessMonitor.Tests.ps1 -Output Detailed' 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 1 tests in 114ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.Tests.ps1'[0m
+[92mDescribing Get-ProcessInfo[0m
+[32m  [+] returns process objects with required properties (CPU, Memory, PID, Name)[0m[90m 101ms (80ms|20ms)[0m
+[97mTests completed in 377ms[0m
+[32mTests Passed: 1, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Assistant] GREEN. **Cycle 2: Test `Get-FilteredProcesses` — filter by CPU and memory thresholds.**
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.Tests.ps1", "old_string": "   
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -c 'Invoke-Pester -Path ./ProcessMonitor.Tests.ps1 -Output Detailed' 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 5 tests in 125ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.Tests.ps1'[0m
+[92mDescribing Get-ProcessInfo[0m
+[32m  [+] returns process objects with required properties (CPU, Memory, PID, Name)[0m[90m 110ms (87ms|23ms)[0m
+[0m
+[92mDescribing Get-FilteredProcesses[0m
+[91m  [-] filters processes exceeding CPU threshold[0m[90m 122ms (120ms|2ms)[0m
+[91m   CommandNotFoundException: The term 'Get-FilteredProcesses' is not recognized as a name of a cmdlet, function, script file, or executable program.
+[91m   Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+[91m   at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powers
+[Assistant] RED — 4 new failures. Now implement `Get-FilteredProcesses`:
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.ps1"}
+[Result] 1	# ProcessMonitor.ps1
+2	# Process monitoring script that reads process info, filters by thresholds,
+3	# identifies top N consumers, and generates alert reports.
+4	# All functions accept mock data for testability.
+5	
+6	function Get-ProcessInfo {
+7	    <#
+8	    .SYNOPSIS
+9	        Normalizes raw process data into a uniform format with CPU%, MemoryMB, PID, and Name.
+10	    .PARAMETER ProcessData
+11	        Array of process objects (e.g. from Get-Process). When omitted, reads live system data.
+12	    #>
+13	    [CmdletBinding()]
+14	    param(
+15	        [Parameter(ValueFromPipeline)]
+16	        [object[]]$ProcessData
+17	    )
+18	
+19	    begin {
+20	        # If no data piped or passed, fetch live processes
+21	        if (-not $ProcessData) {
+22	            $ProcessData = Get-Process
+23	        }
+24	    }
+25	
+26	    process {
+27	        foreach ($proc in $ProcessData) {
+28	            [PSCustomObject]@{
+29	                PID        = $proc.Id
+30	                Name       = $proc.ProcessNam
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.ps1", "old_string": "         
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -c 'Invoke-Pester -Path ./ProcessMonitor.Tests.ps1 -Output Detailed' 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 5 tests in 116ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.Tests.ps1'[0m
+[92mDescribing Get-ProcessInfo[0m
+[32m  [+] returns process objects with required properties (CPU, Memory, PID, Name)[0m[90m 101ms (80ms|21ms)[0m
+[0m
+[92mDescribing Get-FilteredProcesses[0m
+[32m  [+] filters processes exceeding CPU threshold[0m[90m 13ms (12ms|1ms)[0m
+[32m  [+] filters processes exceeding memory threshold[0m[90m 5ms (4ms|1ms)[0m
+[32m  [+] filters processes exceeding EITHER threshold (OR logic)[0m[90m 11ms (10ms|1ms)[0m
+[32m  [+] returns nothing when no processes exceed thresholds[0m[90m 8ms (7ms|1ms)[0m
+[97mTests completed in 429ms[0m
+[32mTests Passed: 5, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0
+[Assistant] GREEN — all 5 pass. **Cycle 3: Test `Get-TopConsumers` — top N resource consumers.**
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.Tests.ps1", "old_string": "   
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -c 'Invoke-Pester -Path ./ProcessMonitor.Tests.ps1 -Output Detailed' 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 9 tests in 202ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.Tests.ps1'[0m
+[92mDescribing Get-ProcessInfo[0m
+[32m  [+] returns process objects with required properties (CPU, Memory, PID, Name)[0m[90m 101ms (80ms|22ms)[0m
+[0m
+[92mDescribing Get-FilteredProcesses[0m
+[32m  [+] filters processes exceeding CPU threshold[0m[90m 14ms (12ms|2ms)[0m
+[32m  [+] filters processes exceeding memory threshold[0m[90m 5ms (4ms|1ms)[0m
+[32m  [+] filters processes exceeding EITHER threshold (OR logic)[0m[90m 10ms (5ms|4ms)[0m
+[32m  [+] returns nothing when no processes exceed thresholds[0m[90m 8ms (7ms|1ms)[0m
+[0m
+[92mDescribing Get-TopConsumers[0m
+[91m  [-] returns top N processes sorted by CPU descending[0m[90m 90ms (89ms|2ms)[0m
+[91m
+[Assistant] RED — 4 new failures. Implement `Get-TopConsumers`:
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.ps1", "offset": 50}
+[Result] 50	    [CmdletBinding()]
+51	    param(
+52	        [Parameter(Mandatory)]
+53	        [object[]]$Processes,
+54	
+55	        [double]$CPUThreshold = [double]::MaxValue,
+56	
+57	        [double]$MemoryThresholdMB = [double]::MaxValue
+58	    )
+59	
+60	    $Processes | Where-Object {
+61	        $_.CPUPercent -ge $CPUThreshold -or $_.MemoryMB -ge $MemoryThresholdMB
+62	    }
+63	}
+64	
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.ps1", "old_string": "    $Proc
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -c 'Invoke-Pester -Path ./ProcessMonitor.Tests.ps1 -Output Detailed' 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 9 tests in 136ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.Tests.ps1'[0m
+[92mDescribing Get-ProcessInfo[0m
+[32m  [+] returns process objects with required properties (CPU, Memory, PID, Name)[0m[90m 103ms (80ms|22ms)[0m
+[0m
+[92mDescribing Get-FilteredProcesses[0m
+[32m  [+] filters processes exceeding CPU threshold[0m[90m 14ms (12ms|2ms)[0m
+[32m  [+] filters processes exceeding memory threshold[0m[90m 5ms (4ms|1ms)[0m
+[32m  [+] filters processes exceeding EITHER threshold (OR logic)[0m[90m 11ms (7ms|4ms)[0m
+[32m  [+] returns nothing when no processes exceed thresholds[0m[90m 9ms (8ms|1ms)[0m
+[0m
+[92mDescribing Get-TopConsumers[0m
+[32m  [+] returns top N processes sorted by CPU descending[0m[90m 13ms (11ms|1ms)[0m
+[32m
+[Assistant] GREEN — 9/9 pass. **Cycle 4: Test `New-AlertReport` — generate an alert report.**
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.Tests.ps1", "old_string": "   
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -c 'Invoke-Pester -Path ./ProcessMonitor.Tests.ps1 -Output Detailed' 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 13 tests in 124ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.Tests.ps1'[0m
+[92mDescribing Get-ProcessInfo[0m
+[32m  [+] returns process objects with required properties (CPU, Memory, PID, Name)[0m[90m 100ms (78ms|22ms)[0m
+[0m
+[92mDescribing Get-FilteredProcesses[0m
+[32m  [+] filters processes exceeding CPU threshold[0m[90m 14ms (12ms|2ms)[0m
+[32m  [+] filters processes exceeding memory threshold[0m[90m 8ms (7ms|1ms)[0m
+[32m  [+] filters processes exceeding EITHER threshold (OR logic)[0m[90m 6ms (5ms|1ms)[0m
+[32m  [+] returns nothing when no processes exceed thresholds[0m[90m 8ms (7ms|1ms)[0m
+[0m
+[92mDescribing Get-TopConsumers[0m
+[32m  [+] returns top N processes sorted by CPU descending[0m[90m 15ms (13ms|1ms)[0m
+[32m
+[Assistant] RED — 4 new failures. Implement `New-AlertReport`:
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.ps1", "offset": 80}
+[Result] 80	        [string]$SortBy = "CPU"
+81	    )
+82	
+83	    $sortProperty = if ($SortBy -eq "Memory") { "MemoryMB" } else { "CPUPercent" }
+84	
+85	    $Processes |
+86	        Sort-Object -Property $sortProperty -Descending |
+87	        Select-Object -First $TopN
+88	}
+89	
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.ps1", "old_string": "    $Proc
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -c 'Invoke-Pester -Path ./ProcessMonitor.Tests.ps1 -Output Detailed' 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 13 tests in 127ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.Tests.ps1'[0m
+[92mDescribing Get-ProcessInfo[0m
+[32m  [+] returns process objects with required properties (CPU, Memory, PID, Name)[0m[90m 93ms (73ms|20ms)[0m
+[0m
+[92mDescribing Get-FilteredProcesses[0m
+[32m  [+] filters processes exceeding CPU threshold[0m[90m 15ms (13ms|2ms)[0m
+[32m  [+] filters processes exceeding memory threshold[0m[90m 8ms (7ms|1ms)[0m
+[32m  [+] filters processes exceeding EITHER threshold (OR logic)[0m[90m 6ms (5ms|1ms)[0m
+[32m  [+] returns nothing when no processes exceed thresholds[0m[90m 8ms (7ms|1ms)[0m
+[0m
+[92mDescribing Get-TopConsumers[0m
+[32m  [+] returns top N processes sorted by CPU descending[0m[90m 15ms (13ms|1ms)[0m
+[32m 
+[Assistant] GREEN — 13/13 pass. **Cycle 5: Test `Invoke-ProcessMonitor` — the orchestration function that ties everything together, plus error handling.**
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.Tests.ps1", "old_string": "   
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -c 'Invoke-Pester -Path ./ProcessMonitor.Tests.ps1 -Output Detailed' 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 19 tests in 141ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.Tests.ps1'[0m
+[92mDescribing Get-ProcessInfo[0m
+[32m  [+] returns process objects with required properties (CPU, Memory, PID, Name)[0m[90m 102ms (82ms|20ms)[0m
+[0m
+[92mDescribing Get-FilteredProcesses[0m
+[32m  [+] filters processes exceeding CPU threshold[0m[90m 19ms (17ms|2ms)[0m
+[32m  [+] filters processes exceeding memory threshold[0m[90m 4ms (3ms|1ms)[0m
+[32m  [+] filters processes exceeding EITHER threshold (OR logic)[0m[90m 5ms (4ms|1ms)[0m
+[32m  [+] returns nothing when no processes exceed thresholds[0m[90m 9ms (7ms|1ms)[0m
+[0m
+[92mDescribing Get-TopConsumers[0m
+[32m  [+] returns top N processes sorted by CPU descending[0m[90m 11ms (10ms|2ms)[0m
+[32m
+[Assistant] RED — 3 failures for `Invoke-ProcessMonitor` (not yet implemented), error handling tests already pass due to `[Parameter(Mandatory)]` and `[ValidateSet]`. Now implement `Invoke-ProcessMonitor`:
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.ps1", "offset": 120}
+[Result] 120	    [void]$sb.AppendLine("----------------------------")
+121	    [void]$sb.AppendLine(("{0,-8} {1,-20} {2,-12} {3,-12}" -f "PID", "Name", "CPU%", "Memory(MB)"))
+122	    [void]$sb.AppendLine(("{0,-8} {1,-20} {2,-12} {3,-12}" -f "---", "----", "----", "----------"))
+123	
+124	    foreach ($proc in $Processes) {
+125	        [void]$sb.AppendLine(("{0,-8} {1,-20} {2,-12} {3,-12}" -f $proc.PID, $proc.Name, $proc.CPUPercent, $proc.MemoryMB))
+126	    }
+127	
+128	    [void]$sb.AppendLine("============================")
+129	    $sb.ToString()
+130	}
+131	
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.ps1", "old_string": "    [void
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -c 'Invoke-Pester -Path ./ProcessMonitor.Tests.ps1 -Output Detailed' 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 19 tests in 144ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.Tests.ps1'[0m
+[92mDescribing Get-ProcessInfo[0m
+[32m  [+] returns process objects with required properties (CPU, Memory, PID, Name)[0m[90m 101ms (74ms|27ms)[0m
+[0m
+[92mDescribing Get-FilteredProcesses[0m
+[32m  [+] filters processes exceeding CPU threshold[0m[90m 19ms (17ms|2ms)[0m
+[32m  [+] filters processes exceeding memory threshold[0m[90m 4ms (3ms|1ms)[0m
+[32m  [+] filters processes exceeding EITHER threshold (OR logic)[0m[90m 5ms (5ms|1ms)[0m
+[32m  [+] returns nothing when no processes exceed thresholds[0m[90m 8ms (7ms|1ms)[0m
+[0m
+[92mDescribing Get-TopConsumers[0m
+[32m  [+] returns top N processes sorted by CPU descending[0m[90m 11ms (10ms|1ms)[0m
+[32m
+[Assistant] 2 still failing due to a type conversion error. Let me debug:
+[Tool: Bash] pwsh -c '
+. ./ProcessMonitor.ps1
+$mockRaw = @(
+    [PSCustomObject]@{ Id = 1; ProcessName = "idle";   CPU = 0.5;  WorkingSet64 = 10485760 }
+    [PSCustomObject]@{ Id = 2; ProcessName = "worker"; CPU = 75.0; WorkingSet64 = 524288000 }
+)
+try {
+    Invoke-ProcessMonitor -ProcessData $mockRaw -CPUThreshold 50 -MemoryThresholdMB 1024 -TopN 2
+} catch {
+    $_.Exception.Message
+    $_.ScriptStackTrace
+}
+' 2>&1
+[Result] [31;1mInvoke-ProcessMonitor: [0m
+[31;1m[36;1mLine |[0m
+[31;1m[36;1m[36;1m   8 | [0m     [36;1mInvoke-ProcessMonitor -ProcessData $mockRaw -CPUThreshold 50 -Mem[0m …[0m
+[31;1m[36;1m[36;1m[0m[36;1m[0m[36;1m     | [31;1m     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+[31;1m[36;1m[36;1m[0m[36;1m[0m[36;1m[31;1m[31;1m[36;1m     | [31;1mProcess monitoring failed: Cannot convert the "System.Object[]" value of type "System.Object[]" to type "System.Int32".[0m
+
+[32;1mReport[0m
+[32;1m------                                                                         [0m
+ERROR: Process monitoring failed — Cannot convert the "System.Object[]" value …
+[Tool: Bash] pwsh -c '
+. ./ProcessMonitor.ps1
+$mockRaw = @(
+    [PSCustomObject]@{ Id = 1; ProcessName = "idle";   CPU = 0.5;  WorkingSet64 = 10485760 }
+    [PSCustomObject]@{ Id = 2; ProcessName = "worker"; CPU = 75.0; WorkingSet64 = 524288000 }
+)
+$ErrorActionPreference = "Stop"
+try {
+    $normalized = foreach ($p in $mockRaw) {
+        [PSCustomObject]@{
+            PID        = $p.Id
+            Name       = $p.ProcessName
+            CPUPercent = if ($null -ne $p.CPU) { [math]::Round($p.CPU, 2) } else { 0 }
+            MemoryMB   = [math]::Round($p.WorkingSet64 / 1MB, 0)
+        }
+    }
+    Write-Output "normalized count: $($normalized.Count)"
+    $normalized | Format-Table
+
+    $filtered = @($normalized | Where-Object {
+        $_.CPUPercent -ge 50 -or $_.MemoryMB -ge 1024
+    })
+    Write-Output "filtered count: $($filtered.Count)"
+    $filtered | Format-Table
+
+    $topN = @($filtered |
+        Sort-Object -Property CPUPercent -Descending |
+        Select-Object -First 2)
+    Write-Output "topN count: $($topN.Count)"
+    $topN | Format-Table
+
+    $report = New-AlertReport -Processes $topN -CPUThreshold 50 -MemoryThresholdMB 1024
+    Write-Output $report
+} catch {
+    Write-Output "ERROR at: $($_.InvocationInfo.ScriptLineNumber)"
+    Write-Output $_.Exception.Message
+    Write-Output $_.ScriptStackTrace
+}
+' 2>&1
+[Result] normalized count: 2
+
+[32;1mPID[0m[32;1m Name  [0m[32;1m CPUPercent[0m[32;1m MemoryMB[0m
+[32;1m---[0m [32;1m----  [0m [32;1m----------[0m [32;1m--------[0m
+  1 idle         0.50    10.00
+  2 worker      75.00   500.00
+
+filtered count: 1
+
+[32;1mPID[0m[32;1m Name  [0m[32;1m CPUPercent[0m[32;1m MemoryMB[0m
+[32;1m---[0m [32;1m----  [0m [32;1m----------[0m [32;1m--------[0m
+  2 worker      75.00   500.00
+
+topN count: 1
+
+[32;1mPID[0m[32;1m Name  [0m[32;1m CPUPercent[0m[32;1m MemoryMB[0m
+[32;1m---[0m [32;1m----  [0m [32;1m----------[0m [32;1m--------[0m
+  2 worker      75.00   500.00
+
+=== PROCESS ALERT REPORT ===
+Generated: 2026-04-08 00:59:59
+Thresholds: CPU >= 50% | Memory >= 1024 MB
+Alerts: 1 process(es)
+----------------------------
+PID      Name                 CPU%         Memory(MB)  
+---      ----                 ----         ----------  
+2        worker               75           500         
+============================
+[Assistant] That works inline. Let me test the actual function with the exact test data:
+[Tool: Bash] pwsh -c '
+. ./ProcessMonitor.ps1
+$mockRaw = @(
+    [PSCustomObject]@{ Id = 1; ProcessName = "idle";   CPU = 0.5;  WorkingSet64 = 10485760 }
+    [PSCustomObject]@{ Id = 2; ProcessName = "worker"; CPU = 75.0; WorkingSet64 = 524288000 }
+    [PSCustomObject]@{ Id = 3; ProcessName = "hog";    CPU = 95.0; WorkingSet64 = 2147483648 }
+    [PSCustomObject]@{ Id = 4; ProcessName = "mid";    CPU = 40.0; WorkingSet64 = 209715200 }
+)
+$ErrorActionPreference = "Continue"
+Invoke-ProcessMonitor -ProcessData $mockRaw -CPUThreshold 50 -MemoryThresholdMB 1024 -TopN 2
+' 2>&1
+[Result] [31;1mInvoke-ProcessMonitor: [0m
+[31;1m[36;1mLine |[0m
+[31;1m[36;1m[36;1m  10 | [0m [36;1mInvoke-ProcessMonitor -ProcessData $mockRaw -CPUThreshold 50 -MemoryT[0m …[0m
+[31;1m[36;1m[36;1m[0m[36;1m[0m[36;1m     | [31;1m ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+[31;1m[36;1m[36;1m[0m[36;1m[0m[36;1m[31;1m[31;1m[36;1m     | [31;1mProcess monitoring failed: Cannot convert the "System.Object[]" value of type "System.Object[]" to type "System.Int32".[0m
+
+[32;1mReport[0m
+[32;1m------                                                                         [0m
+ERROR: Process monitoring failed — Cannot convert the "System.Object[]" value …
+[Tool: Bash] pwsh -c '
+. ./ProcessMonitor.ps1
+$mockRaw = @(
+    [PSCustomObject]@{ Id = 1; ProcessName = "idle";   CPU = 0.5;  WorkingSet64 = 10485760 }
+    [PSCustomObject]@{ Id = 2; ProcessName = "worker"; CPU = 75.0; WorkingSet64 = 524288000 }
+    [PSCustomObject]@{ Id = 3; ProcessName = "hog";    CPU = 95.0; WorkingSet64 = 2147483648 }
+    [PSCustomObject]@{ Id = 4; ProcessName = "mid";    CPU = 40.0; WorkingSet64 = 209715200 }
+)
+
+# Test inline, step by step
+$normalized = foreach ($p in $mockRaw) {
+    [PSCustomObject]@{
+        PID        = $p.Id
+        Name       = $p.ProcessName
+        CPUPercent = if ($null -ne $p.CPU) { [math]::Round($p.CPU, 2) } else { 0 }
+        MemoryMB   = [math]::Round($p.WorkingSet64 / 1MB, 0)
+    }
+}
+Write-Output "Type of normalized: $($normalized.GetType().FullName)"
+Write-Output "Count: $($normalized.Count)"
+
+# This is where it likely breaks - piping Object[] to Where-Object
+$filtered = @($normalized | Where-Object {
+    $_.CPUPercent -ge 50 -or $_.MemoryMB -ge 1024
+})
+Write-Output "filtered count: $($filtered.Count)"
+$filtered | Format-Table
+' 2>&1
+[Result] Type of normalized: System.Object[]
+Count: 4
+filtered count: 2
+
+[32;1mPID[0m[32;1m Name  [0m[32;1m CPUPercent[0m[32;1m MemoryMB[0m
+[32;1m---[0m [32;1m----  [0m [32;1m----------[0m [32;1m--------[0m
+  2 worker      75.00   500.00
+  3 hog         95.00  2048.00
+[Tool: Bash] pwsh -c '
+. ./ProcessMonitor.ps1
+$mockRaw = @(
+    [PSCustomObject]@{ Id = 1; ProcessName = "idle";   CPU = 0.5;  WorkingSet64 = 10485760 }
+    [PSCustomObject]@{ Id = 2; ProcessName = "worker"; CPU = 75.0; WorkingSet64 = 524288000 }
+    [PSCustomObject]@{ Id = 3; ProcessName = "hog";    CPU = 95.0; WorkingSet64 = 2147483648 }
+    [PSCustomObject]@{ Id = 4; ProcessName = "mid";    CPU = 40.0; WorkingSet64 = 209715200 }
+)
+
+# Reproduce by calling the function with Set-StrictMode
+function Test-Invoke {
+    param([object[]]$ProcessData, [double]$CPUThreshold, [double]$MemoryThresholdMB, [int]$TopN)
+    
+    $normalized = foreach ($p in $ProcessData) {
+        [PSCustomObject]@{
+            PID        = $p.Id
+            Name       = $p.ProcessName
+            CPUPercent = if ($null -ne $p.CPU) { [math]::Round($p.CPU, 2) } else { 0 }
+            MemoryMB   = [math]::Round($p.WorkingSet64 / 1MB, 0)
+        }
+    }
+    Write-Output "Inside function - type: $($normalized.GetType().FullName), count: $($normalized.Count)"
+    
+    $filtered = @($normalized | Where-Object {
+        $_.CPUPercent -ge $CPUThreshold -or $_.MemoryMB -ge $MemoryThresholdMB
+    })
+    Write-Output "filtered: $($filtered.Count)"
+    
+    $topN2 = @($filtered |
+        Sort-Object -Property CPUPercent -Descending |
+        Select-Object -First $TopN)
+    Write-Output "topN: $($topN2.Count)"
+}
+
+Test-Invoke -ProcessData $mockRaw -CPUThreshold 50 -MemoryThresholdMB 1024 -TopN 2
+' 2>&1
+[Result] Inside function - type: System.Object[], count: 4
+filtered: 2
+topN: 2
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.ps1", "offset": 132}
+[Result] 132	function Invoke-ProcessMonitor {
+133	    <#
+134	    .SYNOPSIS
+135	        Main orchestration function: reads processes, filters by thresholds,
+136	        picks top N consumers, and generates an alert report.
+137	    .PARAMETER ProcessData
+138	        Raw process objects (e.g. from Get-Process). Pass mock data for testing.
+139	    .PARAMETER CPUThreshold
+140	        CPU percentage threshold for alerting.
+141	    .PARAMETER MemoryThresholdMB
+142	        Memory threshold in MB for alerting.
+143	    .PARAMETER TopN
+144	        Number of top consumers to include in the report.
+145	    .OUTPUTS
+146	        PSCustomObject with .Report (string) and .AlertedProcesses (array).
+147	    #>
+148	    [CmdletBinding()]
+149	    param(
+150	        [object[]]$ProcessData,
+151	
+152	        [double]$CPUThreshold = 80,
+153	
+154	        [double]$MemoryThresholdMB = 512,
+155	
+156	        [int]$TopN = 5
+157	    )
+158	
+159	    try {
+160	        # Step 1: Normalize raw process data, treating null CPU as 0
+1
+[Assistant] The variable `$topN` conflicts with parameter `$TopN` (PowerShell is case-insensitive for variables). Let me rename the local variable:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.ps1", "old_string": "        #
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -c 'Invoke-Pester -Path ./ProcessMonitor.Tests.ps1 -Output Detailed' 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 19 tests in 132ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.Tests.ps1'[0m
+[92mDescribing Get-ProcessInfo[0m
+[32m  [+] returns process objects with required properties (CPU, Memory, PID, Name)[0m[90m 99ms (73ms|26ms)[0m
+[0m
+[92mDescribing Get-FilteredProcesses[0m
+[32m  [+] filters processes exceeding CPU threshold[0m[90m 18ms (16ms|2ms)[0m
+[32m  [+] filters processes exceeding memory threshold[0m[90m 4ms (3ms|1ms)[0m
+[32m  [+] filters processes exceeding EITHER threshold (OR logic)[0m[90m 5ms (4ms|1ms)[0m
+[32m  [+] returns nothing when no processes exceed thresholds[0m[90m 8ms (7ms|1ms)[0m
+[0m
+[92mDescribing Get-TopConsumers[0m
+[32m  [+] returns top N processes sorted by CPU descending[0m[90m 11ms (9ms|1ms)[0m
+[32m  
+[Assistant] GREEN — all 19 tests pass. Now let me also verify `Invoke-Pester` works without explicit path (as required):
+[Tool: Bash] pwsh -c 'Invoke-Pester -Output Detailed' 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 19 tests in 135ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.Tests.ps1'[0m
+[92mDescribing Get-ProcessInfo[0m
+[32m  [+] returns process objects with required properties (CPU, Memory, PID, Name)[0m[90m 99ms (79ms|20ms)[0m
+[0m
+[92mDescribing Get-FilteredProcesses[0m
+[32m  [+] filters processes exceeding CPU threshold[0m[90m 15ms (13ms|2ms)[0m
+[32m  [+] filters processes exceeding memory threshold[0m[90m 4ms (3ms|1ms)[0m
+[32m  [+] filters processes exceeding EITHER threshold (OR logic)[0m[90m 6ms (5ms|1ms)[0m
+[32m  [+] returns nothing when no processes exceed thresholds[0m[90m 8ms (7ms|1ms)[0m
+[0m
+[92mDescribing Get-TopConsumers[0m
+[32m  [+] returns top N processes sorted by CPU descending[0m[90m 14ms (10ms|4ms)[0m
+[32m 
+[Assistant] All **19 tests pass** with bare `Invoke-Pester`. Let me show the final state of both files:
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-opus/ProcessMonitor.ps1"}
+[Result] 1	# ProcessMonitor.ps1
+2	# Process monitoring script that reads process info, filters by thresholds,
+3	# identifies top N consumers, and generates alert reports.
+4	# All functions accept mock data for testability.
+5	
+6	function Get-ProcessInfo {
+7	    <#
+8	    .SYNOPSIS
+9	        Normalizes raw process data into a uniform format with CPU%, MemoryMB, PID, and Name.
+10	    .PARAMETER ProcessData
+11	        Array of process objects (e.g. from Get-Process). When omitted, reads live system data.
+12	    #>
+13	    [CmdletBinding()]
+14	    param(
+15	        [Parameter(ValueFromPipeline)]
+16	        [object[]]$ProcessData
+17	    )
+18	
+19	    begin {
+20	        # If no data piped or passed, fetch live processes
+21	        if (-not $ProcessData) {
+22	            $ProcessData = Get-Process
+23	        }
+24	    }
+25	
+26	    process {
+27	        foreach ($proc in $ProcessData) {
+28	            [PSCustomObject]@{
+29	                PID        = $proc.Id
+30	                Name       = $proc.ProcessNam
+[Assistant] Done. Here's a summary of what was built using TDD (red/green/refactor):
+
+**Files created:**
+- `ProcessMonitor.ps1` — 4 functions, all accepting mock data for testability
+- `ProcessMonitor.Tests.ps1` — 19 Pester tests across 5 describe blocks
+
+**Functions & TDD cycles:**
+
+| Cycle | Function | Purpose |
+|-------|----------|---------|
+| 1 | `Get-ProcessInfo` | Normalizes raw process objects → PID, Name, CPUPercent, MemoryMB |
+| 2 | `Get-FilteredProcesses` | Filters by CPU and/or memory thresholds (OR logic) |
+| 3 | `Get-TopConsumers` | Returns top N processes sorted by CPU or Memory |
+| 4 | `New-AlertReport` | Generates formatted alert report string |
+| 5 | `Invoke-ProcessMonitor` | Orchestrates the full pipeline + error handling |
+
+**Key design decisions:**
+- Every function accepts mock data via parameters — no live system dependency in tests
+- `Invoke-ProcessMonitor` handles null CPU values gracefully (common for zombie processes)
+- Error handling via `try/catch` with meaningful messages
+- `[ValidateSet]` and `[Parameter(Mandatory)]` provide parameter validation that automatically throws on bad input
