@@ -743,6 +743,7 @@ def parse_stream_output(raw_output: str) -> dict:
     install_duration_ms = 0
     tools_installed = []
     interpreter_versions = {}
+    hook_events = []  # Collected from --include-hook-events
 
     for line in raw_output.splitlines():
         line = line.strip()
@@ -837,6 +838,22 @@ def parse_stream_output(raw_output: str) -> dict:
         if "compact" in event_type.lower() or "compact" in str(obj.get("subtype", "")).lower():
             compaction_count += 1
 
+        # Hook events (from --include-hook-events)
+        subtype = obj.get("subtype", "")
+        if subtype in ("hook_started", "hook_response"):
+            hook_entry = {
+                "subtype": subtype,
+                "hook_id": obj.get("hook_id", ""),
+                "hook_name": obj.get("hook_name", ""),
+                "hook_event": obj.get("hook_event", ""),
+            }
+            if subtype == "hook_response":
+                hook_entry["exit_code"] = obj.get("exit_code")
+                hook_entry["outcome"] = obj.get("outcome", "")
+                hook_entry["stdout"] = (obj.get("stdout", "") or "")[:500]
+                hook_entry["stderr"] = (obj.get("stderr", "") or "")[:500]
+            hook_events.append(hook_entry)
+
         # Result event
         if event_type == "result":
             result_data = obj
@@ -885,6 +902,7 @@ def parse_stream_output(raw_output: str) -> dict:
         "model_used": model_used,
         "init_data": init_data,
         "result_meta": result_meta,
+        "hook_events": hook_events,
         "duration_ms": duration_ms,
         "duration_api_ms": duration_api_ms,
         "num_turns": num_turns,
@@ -946,6 +964,7 @@ def run_single_task(
         "--model", model_id,
         "--output-format", "stream-json",
         "--dangerously-skip-permissions",
+        "--include-hook-events",
         "--verbose",
     ]
     if effort:
@@ -1106,6 +1125,18 @@ def run_single_task(
             "tool_install_duration_ms": 0,  # Approximate — see install_commands
             "tools_installed": parsed["tools_installed"][:20],
             "install_commands_count": len(parsed["install_commands"]),
+        },
+        "hooks": {
+            "hook_fires": len([h for h in parsed.get("hook_events", []) if h["subtype"] == "hook_response"]),
+            "hook_errors_caught": len([
+                h for h in parsed.get("hook_events", [])
+                if h["subtype"] == "hook_response" and h.get("stdout", "").strip()
+            ]),
+            "hook_failures": len([
+                h for h in parsed.get("hook_events", [])
+                if h["subtype"] == "hook_response" and h.get("exit_code", 0) != 0
+            ]),
+            "hook_events": parsed.get("hook_events", []),
         },
     }
 
