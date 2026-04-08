@@ -1,0 +1,366 @@
+{
+  "task_id": "11-semantic-version-bumper",
+  "task_name": "Semantic Version Bumper",
+  "task_category": "GitHub Actions / Release Automation",
+  "language_mode": "bash",
+  "language_chosen": "bash",
+  "language_breakdown": {
+    "bash": 100.0
+  },
+  "interpreter_versions": {},
+  "powershell_version": "",
+  "dotnet_version": "",
+  "model": "claude-opus-4-6",
+  "model_short": "opus",
+  "claude_code_version": "2.1.96",
+  "instructions_version": "v3",
+  "timestamp_start": "2026-04-08T21:31:17.614867+00:00",
+  "timestamp_end": "2026-04-08T21:36:48.775687+00:00",
+  "prompt_text": "You are completing a scripting task. You MUST use Bash as your implementation language.\n\nTASK: Parse a version file (or package.json) containing a semantic version string, determine the next version based on conventional commit messages (feat -> minor, fix -> patch, breaking -> major), update the version file, generate a changelog entry from the commits, and output the new version. Create mock commit logs as test fixtures.\n\nREQUIREMENTS:\n1. Use red/green TDD methodology: write a failing test FIRST, then write the minimum code to make it pass, then refactor. Repeat for each piece of functionality.\n2. Create mocks and test fixtures as necessary for testability. Use bats-core (bats) as the testing framework.\n3. All tests must be runnable with `bats` and must pass at the end.\n4. Include clear comments explaining your approach.\n5. Handle errors gracefully with meaningful error messages.\n6. Use `#!/usr/bin/env bash` shebang. Scripts must pass `shellcheck` and `bash -n` syntax validation.\n\nCreate your solution in the current working directory. Start by writing your first failing test.\n\nGITHUB ACTIONS REQUIREMENT:\nIn addition to the script and tests, create a GitHub Actions workflow file at\n.github/workflows/semantic-version-bumper.yml that uses your script in a real CI/CD pipeline.\nThe workflow must:\n- Use appropriate trigger events (push, pull_request, schedule, workflow_dispatch, etc.)\n- Reference your script correctly\n- Pass actionlint validation (valid YAML, valid action references, correct syntax)\n- Include appropriate permissions, environment variables, and job dependencies\n- Actually run successfully when executed locally with `act` (nektos/act)\n\nThe workflow WILL be executed in a Docker container via `act push` after you finish.\nIt must complete without errors. Design your workflow so that its steps work in an\nisolated container environment \u2014 use `actions/checkout@v4`, install any dependencies\nyour script needs, and run the script. Avoid steps that require external services or\nsecrets unless they have sensible defaults/fallbacks.\n\nWORKFLOW VALIDATION:\nYou MUST validate your workflow file by running `actionlint .github/workflows/semantic-version-bumper.yml`\nand fix any errors it reports. actionlint is pre-installed. Iterate until it passes cleanly.\n\nWORKFLOW EXECUTION TEST (MANDATORY):\nYour workflow must actually run in Docker via `act`. You MUST include a test that:\n1. Initializes a git repo in a temp directory and copies your project files into it\n2. Runs: git add -A && git commit -m \"test\" && act push --rm 2>&1\n3. Saves the full output to a file called `act-result.txt` in the current working directory\n4. Asserts that the act command exited with code 0\n5. Parses `act-result.txt` and asserts the workflow produced correct results:\n   - Assert that each job shows \"Job succeeded\"\n   - Assert that your script's outputs have the correct expected values \u2014 not just that\n     they appear, but that they match known-good values. For example, if the workflow\n     runs your version bumper with fixture data, assert the exact version string\n     (e.g. \"1.2.0\") appears in the output, not just \"some version was printed\"\n   - If the workflow sets step outputs, assert their values match expectations\n   - Use your test fixtures as the input data for the workflow run so you know exactly\n     what the correct output should be\n\nThe `act-result.txt` file MUST exist when your tests finish. It is a required artifact.\nIf act fails, debug the workflow until it passes \u2014 check the output for errors.\n`act` and Docker are pre-installed.\n\nWORKFLOW STRUCTURE TESTS:\nAlso write tests that verify your workflow file:\n- Parse the YAML and check that it has the expected structure (triggers, jobs, steps)\n- Verify the workflow references your script files correctly (paths exist)\n- Verify actionlint passes (run it as a subprocess in your test and assert exit code 0)\nThese tests should be part of your main test suite and must pass at the end.\n",
+  "exit_code": 0,
+  "session": {
+    "session_id": "1be3e07d-67cc-43c9-9a43-a230319092a3",
+    "stop_reason": "end_turn",
+    "terminal_reason": "completed",
+    "fast_mode_state": "off",
+    "service_tier": "standard",
+    "speed": "standard",
+    "inference_geo": "",
+    "context_window": 200000,
+    "max_output_tokens": 64000,
+    "permission_mode": "bypassPermissions",
+    "output_style": "default",
+    "tools_available_count": 31,
+    "mcp_servers": [
+      {
+        "name": "claude.ai Microsoft Learn",
+        "status": "connected"
+      },
+      {
+        "name": "claude.ai Gmail",
+        "status": "needs-auth"
+      },
+      {
+        "name": "claude.ai Google Calendar",
+        "status": "needs-auth"
+      }
+    ],
+    "permission_denials": []
+  },
+  "model_usage_detail": {
+    "claude-opus-4-6": {
+      "inputTokens": 36,
+      "outputTokens": 16273,
+      "cacheReadInputTokens": 1093272,
+      "cacheCreationInputTokens": 41879,
+      "webSearchRequests": 0,
+      "costUSD": 1.21538475,
+      "contextWindow": 200000,
+      "maxOutputTokens": 64000
+    }
+  },
+  "effort_level": null,
+  "timing": {
+    "grand_total_duration_ms": 331160,
+    "total_api_duration_ms": 252034,
+    "total_execution_duration_ms": 76894,
+    "num_turns": 45
+  },
+  "tokens": {
+    "input_tokens": 36,
+    "output_tokens": 16273,
+    "cache_read_tokens": 1093272,
+    "cache_creation_tokens": 41879,
+    "total_context_consumed": 1135187,
+    "compaction_count": 0
+  },
+  "cost": {
+    "total_cost_usd": 1.21538475,
+    "assumed_input_cost_per_mtok": 15.0,
+    "assumed_output_cost_per_mtok": 75.0,
+    "assumed_cache_read_cost_per_mtok": 1.5,
+    "assumed_cache_write_cost_per_mtok": 18.75
+  },
+  "code_metrics": {
+    "total_lines": 1016,
+    "total_tokens_estimate": 10025,
+    "file_count": 14,
+    "files": [
+      "act-result.txt",
+      "version_bumper.sh",
+      "version_lib.sh",
+      ".github/workflows/semantic-version-bumper.yml",
+      "test/version_bumper.bats",
+      "test/workflow.bats",
+      "test/fixtures/commits_breaking_footer.txt",
+      "test/fixtures/commits_empty.txt",
+      "test/fixtures/commits_major.txt",
+      "test/fixtures/commits_minor.txt",
+      "test/fixtures/commits_no_bump.txt",
+      "test/fixtures/commits_patch.txt",
+      "test/fixtures/package.json",
+      "test/fixtures/version_plain.txt"
+    ]
+  },
+  "quality": {
+    "tests_pass": null,
+    "error_count": 2,
+    "error_details": [
+      "Exit code 1\n1..34\nok 1 parse_version extracts major.minor.patch from plain version string\nok 2 parse_version extracts version from string with v prefix\nok 3 parse_version fails on invalid version stri",
+      "Exit code 1\nhint: Using 'master' as the name for the initial branch. This default branch name\nhint: is subject to change. To configure the initial branch name to use in all\nhint: of your new repositor"
+    ],
+    "actionlint_pass": true,
+    "actionlint_errors": 0,
+    "actionlint_results": [
+      {
+        "file": ".github/workflows/semantic-version-bumper.yml",
+        "passed": true,
+        "errors": ""
+      }
+    ],
+    "act_ran": true,
+    "act_pass": true,
+    "act_duration_ms": 28494,
+    "act_output": "th API\n[Semantic Version Bumper/Version Bump     ]   | \n[Semantic Version Bumper/Version Bump     ]   | new_version=1.1.0\n[Semantic Version Bumper/Version Bump     ]   \u2705  Success - Main Display results [242.998499ms]\n[Semantic Version Bumper/Version Bump     ] \u2b50 Run Complete job\n[Semantic Version Bumper/Version Bump     ] Cleaning up container for job Version Bump\n[Semantic Version Bumper/Version Bump     ]   \u2705  Success - Complete job\n[Semantic Version Bumper/Version Bump     ] \ud83c\udfc1  Job succeeded\n",
+    "act_error": "time=\"2026-04-08T17:36:48-04:00\" level=info msg=\"Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'\"\n",
+    "act_result_txt_exists": true,
+    "areas_of_difficulty": [],
+    "observations": ""
+  },
+  "tool_install": {
+    "tool_install_duration_ms": 0,
+    "tools_installed": [],
+    "install_commands_count": 0
+  },
+  "hooks": {
+    "hook_fires": 14,
+    "hook_errors_caught": 0,
+    "hook_failures": 0,
+    "hook_events": [
+      {
+        "subtype": "hook_started",
+        "hook_id": "90ccbf21-40d8-4ffc-a616-54e4e6eed236",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "90ccbf21-40d8-4ffc-a616-54e4e6eed236",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "720cab61-6728-4ed6-ad16-bc525c33c37e",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "720cab61-6728-4ed6-ad16-bc525c33c37e",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "eec37e31-2651-4d21-9748-9f28ffa1e3d7",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "eec37e31-2651-4d21-9748-9f28ffa1e3d7",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "a344a721-ca2c-4c38-8674-59abd839d91e",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "a344a721-ca2c-4c38-8674-59abd839d91e",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "1cd10cac-7d83-44b7-955d-3d9c88511ad2",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "1cd10cac-7d83-44b7-955d-3d9c88511ad2",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "dd65bad0-33fc-4361-8849-284b0f3503bc",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "dd65bad0-33fc-4361-8849-284b0f3503bc",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "bcb389b7-68b8-4d47-849e-3f1ad6d0130a",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "bcb389b7-68b8-4d47-849e-3f1ad6d0130a",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "57a8709d-31bf-4fb4-93f7-20306ee65fc6",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "57a8709d-31bf-4fb4-93f7-20306ee65fc6",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "0d67656e-a207-43fd-9032-6fda02723dce",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "0d67656e-a207-43fd-9032-6fda02723dce",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "9e79c375-b39a-4ea3-ba1f-0d29eff664b2",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "9e79c375-b39a-4ea3-ba1f-0d29eff664b2",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "eff680f6-9df8-4346-ad67-767eaab86f5c",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "eff680f6-9df8-4346-ad67-767eaab86f5c",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "10cba8ca-52ff-4cda-ab1b-83c0eee0e260",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "10cba8ca-52ff-4cda-ab1b-83c0eee0e260",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "c23810f2-dbc1-473d-927b-e2f00fdb5771",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "c23810f2-dbc1-473d-927b-e2f00fdb5771",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "3fb8e4b6-7f29-4f88-8243-cc767bc37193",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "3fb8e4b6-7f29-4f88-8243-cc767bc37193",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  }
+}
