@@ -20,8 +20,8 @@ from pathlib import Path
 # Constants
 # ---------------------------------------------------------------------------
 
-INSTRUCTIONS_FILE = "benchmark-instructions-v1.md"
-INSTRUCTIONS_VERSION = "v1"
+INSTRUCTIONS_FILE = "benchmark-instructions-v2.md"
+INSTRUCTIONS_VERSION = "v2"
 
 MODELS = {
     "opus": "claude-opus-4-6",
@@ -301,10 +301,25 @@ PROMPT_TEMPLATES = {
         "REQUIREMENTS:\n"
         "1. Use red/green TDD methodology: write a failing test FIRST, then write the minimum code to make it pass, then refactor. Repeat for each piece of functionality.\n"
         "2. Create mocks and test fixtures as necessary for testability.\n"
-        "3. Use .NET 10 file-based apps: write C# files with top-level statements that can be run directly with `dotnet run <file>.cs`. For tests, use a standard test project with `dotnet test`.\n"
-        "4. All tests must be runnable with `dotnet test` and must pass at the end.\n"
+        "3. Use .NET 10 file-based apps — NO .csproj project files. Write single .cs files that run directly:\n"
+        "   - Run code: `dotnet run app.cs` (top-level statements, no project file needed)\n"
+        "   - Add NuGet packages with directives at the top of the file: `#:package PackageName@Version`\n"
+        "   - For tests, create a test project with `dotnet new xunit` and `dotnet test`, OR write a self-contained test runner .cs file\n"
+        "   - Example file-based app:\n"
+        "     ```\n"
+        "     #:package Newtonsoft.Json@13.0.3\n"
+        "     using Newtonsoft.Json;\n"
+        "     Console.WriteLine(JsonConvert.SerializeObject(new {{ hello = \"world\" }}));\n"
+        "     ```\n"
+        "4. All tests must be runnable and must pass at the end.\n"
         "5. Include clear comments explaining your approach.\n"
         "6. Handle errors gracefully with meaningful error messages.\n\n"
+        "IMPORTANT: The .NET 10 SDK is pre-installed. `dotnet run file.cs` works immediately — do NOT create .csproj files for simple apps.\n\n"
+        "PRO TIPS for .NET 10 file-based apps — read these carefully to avoid common errors:\n"
+        "- File ordering: `#:package` directives first, then `using` statements, then top-level statements (executable code), then class/record/enum declarations at the bottom. Violating this order causes CS8803 and CS1529 errors.\n"
+        "- Each .cs file is its own independent compilation unit. You CANNOT reference a class defined in one .cs file from another .cs file. Put all shared types (classes, records, enums) in the same file that uses them.\n"
+        "- For tests: put your implementation classes and test runner code in one self-contained tests.cs file. Duplicate shared types into app.cs if you also need a standalone app.\n"
+        "- There is no implicit project — no .csproj, no namespace resolution across files, no shared references. Each `dotnet run file.cs` is a standalone program.\n\n"
         "Create your solution in the current working directory. Start by writing your first failing test."
     ),
 }
@@ -835,14 +850,20 @@ def run_single_task(
         "-p", prompt,
         "--model", model_id,
         "--output-format", "stream-json",
-        "--permission-mode", "acceptEdits",
-        "--allowedTools", "Bash(command:*)",
+        "--dangerously-skip-permissions",
         "--verbose",
     ]
 
     # Record timing
     timestamp_start = datetime.now(timezone.utc).isoformat()
     wall_start = time.time()
+
+    # Ensure dotnet and pwsh are on PATH for the agent subprocess
+    env = os.environ.copy()
+    dotnet_root = Path.home() / ".dotnet"
+    if dotnet_root.exists():
+        env["DOTNET_ROOT"] = str(dotnet_root)
+        env["PATH"] = f"{dotnet_root}:{env.get('PATH', '')}"
 
     # Execute
     try:
@@ -852,6 +873,7 @@ def run_single_task(
             capture_output=True,
             text=True,
             timeout=1800,  # 30 minutes
+            env=env,
         )
         raw_stdout = result.stdout
         raw_stderr = result.stderr
