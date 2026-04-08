@@ -1,0 +1,125 @@
+[Tool: Bash] ls /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-sonnet/ && cat /home/passp/.claude/projects/-home-passp-repos-compare-agent-scripting-by-language/memory/MEMORY.md 2>/dev/null || echo "No MEMORY.md found"
+[Result] benchmark-instructions-v2.md
+No MEMORY.md found
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-sonnet/benchmark-instructions-v2.md"}
+[Result] 1	# Benchmark Instructions v2
+2	
+3	**Version**: v2
+4	**Date**: 2026-04-07
+5	**Purpose**: Measure how well Claude Code agents perform scripting tasks across different language constraints.
+6	
+7	**Changes from v1**:
+8	- All permissions are now bypassed (`--dangerously-skip-permissions`) — no more tool-approval errors
+9	- .NET 10 SDK, PowerShell, and Pester are pre-installed — no tool installation overhead
+10	- C# mode updated to use .NET 10 file-based apps (`dotnet run file.cs`) — no .csproj scaffolding needed
+11	
+12	## Methodology
+13	
+14	### Overview
+15	
+16	Each scripting task is executed by a Claude Code agent under 4 different language constraints ("modes") and with 2 different models, yielding **8 runs per task**. Agents receive only the prompt — no conversation context, no prior results.
+17	
+18	### Models
+19	
+20	| Model ID | Short Name | Input $/Mtok | Output $/Mtok | Cache Read $/Mtok | Cache Write $/Mtok |
+21	|----------|------------|-------------|--------------|------------------
+[Assistant] Now I'll build the solution using strict TDD. First, I'll write a failing test, then implement code to make it pass, and repeat.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-sonnet/ArtifactCleanup.Tests.ps1", "content": "# Artifact
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-sonnet/ArtifactCleanup.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Now run the tests to confirm they fail (red phase):
+[Tool: Bash] pwsh -Command "Invoke-Pester './ArtifactCleanup.Tests.ps1' -Output Minimal 2>&1" | head -30
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[91m[-] Discovery in /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-sonnet/ArtifactCleanup.Tests.ps1 failed with:[0m
+[91mSystem.Management.Automation.ParameterBindingException: A parameter cannot be found that matches parameter name 'Latest'.
+[91m   at System.Management.Automation.ExceptionHandlingOps.CheckActionPreference(FunctionContext funcContext, Exception exception) in /root/parts/powershell/build/src/System.Management.Automation/engine/runtime/Operations/MiscOps.cs:line 1786
+[91m   at System.Management.Automation.Interpreter.ActionCallInstruction`2.Run(InterpretedFrame frame) in /root/parts/powershell/build/src/System.Management.Automation/engine/interpreter/CallInstruction.Generated.cs:line 504
+[91m   at System.Management.Automation.Interpreter.EnterTryCatchFinallyInstruction.Run(InterpretedFrame frame) in /root/parts/powershell/build/src/System.M
+[Assistant] The `Set-StrictMode` syntax is wrong — the parameter is `-Version`, not `-Latest`. Fix the test file and then write the module:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-sonnet/ArtifactCleanup.Tests.ps1", 
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-sonnet/ArtifactCleanup.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester './ArtifactCleanup.Tests.ps1' -Output Minimal 2>&1" | head -20
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[91m[-] Discovery in /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-sonnet/ArtifactCleanup.Tests.ps1 failed with:[0m
+[91mSystem.IO.FileNotFoundException: The specified module '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-sonnet/ArtifactCleanup.psm1' was not loaded because no valid module file was found in any module directory.
+[91mat <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-sonnet/ArtifactCleanup.Tests.ps1: line 19
+[91mat <ScriptBlock>, /home/passp/.local/share/powershell/Modules/Pester/5.7.1/Pester.psm1: line 3090
+[91mat Invoke-File, /home/passp/.local/share/powershell/Modules/Pester/5.7.1/Pester.psm1: line 3099
+[91mat Invoke-BlockContainer, /home/passp/.local/share/power
+[Assistant] Tests fail because the module doesn't exist yet — that's the **red** phase. Now write the implementation (green phase):
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-sonnet/ArtifactCleanup.psm1", "content": "# ArtifactClean
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-sonnet/ArtifactCleanup.psm1 (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester './ArtifactCleanup.Tests.ps1' -Output Normal 2>&1"
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[91m[-] Discovery in /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-sonnet/ArtifactCleanup.Tests.ps1 failed with:[0m
+[91mSystem.Management.Automation.ActionPreferenceStopException: The running command stopped because the preference variable "ErrorActionPreference" or common parameter is set to Stop: At /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-sonnet/ArtifactCleanup.psm1:261 char:23
+[91m+         "Deletion Plan$dryRunLabel: " +
+[91m+                       ~~~~~~~~~~~~~
+[91mVariable reference is not valid. ':' was not followed by a valid variable name character. Consider using ${} to delimit the name.
+[91m   at System.Management.Automation.ExceptionHandlingOps.CheckActionPreference(FunctionContext funcContext, Exception exception) in /root/parts/powershell/build/src/Syst
+[Assistant] Fix the string interpolation issue — `$dryRunLabel:` is parsed as a variable scope reference:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-sonnet/ArtifactCleanup.psm1", "old_
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-sonnet/ArtifactCleanup.psm1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester './ArtifactCleanup.Tests.ps1' -Output Normal 2>&1"
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 30 tests in 162ms.[0m
+[95mRunning tests.[0m
+[91m[-] Invoke-AgePolicy.returns empty array when nothing exceeds max age[0m[90m 36ms (35ms|2ms)[0m
+[91m Expected an empty collection, but got collection with size 1 @($null).
+[91m at $toDelete | Should -HaveCount 0, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-sonnet/ArtifactCleanup.Tests.ps1:94
+[91m at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-sonnet/ArtifactCleanup.Tests.ps1:94[0m
+[91m[-] Invoke-AgePolicy.returns all artifacts when all exceed max age[0m[90m 10ms (10ms|1ms)[0m
+[91m Expected a collection with size 3, but got collection with size 2 @(@{Name=old-artifact.zip; SizeBytes=500; CreatedAt=12/01/2025 00:00:00; WorkflowRunId=run-1}, @{Name=ancient-artifact.zip; SizeBytes=
+[Assistant] Three failures to fix:
+1. Age cutoff should use `-le` (equal date is also expired) 
+2. `Where-Object` returning single item loses `.Count` under strict mode — wrap all in `@()`
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-sonnet/ArtifactCleanup.psm1", "old_
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-sonnet/ArtifactCleanup.psm1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-sonnet/ArtifactCleanup.psm1", "old_
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-sonnet/ArtifactCleanup.psm1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester './ArtifactCleanup.Tests.ps1' -Output Normal 2>&1"
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 30 tests in 162ms.[0m
+[95mRunning tests.[0m
+[32m[+] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-sonnet/ArtifactCleanup.Tests.ps1[0m[90m 825ms (393ms|294ms)[0m
+[97mTests completed in 837ms[0m
+[32mTests Passed: 30, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Assistant] All 30 tests pass. Let me do a quick final verification of the file structure:
+[Tool: Bash] ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-sonnet/
+[Result] total 60
+drwxr-xr-x 2 passp passp  4096 Apr  8 06:11 .
+drwxr-xr-x 8 passp passp  4096 Apr  8 06:08 ..
+-rw-r--r-- 1 passp passp 14758 Apr  8 06:09 ArtifactCleanup.Tests.ps1
+-rw-r--r-- 1 passp passp 12675 Apr  8 06:11 ArtifactCleanup.psm1
+-rw-r--r-- 1 passp passp 17086 Apr  7 22:53 benchmark-instructions-v2.md
+[Assistant] All 30 tests pass. Here's what was built:
+
+---
+
+**Files created:**
+- `ArtifactCleanup.psm1` — the implementation module
+- `ArtifactCleanup.Tests.ps1` — the Pester test suite
+
+**TDD cycle followed:**
+1. Wrote all tests first → module missing → **red** (discovery failure)
+2. Fixed `Set-StrictMode -Version Latest` syntax (the param is `-Version`, not bare `-Latest`)
+3. Wrote `ArtifactCleanup.psm1` → 27/30 pass
+4. Fixed two bugs exposed by tests → all 30 pass (**green**)
+
+**Functions implemented (all with strict-mode requirements):**
+
+| Function | Description |
+|---|---|
+| `New-Artifact` | Validates and creates a typed artifact record |
+| `New-RetentionPolicy` | Creates policy config with defaults + validation |
+| `Invoke-AgePolicy` | Flags artifacts older than `MaxAgeDays` |
+| `Invoke-SizePolicy` | Evicts oldest artifacts until total size ≤ limit |
+| `Invoke-KeepLatestPolicy` | Keeps only the N most recent per `WorkflowRunId` |
+| `New-DeletionPlan` | Unions all three policies, deduplicates, produces plan |
+| `Format-DeletionPlanSummary` | Renders plan as human-readable report with DRY RUN label |
+
+**Strict-mode compliance:** every function has `[CmdletBinding()]`, `[OutputType()]`, explicitly-typed parameters, `Set-StrictMode -Version Latest`, and `$ErrorActionPreference = 'Stop'`. Arrays are always wrapped in `@()` to prevent `.Count` failures on scalars under strict mode.
