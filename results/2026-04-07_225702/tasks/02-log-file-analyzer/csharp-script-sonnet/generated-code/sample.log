@@ -1,0 +1,29 @@
+# sample.log — Mixed-format log fixture for testing the log analyzer.
+# Contains syslog-style lines, JSON-structured lines, INFO noise, and
+# a few malformed lines that the parser must handle gracefully.
+
+Apr  7 08:01:00 prod-server webapp[2001]: INFO Service started (PID 2001)
+Apr  7 08:15:30 prod-server webapp[2001]: ERROR OutOfMemory: Cannot allocate 8192 bytes for request buffer
+Apr  7 08:16:05 prod-server webapp[2001]: INFO Attempting garbage collection
+{"timestamp":"2026-04-07T08:30:00Z","level":"ERROR","type":"DatabaseError","message":"Connection pool exhausted after 30s"}
+Apr  7 09:00:12 prod-server webapp[2001]: ERROR OutOfMemory: Cannot allocate 16384 bytes for image cache
+Apr  7 09:15:00 prod-server webapp[2001]: ERROR FileNotFound: /var/log/webapp/archive-2026-04-06.log
+Apr  7 09:30:45 prod-server webapp[2001]: WARNING HighMemory: Memory usage at 92% (threshold: 80%)
+{"timestamp":"2026-04-07T09:45:00Z","level":"WARNING","type":"SlowQuery","message":"SELECT * from orders took 5243ms (threshold: 1000ms)"}
+{"timestamp":"2026-04-07T10:00:00Z","level":"ERROR","type":"DatabaseError","message":"Deadlock detected on table 'sessions'; transaction rolled back"}
+Apr  7 10:30:00 prod-server webapp[2001]: ERROR NetworkTimeout: Upstream API call to payments-svc timed out after 30s
+Apr  7 11:00:00 prod-server webapp[2001]: INFO Daily maintenance window started
+Apr  7 11:30:22 prod-server webapp[2001]: ERROR OutOfMemory: Cannot allocate 32768 bytes for thumbnail generation
+{"timestamp":"2026-04-07T12:00:00Z","level":"ERROR","type":"PermissionDenied","message":"Cannot write to /var/log/webapp; check directory permissions"}
+Apr  7 12:30:01 prod-server webapp[2001]: WARNING HighMemory: Memory usage at 95% — triggering eviction
+{"timestamp":"2026-04-07T13:00:00Z","level":"WARNING","type":"SlowQuery","message":"UPDATE sessions SET last_seen=? took 8100ms"}
+Apr  7 13:30:00 prod-server webapp[2001]: ERROR FileNotFound: /etc/webapp/config-overrides.json
+Apr  7 14:00:00 prod-server webapp[2001]: INFO Health check passed
+{"timestamp":"2026-04-07T14:30:00Z","level":"ERROR","type":"NetworkTimeout","message":"gRPC call to auth-service failed: deadline exceeded"}
+Apr  7 15:00:00 prod-server webapp[2001]: ERROR DatabaseError: Prepared statement execution failed: column count mismatch
+this_line_is_malformed_and_should_be_silently_ignored
+{"invalid_json_object_missing_required_fields": true, "noise": 42}
+Apr  7 15:30:00 prod-server webapp[2001]: INFO Reloading configuration
+Apr  7 16:00:00 prod-server webapp[2001]: ERROR OutOfMemory: Cannot allocate 65536 bytes for video transcoding
+{"timestamp":"2026-04-07T16:30:00Z","level":"WARNING","type":"HighMemory","message":"Heap at 97%; forcing full GC"}
+Apr  7 17:00:00 prod-server webapp[2001]: INFO Shutting down gracefully
