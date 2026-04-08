@@ -1,0 +1,219 @@
+[Assistant] Let me start by checking the current directory, then begin the TDD cycle.
+[Tool: Bash] ls /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/01-csv-report-generator/csharp-script-sonnet/ && dotnet --version
+[Result ERROR] Exit code 127
+benchmark-instructions-v2.md
+/bin/bash: line 1: dotnet: command not found
+[Tool: Bash] which dotnet || find /usr /opt /home -name "dotnet" -type f 2>/dev/null | head -5
+[Result] /home/passp/repos/compare-agent-scripting-by-language/results/2026-04-02_163146/tasks/02-log-file-analyzer/csharp-script-sonnet/generated-code/dotnet
+/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/02-log-file-analyzer/csharp-script-sonnet/dotnet
+/home/passp/.dotnet/dotnet
+[Tool: Bash] export PATH="$PATH:/home/passp/.dotnet" && dotnet --version
+[Result] 10.0.201
+[Assistant] Good, .NET 10 is available. Now I'll begin TDD — **RED phase first**: write tests with stub implementations that throw `NotImplementedException`.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/01-csv-report-generator/csharp-script-sonnet/tests.cs", "content": "// ===============================
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/01-csv-report-generator/csharp-script-sonnet/tests.cs (file state is current in your context — no need to Read it back)
+[Assistant] Now run the tests to see the **RED** phase:
+[Tool: Bash] export PATH="$PATH:/home/passp/.dotnet" && dotnet run tests.cs 2>&1
+[Result ERROR] Exit code 1
+/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/01-csv-report-generator/csharp-script-sonnet/tests.cs(83,1): error CS8803: Top-level statements must precede namespace and type declarations.
+
+The build failed. Fix the build errors and run again.
+[Assistant] The top-level statements must precede type declarations in C# file-based apps. I need to restructure — top-level code first, then type/class declarations at the bottom.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/01-csv-report-generator/csharp-script-sonnet/tests.cs", "content": "// ===============================
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/01-csv-report-generator/csharp-script-sonnet/tests.cs has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] export PATH="$PATH:/home/passp/.dotnet" && dotnet run tests.cs 2>&1
+[Result ERROR] Exit code 1
+CSV Report Generator — Test Suite
+════════════════════════════════════════
+
+Test 1: CSV Parsing from string
+───────────────────────────────
+  [FAIL] Not implemented: RED: CSV parsing not yet implemented
+
+Test 2: CSV Parsing from file
+─────────────────────────────
+  [FAIL] Not implemented: RED: File reading not yet implemented
+
+Test 3: Missing file throws FileNotFoundException
+─────────────────────────────────────────────────
+  [FAIL] Not implemented: RED: File reading not yet implemented
+
+Test 4: Filter active employees
+───────────────────────────────
+  [FAIL] Not implemented: RED: Filtering not yet implemented
+
+Test 5: Department statistics
+─────────────────────────────
+  [FAIL] Not implemented: RED: Department stats not yet implemented
+
+Test 6: Overall statistics
+──────────────────────────
+  [FAIL] Not implemented: RED: Overall stats not yet implemented
+
+Test 7: Report formatting
+─────────────────────────
+  [FAIL] Not implemented: RED: Report formatting not yet implemente
+[Assistant] **RED phase confirmed** — all 10 tests fail. Now implement the **GREEN phase** by replacing the stubs with real implementations:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/01-csv-report-generator/csharp-script-sonnet/tests.cs", "old_string": "// ======
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/01-csv-report-generator/csharp-script-sonnet/tests.cs has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] export PATH="$PATH:/home/passp/.dotnet" && dotnet run tests.cs 2>&1
+[Result] CSV Report Generator — Test Suite
+════════════════════════════════════════
+
+Test 1: CSV Parsing from string
+───────────────────────────────
+  [PASS] Parses 3 rows
+  [PASS] Name parsed correctly
+  [PASS] Department parsed correctly
+  [PASS] Salary parsed as decimal
+  [PASS] HireDate parsed correctly
+  [PASS] Status Active parsed
+  [PASS] Status Inactive parsed
+  [PASS] Second employee name
+
+Test 2: CSV Parsing from file
+─────────────────────────────
+  [PASS] Parsed 1 employee from file
+  [PASS] Name from file
+  [PASS] Department from file
+  [PASS] Salary from file
+
+Test 3: Missing file throws FileNotFoundException
+─────────────────────────────────────────────────
+  [PASS] FileNotFoundException thrown
+
+Test 4: Filter active employees
+───────────────────────────────
+  [PASS] Returns 2 active employees
+  [PASS] All returned are Active
+  [PASS] Alice included
+  [PASS] Bob excluded
+  [PASS] Dave excluded
+
+Test 5: Department statistics
+─────────────────────────────
+  [PASS] Two departments re
+[Assistant] **GREEN phase** — 48 assertions across 10 test suites, all passing. Now create the sample CSV test fixture and the main application:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/01-csv-report-generator/csharp-script-sonnet/employees.csv", "content": "name,department,salary,hire_d
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/01-csv-report-generator/csharp-script-sonnet/employees.csv (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/01-csv-report-generator/csharp-script-sonnet/app.cs", "content": "// =================================
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/01-csv-report-generator/csharp-script-sonnet/app.cs (file state is current in your context — no need to Read it back)
+[Tool: Bash] export PATH="$PATH:/home/passp/.dotnet" && dotnet run app.cs 2>&1
+[Result] Employee CSV Report Generator
+========================================
+Input:  employees.csv
+Output: report.txt
+
+Reading employee data...
+  Loaded 20 employee records.
+  16 active employees found.
+Computing statistics...
+  3 department(s) computed.
+Report written to: report.txt
+
+============================================================
+EMPLOYEE SALARY REPORT
+Generated: 2026-04-08 06:53:17
+============================================================
+
+OVERALL STATISTICS
+────────────────────────────────────────────────────────────
+  Total Employees:   20
+  Active Employees:  16
+  Average Salary:    ¤84,093.75
+  Min Salary:        ¤65,000.00
+  Max Salary:        ¤110,000.00
+
+DEPARTMENT BREAKDOWN
+────────────────────────────────────────────────────────────
+
+  Department:      Engineering
+  Headcount:       7
+  Average Salary:  ¤96,642.86
+  Min Salary:      ¤88,500.00
+  Max Salary:      ¤110,000.00
+
+  Department:      HR
+  Headcount:       4
+  Average Salary:  ¤69,000.00
+  Min Salary:    
+[Assistant] Everything works. Let me do a final confirmation run of the tests:
+[Tool: Bash] export PATH="$PATH:/home/passp/.dotnet" && dotnet run tests.cs 2>&1
+[Result] CSV Report Generator — Test Suite
+════════════════════════════════════════
+
+Test 1: CSV Parsing from string
+───────────────────────────────
+  [PASS] Parses 3 rows
+  [PASS] Name parsed correctly
+  [PASS] Department parsed correctly
+  [PASS] Salary parsed as decimal
+  [PASS] HireDate parsed correctly
+  [PASS] Status Active parsed
+  [PASS] Status Inactive parsed
+  [PASS] Second employee name
+
+Test 2: CSV Parsing from file
+─────────────────────────────
+  [PASS] Parsed 1 employee from file
+  [PASS] Name from file
+  [PASS] Department from file
+  [PASS] Salary from file
+
+Test 3: Missing file throws FileNotFoundException
+─────────────────────────────────────────────────
+  [PASS] FileNotFoundException thrown
+
+Test 4: Filter active employees
+───────────────────────────────
+  [PASS] Returns 2 active employees
+  [PASS] All returned are Active
+  [PASS] Alice included
+  [PASS] Bob excluded
+  [PASS] Dave excluded
+
+Test 5: Department statistics
+─────────────────────────────
+  [PASS] Two departments re
+[Assistant] All 48 assertions pass. Here's a summary of what was built:
+
+---
+
+## TDD Cycle Summary
+
+**RED** — Wrote `tests.cs` with 10 test suites and stub implementations throwing `NotImplementedException`. All tests failed (0/48).
+
+**GREEN** — Replaced stubs with real implementations in-place. All 48 assertions pass.
+
+**REFACTOR** — `app.cs` was written cleanly using the proven implementation with clear separation of concerns.
+
+---
+
+## Files
+
+| File | Purpose |
+|------|---------|
+| `tests.cs` | Self-contained test runner (48 assertions, 10 suites) + implementation |
+| `app.cs` | Main CLI app — reads CSV, generates and writes report |
+| `employees.csv` | 20-row test fixture (mix of Active/Inactive, 3 departments) |
+| `report.txt` | Generated output from running `app.cs` |
+
+## How to run
+
+```bash
+# Run tests
+dotnet run tests.cs
+
+# Run the app (default: employees.csv → report.txt)
+dotnet run app.cs
+
+# Custom input/output
+dotnet run app.cs my-data.csv my-report.txt
+```
+
+## Key design decisions
+
+- **CsvParser** handles malformed rows gracefully with warnings (skips, doesn't crash)
+- **FilterActiveEmployees** is case-insensitive so `"active"` and `"ACTIVE"` both work
+- **ComputeOverallStats** guards against divide-by-zero when no active employees exist
+- **WriteReportToFile** creates parent directories automatically
