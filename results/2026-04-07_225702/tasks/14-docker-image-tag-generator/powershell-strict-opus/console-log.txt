@@ -1,0 +1,613 @@
+[Assistant] 
+
+I'll start by examining the workspace and then follow TDD methodology to build the Docker image tag generator.
+[Tool: Bash] ls /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/
+[Result] benchmark-instructions-v2.md
+[Tool: Bash] pwsh -Command 'Get-Module -ListAvailable Pester | Select-Object Version' 2>&1 | head -5
+[Result] [32;1mVersion[0m
+[32;1m-------[0m
+5.7.1
+[Assistant] Good, Pester 5.7.1 is available. Let me start with the first failing test.
+
+## TDD Cycle 1: Main branch produces "latest" tag
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.Tests.ps1", "content": "Set-S
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Run the test — it should fail since the function doesn't exist yet.
+[Tool: Bash] pwsh -Command 'Invoke-Pester -Path ./Get-DockerImageTags.Tests.ps1 -Output Detailed' 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[91m[-] Discovery in /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.Tests.ps1 failed with:[0m
+[91mSystem.Management.Automation.ParameterBindingException: A parameter cannot be found that matches parameter name 'Latest'.
+[91m   at System.Management.Automation.ExceptionHandlingOps.CheckActionPreference(FunctionContext funcContext, Exception exception) in /root/parts/powershell/build/src/System.Management.Automation/engine/runtime/Operations/MiscOps.cs:line 1786
+[91m   at System.Management.Automation.Interpreter.ActionCallInstruction`2.Run(InterpretedFrame frame) in /root/parts/powershell/build/src/System.Management.Automation/engine/interpreter/CallInstruction.Generated.cs:line 504
+[91m   at System.Management.Automation.Interpreter.EnterTryCatchFinallyInstruction.Run(InterpretedFrame frame) in /root/parts/p
+[Assistant] The `Set-StrictMode -Latest` at the test file top level conflicts with Pester internals. I'll move it inside the `BeforeAll` block for the test file, and keep it strict in the source file.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.Tests.p
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command 'Invoke-Pester -Path ./Get-DockerImageTags.Tests.ps1 -Output Detailed' 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 2 tests in 128ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.Tests.ps1'[0m
+[91m[-] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.Tests.ps1 failed with:[0m
+[91mCommandNotFoundException: The term '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.ps1' is not recognized as a name of a cmdlet, function, script file, or executable program.
+[91mCheck the spelling of the name, or if a path was included, verify that the path is correct and try again.
+[91mat <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-la
+[Assistant] Tests fail because the source file doesn't exist. Now I'll write the minimum implementation.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.ps1", "content": "Set-StrictM
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command 'Invoke-Pester -Path ./Get-DockerImageTags.Tests.ps1 -Output Detailed' 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 2 tests in 125ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.Tests.ps1'[0m
+[91m[-] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.Tests.ps1 failed with:[0m
+[91mParameterBindingException: A parameter cannot be found that matches parameter name 'Latest'.
+[91mat <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.ps1:1
+[91mat <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.Tests.ps
+[Assistant] The parameter is `-Version Latest`, not `-Latest`.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.ps1", "
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command 'Invoke-Pester -Path ./Get-DockerImageTags.Tests.ps1 -Output Detailed' 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 2 tests in 126ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.Tests.ps1'[0m
+[92mDescribing Get-DockerImageTags[0m
+[96m Context Main branch builds[0m
+[32m   [+] Should return "latest" tag for the main branch[0m[90m 76ms (51ms|25ms)[0m
+[32m   [+] Should return "latest" tag for the master branch[0m[90m 3ms (2ms|1ms)[0m
+[97mTests completed in 389ms[0m
+[32mTests Passed: 2, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Assistant] 2 tests pass. 
+
+## TDD Cycle 2: PR tags
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.Tests.ps1"}
+[Result] 1	# Import the module under test; strict mode is enforced in the source file itself
+2	BeforeAll {
+3	    . "$PSScriptRoot/Get-DockerImageTags.ps1"
+4	}
+5	
+6	Describe 'Get-DockerImageTags' {
+7	
+8	    Context 'Main branch builds' {
+9	        It 'Should return "latest" tag for the main branch' {
+10	            [hashtable]$context = @{
+11	                BranchName = 'main'
+12	                CommitSha  = 'abc1234567890def'
+13	                Tags       = @()
+14	                PrNumber   = $null
+15	            }
+16	            [string[]]$result = Get-DockerImageTags @context
+17	            $result | Should -Contain 'latest'
+18	        }
+19	
+20	        It 'Should return "latest" tag for the master branch' {
+21	            [hashtable]$context = @{
+22	                BranchName = 'master'
+23	                CommitSha  = 'abc1234567890def'
+24	                Tags       = @()
+25	                PrNumber   = $null
+26	            }
+27	            [string[]]$result = Get-DockerImageTags @context
+28
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.Tests.p
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command 'Invoke-Pester -Path ./Get-DockerImageTags.Tests.ps1 -Output Detailed' 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 4 tests in 135ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.Tests.ps1'[0m
+[92mDescribing Get-DockerImageTags[0m
+[96m Context Main branch builds[0m
+[32m   [+] Should return "latest" tag for the main branch[0m[90m 74ms (49ms|25ms)[0m
+[32m   [+] Should return "latest" tag for the master branch[0m[90m 3ms (2ms|1ms)[0m
+[96m Context Pull request builds[0m
+[91m   [-] Should return "pr-{number}" tag when PrNumber is provided[0m[90m 30ms (23ms|7ms)[0m
+[91m    Expected 'pr-42' to be found in collection $null, but it was not found.
+[91m    at $result | Should -Contain 'pr-42', /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-Doc
+[Assistant] 1 failing test — `pr-42` not found. Now add the PR tag logic.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.ps1"}
+[Result] 1	Set-StrictMode -Version Latest
+2	$ErrorActionPreference = 'Stop'
+3	
+4	<#
+5	.SYNOPSIS
+6	    Generates Docker image tags based on git context (branch, commit, tags, PR number).
+7	
+8	.DESCRIPTION
+9	    Follows common Docker tagging conventions:
+10	      - "latest" for main/master branches
+11	      - "pr-{number}" for pull requests
+12	      - "v{semver}" for semver tags
+13	      - "{branch}-{short-sha}" for feature branches
+14	    All tags are sanitized: lowercased, special characters replaced with hyphens.
+15	#>
+16	
+17	function Get-DockerImageTags {
+18	    [CmdletBinding()]
+19	    [OutputType([string[]])]
+20	    param(
+21	        [Parameter(Mandatory = $true)]
+22	        [string]$BranchName,
+23	
+24	        [Parameter(Mandatory = $true)]
+25	        [string]$CommitSha,
+26	
+27	        [Parameter(Mandatory = $false)]
+28	        [AllowEmptyCollection()]
+29	        [string[]]$Tags = @(),
+30	
+31	        [Parameter(Mandatory = $false)]
+32	        [AllowNull()]
+33	        [Nullable[int]]$PrNumbe
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.ps1", "
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command 'Invoke-Pester -Path ./Get-DockerImageTags.Tests.ps1 -Output Detailed' 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 4 tests in 124ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.Tests.ps1'[0m
+[92mDescribing Get-DockerImageTags[0m
+[96m Context Main branch builds[0m
+[32m   [+] Should return "latest" tag for the main branch[0m[90m 72ms (48ms|24ms)[0m
+[32m   [+] Should return "latest" tag for the master branch[0m[90m 2ms (2ms|1ms)[0m
+[96m Context Pull request builds[0m
+[32m   [+] Should return "pr-{number}" tag when PrNumber is provided[0m[90m 11ms (5ms|6ms)[0m
+[32m   [+] Should NOT return "latest" for a PR on a feature branch[0m[90m 3ms (3ms|1ms)[0m
+[97mTests completed in 421ms[0m
+[32mTests Passed: 4, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Assistant] 4 pass.
+
+## TDD Cycle 3: Semver tags
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.Tests.ps1"}
+[Result] 1	# Import the module under test; strict mode is enforced in the source file itself
+2	BeforeAll {
+3	    . "$PSScriptRoot/Get-DockerImageTags.ps1"
+4	}
+5	
+6	Describe 'Get-DockerImageTags' {
+7	
+8	    Context 'Main branch builds' {
+9	        It 'Should return "latest" tag for the main branch' {
+10	            [hashtable]$context = @{
+11	                BranchName = 'main'
+12	                CommitSha  = 'abc1234567890def'
+13	                Tags       = @()
+14	                PrNumber   = $null
+15	            }
+16	            [string[]]$result = Get-DockerImageTags @context
+17	            $result | Should -Contain 'latest'
+18	        }
+19	
+20	        It 'Should return "latest" tag for the master branch' {
+21	            [hashtable]$context = @{
+22	                BranchName = 'master'
+23	                CommitSha  = 'abc1234567890def'
+24	                Tags       = @()
+25	                PrNumber   = $null
+26	            }
+27	            [string[]]$result = Get-DockerImageTags @context
+28
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.Tests.p
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command 'Invoke-Pester -Path ./Get-DockerImageTags.Tests.ps1 -Output Detailed' 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 7 tests in 136ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.Tests.ps1'[0m
+[92mDescribing Get-DockerImageTags[0m
+[96m Context Main branch builds[0m
+[32m   [+] Should return "latest" tag for the main branch[0m[90m 75ms (49ms|26ms)[0m
+[32m   [+] Should return "latest" tag for the master branch[0m[90m 3ms (2ms|1ms)[0m
+[96m Context Pull request builds[0m
+[32m   [+] Should return "pr-{number}" tag when PrNumber is provided[0m[90m 6ms (4ms|2ms)[0m
+[32m   [+] Should NOT return "latest" for a PR on a feature branch[0m[90m 4ms (3ms|1ms)[0m
+[96m Context Semver tag builds[0m
+[91m   [-] Should return "v1.2.3" for a semver git tag[0m[90m 28ms (26ms|2ms)[0m
+[91m    Expected 'v1.2.3' to be found in collection late
+[Assistant] 3 failing as expected. Now implement semver tag handling.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.ps1", "
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command 'Invoke-Pester -Path ./Get-DockerImageTags.Tests.ps1 -Output Detailed' 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 7 tests in 144ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.Tests.ps1'[0m
+[92mDescribing Get-DockerImageTags[0m
+[96m Context Main branch builds[0m
+[32m   [+] Should return "latest" tag for the main branch[0m[90m 75ms (48ms|28ms)[0m
+[32m   [+] Should return "latest" tag for the master branch[0m[90m 2ms (2ms|1ms)[0m
+[96m Context Pull request builds[0m
+[32m   [+] Should return "pr-{number}" tag when PrNumber is provided[0m[90m 6ms (5ms|1ms)[0m
+[32m   [+] Should NOT return "latest" for a PR on a feature branch[0m[90m 4ms (3ms|1ms)[0m
+[96m Context Semver tag builds[0m
+[32m   [+] Should return "v1.2.3" for a semver git tag[0m[90m 9ms (8ms|2ms)[0m
+[32m   [+] Should return multiple semver tags when present
+[Assistant] 7 pass.
+
+## TDD Cycle 4: Feature branch tags ({branch}-{short-sha})
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.Tests.ps1"}
+[Result] 1	# Import the module under test; strict mode is enforced in the source file itself
+2	BeforeAll {
+3	    . "$PSScriptRoot/Get-DockerImageTags.ps1"
+4	}
+5	
+6	Describe 'Get-DockerImageTags' {
+7	
+8	    Context 'Main branch builds' {
+9	        It 'Should return "latest" tag for the main branch' {
+10	            [hashtable]$context = @{
+11	                BranchName = 'main'
+12	                CommitSha  = 'abc1234567890def'
+13	                Tags       = @()
+14	                PrNumber   = $null
+15	            }
+16	            [string[]]$result = Get-DockerImageTags @context
+17	            $result | Should -Contain 'latest'
+18	        }
+19	
+20	        It 'Should return "latest" tag for the master branch' {
+21	            [hashtable]$context = @{
+22	                BranchName = 'master'
+23	                CommitSha  = 'abc1234567890def'
+24	                Tags       = @()
+25	                PrNumber   = $null
+26	            }
+27	            [string[]]$result = Get-DockerImageTags @context
+28
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.Tests.p
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command 'Invoke-Pester -Path ./Get-DockerImageTags.Tests.ps1 -Output Detailed' 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 10 tests in 136ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.Tests.ps1'[0m
+[92mDescribing Get-DockerImageTags[0m
+[96m Context Main branch builds[0m
+[32m   [+] Should return "latest" tag for the main branch[0m[90m 76ms (49ms|28ms)[0m
+[32m   [+] Should return "latest" tag for the master branch[0m[90m 3ms (2ms|1ms)[0m
+[96m Context Pull request builds[0m
+[32m   [+] Should return "pr-{number}" tag when PrNumber is provided[0m[90m 6ms (5ms|1ms)[0m
+[32m   [+] Should NOT return "latest" for a PR on a feature branch[0m[90m 4ms (3ms|1ms)[0m
+[96m Context Semver tag builds[0m
+[32m   [+] Should return "v1.2.3" for a semver git tag[0m[90m 9ms (8ms|2ms)[0m
+[32m   [+] Should return multiple semver tags when presen
+[Assistant] 3 failing. Now implement the branch-sha tag and the sanitization helper.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.ps1"}
+[Result] 1	Set-StrictMode -Version Latest
+2	$ErrorActionPreference = 'Stop'
+3	
+4	<#
+5	.SYNOPSIS
+6	    Generates Docker image tags based on git context (branch, commit, tags, PR number).
+7	
+8	.DESCRIPTION
+9	    Follows common Docker tagging conventions:
+10	      - "latest" for main/master branches
+11	      - "pr-{number}" for pull requests
+12	      - "v{semver}" for semver tags
+13	      - "{branch}-{short-sha}" for feature branches
+14	    All tags are sanitized: lowercased, special characters replaced with hyphens.
+15	#>
+16	
+17	function Get-DockerImageTags {
+18	    [CmdletBinding()]
+19	    [OutputType([string[]])]
+20	    param(
+21	        [Parameter(Mandatory = $true)]
+22	        [string]$BranchName,
+23	
+24	        [Parameter(Mandatory = $true)]
+25	        [string]$CommitSha,
+26	
+27	        [Parameter(Mandatory = $false)]
+28	        [AllowEmptyCollection()]
+29	        [string[]]$Tags = @(),
+30	
+31	        [Parameter(Mandatory = $false)]
+32	        [AllowNull()]
+33	        [Nullable[int]]$PrNumbe
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.ps1", "
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Now add the branch-sha tag generation at the end of the function:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.ps1", "
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command 'Invoke-Pester -Path ./Get-DockerImageTags.Tests.ps1 -Output Detailed' 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 10 tests in 130ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.Tests.ps1'[0m
+[92mDescribing Get-DockerImageTags[0m
+[96m Context Main branch builds[0m
+[32m   [+] Should return "latest" tag for the main branch[0m[90m 89ms (57ms|32ms)[0m
+[32m   [+] Should return "latest" tag for the master branch[0m[90m 3ms (2ms|1ms)[0m
+[96m Context Pull request builds[0m
+[32m   [+] Should return "pr-{number}" tag when PrNumber is provided[0m[90m 6ms (5ms|1ms)[0m
+[32m   [+] Should NOT return "latest" for a PR on a feature branch[0m[90m 5ms (3ms|1ms)[0m
+[96m Context Semver tag builds[0m
+[32m   [+] Should return "v1.2.3" for a semver git tag[0m[90m 7ms (6ms|2ms)[0m
+[32m   [+] Should return multiple semver tags when presen
+[Assistant] All 10 pass.
+
+## TDD Cycle 5: Tag sanitization
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.Tests.ps1"}
+[Result] 1	# Import the module under test; strict mode is enforced in the source file itself
+2	BeforeAll {
+3	    . "$PSScriptRoot/Get-DockerImageTags.ps1"
+4	}
+5	
+6	Describe 'Get-DockerImageTags' {
+7	
+8	    Context 'Main branch builds' {
+9	        It 'Should return "latest" tag for the main branch' {
+10	            [hashtable]$context = @{
+11	                BranchName = 'main'
+12	                CommitSha  = 'abc1234567890def'
+13	                Tags       = @()
+14	                PrNumber   = $null
+15	            }
+16	            [string[]]$result = Get-DockerImageTags @context
+17	            $result | Should -Contain 'latest'
+18	        }
+19	
+20	        It 'Should return "latest" tag for the master branch' {
+21	            [hashtable]$context = @{
+22	                BranchName = 'master'
+23	                CommitSha  = 'abc1234567890def'
+24	                Tags       = @()
+25	                PrNumber   = $null
+26	            }
+27	            [string[]]$result = Get-DockerImageTags @context
+28
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.Tests.p
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command 'Invoke-Pester -Path ./Get-DockerImageTags.Tests.ps1 -Output Detailed' 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 13 tests in 140ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.Tests.ps1'[0m
+[92mDescribing Get-DockerImageTags[0m
+[96m Context Main branch builds[0m
+[32m   [+] Should return "latest" tag for the main branch[0m[90m 80ms (57ms|23ms)[0m
+[32m   [+] Should return "latest" tag for the master branch[0m[90m 9ms (9ms|1ms)[0m
+[96m Context Pull request builds[0m
+[32m   [+] Should return "pr-{number}" tag when PrNumber is provided[0m[90m 6ms (5ms|2ms)[0m
+[32m   [+] Should NOT return "latest" for a PR on a feature branch[0m[90m 5ms (3ms|1ms)[0m
+[96m Context Semver tag builds[0m
+[32m   [+] Should return "v1.2.3" for a semver git tag[0m[90m 9ms (6ms|4ms)[0m
+[32m   [+] Should return multiple semver tags when presen
+[Assistant] All 13 pass — sanitization already worked from the implementation. 
+
+## TDD Cycle 6: Error handling and edge cases
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.Tests.p
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command 'Invoke-Pester -Path ./Get-DockerImageTags.Tests.ps1 -Output Detailed' 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 17 tests in 144ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.Tests.ps1'[0m
+[92mDescribing Get-DockerImageTags[0m
+[96m Context Main branch builds[0m
+[32m   [+] Should return "latest" tag for the main branch[0m[90m 79ms (49ms|30ms)[0m
+[32m   [+] Should return "latest" tag for the master branch[0m[90m 4ms (2ms|1ms)[0m
+[96m Context Pull request builds[0m
+[32m   [+] Should return "pr-{number}" tag when PrNumber is provided[0m[90m 7ms (5ms|2ms)[0m
+[32m   [+] Should NOT return "latest" for a PR on a feature branch[0m[90m 4ms (3ms|1ms)[0m
+[96m Context Semver tag builds[0m
+[32m   [+] Should return "v1.2.3" for a semver git tag[0m[90m 7ms (5ms|1ms)[0m
+[32m   [+] Should return multiple semver tags when presen
+[Assistant] The validation for empty strings is already handled by PowerShell's `[ValidateNotNullOrEmpty()]` attribute behavior, but using a different error message. I'll add `[ValidateNotNullOrEmpty()]` attributes and update the test expectations to match PowerShell's built-in validation messages.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.ps1"}
+[Result] 1	Set-StrictMode -Version Latest
+2	$ErrorActionPreference = 'Stop'
+3	
+4	<#
+5	.SYNOPSIS
+6	    Generates Docker image tags based on git context (branch, commit, tags, PR number).
+7	
+8	.DESCRIPTION
+9	    Follows common Docker tagging conventions:
+10	      - "latest" for main/master branches
+11	      - "pr-{number}" for pull requests
+12	      - "v{semver}" for semver tags
+13	      - "{branch}-{short-sha}" for feature branches
+14	    All tags are sanitized: lowercased, special characters replaced with hyphens.
+15	#>
+16	
+17	# Sanitize a string for use as a Docker tag: lowercase, replace non-alphanumeric
+18	# sequences with a single hyphen, trim leading/trailing hyphens.
+19	function ConvertTo-DockerTagSafe {
+20	    [CmdletBinding()]
+21	    [OutputType([string])]
+22	    param(
+23	        [Parameter(Mandatory = $true)]
+24	        [string]$Value
+25	    )
+26	
+27	    [string]$sanitized = $Value.ToLowerInvariant()
+28	    # Replace any run of characters that aren't alphanumeric or dots with a hyphen
+[Assistant] I'll add explicit validation with custom error messages and add `[ValidateNotNullOrEmpty()]`:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.ps1", "
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Now update the tests to match the actual PowerShell validation error messages:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.Tests.p
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command 'Invoke-Pester -Path ./Get-DockerImageTags.Tests.ps1 -Output Detailed' 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 17 tests in 145ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.Tests.ps1'[0m
+[92mDescribing Get-DockerImageTags[0m
+[96m Context Main branch builds[0m
+[32m   [+] Should return "latest" tag for the main branch[0m[90m 77ms (48ms|29ms)[0m
+[32m   [+] Should return "latest" tag for the master branch[0m[90m 3ms (2ms|1ms)[0m
+[96m Context Pull request builds[0m
+[32m   [+] Should return "pr-{number}" tag when PrNumber is provided[0m[90m 9ms (7ms|2ms)[0m
+[32m   [+] Should NOT return "latest" for a PR on a feature branch[0m[90m 4ms (3ms|1ms)[0m
+[96m Context Semver tag builds[0m
+[32m   [+] Should return "v1.2.3" for a semver git tag[0m[90m 7ms (5ms|3ms)[0m
+[32m   [+] Should return multiple semver tags when presen
+[Assistant] The message is "null or empty". Let me fix the wildcard:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.Tests.p
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command 'Invoke-Pester -Path ./Get-DockerImageTags.Tests.ps1 -Output Detailed' 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 17 tests in 155ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.Tests.ps1'[0m
+[92mDescribing Get-DockerImageTags[0m
+[96m Context Main branch builds[0m
+[32m   [+] Should return "latest" tag for the main branch[0m[90m 78ms (48ms|30ms)[0m
+[32m   [+] Should return "latest" tag for the master branch[0m[90m 3ms (2ms|1ms)[0m
+[96m Context Pull request builds[0m
+[32m   [+] Should return "pr-{number}" tag when PrNumber is provided[0m[90m 8ms (6ms|2ms)[0m
+[32m   [+] Should NOT return "latest" for a PR on a feature branch[0m[90m 5ms (4ms|1ms)[0m
+[96m Context Semver tag builds[0m
+[32m   [+] Should return "v1.2.3" for a semver git tag[0m[90m 7ms (6ms|1ms)[0m
+[32m   [+] Should return multiple semver tags when presen
+[Assistant] All 17 tests pass. Now let me add a runner script that demonstrates the tool and verify the final state of both files.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.ps1"}
+[Result] 1	Set-StrictMode -Version Latest
+2	$ErrorActionPreference = 'Stop'
+3	
+4	<#
+5	.SYNOPSIS
+6	    Generates Docker image tags based on git context (branch, commit, tags, PR number).
+7	
+8	.DESCRIPTION
+9	    Follows common Docker tagging conventions:
+10	      - "latest" for main/master branches
+11	      - "pr-{number}" for pull requests
+12	      - "v{semver}" for semver tags
+13	      - "{branch}-{short-sha}" for feature branches
+14	    All tags are sanitized: lowercased, special characters replaced with hyphens.
+15	#>
+16	
+17	# Sanitize a string for use as a Docker tag: lowercase, replace non-alphanumeric
+18	# sequences with a single hyphen, trim leading/trailing hyphens.
+19	function ConvertTo-DockerTagSafe {
+20	    [CmdletBinding()]
+21	    [OutputType([string])]
+22	    param(
+23	        [Parameter(Mandatory = $true)]
+24	        [string]$Value
+25	    )
+26	
+27	    [string]$sanitized = $Value.ToLowerInvariant()
+28	    # Replace any run of characters that aren't alphanumeric or dots with a hyphen
+[Assistant] Now let me create a demo runner script:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Invoke-Demo.ps1", "content": "Set-StrictMode -Ver
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Invoke-Demo.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -File ./Invoke-Demo.ps1 2>&1
+[Result] === Main branch build ===
+  latest
+  main-a1b2c3d
+
+=== Pull request build ===
+  pr-42
+  feature-user-auth-deadbee
+
+=== Semver release on main ===
+  latest
+  v2.1.0
+  main-f0f0f0f
+
+=== Feature branch (no PR) ===
+  feature-add-oauth-9876543
+
+=== Pre-release tag on main ===
+  latest
+  v3.0.0-rc.1
+  main-cafe012
+[Assistant] Everything works. Let me do one final run of all tests via `Invoke-Pester`:
+[Tool: Bash] pwsh -Command 'Invoke-Pester -Path ./Get-DockerImageTags.Tests.ps1 -Output Detailed' 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 17 tests in 140ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/14-docker-image-tag-generator/powershell-strict-opus/Get-DockerImageTags.Tests.ps1'[0m
+[92mDescribing Get-DockerImageTags[0m
+[96m Context Main branch builds[0m
+[32m   [+] Should return "latest" tag for the main branch[0m[90m 88ms (52ms|37ms)[0m
+[32m   [+] Should return "latest" tag for the master branch[0m[90m 3ms (2ms|1ms)[0m
+[96m Context Pull request builds[0m
+[32m   [+] Should return "pr-{number}" tag when PrNumber is provided[0m[90m 7ms (5ms|2ms)[0m
+[32m   [+] Should NOT return "latest" for a PR on a feature branch[0m[90m 4ms (3ms|1ms)[0m
+[96m Context Semver tag builds[0m
+[32m   [+] Should return "v1.2.3" for a semver git tag[0m[90m 7ms (6ms|1ms)[0m
+[32m   [+] Should return multiple semver tags when presen
+[Assistant] All 17 tests pass. Here's a summary of what was built:
+
+## Files
+
+| File | Purpose |
+|---|---|
+| `Get-DockerImageTags.ps1` | Core module with `ConvertTo-DockerTagSafe` and `Get-DockerImageTags` functions |
+| `Get-DockerImageTags.Tests.ps1` | 17 Pester tests across 6 contexts |
+| `Invoke-Demo.ps1` | Demo runner showing 5 mock scenarios |
+
+## Strict mode compliance
+- `Set-StrictMode -Version Latest` and `$ErrorActionPreference = 'Stop'` at file top
+- All parameters explicitly typed (`[string]`, `[string[]]`, `[Nullable[int]]`)
+- `[CmdletBinding()]` and `[OutputType()]` on both functions
+- `[ValidateNotNullOrEmpty()]` on required parameters
+- Explicit casts throughout (no implicit conversions)
+
+## Tagging conventions
+| Context | Tags produced |
+|---|---|
+| `main`/`master` branch | `latest`, `{branch}-{sha7}` |
+| Pull request | `pr-{number}`, `{branch}-{sha7}` |
+| Semver git tag | `v{semver}`, `{branch}-{sha7}` (+ `latest` if on main) |
+| Feature branch | `{sanitized-branch}-{sha7}` |
+
+## TDD cycles followed
+1. Main/master → `latest`
+2. PR number → `pr-N`
+3. Semver tags → `v1.2.3`, `v1.2.3-beta.1`
+4. Branch-SHA tag → `{branch}-{sha7}`
+5. Sanitization (lowercase, special chars → hyphens)
+6. Error handling + combined scenario
