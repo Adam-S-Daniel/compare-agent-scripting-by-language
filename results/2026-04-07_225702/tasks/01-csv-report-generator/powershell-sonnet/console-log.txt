@@ -1,0 +1,114 @@
+[Tool: Bash] ls /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/01-csv-report-generator/powershell-sonnet/
+[Result] benchmark-instructions-v2.md
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/01-csv-report-generator/powershell-sonnet/benchmark-instructions-v2.md"}
+[Result] 1	# Benchmark Instructions v2
+2	
+3	**Version**: v2
+4	**Date**: 2026-04-07
+5	**Purpose**: Measure how well Claude Code agents perform scripting tasks across different language constraints.
+6	
+7	**Changes from v1**:
+8	- All permissions are now bypassed (`--dangerously-skip-permissions`) — no more tool-approval errors
+9	- .NET 10 SDK, PowerShell, and Pester are pre-installed — no tool installation overhead
+10	- C# mode updated to use .NET 10 file-based apps (`dotnet run file.cs`) — no .csproj scaffolding needed
+11	
+12	## Methodology
+13	
+14	### Overview
+15	
+16	Each scripting task is executed by a Claude Code agent under 4 different language constraints ("modes") and with 2 different models, yielding **8 runs per task**. Agents receive only the prompt — no conversation context, no prior results.
+17	
+18	### Models
+19	
+20	| Model ID | Short Name | Input $/Mtok | Output $/Mtok | Cache Read $/Mtok | Cache Write $/Mtok |
+21	|----------|------------|-------------|--------------|------------------
+[Assistant] Let me start with the TDD approach - write the failing tests first, then implement the code.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/01-csv-report-generator/powershell-sonnet/CsvReportGenerator.Tests.ps1", "content": "# CsvReportGenera
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/01-csv-report-generator/powershell-sonnet/CsvReportGenerator.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Now let's run the tests to confirm they fail (RED phase):
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./CsvReportGenerator.Tests.ps1 -Output Minimal" 2>&1 | head -50
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 25 tests in 149ms.[0m
+[95mRunning tests.[0m
+[91m[-] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/01-csv-report-generator/powershell-sonnet/CsvReportGenerator.Tests.ps1 failed with:[0m
+[91mCommandNotFoundException: The term '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/01-csv-report-generator/powershell-sonnet/CsvReportGenerator.ps1' is not recognized as a name of a cmdlet, function, script file, or executable program.
+[91mCheck the spelling of the name, or if a path was included, verify that the path is correct and try again.
+[91mat <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/01-csv-report-generator/powershell-sonnet/CsvReportGenerator.Tests.ps1:7[0m
+[97mTests completed in 331ms[0m
+[97mTests Passed: 0, [0m[91mFailed: 25, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[
+[Assistant] Tests are failing as expected (RED). Now let's implement the solution (GREEN phase):
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/01-csv-report-generator/powershell-sonnet/CsvReportGenerator.ps1", "content": "# CsvReportGenerator.ps
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/01-csv-report-generator/powershell-sonnet/CsvReportGenerator.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./CsvReportGenerator.Tests.ps1 -Output Detailed" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 25 tests in 131ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/01-csv-report-generator/powershell-sonnet/CsvReportGenerator.Tests.ps1'[0m
+[92mDescribing Import-EmployeeCsv[0m
+[32m  [+] should load all employee records from a CSV file[0m[90m 80ms (54ms|26ms)[0m
+[32m  [+] should parse employee fields correctly[0m[90m 15ms (14ms|1ms)[0m
+[32m  [+] should parse salary as a numeric type[0m[90m 26ms (25ms|1ms)[0m
+[32m  [+] should throw a meaningful error for a non-existent file[0m[90m 24ms (23ms|1ms)[0m
+[0m
+[92mDescribing Get-ActiveEmployees[0m
+[32m  [+] should return only employees with status 'active'[0m[90m 26ms (20ms|6ms)[0m
+[32m  [+] should return 8 active employees from the test fixture[0m[90m 3ms (2ms|1ms)[0m
+[32m  [+] should exclude inactive employees[0m[90m 3ms (3ms|
+[Assistant] All 25 tests pass. Let me also create the main entry-point script for running the report end-to-end:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/01-csv-report-generator/powershell-sonnet/Run-CsvReport.ps1", "content": "# Run-CsvReport.ps1\n# Main 
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/01-csv-report-generator/powershell-sonnet/Run-CsvReport.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "./Run-CsvReport.ps1" 2>&1 && echo "---" && cat ./report.txt
+[Result] Loading employee data from: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/01-csv-report-generator/powershell-sonnet/fixtures/employees.csv
+Filtering active employees...
+Computing department statistics...
+Computing overall statistics...
+Writing report to: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/01-csv-report-generator/powershell-sonnet/report.txt
+Done. Report generated successfully.
+---
+============================================================
+EMPLOYEE SUMMARY REPORT
+Generated: 2026-04-07 23:15:24
+============================================================
+
+OVERALL STATISTICS
+----------------------------------------
+Total Employees:  8
+Average Salary:   $80875
+Min Salary:       $62000
+Max Salary:       $105000
+Total Payroll:    $647000
+
+DEPARTMENT BREAKDOWN
+----------------------------------------
+
+Department: Engineering
+  Headcount:      4
+  Average Salary: $94250
+  Total Payroll:  $377000
+
+Department:
+[Assistant] 25/25 tests pass. Here's what was built:
+
+**Files:**
+- `CsvReportGenerator.Tests.ps1` — 25 Pester tests across 5 `Describe` blocks
+- `CsvReportGenerator.ps1` — library of 4 functions
+- `Run-CsvReport.ps1` — CLI entry point
+- `fixtures/employees.csv` — created at test time: 10 employees, 8 active, 3 departments
+
+**TDD cycle followed:**
+1. **RED** — wrote all tests first; they failed with `CommandNotFoundException` (no implementation)
+2. **GREEN** — implemented minimum code in `CsvReportGenerator.ps1` to make all 25 pass
+3. Report script is the REFACTOR step (composing the pipeline cleanly)
+
+**Functions:**
+| Function | Purpose |
+|---|---|
+| `Import-EmployeeCsv` | Loads CSV, casts salary to `[decimal]`, throws on missing file |
+| `Get-ActiveEmployees` | Filters to `status -eq "active"`, returns guaranteed array |
+| `Get-DepartmentStats` | Groups by dept, computes headcount/avg/total payroll |
+| `Get-OverallStats` | Computes totals/avg/min/max across all supplied employees |
+| `Write-SummaryReport` | Formats and writes text report to a file |
