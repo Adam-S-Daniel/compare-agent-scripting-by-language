@@ -1,0 +1,111 @@
+[Tool: Bash] ls /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-sonnet/ 2>/dev/null && pwd
+[Result] benchmark-instructions-v2.md
+/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-sonnet
+[Tool: Bash] pwsh --version 2>/dev/null || echo "PowerShell not found"
+[Result] PowerShell 7.6.0
+[Tool: Bash] pwsh -Command "Get-Module -ListAvailable Pester | Select-Object -First 1 | Format-List Name, Version"
+[Result] [32;1mName    : [0mPester
+[32;1mVersion : [0m5.7.1
+[Assistant] Good. Now I'll implement TDD step by step. First, write the failing test, then the implementation.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-sonnet/SearchReplace.Tests.ps1", "content": "# SearchReplace.T
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-sonnet/SearchReplace.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Now run the tests to confirm they fail (red phase):
+[Tool: Bash] pwsh -Command "Invoke-Pester ./SearchReplace.Tests.ps1 -Output Minimal" 2>&1 | tail -20
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 17 tests in 156ms.[0m
+[95mRunning tests.[0m
+[91m[-] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-sonnet/SearchReplace.Tests.ps1 failed with:[0m
+[91mCommandNotFoundException: The term '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-sonnet/SearchReplace.ps1' is not recognized as a name of a cmdlet, function, script file, or executable program.
+[91mCheck the spelling of the name, or if a path was included, verify that the path is correct and try again.
+[91mat <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-sonnet/SearchReplace.Tests.ps1:5[0m
+[97mTests completed in 351ms[0m
+[97mTests Passed: 0, [0m[91mFailed: 17, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[
+[Assistant] Tests are red. Now write the implementation (green phase):
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-sonnet/SearchReplace.ps1", "content": "# SearchReplace.ps1\n# 
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-sonnet/SearchReplace.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester ./SearchReplace.Tests.ps1 -Output Normal" 2>&1
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 17 tests in 158ms.[0m
+[95mRunning tests.[0m
+[32m[+] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-sonnet/SearchReplace.Tests.ps1[0m[90m 735ms (312ms|289ms)[0m
+[97mTests completed in 749ms[0m
+[32mTests Passed: 17, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Assistant] All 17 tests pass. Let me do a quick refactor pass to clean up the implementation:
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-sonnet/SearchReplace.ps1"}
+[Result] 1	# SearchReplace.ps1
+2	# Multi-file recursive search-and-replace with preview mode, backup creation,
+3	# and change-summary reporting.
+4	#
+5	# Public API:
+6	#   Find-FileMatches    - locate matching lines across files
+7	#   Invoke-SearchReplace - perform (or preview) substitutions
+8	
+9	# ---------------------------------------------------------------------------
+10	# Find-FileMatches
+11	# ---------------------------------------------------------------------------
+12	# Recursively finds files under -Path whose names match -GlobPattern, then
+13	# returns one match-object per line that contains -SearchPattern (regex).
+14	#
+15	# Returns: [PSCustomObject]{ File; LineNumber; LineText }[]
+16	# ---------------------------------------------------------------------------
+17	function Find-FileMatches {
+18	    [CmdletBinding()]
+19	    param(
+20	        [Parameter(Mandatory)] [string] $Path,
+21	        [Parameter(Mandatory)] [string] $GlobPattern,
+22	        [Parameter(Mandatory)] [string] $Search
+[Assistant] The implementation is clean and well-structured already. The refactor is done. Let me do one final test run to confirm everything still passes:
+[Tool: Bash] pwsh -Command "Invoke-Pester ./SearchReplace.Tests.ps1 -Output Detailed" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 17 tests in 158ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/10-multi-file-search-replace/powershell-sonnet/SearchReplace.Tests.ps1'[0m
+[92mDescribing Find-FileMatches[0m
+[96m Context basic match discovery[0m
+[32m   [+] returns match objects for files containing the pattern[0m[90m 95ms (72ms|23ms)[0m
+[32m   [+] each match object has File, LineNumber, LineText properties[0m[90m 13ms (12ms|1ms)[0m
+[32m   [+] does not match files excluded by glob[0m[90m 8ms (7ms|1ms)[0m
+[32m   [+] returns empty when no files match glob[0m[90m 4ms (3ms|1ms)[0m
+[32m   [+] returns empty when pattern not found in any file[0m[90m 5ms (4ms|1ms)[0m
+[96m Context line number accuracy[0m
+[32m   [+] reports correct line number for a match on line 2[0m[90m 13ms (12ms|1ms)[0m
+[0m
+[92mDescribing Invo
+[Assistant] 17/17 tests pass. Here's a summary of what was built:
+
+---
+
+## Solution Overview
+
+### Files
+- `SearchReplace.ps1` — implementation
+- `SearchReplace.Tests.ps1` — Pester test suite
+
+### TDD Cycle Followed
+1. **Red** — wrote the full test suite first; all 17 tests failed (no implementation file existed)
+2. **Green** — wrote minimum implementation to pass all tests
+3. **Refactor** — implementation was already clean; no structural changes needed
+
+### Functions
+
+**`Find-FileMatches -Path -GlobPattern -SearchPattern`**
+- Recursively finds files matching the glob under `Path`
+- Returns `{ File, LineNumber, LineText }` objects for each matching line
+- Validates path existence and regex validity with meaningful errors
+
+**`Invoke-SearchReplace -Path -GlobPattern -SearchPattern -Replacement [-Preview]`**
+- `-Preview`: returns `{ File, LineNumber, OldText, NewText }` report with **no file modifications**
+- Live mode: creates a `.bak` backup of each changed file, applies substitutions in-place, returns same report schema
+- Files with zero matches are left untouched (no backup created)
+
+### Test Coverage (17 tests across 4 `Describe` blocks)
+- Basic match discovery (glob filtering, empty results, recursion)
+- Line number accuracy
+- Preview mode (no mutation, correct report shape and content)
+- Live mode (in-place edits, backup creation/content, no spurious backups, summary report)
+- Error handling (bad path, invalid regex)
