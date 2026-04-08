@@ -1,0 +1,356 @@
+[Assistant] 
+
+I'll start by understanding the task, then follow TDD methodology to build the solution incrementally.
+
+Let me check the current working directory first.
+[Tool: Bash] ls /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/18-secret-rotation-validator/powershell-opus/
+[Result] benchmark-instructions-v2.md
+[Assistant] Empty workspace aside from instructions. Let me start with TDD — first failing test.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/18-secret-rotation-validator/powershell-opus/SecretRotationValidator.Tests.ps1", "content": "# Secret 
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/18-secret-rotation-validator/powershell-opus/SecretRotationValidator.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Now run the tests to confirm they fail (RED phase):
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./SecretRotationValidator.Tests.ps1 -PassThru" 2>&1 | tail -30
+[Result] [32;1mPSVersion             : [0m7.6.0
+[32;1mPSBoundParameters     : [0m{[Path, System.String[]], [PassThru, True]}
+[32;1mPlugins               : [0m
+[32;1mPluginConfiguration   : [0m
+[32;1mPluginData            : [0m
+[32;1mConfiguration         : [0mPesterConfiguration
+[32;1mDiscoveryDuration     : [0m00:00:00.1411460
+[32;1mUserDuration          : [0m00:00:00.0221847
+[32;1mFrameworkDuration     : [0m00:00:00.2050755
+[32;1mFailed                : [0m{[-] returns 'Expired' for a secret past its rotation d
+                        ate, [-] returns 'Warning' for a secret expiring within
+                         the warning window, [-] returns 'OK' for a secret not 
+                        expiring soon, [-] includes days until expiry and expir
+                        y date…}
+[32;1mFailedBlocks          : [0m{}
+[32;1mFailedContainers      : [0m{[-] /home/passp/repos/compare-agent-scripting-by-langu
+                        age/workspaces/2026-04-07_225702/18-secret-r
+[Assistant] All tests fail as expected. Now write the implementation (GREEN phase):
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/18-secret-rotation-validator/powershell-opus/SecretRotationValidator.ps1", "content": "# Secret Rotati
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/18-secret-rotation-validator/powershell-opus/SecretRotationValidator.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Run the tests to see if they pass (GREEN phase):
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./SecretRotationValidator.Tests.ps1 -PassThru" 2>&1
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 21 tests in 160ms.[0m
+[95mRunning tests.[0m
+[91m[-] Get-SecretStatus.result properties.includes days until expiry and expiry date[0m[90m 28ms (27ms|1ms)[0m
+[91m Expected 6, but got 5.
+[91m at $result.DaysUntilExpiry | Should -Be 6, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/18-secret-rotation-validator/powershell-opus/SecretRotationValidator.Tests.ps1:65
+[91m at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/18-secret-rotation-validator/powershell-opus/SecretRotationValidator.Tests.ps1:65[0m
+[91m[-] Import-SecretConfig.loads secrets from a JSON file[0m[90m 30ms (29ms|1ms)[0m
+[91m Expected 1, but got 4.
+[91m at $result.Count | Should -Be 1, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/18-secret-rotation-validator/powershell-opus/SecretRotationValidator.Tests.ps1:181
+[91m at <S
+[Assistant] 18/21 pass. Three fixes needed:
+
+1. **DaysUntilExpiry calculation**: March 14 + 30 = April 13, April 13 - April 8 = 5 days, not 6. Fix the test.
+2. **Empty array binding**: Allow empty `Secrets` parameter.
+3. **Import single-item JSON**: `ConvertTo-Json` for a single-element array wraps properties — need `-AsArray`.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/18-secret-rotation-validator/powershell-opus/SecretRotationValidator.Tests.ps1",
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/18-secret-rotation-validator/powershell-opus/SecretRotationValidator.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Now fix the Import-SecretConfig test — single-element array needs `-AsArray`:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/18-secret-rotation-validator/powershell-opus/SecretRotationValidator.Tests.ps1",
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/18-secret-rotation-validator/powershell-opus/SecretRotationValidator.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Now fix the empty secrets list — allow empty array:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/18-secret-rotation-validator/powershell-opus/SecretRotationValidator.ps1", "old_
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/18-secret-rotation-validator/powershell-opus/SecretRotationValidator.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Run tests again:
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./SecretRotationValidator.Tests.ps1 -PassThru" 2>&1
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 21 tests in 162ms.[0m
+[95mRunning tests.[0m
+[91m[-] Import-SecretConfig.loads secrets from a JSON file[0m[90m 50ms (49ms|1ms)[0m
+[91m Expected 1, but got 4.
+[91m at $result.Count | Should -Be 1, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/18-secret-rotation-validator/powershell-opus/SecretRotationValidator.Tests.ps1:181
+[91m at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/18-secret-rotation-validator/powershell-opus/SecretRotationValidator.Tests.ps1:181[0m
+[97mTests completed in 822ms[0m
+[97mTests Passed: 20, [0m[91mFailed: 1, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+
+[32;1mContainers            : [0m{[-] /home/passp/repos/compare-agent-scripting-by-langu
+                        age/workspaces/2026-04-07_225702/18-secret-rotation-val
+                        idator/powershell
+[Assistant] One remaining: the Import test still gets count 4. The issue is that a single hashtable in an array gets flattened by `ConvertTo-Json`. Let me debug:
+[Tool: Bash] pwsh -Command '
+$config = @(
+    @{ Name = "test-secret"; LastRotated = "2026-04-01"; RotationDays = 30; RequiredBy = @("svc1") }
+)
+$json = ConvertTo-Json -InputObject $config -Depth 3
+Write-Host "JSON:"
+Write-Host $json
+Write-Host "---"
+$parsed = $json | ConvertFrom-Json
+Write-Host "Parsed type: $($parsed.GetType().FullName)"
+Write-Host "Parsed count: $(@($parsed).Count)"
+'
+[Result] JSON:
+[
+  {
+    "RequiredBy": [
+      "svc1"
+    ],
+    "Name": "test-secret",
+    "LastRotated": "2026-04-01",
+    "RotationDays": 30
+  }
+]
+---
+Parsed type: System.Management.Automation.PSCustomObject
+Parsed count: 1
+[Assistant] The JSON is fine, and `@($parsed).Count` is 1. So the issue must be in `Import-SecretConfig` — the `@(foreach ...)` with a single hashtable returns 4 because iterating a hashtable yields key-value pairs. I need to wrap each hashtable emission properly.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/18-secret-rotation-validator/powershell-opus/SecretRotationValidator.ps1", "offset": 137, "limit": 30}
+[Result] 137	
+138	    # Summary section
+139	    [void]$sb.AppendLine("## Summary")
+140	    [void]$sb.AppendLine()
+141	    [void]$sb.AppendLine("- **Total**: $($Report.Summary.Total)")
+142	    [void]$sb.AppendLine("- **Expired**: $($Report.Summary.Expired)")
+143	    [void]$sb.AppendLine("- **Warning**: $($Report.Summary.Warning)")
+144	    [void]$sb.AppendLine("- **OK**: $($Report.Summary.OK)")
+145	    [void]$sb.AppendLine()
+146	
+147	    # Table header
+148	    [void]$sb.AppendLine("| Name | Urgency | Last Rotated | Expiry Date | Days Until Expiry | Required By |")
+149	    [void]$sb.AppendLine("|------|---------|--------------|-------------|-------------------|-------------|")
+150	
+151	    # Rows sorted by urgency: Expired first, then Warning, then OK
+152	    $urgencyOrder = @{ "Expired" = 0; "Warning" = 1; "OK" = 2 }
+153	    $sorted = $Report.All | Sort-Object { $urgencyOrder[$_.Urgency] }, DaysUntilExpiry
+154	
+155	    foreach ($s in $sorted) {
+156	        $services = ($s.RequiredBy -join ", ")
+1
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/18-secret-rotation-validator/powershell-opus/SecretRotationValidator.ps1", "offset": 166}
+[Result] 166	    .SYNOPSIS
+167	        Loads secret configurations from a JSON file.
+168	    .PARAMETER Path
+169	        Path to the JSON config file containing an array of secret definitions.
+170	    #>
+171	    [CmdletBinding()]
+172	    param(
+173	        [Parameter(Mandatory)][string]$Path
+174	    )
+175	
+176	    if (-not (Test-Path $Path)) {
+177	        throw "Secret config file not found: $Path"
+178	    }
+179	
+180	    try {
+181	        $content = Get-Content -Path $Path -Raw
+182	        $parsed = $content | ConvertFrom-Json
+183	    } catch [System.ArgumentException] {
+184	        throw "Failed to parse secret config: invalid JSON in $Path"
+185	    } catch {
+186	        # Re-throw parse errors with a clearer message
+187	        if ($_.Exception.Message -match "Json|parse|convert") {
+188	            throw "Failed to parse secret config: invalid JSON in $Path"
+189	        }
+190	        throw
+191	    }
+192	
+193	    # Convert PSObjects back to hashtables for consistent handling
+194	    @(foreach 
+[Assistant] The problem is that `@(foreach ($item in $parsed) { @{...} })` — when `$parsed` is a single PSObject (not array), the foreach iterates its properties. I need to wrap `$parsed` in `@()`:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/18-secret-rotation-validator/powershell-opus/SecretRotationValidator.ps1", "old_
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/18-secret-rotation-validator/powershell-opus/SecretRotationValidator.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./SecretRotationValidator.Tests.ps1 -PassThru" 2>&1
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 21 tests in 163ms.[0m
+[95mRunning tests.[0m
+[91m[-] Import-SecretConfig.loads secrets from a JSON file[0m[90m 36ms (35ms|1ms)[0m
+[91m Expected 1, but got 4.
+[91m at $result.Count | Should -Be 1, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/18-secret-rotation-validator/powershell-opus/SecretRotationValidator.Tests.ps1:181
+[91m at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/18-secret-rotation-validator/powershell-opus/SecretRotationValidator.Tests.ps1:181[0m
+[97mTests completed in 818ms[0m
+[97mTests Passed: 20, [0m[91mFailed: 1, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+
+[32;1mContainers            : [0m{[-] /home/passp/repos/compare-agent-scripting-by-langu
+                        age/workspaces/2026-04-07_225702/18-secret-rotation-val
+                        idator/powershell
+[Assistant] Still 4. Let me debug more carefully — the issue is that the function returns a hashtable and the `@()` wrapper enumerates it:
+[Tool: Bash] pwsh -Command '
+$tempFile = "/tmp/test_secrets.json"
+$config = @(
+    @{ Name = "test-secret"; LastRotated = "2026-04-01"; RotationDays = 30; RequiredBy = @("svc1") }
+)
+ConvertTo-Json -InputObject $config -Depth 3 | Set-Content $tempFile
+Write-Host "File contents:"
+Get-Content $tempFile
+Write-Host "---"
+
+$content = Get-Content -Path $tempFile -Raw
+$parsed = $content | ConvertFrom-Json
+Write-Host "Parsed type: $($parsed.GetType().FullName)"
+Write-Host "Parsed count with @(): $(@($parsed).Count)"
+
+$results = @(foreach ($item in @($parsed)) {
+    @{
+        Name = $item.Name
+        LastRotated = $item.LastRotated
+        RotationDays = [int]$item.RotationDays
+        RequiredBy = @($item.RequiredBy)
+    }
+})
+Write-Host "Results count: $($results.Count)"
+Write-Host "Results type: $($results.GetType().FullName)"
+if ($results.Count -gt 1) {
+    foreach ($r in $results) {
+        Write-Host "  Item: $($r.GetType().FullName) = $r"
+    }
+}
+'
+[Result] File contents:
+[
+  {
+    "RequiredBy": [
+      "svc1"
+    ],
+    "RotationDays": 30,
+    "LastRotated": "2026-04-01",
+    "Name": "test-secret"
+  }
+]
+---
+Parsed type: System.Management.Automation.PSCustomObject
+Parsed count with @(): 1
+Results count: 1
+Results type: System.Object[]
+[Assistant] When run standalone it returns 1. The issue must be in how the test receives the result. The function returns `@(hashtable)`, and PowerShell unwraps the single-element array when returning from a function, yielding just the hashtable. Then in the test, `$result.Count` on a hashtable gives the number of keys (4).
+
+The fix: use `,` to prevent array unrolling, or change the test to use `@($result).Count`:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/18-secret-rotation-validator/powershell-opus/SecretRotationValidator.ps1", "old_
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/18-secret-rotation-validator/powershell-opus/SecretRotationValidator.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./SecretRotationValidator.Tests.ps1 -PassThru" 2>&1
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 21 tests in 164ms.[0m
+[95mRunning tests.[0m
+[32m[+] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/18-secret-rotation-validator/powershell-opus/SecretRotationValidator.Tests.ps1[0m[90m 767ms (324ms|301ms)[0m
+[97mTests completed in 779ms[0m
+[32mTests Passed: 21, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+
+[32;1mContainers            : [0m{[+] /home/passp/repos/compare-agent-scripting-by-langu
+                        age/workspaces/2026-04-07_225702/18-secret-rotation-val
+                        idator/powershell-opus/SecretRotationValidator.Tests.ps
+                        1}
+[32;1mResult                : [0mPassed
+[32;1mFailedCount           : [0m0
+[32;1mFailedBlocksCount     : [0m0
+[32;1mFailedContainersCount : [0m0
+[32;1mPassedCount           : [0m21
+[32;1mSkippedCount          : [0m0
+[32;1mInconclusive
+[Assistant] All 21 tests pass. Now let me create a sample config file and a demo script to make the solution complete and easy to use:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/18-secret-rotation-validator/powershell-opus/secrets.json", "content": "[\n  {\n    \"Name\": \"db-pas
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/18-secret-rotation-validator/powershell-opus/secrets.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/18-secret-rotation-validator/powershell-opus/Invoke-SecretRotationValidator.ps1", "content": "#!/usr/b
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/18-secret-rotation-validator/powershell-opus/Invoke-SecretRotationValidator.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Let me do a quick demo run to verify the end-to-end workflow:
+[Tool: Bash] pwsh -File ./Invoke-SecretRotationValidator.ps1 -ConfigPath ./secrets.json -Format Markdown -WarningDays 7 2>&1
+[Result ERROR] Exit code 1
+# Secret Rotation Report
+
+## Summary
+
+- **Total**: 6
+- **Expired**: 2
+- **Warning**: 0
+- **OK**: 4
+
+| Name | Urgency | Last Rotated | Expiry Date | Days Until Expiry | Required By |
+|------|---------|--------------|-------------|-------------------|-------------|
+| db-password | Expired | 2026-01-15 | 2026-02-14 | -53 | api-service, worker-service, analytics |
+| oauth-client-secret | Expired | 2026-02-01 | 2026-04-02 | -6 | auth-service, sso-proxy |
+| jwt-signing-key | OK | 2026-04-03 | 2026-04-17 | 9 | auth-service, api-gateway |
+| api-key-stripe | OK | 2026-03-20 | 2026-06-18 | 71 | billing-service |
+| ssh-deploy-key | OK | 2026-04-06 | 2026-10-03 | 178 | ci-pipeline |
+| tls-certificate | OK | 2026-03-01 | 2027-03-01 | 327 | load-balancer |
+[Tool: Bash] pwsh -File ./Invoke-SecretRotationValidator.ps1 -ConfigPath ./secrets.json -Format JSON -WarningDays 14 2>&1 | head -50
+[Result] {
+  "secrets": [
+    {
+      "name": "db-password",
+      "lastRotated": "2026-01-15",
+      "requiredBy": [
+        "api-service",
+        "worker-service",
+        "analytics"
+      ],
+      "expiryDate": "2026-02-14",
+      "urgency": "Expired",
+      "daysUntilExpiry": -53,
+      "rotationDays": 30
+    },
+    {
+      "name": "api-key-stripe",
+      "lastRotated": "2026-03-20",
+      "requiredBy": [
+        "billing-service"
+      ],
+      "expiryDate": "2026-06-18",
+      "urgency": "OK",
+      "daysUntilExpiry": 71,
+      "rotationDays": 90
+    },
+    {
+      "name": "jwt-signing-key",
+      "lastRotated": "2026-04-03",
+      "requiredBy": [
+        "auth-service",
+        "api-gateway"
+      ],
+      "expiryDate": "2026-04-17",
+      "urgency": "Warning",
+      "daysUntilExpiry": 9,
+      "rotationDays": 14
+    },
+    {
+      "name": "tls-certificate",
+      "lastRotated": "2026-03-01",
+      "requiredBy": [
+        "load-balancer"
+      ],
+      "expiryDate": "2027-03-01",
+     
+[Assistant] Everything works. Final test run to confirm all 21 tests still pass:
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./SecretRotationValidator.Tests.ps1 -Output Detailed" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 21 tests in 157ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/18-secret-rotation-validator/powershell-opus/SecretRotationValidator.Tests.ps1'[0m
+[92mDescribing Get-SecretStatus[0m
+[96m Context when a secret is expired[0m
+[32m   [+] returns 'Expired' for a secret past its rotation date[0m[90m 85ms (58ms|26ms)[0m
+[96m Context when a secret is within the warning window[0m
+[32m   [+] returns 'Warning' for a secret expiring within the warning window[0m[90m 7ms (5ms|2ms)[0m
+[96m Context when a secret is OK[0m
+[32m   [+] returns 'OK' for a secret not expiring soon[0m[90m 4ms (3ms|1ms)[0m
+[96m Context result properties[0m
+[32m   [+] includes days until expiry and expiry date[0m[90m 10ms (9ms|1ms)[0m
+[32m   [+] returns negative days for already-expired secrets[0m[90m 5ms (4ms|1ms
+[Assistant] All 21 tests pass. Here's what was built:
+
+## Files created
+
+| File | Purpose |
+|------|---------|
+| `SecretRotationValidator.ps1` | Core module with 4 functions: `Get-SecretStatus`, `Get-RotationReport`, `Format-RotationReport`, `Import-SecretConfig` |
+| `SecretRotationValidator.Tests.ps1` | 21 Pester tests across 5 describe blocks covering all functionality and edge cases |
+| `Invoke-SecretRotationValidator.ps1` | CLI entry point with `-ConfigPath`, `-Format` (JSON/Markdown), and `-WarningDays` parameters |
+| `secrets.json` | Sample config with 6 secrets having varying rotation policies |
+
+## Key design decisions
+
+- **`Get-SecretStatus`** evaluates a single secret: computes expiry date, days remaining, and urgency (Expired/Warning/OK) based on a configurable warning window
+- **`Get-RotationReport`** aggregates all secrets and groups by urgency with summary counts
+- **`Format-RotationReport`** outputs either a markdown table (sorted by urgency) or structured JSON
+- **`Import-SecretConfig`** loads from JSON files with meaningful error messages for missing/invalid files
+- **`ReferenceDate`** parameter enables deterministic testing without mocking `Get-Date`
+- Exit code 1 when expired secrets exist (useful for CI pipelines)
