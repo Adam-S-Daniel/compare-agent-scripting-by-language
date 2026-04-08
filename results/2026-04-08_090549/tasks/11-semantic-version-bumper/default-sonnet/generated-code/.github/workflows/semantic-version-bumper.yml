@@ -1,0 +1,191 @@
+# Semantic Version Bumper — CI/CD workflow
+#
+# Integrates version_bumper.py into the release pipeline.
+#
+# Trigger strategy:
+#   - push to main: auto-bump and commit new version
+#   - pull_request to main: dry-run (check what bump *would* happen, no write)
+#   - workflow_dispatch: on-demand bump with optional force bump type override
+#
+# Jobs:
+#   detect    — determine the bump type from commit messages
+#   bump      — apply bump, commit, and tag (main branch only)
+#   test      — always run the test suite to gate merges
+
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      force_bump:
+        description: "Force a specific bump type (major / minor / patch / none). Leave blank to auto-detect."
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: write   # needed to push the version bump commit and tag
+
+jobs:
+  # ── 1. Always run the test suite ──────────────────────────────────────────
+  test:
+    name: Run test suite
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install test dependencies
+        run: pip install pytest
+
+      - name: Run tests
+        run: python -m pytest test_version_bumper.py -v
+
+  # ── 2. Collect commits since last tag and detect bump type ────────────────
+  detect:
+    name: Detect version bump
+    runs-on: ubuntu-latest
+    needs: test
+    outputs:
+      bump_type: ${{ steps.detect.outputs.bump_type }}
+      current_version: ${{ steps.detect.outputs.current_version }}
+    steps:
+      - name: Checkout repository (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history needed to walk back to last tag
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Collect commits since last tag
+        id: commits
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -n "$LAST_TAG" ]; then
+            git log "${LAST_TAG}..HEAD" --pretty=format:"%B%n---commit-separator---" > commits.txt
+          else
+            git log --pretty=format:"%B%n---commit-separator---" > commits.txt
+          fi
+          echo "Collected $(wc -l < commits.txt) lines of commit messages"
+
+      - name: Detect bump type
+        id: detect
+        run: |
+          CURRENT=$(python3 - <<'EOF'
+          import json
+          with open("package.json") as f:
+              print(json.load(f)["version"])
+          EOF
+          )
+          echo "current_version=${CURRENT}" >> "$GITHUB_OUTPUT"
+
+          # Allow workflow_dispatch to override the bump type
+          FORCE="${{ github.event.inputs.force_bump }}"
+          if [ -n "$FORCE" ]; then
+            echo "bump_type=${FORCE}" >> "$GITHUB_OUTPUT"
+            echo "Bump type forced to: ${FORCE}"
+          else
+            BUMP=$(python3 - <<'PYEOF'
+          from version_bumper import determine_bump_type
+          commits = open("commits.txt").read().splitlines()
+          print(determine_bump_type(commits))
+          PYEOF
+            )
+            echo "bump_type=${BUMP}" >> "$GITHUB_OUTPUT"
+            echo "Detected bump type: ${BUMP}"
+          fi
+
+  # ── 3. Apply the bump, commit, tag, and push (main branch only) ───────────
+  bump:
+    name: Apply version bump
+    runs-on: ubuntu-latest
+    needs: detect
+    # Only execute on pushes to main; PR runs are dry-run via the detect job
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && needs.detect.outputs.bump_type != 'none'
+    env:
+      NEW_VERSION: ""
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Use a PAT or the default GITHUB_TOKEN for pushing
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Apply version bump
+        id: bump
+        run: |
+          # Write commits collected in the detect job — re-collect here to keep
+          # the job self-contained (detect and bump may run on different runners).
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -n "$LAST_TAG" ]; then
+            git log "${LAST_TAG}..HEAD" --pretty=format:"%B%n---" > commits.txt
+          else
+            git log --pretty=format:"%B%n---" > commits.txt
+          fi
+
+          NEW_VER=$(python3 version_bumper.py package.json commits.txt \
+                      --changelog CHANGELOG.md)
+          echo "new_version=${NEW_VER}" >> "$GITHUB_OUTPUT"
+          echo "Bumped to: ${NEW_VER}"
+
+      - name: Commit updated files
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add package.json CHANGELOG.md
+          git commit -m "chore(release): bump version to ${{ steps.bump.outputs.new_version }} [skip ci]"
+
+      - name: Create git tag
+        run: |
+          git tag "v${{ steps.bump.outputs.new_version }}"
+
+      - name: Push commit and tag
+        run: |
+          git push origin main
+          git push origin "v${{ steps.bump.outputs.new_version }}"
+
+  # ── 4. Summary comment on pull requests (dry-run preview) ────────────────
+  pr-comment:
+    name: PR bump preview
+    runs-on: ubuntu-latest
+    needs: detect
+    if: github.event_name == 'pull_request'
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Comment bump preview on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const bump = '${{ needs.detect.outputs.bump_type }}';
+            const current = '${{ needs.detect.outputs.current_version }}';
+            const body = `### Version bump preview\n\n` +
+              `Current version: \`${current}\`\n` +
+              `Detected bump type: **${bump}**\n\n` +
+              `> This comment is informational only. The actual bump runs on merge to \`main\`.`;
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body,
+            });
