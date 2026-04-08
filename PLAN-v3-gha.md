@@ -2,13 +2,13 @@
 
 **Branch:** `gha-benchmark-v3`
 **Date:** 2026-04-08
-**Status:** Planning — not yet implemented
+**Status:** Implemented — phases 1-4 complete, pilot runs done, iterating on prompt design
 
 ---
 
 ## Goal
 
-Test how well Claude Code agents can write **real GitHub Actions workflows + supporting scripts** across language modes, validated with `actionlint` and optionally `act`.
+Test how well Claude Code agents can write **real, runnable GitHub Actions workflows + supporting scripts** across language modes. Workflows must pass `actionlint` static analysis AND execute successfully in Docker via `act` (nektos/act). All agent tests run through the workflow pipeline — no direct script testing.
 
 ## Scope Changes from v2
 
@@ -18,7 +18,7 @@ Test how well Claude Code agents can write **real GitHub Actions workflows + sup
 | **Modes** | default, powershell, powershell-strict, csharp-script | default, powershell, bash, typescript-bun |
 | **Models** | opus, sonnet | opus, sonnet |
 | **Hooks** | None (prototype only) | syntax/lint hooks on all modes |
-| **Validation** | Tests pass (agent-reported) | Tests pass + `actionlint` on any .yml in `.github/workflows/` |
+| **Validation** | Tests pass (agent-reported) | actionlint + `act` execution in Docker + agent tests through act pipeline |
 | **Total runs** | 144 | 8 tasks × 4 modes × 2 models = 64 runs |
 
 ## Task Redesign (Tasks 11-18)
@@ -29,7 +29,7 @@ These tasks already have GHA-themed descriptions but currently produce standalon
 2. **The script itself** in the constrained language
 3. **Tests** for the script logic (same as v2)
 
-The workflow doesn't need to be runnable (no real repo context), but it must pass `actionlint` static analysis. This tests whether the agent can produce valid workflow YAML alongside the implementation.
+The workflow must pass `actionlint` AND run successfully in Docker via `act push`. All agent tests must execute through the workflow pipeline — no direct script testing. Agents produce `act-result.txt` as a mandatory artifact proving the workflow ran with correct outputs.
 
 ### Task-by-Task Prompt Adjustments
 

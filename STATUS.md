@@ -147,23 +147,38 @@ results/2026-04-07_225702/         — v2 benchmark results (108 complete + 3 C#
 workspaces/                        — Isolated agent workspace directories
 ```
 
-## v3 Direction (decided 2026-04-08)
+## v3 Implementation (2026-04-08, branch `gha-benchmark-v3`)
 
-**See `PLAN-v3-gha.md` for full implementation plan.**
+**See `PLAN-v3-gha.md` for original plan. See `benchmark-instructions-v3.md` for current spec.**
 
 v3 pivots from general scripting to GitHub Actions workflow authoring:
-- **Tasks**: Only 11-18 (GHA-category tasks) — agents must produce valid workflow YAML + scripts
+- **Tasks**: Only 11-18 (GHA-category tasks)
 - **Modes**: default, powershell, bash, typescript-bun (dropped c#, powershell-strict)
-- **Hooks**: syntax/lint checking on all modes via PostToolUse hooks (including `actionlint` for workflow YAML)
-- **Validation**: `actionlint` on workflow files + agent's own tests
+- **Hooks**: PostToolUse syntax/lint hooks on all modes (.py, .sh, .ts, .ps1, .yml via actionlint)
+- **Validation**: actionlint + `act` execution in Docker — all agent tests must run through the GHA pipeline
+- **Key artifact**: `act-result.txt` — mandatory proof that the workflow ran with correct outputs
+- **Metrics**: Per-tool-use timing via real-time Popen streaming, actionlint pass rates, hook effectiveness
 - **Branch**: `gha-benchmark-v3`
-- **Estimated runs**: 8 tasks × 4 modes × 2 models = 64 runs (~$24-32)
+- **Estimated runs**: 8 tasks × 4 modes × 2 models = 64 runs
 
-## To Resume: Next Steps
+### Phases completed
+1. Infrastructure: actionlint, shellcheck, bats-core installed
+2. Hooks: syntax-check.py extended for .py, .sh, .yml
+3. Runner: new modes, GHA prompt addendum, workspace hook setup, Popen streaming
+4. Instructions: benchmark-instructions-v3.md created
+5. Pilot runs: task 11 tested across modes, iterating on prompt design
 
-1. Read `PLAN-v3-gha.md` for the full implementation plan with phases
-2. Phase 1: Install actionlint, shellcheck, bats-core
-3. Phase 2: Extend `hooks/syntax-check.py` for .py, .sh, .yml
-4. Phase 3: Update runner.py (new modes, GHA prompt addendum, hook setup, post-run validation)
-5. Phase 4: Create `benchmark-instructions-v3.md`
-6. Phase 5: Pilot run (2 tasks × 4 modes × 1 model), then full run (64 runs)
+### Key design decisions made during implementation
+- All tests must run through `act` — no direct script testing
+- No `.github/workflows/` at repo root (only in agent workspaces)
+- Only spawned agents fix their own YAML (runner observes, never intervenes)
+- Runner's independent `act push` removed — agent's `act-result.txt` is ground truth
+- MCP servers disabled on agent instances (--strict-mcp-config)
+- Git push squashing removed (caused repo corruption under concurrent access)
+
+### To Resume: Next Steps
+
+1. Complete pilot run: task 11 × 4 modes × 2 models
+2. Run analysis notebook on results
+3. Full run: tasks 11-18 × 4 modes × 2 models = 64 runs
+4. Cross-mode analysis of actionlint pass rates, act success rates, hook effectiveness
