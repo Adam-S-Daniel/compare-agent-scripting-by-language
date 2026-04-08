@@ -1,6 +1,6 @@
 # Benchmark Results: PowerShell vs Default Language
 
-**Last updated:** 2026-04-08 06:54:56 AM ET
+**Last updated:** 2026-04-08 06:56:16 AM ET
 
 **Status:** 110/144 runs completed, 142 remaining
 **Total cost so far:** $77.4534
@@ -10,6 +10,8 @@
 
 | Task | Mode | Model | Duration | Turns | Lines | Errors | Cost | Language |
 |------|------|-------|----------|-------|-------|--------|------|----------|
+| CSV Report Generator | csharp-script | opus | 436s | 20 | 704 | 4 | $1.3294 | csharp |
+| CSV Report Generator | csharp-script | sonnet | 453s | 14 | 762 | 3 | $0.7435 | csharp |
 | CSV Report Generator | default | opus | 102s | 12 | 960 | 0 | $0.3757 | python |
 | CSV Report Generator | default | sonnet | 376s | 1 | 1760 | 3 | $0.7093 | python |
 | CSV Report Generator | powershell | opus | 255s | 37 | 330 | 0 | $1.0452 | powershell |
@@ -118,8 +120,6 @@
 | Secret Rotation Validator | powershell | sonnet | 212s | 11 | 718 | 0 | $0.4808 | powershell |
 | Secret Rotation Validator | powershell-strict | opus | 318s | 39 | 662 | 2 | $1.2671 | powershell |
 | Secret Rotation Validator | powershell-strict | sonnet | 238s | 20 | 553 | 0 | $0.5268 | powershell |
-| CSV Report Generator | csharp-script | opus | 436s | 20 | 704 | 4 | $1.3294 | csharp |
-| CSV Report Generator | csharp-script | sonnet | 453s | 14 | 762 | 3 | $0.7435 | csharp |
 
 ## Comparison by Language Mode
 
@@ -141,9 +141,9 @@
 
 | Task | Model | Mode | Default Lang | Def Dur | Mode Dur | Dur Delta | Def Err | Mode Err | Err Delta | Def Lines | Mode Lines |
 |------|-------|------|-------------|---------|----------|-----------|---------|----------|-----------|-----------|------------|
+| CSV Report Generator | sonnet | csharp-script | python | 376s | 453s | +20% | 3 | 3 | +0 | 1760 | 762 |
 | CSV Report Generator | sonnet | powershell | python | 376s | 124s | -67% | 3 | 0 | -3 | 1760 | 464 |
 | CSV Report Generator | sonnet | powershell-strict | python | 376s | 392s | +4% | 3 | 0 | -3 | 1760 | 535 |
-| CSV Report Generator | sonnet | csharp-script | python | 376s | 453s | +20% | 3 | 3 | +0 | 1760 | 762 |
 | Log File Analyzer | sonnet | powershell | python | 176s | 232s | +32% | 0 | 0 | +0 | 2268 | 681 |
 | Log File Analyzer | sonnet | powershell-strict | python | 176s | 228s | +30% | 0 | 1 | +1 | 2268 | 802 |
 | Directory Tree Sync | sonnet | powershell | python | 234s | 179s | -23% | 1 | 0 | -1 | 1723 | 757 |
