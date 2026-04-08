@@ -1,0 +1,264 @@
+[Assistant] 
+
+I'll start by understanding the task, then follow TDD methodology to build a GitHub Actions matrix generator in PowerShell.
+
+Let me first check the current working directory.
+[Tool: Bash] ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-opus/
+[Result] total 28
+drwxr-xr-x 2 passp passp  4096 Apr  8 05:31 .
+drwxr-xr-x 4 passp passp  4096 Apr  8 05:31 ..
+-rw-r--r-- 1 passp passp 17086 Apr  7 22:53 benchmark-instructions-v2.md
+[Tool: Bash] which pwsh && pwsh --version
+[Result] /snap/bin/pwsh
+PowerShell 7.6.0
+[Assistant] Good. Let me start with the first failing test.
+
+## Step 1: Basic matrix generation from OS, language versions, and feature flags
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-opus/MatrixGenerator.Tests.ps1", "content": "BeforeAll {\n 
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-opus/MatrixGenerator.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Run the tests — they should fail since the script doesn't exist yet.
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./MatrixGenerator.Tests.ps1 -Output Detailed" 2>&1 | tail -30
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 3 tests in 129ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-opus/MatrixGenerator.Tests.ps1'[0m
+[91m[-] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-opus/MatrixGenerator.Tests.ps1 failed with:[0m
+[91mCommandNotFoundException: The term '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-opus/MatrixGenerator.ps1' is not recognized as a name of a cmdlet, function, script file, or executable program.
+[91mCheck the spelling of the name, or if a path was included, verify that the path is correct and try again.
+[91mat <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-0
+[Assistant] Tests fail as expected. Now write the minimum code to make them pass.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-opus/MatrixGenerator.ps1", "content": "# MatrixGenerator.ps
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-opus/MatrixGenerator.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./MatrixGenerator.Tests.ps1 -Output Detailed" 2>&1 | tail -30
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 3 tests in 126ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-opus/MatrixGenerator.Tests.ps1'[0m
+[92mDescribing New-BuildMatrix[0m
+[96m Context Basic matrix generation[0m
+[32m   [+] generates a cartesian product of OS, language, and feature-flag dimensions[0m[90m 101ms (75ms|26ms)[0m
+[32m   [+] returns valid JSON when converted[0m[90m 36ms (35ms|1ms)[0m
+[32m   [+] each combination contains all dimension keys[0m[90m 19ms (18ms|1ms)[0m
+[97mTests completed in 478ms[0m
+[32mTests Passed: 3, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Assistant] All 3 pass. Now add tests for exclude rules.
+
+## Step 2: Exclude rules
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-opus/MatrixGenerator.Tests.ps1"}
+[Result] 1	BeforeAll {
+2	    . "$PSScriptRoot/MatrixGenerator.ps1"
+3	}
+4	
+5	Describe "New-BuildMatrix" {
+6	
+7	    # ── Basic cartesian product ──────────────────────────────────────────
+8	    Context "Basic matrix generation" {
+9	
+10	        It "generates a cartesian product of OS, language, and feature-flag dimensions" {
+11	            $config = @{
+12	                os       = @("ubuntu-latest", "windows-latest")
+13	                language = @("3.9", "3.10")
+14	                feature  = @("enabled")
+15	            }
+16	            $result = New-BuildMatrix -Config $config
+17	            # 2 OS × 2 language × 1 feature = 4 combinations
+18	            $result.matrix.include.Count | Should -Be 4
+19	        }
+20	
+21	        It "returns valid JSON when converted" {
+22	            $config = @{
+23	                os       = @("ubuntu-latest")
+24	                language = @("3.9")
+25	            }
+26	            $result = New-BuildMatrix -Config $config
+27	            $json = $result | ConvertTo-J
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-opus/MatrixGenerator.Tests.ps1", "old
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-opus/MatrixGenerator.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./MatrixGenerator.Tests.ps1 -Output Detailed" 2>&1 | tail -25
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 6 tests in 141ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-opus/MatrixGenerator.Tests.ps1'[0m
+[92mDescribing New-BuildMatrix[0m
+[96m Context Basic matrix generation[0m
+[32m   [+] generates a cartesian product of OS, language, and feature-flag dimensions[0m[90m 102ms (77ms|25ms)[0m
+[32m   [+] returns valid JSON when converted[0m[90m 36ms (35ms|1ms)[0m
+[32m   [+] each combination contains all dimension keys[0m[90m 19ms (18ms|1ms)[0m
+[96m Context Exclude rules[0m
+[32m   [+] removes combinations matching an exclude rule[0m[90m 13ms (6ms|7ms)[0m
+[32m   [+] does not remove non-matching combinations[0m[90m 5ms (5ms|1ms)[0m
+[32m   [+] supports partial-key excludes (matches on subset of dimensions)[0m[90m 8ms (7ms|1ms)[0m
+[97mTests c
+[Assistant] 6/6 pass. Now add include rules tests.
+
+## Step 3: Include rules
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-opus/MatrixGenerator.Tests.ps1"}
+[Result] 1	BeforeAll {
+2	    . "$PSScriptRoot/MatrixGenerator.ps1"
+3	}
+4	
+5	Describe "New-BuildMatrix" {
+6	
+7	    # ── Basic cartesian product ──────────────────────────────────────────
+8	    Context "Basic matrix generation" {
+9	
+10	        It "generates a cartesian product of OS, language, and feature-flag dimensions" {
+11	            $config = @{
+12	                os       = @("ubuntu-latest", "windows-latest")
+13	                language = @("3.9", "3.10")
+14	                feature  = @("enabled")
+15	            }
+16	            $result = New-BuildMatrix -Config $config
+17	            # 2 OS × 2 language × 1 feature = 4 combinations
+18	            $result.matrix.include.Count | Should -Be 4
+19	        }
+20	
+21	        It "returns valid JSON when converted" {
+22	            $config = @{
+23	                os       = @("ubuntu-latest")
+24	                language = @("3.9")
+25	            }
+26	            $result = New-BuildMatrix -Config $config
+27	            $json = $result | ConvertTo-J
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-opus/MatrixGenerator.Tests.ps1", "old
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-opus/MatrixGenerator.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./MatrixGenerator.Tests.ps1 -Output Detailed" 2>&1 | tail -40
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 17 tests in 151ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-opus/MatrixGenerator.Tests.ps1'[0m
+[92mDescribing New-BuildMatrix[0m
+[96m Context Basic matrix generation[0m
+[32m   [+] generates a cartesian product of OS, language, and feature-flag dimensions[0m[90m 92ms (63ms|29ms)[0m
+[32m   [+] returns valid JSON when converted[0m[90m 29ms (28ms|1ms)[0m
+[32m   [+] each combination contains all dimension keys[0m[90m 26ms (25ms|1ms)[0m
+[96m Context Exclude rules[0m
+[32m   [+] removes combinations matching an exclude rule[0m[90m 9ms (6ms|3ms)[0m
+[32m   [+] does not remove non-matching combinations[0m[90m 5ms (5ms|1ms)[0m
+[32m   [+] supports partial-key excludes (matches on subset of dimensions)[0m[90m 17ms (11ms|6ms)[0m
+[96m Conte
+[Assistant] All 17 tests pass. Now add the ConvertTo-MatrixJson tests and an end-to-end integration test.
+
+## Step 4: ConvertTo-MatrixJson and integration tests
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-opus/MatrixGenerator.Tests.ps1"}
+[Result] 1	BeforeAll {
+2	    . "$PSScriptRoot/MatrixGenerator.ps1"
+3	}
+4	
+5	Describe "New-BuildMatrix" {
+6	
+7	    # ── Basic cartesian product ──────────────────────────────────────────
+8	    Context "Basic matrix generation" {
+9	
+10	        It "generates a cartesian product of OS, language, and feature-flag dimensions" {
+11	            $config = @{
+12	                os       = @("ubuntu-latest", "windows-latest")
+13	                language = @("3.9", "3.10")
+14	                feature  = @("enabled")
+15	            }
+16	            $result = New-BuildMatrix -Config $config
+17	            # 2 OS × 2 language × 1 feature = 4 combinations
+18	            $result.matrix.include.Count | Should -Be 4
+19	        }
+20	
+21	        It "returns valid JSON when converted" {
+22	            $config = @{
+23	                os       = @("ubuntu-latest")
+24	                language = @("3.9")
+25	            }
+26	            $result = New-BuildMatrix -Config $config
+27	            $json = $result | ConvertTo-J
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-opus/MatrixGenerator.Tests.ps1", "old
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-opus/MatrixGenerator.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./MatrixGenerator.Tests.ps1 -Output Detailed" 2>&1 | tail -50
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 21 tests in 156ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-opus/MatrixGenerator.Tests.ps1'[0m
+[92mDescribing New-BuildMatrix[0m
+[96m Context Basic matrix generation[0m
+[32m   [+] generates a cartesian product of OS, language, and feature-flag dimensions[0m[90m 98ms (76ms|23ms)[0m
+[32m   [+] returns valid JSON when converted[0m[90m 35ms (33ms|1ms)[0m
+[32m   [+] each combination contains all dimension keys[0m[90m 24ms (22ms|1ms)[0m
+[96m Context Exclude rules[0m
+[32m   [+] removes combinations matching an exclude rule[0m[90m 9ms (7ms|2ms)[0m
+[32m   [+] does not remove non-matching combinations[0m[90m 8ms (7ms|1ms)[0m
+[32m   [+] supports partial-key excludes (matches on subset of dimensions)[0m[90m 10ms (9ms|1ms)[0m
+[96m Contex
+[Assistant] All 21 tests pass. Let me verify the final state of both files.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-opus/MatrixGenerator.ps1"}
+[Result] 1	# MatrixGenerator.ps1
+2	# Generates a GitHub Actions strategy.matrix JSON from a configuration hashtable.
+3	# Supports include/exclude rules, max-parallel, fail-fast, and size validation.
+4	
+5	function New-BuildMatrix {
+6	    <#
+7	    .SYNOPSIS
+8	        Generate a GitHub Actions strategy.matrix object from a configuration.
+9	    .PARAMETER Config
+10	        Hashtable whose keys are dimension names and values are arrays of options.
+11	    .PARAMETER Include
+12	        Array of hashtables for extra combinations to merge into the matrix.
+13	    .PARAMETER Exclude
+14	        Array of hashtables for combinations to remove from the matrix.
+15	    .PARAMETER MaxParallel
+16	        Maximum number of parallel jobs (maps to strategy.max-parallel).
+17	    .PARAMETER FailFast
+18	        Whether to cancel remaining jobs when one fails (maps to strategy.fail-fast).
+19	    .PARAMETER MaxSize
+20	        Maximum allowed number of matrix combinations. Defaults to 256 (GitHub's limit).
+21	    #>
+22	  
+[Assistant] Everything looks clean. Let me do one final run to confirm all tests pass with `Invoke-Pester` (no path argument, as the task requires).
+[Tool: Bash] pwsh -Command "Invoke-Pester -Output Detailed" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 21 tests in 149ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-opus/MatrixGenerator.Tests.ps1'[0m
+[92mDescribing New-BuildMatrix[0m
+[96m Context Basic matrix generation[0m
+[32m   [+] generates a cartesian product of OS, language, and feature-flag dimensions[0m[90m 102ms (79ms|23ms)[0m
+[32m   [+] returns valid JSON when converted[0m[90m 32ms (31ms|1ms)[0m
+[32m   [+] each combination contains all dimension keys[0m[90m 24ms (23ms|1ms)[0m
+[96m Context Exclude rules[0m
+[32m   [+] removes combinations matching an exclude rule[0m[90m 11ms (7ms|3ms)[0m
+[32m   [+] does not remove non-matching combinations[0m[90m 9ms (9ms|1ms)[0m
+[32m   [+] supports partial-key excludes (matches on subset of dimensions)[0m[90m 9ms (8ms|1ms)[0m
+[96m Conte
+[Assistant] **21 tests pass, 0 failures.**
+
+## Summary
+
+Two files created:
+
+**`MatrixGenerator.ps1`** — Two functions:
+- `New-BuildMatrix` — Takes a config hashtable of dimensions, builds the cartesian product, applies exclude rules (partial-key matching), merges include rules (standalone or augmenting existing combos), validates against a max size (default 256), and returns a strategy hashtable with `matrix`, optional `max-parallel`, and optional `fail-fast`.
+- `ConvertTo-MatrixJson` — Wrapper that calls `New-BuildMatrix` and returns the result as JSON.
+
+**`MatrixGenerator.Tests.ps1`** — 21 Pester tests across 8 contexts:
+1. **Basic matrix generation** — cartesian product, valid JSON, all keys present
+2. **Exclude rules** — exact match, no-match passthrough, partial-key matching
+3. **Include rules** — standalone additions, merge into existing combos
+4. **Strategy options** — max-parallel and fail-fast presence/absence
+5. **Matrix size validation** — over-limit throws, at-limit passes, default 256
+6. **Error handling** — empty config
+7. **Include + exclude together** — combined behavior
+8. **End-to-end integration** — realistic 3-OS × 3-Node × 2-feature pipeline with excludes, includes, and full verification
