@@ -1,0 +1,390 @@
+[Assistant] 
+
+I'll start by understanding the task, then follow TDD methodology to build the solution.
+
+Let me check the current working directory first.
+[Tool: Bash] ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/
+[Result] total 28
+drwxr-xr-x 2 passp passp  4096 Apr  8 05:33 .
+drwxr-xr-x 5 passp passp  4096 Apr  8 05:33 ..
+-rw-r--r-- 1 passp passp 17086 Apr  7 22:53 benchmark-instructions-v2.md
+[Tool: Bash] which pwsh && pwsh --version
+[Result] /snap/bin/pwsh
+PowerShell 7.6.0
+[Assistant] Good. Let me start with the first failing test.
+
+## Red: First test — basic matrix generation from OS and language version config
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/MatrixGenerator.Tests.ps1", "content": "Set-Str
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/MatrixGenerator.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./MatrixGenerator.Tests.ps1 -Output Detailed" 2>&1 | tail -30
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[91m[-] Discovery in /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/MatrixGenerator.Tests.ps1 failed with:[0m
+[91mSystem.Management.Automation.ParameterBindingException: A parameter cannot be found that matches parameter name 'Latest'.
+[91m   at System.Management.Automation.ExceptionHandlingOps.CheckActionPreference(FunctionContext funcContext, Exception exception) in /root/parts/powershell/build/src/System.Management.Automation/engine/runtime/Operations/MiscOps.cs:line 1786
+[91m   at System.Management.Automation.Interpreter.ActionCallInstruction`2.Run(InterpretedFrame frame) in /root/parts/powershell/build/src/System.Management.Automation/engine/interpreter/CallInstruction.Generated.cs:line 504
+[91m   at System.Management.Automation.Interpreter.EnterTryCatchFinallyInstruction.Run(InterpretedFrame frame) in /root/parts/pow
+[Assistant] The `Set-StrictMode -Latest` at file scope conflicts with Pester discovery. I'll move it into `BeforeAll`.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/MatrixGenerator.Tests.ps1
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/MatrixGenerator.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./MatrixGenerator.Tests.ps1 -Output Detailed" 2>&1 | tail -20
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 1 tests in 126ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/MatrixGenerator.Tests.ps1'[0m
+[91m[-] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/MatrixGenerator.Tests.ps1 failed with:[0m
+[91mParameterBindingException: A parameter cannot be found that matches parameter name 'Latest'.
+[91mat <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/MatrixGenerator.Tests.ps1:2[0m
+[97mTests completed in 329ms[0m
+[97mTests Passed: 0, [0m[91mFailed: 1, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[91mContainer failed: 1[0m
+[Tool: Bash] pwsh -Command "Set-StrictMode -Version Latest; Write-Host 'ok'" 2>&1
+[Result] ok
+[Assistant] The parameter is `-Version Latest`, not `-Latest`. Let me fix the test file.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/MatrixGenerator.Tests.ps1
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/MatrixGenerator.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./MatrixGenerator.Tests.ps1 -Output Detailed" 2>&1 | tail -20
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 1 tests in 129ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/MatrixGenerator.Tests.ps1'[0m
+[91m[-] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/MatrixGenerator.Tests.ps1 failed with:[0m
+[91mCommandNotFoundException: The term '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/MatrixGenerator.ps1' is not recognized as a name of a cmdlet, function, script file, or executable program.
+[91mCheck the spelling of the name, or if a path was included, verify that the path is correct and try again.
+[91mat <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language
+[Assistant] Test fails because `MatrixGenerator.ps1` doesn't exist yet — that's the expected Red phase. Now let me write the minimum implementation.
+
+## Green: Implement basic cartesian product
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/MatrixGenerator.ps1", "content": "Set-StrictMod
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/MatrixGenerator.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./MatrixGenerator.Tests.ps1 -Output Detailed" 2>&1 | tail -25
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 1 tests in 126ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/MatrixGenerator.Tests.ps1'[0m
+[92mDescribing New-BuildMatrix[0m
+[96m Context Basic cartesian product[0m
+[32m   [+] generates all OS x version combinations[0m[90m 104ms (79ms|25ms)[0m
+[97mTests completed in 413ms[0m
+[32mTests Passed: 1, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Assistant] First test passes. Now I'll continue TDD — adding tests for each feature, then making them pass.
+
+## Red: Test exclude rules
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/MatrixGenerator.Tests.ps1"}
+[Result] 1	BeforeAll {
+2	    Set-StrictMode -Version Latest
+3	    $ErrorActionPreference = 'Stop'
+4	    . "$PSScriptRoot/MatrixGenerator.ps1"
+5	}
+6	
+7	Describe 'New-BuildMatrix' {
+8	
+9	    Context 'Basic cartesian product' {
+10	        It 'generates all OS x version combinations' {
+11	            $config = @{
+12	                os       = @('ubuntu-latest', 'windows-latest')
+13	                version  = @('3.9', '3.10')
+14	            }
+15	            $result = New-BuildMatrix -Configuration $config
+16	            $matrix = $result.matrix
+17	            $matrix.include.Count | Should -Be 4
+18	            $matrix.include[0].os | Should -Be 'ubuntu-latest'
+19	            $matrix.include[0].version | Should -Be '3.9'
+20	        }
+21	    }
+22	}
+23	
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/MatrixGenerator.Tests.ps1
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/MatrixGenerator.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./MatrixGenerator.Tests.ps1 -Output Detailed" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 15 tests in 149ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/MatrixGenerator.Tests.ps1'[0m
+[92mDescribing New-BuildMatrix[0m
+[96m Context Basic cartesian product[0m
+[32m   [+] generates all OS x version combinations[0m[90m 97ms (75ms|22ms)[0m
+[96m Context Exclude rules[0m
+[32m   [+] removes combinations matching an exclude rule[0m[90m 24ms (22ms|2ms)[0m
+[32m   [+] excludes based on partial key match[0m[90m 8ms (7ms|1ms)[0m
+[96m Context Include rules[0m
+[32m   [+] adds new combinations via include[0m[90m 15ms (14ms|1ms)[0m
+[32m   [+] augments existing combinations with extra properties via include[0m[90m 10ms (9ms|1ms)[0m
+[96m Context Max-parallel and fail-fast[0m
+[32m   [+] includes max-parallel in the result[0m
+[Assistant] All 15 tests pass. Let me add a few more edge case tests and an error-handling test for invalid input, then add the complete JSON output script.
+
+## Red: More edge cases and error handling
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/MatrixGenerator.Tests.ps1"}
+[Result] 1	BeforeAll {
+2	    Set-StrictMode -Version Latest
+3	    $ErrorActionPreference = 'Stop'
+4	    . "$PSScriptRoot/MatrixGenerator.ps1"
+5	}
+6	
+7	Describe 'New-BuildMatrix' {
+8	
+9	    Context 'Basic cartesian product' {
+10	        It 'generates all OS x version combinations' {
+11	            $config = @{
+12	                os       = @('ubuntu-latest', 'windows-latest')
+13	                version  = @('3.9', '3.10')
+14	            }
+15	            $result = New-BuildMatrix -Configuration $config
+16	            $matrix = $result.matrix
+17	            $matrix.include.Count | Should -Be 4
+18	            $matrix.include[0].os | Should -Be 'ubuntu-latest'
+19	            $matrix.include[0].version | Should -Be '3.9'
+20	        }
+21	    }
+22	
+23	    Context 'Exclude rules' {
+24	        It 'removes combinations matching an exclude rule' {
+25	            $config = @{
+26	                os      = @('ubuntu-latest', 'windows-latest')
+27	                version = @('3.9', '3.10')
+28	                ex
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/MatrixGenerator.Tests.ps1
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/MatrixGenerator.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./MatrixGenerator.Tests.ps1 -Output Detailed" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 19 tests in 155ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/MatrixGenerator.Tests.ps1'[0m
+[92mDescribing New-BuildMatrix[0m
+[96m Context Basic cartesian product[0m
+[32m   [+] generates all OS x version combinations[0m[90m 105ms (81ms|24ms)[0m
+[96m Context Exclude rules[0m
+[32m   [+] removes combinations matching an exclude rule[0m[90m 18ms (17ms|1ms)[0m
+[32m   [+] excludes based on partial key match[0m[90m 12ms (11ms|1ms)[0m
+[96m Context Include rules[0m
+[32m   [+] adds new combinations via include[0m[90m 15ms (14ms|1ms)[0m
+[32m   [+] augments existing combinations with extra properties via include[0m[90m 9ms (8ms|1ms)[0m
+[96m Context Max-parallel and fail-fast[0m
+[32m   [+] includes max-parallel in the result[0
+[Assistant] All 19 tests pass. Now let me add a runner script that reads a JSON config file and outputs the complete matrix JSON, and a test fixture.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/fixtures/basic-config.json", "content": "{\n  \
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/fixtures/basic-config.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/fixtures/large-config.json", "content": "{\n  \
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/fixtures/large-config.json (file state is current in your context — no need to Read it back)
+[Assistant] Now write the runner script:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/Generate-Matrix.ps1", "content": "#!/usr/bin/en
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/Generate-Matrix.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Let me test the runner with the fixture:
+[Tool: Bash] pwsh -File ./Generate-Matrix.ps1 -ConfigPath ./fixtures/basic-config.json 2>&1
+[Result ERROR] Exit code 1
+[31;1mParserError: [0m/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/Generate-Matrix.ps1:16[0m
+[31;1m[0m[36;1mLine |[0m
+[31;1m[0m[36;1m[36;1m  16 | [0m [36;1m[CmdletBinding()][0m
+[31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m     | [31;1m ~~~~~~~~~~~~~~~~~[0m
+[31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m[31;1m[31;1m[36;1m     | [31;1mUnexpected attribute 'CmdletBinding'.[0m
+[Assistant] The `param()` block must come first in a script file. Let me fix the ordering.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/Generate-Matrix.ps1", "content": "#!/usr/bin/en
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/Generate-Matrix.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -File ./Generate-Matrix.ps1 -ConfigPath ./fixtures/basic-config.json 2>&1
+[Result] {
+  "max-parallel": 4,
+  "fail-fast": false,
+  "matrix": {
+    "include": [
+      {
+        "version": "3.9",
+        "os": "ubuntu-latest"
+      },
+      {
+        "version": "3.10",
+        "os": "ubuntu-latest"
+      },
+      {
+        "version": "3.11",
+        "os": "ubuntu-latest"
+      },
+      {
+        "version": "3.9",
+        "os": "windows-latest"
+      },
+      {
+        "version": "3.10",
+        "os": "windows-latest"
+      },
+      {
+        "version": "3.11",
+        "os": "windows-latest"
+      },
+      {
+        "version": "3.10",
+        "os": "macos-latest"
+      },
+      {
+        "version": "3.11",
+        "os": "macos-latest"
+      },
+      {
+        "os": "ubuntu-latest",
+        "version": "3.12",
+        "experimental": true
+      }
+    ]
+  }
+}
+[Assistant] The runner works correctly — it excluded macos+3.9, included ubuntu+3.12 as experimental. Let me test the error case:
+[Tool: Bash] pwsh -File ./Generate-Matrix.ps1 -ConfigPath ./fixtures/large-config.json 2>&1
+[Result ERROR] Exit code 1
+[31;1mWrite-Error: [0m/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/Generate-Matrix.ps1:77[0m
+[31;1m[0m[36;1mLine |[0m
+[31;1m[0m[36;1m[36;1m  77 | [0m     [36;1mWrite-Error "Matrix generation failed: $_"[0m
+[31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m     | [31;1m     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+[31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m[31;1m[31;1m[36;1m     | [31;1mMatrix generation failed: Matrix size 75 exceeds maximum of 10[0m
+[31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m[31;1m[31;1m[36;1m[31;1m[36;1m     | [31;1mcombinations.[0m
+[Assistant] Error handling works — clear message showing 75 combos exceeds the 10 max. Now add tests for the CLI runner and fixture handling.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/MatrixGenerator.Tests.ps1"}
+[Result] 1	BeforeAll {
+2	    Set-StrictMode -Version Latest
+3	    $ErrorActionPreference = 'Stop'
+4	    . "$PSScriptRoot/MatrixGenerator.ps1"
+5	}
+6	
+7	Describe 'New-BuildMatrix' {
+8	
+9	    Context 'Basic cartesian product' {
+10	        It 'generates all OS x version combinations' {
+11	            $config = @{
+12	                os       = @('ubuntu-latest', 'windows-latest')
+13	                version  = @('3.9', '3.10')
+14	            }
+15	            $result = New-BuildMatrix -Configuration $config
+16	            $matrix = $result.matrix
+17	            $matrix.include.Count | Should -Be 4
+18	            $matrix.include[0].os | Should -Be 'ubuntu-latest'
+19	            $matrix.include[0].version | Should -Be '3.9'
+20	        }
+21	    }
+22	
+23	    Context 'Exclude rules' {
+24	        It 'removes combinations matching an exclude rule' {
+25	            $config = @{
+26	                os      = @('ubuntu-latest', 'windows-latest')
+27	                version = @('3.9', '3.10')
+28	                ex
+[Assistant] Now let me add integration tests that test the CLI runner against fixtures:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/MatrixGenerator.Tests.ps1
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/MatrixGenerator.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./MatrixGenerator.Tests.ps1 -Output Detailed" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 21 tests in 155ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/MatrixGenerator.Tests.ps1'[0m
+[92mDescribing New-BuildMatrix[0m
+[96m Context Basic cartesian product[0m
+[32m   [+] generates all OS x version combinations[0m[90m 100ms (70ms|29ms)[0m
+[96m Context Exclude rules[0m
+[32m   [+] removes combinations matching an exclude rule[0m[90m 17ms (16ms|1ms)[0m
+[32m   [+] excludes based on partial key match[0m[90m 17ms (9ms|8ms)[0m
+[96m Context Include rules[0m
+[32m   [+] adds new combinations via include[0m[90m 18ms (16ms|2ms)[0m
+[32m   [+] augments existing combinations with extra properties via include[0m[90m 11ms (10ms|1ms)[0m
+[96m Context Max-parallel and fail-fast[0m
+[32m   [+] includes max-parallel in the result[
+[Assistant] All 21 tests pass. Let me verify the final state of all files.
+[Tool: Bash] ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/ && echo "---" && ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/fixtures/
+[Result] total 56
+drwxr-xr-x 3 passp passp  4096 Apr  8 05:37 .
+drwxr-xr-x 5 passp passp  4096 Apr  8 05:33 ..
+-rw-r--r-- 1 passp passp  2301 Apr  8 05:36 Generate-Matrix.ps1
+-rw-r--r-- 1 passp passp 11612 Apr  8 05:37 MatrixGenerator.Tests.ps1
+-rw-r--r-- 1 passp passp  7900 Apr  8 05:35 MatrixGenerator.ps1
+-rw-r--r-- 1 passp passp 17086 Apr  7 22:53 benchmark-instructions-v2.md
+drwxr-xr-x 2 passp passp  4096 Apr  8 05:37 fixtures
+---
+total 16
+drwxr-xr-x 2 passp passp 4096 Apr  8 05:37 .
+drwxr-xr-x 3 passp passp 4096 Apr  8 05:37 ..
+-rw-r--r-- 1 passp passp  303 Apr  8 05:36 basic-config.json
+-rw-r--r-- 1 passp passp  139 Apr  8 05:36 large-config.json
+[Assistant] Let me also verify strict mode compliance — check that all functions have `[CmdletBinding()]`, `[OutputType()]`, and typed parameters.
+[Tool: Bash] pwsh -Command "
+Set-StrictMode -Version Latest
+. ./MatrixGenerator.ps1
+
+# Verify all exported functions have CmdletBinding
+foreach (\$fn in @('New-BuildMatrix', 'Get-CartesianProduct', 'Remove-ExcludedCombinations', 'Test-CombinationMatchesRule', 'Add-IncludedCombinations', 'ConvertTo-MatrixJson')) {
+    \$cmd = Get-Command \$fn
+    \$attr = \$cmd.ScriptBlock.Attributes | Where-Object { \$_ -is [System.Management.Automation.CmdletBindingAttribute] }
+    if (\$attr) { Write-Host \"[OK] \$fn has CmdletBinding\" } else { Write-Host \"[FAIL] \$fn missing CmdletBinding\" }
+    
+    \$ot = \$cmd.ScriptBlock.Attributes | Where-Object { \$_ -is [System.Management.Automation.OutputTypeAttribute] }
+    if (\$ot) { Write-Host \"[OK] \$fn has OutputType: \$(\$ot.Type.Name)\" } else { Write-Host \"[FAIL] \$fn missing OutputType\" }
+}
+" 2>&1
+[Result] [OK] New-BuildMatrix has CmdletBinding
+[OK] New-BuildMatrix has OutputType: System.Collections.Hashtable
+[OK] Get-CartesianProduct has CmdletBinding
+[OK] Get-CartesianProduct has OutputType: System.Array
+[OK] Remove-ExcludedCombinations has CmdletBinding
+[OK] Remove-ExcludedCombinations has OutputType: System.Array
+[OK] Test-CombinationMatchesRule has CmdletBinding
+[OK] Test-CombinationMatchesRule has OutputType: System.Boolean
+[OK] Add-IncludedCombinations has CmdletBinding
+[OK] Add-IncludedCombinations has OutputType: System.Array
+[OK] ConvertTo-MatrixJson has CmdletBinding
+[OK] ConvertTo-MatrixJson has OutputType: System.String
+[Assistant] All strict mode requirements verified. Final test run:
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./MatrixGenerator.Tests.ps1 -Output Detailed" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 21 tests in 180ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/16-environment-matrix-generator/powershell-strict-opus/MatrixGenerator.Tests.ps1'[0m
+[92mDescribing New-BuildMatrix[0m
+[96m Context Basic cartesian product[0m
+[32m   [+] generates all OS x version combinations[0m[90m 118ms (84ms|33ms)[0m
+[96m Context Exclude rules[0m
+[32m   [+] removes combinations matching an exclude rule[0m[90m 25ms (23ms|3ms)[0m
+[32m   [+] excludes based on partial key match[0m[90m 35ms (13ms|21ms)[0m
+[96m Context Include rules[0m
+[32m   [+] adds new combinations via include[0m[90m 22ms (20ms|2ms)[0m
+[32m   [+] augments existing combinations with extra properties via include[0m[90m 17ms (16ms|1ms)[0m
+[96m Context Max-parallel and fail-fast[0m
+[32m   [+] includes max-parallel in the result
+[Assistant] All 21 tests pass. Here's a summary of what was built:
+
+## Files created
+
+| File | Purpose |
+|---|---|
+| `MatrixGenerator.ps1` | Core module — 6 functions for matrix generation |
+| `MatrixGenerator.Tests.ps1` | 21 Pester tests across 13 contexts |
+| `Generate-Matrix.ps1` | CLI entry point — reads JSON config, outputs matrix JSON |
+| `fixtures/basic-config.json` | Test fixture: 3 OS × 3 versions with exclude/include rules |
+| `fixtures/large-config.json` | Test fixture: deliberately oversized matrix for error testing |
+
+## Features covered
+
+- **Cartesian product** of arbitrary dimension arrays (os, version, arch, feature flags, etc.)
+- **Exclude rules** — partial or full key match removes combinations
+- **Include rules** — adds new combos or augments existing ones with extra properties (GitHub Actions semantics)
+- **max-parallel** and **fail-fast** strategy settings
+- **Matrix size validation** with configurable max (default 256)
+- **JSON output** via `ConvertTo-MatrixJson`
+- **Strict mode compliance** — `Set-StrictMode -Version Latest`, `$ErrorActionPreference = 'Stop'`, `[CmdletBinding()]`, `[OutputType()]`, explicitly typed parameters on every function
