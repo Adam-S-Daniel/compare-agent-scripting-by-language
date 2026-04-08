@@ -60,15 +60,24 @@ The workflow WILL be executed via `act push` after you finish. Design your workf
 
 You MUST validate your workflow file by running `actionlint .github/workflows/<task-name>.yml` and fixing any errors it reports. `actionlint` is pre-installed. Iterate until it passes cleanly.
 
-### Workflow Tests
+### Workflow Execution Test (Mandatory)
 
-Write tests that verify your workflow file as part of your main test suite:
+Your workflow must actually run in Docker via `act`. You MUST include a test that:
+1. Initializes a git repo in a temp directory and copies your project files into it
+2. Runs: `git add -A && git commit -m "test" && act push --rm 2>&1`
+3. Saves the full output to a file called `act-result.txt` in the current working directory
+4. Asserts that the act command exited with code 0
+
+The `act-result.txt` file MUST exist when your tests finish. It is a required artifact. If `act` fails, debug the workflow until it passes. `act` and Docker are pre-installed.
+
+### Workflow Structure Tests
+
+Also write tests that verify your workflow file:
 - Parse the YAML and check that it has the expected structure (triggers, jobs, steps)
 - Verify the workflow references your script files correctly (paths exist)
-- Verify step outputs, environment variables, and job dependencies are wired up correctly
 - Verify actionlint passes (run it as a subprocess in your test and assert exit code 0)
 
-These workflow tests must pass alongside your script logic tests.
+All workflow tests must pass alongside your script logic tests.
 
 ### Pre-installed Tools
 
@@ -240,11 +249,21 @@ WORKFLOW VALIDATION:
 You MUST validate your workflow file by running `actionlint .github/workflows/<task-name>.yml`
 and fix any errors it reports. actionlint is pre-installed. Iterate until it passes cleanly.
 
-WORKFLOW TESTS:
-Write tests that verify your workflow file:
+WORKFLOW EXECUTION TEST (MANDATORY):
+Your workflow must actually run in Docker via `act`. You MUST include a test that:
+1. Initializes a git repo in a temp directory and copies your project files into it
+2. Runs: git add -A && git commit -m "test" && act push --rm 2>&1
+3. Saves the full output to a file called `act-result.txt` in the current working directory
+4. Asserts that the act command exited with code 0
+
+The `act-result.txt` file MUST exist when your tests finish. It is a required artifact.
+If act fails, debug the workflow until it passes — check the output for errors.
+`act` and Docker are pre-installed.
+
+WORKFLOW STRUCTURE TESTS:
+Also write tests that verify your workflow file:
 - Parse the YAML and check that it has the expected structure (triggers, jobs, steps)
 - Verify the workflow references your script files correctly (paths exist)
-- Verify step outputs, environment variables, and job dependencies are wired up correctly
 - Verify actionlint passes (run it as a subprocess in your test and assert exit code 0)
 These tests should be part of your main test suite and must pass at the end.
 ```
