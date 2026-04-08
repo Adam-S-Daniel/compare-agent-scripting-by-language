@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Fixture: Linux / Python 3.11 run
+     Simulates a matrix build leg. Includes a deliberately flaky test
+     (test_network_retry) that passes here but fails on Windows. -->
+<testsuites name="pytest" time="2.345" tests="8" failures="1" errors="0" skipped="1">
+  <testsuite name="tests.unit.test_math" tests="3" failures="0" errors="0" skipped="0" time="0.310">
+    <testcase classname="tests.unit.test_math" name="test_add" time="0.100"/>
+    <testcase classname="tests.unit.test_math" name="test_subtract" time="0.105"/>
+    <testcase classname="tests.unit.test_math" name="test_divide_by_zero" time="0.105"/>
+  </testsuite>
+  <testsuite name="tests.unit.test_string" tests="3" failures="0" errors="0" skipped="1" time="0.535">
+    <testcase classname="tests.unit.test_string" name="test_trim" time="0.050"/>
+    <testcase classname="tests.unit.test_string" name="test_upper" time="0.050"/>
+    <testcase classname="tests.unit.test_string" name="test_deprecated_method" time="0.000">
+      <skipped message="Deprecated API removed in v2.0"/>
+    </testcase>
+  </testsuite>
+  <testsuite name="tests.integration.test_network" tests="2" failures="1" errors="0" skipped="0" time="1.500">
+    <!-- test_network_retry is flaky: passes on Linux, fails on Windows -->
+    <testcase classname="tests.integration.test_network" name="test_network_retry" time="0.750"/>
+    <testcase classname="tests.integration.test_network" name="test_connection_refused" time="0.750">
+      <failure message="ConnectionRefusedError: [Errno 111] Connection refused">
+ConnectionRefusedError: [Errno 111] Connection refused
+  File "tests/integration/test_network.py", line 42, in test_connection_refused
+    client.connect("localhost", 9999)
+      </failure>
+    </testcase>
+  </testsuite>
+</testsuites>
