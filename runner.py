@@ -1009,6 +1009,8 @@ def run_single_task(
         "--dangerously-skip-permissions",
         "--include-hook-events",
         "--verbose",
+        "--mcp-config", "{}",
+        "--strict-mcp-config",
     ]
     if effort:
         cmd.extend(["--effort", effort])
