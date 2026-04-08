@@ -331,6 +331,7 @@ MODES = list(PROMPT_TEMPLATES.keys())
 # ---------------------------------------------------------------------------
 
 PUSH_INTERVAL = 60  # seconds between incremental git pushes
+INCREMENTAL_PREFIX = "Incremental benchmark results:"
 
 
 def log(msg: str) -> None:
@@ -338,30 +339,85 @@ def log(msg: str) -> None:
     print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}", file=sys.stderr, flush=True)
 
 
-def git_push_results(repo_root: Path, branch: str, run_count: int, total_runs: int) -> None:
-    """Commit and push any new results to the remote branch."""
+def _last_commit_is_incremental(repo_root: Path) -> bool:
+    """Check if the most recent commit is an incremental status update."""
+    try:
+        result = subprocess.run(
+            ["git", "log", "-1", "--format=%s"],
+            cwd=str(repo_root), capture_output=True, text=True, timeout=10,
+        )
+        return result.stdout.strip().startswith(INCREMENTAL_PREFIX)
+    except Exception:
+        return False
+
+
+def git_push_results(
+    repo_root: Path,
+    branch: str,
+    run_count: int,
+    total_runs: int,
+    *,
+    final: bool = False,
+) -> None:
+    """Commit and push results, squashing consecutive incremental commits.
+
+    Incremental commits (periodic progress snapshots) get squashed into a
+    single commit so the history stays clean.  When ``final=True`` the commit
+    message reflects the completed run instead of "Incremental …".
+    """
     try:
         status = subprocess.run(
             ["git", "status", "--porcelain", "results/"],
             cwd=str(repo_root), capture_output=True, text=True, timeout=10,
         )
         if not status.stdout.strip():
-            return  # nothing new
+            if not final:
+                return  # nothing new for incremental pushes
+            # For final push, still squash previous incrementals even if
+            # there are no new changes to stage
+            if not _last_commit_is_incremental(repo_root):
+                return
 
+        # Stage results
         subprocess.run(
             ["git", "add", "results/"],
             cwd=str(repo_root), capture_output=True, timeout=10,
         )
-        msg = f"Incremental benchmark results: {run_count}/{total_runs} runs completed"
+
+        # Squash: if previous commit was incremental, soft-reset to absorb it
+        did_squash = False
+        if _last_commit_is_incremental(repo_root):
+            subprocess.run(
+                ["git", "reset", "--soft", "HEAD~1"],
+                cwd=str(repo_root), capture_output=True, timeout=10,
+            )
+            # Re-stage after reset (the index is preserved but we may need
+            # to pick up anything the reset un-committed)
+            subprocess.run(
+                ["git", "add", "results/"],
+                cwd=str(repo_root), capture_output=True, timeout=10,
+            )
+            did_squash = True
+
+        if final:
+            msg = f"Benchmark results: {run_count}/{total_runs} runs completed"
+        else:
+            msg = f"{INCREMENTAL_PREFIX} {run_count}/{total_runs} runs completed"
+
         subprocess.run(
             ["git", "commit", "-m", msg],
             cwd=str(repo_root), capture_output=True, timeout=30,
         )
-        subprocess.run(
-            ["git", "push", "-u", "origin", branch],
-            cwd=str(repo_root), capture_output=True, timeout=60,
-        )
-        log(f"  [push] Pushed results ({run_count}/{total_runs} done)")
+
+        # Force-with-lease when we squashed (rewrote history) — safe because
+        # only the runner touches this branch during a run.
+        if did_squash:
+            push_args = ["git", "push", "--force-with-lease", "-u", "origin", branch]
+        else:
+            push_args = ["git", "push", "-u", "origin", branch]
+        subprocess.run(push_args, capture_output=True, timeout=60, cwd=str(repo_root))
+
+        log(f"  [push] Pushed results ({run_count}/{total_runs} done{', FINAL' if final else ''})")
     except Exception as e:
         log(f"  [push] Warning: push failed: {e}")
 
@@ -1398,10 +1454,10 @@ def main():
     # Print summary
     print_summary_table(all_metrics)
 
-    # Final results.md and push
+    # Final results.md and push — squashes any remaining incremental commits
     pusher.stop()
     generate_results_md(run_dir, all_metrics, total_runs, run_count)
-    git_push_results(repo_root, git_branch, run_count, total_runs)
+    git_push_results(repo_root, git_branch, run_count, total_runs, final=True)
     log(f"Final results pushed to {git_branch}")
 
     log(f"\nResults saved to: {run_dir}")
