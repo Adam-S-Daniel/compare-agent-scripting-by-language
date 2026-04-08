@@ -1097,45 +1097,10 @@ def run_single_task(
     actionlint_pass = all(r["passed"] for r in actionlint_results) if actionlint_results else None
     actionlint_error_count = sum(1 for r in actionlint_results if r["passed"] is False)
 
-    # Post-run workflow execution via act (if available and workflow files exist)
-    act_result = {"ran": False, "passed": None, "duration_ms": 0, "output": "", "error": ""}
-    if workflow_dir.exists() and list(workflow_dir.glob("*.yml")) + list(workflow_dir.glob("*.yaml")):
-        # Commit all workspace files so act can use them
-        subprocess.run(["git", "add", "-A"], cwd=str(workspace), capture_output=True, timeout=10)
-        subprocess.run(
-            ["git", "commit", "-m", "benchmark run", "--allow-empty"],
-            cwd=str(workspace), capture_output=True, timeout=10,
-        )
-        try:
-            act_start = time.time()
-            r = subprocess.run(
-                ["act", "push", "--rm"],
-                cwd=str(workspace),
-                capture_output=True, text=True,
-                timeout=300,  # 5 minute cap per workflow
-                env=env,
-            )
-            act_duration_ms = int((time.time() - act_start) * 1000)
-            act_result = {
-                "ran": True,
-                "passed": r.returncode == 0,
-                "duration_ms": act_duration_ms,
-                "exit_code": r.returncode,
-                "output": (r.stdout or "")[-2000:],  # last 2000 chars
-                "error": (r.stderr or "")[-1000:],
-            }
-            log(f"  act push: {'PASS' if r.returncode == 0 else 'FAIL'} ({act_duration_ms}ms)")
-        except FileNotFoundError:
-            act_result["error"] = "act not installed"
-        except subprocess.TimeoutExpired:
-            act_duration_ms = 300_000
-            act_result = {
-                "ran": True, "passed": False, "duration_ms": act_duration_ms,
-                "exit_code": -1, "output": "", "error": "act timed out (5 min)",
-            }
-            log(f"  act push: TIMEOUT")
-        except Exception as e:
-            act_result["error"] = str(e)
+    # Check for agent-produced act-result.txt (proof the agent ran act in its tests)
+    act_result_path = workspace / "act-result.txt"
+    act_result_txt_exists = act_result_path.exists()
+    act_result_txt_size = act_result_path.stat().st_size if act_result_txt_exists else 0
 
     # Code metrics
     total_lines = count_lines(gen_dir) if gen_dir.exists() else 0
@@ -1236,12 +1201,8 @@ def run_single_task(
             "actionlint_pass": actionlint_pass,
             "actionlint_errors": actionlint_error_count,
             "actionlint_results": actionlint_results,
-            "act_ran": act_result["ran"],
-            "act_pass": act_result.get("passed"),
-            "act_duration_ms": act_result.get("duration_ms", 0),
-            "act_output": act_result.get("output", "")[-500:],
-            "act_error": act_result.get("error", ""),
-            "act_result_txt_exists": (workspace / "act-result.txt").exists(),
+            "act_result_txt_exists": act_result_txt_exists,
+            "act_result_txt_size": act_result_txt_size,
             "areas_of_difficulty": [],
             "observations": "",
         },
