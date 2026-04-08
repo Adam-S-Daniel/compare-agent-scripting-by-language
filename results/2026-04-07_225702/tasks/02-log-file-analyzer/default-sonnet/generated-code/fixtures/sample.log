@@ -1,0 +1,43 @@
+# Sample mixed-format log file used as a test fixture.
+# Lines starting with '#' are treated as malformed (skipped by the parser).
+#
+# Contains:
+#   - Syslog-style entries (various levels)
+#   - JSON-structured entries (various levels)
+#   - Duplicate error types to exercise frequency counting
+#   - Intentionally malformed lines to exercise robustness
+
+Jan 15 10:00:01 webserver nginx[1001]: INFO: server started on port 443
+Jan 15 10:00:05 webserver nginx[1001]: INFO: loaded SSL certificate /etc/ssl/cert.pem
+Jan 15 10:01:22 webserver nginx[1001]: WARNING: SlowRequest: request took 4.8s for GET /api/data
+Jan 15 10:02:45 webserver appd[2002]: ERROR: DBConnectionError: could not connect to postgres:5432
+Jan 15 10:02:47 webserver appd[2002]: ERROR: DBConnectionError: retry 1/3 failed
+Jan 15 10:02:50 webserver appd[2002]: ERROR: DBConnectionError: retry 2/3 failed
+Jan 15 10:02:53 webserver appd[2002]: ERROR: DBConnectionError: retry 3/3 failed - giving up
+{"timestamp": "2024-01-15T10:03:00", "level": "ERROR", "type": "DBConnectionError", "message": "connection pool exhausted after 3 retries"}
+{"timestamp": "2024-01-15T10:03:05", "level": "WARNING", "type": "HighMemory", "message": "heap usage at 87% (3.5 GB / 4 GB)"}
+Jan 15 10:05:10 webserver appd[2002]: INFO: reconnected to database successfully
+{"timestamp": "2024-01-15T10:05:30", "level": "INFO", "type": "CacheWarm", "message": "query cache warmed up with 1200 entries"}
+Jan 15 10:10:00 webserver nginx[1001]: WARNING: SlowRequest: request took 6.1s for POST /api/upload
+{"timestamp": "2024-01-15T10:10:15", "level": "WARNING", "type": "SlowRequest", "message": "downstream service /api/payments responded in 5.9s"}
+Jan 15 10:15:33 webserver appd[2002]: ERROR: NullPointerException: unexpected null in UserService.getProfile line 142
+Jan 15 10:18:00 webserver cron[3003]: INFO: scheduled backup started
+Jan 15 10:20:44 webserver appd[2002]: ERROR: AuthTokenExpired: JWT expired for user session abc123
+{"timestamp": "2024-01-15T10:21:00", "level": "ERROR", "type": "AuthTokenExpired", "message": "session token expired, user id=9871"}
+{"timestamp": "2024-01-15T10:21:05", "level": "DEBUG", "type": "TokenRefresh", "message": "attempting silent token refresh for user id=9871"}
+Jan 15 10:22:10 webserver appd[2002]: ERROR: AuthTokenExpired: session hijack attempt blocked for ip 192.168.1.55
+Jan 15 10:25:00 webserver cron[3003]: INFO: backup completed successfully (1.2 GB archived)
+{"timestamp": "2024-01-15T10:26:00", "level": "WARNING", "type": "DiskSpace", "message": "disk /var is at 91% capacity"}
+Jan 15 10:30:00 webserver nginx[1001]: ERROR: TLSHandshakeError: client disconnected during TLS handshake from 10.0.0.12
+{"timestamp": "2024-01-15T10:30:05", "level": "ERROR", "type": "TLSHandshakeError", "message": "unexpected EOF during handshake, peer=10.0.0.13"}
+Jan 15 10:35:15 webserver appd[2002]: WARNING: RateLimitApproaching: client 192.168.2.1 at 95% of hourly quota
+{"timestamp": "2024-01-15T10:40:00", "level": "ERROR", "type": "NullPointerException", "message": "null reference in OrderService.calculateTotal line 88"}
+this is a completely malformed line that should be skipped
+
+{"not_a_log": "missing level key should be skipped"}
+Jan 15 10:45:00 webserver appd[2002]: INFO: garbage collection completed in 320ms
+{"timestamp": "2024-01-15T10:50:00", "level": "ERROR", "type": "DBConnectionError", "message": "standby replica unreachable"}
+Jan 15 10:55:30 webserver nginx[1001]: WARNING: SlowRequest: request took 8.3s for GET /api/report/export
+{"timestamp": "2024-01-15T11:00:00", "level": "ERROR", "type": "OutOfMemoryError", "message": "JVM heap space exhausted, dumping heap to /var/log/heap.hprof"}
+Jan 15 11:00:01 webserver appd[2002]: ERROR: OutOfMemoryError: process killed by OOM killer (pid 2002)
+{"timestamp": "2024-01-15T11:00:10", "level": "CRITICAL", "type": "ServiceDown", "message": "application process exited unexpectedly, restarting"}
