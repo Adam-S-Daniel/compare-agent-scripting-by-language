@@ -1,0 +1,99 @@
+name: Semantic Version Bumper
+
+on:
+  # Run on pushes to main (after PRs merge) to cut a release
+  push:
+    branches: [main]
+  # Allow manual triggering for ad-hoc releases
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run (do not commit version bump)"
+        required: false
+        default: "false"
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  # ── Run tests first ──────────────────────────────────────────────────────
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run tests
+        run: bun test
+
+  # ── Bump version and tag ────────────────────────────────────────────────
+  bump:
+    needs: test
+    runs-on: ubuntu-latest
+    outputs:
+      new_version: ${{ steps.bump.outputs.new_version }}
+      bumped: ${{ steps.bump.outputs.bumped }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history needed for commit log
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Get last tag
+        id: last_tag
+        run: |
+          TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: Determine version bump
+        id: bump
+        env:
+          DRY_RUN: ${{ inputs.dry_run || 'false' }}
+        run: |
+          LAST_TAG="${{ steps.last_tag.outputs.tag }}"
+          if [ -z "$LAST_TAG" ]; then
+            RANGE="HEAD"
+          else
+            RANGE="${LAST_TAG}..HEAD"
+          fi
+
+          FLAGS=""
+          if [ "$DRY_RUN" = "true" ]; then
+            FLAGS="--dry-run"
+          fi
+
+          # Pipe the conventional commits into the bumper script
+          OUTPUT=$(git log --oneline "$RANGE" | bun run bump-version.ts package.json $FLAGS 2>&1) || true
+          echo "$OUTPUT"
+
+          # Extract the new version from the script output
+          NEW_VERSION=$(echo "$OUTPUT" | grep '^NEW_VERSION=' | cut -d= -f2)
+          if [ -n "$NEW_VERSION" ]; then
+            echo "new_version=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+            echo "bumped=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "bumped=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit version bump
+        if: steps.bump.outputs.bumped == 'true' && inputs.dry_run != 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add package.json
+          git commit -m "chore(release): v${{ steps.bump.outputs.new_version }}"
+          git tag "v${{ steps.bump.outputs.new_version }}"
+          git push origin main --tags
