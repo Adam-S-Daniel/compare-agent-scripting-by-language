@@ -465,8 +465,8 @@ def capture_workspace_listing(workspace: Path) -> str:
     """Return a recursive file listing of the workspace directory."""
     lines = []
     for root, dirs, files in os.walk(workspace):
-        # skip hidden dirs
-        dirs[:] = [d for d in dirs if not d.startswith(".")]
+        # skip hidden dirs, but allow .github/
+        dirs[:] = [d for d in dirs if not d.startswith(".") or d == ".github"]
         level = len(Path(root).relative_to(workspace).parts)
         indent = "  " * level
         lines.append(f"{indent}{Path(root).name}/")
@@ -486,7 +486,7 @@ def copy_generated_files(workspace: Path, dest: Path) -> list[str]:
     dest.mkdir(parents=True, exist_ok=True)
     copied = []
     for root, dirs, files in os.walk(workspace):
-        dirs[:] = [d for d in dirs if not d.startswith(".")]
+        dirs[:] = [d for d in dirs if not d.startswith(".") or d == ".github"]
         for f in sorted(files):
             if f.startswith(".") or f == INSTRUCTIONS_FILE:
                 continue
