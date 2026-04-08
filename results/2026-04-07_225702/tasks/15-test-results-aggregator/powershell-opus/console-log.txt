@@ -1,0 +1,356 @@
+[Assistant] 
+
+I'll start by understanding the task and then follow TDD methodology to build this solution. Let me first check the current working directory.
+[Tool: Bash] ls /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/15-test-results-aggregator/powershell-opus/
+[Result] benchmark-instructions-v2.md
+[Tool: Bash] which pwsh && pwsh --version
+[Result] /snap/bin/pwsh
+PowerShell 7.6.0
+[Tool: Bash] pwsh -c 'Get-Module -ListAvailable Pester | Select-Object Version'
+[Result] [32;1mVersion[0m
+[32;1m-------[0m
+5.7.1
+[Assistant] Good. Let me plan the approach and start with TDD.
+
+**Plan:**
+1. Create sample test fixtures (JUnit XML, JSON test results)
+2. Build a `TestResultsAggregator.ps1` module with functions:
+   - `Import-JUnitResults` - parse JUnit XML
+   - `Import-JsonResults` - parse JSON test results
+   - `Merge-TestResults` - aggregate across files
+   - `Get-FlakyTests` - identify flaky tests
+   - `New-MarkdownSummary` - generate GitHub Actions summary
+3. TDD each function: failing test → implement → refactor
+
+Let me start with the fixtures and first failing test.
+[Tool: Bash] mkdir -p fixtures
+[Result] (Bash completed with no output)
+[Assistant] **Step 1: Create test fixtures**
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/15-test-results-aggregator/powershell-opus/fixtures/junit-run1.xml", "content": "<?xml version=\"1.0\"
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/15-test-results-aggregator/powershell-opus/fixtures/junit-run1.xml (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/15-test-results-aggregator/powershell-opus/fixtures/junit-run2.xml", "content": "<?xml version=\"1.0\"
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/15-test-results-aggregator/powershell-opus/fixtures/junit-run2.xml (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/15-test-results-aggregator/powershell-opus/fixtures/results-run1.json", "content": "{\n  \"testSuites\
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/15-test-results-aggregator/powershell-opus/fixtures/results-run1.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/15-test-results-aggregator/powershell-opus/fixtures/results-run2.json", "content": "{\n  \"testSuites\
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/15-test-results-aggregator/powershell-opus/fixtures/results-run2.json (file state is current in your context — no need to Read it back)
+[Assistant] Now, **RED phase** — write the first failing test for `Import-JUnitResults`:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/15-test-results-aggregator/powershell-opus/TestResultsAggregator.Tests.ps1", "content": "# TestResults
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/15-test-results-aggregator/powershell-opus/TestResultsAggregator.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Create a stub implementation file so the test can at least load:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/15-test-results-aggregator/powershell-opus/TestResultsAggregator.ps1", "content": "# TestResultsAggreg
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/15-test-results-aggregator/powershell-opus/TestResultsAggregator.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Run the tests — they should all **fail** (RED):
+[Tool: Bash] pwsh -c 'Invoke-Pester -Path ./TestResultsAggregator.Tests.ps1 -Output Detailed' 2>&1 | tail -30
+[Result] [95mDiscovery found 10 tests in 132ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/15-test-results-aggregator/powershell-opus/TestResultsAggregator.Tests.ps1'[0m
+[92mDescribing Import-JUnitResults[0m
+[96m Context with a valid JUnit XML file[0m
+[91m[-] Context Import-JUnitResults.with a valid JUnit XML file failed[0m
+[91m   CommandNotFoundException: The term 'Import-JUnitResults' is not recognized as a name of a cmdlet, function, script file, or executable program.
+[91m   Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+[91m   at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/15-test-results-aggregator/powershell-opus/TestResultsAggregator.Tests.ps1:16[0m
+[96m Context with a non-existent file[0m
+[91m   [-] throws a meaningful error[0m[90m 169ms (154ms|15ms)[0m
+[91m 
+[Assistant] All 10 tests fail. **GREEN phase** — implement `Import-JUnitResults`:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/15-test-results-aggregator/powershell-opus/TestResultsAggregator.ps1", "content": "# TestResultsAggreg
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/15-test-results-aggregator/powershell-opus/TestResultsAggregator.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -c 'Invoke-Pester -Path ./TestResultsAggregator.Tests.ps1 -Output Detailed' 2>&1 | tail -25
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 10 tests in 132ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/15-test-results-aggregator/powershell-opus/TestResultsAggregator.Tests.ps1'[0m
+[92mDescribing Import-JUnitResults[0m
+[96m Context with a valid JUnit XML file[0m
+[32m   [+] returns an object with a TestCases array[0m[90m 66ms (40ms|26ms)[0m
+[32m   [+] parses the correct number of test cases[0m[90m 27ms (26ms|1ms)[0m
+[32m   [+] extracts test name and classname[0m[90m 5ms (5ms|1ms)[0m
+[32m   [+] marks passed tests as Passed[0m[90m 6ms (5ms|1ms)[0m
+[32m   [+] marks failed tests as Failed with an error message[0m[90m 12ms (10ms|1ms)[0m
+[32m   [+] marks skipped tests as Skipped[0m[90m 5ms (3ms|1ms)[0m
+[32m   [+] parses duration as a double[0m[90m 24ms (23ms|1ms)[0m
+[32m   [+] captures the total duration from the
+[Assistant] All 10 pass. Now **RED** — add failing tests for `Import-JsonResults`:
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/15-test-results-aggregator/powershell-opus/TestResultsAggregator.Tests.ps1"}
+[Result] 1	# TestResultsAggregator.Tests.ps1
+2	# Pester tests for the Test Results Aggregator module.
+3	# TDD approach: each test was written FIRST (red), then implementation added (green), then refactored.
+4	
+5	BeforeAll {
+6	    . "$PSScriptRoot/TestResultsAggregator.ps1"
+7	}
+8	
+9	# --------------------------------------------------------------------------
+10	# Import-JUnitResults: Parse JUnit XML files into a normalized structure
+11	# --------------------------------------------------------------------------
+12	Describe 'Import-JUnitResults' {
+13	
+14	    Context 'with a valid JUnit XML file' {
+15	        BeforeAll {
+16	            $script:results = Import-JUnitResults -Path "$PSScriptRoot/fixtures/junit-run1.xml"
+17	        }
+18	
+19	        It 'returns an object with a TestCases array' {
+20	            $results.TestCases | Should -Not -BeNullOrEmpty
+21	        }
+22	
+23	        It 'parses the correct number of test cases' {
+24	            $results.TestCases.Count | Should -Be 5
+25	        }
+26
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/15-test-results-aggregator/powershell-opus/TestResultsAggregator.Tests.ps1", "ol
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/15-test-results-aggregator/powershell-opus/TestResultsAggregator.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Verify tests fail (RED):
+[Tool: Bash] pwsh -c 'Invoke-Pester -Path ./TestResultsAggregator.Tests.ps1 -Output Detailed' 2>&1 | grep -E '\[-\]|\[+\]|Tests Passed|Tests completed'
+[Result] [91m[-] Context Import-JsonResults.with a valid JSON results file failed[0m
+[91m   [-] throws a meaningful error[0m[90m 108ms (106ms|2ms)[0m
+[91m   [-] throws a meaningful error[0m[90m 90ms (89ms|2ms)[0m
+[97mTests completed in 1.06s[0m
+[97mTests Passed: 10, [0m[91mFailed: 9, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Assistant] 9 new tests fail. **GREEN** — implement `Import-JsonResults`:
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/15-test-results-aggregator/powershell-opus/TestResultsAggregator.ps1"}
+[Result] 1	# TestResultsAggregator.ps1
+2	# Aggregates test results from JUnit XML and JSON formats,
+3	# identifies flaky tests, and generates a Markdown summary.
+4	
+5	function Import-JUnitResults {
+6	    <#
+7	    .SYNOPSIS
+8	        Parses a JUnit XML file into a normalized test-result object.
+9	    .DESCRIPTION
+10	        Reads a JUnit XML file (testsuites/testsuite/testcase), normalizes
+11	        each test case into a PSCustomObject with Name, ClassName, Status,
+12	        Duration, and ErrorMessage fields.
+13	    #>
+14	    [CmdletBinding()]
+15	    param(
+16	        [Parameter(Mandatory)]
+17	        [string]$Path
+18	    )
+19	
+20	    # Validate the file exists
+21	    if (-not (Test-Path $Path)) {
+22	        throw "File '$Path' does not exist."
+23	    }
+24	
+25	    # Try to parse the XML
+26	    try {
+27	        [xml]$xml = Get-Content -Path $Path -Raw
+28	    }
+29	    catch {
+30	        throw "Failed to parse XML from '$Path': $_"
+31	    }
+32	
+33	    $testCases = @()
+34	    $root = $xml.testsuit
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/15-test-results-aggregator/powershell-opus/TestResultsAggregator.ps1", "old_stri
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/15-test-results-aggregator/powershell-opus/TestResultsAggregator.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -c 'Invoke-Pester -Path ./TestResultsAggregator.Tests.ps1 -Output Detailed' 2>&1 | grep -E '\[-\]|\[+\]|Tests Passed|Tests completed'
+[Result] [97mTests completed in 739ms[0m
+[32mTests Passed: 19, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Assistant] All 19 pass. Now **RED** — add tests for `Merge-TestResults`:
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/15-test-results-aggregator/powershell-opus/TestResultsAggregator.Tests.ps1", "offset": 120}
+[Result] 120	        }
+121	    }
+122	
+123	    Context 'with a non-existent file' {
+124	        It 'throws a meaningful error' {
+125	            { Import-JsonResults -Path '/no/such/file.json' } |
+126	                Should -Throw '*does not exist*'
+127	        }
+128	    }
+129	
+130	    Context 'with invalid JSON content' {
+131	        BeforeAll {
+132	            $script:badFile = Join-Path $TestDrive 'bad.json'
+133	            'not json{{{' | Set-Content $badFile
+134	        }
+135	
+136	        It 'throws a meaningful error' {
+137	            { Import-JsonResults -Path $badFile } |
+138	                Should -Throw '*Failed to parse*'
+139	        }
+140	    }
+141	}
+142	
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/15-test-results-aggregator/powershell-opus/TestResultsAggregator.Tests.ps1", "ol
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/15-test-results-aggregator/powershell-opus/TestResultsAggregator.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Verify they fail (RED):
+[Tool: Bash] pwsh -c 'Invoke-Pester -Path ./TestResultsAggregator.Tests.ps1 -Output Detailed' 2>&1 | grep -E '\[-\]|Tests Passed|Tests completed'
+[Result] [91m[-] Context Merge-TestResults.with two JUnit runs and two JSON runs failed[0m
+[91m[-] Context Merge-TestResults.with an empty results array failed[0m
+[91m[-] Context Get-FlakyTests.with mixed JUnit results across two runs failed[0m
+[91m[-] Context Get-FlakyTests.with no flaky tests failed[0m
+[97mTests completed in 1.3s[0m
+[97mTests Passed: 19, [0m[91mFailed: 14, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Assistant] 14 new tests fail. **GREEN** — implement `Merge-TestResults` and `Get-FlakyTests`:
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/15-test-results-aggregator/powershell-opus/TestResultsAggregator.ps1", "offset": 90}
+[Result] 90	    }
+91	
+92	    # Normalize status strings to title case (passed -> Passed, etc.)
+93	    $statusMap = @{
+94	        'passed'  = 'Passed'
+95	        'failed'  = 'Failed'
+96	        'skipped' = 'Skipped'
+97	    }
+98	
+99	    $testCases = @()
+100	    foreach ($suite in $json.testSuites) {
+101	        foreach ($t in $suite.tests) {
+102	            $normalizedStatus = $statusMap[$t.status]
+103	            if (-not $normalizedStatus) {
+104	                $normalizedStatus = (Get-Culture).TextInfo.ToTitleCase($t.status)
+105	            }
+106	
+107	            $testCases += [PSCustomObject]@{
+108	                Name         = $t.name
+109	                ClassName    = $t.classname
+110	                Status       = $normalizedStatus
+111	                Duration     = [double]$t.duration
+112	                ErrorMessage = $t.error
+113	            }
+114	        }
+115	    }
+116	
+117	    $totalDuration = ($testCases | Measure-Object -Property Duration -Sum).Sum
+118	
+119	    [PSCustomObject]@{
+
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/15-test-results-aggregator/powershell-opus/TestResultsAggregator.ps1", "old_stri
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/15-test-results-aggregator/powershell-opus/TestResultsAggregator.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -c 'Invoke-Pester -Path ./TestResultsAggregator.Tests.ps1 -Output Detailed' 2>&1 | grep -E '\[-\]|\[+\]|Tests Passed|Tests completed'
+[Result] [97mTests completed in 1.08s[0m
+[32mTests Passed: 33, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Assistant] All 33 pass. Now **RED** — add tests for `New-MarkdownSummary`:
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/15-test-results-aggregator/powershell-opus/TestResultsAggregator.Tests.ps1", "offset": 230}
+[Result] 230	        It 'does not flag consistently passing tests' {
+231	            $flaky.Name | Should -Not -Contain 'test_addition'
+232	            $flaky.Name | Should -Not -Contain 'test_multiplication'
+233	        }
+234	
+235	        It 'does not flag consistently skipped tests' {
+236	            $flaky.Name | Should -Not -Contain 'test_split'
+237	        }
+238	
+239	        It 'includes pass and fail counts for each flaky test' {
+240	            $sub = $flaky | Where-Object { $_.Name -eq 'test_subtraction' }
+241	            $sub.PassCount | Should -Be 1
+242	            $sub.FailCount | Should -Be 1
+243	        }
+244	    }
+245	
+246	    Context 'with no flaky tests' {
+247	        BeforeAll {
+248	            # Two identical passing runs — no flakiness
+249	            $script:run = Import-JsonResults -Path "$PSScriptRoot/fixtures/results-run2.json"
+250	            $script:merged = Merge-TestResults -Results @($run, $run)
+251	            $script:flaky = Get-FlakyTests -MergedResults $merged
+25
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/15-test-results-aggregator/powershell-opus/TestResultsAggregator.Tests.ps1", "ol
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/15-test-results-aggregator/powershell-opus/TestResultsAggregator.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Verify they fail (RED):
+[Tool: Bash] pwsh -c 'Invoke-Pester -Path ./TestResultsAggregator.Tests.ps1 -Output Detailed' 2>&1 | grep -E '\[-\]|Tests Passed|Tests completed'
+[Result] [91m[-] Context New-MarkdownSummary.with aggregated results including flaky tests failed[0m
+[91m[-] Context New-MarkdownSummary.with no failures and no flaky tests failed[0m
+[91m[-] Context Invoke-TestResultsAggregator.processing a directory of mixed fixture files failed[0m
+[91m   [-] throws a meaningful error[0m[90m 98ms (96ms|2ms)[0m
+[97mTests completed in 1.73s[0m
+[97mTests Passed: 33, [0m[91mFailed: 17, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Assistant] 17 new tests fail. **GREEN** — implement `New-MarkdownSummary` and `Invoke-TestResultsAggregator`:
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/15-test-results-aggregator/powershell-opus/TestResultsAggregator.ps1", "offset": 170}
+[Result] 170	    [CmdletBinding()]
+171	    param(
+172	        [Parameter(Mandatory)]
+173	        [PSCustomObject]$MergedResults
+174	    )
+175	
+176	    if (-not $MergedResults.AllTestCases -or $MergedResults.AllTestCases.Count -eq 0) {
+177	        return @()
+178	    }
+179	
+180	    # Group by test identity (ClassName + Name)
+181	    $groups = $MergedResults.AllTestCases | Group-Object -Property { "$($_.ClassName).$($_.Name)" }
+182	
+183	    $flakyTests = @()
+184	    foreach ($g in $groups) {
+185	        $statuses = $g.Group | Select-Object -ExpandProperty Status
+186	        $passCount = @($statuses | Where-Object { $_ -eq 'Passed' }).Count
+187	        $failCount = @($statuses | Where-Object { $_ -eq 'Failed' }).Count
+188	
+189	        # Flaky = has both passes and failures
+190	        if ($passCount -gt 0 -and $failCount -gt 0) {
+191	            $flakyTests += [PSCustomObject]@{
+192	                Name       = $g.Group[0].Name
+193	                ClassName  = $g.Group[0].ClassName
+194	            
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/15-test-results-aggregator/powershell-opus/TestResultsAggregator.ps1", "old_stri
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/15-test-results-aggregator/powershell-opus/TestResultsAggregator.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -c 'Invoke-Pester -Path ./TestResultsAggregator.Tests.ps1 -Output Detailed' 2>&1 | tail -50
+[Result] [32m   [+] throws a meaningful error[0m[90m 9ms (7ms|2ms)[0m
+[0m
+[92mDescribing Merge-TestResults[0m
+[96m Context with two JUnit runs and two JSON runs[0m
+[32m   [+] returns an object with Passed, Failed, Skipped counts[0m[90m 11ms (8ms|4ms)[0m
+[32m   [+] counts total test executions across all runs[0m[90m 4ms (3ms|1ms)[0m
+[32m   [+] counts passed tests correctly[0m[90m 3ms (2ms|1ms)[0m
+[32m   [+] counts failed tests correctly[0m[90m 3ms (2ms|1ms)[0m
+[32m   [+] counts skipped tests correctly[0m[90m 7ms (5ms|1ms)[0m
+[32m   [+] sums total duration across all runs[0m[90m 2ms (2ms|1ms)[0m
+[32m   [+] includes all individual test case records[0m[90m 3ms (2ms|1ms)[0m
+[96m Context with an empty results array[0m
+[32m   [+] returns zero totals[0m[90m 14ms (13ms|1ms)[0m
+[0m
+[92mDescribing Get-FlakyTests[0m
+[96m Context with mixed JUnit results across two runs[0m
+[32m   [+] identifies test_subtraction as flaky[0m[90m 5ms (3ms|2ms)[0m
+[32m   [+] 
+[Assistant] All **50 tests pass**. Let me do a final full run to confirm everything is solid:
+[Tool: Bash] pwsh -c 'Invoke-Pester -Path ./TestResultsAggregator.Tests.ps1 -Output Detailed' 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 50 tests in 181ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/15-test-results-aggregator/powershell-opus/TestResultsAggregator.Tests.ps1'[0m
+[92mDescribing Import-JUnitResults[0m
+[96m Context with a valid JUnit XML file[0m
+[32m   [+] returns an object with a TestCases array[0m[90m 66ms (37ms|30ms)[0m
+[32m   [+] parses the correct number of test cases[0m[90m 28ms (27ms|1ms)[0m
+[32m   [+] extracts test name and classname[0m[90m 6ms (5ms|1ms)[0m
+[32m   [+] marks passed tests as Passed[0m[90m 7ms (6ms|2ms)[0m
+[32m   [+] marks failed tests as Failed with an error message[0m[90m 12ms (10ms|2ms)[0m
+[32m   [+] marks skipped tests as Skipped[0m[90m 20ms (19ms|1ms)[0m
+[32m   [+] parses duration as a double[0m[90m 32ms (31ms|1ms)[0m
+[32m   [+] captures the total duration from t
+[Assistant] **50/50 tests pass.** Here's a summary of what was built:
+
+## Solution
+
+**Files created:**
+
+| File | Purpose |
+|------|---------|
+| `TestResultsAggregator.ps1` | Main module with 5 functions |
+| `TestResultsAggregator.Tests.ps1` | 50 Pester tests across 6 Describe blocks |
+| `fixtures/junit-run1.xml` | JUnit XML fixture (run 1 — subtraction fails) |
+| `fixtures/junit-run2.xml` | JUnit XML fixture (run 2 — concat fails) |
+| `fixtures/results-run1.json` | JSON fixture (run 1 — create_user fails) |
+| `fixtures/results-run2.json` | JSON fixture (run 2 — all pass) |
+
+**Functions implemented:**
+
+- **`Import-JUnitResults`** — Parses JUnit XML into normalized test case objects
+- **`Import-JsonResults`** — Parses JSON test results into the same normalized shape
+- **`Merge-TestResults`** — Aggregates across multiple runs; computes passed/failed/skipped/duration totals
+- **`Get-FlakyTests`** — Identifies tests that both passed and failed across runs (groups by ClassName.Name)
+- **`New-MarkdownSummary`** — Generates a GitHub Actions job summary with totals table, flaky tests section, and failed tests with error messages
+- **`Invoke-TestResultsAggregator`** — End-to-end orchestrator that scans a directory and produces the full report
+
+**TDD cycle followed:** Each function was test-first (RED → GREEN → next feature). Error handling covers missing files, invalid XML/JSON, and empty directories.
