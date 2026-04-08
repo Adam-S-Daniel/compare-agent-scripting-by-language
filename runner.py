@@ -737,9 +737,14 @@ def generate_results_md(run_dir: Path, all_metrics: list[dict], total_runs: int,
 # Stream Parsing
 # ---------------------------------------------------------------------------
 
-def parse_stream_output(raw_output: str) -> dict:
-    """Parse the JSON stream output from claude CLI and extract metrics."""
-    events = []
+def parse_stream_output(timestamped_lines: list[tuple[int, str]]) -> dict:
+    """Parse timestamped JSON stream lines from claude CLI and extract metrics.
+
+    Each entry is (timestamp_ms, json_line) where timestamp_ms is wall-clock
+    milliseconds since epoch, captured in real-time as lines arrived from the
+    CLI subprocess.
+    """
+    events = []  # (timestamp_ms, parsed_obj)
     console_lines = []
     claude_code_version = ""
     model_used = ""
@@ -749,18 +754,22 @@ def parse_stream_output(raw_output: str) -> dict:
     error_count = 0
     error_details = []
     install_commands = []
-    install_duration_ms = 0
     tools_installed = []
     interpreter_versions = {}
     hook_events = []  # Collected from --include-hook-events
 
-    for line in raw_output.splitlines():
+    # Track pending tool_use events by ID for duration calculation
+    pending_tool_uses: dict[str, tuple[int, str, str]] = {}  # id -> (timestamp_ms, tool_name, command)
+    tool_use_durations: list[dict] = []  # completed tool uses with duration
+    install_duration_ms = 0
+
+    for ts_ms, line in timestamped_lines:
         line = line.strip()
         if not line:
             continue
         try:
             obj = json.loads(line)
-            events.append(obj)
+            events.append((ts_ms, obj))
         except json.JSONDecodeError:
             continue
 
@@ -799,7 +808,10 @@ def parse_stream_output(raw_output: str) -> dict:
             for c in content:
                 if isinstance(c, dict) and c.get("type") == "tool_use":
                     tool_name = c.get("name", "")
+                    tool_id = c.get("id", "")
                     tool_input = c.get("input", {})
+                    is_install = False
+                    cmd = ""
                     if tool_name == "Bash":
                         cmd = tool_input.get("command", "")
                         console_lines.append(f"[Tool: {tool_name}] {cmd}")
@@ -807,22 +819,38 @@ def parse_stream_output(raw_output: str) -> dict:
                         for pattern in INSTALL_PATTERNS:
                             if re.search(pattern, cmd, re.IGNORECASE):
                                 install_commands.append(cmd)
-                                # Extract package names roughly
                                 tools_installed.append(cmd.strip())
+                                is_install = True
                                 break
-                        # Check for version commands
-                        if re.search(r"--version|version|\$PSVersionTable|dotnet --info", cmd, re.IGNORECASE):
-                            pass  # Version info will be in tool results
                     else:
                         detail = json.dumps(tool_input)[:200] if tool_input else ""
                         console_lines.append(f"[Tool: {tool_name}] {detail}")
+                    # Track this tool_use for duration measurement
+                    if tool_id:
+                        pending_tool_uses[tool_id] = (ts_ms, tool_name, cmd if tool_name == "Bash" else "", is_install)
 
         # Tool results
         if event_type == "user":
             for c in content:
                 if isinstance(c, dict) and c.get("type") == "tool_result":
+                    tool_use_id = c.get("tool_use_id", "")
                     result_content = c.get("content", "")
                     is_error = c.get("is_error", False)
+
+                    # Compute duration if we have the matching tool_use
+                    if tool_use_id and tool_use_id in pending_tool_uses:
+                        start_ms, t_name, t_cmd, t_is_install = pending_tool_uses.pop(tool_use_id)
+                        dur = ts_ms - start_ms
+                        tool_use_durations.append({
+                            "tool_name": t_name,
+                            "command": t_cmd[:200],
+                            "duration_ms": dur,
+                            "is_error": is_error,
+                            "is_install": t_is_install,
+                        })
+                        if t_is_install:
+                            install_duration_ms += dur
+
                     if isinstance(result_content, str):
                         console_lines.append(f"[Result{' ERROR' if is_error else ''}] {result_content[:1000]}")
                         if is_error:
@@ -835,7 +863,6 @@ def parse_stream_output(raw_output: str) -> dict:
                                 if len(parts) >= 2:
                                     interpreter_versions["powershell"] = parts[-1]
                             if re.match(r"^\d+\.\d+\.\d+", vline.strip()) and "dotnet" not in interpreter_versions:
-                                # Could be dotnet version output
                                 pass
                     elif isinstance(result_content, list):
                         for rc in result_content:
@@ -905,7 +932,8 @@ def parse_stream_output(raw_output: str) -> dict:
         break  # just take the first (should be only one)
 
     return {
-        "events": events,
+        "events": [obj for _, obj in events],
+        "timestamped_events": events,  # (ts_ms, obj) for analysis
         "console_log": "\n".join(console_lines),
         "claude_code_version": claude_code_version,
         "model_used": model_used,
@@ -925,8 +953,10 @@ def parse_stream_output(raw_output: str) -> dict:
         "error_count": error_count,
         "error_details": error_details,
         "install_commands": install_commands,
+        "install_duration_ms": install_duration_ms,
         "tools_installed": tools_installed,
         "interpreter_versions": interpreter_versions,
+        "tool_use_durations": tool_use_durations,
         "result_data": result_data,
     }
 
@@ -1029,36 +1059,47 @@ def run_single_task(
         env["DOTNET_ROOT"] = str(dotnet_root)
         env["PATH"] = f"{dotnet_root}:{env.get('PATH', '')}"
 
-    # Execute
+    # Execute with real-time line timestamping
+    timestamped_lines: list[tuple[int, str]] = []  # (epoch_ms, line)
+    raw_stderr = ""
+    exit_code = -1
     try:
-        result = subprocess.run(
+        proc = subprocess.Popen(
             cmd,
             cwd=str(workspace),
-            capture_output=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             text=True,
-            timeout=1800,  # 30 minutes
             env=env,
         )
-        raw_stdout = result.stdout
-        raw_stderr = result.stderr
-        exit_code = result.returncode
-    except subprocess.TimeoutExpired:
-        raw_stdout = ""
-        raw_stderr = "TIMEOUT: Process exceeded 30 minute limit"
-        exit_code = -1
-        log(f"  TIMEOUT: {task_id} | {mode} | {model_short}")
+        # Read stdout line-by-line, stamping each with current time
+        deadline = wall_start + 1800  # 30 minute timeout
+        for line in proc.stdout:
+            ts_ms = int(time.time() * 1000)
+            timestamped_lines.append((ts_ms, line.rstrip("\n")))
+            if time.time() > deadline:
+                proc.kill()
+                raw_stderr = "TIMEOUT: Process exceeded 30 minute limit"
+                log(f"  TIMEOUT: {task_id} | {mode} | {model_short}")
+                break
+        proc.wait(timeout=30)
+        exit_code = proc.returncode
+        raw_stderr = proc.stderr.read() if proc.stderr else ""
     except Exception as e:
-        raw_stdout = ""
         raw_stderr = f"ERROR: {str(e)}"
         exit_code = -2
         log(f"  ERROR: {task_id} | {mode} | {model_short}: {e}")
+        try:
+            proc.kill()
+        except Exception:
+            pass
 
     wall_end = time.time()
     timestamp_end = datetime.now(timezone.utc).isoformat()
     grand_total_duration_ms = int((wall_end - wall_start) * 1000)
 
-    # Parse stream output
-    parsed = parse_stream_output(raw_stdout)
+    # Parse stream output (now with per-line timestamps)
+    parsed = parse_stream_output(timestamped_lines)
 
     # Capture workspace after
     workspace_after = capture_workspace_listing(workspace)
@@ -1209,9 +1250,16 @@ def run_single_task(
             "observations": "",
         },
         "tool_install": {
-            "tool_install_duration_ms": None,  # Not measurable — CLI stream lacks per-event timestamps
+            "tool_install_duration_ms": parsed["install_duration_ms"],
             "tools_installed": parsed["tools_installed"][:20],
             "install_commands_count": len(parsed["install_commands"]),
+        },
+        "tool_use_timing": {
+            "total_tool_uses": len(parsed["tool_use_durations"]),
+            "total_tool_duration_ms": sum(d["duration_ms"] for d in parsed["tool_use_durations"]),
+            "bash_tool_uses": len([d for d in parsed["tool_use_durations"] if d["tool_name"] == "Bash"]),
+            "bash_total_ms": sum(d["duration_ms"] for d in parsed["tool_use_durations"] if d["tool_name"] == "Bash"),
+            "slowest_tool_uses": sorted(parsed["tool_use_durations"], key=lambda d: -d["duration_ms"])[:5],
         },
         "hooks": {
             "hook_fires": len([h for h in parsed.get("hook_events", []) if h["subtype"] == "hook_response"]),
