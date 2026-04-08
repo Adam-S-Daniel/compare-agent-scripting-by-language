@@ -1,0 +1,124 @@
+[Tool: Bash] ls /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-sonnet/ && pwsh --version 2>/dev/null || echo "PowerShell not found"
+[Result] benchmark-instructions-v2.md
+PowerShell 7.6.0
+[Tool: Bash] pwsh -c "Get-Module -ListAvailable Pester | Select-Object -First 1 Version, Name"
+[Result] [32;1mVersion[0m[32;1m Name[0m
+[32;1m-------[0m [32;1m----[0m
+5.7.1   Pester
+[Assistant] Good. Pester 5.7.1 is available. Let me start with the TDD approach — write the first failing test, then implement.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-sonnet/ProcessMonitor.Tests.ps1", "content": "# ProcessMonitor.Tests.ps1
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-sonnet/ProcessMonitor.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Now run the tests to confirm they fail (red phase):
+[Tool: Bash] pwsh -c "Invoke-Pester ./ProcessMonitor.Tests.ps1 -Output Minimal" 2>&1 | tail -20
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 17 tests in 146ms.[0m
+[95mRunning tests.[0m
+[91m[-] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-sonnet/ProcessMonitor.Tests.ps1 failed with:[0m
+[91mCommandNotFoundException: The term '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-sonnet/ProcessMonitor.ps1' is not recognized as a name of a cmdlet, function, script file, or executable program.
+[91mCheck the spelling of the name, or if a path was included, verify that the path is correct and try again.
+[91mat <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-sonnet/ProcessMonitor.Tests.ps1:7[0m
+[97mTests completed in 339ms[0m
+[97mTests Passed: 0, [0m[91mFailed: 17, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[91mC
+[Assistant] All 17 tests fail — red phase confirmed. Now implement the production code:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-sonnet/ProcessMonitor.ps1", "content": "# ProcessMonitor.ps1\n# A proces
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-sonnet/ProcessMonitor.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -c "Invoke-Pester ./ProcessMonitor.Tests.ps1 -Output Detailed" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 17 tests in 137ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-sonnet/ProcessMonitor.Tests.ps1'[0m
+[92mDescribing Get-ProcessData[0m
+[96m Context When given a mock data provider[0m
+[32m   [+] Returns a list of process objects with required properties[0m[90m 99ms (63ms|36ms)[0m
+[32m   [+] Returns an empty list when the provider returns nothing[0m[90m 4ms (3ms|1ms)[0m
+[0m
+[92mDescribing Invoke-ProcessFilter[0m
+[91m  [-] Returns only processes exceeding the CPU threshold[0m[90m 46ms (43ms|3ms)[0m
+[91m   Expected a collection with size 2, but got collection with size 4 @(@{PID=1; Name=high-cpu; CPU=80; MemoryMB=100}, @{PID=2; Name=high-mem; CPU=2; MemoryMB=900}, @{PID=3; Name=both-high; CPU=75; MemoryMB=800}, @{PID=4; Name=low; CPU=1; MemoryMB=50}).
+[91m
+[Assistant] 15 tests pass. 5 failures to fix:
+1. Filter OR logic should treat threshold=0 as "axis disabled"
+2. `New-AlertReport` can't accept empty arrays (missing `[AllowEmptyCollection()]`)
+3. Pipeline null/empty propagation in `Invoke-ProcessMonitor`
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-sonnet/ProcessMonitor.ps1", "old_string": "    # O
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-sonnet/ProcessMonitor.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-sonnet/ProcessMonitor.ps1", "old_string": "    [Cm
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-sonnet/ProcessMonitor.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Now fix `New-AlertReport` to accept empty collections, and fix the pipeline in `Invoke-ProcessMonitor`:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-sonnet/ProcessMonitor.ps1", "old_string": "    [Cm
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-sonnet/ProcessMonitor.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Now fix `Invoke-ProcessMonitor` to guard against empty/null between pipeline stages, and to ensure arrays stay arrays (using the unary comma `,$array` trick to prevent PowerShell unwrapping single-element arrays):
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-sonnet/ProcessMonitor.ps1", "offset": 155}
+[Result] 155	    .PARAMETER DataProvider
+156	        Scriptblock that supplies process data (mockable in tests).
+157	    .PARAMETER CpuThreshold
+158	        CPU % threshold for alerting.
+159	    .PARAMETER MemoryMBThreshold
+160	        Memory (MB) threshold for alerting.
+161	    .PARAMETER Top
+162	        How many top consumers to include in the report.
+163	    .PARAMETER SortBy
+164	        Property to rank by (CPU or MemoryMB).
+165	    #>
+166	    [CmdletBinding()]
+167	    param(
+168	        [Parameter(Mandatory)]
+169	        [scriptblock]$DataProvider,
+170	
+171	        [double]$CpuThreshold      = 80,
+172	        [double]$MemoryMBThreshold = 512,
+173	        [int]   $Top               = 10,
+174	        [string]$SortBy            = "CPU"
+175	    )
+176	
+177	    $all      = Get-ProcessData      -DataProvider      $DataProvider
+178	    $filtered = Invoke-ProcessFilter -Processes         $all `
+179	                                     -CpuThreshold      $CpuThreshold `
+180	                         
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-sonnet/ProcessMonitor.ps1", "old_string": "    $al
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-sonnet/ProcessMonitor.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -c "Invoke-Pester ./ProcessMonitor.Tests.ps1 -Output Detailed" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 17 tests in 131ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-sonnet/ProcessMonitor.Tests.ps1'[0m
+[92mDescribing Get-ProcessData[0m
+[96m Context When given a mock data provider[0m
+[32m   [+] Returns a list of process objects with required properties[0m[90m 98ms (60ms|37ms)[0m
+[32m   [+] Returns an empty list when the provider returns nothing[0m[90m 5ms (3ms|1ms)[0m
+[0m
+[92mDescribing Invoke-ProcessFilter[0m
+[32m  [+] Returns only processes exceeding the CPU threshold[0m[90m 19ms (15ms|4ms)[0m
+[32m  [+] Returns only processes exceeding the memory threshold[0m[90m 4ms (3ms|1ms)[0m
+[32m  [+] Returns processes exceeding either threshold (OR logic)[0m[90m 4ms (3ms|1ms)[0m
+[32m  [+] Returns an empty list when no processes exceed any threshold[0m[
+[Assistant] All 17 tests pass. Here's a summary of what was built:
+
+---
+
+**Files created:**
+- `ProcessMonitor.ps1` — production implementation
+- `ProcessMonitor.Tests.ps1` — Pester test suite
+
+**TDD cycle followed:**
+
+| Feature | Tests |
+|---|---|
+| `Get-ProcessData` | Reads via injected scriptblock; handles empty provider |
+| `Invoke-ProcessFilter` | OR-logic across CPU/memory thresholds; `0` disables an axis |
+| `Get-TopConsumers` | Sorts descending by any valid property; validates prop name; handles N > list size |
+| `New-AlertReport` | Formats a columnar report; no-alerts message for empty input |
+| `Invoke-ProcessMonitor` | Full pipeline integration with mocked provider |
+
+**Key design decisions:**
+- All process data flows through a `[scriptblock]$DataProvider` parameter — zero dependency on live system processes, fully mockable in tests.
+- `[object[]]$arr = @(...)` pattern prevents PowerShell's single-element array-to-scalar unwrapping across the pipeline stages.
+- Threshold of `0` signals "axis disabled", enabling single-axis filtering tests naturally.
