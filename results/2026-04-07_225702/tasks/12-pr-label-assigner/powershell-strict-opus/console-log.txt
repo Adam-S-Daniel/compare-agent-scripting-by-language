@@ -1,0 +1,501 @@
+[Assistant] 
+
+I'll start by examining the current working directory, then follow TDD methodology to build this solution.
+[Tool: Bash] ls /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/
+[Result] benchmark-instructions-v2.md
+[Assistant] Empty workspace aside from instructions. Let me start with the first failing test.
+
+**Cycle 1: Basic single-rule matching**
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.Tests.ps1", "content": "Set-StrictMode -La
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Run the test — it should fail (RED):
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./PrLabelAssigner.Tests.ps1 -Output Detailed" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[91m[-] Discovery in /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.Tests.ps1 failed with:[0m
+[91mSystem.Management.Automation.ParameterBindingException: A parameter cannot be found that matches parameter name 'Latest'.
+[91m   at System.Management.Automation.ExceptionHandlingOps.CheckActionPreference(FunctionContext funcContext, Exception exception) in /root/parts/powershell/build/src/System.Management.Automation/engine/runtime/Operations/MiscOps.cs:line 1786
+[91m   at System.Management.Automation.Interpreter.ActionCallInstruction`2.Run(InterpretedFrame frame) in /root/parts/powershell/build/src/System.Management.Automation/engine/interpreter/CallInstruction.Generated.cs:line 504
+[91m   at System.Management.Automation.Interpreter.EnterTryCatchFinallyInstruction.Run(InterpretedFrame frame) in /root/parts/powershell/bui
+[Assistant] The `-Latest` flag isn't supported in this PowerShell version. Let me check what version is available.
+[Tool: Bash] pwsh -Command '$PSVersionTable.PSVersion'
+[Result] [32;1mMajor [0m[32;1m Minor [0m[32;1m Patch [0m[32;1m PreReleaseLabel[0m[32;1m BuildLabel[0m
+[32;1m----- [0m [32;1m----- [0m [32;1m----- [0m [32;1m---------------[0m [32;1m----------[0m
+7      6      0
+[Tool: Bash] pwsh -Command 'Set-StrictMode -Version Latest; Write-Output "works"' 2>&1
+[Result] works
+[Assistant] It's `-Version Latest`, not `-Latest`. Let me fix the test file and create a stub module.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.Tests.ps1", "old_str
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Now create a minimal stub `PrLabelAssigner.ps1` that will fail (function doesn't exist yet):
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.ps1", "content": "Set-StrictMode -Version 
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] RED — confirm it fails:
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./PrLabelAssigner.Tests.ps1 -Output Detailed" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 1 tests in 133ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.Tests.ps1'[0m
+[92mDescribing Get-PrLabels[0m
+[96m Context Basic single-rule matching[0m
+[91m   [-] assigns a label when a file matches a glob pattern[0m[90m 136ms (109ms|27ms)[0m
+[91m    CommandNotFoundException: The term 'Get-PrLabels' is not recognized as a name of a cmdlet, function, script file, or executable program.
+[91m    Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+[91m    at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.Tests.ps1:16[0m
+[97mTests completed in 505ms[0m
+[97mTests Passed: 0
+[Assistant] RED confirmed. Now write the minimum code to make it GREEN.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.ps1"}
+[Result] 1	Set-StrictMode -Version Latest
+2	$ErrorActionPreference = 'Stop'
+3	
+4	# PR Label Assigner
+5	# Assigns labels to a PR based on changed file paths and configurable glob-pattern rules.
+6	# Supports glob patterns (**, *, ?), multiple labels per file, and priority ordering.
+7	
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.ps1", "old_string": 
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] GREEN — run the test:
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./PrLabelAssigner.Tests.ps1 -Output Detailed" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 1 tests in 124ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.Tests.ps1'[0m
+[92mDescribing Get-PrLabels[0m
+[96m Context Basic single-rule matching[0m
+[32m   [+] assigns a label when a file matches a glob pattern[0m[90m 106ms (82ms|24ms)[0m
+[97mTests completed in 409ms[0m
+[32mTests Passed: 1, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Assistant] GREEN. Now **Cycle 2: Multiple rules, multiple labels per file, no-match case**.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.Tests.ps1"}
+[Result] 1	Set-StrictMode -Version Latest
+2	$ErrorActionPreference = 'Stop'
+3	
+4	BeforeAll {
+5	    . "$PSScriptRoot/PrLabelAssigner.ps1"
+6	}
+7	
+8	Describe 'Get-PrLabels' {
+9	    Context 'Basic single-rule matching' {
+10	        It 'assigns a label when a file matches a glob pattern' {
+11	            [hashtable[]]$rules = @(
+12	                @{ Pattern = 'docs/**'; Label = 'documentation' }
+13	            )
+14	            [string[]]$files = @('docs/readme.md')
+15	
+16	            [string[]]$result = Get-PrLabels -ChangedFiles $files -Rules $rules
+17	
+18	            $result | Should -Contain 'documentation'
+19	            $result.Count | Should -Be 1
+20	        }
+21	    }
+22	}
+23	
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.Tests.ps1", "old_str
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./PrLabelAssigner.Tests.ps1 -Output Detailed" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 4 tests in 130ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.Tests.ps1'[0m
+[92mDescribing Get-PrLabels[0m
+[96m Context Basic single-rule matching[0m
+[32m   [+] assigns a label when a file matches a glob pattern[0m[90m 109ms (82ms|26ms)[0m
+[96m Context Multiple rules and files[0m
+[32m   [+] assigns multiple labels when a file matches multiple rules[0m[90m 7ms (6ms|1ms)[0m
+[91m   [-] returns no labels when no files match any rule[0m[90m 15ms (13ms|2ms)[0m
+[91m    PropertyNotFoundException: The property 'Count' cannot be found on this object. Verify that the property exists.
+[91m    at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opu
+[Assistant] RED on the empty-result case. When no matches, the function returns `$null` instead of an empty array. Let me fix the function to always return an array.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.ps1", "offset": 86}
+[Result] 86	.DESCRIPTION
+87	    Each rule is a hashtable with Pattern (glob), Label (string), and optional Priority (int).
+88	    Higher priority rules win when conflicts arise. Returns a deduplicated, sorted label set.
+89	#>
+90	function Get-PrLabels {
+91	    [CmdletBinding()]
+92	    [OutputType([string[]])]
+93	    param(
+94	        [Parameter(Mandatory)]
+95	        [string[]]$ChangedFiles,
+96	
+97	        [Parameter(Mandatory)]
+98	        [hashtable[]]$Rules
+99	    )
+100	
+101	    [System.Collections.Generic.HashSet[string]]$labels = [System.Collections.Generic.HashSet[string]]::new()
+102	
+103	    foreach ($file in $ChangedFiles) {
+104	        foreach ($rule in $Rules) {
+105	            if (Test-GlobMatch -Path $file -Pattern ([string]$rule.Pattern)) {
+106	                [void]$labels.Add([string]$rule.Label)
+107	            }
+108	        }
+109	    }
+110	
+111	    [string[]]$sorted = $labels | Sort-Object
+112	    return [string[]]$sorted
+113	}
+114	
+[Assistant] The issue: when `$labels` is empty, `$labels | Sort-Object` returns `$null`. I need to handle the empty case explicitly.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.ps1", "old_string": 
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./PrLabelAssigner.Tests.ps1 -Output Detailed" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 4 tests in 136ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.Tests.ps1'[0m
+[92mDescribing Get-PrLabels[0m
+[96m Context Basic single-rule matching[0m
+[32m   [+] assigns a label when a file matches a glob pattern[0m[90m 106ms (78ms|28ms)[0m
+[96m Context Multiple rules and files[0m
+[32m   [+] assigns multiple labels when a file matches multiple rules[0m[90m 8ms (6ms|2ms)[0m
+[91m   [-] returns no labels when no files match any rule[0m[90m 16ms (14ms|2ms)[0m
+[91m    PropertyNotFoundException: The property 'Count' cannot be found on this object. Verify that the property exists.
+[91m    at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opu
+[Assistant] PowerShell unwraps arrays on return. I need to use `Write-Output -NoEnumerate` or the comma trick.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.ps1", "old_string": 
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./PrLabelAssigner.Tests.ps1 -Output Detailed" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 4 tests in 130ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.Tests.ps1'[0m
+[92mDescribing Get-PrLabels[0m
+[96m Context Basic single-rule matching[0m
+[32m   [+] assigns a label when a file matches a glob pattern[0m[90m 102ms (77ms|25ms)[0m
+[96m Context Multiple rules and files[0m
+[32m   [+] assigns multiple labels when a file matches multiple rules[0m[90m 8ms (6ms|2ms)[0m
+[32m   [+] returns no labels when no files match any rule[0m[90m 6ms (4ms|1ms)[0m
+[32m   [+] deduplicates labels when multiple files match the same rule[0m[90m 6ms (5ms|1ms)[0m
+[97mTests completed in 442ms[0m
+[32mTests Passed: 4, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Assistant] All 4 GREEN. **Cycle 3: Glob pattern variants** — test `*.test.*`, nested paths, `?` wildcard.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.Tests.ps1"}
+[Result] 1	Set-StrictMode -Version Latest
+2	$ErrorActionPreference = 'Stop'
+3	
+4	BeforeAll {
+5	    . "$PSScriptRoot/PrLabelAssigner.ps1"
+6	}
+7	
+8	Describe 'Get-PrLabels' {
+9	    Context 'Basic single-rule matching' {
+10	        It 'assigns a label when a file matches a glob pattern' {
+11	            [hashtable[]]$rules = @(
+12	                @{ Pattern = 'docs/**'; Label = 'documentation' }
+13	            )
+14	            [string[]]$files = @('docs/readme.md')
+15	
+16	            [string[]]$result = Get-PrLabels -ChangedFiles $files -Rules $rules
+17	
+18	            $result | Should -Contain 'documentation'
+19	            $result.Count | Should -Be 1
+20	        }
+21	    }
+22	
+23	    Context 'Multiple rules and files' {
+24	        It 'assigns multiple labels when a file matches multiple rules' {
+25	            [hashtable[]]$rules = @(
+26	                @{ Pattern = 'src/api/**'; Label = 'api' }
+27	                @{ Pattern = 'src/**'; Label = 'source' }
+28	            )
+29	            [string[]
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.Tests.ps1", "old_str
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./PrLabelAssigner.Tests.ps1 -Output Detailed" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 9 tests in 134ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.Tests.ps1'[0m
+[92mDescribing Get-PrLabels[0m
+[96m Context Basic single-rule matching[0m
+[32m   [+] assigns a label when a file matches a glob pattern[0m[90m 101ms (77ms|24ms)[0m
+[96m Context Multiple rules and files[0m
+[32m   [+] assigns multiple labels when a file matches multiple rules[0m[90m 7ms (6ms|1ms)[0m
+[32m   [+] returns no labels when no files match any rule[0m[90m 6ms (4ms|1ms)[0m
+[32m   [+] deduplicates labels when multiple files match the same rule[0m[90m 9ms (8ms|1ms)[0m
+[96m Context Glob pattern variants[0m
+[32m   [+] matches *.test.* pattern for test files[0m[90m 4ms (3ms|1ms)[0m
+[32m   [+] matches *.test.* in nested paths with ** prefi
+[Assistant] All 9 GREEN. **Cycle 4: Priority ordering when rules conflict**.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.Tests.ps1", "old_str
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] RED — run tests to see failures:
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./PrLabelAssigner.Tests.ps1 -Output Detailed" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 13 tests in 140ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.Tests.ps1'[0m
+[92mDescribing Get-PrLabels[0m
+[96m Context Basic single-rule matching[0m
+[32m   [+] assigns a label when a file matches a glob pattern[0m[90m 97ms (74ms|23ms)[0m
+[96m Context Multiple rules and files[0m
+[32m   [+] assigns multiple labels when a file matches multiple rules[0m[90m 9ms (6ms|3ms)[0m
+[32m   [+] returns no labels when no files match any rule[0m[90m 6ms (4ms|2ms)[0m
+[32m   [+] deduplicates labels when multiple files match the same rule[0m[90m 4ms (4ms|1ms)[0m
+[96m Context Glob pattern variants[0m
+[32m   [+] matches *.test.* pattern for test files[0m[90m 5ms (3ms|2ms)[0m
+[32m   [+] matches *.test.* in nested paths with ** prefi
+[Assistant] RED as expected — 2 priority tests fail. Now implement priority logic in `Get-PrLabels`.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.ps1", "offset": 86}
+[Result] 86	.DESCRIPTION
+87	    Each rule is a hashtable with Pattern (glob), Label (string), and optional Priority (int).
+88	    Higher priority rules win when conflicts arise. Returns a deduplicated, sorted label set.
+89	#>
+90	function Get-PrLabels {
+91	    [CmdletBinding()]
+92	    [OutputType([string[]])]
+93	    param(
+94	        [Parameter(Mandatory)]
+95	        [string[]]$ChangedFiles,
+96	
+97	        [Parameter(Mandatory)]
+98	        [hashtable[]]$Rules
+99	    )
+100	
+101	    [System.Collections.Generic.HashSet[string]]$labels = [System.Collections.Generic.HashSet[string]]::new()
+102	
+103	    foreach ($file in $ChangedFiles) {
+104	        foreach ($rule in $Rules) {
+105	            if (Test-GlobMatch -Path $file -Pattern ([string]$rule.Pattern)) {
+106	                [void]$labels.Add([string]$rule.Label)
+107	            }
+108	        }
+109	    }
+110	
+111	    if ($labels.Count -eq 0) {
+112	        # Use comma operator to prevent PowerShell from unwrapping the empty array
+113	        return 
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.ps1", "old_string": 
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./PrLabelAssigner.Tests.ps1 -Output Detailed" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 13 tests in 142ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.Tests.ps1'[0m
+[92mDescribing Get-PrLabels[0m
+[96m Context Basic single-rule matching[0m
+[32m   [+] assigns a label when a file matches a glob pattern[0m[90m 101ms (79ms|23ms)[0m
+[96m Context Multiple rules and files[0m
+[32m   [+] assigns multiple labels when a file matches multiple rules[0m[90m 8ms (6ms|2ms)[0m
+[32m   [+] returns no labels when no files match any rule[0m[90m 9ms (8ms|1ms)[0m
+[32m   [+] deduplicates labels when multiple files match the same rule[0m[90m 4ms (3ms|1ms)[0m
+[96m Context Glob pattern variants[0m
+[32m   [+] matches *.test.* pattern for test files[0m[90m 4ms (2ms|1ms)[0m
+[32m   [+] matches *.test.* in nested paths with ** pref
+[Assistant] All 13 GREEN. **Cycle 5: Error handling and edge cases**.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.Tests.ps1"}
+[Result] 1	Set-StrictMode -Version Latest
+2	$ErrorActionPreference = 'Stop'
+3	
+4	BeforeAll {
+5	    . "$PSScriptRoot/PrLabelAssigner.ps1"
+6	}
+7	
+8	Describe 'Get-PrLabels' {
+9	    Context 'Basic single-rule matching' {
+10	        It 'assigns a label when a file matches a glob pattern' {
+11	            [hashtable[]]$rules = @(
+12	                @{ Pattern = 'docs/**'; Label = 'documentation' }
+13	            )
+14	            [string[]]$files = @('docs/readme.md')
+15	
+16	            [string[]]$result = Get-PrLabels -ChangedFiles $files -Rules $rules
+17	
+18	            $result | Should -Contain 'documentation'
+19	            $result.Count | Should -Be 1
+20	        }
+21	    }
+22	
+23	    Context 'Multiple rules and files' {
+24	        It 'assigns multiple labels when a file matches multiple rules' {
+25	            [hashtable[]]$rules = @(
+26	                @{ Pattern = 'src/api/**'; Label = 'api' }
+27	                @{ Pattern = 'src/**'; Label = 'source' }
+28	            )
+29	            [string[]
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.Tests.ps1", "old_str
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] RED — run tests:
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./PrLabelAssigner.Tests.ps1 -Output Detailed" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 18 tests in 149ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.Tests.ps1'[0m
+[92mDescribing Get-PrLabels[0m
+[96m Context Basic single-rule matching[0m
+[32m   [+] assigns a label when a file matches a glob pattern[0m[90m 115ms (81ms|33ms)[0m
+[96m Context Multiple rules and files[0m
+[32m   [+] assigns multiple labels when a file matches multiple rules[0m[90m 8ms (6ms|2ms)[0m
+[32m   [+] returns no labels when no files match any rule[0m[90m 4ms (3ms|1ms)[0m
+[32m   [+] deduplicates labels when multiple files match the same rule[0m[90m 4ms (4ms|1ms)[0m
+[96m Context Glob pattern variants[0m
+[32m   [+] matches *.test.* pattern for test files[0m[90m 4ms (2ms|1ms)[0m
+[32m   [+] matches *.test.* in nested paths with ** pref
+[Assistant] All 18 GREEN — including error handling. The validation I added must already be in the function. Let me verify:
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.ps1", "offset": 100, "limit": 20}
+[Result] 100	
+101	    [System.Collections.Generic.HashSet[string]]$labels = [System.Collections.Generic.HashSet[string]]::new()
+102	
+103	    foreach ($file in $ChangedFiles) {
+104	        # Collect all matching rules for this file
+105	        [System.Collections.ArrayList]$matchedRules = [System.Collections.ArrayList]::new()
+106	        foreach ($rule in $Rules) {
+107	            if (Test-GlobMatch -Path $file -Pattern ([string]$rule.Pattern)) {
+108	                [int]$priority = if ($rule.ContainsKey('Priority')) { [int]$rule.Priority } else { 0 }
+109	                [void]$matchedRules.Add(@{ Label = [string]$rule.Label; Priority = $priority })
+110	            }
+111	        }
+112	
+113	        if ($matchedRules.Count -eq 0) { continue }
+114	
+115	        # Find the highest priority among matched rules for this file
+116	        [int]$maxPriority = 0
+117	        foreach ($m in $matchedRules) {
+118	            if ([int]$m.Priority -gt $maxPriority) {
+119	                $maxPriority = [int]$m.Pr
+[Assistant] The error handling works because strict mode + `[string]$rule.Pattern` throws when the key doesn't exist. But let me add explicit validation with better error messages.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.ps1", "old_string": 
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./PrLabelAssigner.Tests.ps1 -Output Detailed" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 18 tests in 143ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.Tests.ps1'[0m
+[92mDescribing Get-PrLabels[0m
+[96m Context Basic single-rule matching[0m
+[32m   [+] assigns a label when a file matches a glob pattern[0m[90m 115ms (85ms|31ms)[0m
+[96m Context Multiple rules and files[0m
+[32m   [+] assigns multiple labels when a file matches multiple rules[0m[90m 9ms (7ms|2ms)[0m
+[32m   [+] returns no labels when no files match any rule[0m[90m 4ms (3ms|1ms)[0m
+[32m   [+] deduplicates labels when multiple files match the same rule[0m[90m 4ms (3ms|1ms)[0m
+[96m Context Glob pattern variants[0m
+[32m   [+] matches *.test.* pattern for test files[0m[90m 4ms (3ms|1ms)[0m
+[32m   [+] matches *.test.* in nested paths with ** pref
+[Assistant] All 18 tests pass. Let me review the final files.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.ps1"}
+[Result] 1	Set-StrictMode -Version Latest
+2	$ErrorActionPreference = 'Stop'
+3	
+4	# PR Label Assigner
+5	# Assigns labels to a PR based on changed file paths and configurable glob-pattern rules.
+6	# Supports glob patterns (**, *, ?), multiple labels per file, and priority ordering.
+7	
+8	<#
+9	.SYNOPSIS
+10	    Converts a glob pattern (with ** and * wildcards) into a PowerShell-compatible regex.
+11	.DESCRIPTION
+12	    Translates glob syntax: ** matches any path segment(s), * matches within a segment,
+13	    ? matches a single char. Dots and other regex metacharacters are escaped.
+14	#>
+15	function ConvertTo-GlobRegex {
+16	    [CmdletBinding()]
+17	    [OutputType([string])]
+18	    param(
+19	        [Parameter(Mandatory)]
+20	        [string]$Pattern
+21	    )
+22	
+23	    # Normalize path separators to forward slash
+24	    [string]$p = $Pattern.Replace('\', '/')
+25	
+26	    # Escape regex metacharacters except our glob wildcards (* and ?)
+27	    # We handle ** first by replacing with a placeholder, then *
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.Tests.ps1"}
+[Result] 1	Set-StrictMode -Version Latest
+2	$ErrorActionPreference = 'Stop'
+3	
+4	BeforeAll {
+5	    . "$PSScriptRoot/PrLabelAssigner.ps1"
+6	}
+7	
+8	Describe 'Get-PrLabels' {
+9	    Context 'Basic single-rule matching' {
+10	        It 'assigns a label when a file matches a glob pattern' {
+11	            [hashtable[]]$rules = @(
+12	                @{ Pattern = 'docs/**'; Label = 'documentation' }
+13	            )
+14	            [string[]]$files = @('docs/readme.md')
+15	
+16	            [string[]]$result = Get-PrLabels -ChangedFiles $files -Rules $rules
+17	
+18	            $result | Should -Contain 'documentation'
+19	            $result.Count | Should -Be 1
+20	        }
+21	    }
+22	
+23	    Context 'Multiple rules and files' {
+24	        It 'assigns multiple labels when a file matches multiple rules' {
+25	            [hashtable[]]$rules = @(
+26	                @{ Pattern = 'src/api/**'; Label = 'api' }
+27	                @{ Pattern = 'src/**'; Label = 'source' }
+28	            )
+29	            [string[]
+[Assistant] Everything looks solid. Let me do a final clean run to confirm all 18 tests pass.
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./PrLabelAssigner.Tests.ps1 -Output Detailed" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 18 tests in 154ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/12-pr-label-assigner/powershell-strict-opus/PrLabelAssigner.Tests.ps1'[0m
+[92mDescribing Get-PrLabels[0m
+[96m Context Basic single-rule matching[0m
+[32m   [+] assigns a label when a file matches a glob pattern[0m[90m 116ms (84ms|32ms)[0m
+[96m Context Multiple rules and files[0m
+[32m   [+] assigns multiple labels when a file matches multiple rules[0m[90m 8ms (6ms|2ms)[0m
+[32m   [+] returns no labels when no files match any rule[0m[90m 4ms (3ms|1ms)[0m
+[32m   [+] deduplicates labels when multiple files match the same rule[0m[90m 4ms (3ms|1ms)[0m
+[96m Context Glob pattern variants[0m
+[32m   [+] matches *.test.* pattern for test files[0m[90m 4ms (3ms|1ms)[0m
+[32m   [+] matches *.test.* in nested paths with ** pref
+[Assistant] **18/18 tests pass.** Here's a summary of what was built using TDD:
+
+**Files created:**
+- `PrLabelAssigner.ps1` — Main module with 3 functions
+- `PrLabelAssigner.Tests.ps1` — 18 Pester tests across 6 contexts
+
+**Functions (all with strict mode, `[CmdletBinding()]`, `[OutputType()]`, explicit types):**
+- `ConvertTo-GlobRegex` — Converts glob patterns (`**`, `*`, `?`) to regex
+- `Test-GlobMatch` — Tests a file path against a glob pattern
+- `Get-PrLabels` — Core function: matches changed files to rules, applies priority ordering, returns deduplicated sorted labels
+
+**TDD cycles:**
+1. Basic single-rule matching → built `ConvertTo-GlobRegex`, `Test-GlobMatch`, `Get-PrLabels`
+2. Multiple rules/files, deduplication, no-match → fixed empty array unwrapping with `,` operator
+3. Glob variants (`*.test.*`, `**/*.test.*`, `?`, `*` not crossing `/`) → all passed immediately
+4. Priority ordering (highest wins per file, equal priorities coexist) → added per-file max-priority logic
+5. Error handling + realistic scenario → added upfront rule validation
