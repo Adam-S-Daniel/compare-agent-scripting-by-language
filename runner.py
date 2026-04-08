@@ -20,8 +20,8 @@ from pathlib import Path
 # Constants
 # ---------------------------------------------------------------------------
 
-INSTRUCTIONS_FILE = "benchmark-instructions-v2.md"
-INSTRUCTIONS_VERSION = "v2"
+INSTRUCTIONS_FILE = "benchmark-instructions-v3.md"
+INSTRUCTIONS_VERSION = "v3"
 
 MODELS = {
     "opus": "claude-opus-4-6",
@@ -38,6 +38,7 @@ LANGUAGE_EXTENSIONS = {
     ".ps1": "powershell", ".psm1": "powershell", ".psd1": "powershell",
     ".cs": "csharp", ".rb": "ruby", ".go": "go", ".rs": "rust",
     ".java": "java", ".pl": "perl", ".lua": "lua", ".r": "r",
+    ".yml": "yaml", ".yaml": "yaml",
 }
 
 INSTALL_PATTERNS = [
@@ -277,54 +278,59 @@ PROMPT_TEMPLATES = {
         "5. Handle errors gracefully with meaningful error messages.\n\n"
         "Create your solution in the current working directory. Start by writing your first failing test."
     ),
-    "powershell-strict": (
-        "You are completing a scripting task. You MUST use PowerShell with strict mode as your implementation language.\n\n"
+    "bash": (
+        "You are completing a scripting task. You MUST use Bash as your implementation language.\n\n"
         "TASK: {task_description}\n\n"
         "REQUIREMENTS:\n"
         "1. Use red/green TDD methodology: write a failing test FIRST, then write the minimum code to make it pass, then refactor. Repeat for each piece of functionality.\n"
-        "2. Create mocks and test fixtures as necessary for testability. Use Pester as the testing framework.\n"
-        "3. All tests must be runnable with `Invoke-Pester` and must pass at the end.\n"
+        "2. Create mocks and test fixtures as necessary for testability. Use bats-core (bats) as the testing framework.\n"
+        "3. All tests must be runnable with `bats` and must pass at the end.\n"
         "4. Include clear comments explaining your approach.\n"
         "5. Handle errors gracefully with meaningful error messages.\n"
-        "6. STRICT MODE REQUIREMENTS — every script and module file must include:\n"
-        "   - `Set-StrictMode -Latest` at the top\n"
-        "   - `$ErrorActionPreference = 'Stop'`\n"
-        "   - All function parameters must be explicitly typed (e.g., `[string]$Name`, `[int]$Count`, `[hashtable]$Options`)\n"
-        "   - All functions must declare `[OutputType()]` attributes\n"
-        "   - No implicit type conversions — cast explicitly where needed\n"
-        "   - Use `[CmdletBinding()]` on all functions\n\n"
+        "6. Use `#!/usr/bin/env bash` shebang. Scripts must pass `shellcheck` and `bash -n` syntax validation.\n\n"
         "Create your solution in the current working directory. Start by writing your first failing test."
     ),
-    "csharp-script": (
-        "You are completing a scripting task. You MUST use C# with .NET 10 file-based apps as your implementation language.\n\n"
+    "typescript-bun": (
+        "You are completing a scripting task. You MUST use TypeScript with Bun as your implementation language and runtime.\n\n"
         "TASK: {task_description}\n\n"
         "REQUIREMENTS:\n"
         "1. Use red/green TDD methodology: write a failing test FIRST, then write the minimum code to make it pass, then refactor. Repeat for each piece of functionality.\n"
-        "2. Create mocks and test fixtures as necessary for testability.\n"
-        "3. Use .NET 10 file-based apps — NO .csproj project files. Write single .cs files that run directly:\n"
-        "   - Run code: `dotnet run app.cs` (top-level statements, no project file needed)\n"
-        "   - Add NuGet packages with directives at the top of the file: `#:package PackageName@Version`\n"
-        "   - For tests, create a test project with `dotnet new xunit` and `dotnet test`, OR write a self-contained test runner .cs file\n"
-        "   - Example file-based app:\n"
-        "     ```\n"
-        "     #:package Newtonsoft.Json@13.0.3\n"
-        "     using Newtonsoft.Json;\n"
-        "     Console.WriteLine(JsonConvert.SerializeObject(new {{ hello = \"world\" }}));\n"
-        "     ```\n"
-        "4. All tests must be runnable and must pass at the end.\n"
-        "5. Include clear comments explaining your approach.\n"
-        "6. Handle errors gracefully with meaningful error messages.\n\n"
-        "IMPORTANT: The .NET 10 SDK is pre-installed. `dotnet run file.cs` works immediately — do NOT create .csproj files for simple apps.\n\n"
-        "PRO TIPS for .NET 10 file-based apps — read these carefully to avoid common errors:\n"
-        "- File ordering: `#:package` directives first, then `using` statements, then top-level statements (executable code), then class/record/enum declarations at the bottom. Violating this order causes CS8803 and CS1529 errors.\n"
-        "- Each .cs file is its own independent compilation unit. You CANNOT reference a class defined in one .cs file from another .cs file. Put all shared types (classes, records, enums) in the same file that uses them.\n"
-        "- For tests: put your implementation classes and test runner code in one self-contained tests.cs file. Duplicate shared types into app.cs if you also need a standalone app.\n"
-        "- There is no implicit project — no .csproj, no namespace resolution across files, no shared references. Each `dotnet run file.cs` is a standalone program.\n\n"
+        "2. Create mocks and test fixtures as necessary for testability. Use Bun's built-in test runner (`bun test`).\n"
+        "3. All tests must be runnable with `bun test` and must pass at the end.\n"
+        "4. Include clear comments explaining your approach.\n"
+        "5. Handle errors gracefully with meaningful error messages.\n"
+        "6. Use TypeScript features: explicit types, interfaces, and type annotations. Run scripts with `bun run <file>.ts`.\n\n"
         "Create your solution in the current working directory. Start by writing your first failing test."
     ),
 }
 
 MODES = list(PROMPT_TEMPLATES.keys())
+
+# GHA workflow requirement addendum — appended to prompts for tasks 11-18
+GHA_TASK_IDS = {
+    "11-semantic-version-bumper",
+    "12-pr-label-assigner",
+    "13-dependency-license-checker",
+    "14-docker-image-tag-generator",
+    "15-test-results-aggregator",
+    "16-environment-matrix-generator",
+    "17-artifact-cleanup-script",
+    "18-secret-rotation-validator",
+}
+
+GHA_WORKFLOW_ADDENDUM = """
+GITHUB ACTIONS REQUIREMENT:
+In addition to the script and tests, create a GitHub Actions workflow file at
+.github/workflows/{task_slug}.yml that would use your script in a real CI/CD pipeline.
+The workflow must:
+- Use appropriate trigger events (push, pull_request, schedule, workflow_dispatch, etc.)
+- Reference your script correctly
+- Pass actionlint validation (valid YAML, valid action references, correct syntax)
+- Include appropriate permissions, environment variables, and job dependencies
+
+The workflow does NOT need to actually run — it just needs to be syntactically valid
+and demonstrate how your script would be integrated into a CI/CD pipeline.
+"""
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -939,12 +945,40 @@ def run_single_task(
     task_name = task["name"]
     prompt = PROMPT_TEMPLATES[mode].format(task_description=task["description"])
 
+    # Append GHA workflow requirement for tasks 11-18
+    if task_id in GHA_TASK_IDS:
+        task_slug = task_id.split("-", 1)[1] if "-" in task_id else task_id
+        prompt += "\n" + GHA_WORKFLOW_ADDENDUM.format(task_slug=task_slug)
+
     # Create workspace
     workspace = repo_root / "workspaces" / run_dir.name / task_id / f"{mode}-{model_short}"
     workspace.mkdir(parents=True, exist_ok=True)
 
     # Copy instructions file
     shutil.copy2(repo_root / INSTRUCTIONS_FILE, workspace / INSTRUCTIONS_FILE)
+
+    # Set up workspace hooks — syntax/lint checking on Write/Edit
+    hook_script = (repo_root / "hooks" / "syntax-check.py").resolve()
+    if hook_script.exists():
+        claude_dir = workspace / ".claude"
+        claude_dir.mkdir(parents=True, exist_ok=True)
+        hook_config = {
+            "hooks": {
+                "PostToolUse": [
+                    {
+                        "matcher": "Write|Edit",
+                        "hooks": [
+                            {
+                                "type": "command",
+                                "command": f"python3 {hook_script}",
+                                "timeout": 15,
+                            }
+                        ],
+                    }
+                ]
+            }
+        }
+        (claude_dir / "settings.json").write_text(json.dumps(hook_config, indent=2))
 
     # Create results directory
     result_dir = run_dir / "tasks" / task_id / f"{mode}-{model_short}"
@@ -974,8 +1008,11 @@ def run_single_task(
     timestamp_start = datetime.now(timezone.utc).isoformat()
     wall_start = time.time()
 
-    # Ensure dotnet and pwsh are on PATH for the agent subprocess
+    # Ensure tools are on PATH for the agent subprocess
     env = os.environ.copy()
+    local_bin = Path.home() / ".local" / "bin"
+    if local_bin.exists():
+        env["PATH"] = f"{local_bin}:{env.get('PATH', '')}"
     dotnet_root = Path.home() / ".dotnet"
     if dotnet_root.exists():
         env["DOTNET_ROOT"] = str(dotnet_root)
@@ -1020,6 +1057,37 @@ def run_single_task(
     gen_dir = result_dir / "generated-code"
     generated_files = copy_generated_files(workspace, gen_dir)
 
+    # Post-run actionlint validation on any workflow files
+    actionlint_results = []
+    workflow_dir = workspace / ".github" / "workflows"
+    if workflow_dir.exists():
+        for wf in sorted(workflow_dir.glob("*.yml")) + sorted(workflow_dir.glob("*.yaml")):
+            try:
+                r = subprocess.run(
+                    ["actionlint", str(wf)],
+                    capture_output=True, text=True, timeout=15,
+                )
+                actionlint_results.append({
+                    "file": str(wf.relative_to(workspace)),
+                    "passed": r.returncode == 0,
+                    "errors": (r.stdout.strip() or r.stderr.strip()) if r.returncode != 0 else "",
+                })
+            except FileNotFoundError:
+                actionlint_results.append({
+                    "file": str(wf.relative_to(workspace)),
+                    "passed": None,
+                    "errors": "actionlint not found",
+                })
+            except Exception as e:
+                actionlint_results.append({
+                    "file": str(wf.relative_to(workspace)),
+                    "passed": None,
+                    "errors": str(e),
+                })
+
+    actionlint_pass = all(r["passed"] for r in actionlint_results) if actionlint_results else None
+    actionlint_error_count = sum(1 for r in actionlint_results if r["passed"] is False)
+
     # Code metrics
     total_lines = count_lines(gen_dir) if gen_dir.exists() else 0
     all_code = get_all_code_text(gen_dir) if gen_dir.exists() else ""
@@ -1030,10 +1098,8 @@ def run_single_task(
     language_chosen = ""
     if language_breakdown:
         language_chosen = max(language_breakdown, key=language_breakdown.get)
-    elif mode in ("powershell", "powershell-strict"):
+    elif mode in ("powershell",):
         language_chosen = "powershell"
-    elif mode == "csharp-script":
-        language_chosen = "csharp"
     elif mode == "bash":
         language_chosen = "bash"
     elif mode == "typescript-bun":
@@ -1118,6 +1184,9 @@ def run_single_task(
             "tests_pass": None,  # Would need to actually run tests to determine
             "error_count": parsed["error_count"],
             "error_details": parsed["error_details"][:20],  # Cap at 20
+            "actionlint_pass": actionlint_pass,
+            "actionlint_errors": actionlint_error_count,
+            "actionlint_results": actionlint_results,
             "areas_of_difficulty": [],
             "observations": "",
         },
@@ -1283,8 +1352,8 @@ def main():
         help="Comma-separated model short names: opus,sonnet (default: opus,sonnet)"
     )
     parser.add_argument(
-        "--modes", default="default,powershell,powershell-strict,csharp-script",
-        help="Comma-separated language modes (default: default,powershell,powershell-strict,csharp-script)"
+        "--modes", default="default,powershell,bash,typescript-bun",
+        help="Comma-separated language modes (default: default,powershell,bash,typescript-bun)"
     )
     parser.add_argument(
         "--resume", default=None,
