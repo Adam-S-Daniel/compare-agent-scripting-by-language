@@ -1,0 +1,475 @@
+[Assistant] 
+
+I'll start by understanding the task, then follow TDD methodology to build the artifact cleanup script.
+
+Let me check the current working directory first.
+[Tool: Bash] ls /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/
+[Result] benchmark-instructions-v2.md
+[Tool: Bash] which pwsh && pwsh --version
+[Result] /snap/bin/pwsh
+PowerShell 7.6.0
+[Assistant] Good. Let me start with the first failing test — testing the mock data structure and basic artifact creation.
+
+## Step 1: First failing test — Artifact data model and mock data
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1", "content": "Set-StrictMo
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Run the failing test:
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./ArtifactCleanup.Tests.ps1 -Output Detailed" 2>&1 | tail -30
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[91m[-] Discovery in /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1 failed with:[0m
+[91mSystem.Management.Automation.ParameterBindingException: A parameter cannot be found that matches parameter name 'Latest'.
+[91m   at System.Management.Automation.ExceptionHandlingOps.CheckActionPreference(FunctionContext funcContext, Exception exception) in /root/parts/powershell/build/src/System.Management.Automation/engine/runtime/Operations/MiscOps.cs:line 1786
+[91m   at System.Management.Automation.Interpreter.ActionCallInstruction`2.Run(InterpretedFrame frame) in /root/parts/powershell/build/src/System.Management.Automation/engine/interpreter/CallInstruction.Generated.cs:line 504
+[91m   at System.Management.Automation.Interpreter.EnterTryCatchFinallyInstruction.Run(InterpretedFrame frame) in /root/parts/powershe
+[Assistant] The correct syntax is `-Version Latest`, not `-Latest`. Let me fix the test file and create the implementation file.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1", "o
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Now create the minimal implementation to make the tests pass:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.ps1", "content": "Set-StrictMode -Ve
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./ArtifactCleanup.Tests.ps1 -Output Detailed" 2>&1 | tail -20
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 3 tests in 126ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1'[0m
+[92mDescribing New-ArtifactRecord[0m
+[32m  [+] creates an artifact record with all required fields[0m[90m 97ms (76ms|21ms)[0m
+[91m  [-] rejects empty name[0m[90m 43ms (42ms|1ms)[0m
+[91m   Expected an exception with message like '*Name cannot be empty*' to be thrown, but the message was 'Cannot bind argument to parameter 'Name' because it is an empty string.'. from /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1:21 char:36
+[91m       +         { New-ArtifactRecord -Name '' -SizeBytes 100 -CreationDate ([ …
+[91m       +                      
+[Assistant] PowerShell's `[Parameter(Mandatory)]` with `[string]` already rejects empty strings. Let me fix the test to match the actual error message.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1", "o
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./ArtifactCleanup.Tests.ps1 -Output Detailed" 2>&1 | tail -15
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 3 tests in 131ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1'[0m
+[92mDescribing New-ArtifactRecord[0m
+[32m  [+] creates an artifact record with all required fields[0m[90m 92ms (71ms|21ms)[0m
+[32m  [+] rejects empty name[0m[90m 23ms (23ms|1ms)[0m
+[32m  [+] rejects negative size[0m[90m 13ms (8ms|5ms)[0m
+[97mTests completed in 444ms[0m
+[32mTests Passed: 3, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Assistant] All green. Now let me add mock data fixtures and the retention policy tests.
+
+## Step 2: Mock data fixtures + retention policy (max age)
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1"}
+[Result] 1	BeforeAll {
+2	    Set-StrictMode -Version Latest
+3	    $ErrorActionPreference = 'Stop'
+4	    . "$PSScriptRoot/ArtifactCleanup.ps1"
+5	}
+6	
+7	Describe 'New-ArtifactRecord' {
+8	    It 'creates an artifact record with all required fields' {
+9	        $artifact = New-ArtifactRecord -Name 'build-output' `
+10	            -SizeBytes 1048576 `
+11	            -CreationDate ([datetime]'2026-03-01') `
+12	            -WorkflowRunId 'run-100'
+13	
+14	        $artifact.Name | Should -Be 'build-output'
+15	        $artifact.SizeBytes | Should -Be 1048576
+16	        $artifact.CreationDate | Should -Be ([datetime]'2026-03-01')
+17	        $artifact.WorkflowRunId | Should -Be 'run-100'
+18	    }
+19	
+20	    It 'rejects empty name' {
+21	        # PowerShell validates [string] Mandatory params — empty string is rejected at binding
+22	        { New-ArtifactRecord -Name '' -SizeBytes 100 -CreationDate ([datetime]::Now) -WorkflowRunId 'run-1' } |
+23	            Should -Throw
+24	    }
+25	
+26	    It 'rejects negat
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1", "o
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Run the failing tests:
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./ArtifactCleanup.Tests.ps1 -Output Detailed" 2>&1 | tail -30
+[Result] [95mDiscovery found 7 tests in 126ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1'[0m
+[92mDescribing New-ArtifactRecord[0m
+[32m  [+] creates an artifact record with all required fields[0m[90m 100ms (78ms|22ms)[0m
+[32m  [+] rejects empty name[0m[90m 33ms (32ms|1ms)[0m
+[32m  [+] rejects negative size[0m[90m 11ms (9ms|2ms)[0m
+[0m
+[92mDescribing New-MockArtifactSet[0m
+[91m  [-] returns a known set of artifacts for testing[0m[90m 89ms (86ms|3ms)[0m
+[91m   CommandNotFoundException: The term 'New-MockArtifactSet' is not recognized as a name of a cmdlet, function, script file, or executable program.
+[91m   Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+[91m   at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspace
+[Assistant] Good — 4 failing tests. Now implement `New-MockArtifactSet` and `Get-ArtifactsExceedingMaxAge`:
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.ps1"}
+[Result] 1	Set-StrictMode -Version Latest
+2	$ErrorActionPreference = 'Stop'
+3	
+4	# ArtifactCleanup.ps1
+5	# Applies retention policies to CI/CD artifacts and generates a deletion plan.
+6	# Supports: max age, max total size, keep-latest-N per workflow, and dry-run mode.
+7	
+8	function New-ArtifactRecord {
+9	    <#
+10	    .SYNOPSIS
+11	        Creates a structured artifact record (PSCustomObject) from the given metadata.
+12	    #>
+13	    [CmdletBinding()]
+14	    [OutputType([PSCustomObject])]
+15	    param(
+16	        [Parameter(Mandatory)]
+17	        [string]$Name,
+18	
+19	        [Parameter(Mandatory)]
+20	        [long]$SizeBytes,
+21	
+22	        [Parameter(Mandatory)]
+23	        [datetime]$CreationDate,
+24	
+25	        [Parameter(Mandatory)]
+26	        [string]$WorkflowRunId
+27	    )
+28	
+29	    if ([string]::IsNullOrWhiteSpace($Name)) {
+30	        throw "Name cannot be empty"
+31	    }
+32	    if ($SizeBytes -lt 0) {
+33	        throw "SizeBytes must be non-negative"
+34	    }
+35	
+36	    [PSCustomObject]
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.ps1", "old_str
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./ArtifactCleanup.Tests.ps1 -Output Detailed" 2>&1 | tail -20
+[Result] [95mDiscovery found 7 tests in 127ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1'[0m
+[92mDescribing New-ArtifactRecord[0m
+[32m  [+] creates an artifact record with all required fields[0m[90m 102ms (80ms|22ms)[0m
+[32m  [+] rejects empty name[0m[90m 34ms (33ms|1ms)[0m
+[32m  [+] rejects negative size[0m[90m 9ms (8ms|1ms)[0m
+[0m
+[92mDescribing New-MockArtifactSet[0m
+[32m  [+] returns a known set of artifacts for testing[0m[90m 79ms (76ms|4ms)[0m
+[0m
+[92mDescribing Get-ArtifactsExceedingMaxAge[0m
+[32m  [+] marks artifacts older than MaxAgeDays for deletion[0m[90m 28ms (26ms|1ms)[0m
+[91m  [-] returns nothing when all artifacts are within age limit[0m[90m 6ms (5ms|1ms)[0m
+[91m   PropertyNotFoundException: The property 'Count' cannot be found on this object. Verify that the property exis
+[Assistant] Strict mode issue — `$null` from an empty filter has no `.Count`. Fix the test to wrap in `@()`:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1", "o
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./ArtifactCleanup.Tests.ps1 -Output Detailed" 2>&1 | tail -15
+[Result] [95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1'[0m
+[92mDescribing New-ArtifactRecord[0m
+[32m  [+] creates an artifact record with all required fields[0m[90m 93ms (71ms|22ms)[0m
+[32m  [+] rejects empty name[0m[90m 29ms (29ms|1ms)[0m
+[32m  [+] rejects negative size[0m[90m 10ms (9ms|1ms)[0m
+[0m
+[92mDescribing New-MockArtifactSet[0m
+[32m  [+] returns a known set of artifacts for testing[0m[90m 51ms (49ms|2ms)[0m
+[0m
+[92mDescribing Get-ArtifactsExceedingMaxAge[0m
+[32m  [+] marks artifacts older than MaxAgeDays for deletion[0m[90m 19ms (18ms|2ms)[0m
+[32m  [+] returns nothing when all artifacts are within age limit[0m[90m 5ms (5ms|1ms)[0m
+[32m  [+] returns all artifacts when MaxAgeDays is 0[0m[90m 7ms (5ms|1ms)[0m
+[97mTests completed in 555ms[0m
+[32mTests Passed: 7, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInc
+[Assistant] All 7 green. Now add tests for max total size and keep-latest-N policies.
+
+## Step 3: Keep-latest-N per workflow + max total size policies
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1"}
+[Result] 1	BeforeAll {
+2	    Set-StrictMode -Version Latest
+3	    $ErrorActionPreference = 'Stop'
+4	    . "$PSScriptRoot/ArtifactCleanup.ps1"
+5	}
+6	
+7	Describe 'New-ArtifactRecord' {
+8	    It 'creates an artifact record with all required fields' {
+9	        $artifact = New-ArtifactRecord -Name 'build-output' `
+10	            -SizeBytes 1048576 `
+11	            -CreationDate ([datetime]'2026-03-01') `
+12	            -WorkflowRunId 'run-100'
+13	
+14	        $artifact.Name | Should -Be 'build-output'
+15	        $artifact.SizeBytes | Should -Be 1048576
+16	        $artifact.CreationDate | Should -Be ([datetime]'2026-03-01')
+17	        $artifact.WorkflowRunId | Should -Be 'run-100'
+18	    }
+19	
+20	    It 'rejects empty name' {
+21	        # PowerShell validates [string] Mandatory params — empty string is rejected at binding
+22	        { New-ArtifactRecord -Name '' -SizeBytes 100 -CreationDate ([datetime]::Now) -WorkflowRunId 'run-1' } |
+23	            Should -Throw
+24	    }
+25	
+26	    It 'rejects negat
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1", "o
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Run failing tests:
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./ArtifactCleanup.Tests.ps1 -Output Detailed" 2>&1 | tail -20
+[Result] [91m  [-] keeps exactly 2 per workflow[0m[90m 82ms (81ms|1ms)[0m
+[91m   CommandNotFoundException: The term 'Get-ArtifactsExceedingKeepLatestN' is not recognized as a name of a cmdlet, function, script file, or executable program.
+[91m   Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+[91m   at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1:104[0m
+[0m
+[92mDescribing Get-ArtifactsExceedingMaxTotalSize[0m
+[91m  [-] marks oldest artifacts for deletion until total size is within budget[0m[90m 99ms (96ms|2ms)[0m
+[91m   CommandNotFoundException: The term 'Get-ArtifactsExceedingMaxTotalSize' is not recognized as a name of a cmdlet, function, script file, or executable program.
+[91m   Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+[91m  
+[Assistant] Good — 6 new failures. Now implement both functions:
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.ps1", "offset": 90}
+[Result] 90	
+91	    if ($MaxAgeDays -lt 0) {
+92	        throw "MaxAgeDays must be non-negative"
+93	    }
+94	
+95	    [datetime]$cutoff = $ReferenceDate.AddDays(-$MaxAgeDays)
+96	
+97	    # Return artifacts created strictly before the cutoff
+98	    [PSCustomObject[]]$expired = @($Artifacts | Where-Object { $_.CreationDate -lt $cutoff })
+99	    return $expired
+100	}
+101	
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.ps1", "old_str
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./ArtifactCleanup.Tests.ps1 -Output Detailed" 2>&1 | tail -25
+[Result] [95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1'[0m
+[92mDescribing New-ArtifactRecord[0m
+[32m  [+] creates an artifact record with all required fields[0m[90m 88ms (67ms|21ms)[0m
+[32m  [+] rejects empty name[0m[90m 25ms (24ms|1ms)[0m
+[32m  [+] rejects negative size[0m[90m 12ms (10ms|1ms)[0m
+[0m
+[92mDescribing New-MockArtifactSet[0m
+[32m  [+] returns a known set of artifacts for testing[0m[90m 67ms (64ms|2ms)[0m
+[0m
+[92mDescribing Get-ArtifactsExceedingMaxAge[0m
+[32m  [+] marks artifacts older than MaxAgeDays for deletion[0m[90m 16ms (14ms|2ms)[0m
+[32m  [+] returns nothing when all artifacts are within age limit[0m[90m 5ms (4ms|1ms)[0m
+[32m  [+] returns all artifacts when MaxAgeDays is 0[0m[90m 4ms (3ms|1ms)[0m
+[0m
+[92mDescribing Get-ArtifactsExceedingKeepLatestN[0m
+[32m  [+] keeps only N newest artifacts per work
+[Assistant] All 13 green. Now add the combined policy application and deletion plan generation.
+
+## Step 4: Combined policy + deletion plan + dry-run mode
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1"}
+[Result] 1	BeforeAll {
+2	    Set-StrictMode -Version Latest
+3	    $ErrorActionPreference = 'Stop'
+4	    . "$PSScriptRoot/ArtifactCleanup.ps1"
+5	}
+6	
+7	Describe 'New-ArtifactRecord' {
+8	    It 'creates an artifact record with all required fields' {
+9	        $artifact = New-ArtifactRecord -Name 'build-output' `
+10	            -SizeBytes 1048576 `
+11	            -CreationDate ([datetime]'2026-03-01') `
+12	            -WorkflowRunId 'run-100'
+13	
+14	        $artifact.Name | Should -Be 'build-output'
+15	        $artifact.SizeBytes | Should -Be 1048576
+16	        $artifact.CreationDate | Should -Be ([datetime]'2026-03-01')
+17	        $artifact.WorkflowRunId | Should -Be 'run-100'
+18	    }
+19	
+20	    It 'rejects empty name' {
+21	        # PowerShell validates [string] Mandatory params — empty string is rejected at binding
+22	        { New-ArtifactRecord -Name '' -SizeBytes 100 -CreationDate ([datetime]::Now) -WorkflowRunId 'run-1' } |
+23	            Should -Throw
+24	    }
+25	
+26	    It 'rejects negat
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1", "o
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Run failing tests:
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./ArtifactCleanup.Tests.ps1 -Output Detailed" 2>&1 | tail -30
+[Result] [32m  [+] returns nothing when already within budget[0m[90m 5ms (3ms|1ms)[0m
+[32m  [+] marks multiple artifacts when needed to meet budget[0m[90m 9ms (7ms|2ms)[0m
+[0m
+[92mDescribing New-DeletionPlan[0m
+[91m  [-] combines all policies and de-duplicates artifacts to delete[0m[90m 158ms (154ms|4ms)[0m
+[91m   CommandNotFoundException: The term 'New-DeletionPlan' is not recognized as a name of a cmdlet, function, script file, or executable program.
+[91m   Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+[91m   at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1:160[0m
+[91m  [-] handles case where no policies trigger any deletions[0m[90m 89ms (87ms|1ms)[0m
+[91m   CommandNotFoundException: The term 'New-DeletionPlan' is not recognized as a name of a cmdlet, function, script file, or executa
+[Assistant] 5 new failures as expected. Now implement `New-DeletionPlan`, `Invoke-ArtifactCleanup`, and `Format-DeletionSummary`:
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.ps1", "offset": 150}
+[Result] 150	        until the remaining total size fits within MaxTotalSizeBytes.
+151	        Returns the artifacts marked for deletion.
+152	    #>
+153	    [CmdletBinding()]
+154	    [OutputType([PSCustomObject[]])]
+155	    param(
+156	        [Parameter(Mandatory)]
+157	        [PSCustomObject[]]$Artifacts,
+158	
+159	        [Parameter(Mandatory)]
+160	        [long]$MaxTotalSizeBytes
+161	    )
+162	
+163	    if ($MaxTotalSizeBytes -lt 0) {
+164	        throw "MaxTotalSizeBytes must be non-negative"
+165	    }
+166	
+167	    [long]$totalSize = [long]0
+168	    foreach ($a in $Artifacts) {
+169	        $totalSize += [long]$a.SizeBytes
+170	    }
+171	
+172	    if ($totalSize -le $MaxTotalSizeBytes) {
+173	        return [PSCustomObject[]]@()
+174	    }
+175	
+176	    # Sort oldest first — delete oldest until within budget
+177	    [PSCustomObject[]]$sorted = @($Artifacts | Sort-Object -Property CreationDate)
+178	    [System.Collections.Generic.List[PSCustomObject]]$toDelete = [System.Collections.Generic.List[PSCus
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.ps1", "old_str
+[Result ERROR] <tool_use_error>Found 2 matches of the string to replace, but replace_all is false. To replace all occurrences, set replace_all to true. To replace only one occurrence, please provide more context to uniquely identify the instance.
+String:     return [PSCustomObject[]]@($toDelete)
+}</tool_use_error>
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.ps1", "offset": 185}
+[Result] 185	        $totalSize -= [long]$artifact.SizeBytes
+186	    }
+187	
+188	    return [PSCustomObject[]]@($toDelete)
+189	}
+190	
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.ps1", "old_str
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./ArtifactCleanup.Tests.ps1 -Output Detailed" 2>&1 | tail -30
+[Result] [92mDescribing New-MockArtifactSet[0m
+[32m  [+] returns a known set of artifacts for testing[0m[90m 66ms (64ms|2ms)[0m
+[0m
+[92mDescribing Get-ArtifactsExceedingMaxAge[0m
+[32m  [+] marks artifacts older than MaxAgeDays for deletion[0m[90m 17ms (15ms|2ms)[0m
+[32m  [+] returns nothing when all artifacts are within age limit[0m[90m 4ms (3ms|1ms)[0m
+[32m  [+] returns all artifacts when MaxAgeDays is 0[0m[90m 6ms (5ms|1ms)[0m
+[0m
+[92mDescribing Get-ArtifactsExceedingKeepLatestN[0m
+[32m  [+] keeps only N newest artifacts per workflow and marks the rest for deletion[0m[90m 21ms (20ms|1ms)[0m
+[32m  [+] returns nothing when N is greater than or equal to artifacts per workflow[0m[90m 9ms (8ms|1ms)[0m
+[32m  [+] keeps exactly 2 per workflow[0m[90m 7ms (6ms|1ms)[0m
+[0m
+[92mDescribing Get-ArtifactsExceedingMaxTotalSize[0m
+[32m  [+] marks oldest artifacts for deletion until total size is within budget[0m[90m 33ms (29ms|3ms)[0m
+[32m  [+] returns nothing when 
+[Assistant] All 18 tests passing. Let me add a few more edge case tests and the `Format-ByteSize` test, then add an integration test using the mock data set.
+
+## Step 5: Edge cases + integration test with mock data
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1", "offset": 230}
+[Result] 230	        )
+231	        $plan = New-DeletionPlan -Artifacts $artifacts `
+232	            -MaxAgeDays ([int]30) `
+233	            -KeepLatestN ([int]10) `
+234	            -MaxTotalSizeBytes ([long]999999999) `
+235	            -ReferenceDate ([datetime]'2026-04-01')
+236	
+237	        [string]$summary = Format-DeletionSummary -Plan $plan
+238	        $summary | Should -Not -BeNullOrEmpty
+239	        # Should mention retained and deleted counts
+240	        $summary | Should -Match 'retain'
+241	        $summary | Should -Match 'delete'
+242	    }
+243	}
+244	
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1", "o
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./ArtifactCleanup.Tests.ps1 -Output Detailed" 2>&1 | tail -45
+[Result] [32m  [+] returns a known set of artifacts for testing[0m[90m 76ms (69ms|7ms)[0m
+[0m
+[92mDescribing Get-ArtifactsExceedingMaxAge[0m
+[32m  [+] marks artifacts older than MaxAgeDays for deletion[0m[90m 16ms (15ms|1ms)[0m
+[32m  [+] returns nothing when all artifacts are within age limit[0m[90m 3ms (2ms|1ms)[0m
+[32m  [+] returns all artifacts when MaxAgeDays is 0[0m[90m 4ms (3ms|1ms)[0m
+[0m
+[92mDescribing Get-ArtifactsExceedingKeepLatestN[0m
+[32m  [+] keeps only N newest artifacts per workflow and marks the rest for deletion[0m[90m 26ms (25ms|2ms)[0m
+[32m  [+] returns nothing when N is greater than or equal to artifacts per workflow[0m[90m 6ms (5ms|1ms)[0m
+[32m  [+] keeps exactly 2 per workflow[0m[90m 7ms (6ms|1ms)[0m
+[0m
+[92mDescribing Get-ArtifactsExceedingMaxTotalSize[0m
+[32m  [+] marks oldest artifacts for deletion until total size is within budget[0m[90m 20ms (17ms|3ms)[0m
+[32m  [+] returns nothing when already within budget[0m[90m 7ms (5ms|
+[Assistant] All 28 tests passing. Let me verify the final state of both files and do a quick demo of the summary output.
+[Tool: Bash] pwsh -Command '
+. ./ArtifactCleanup.ps1
+$artifacts = New-MockArtifactSet
+$result = Invoke-ArtifactCleanup -Artifacts $artifacts `
+    -MaxAgeDays 60 -KeepLatestN 2 -MaxTotalSizeBytes 15728640 `
+    -ReferenceDate ([datetime]"2026-04-01") -DryRun
+Write-Host "[DRY RUN]"
+Write-Host (Format-DeletionSummary -Plan $result.Plan)
+'
+[Result] [DRY RUN]
+=== Artifact Cleanup Deletion Plan ===
+Total artifacts:    10
+To delete:          3
+To retain:          7
+Space reclaimed:    6.50 MB
+
+--- Artifacts to delete ---
+  [-] build-A-1  (5.00 MB, created 2026-01-10, workflow wf-A-run-1)
+  [-] test-B-1  (1.00 MB, created 2026-01-05, workflow wf-B-run-1)
+  [-] deploy-C-1  (512.00 KB, created 2025-12-01, workflow wf-C-run-1)
+
+--- Artifacts to retain ---
+  [+] build-A-2  (4.00 MB, created 2026-02-15, workflow wf-A-run-2)
+  [+] build-A-3  (3.00 MB, created 2026-03-20, workflow wf-A-run-3)
+  [+] build-A-4  (2.00 MB, created 2026-03-30, workflow wf-A-run-4)
+  [+] test-B-2  (2.00 MB, created 2026-03-10, workflow wf-B-run-2)
+  [+] test-B-3  (1.50 MB, created 2026-03-28, workflow wf-B-run-3)
+  [+] deploy-C-2  (768.00 KB, created 2026-03-25, workflow wf-C-run-2)
+  [+] deploy-C-3  (640.00 KB, created 2026-03-31, workflow wf-C-run-3)
+[Assistant] Everything works. Let me do a final verification with `Invoke-Pester`:
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path ./ArtifactCleanup.Tests.ps1 -Output Detailed" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 28 tests in 146ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1'[0m
+[92mDescribing New-ArtifactRecord[0m
+[32m  [+] creates an artifact record with all required fields[0m[90m 85ms (65ms|20ms)[0m
+[32m  [+] rejects empty name[0m[90m 32ms (30ms|1ms)[0m
+[32m  [+] rejects negative size[0m[90m 8ms (7ms|1ms)[0m
+[0m
+[92mDescribing New-MockArtifactSet[0m
+[32m  [+] returns a known set of artifacts for testing[0m[90m 77ms (75ms|2ms)[0m
+[0m
+[92mDescribing Get-ArtifactsExceedingMaxAge[0m
+[32m  [+] marks artifacts older than MaxAgeDays for deletion[0m[90m 20ms (18ms|2ms)[0m
+[32m  [+] returns nothing when all artifacts are within age limit[0m[90m 4ms (3ms|1ms)[0m
+[32m  [+] returns all artifacts when MaxAgeDays
+[Assistant] **28 tests, all passing.**
+
+Here's what was built:
+
+**`ArtifactCleanup.ps1`** — All functions with strict mode (`Set-StrictMode -Version Latest`, `$ErrorActionPreference = 'Stop'`, `[CmdletBinding()]`, `[OutputType()]`, explicit types on all parameters):
+
+| Function | Purpose |
+|---|---|
+| `New-ArtifactRecord` | Creates a validated artifact metadata object |
+| `New-MockArtifactSet` | 10 realistic test artifacts across 3 workflows |
+| `Get-ArtifactsExceedingMaxAge` | Policy: delete artifacts older than N days |
+| `Get-ArtifactsExceedingKeepLatestN` | Policy: keep only N newest per workflow |
+| `Get-ArtifactsExceedingMaxTotalSize` | Policy: trim oldest until total size fits budget |
+| `New-DeletionPlan` | Combines all 3 policies (union), de-duplicates, returns plan with stats |
+| `Invoke-ArtifactCleanup` | Entry point with `-DryRun` switch support |
+| `Format-DeletionSummary` | Human-readable report of the plan |
+| `Format-ByteSize` | Byte count to B/KB/MB/GB formatter |
+
+**`ArtifactCleanup.Tests.ps1`** — 28 Pester tests across 10 Describe blocks covering unit tests for each function, error handling, and integration tests with the full mock data set.
