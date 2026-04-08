@@ -321,15 +321,19 @@ GHA_TASK_IDS = {
 GHA_WORKFLOW_ADDENDUM = """
 GITHUB ACTIONS REQUIREMENT:
 In addition to the script and tests, create a GitHub Actions workflow file at
-.github/workflows/{task_slug}.yml that would use your script in a real CI/CD pipeline.
+.github/workflows/{task_slug}.yml that uses your script in a real CI/CD pipeline.
 The workflow must:
 - Use appropriate trigger events (push, pull_request, schedule, workflow_dispatch, etc.)
 - Reference your script correctly
 - Pass actionlint validation (valid YAML, valid action references, correct syntax)
 - Include appropriate permissions, environment variables, and job dependencies
+- Actually run successfully when executed locally with `act` (nektos/act)
 
-The workflow does NOT need to actually run — it just needs to be syntactically valid
-and demonstrate how your script would be integrated into a CI/CD pipeline.
+The workflow WILL be executed in a Docker container via `act push` after you finish.
+It must complete without errors. Design your workflow so that its steps work in an
+isolated container environment — use `actions/checkout@v4`, install any dependencies
+your script needs, and run the script. Avoid steps that require external services or
+secrets unless they have sensible defaults/fallbacks.
 
 WORKFLOW VALIDATION:
 You MUST validate your workflow file by running `actionlint .github/workflows/{task_slug}.yml`
@@ -939,6 +943,12 @@ def run_single_task(
     workspace = repo_root / "workspaces" / run_dir.name / task_id / f"{mode}-{model_short}"
     workspace.mkdir(parents=True, exist_ok=True)
 
+    # Initialize workspace as a git repo (act requires one)
+    if not (workspace / ".git").exists():
+        subprocess.run(["git", "init", "-q"], cwd=str(workspace), capture_output=True, timeout=10)
+        subprocess.run(["git", "config", "user.email", "benchmark@test"], cwd=str(workspace), capture_output=True, timeout=5)
+        subprocess.run(["git", "config", "user.name", "benchmark"], cwd=str(workspace), capture_output=True, timeout=5)
+
     # Copy instructions file
     shutil.copy2(repo_root / INSTRUCTIONS_FILE, workspace / INSTRUCTIONS_FILE)
 
@@ -1073,6 +1083,46 @@ def run_single_task(
     actionlint_pass = all(r["passed"] for r in actionlint_results) if actionlint_results else None
     actionlint_error_count = sum(1 for r in actionlint_results if r["passed"] is False)
 
+    # Post-run workflow execution via act (if available and workflow files exist)
+    act_result = {"ran": False, "passed": None, "duration_ms": 0, "output": "", "error": ""}
+    if workflow_dir.exists() and list(workflow_dir.glob("*.yml")) + list(workflow_dir.glob("*.yaml")):
+        # Commit all workspace files so act can use them
+        subprocess.run(["git", "add", "-A"], cwd=str(workspace), capture_output=True, timeout=10)
+        subprocess.run(
+            ["git", "commit", "-m", "benchmark run", "--allow-empty"],
+            cwd=str(workspace), capture_output=True, timeout=10,
+        )
+        try:
+            act_start = time.time()
+            r = subprocess.run(
+                ["act", "push", "--rm"],
+                cwd=str(workspace),
+                capture_output=True, text=True,
+                timeout=300,  # 5 minute cap per workflow
+                env=env,
+            )
+            act_duration_ms = int((time.time() - act_start) * 1000)
+            act_result = {
+                "ran": True,
+                "passed": r.returncode == 0,
+                "duration_ms": act_duration_ms,
+                "exit_code": r.returncode,
+                "output": (r.stdout or "")[-2000:],  # last 2000 chars
+                "error": (r.stderr or "")[-1000:],
+            }
+            log(f"  act push: {'PASS' if r.returncode == 0 else 'FAIL'} ({act_duration_ms}ms)")
+        except FileNotFoundError:
+            act_result["error"] = "act not installed"
+        except subprocess.TimeoutExpired:
+            act_duration_ms = 300_000
+            act_result = {
+                "ran": True, "passed": False, "duration_ms": act_duration_ms,
+                "exit_code": -1, "output": "", "error": "act timed out (5 min)",
+            }
+            log(f"  act push: TIMEOUT")
+        except Exception as e:
+            act_result["error"] = str(e)
+
     # Code metrics
     total_lines = count_lines(gen_dir) if gen_dir.exists() else 0
     all_code = get_all_code_text(gen_dir) if gen_dir.exists() else ""
@@ -1172,6 +1222,11 @@ def run_single_task(
             "actionlint_pass": actionlint_pass,
             "actionlint_errors": actionlint_error_count,
             "actionlint_results": actionlint_results,
+            "act_ran": act_result["ran"],
+            "act_pass": act_result.get("passed"),
+            "act_duration_ms": act_result.get("duration_ms", 0),
+            "act_output": act_result.get("output", "")[-500:],
+            "act_error": act_result.get("error", ""),
             "areas_of_difficulty": [],
             "observations": "",
         },
@@ -1317,6 +1372,8 @@ def get_system_info() -> dict:
         ("actionlint", ["actionlint", "--version"]),
         ("shellcheck", ["shellcheck", "--version"]),
         ("bash", ["bash", "--version"]),
+        ("act", ["act", "--version"]),
+        ("docker", ["docker", "--version"]),
     ]:
         try:
             r = subprocess.run(cmd, capture_output=True, text=True, timeout=10)

@@ -52,8 +52,9 @@ For every task, the agent must also create a GitHub Actions workflow file at `.g
 - Reference the script correctly
 - Pass `actionlint` validation (valid YAML, valid action references, correct syntax)
 - Include appropriate permissions, environment variables, and job dependencies
+- Actually run successfully when executed locally with `act` (nektos/act) in a Docker container
 
-The workflow does NOT need to actually run -- it just needs to be syntactically valid and demonstrate how the script would be integrated into a CI/CD pipeline.
+The workflow WILL be executed via `act push` after you finish. Design your workflow so its steps work in an isolated container environment -- use `actions/checkout@v4`, install any dependencies your script needs, and run the script. Avoid steps that require external services or secrets unless they have sensible defaults/fallbacks.
 
 ### Workflow Validation
 
@@ -78,6 +79,8 @@ The following tools are pre-installed in the benchmark environment:
 - **Bash** with **bats-core** testing framework
 - **actionlint** (GitHub Actions workflow linter)
 - **shellcheck** (shell script static analysis)
+- **act** (nektos/act — runs GitHub Actions workflows locally in Docker)
+- **Docker** (container runtime, used by act)
 
 Agents should NOT attempt to install these tools -- they are already available.
 
@@ -227,8 +230,11 @@ The workflow must:
 - Pass actionlint validation (valid YAML, valid action references, correct syntax)
 - Include appropriate permissions, environment variables, and job dependencies
 
-The workflow does NOT need to actually run — it just needs to be syntactically valid
-and demonstrate how your script would be integrated into a CI/CD pipeline.
+The workflow WILL be executed in a Docker container via `act push` after you finish.
+It must complete without errors. Design your workflow so that its steps work in an
+isolated container environment — use `actions/checkout@v4`, install any dependencies
+your script needs, and run the script. Avoid steps that require external services or
+secrets unless they have sensible defaults/fallbacks.
 
 WORKFLOW VALIDATION:
 You MUST validate your workflow file by running `actionlint .github/workflows/<task-name>.yml`
@@ -280,6 +286,9 @@ For each run, the runner captures:
 | actionlint_pass | Post-run | Whether all workflow files pass actionlint |
 | actionlint_errors | Post-run | Number of workflow files failing actionlint |
 | actionlint_results | Post-run | Per-file actionlint pass/fail with error details |
+| act_ran | Post-run | Whether act was available and attempted |
+| act_pass | Post-run | Whether the workflow ran successfully via act |
+| act_duration_ms | Post-run | Wall-clock time for workflow execution in Docker |
 | error_count | CLI stream | Number of errors during the run |
 | hook_fires | CLI stream | Number of hook responses (syntax check activations) |
 | hook_errors_caught | CLI stream | Number of hooks that returned diagnostics |
@@ -295,8 +304,9 @@ For each run, the runner captures:
 
 ### Quality Dimensions
 
-Each run is evaluated on two independent quality dimensions:
+Each run is evaluated on three independent quality dimensions:
 1. **Tests pass** -- Did the agent's own tests pass? (agent-reported)
 2. **actionlint pass** -- Did the workflow YAML pass static analysis? (runner-validated)
+3. **act pass** -- Did the workflow actually run successfully in a Docker container? (runner-executed)
 
-This gives a 2x2 matrix per run: tests pass/fail x actionlint pass/fail.
+This gives a 2x2x2 quality cube per run. The `act_duration_ms` metric records how long the workflow took to execute, enabling comparison of workflow efficiency across modes.

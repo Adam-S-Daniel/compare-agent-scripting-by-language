@@ -98,6 +98,25 @@ if ! command -v bats &>/dev/null; then
 fi
 echo "bats: $(bats --version)"
 
+# Install act (nektos/act) for running workflows in Docker
+if ! command -v act &>/dev/null; then
+    echo "Installing act..."
+    curl -sL https://raw.githubusercontent.com/nektos/act/master/install.sh | bash -s -- -b ~/.local/bin
+    export PATH="$HOME/.local/bin:$PATH"
+fi
+echo "act: $(act --version 2>&1)"
+
+# Configure act to use medium-sized runner image
+mkdir -p ~/.config/act
+echo '-P ubuntu-latest=catthehacker/ubuntu:act-latest' > ~/.config/act/actrc
+
+# Verify Docker is available (required by act)
+if command -v docker &>/dev/null && docker info &>/dev/null; then
+    echo "docker: $(docker --version)"
+else
+    echo "WARNING: Docker not available — workflow execution via act will be skipped"
+fi
+
 # Verify bun is present (should be pre-installed)
 if command -v bun &>/dev/null; then
     echo "bun: $(bun --version)"
