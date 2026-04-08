@@ -339,22 +339,18 @@ and demonstrate how your script would be integrated into a CI/CD pipeline.
 PUSH_INTERVAL = 60  # seconds between incremental git pushes
 INCREMENTAL_PREFIX = "Incremental benchmark results:"
 
+# Directories to skip in workspace walkers (noise that inflates metrics)
+SKIP_DIRS = {"node_modules", "__pycache__", ".pytest_cache", ".mypy_cache", "obj", "bin"}
+
 
 def log(msg: str) -> None:
     """Print progress to stderr."""
     print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}", file=sys.stderr, flush=True)
 
 
-def _last_commit_is_incremental(repo_root: Path) -> bool:
-    """Check if the most recent commit is an incremental status update."""
-    try:
-        result = subprocess.run(
-            ["git", "log", "-1", "--format=%s"],
-            cwd=str(repo_root), capture_output=True, text=True, timeout=10,
-        )
-        return result.stdout.strip().startswith(INCREMENTAL_PREFIX)
-    except Exception:
-        return False
+# Lock protects all git operations so the PeriodicPusher background thread
+# and any foreground git work never overlap.
+_git_lock = threading.Lock()
 
 
 def git_push_results(
@@ -365,67 +361,44 @@ def git_push_results(
     *,
     final: bool = False,
 ) -> None:
-    """Commit and push results, squashing consecutive incremental commits.
+    """Commit and push results (append-only, no history rewriting).
 
-    Incremental commits (periodic progress snapshots) get squashed into a
-    single commit so the history stays clean.  When ``final=True`` the commit
-    message reflects the completed run instead of "Incremental …".
+    Earlier versions squashed incremental commits via ``git reset --soft``,
+    which corrupted the repo when concurrent git operations occurred (e.g.
+    manual rebase while the background pusher was running).  Now we simply
+    append commits — safe for concurrency, easy to squash later if desired.
     """
-    try:
-        status = subprocess.run(
-            ["git", "status", "--porcelain", "results/"],
-            cwd=str(repo_root), capture_output=True, text=True, timeout=10,
-        )
-        if not status.stdout.strip():
-            if not final:
-                return  # nothing new for incremental pushes
-            # For final push, still squash previous incrementals even if
-            # there are no new changes to stage
-            if not _last_commit_is_incremental(repo_root):
-                return
-
-        # Stage results
-        subprocess.run(
-            ["git", "add", "results/"],
-            cwd=str(repo_root), capture_output=True, timeout=10,
-        )
-
-        # Squash: if previous commit was incremental, soft-reset to absorb it
-        did_squash = False
-        if _last_commit_is_incremental(repo_root):
-            subprocess.run(
-                ["git", "reset", "--soft", "HEAD~1"],
-                cwd=str(repo_root), capture_output=True, timeout=10,
+    with _git_lock:
+        try:
+            status = subprocess.run(
+                ["git", "status", "--porcelain", "results/"],
+                cwd=str(repo_root), capture_output=True, text=True, timeout=10,
             )
-            # Re-stage after reset (the index is preserved but we may need
-            # to pick up anything the reset un-committed)
+            if not status.stdout.strip():
+                return  # nothing new to commit
+
+            # Stage results
             subprocess.run(
                 ["git", "add", "results/"],
                 cwd=str(repo_root), capture_output=True, timeout=10,
             )
-            did_squash = True
 
-        if final:
-            msg = f"Benchmark results: {run_count}/{total_runs} runs completed"
-        else:
-            msg = f"{INCREMENTAL_PREFIX} {run_count}/{total_runs} runs completed"
+            if final:
+                msg = f"Benchmark results: {run_count}/{total_runs} runs completed"
+            else:
+                msg = f"{INCREMENTAL_PREFIX} {run_count}/{total_runs} runs completed"
 
-        subprocess.run(
-            ["git", "commit", "-m", msg],
-            cwd=str(repo_root), capture_output=True, timeout=30,
-        )
+            subprocess.run(
+                ["git", "commit", "-m", msg],
+                cwd=str(repo_root), capture_output=True, timeout=30,
+            )
 
-        # Force-with-lease when we squashed (rewrote history) — safe because
-        # only the runner touches this branch during a run.
-        if did_squash:
-            push_args = ["git", "push", "--force-with-lease", "-u", "origin", branch]
-        else:
             push_args = ["git", "push", "-u", "origin", branch]
-        subprocess.run(push_args, capture_output=True, timeout=60, cwd=str(repo_root))
+            subprocess.run(push_args, capture_output=True, timeout=60, cwd=str(repo_root))
 
-        log(f"  [push] Pushed results ({run_count}/{total_runs} done{', FINAL' if final else ''})")
-    except Exception as e:
-        log(f"  [push] Warning: push failed: {e}")
+            log(f"  [push] Pushed results ({run_count}/{total_runs} done{', FINAL' if final else ''})")
+        except Exception as e:
+            log(f"  [push] Warning: push failed: {e}")
 
 
 class PeriodicPusher:
@@ -466,7 +439,7 @@ def capture_workspace_listing(workspace: Path) -> str:
     lines = []
     for root, dirs, files in os.walk(workspace):
         # skip hidden dirs, but allow .github/
-        dirs[:] = [d for d in dirs if not d.startswith(".") or d == ".github"]
+        dirs[:] = [d for d in dirs if (not d.startswith(".") or d == ".github") and d not in SKIP_DIRS]
         level = len(Path(root).relative_to(workspace).parts)
         indent = "  " * level
         lines.append(f"{indent}{Path(root).name}/")
@@ -486,7 +459,7 @@ def copy_generated_files(workspace: Path, dest: Path) -> list[str]:
     dest.mkdir(parents=True, exist_ok=True)
     copied = []
     for root, dirs, files in os.walk(workspace):
-        dirs[:] = [d for d in dirs if not d.startswith(".") or d == ".github"]
+        dirs[:] = [d for d in dirs if (not d.startswith(".") or d == ".github") and d not in SKIP_DIRS]
         for f in sorted(files):
             if f.startswith(".") or f == INSTRUCTIONS_FILE:
                 continue
@@ -506,7 +479,7 @@ def count_lines(directory: Path) -> int:
     """Count total lines of code in a directory."""
     total = 0
     for root, dirs, files in os.walk(directory):
-        dirs[:] = [d for d in dirs if not d.startswith(".")]
+        dirs[:] = [d for d in dirs if not d.startswith(".") and d not in SKIP_DIRS]
         for f in files:
             if f.startswith("."):
                 continue
@@ -527,7 +500,7 @@ def compute_language_breakdown(directory: Path) -> dict:
     lang_lines: dict[str, int] = {}
     total = 0
     for root, dirs, files in os.walk(directory):
-        dirs[:] = [d for d in dirs if not d.startswith(".")]
+        dirs[:] = [d for d in dirs if not d.startswith(".") and d not in SKIP_DIRS]
         for f in files:
             if f.startswith("."):
                 continue
@@ -549,7 +522,7 @@ def get_all_code_text(directory: Path) -> str:
     """Get all code text from files in directory for token counting."""
     texts = []
     for root, dirs, files in os.walk(directory):
-        dirs[:] = [d for d in dirs if not d.startswith(".")]
+        dirs[:] = [d for d in dirs if not d.startswith(".") and d not in SKIP_DIRS]
         for f in files:
             if f.startswith(".") or f == INSTRUCTIONS_FILE:
                 continue
