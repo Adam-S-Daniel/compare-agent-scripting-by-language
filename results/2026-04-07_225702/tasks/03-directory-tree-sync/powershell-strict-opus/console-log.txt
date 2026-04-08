@@ -1,0 +1,443 @@
+[Assistant] 
+
+I'll start by understanding the task and then follow TDD methodology to build a directory tree sync tool in PowerShell with strict mode.
+
+Let me first check the current working directory.
+[Tool: Bash] ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/
+[Result] total 28
+drwxr-xr-x 2 passp passp  4096 Apr  7 23:54 .
+drwxr-xr-x 5 passp passp  4096 Apr  7 23:54 ..
+-rw-r--r-- 1 passp passp 17086 Apr  7 22:53 benchmark-instructions-v2.md
+[Tool: Bash] which pwsh && pwsh --version
+[Result] /snap/bin/pwsh
+PowerShell 7.6.0
+[Assistant] Good. Let me start with the first failing test — testing that we can compute SHA-256 hashes of files.
+
+## TDD Cycle 1: File Hashing
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1", "content": "Set-StrictMode -La
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Run the test — it should fail since `DirectorySync.ps1` doesn't exist yet.
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path './DirectorySync.Tests.ps1' -Output Detailed" 2>&1 | tail -30
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[91m[-] Discovery in /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1 failed with:[0m
+[91mSystem.Management.Automation.ParameterBindingException: A parameter cannot be found that matches parameter name 'Latest'.
+[91m   at System.Management.Automation.ExceptionHandlingOps.CheckActionPreference(FunctionContext funcContext, Exception exception) in /root/parts/powershell/build/src/System.Management.Automation/engine/runtime/Operations/MiscOps.cs:line 1786
+[91m   at System.Management.Automation.Interpreter.ActionCallInstruction`2.Run(InterpretedFrame frame) in /root/parts/powershell/build/src/System.Management.Automation/engine/interpreter/CallInstruction.Generated.cs:line 504
+[91m   at System.Management.Automation.Interpreter.EnterTryCatchFinallyInstruction.Run(InterpretedFrame frame) in /root/parts/powershell/bui
+[Assistant] The parameter is `-Version Latest`, not `-Latest`. Let me fix both files.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1", "old_str
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Now run — should fail because `DirectorySync.ps1` doesn't exist.
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path './DirectorySync.Tests.ps1' -Output Detailed" 2>&1 | tail -20
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 3 tests in 118ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1'[0m
+[91m[-] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1 failed with:[0m
+[91mCommandNotFoundException: The term '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.ps1' is not recognized as a name of a cmdlet, function, script file, or executable program.
+[91mCheck the spelling of the name, or if a path was included, verify that the path is correct and try again.
+[91mat <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-
+[Assistant] Good — tests fail because the source file doesn't exist. Now write the minimum implementation.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.ps1", "content": "Set-StrictMode -Version 
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path './DirectorySync.Tests.ps1' -Output Detailed" 2>&1 | tail -25
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 3 tests in 136ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1'[0m
+[92mDescribing Get-FileHashMap[0m
+[32m  [+] Should return an empty hashtable for an empty directory[0m[90m 111ms (89ms|22ms)[0m
+[32m  [+] Should return SHA-256 hashes for files in a directory[0m[90m 30ms (29ms|1ms)[0m
+[32m  [+] Should use relative paths as keys including subdirectories[0m[90m 14ms (13ms|1ms)[0m
+[97mTests completed in 464ms[0m
+[32mTests Passed: 3, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Assistant] All 3 tests pass. Now TDD cycle 2.
+
+## TDD Cycle 2: Compare Directory Trees
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1"}
+[Result] 1	# Import the module under test and enable strict mode inside Pester's BeforeAll
+2	BeforeAll {
+3	    Set-StrictMode -Version Latest
+4	    $ErrorActionPreference = 'Stop'
+5	    . "$PSScriptRoot/DirectorySync.ps1"
+6	}
+7	
+8	Describe 'Get-FileHashMap' {
+9	    BeforeEach {
+10	        # Create temporary directory structures for testing
+11	        $script:testRoot = Join-Path ([System.IO.Path]::GetTempPath()) "DirSyncTest_$([System.Guid]::NewGuid().ToString('N'))"
+12	        New-Item -ItemType Directory -Path $script:testRoot -Force | Out-Null
+13	    }
+14	
+15	    AfterEach {
+16	        if (Test-Path $script:testRoot) {
+17	            Remove-Item -Recurse -Force $script:testRoot
+18	        }
+19	    }
+20	
+21	    It 'Should return an empty hashtable for an empty directory' {
+22	        $result = Get-FileHashMap -Path $script:testRoot
+23	        $result | Should -BeOfType [hashtable]
+24	        $result.Count | Should -Be 0
+25	    }
+26	
+27	    It 'Should return SHA-256 hashes for files in a direc
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1", "old_str
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Run to confirm the new tests fail.
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path './DirectorySync.Tests.ps1' -Output Detailed" 2>&1 | tail -25
+[Result] [32m  [+] Should use relative paths as keys including subdirectories[0m[90m 10ms (9ms|1ms)[0m
+[0m
+[92mDescribing Compare-DirectoryTrees[0m
+[91m  [-] Should detect files only in source[0m[90m 112ms (110ms|2ms)[0m
+[91m   CommandNotFoundException: The term 'Compare-DirectoryTrees' is not recognized as a name of a cmdlet, function, script file, or executable program.
+[91m   Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+[91m   at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1:67[0m
+[91m  [-] Should detect files only in target[0m[90m 92ms (92ms|1ms)[0m
+[91m   CommandNotFoundException: The term 'Compare-DirectoryTrees' is not recognized as a name of a cmdlet, function, script file, or executable program.
+[91m   Check the spelling of the name, or if a path was included, verify that the path is c
+[Assistant] 5 new tests fail as expected. Now implement `Compare-DirectoryTrees`.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.ps1"}
+[Result] 1	Set-StrictMode -Version Latest
+2	$ErrorActionPreference = 'Stop'
+3	
+4	<#
+5	.SYNOPSIS
+6	    Directory Tree Sync — compares two directory trees by SHA-256 content hash,
+7	    identifies differences, and generates/executes a sync plan.
+8	
+9	.DESCRIPTION
+10	    Provides functions to:
+11	    - Hash all files in a directory tree (Get-FileHashMap)
+12	    - Compare two directory trees (Compare-DirectoryTrees)
+13	    - Generate a sync plan (New-SyncPlan)
+14	    - Execute a sync plan in dry-run or execute mode (Invoke-SyncPlan)
+15	#>
+16	
+17	function Get-FileHashMap {
+18	    <#
+19	    .SYNOPSIS
+20	        Builds a hashtable mapping relative file paths to their SHA-256 hashes.
+21	    #>
+22	    [CmdletBinding()]
+23	    [OutputType([hashtable])]
+24	    param(
+25	        [Parameter(Mandatory)]
+26	        [string]$Path
+27	    )
+28	
+29	    if (-not (Test-Path -LiteralPath $Path -PathType Container)) {
+30	        throw "Directory not found: $Path"
+31	    }
+32	
+33	    [hashtable]$hashMap = @{}
+34	    [
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.ps1", "old_string": 
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path './DirectorySync.Tests.ps1' -Output Detailed" 2>&1 | tail -25
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 8 tests in 131ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1'[0m
+[92mDescribing Get-FileHashMap[0m
+[32m  [+] Should return an empty hashtable for an empty directory[0m[90m 107ms (85ms|22ms)[0m
+[32m  [+] Should return SHA-256 hashes for files in a directory[0m[90m 26ms (26ms|1ms)[0m
+[32m  [+] Should use relative paths as keys including subdirectories[0m[90m 11ms (10ms|1ms)[0m
+[0m
+[92mDescribing Compare-DirectoryTrees[0m
+[32m  [+] Should detect files only in source[0m[90m 31ms (30ms|2ms)[0m
+[32m  [+] Should detect files only in target[0m[90m 17ms (16ms|1ms)[0m
+[32m  [+] Should detect modified files (same name, different content)[0m[90m 17ms (14ms|3ms)[0m
+[32m  [+] Should detect identical files[0m[90m 
+[Assistant] All 8 tests pass. 
+
+## TDD Cycle 3: Sync Plan Generation
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1", "old_str
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path './DirectorySync.Tests.ps1' -Output Detailed" 2>&1 | grep -E '^\[9[12]|Tests Passed|Tests completed'
+[Result] [97mTests completed in 1.13s[0m
+[97mTests Passed: 8, [0m[91mFailed: 5, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Assistant] 5 new tests fail. Now implement `New-SyncPlan`.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.ps1", "offset": 95}
+[Result] 95	        }
+96	        else {
+97	            $modified.Add($key)
+98	        }
+99	    }
+100	
+101	    return @{
+102	        SourceOnly = [string[]]@($sourceOnly)
+103	        TargetOnly = [string[]]@($targetOnly)
+104	        Modified   = [string[]]@($modified)
+105	        Identical  = [string[]]@($identical)
+106	    }
+107	}
+108	
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.ps1", "old_string": 
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path './DirectorySync.Tests.ps1' -Output Detailed" 2>&1 | tail -25
+[Result] [95mStarting discovery in 1 files.[0m
+[95mDiscovery found 13 tests in 129ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1'[0m
+[92mDescribing Get-FileHashMap[0m
+[32m  [+] Should return an empty hashtable for an empty directory[0m[90m 108ms (87ms|21ms)[0m
+[32m  [+] Should return SHA-256 hashes for files in a directory[0m[90m 28ms (27ms|1ms)[0m
+[32m  [+] Should use relative paths as keys including subdirectories[0m[90m 12ms (10ms|1ms)[0m
+[0m
+[92mDescribing Compare-DirectoryTrees[0m
+[32m  [+] Should detect files only in source[0m[90m 34ms (33ms|2ms)[0m
+[32m  [+] Should detect files only in target[0m[90m 16ms (15ms|1ms)[0m
+[32m  [+] Should detect modified files (same name, different content)[0m[90m 14ms (13ms|1ms)[0m
+[32m  [+] Should detect identical files[0m[90m 11ms (10ms|1ms)[0m
+[32m  [
+[Assistant] All 13 tests pass.
+
+## TDD Cycle 4: Invoke-SyncPlan (Dry-Run and Execute modes)
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1", "offset": 140}
+[Result] 140	
+141	        $plan = New-SyncPlan -SourcePath $script:sourceRoot -TargetPath $script:targetRoot
+142	        $plan.Actions.Count | Should -Be 1
+143	        $plan.Actions[0].Action | Should -Be 'Copy'
+144	        $plan.Actions[0].RelativePath | Should -Be 'new.txt'
+145	    }
+146	
+147	    It 'Should generate Delete actions for target-only files' {
+148	        Set-Content -Path (Join-Path $script:targetRoot 'orphan.txt') -Value 'orphan' -NoNewline
+149	
+150	        $plan = New-SyncPlan -SourcePath $script:sourceRoot -TargetPath $script:targetRoot
+151	        $plan.Actions.Count | Should -Be 1
+152	        $plan.Actions[0].Action | Should -Be 'Delete'
+153	        $plan.Actions[0].RelativePath | Should -Be 'orphan.txt'
+154	    }
+155	
+156	    It 'Should generate Overwrite actions for modified files' {
+157	        Set-Content -Path (Join-Path $script:sourceRoot 'file.txt') -Value 'v2' -NoNewline
+158	        Set-Content -Path (Join-Path $script:targetRoot 'file.txt') -Value 'v1' -NoNewline
+15
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1", "old_str
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path './DirectorySync.Tests.ps1' -Output Detailed" 2>&1 | grep -E 'Tests Passed|Tests completed'
+[Result] [97mTests completed in 1.57s[0m
+[97mTests Passed: 13, [0m[91mFailed: 8, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Assistant] 8 new tests fail. Now implement `Invoke-SyncPlan`.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.ps1", "offset": 140}
+[Result] 140	
+141	    # Files that differ need to be overwritten in target from source
+142	    foreach ($file in $comparison.Modified) {
+143	        $actions.Add(@{
+144	            Action       = [string]'Overwrite'
+145	            RelativePath = [string]$file
+146	        })
+147	    }
+148	
+149	    # Files only in target need to be deleted
+150	    foreach ($file in $comparison.TargetOnly) {
+151	        $actions.Add(@{
+152	            Action       = [string]'Delete'
+153	            RelativePath = [string]$file
+154	        })
+155	    }
+156	
+157	    return @{
+158	        SourcePath = [string]$SourcePath
+159	        TargetPath = [string]$TargetPath
+160	        Actions    = [hashtable[]]@($actions)
+161	    }
+162	}
+163	
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.ps1", "old_string": 
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path './DirectorySync.Tests.ps1' -Output Detailed" 2>&1 | tail -35
+[Result] [95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1'[0m
+[92mDescribing Get-FileHashMap[0m
+[32m  [+] Should return an empty hashtable for an empty directory[0m[90m 106ms (86ms|20ms)[0m
+[32m  [+] Should return SHA-256 hashes for files in a directory[0m[90m 36ms (35ms|1ms)[0m
+[32m  [+] Should use relative paths as keys including subdirectories[0m[90m 9ms (8ms|1ms)[0m
+[0m
+[92mDescribing Compare-DirectoryTrees[0m
+[32m  [+] Should detect files only in source[0m[90m 44ms (43ms|2ms)[0m
+[32m  [+] Should detect files only in target[0m[90m 10ms (9ms|1ms)[0m
+[32m  [+] Should detect modified files (same name, different content)[0m[90m 24ms (23ms|1ms)[0m
+[32m  [+] Should detect identical files[0m[90m 14ms (13ms|1ms)[0m
+[32m  [+] Should handle a mixed scenario with nested directories[0m[90m 16ms (15ms|1ms)[0m
+
+[Assistant] All 21 tests pass.
+
+## TDD Cycle 5: Error Handling
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1", "offset": 258}
+[Result] 258	
+259	        Get-Content -LiteralPath (Join-Path $script:targetRoot 'file.txt') -Raw | Should -Be 'updated'
+260	    }
+261	
+262	    It 'Should create subdirectories when copying nested files' {
+263	        New-Item -ItemType Directory -Path (Join-Path $script:sourceRoot 'deep/nested') -Force | Out-Null
+264	        Set-Content -Path (Join-Path $script:sourceRoot 'deep/nested/file.txt') -Value 'deep' -NoNewline
+265	
+266	        $plan = New-SyncPlan -SourcePath $script:sourceRoot -TargetPath $script:targetRoot
+267	        Invoke-SyncPlan -Plan $plan
+268	
+269	        [string]$copiedPath = Join-Path $script:targetRoot 'deep/nested/file.txt'
+270	        Test-Path $copiedPath | Should -BeTrue
+271	        Get-Content -LiteralPath $copiedPath -Raw | Should -Be 'deep'
+272	    }
+273	
+274	    It 'Should make target identical to source after a full sync' {
+275	        # Set up a complex scenario
+276	        Set-Content -Path (Join-Path $script:sourceRoot 'a.txt') -Value 'aaa' -NoNewline
+277	    
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1", "old_str
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path './DirectorySync.Tests.ps1' -Output Detailed" 2>&1 | tail -15
+[Result] [0m
+[92mDescribing Invoke-SyncPlan - Execute mode[0m
+[32m  [+] Should copy source-only files to target[0m[90m 19ms (16ms|3ms)[0m
+[32m  [+] Should delete target-only files[0m[90m 16ms (15ms|1ms)[0m
+[32m  [+] Should overwrite modified files in target with source content[0m[90m 14ms (13ms|1ms)[0m
+[32m  [+] Should create subdirectories when copying nested files[0m[90m 16ms (15ms|1ms)[0m
+[32m  [+] Should make target identical to source after a full sync[0m[90m 32ms (31ms|1ms)[0m
+[32m  [+] Should return a report with Executed status[0m[90m 18ms (14ms|4ms)[0m
+[0m
+[92mDescribing Error handling[0m
+[32m  [+] Get-FileHashMap should throw for a nonexistent directory[0m[90m 28ms (25ms|2ms)[0m
+[32m  [+] Compare-DirectoryTrees should throw if source does not exist[0m[90m 10ms (5ms|4ms)[0m
+[32m  [+] Compare-DirectoryTrees should throw if target does not exist[0m[90m 7ms (6ms|1ms)[0m
+[97mTests completed in 1.03s[0m
+[32mTests Passed: 24, [0m[90mFailed: 0, 
+[Assistant] All 24 tests pass. The error handling already worked because `Get-FileHashMap` throws when the directory doesn't exist and `Compare-DirectoryTrees` calls it.
+
+## TDD Cycle 6: Edge cases — empty files, binary files, special characters
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1", "old_str
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path './DirectorySync.Tests.ps1' -Output Detailed" 2>&1 | tail -15
+[Result] [32m  [+] Should make target identical to source after a full sync[0m[90m 40ms (39ms|1ms)[0m
+[32m  [+] Should return a report with Executed status[0m[90m 15ms (13ms|2ms)[0m
+[0m
+[92mDescribing Error handling[0m
+[32m  [+] Get-FileHashMap should throw for a nonexistent directory[0m[90m 28ms (26ms|1ms)[0m
+[32m  [+] Compare-DirectoryTrees should throw if source does not exist[0m[90m 5ms (5ms|1ms)[0m
+[32m  [+] Compare-DirectoryTrees should throw if target does not exist[0m[90m 6ms (6ms|1ms)[0m
+[0m
+[92mDescribing Edge cases[0m
+[32m  [+] Should handle empty files correctly[0m[90m 10ms (9ms|1ms)[0m
+[32m  [+] Should handle binary content[0m[90m 13ms (12ms|1ms)[0m
+[32m  [+] Should handle files with spaces in names[0m[90m 8ms (8ms|1ms)[0m
+[32m  [+] Should sync both empty directories to produce no actions[0m[90m 7ms (6ms|1ms)[0m
+[97mTests completed in 1.02s[0m
+[32mTests Passed: 28, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[
+[Assistant] All 28 tests pass. Let me do a final review of both files to make sure everything is clean and meets the strict mode requirements.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.ps1"}
+[Result] 1	Set-StrictMode -Version Latest
+2	$ErrorActionPreference = 'Stop'
+3	
+4	<#
+5	.SYNOPSIS
+6	    Directory Tree Sync — compares two directory trees by SHA-256 content hash,
+7	    identifies differences, and generates/executes a sync plan.
+8	
+9	.DESCRIPTION
+10	    Provides functions to:
+11	    - Hash all files in a directory tree (Get-FileHashMap)
+12	    - Compare two directory trees (Compare-DirectoryTrees)
+13	    - Generate a sync plan (New-SyncPlan)
+14	    - Execute a sync plan in dry-run or execute mode (Invoke-SyncPlan)
+15	#>
+16	
+17	function Get-FileHashMap {
+18	    <#
+19	    .SYNOPSIS
+20	        Builds a hashtable mapping relative file paths to their SHA-256 hashes.
+21	    #>
+22	    [CmdletBinding()]
+23	    [OutputType([hashtable])]
+24	    param(
+25	        [Parameter(Mandatory)]
+26	        [string]$Path
+27	    )
+28	
+29	    if (-not (Test-Path -LiteralPath $Path -PathType Container)) {
+30	        throw "Directory not found: $Path"
+31	    }
+32	
+33	    [hashtable]$hashMap = @{}
+34	    [
+[Assistant] Everything looks good. Let me verify the final test file and run the complete suite one more time.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1"}
+[Result] 1	# Import the module under test and enable strict mode inside Pester's BeforeAll
+2	BeforeAll {
+3	    Set-StrictMode -Version Latest
+4	    $ErrorActionPreference = 'Stop'
+5	    . "$PSScriptRoot/DirectorySync.ps1"
+6	}
+7	
+8	Describe 'Get-FileHashMap' {
+9	    BeforeEach {
+10	        # Create temporary directory structures for testing
+11	        $script:testRoot = Join-Path ([System.IO.Path]::GetTempPath()) "DirSyncTest_$([System.Guid]::NewGuid().ToString('N'))"
+12	        New-Item -ItemType Directory -Path $script:testRoot -Force | Out-Null
+13	    }
+14	
+15	    AfterEach {
+16	        if (Test-Path $script:testRoot) {
+17	            Remove-Item -Recurse -Force $script:testRoot
+18	        }
+19	    }
+20	
+21	    It 'Should return an empty hashtable for an empty directory' {
+22	        $result = Get-FileHashMap -Path $script:testRoot
+23	        $result | Should -BeOfType [hashtable]
+24	        $result.Count | Should -Be 0
+25	    }
+26	
+27	    It 'Should return SHA-256 hashes for files in a direc
+[Assistant] Final run to confirm everything passes:
+[Tool: Bash] pwsh -Command "Invoke-Pester -Path './DirectorySync.Tests.ps1' -Output Detailed" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 28 tests in 143ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1'[0m
+[92mDescribing Get-FileHashMap[0m
+[32m  [+] Should return an empty hashtable for an empty directory[0m[90m 112ms (93ms|19ms)[0m
+[32m  [+] Should return SHA-256 hashes for files in a directory[0m[90m 24ms (23ms|1ms)[0m
+[32m  [+] Should use relative paths as keys including subdirectories[0m[90m 8ms (7ms|1ms)[0m
+[0m
+[92mDescribing Compare-DirectoryTrees[0m
+[32m  [+] Should detect files only in source[0m[90m 40ms (38ms|2ms)[0m
+[32m  [+] Should detect files only in target[0m[90m 12ms (8ms|4ms)[0m
+[32m  [+] Should detect modified files (same name, different content)[0m[90m 12ms (11ms|1ms)[0m
+[32m  [+] Should detect identical files[0m[90m 13
+[Assistant] **All 28 tests pass.** Here's a summary of what was built using red/green TDD:
+
+### Files created
+
+- **`DirectorySync.ps1`** — Main module with 4 functions, all with `Set-StrictMode -Version Latest`, `$ErrorActionPreference = 'Stop'`, `[CmdletBinding()]`, `[OutputType()]`, and explicitly typed parameters:
+  - `Get-FileHashMap` — Recursively hashes all files in a directory tree using SHA-256, returning a hashtable of relative-path → hash
+  - `Compare-DirectoryTrees` — Compares two trees and categorizes files as SourceOnly, TargetOnly, Modified, or Identical
+  - `New-SyncPlan` — Generates a list of Copy/Overwrite/Delete actions to make target match source
+  - `Invoke-SyncPlan` — Executes the plan; supports `-DryRun` (report only) or execute mode with error handling
+
+- **`DirectorySync.Tests.ps1`** — 28 Pester tests across 7 Describe blocks:
+  - `Get-FileHashMap` (3 tests): empty dir, hash verification, nested paths
+  - `Compare-DirectoryTrees` (5 tests): source-only, target-only, modified, identical, mixed nested
+  - `New-SyncPlan` (5 tests): copy/delete/overwrite action generation, no-op, metadata
+  - `Invoke-SyncPlan DryRun` (2 tests): no modification, report with DryRun status
+  - `Invoke-SyncPlan Execute` (6 tests): copy, delete, overwrite, nested dir creation, full sync verification, report status
+  - `Error handling` (3 tests): nonexistent directories throw meaningful errors
+  - `Edge cases` (4 tests): empty files, binary content, filenames with spaces, empty-to-empty sync
