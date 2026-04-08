@@ -67,6 +67,10 @@ Your workflow must actually run in Docker via `act`. You MUST include a test tha
 2. Runs: `git add -A && git commit -m "test" && act push --rm 2>&1`
 3. Saves the full output to a file called `act-result.txt` in the current working directory
 4. Asserts that the act command exited with code 0
+5. Parses `act-result.txt` and verifies the workflow produced expected outputs:
+   - Each job shows "Job succeeded" in the act output
+   - Your script's key outputs appear in the act log (e.g. version strings, generated files, summary text)
+   - If your workflow uses step outputs or artifacts, verify they appear in the log
 
 The `act-result.txt` file MUST exist when your tests finish. It is a required artifact. If `act` fails, debug the workflow until it passes. `act` and Docker are pre-installed.
 
