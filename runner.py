@@ -679,6 +679,7 @@ def parse_stream_output(raw_output: str) -> dict:
     claude_code_version = ""
     model_used = ""
     result_data = {}
+    init_data = {}
     compaction_count = 0
     error_count = 0
     error_details = []
@@ -701,10 +702,24 @@ def parse_stream_output(raw_output: str) -> dict:
         msg = obj.get("message", {}) if isinstance(obj.get("message"), dict) else {}
         content = msg.get("content", []) if isinstance(msg.get("content"), list) else []
 
-        # Init event
+        # Init event — capture all metadata about the session
         if event_type == "system" and obj.get("subtype") == "init":
             claude_code_version = obj.get("claude_code_version", "")
             model_used = obj.get("model", "")
+            init_data = {
+                "session_id": obj.get("session_id", ""),
+                "model": model_used,
+                "claude_code_version": claude_code_version,
+                "permission_mode": obj.get("permissionMode", ""),
+                "output_style": obj.get("output_style", ""),
+                "fast_mode_state": obj.get("fast_mode_state", ""),
+                "tools_available": obj.get("tools", []),
+                "mcp_servers": obj.get("mcp_servers", []),
+                "agents_available": obj.get("agents", []),
+                "skills_available": obj.get("skills", []),
+                "plugins": obj.get("plugins", []),
+                "cwd": obj.get("cwd", ""),
+            }
 
         # Assistant text
         if event_type == "assistant":
@@ -786,11 +801,34 @@ def parse_stream_output(raw_output: str) -> dict:
     # We'll use a heuristic: count install commands and note them
     # A more precise approach would require correlating tool_use IDs with their results
 
+    # Extract detailed metadata from result event
+    model_usage = result_data.get("modelUsage", {})
+    result_meta = {
+        "session_id": result_data.get("session_id", ""),
+        "stop_reason": result_data.get("stop_reason", ""),
+        "terminal_reason": result_data.get("terminal_reason", ""),
+        "fast_mode_state": result_data.get("fast_mode_state", ""),
+        "service_tier": usage.get("service_tier", ""),
+        "speed": usage.get("speed", ""),
+        "inference_geo": usage.get("inference_geo", ""),
+        "model_usage": model_usage,
+        "permission_denials": result_data.get("permission_denials", []),
+        "context_window": None,
+        "max_output_tokens": None,
+    }
+    # Extract context_window and max_output_tokens from modelUsage
+    for model_key, model_info in model_usage.items():
+        result_meta["context_window"] = model_info.get("contextWindow")
+        result_meta["max_output_tokens"] = model_info.get("maxOutputTokens")
+        break  # just take the first (should be only one)
+
     return {
         "events": events,
         "console_log": "\n".join(console_lines),
         "claude_code_version": claude_code_version,
         "model_used": model_used,
+        "init_data": init_data,
+        "result_meta": result_meta,
         "duration_ms": duration_ms,
         "duration_api_ms": duration_api_ms,
         "num_turns": num_turns,
@@ -820,6 +858,7 @@ def run_single_task(
     model_short: str,
     run_dir: Path,
     repo_root: Path,
+    effort: str | None = None,
 ) -> dict:
     """Run a single task/mode/model combination and return metrics."""
     task_id = task["id"]
@@ -853,6 +892,8 @@ def run_single_task(
         "--dangerously-skip-permissions",
         "--verbose",
     ]
+    if effort:
+        cmd.extend(["--effort", effort])
 
     # Record timing
     timestamp_start = datetime.now(timezone.utc).isoformat()
@@ -918,6 +959,10 @@ def run_single_task(
         language_chosen = "powershell"
     elif mode == "csharp-script":
         language_chosen = "csharp"
+    elif mode == "bash":
+        language_chosen = "bash"
+    elif mode == "typescript-bun":
+        language_chosen = "typescript"
 
     # Get runtime versions
     powershell_version = parsed["interpreter_versions"].get("powershell", "")
@@ -948,6 +993,25 @@ def run_single_task(
         "timestamp_end": timestamp_end,
         "prompt_text": prompt,
         "exit_code": exit_code,
+        # Session & environment metadata — everything the CLI exposes
+        "session": {
+            "session_id": parsed.get("result_meta", {}).get("session_id", ""),
+            "stop_reason": parsed.get("result_meta", {}).get("stop_reason", ""),
+            "terminal_reason": parsed.get("result_meta", {}).get("terminal_reason", ""),
+            "fast_mode_state": parsed.get("result_meta", {}).get("fast_mode_state", ""),
+            "service_tier": parsed.get("result_meta", {}).get("service_tier", ""),
+            "speed": parsed.get("result_meta", {}).get("speed", ""),
+            "inference_geo": parsed.get("result_meta", {}).get("inference_geo", ""),
+            "context_window": parsed.get("result_meta", {}).get("context_window"),
+            "max_output_tokens": parsed.get("result_meta", {}).get("max_output_tokens"),
+            "permission_mode": parsed.get("init_data", {}).get("permission_mode", ""),
+            "output_style": parsed.get("init_data", {}).get("output_style", ""),
+            "tools_available_count": len(parsed.get("init_data", {}).get("tools_available", [])),
+            "mcp_servers": parsed.get("init_data", {}).get("mcp_servers", []),
+            "permission_denials": parsed.get("result_meta", {}).get("permission_denials", []),
+        },
+        "model_usage_detail": parsed.get("result_meta", {}).get("model_usage", {}),
+        "effort_level": effort,
         "timing": {
             "grand_total_duration_ms": grand_total_duration_ms,
             "total_api_duration_ms": api_duration_ms,
@@ -1037,6 +1101,90 @@ def print_summary_table(all_metrics: list[dict]) -> None:
     print("=" * 120)
 
 
+def probe_model_metadata(model_id: str) -> dict:
+    """Probe the Claude CLI to capture full model/environment metadata before the benchmark run.
+
+    Runs a minimal `claude -p "say ok"` call and extracts every available field
+    from the init and result events.  This lets us log the exact resolved model,
+    service tier, context window, CLI version, etc. once at the start.
+    """
+    try:
+        result = subprocess.run(
+            ["claude", "-p", "say ok", "--model", model_id,
+             "--output-format", "stream-json", "--dangerously-skip-permissions"],
+            capture_output=True, text=True, timeout=60,
+        )
+        init_event = {}
+        result_event = {}
+        for line in result.stdout.splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                obj = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if obj.get("type") == "system" and obj.get("subtype") == "init":
+                init_event = obj
+            elif obj.get("type") == "result":
+                result_event = obj
+        model_usage = result_event.get("modelUsage", {})
+        model_info = model_usage.get(model_id, {})
+        return {
+            "model_id_requested": model_id,
+            "model_id_init": init_event.get("model", ""),
+            "claude_code_version": init_event.get("claude_code_version", ""),
+            "service_tier": result_event.get("usage", {}).get("service_tier", ""),
+            "speed": result_event.get("usage", {}).get("speed", ""),
+            "inference_geo": result_event.get("usage", {}).get("inference_geo", ""),
+            "context_window": model_info.get("contextWindow"),
+            "max_output_tokens": model_info.get("maxOutputTokens"),
+            "fast_mode_state": result_event.get("fast_mode_state", ""),
+            "permission_mode": init_event.get("permissionMode", ""),
+            "tools_count": len(init_event.get("tools", [])),
+            "mcp_servers": init_event.get("mcp_servers", []),
+            "agents": init_event.get("agents", []),
+            "plugins": init_event.get("plugins", []),
+        }
+    except Exception as e:
+        log(f"  Warning: model probe for {model_id} failed: {e}")
+        return {"model_id_requested": model_id, "error": str(e)}
+
+
+def get_system_info() -> dict:
+    """Capture system environment info for reproducibility."""
+    info = {
+        "platform": sys.platform,
+        "python_version": sys.version,
+        "hostname": "",
+        "uname": "",
+    }
+    try:
+        import platform as plat
+        info["hostname"] = plat.node()
+        info["uname"] = str(plat.uname())
+    except Exception:
+        pass
+    # Tool versions
+    for tool, cmd in [
+        ("claude", ["claude", "--version"]),
+        ("python", ["python3", "--version"]),
+        ("node", ["node", "--version"]),
+        ("bun", ["bun", "--version"]),
+        ("pwsh", ["pwsh", "--version"]),
+        ("dotnet", ["dotnet", "--version"]),
+        ("actionlint", ["actionlint", "--version"]),
+        ("shellcheck", ["shellcheck", "--version"]),
+        ("bash", ["bash", "--version"]),
+    ]:
+        try:
+            r = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
+            info[f"{tool}_version"] = r.stdout.strip().split("\n")[0]
+        except Exception:
+            info[f"{tool}_version"] = "not found"
+    return info
+
+
 def main():
     parser = argparse.ArgumentParser(description="Benchmark Claude Code agents on scripting tasks")
     parser.add_argument(
@@ -1054,6 +1202,10 @@ def main():
     parser.add_argument(
         "--resume", default=None,
         help="Resume a previous run by providing its timestamp directory name (e.g., 2026-04-02_181500). Skips runs that already have metrics.json."
+    )
+    parser.add_argument(
+        "--effort", default=None, choices=["low", "medium", "high", "max"],
+        help="Reasoning effort level passed to claude CLI (default: not set, uses CLI default)"
     )
     args = parser.parse_args()
 
@@ -1097,6 +1249,22 @@ def main():
     log(f"Results: {run_dir}")
     log("")
 
+    # Pre-flight: capture system info and probe each model
+    log("Pre-flight: capturing system info...")
+    system_info = get_system_info()
+    log(f"  Claude CLI: {system_info.get('claude_version', 'unknown')}")
+    log(f"  Python: {system_info.get('python_version', 'unknown')}")
+
+    model_probes = {}
+    for model_short, model_id in selected_models:
+        log(f"Pre-flight: probing model {model_short} ({model_id})...")
+        probe = probe_model_metadata(model_id)
+        model_probes[model_short] = probe
+        log(f"  Service tier: {probe.get('service_tier', '?')}, "
+            f"Speed: {probe.get('speed', '?')}, "
+            f"Context window: {probe.get('context_window', '?')}, "
+            f"Max output: {probe.get('max_output_tokens', '?')}")
+
     # Run manifest
     manifest = {
         "run_id": run_timestamp,
@@ -1109,6 +1277,9 @@ def main():
         "completed_at": None,
         "cost_assumptions": COST_PER_MTOK,
         "total_cost_usd": 0,
+        "system_info": system_info,
+        "model_probes": model_probes,
+        "effort_level": args.effort,
     }
 
     all_metrics = []
@@ -1164,6 +1335,7 @@ def main():
                         model_short=model_short,
                         run_dir=run_dir,
                         repo_root=repo_root,
+                        effort=args.effort,
                     )
                     all_metrics.append(metrics)
                 except Exception as e:

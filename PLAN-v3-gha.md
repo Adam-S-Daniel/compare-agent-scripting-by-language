@@ -163,6 +163,19 @@ This gives us two quality dimensions per run:
 
 4. **Verify bun** — already installed at 1.3.11
 
+### Phase 1b: Metadata Logging (DONE)
+
+Runner.py now captures comprehensive model/environment metadata:
+
+- **Pre-flight probes**: `probe_model_metadata()` runs a minimal `claude -p "say ok"` per model to capture service_tier, speed, context_window, max_output_tokens, CLI version
+- **System info**: `get_system_info()` captures Python version, tool versions (claude, node, bun, pwsh, dotnet, actionlint, shellcheck, bash), hostname, platform
+- **Per-run session data**: Every metrics.json includes a `session` block with session_id, stop_reason, terminal_reason, fast_mode_state, service_tier, speed, inference_geo, context_window, max_output_tokens, permission_mode, tools_available_count, mcp_servers, permission_denials
+- **Model usage detail**: Raw `modelUsage` from CLI result event (per-model token totals, context window, max output tokens, cost)
+- **Effort level**: `--effort` CLI arg passed through to claude, logged in manifest and per-run metrics
+- **Manifest**: `run-manifest.json` includes `system_info`, `model_probes`, and `effort_level`
+
+**What we CAN'T get**: The resolved model datestamp (e.g., `claude-sonnet-4-6-20260301`). The CLI only exposes the alias. Would need API response headers which aren't surfaced.
+
 ### Phase 2: Hook Script Updates
 
 5. **Extend `hooks/syntax-check.py`** to handle:
