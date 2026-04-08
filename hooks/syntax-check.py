@@ -28,7 +28,65 @@ def main():
 
     errors = ""
 
-    if ext == "cs":
+    if ext == "py":
+        # Python — py_compile catches syntax errors
+        try:
+            result = subprocess.run(
+                ["python3", "-m", "py_compile", file_path],
+                capture_output=True, text=True, timeout=10,
+            )
+            if result.returncode != 0:
+                errors = result.stderr.strip()
+                # Limit to first 10 lines
+                errors = "\n".join(errors.splitlines()[:10])
+        except Exception:
+            pass
+
+    elif ext == "sh":
+        # Shell — bash -n for syntax, shellcheck for lint
+        try:
+            result = subprocess.run(
+                ["bash", "-n", file_path],
+                capture_output=True, text=True, timeout=10,
+            )
+            if result.returncode != 0:
+                errors = result.stderr.strip()
+        except Exception:
+            pass
+
+        if not errors:
+            try:
+                result = subprocess.run(
+                    ["shellcheck", "-f", "gcc", file_path],
+                    capture_output=True, text=True, timeout=10,
+                )
+                error_lines = [
+                    l for l in result.stdout.splitlines()
+                    if ": error:" in l or ": warning:" in l
+                ]
+                errors = "\n".join(error_lines[:10])
+            except FileNotFoundError:
+                pass  # shellcheck not installed — skip lint
+            except Exception:
+                pass
+
+    elif ext in ("yml", "yaml"):
+        # YAML — actionlint for GitHub Actions workflow files only
+        if ".github/workflows/" in file_path or ".github\\workflows\\" in file_path:
+            try:
+                result = subprocess.run(
+                    ["actionlint", file_path],
+                    capture_output=True, text=True, timeout=10,
+                )
+                if result.returncode != 0:
+                    errors = result.stdout.strip() or result.stderr.strip()
+                    errors = "\n".join(errors.splitlines()[:10])
+            except FileNotFoundError:
+                pass  # actionlint not installed — skip
+            except Exception:
+                pass
+
+    elif ext == "cs":
         # C# file-based apps — dotnet build catches compile errors
         try:
             result = subprocess.run(
