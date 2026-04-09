@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-09 09:30:27 AM ET
+**Last updated:** 2026-04-09 09:41:01 AM ET
 
 **Status:** 64/64 runs completed, 0 remaining
 **Total cost so far:** $84.2473
@@ -23,19 +23,19 @@
 
 ### Hook Savings by Language × Model
 
-Each hook-caught error avoids a full test → diagnose → fix → retest cycle.
+Each hook-caught error avoids one test run that would otherwise have been needed to discover it.
 
-| Mode | Model | Fires | Caught | Rate | Time Saved | % of Time | $ Saved | % of $ | Turns Saved |
-|------|-------|-------|--------|------|-----------|-----------|---------|--------|-------------|
-| bash | opus | 93 | 5 | 5.4% | 2.2min | 0.3% | $0.1875 | 0.22% | 5 |
-| bash | sonnet | 98 | 14 | 14.3% | 8.6min | 1.2% | $0.1050 | 0.12% | 14 |
-| default | opus | 90 | 5 | 5.6% | 1.9min | 0.3% | $0.1875 | 0.22% | 5 |
-| default | sonnet | 81 | 4 | 4.9% | 2.2min | 0.3% | $0.0300 | 0.04% | 4 |
-| powershell | opus | 68 | 2 | 2.9% | 1.7min | 0.2% | $0.0750 | 0.09% | 2 |
-| powershell | sonnet | 82 | 1 | 1.2% | 1.0min | 0.1% | $0.0075 | 0.01% | 1 |
-| typescript-bun | opus | 94 | 50 | 53.2% | 19.2min | 2.6% | $1.8750 | 2.23% | 50 |
-| typescript-bun | sonnet | 99 | 46 | 46.5% | 25.3min | 3.5% | $0.3450 | 0.41% | 46 |
-| **Total** | | **705** | **127** | **18.0%** | **62.1min** | **8.6%** | **$2.8125** | **3.34%** | **127** |
+| Mode | Model | Fires | Caught | Rate | Time Saved | % of Time | Turns Saved |
+|------|-------|-------|--------|------|-----------|-----------|-------------|
+| bash | opus | 93 | 5 | 5.4% | 1.0min | 0.1% | 5 |
+| bash | sonnet | 98 | 14 | 14.3% | 2.8min | 0.4% | 14 |
+| default | opus | 90 | 5 | 5.6% | 0.7min | 0.1% | 5 |
+| default | sonnet | 81 | 4 | 4.9% | 0.5min | 0.1% | 4 |
+| powershell | opus | 68 | 2 | 2.9% | 1.2min | 0.2% | 2 |
+| powershell | sonnet | 82 | 1 | 1.2% | 0.6min | 0.1% | 1 |
+| typescript-bun | opus | 94 | 50 | 53.2% | 6.7min | 0.9% | 50 |
+| typescript-bun | sonnet | 99 | 46 | 46.5% | 6.1min | 0.8% | 46 |
+| **Total** | | **705** | **127** | **18.0%** | **19.6min** | **2.7%** | **127** |
 
 ### Prompt Cache Savings
 

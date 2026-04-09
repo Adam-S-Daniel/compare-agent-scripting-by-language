@@ -827,9 +827,10 @@ def generate_results_md(run_dir: Path, all_metrics: list[dict], total_runs: int,
     # Collect all data first, then emit tables
 
     # ── Collect trap & hook data ──
+    # Estimated wall-clock cost of one test run, by mode.  A hook-caught
+    # error avoids one test run that would otherwise have surfaced the error.
+    # The agent still does the same diagnose→fix work either way.
     TEST_RUN_COST_S = {"default": 8, "powershell": 35, "bash": 12, "typescript-bun": 8}
-    API_TURN_COST_S = {"opus": 15, "sonnet": 25}
-    TURN_COST_USD = {"opus": 500 * 75 / 1_000_000, "sonnet": 500 * 15 / 1_000_000}
 
     trap_instances: list[dict] = []
     hook_by_combo: dict[tuple, dict] = {}
@@ -859,8 +860,10 @@ def generate_results_md(run_dir: Path, all_metrics: list[dict], total_runs: int,
 
         caught = m.get("hooks", {}).get("hook_errors_caught", 0)
         fires = m.get("hooks", {}).get("hook_fires", 0)
-        ts = caught * (TEST_RUN_COST_S.get(mode, 10) + API_TURN_COST_S.get(model, 20))
-        cs = caught * TURN_COST_USD.get(model, 0.02)
+        ts = caught * TEST_RUN_COST_S.get(mode, 10)
+        # Dollar savings are negligible — the avoided test run consumes
+        # tool-execution time, not meaningful extra API tokens.
+        cs = 0.0
         if combo not in hook_by_combo:
             hook_by_combo[combo] = {"fires": 0, "caught": 0, "time_saved": 0, "cost_saved": 0}
         hook_by_combo[combo]["fires"] += fires
@@ -898,10 +901,10 @@ def generate_results_md(run_dir: Path, all_metrics: list[dict], total_runs: int,
     # ── Hook Savings by Language × Model ──
     lines.append("### Hook Savings by Language × Model")
     lines.append("")
-    lines.append("Each hook-caught error avoids a full test → diagnose → fix → retest cycle.")
+    lines.append("Each hook-caught error avoids one test run that would otherwise have been needed to discover it.")
     lines.append("")
-    lines.append("| Mode | Model | Fires | Caught | Rate | Time Saved | % of Time | $ Saved | % of $ | Turns Saved |")
-    lines.append("|------|-------|-------|--------|------|-----------|-----------|---------|--------|-------------|")
+    lines.append("| Mode | Model | Fires | Caught | Rate | Time Saved | % of Time | Turns Saved |")
+    lines.append("|------|-------|-------|--------|------|-----------|-----------|-------------|")
     for mode in modes_seen:
         for model in models_seen:
             hs = hook_by_combo.get((mode, model), {})
@@ -911,24 +914,19 @@ def generate_results_md(run_dir: Path, all_metrics: list[dict], total_runs: int,
                 continue
             rate = c_count / f_count * 100
             t_pct = hs["time_saved"] / total_duration * 100 if total_duration else 0
-            c_pct = hs["cost_saved"] / total_cost * 100 if total_cost else 0
             lines.append(
                 f"| {mode} | {model} | {f_count} | {c_count} | {rate:.1f}% "
-                f"| {hs['time_saved']/60:.1f}min | {t_pct:.1f}% "
-                f"| ${hs['cost_saved']:.4f} | {c_pct:.2f}% | {c_count} |"
+                f"| {hs['time_saved']/60:.1f}min | {t_pct:.1f}% | {c_count} |"
             )
     total_hook_fires = sum(h.get("fires", 0) for h in hook_by_combo.values())
     total_hook_caught = sum(h.get("caught", 0) for h in hook_by_combo.values())
     total_hook_time = sum(h.get("time_saved", 0) for h in hook_by_combo.values())
-    total_hook_cost = sum(h.get("cost_saved", 0) for h in hook_by_combo.values())
     if total_hook_fires:
         ht_pct = total_hook_time / total_duration * 100 if total_duration else 0
-        hc_pct = total_hook_cost / total_cost * 100 if total_cost else 0
         lines.append(
             f"| **Total** | | **{total_hook_fires}** | **{total_hook_caught}** "
             f"| **{total_hook_caught/total_hook_fires*100:.1f}%** "
-            f"| **{total_hook_time/60:.1f}min** | **{ht_pct:.1f}%** "
-            f"| **${total_hook_cost:.4f}** | **{hc_pct:.2f}%** | **{total_hook_caught}** |"
+            f"| **{total_hook_time/60:.1f}min** | **{ht_pct:.1f}%** | **{total_hook_caught}** |"
         )
     lines.append("")
 
