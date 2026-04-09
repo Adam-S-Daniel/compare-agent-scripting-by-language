@@ -1,0 +1,37 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  generate-matrix:
+    name: Generate Build Matrix
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install PowerShell
+        run: |
+          if ! command -v pwsh &>/dev/null; then
+            wget -q https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb \
+              -O /tmp/packages-microsoft-prod.deb
+            dpkg -i /tmp/packages-microsoft-prod.deb
+            apt-get update -qq
+            DEBIAN_FRONTEND=noninteractive apt-get install -y -qq powershell
+          fi
+          pwsh --version
+
+      - name: Generate Build Matrix
+        run: |
+          if [ ! -f "matrix-config.json" ]; then
+            echo "MATRIX_ERROR: matrix-config.json not found in repository root"
+            exit 1
+          fi
+          pwsh -File New-BuildMatrix.ps1 -ConfigPath matrix-config.json

@@ -1,0 +1,140 @@
+name: Artifact Cleanup Script
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * 0"
+
+permissions:
+  contents: read
+
+env:
+  # Fixed reference epoch for deterministic age calculations.
+  # All "old" fixture epochs are far below this value; "new" ones are close to it.
+  REFDATE: "9999999999"
+
+jobs:
+  # -----------------------------------------------------------------------
+  # Job 1: lint – shellcheck + bash -n
+  # -----------------------------------------------------------------------
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install shellcheck
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y shellcheck
+
+      - name: shellcheck artifact_cleanup.sh
+        run: shellcheck artifact_cleanup.sh
+
+      - name: bash -n syntax check
+        run: bash -n artifact_cleanup.sh
+
+  # -----------------------------------------------------------------------
+  # Job 2: unit-tests – run bats test suite inside CI
+  # -----------------------------------------------------------------------
+  unit-tests:
+    name: Unit Tests (bats)
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install bats-core
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y bats
+
+      - name: Run bats tests
+        run: bats tests/artifact_cleanup.bats
+
+  # -----------------------------------------------------------------------
+  # Job 3: integration – run the script with fixture data and emit
+  # verifiable output.  The TC_ID env var selects which test case to run;
+  # when absent (normal CI push) all five cases are executed sequentially.
+  #
+  # TC_ID values: tc1 | tc2 | tc3 | tc4 | tc5 | (unset → all)
+  # -----------------------------------------------------------------------
+  integration:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Make script executable
+        run: chmod +x artifact_cleanup.sh
+
+      # ------------------------------------------------------------------
+      # Dispatch to specific test case via TC_ID, or run all when unset.
+      # Using shell case statement so a single step handles all variants.
+      # ------------------------------------------------------------------
+      - name: Run artifact cleanup test case(s)
+        run: |
+          run_tc1() {
+            echo "=== TC1: max-age policy ==="
+            ./artifact_cleanup.sh \
+              --artifacts tests/fixtures/test_max_age.csv \
+              --max-age 30 \
+              --reference-date "${REFDATE}"
+            echo "=== TC1 END ==="
+          }
+
+          run_tc2() {
+            echo "=== TC2: keep-latest-N policy ==="
+            ./artifact_cleanup.sh \
+              --artifacts tests/fixtures/test_keep_latest.csv \
+              --keep-latest 2 \
+              --reference-date "${REFDATE}"
+            echo "=== TC2 END ==="
+          }
+
+          run_tc3() {
+            echo "=== TC3: max-total-size policy ==="
+            ./artifact_cleanup.sh \
+              --artifacts tests/fixtures/test_max_size.csv \
+              --max-total-size 6291456 \
+              --reference-date "${REFDATE}"
+            echo "=== TC3 END ==="
+          }
+
+          run_tc4() {
+            echo "=== TC4: combined policies ==="
+            ./artifact_cleanup.sh \
+              --artifacts tests/fixtures/test_combined.csv \
+              --max-age 30 \
+              --keep-latest 2 \
+              --reference-date "${REFDATE}"
+            echo "=== TC4 END ==="
+          }
+
+          run_tc5() {
+            echo "=== TC5: dry-run mode ==="
+            ./artifact_cleanup.sh \
+              --artifacts tests/fixtures/test_dry_run.csv \
+              --max-age 30 \
+              --reference-date "${REFDATE}" \
+              --dry-run
+            echo "=== TC5 END ==="
+          }
+
+          case "${TC_ID:-all}" in
+            tc1) run_tc1 ;;
+            tc2) run_tc2 ;;
+            tc3) run_tc3 ;;
+            tc4) run_tc4 ;;
+            tc5) run_tc5 ;;
+            *)
+              run_tc1
+              run_tc2
+              run_tc3
+              run_tc4
+              run_tc5
+              ;;
+          esac

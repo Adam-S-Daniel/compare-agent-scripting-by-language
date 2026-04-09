@@ -1,0 +1,48 @@
+name: Artifact Cleanup Script
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  schedule:
+    # Run daily at midnight UTC to keep artifact storage under control
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Run in dry-run mode (no actual deletions)"
+        required: false
+        default: "true"
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  artifact-cleanup:
+    name: Run Artifact Cleanup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Install actionlint
+        run: |
+          curl -sLO https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_amd64.tar.gz
+          tar -xzf actionlint_1.7.7_linux_amd64.tar.gz actionlint
+          sudo mv actionlint /usr/local/bin/actionlint
+
+      - name: Run artifact cleanup (dry-run mode)
+        run: bun run artifact-cleanup.ts --dry-run
+
+      - name: Run tests
+        run: bun test

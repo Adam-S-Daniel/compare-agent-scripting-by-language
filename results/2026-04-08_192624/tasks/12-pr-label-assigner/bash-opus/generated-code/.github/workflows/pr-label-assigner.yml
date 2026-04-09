@@ -1,0 +1,74 @@
+name: PR Label Assigner
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  assign-labels:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate script syntax
+        run: |
+          bash -n pr-label-assigner.sh
+          echo "SYNTAX_CHECK=passed"
+
+      - name: Run shellcheck
+        run: |
+          if command -v shellcheck > /dev/null 2>&1; then
+            shellcheck pr-label-assigner.sh
+            echo "SHELLCHECK=passed"
+          else
+            echo "SHELLCHECK=skipped"
+          fi
+
+      - name: Run label assigner
+        run: |
+          chmod +x pr-label-assigner.sh
+
+          # If a test fixture file exists, use it; otherwise use default
+          if [ -f "test-fixtures/changed-files.txt" ]; then
+            FIXTURE_FILE="test-fixtures/changed-files.txt"
+          else
+            FIXTURE_FILE="test-fixtures/case2-mixed-files.txt"
+          fi
+
+          echo "=== Fixture file: ${FIXTURE_FILE} ==="
+          echo "=== Changed files ==="
+          cat "${FIXTURE_FILE}"
+          echo ""
+
+          ./pr-label-assigner.sh -f "${FIXTURE_FILE}"
+
+      - name: Verify output correctness
+        run: |
+          chmod +x pr-label-assigner.sh
+
+          if [ -f "test-fixtures/changed-files.txt" ]; then
+            FIXTURE_FILE="test-fixtures/changed-files.txt"
+          else
+            FIXTURE_FILE="test-fixtures/case2-mixed-files.txt"
+          fi
+
+          output=$(./pr-label-assigner.sh -f "${FIXTURE_FILE}")
+
+          if echo "${output}" | grep -q "Assigned labels:"; then
+            echo "VERIFY=label_output_present"
+          else
+            echo "VERIFY=no_label_output"
+            exit 1
+          fi
+
+          # Extract just the labels (lines after "Assigned labels:" and before empty line)
+          labels=$(echo "${output}" | sed -n '/^Assigned labels:$/,/^$/p' | grep -v '^Assigned labels:$' | grep -v '^$')
+          echo "FINAL_LABELS=${labels}"
+          echo "Job succeeded"

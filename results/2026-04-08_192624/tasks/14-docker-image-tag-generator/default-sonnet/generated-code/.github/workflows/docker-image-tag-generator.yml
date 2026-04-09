@@ -1,0 +1,88 @@
+name: Docker Image Tag Generator
+
+# Trigger on pushes to any branch/tag, PRs, and manual dispatch.
+on:
+  push:
+    branches:
+      - "**"
+    tags:
+      - "v*"
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  generate-tags:
+    runs-on: ubuntu-latest
+
+    steps:
+      # -----------------------------------------------------------------------
+      # 1. Check out the repository so the Python scripts are available.
+      # -----------------------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # -----------------------------------------------------------------------
+      # 2. Set up the Python runtime.
+      # -----------------------------------------------------------------------
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # -----------------------------------------------------------------------
+      # 3. Install test dependencies.
+      # -----------------------------------------------------------------------
+      - name: Install dependencies
+        run: pip install pytest
+
+      # -----------------------------------------------------------------------
+      # 4. Run unit tests (TDD green phase — all 35 must pass).
+      # -----------------------------------------------------------------------
+      - name: Run unit tests
+        run: python -m pytest test_docker_tag_generator.py -v
+
+      # -----------------------------------------------------------------------
+      # 5. Generate Docker image tags.
+      #
+      #    In production, reads from GitHub Actions built-in env vars:
+      #      GITHUB_REF_NAME  – branch or tag name
+      #      GITHUB_SHA       – full commit SHA
+      #
+      #    For CI testing via 'act --env TEST_BRANCH=... --env TEST_SHA=...':
+      #      TEST_BRANCH, TEST_SHA, TEST_TAGS, TEST_PR_NUMBER override the
+      #      defaults, enabling fixture-driven test cases without modifying
+      #      the actual git repo state.
+      # -----------------------------------------------------------------------
+      - name: Generate Docker image tags
+        run: |
+          # Allow test overrides; fall back to GitHub Actions built-ins.
+          BRANCH="${TEST_BRANCH:-$GITHUB_REF_NAME}"
+          COMMIT_SHA="${TEST_SHA:-$GITHUB_SHA}"
+          GIT_TAGS="${TEST_TAGS:-}"
+          PR_NUMBER="${TEST_PR_NUMBER:-}"
+
+          export BRANCH COMMIT_SHA GIT_TAGS PR_NUMBER
+
+          echo "--- Input context ---"
+          echo "BRANCH:     $BRANCH"
+          echo "COMMIT_SHA: $COMMIT_SHA"
+          echo "GIT_TAGS:   $GIT_TAGS"
+          echo "PR_NUMBER:  $PR_NUMBER"
+          echo "---------------------"
+
+          python docker_tag_generator.py
+
+      # -----------------------------------------------------------------------
+      # 6. Write a job summary (best-effort; silently skipped if unavailable).
+      # -----------------------------------------------------------------------
+      - name: Write step summary
+        if: always()
+        run: |
+          if [ -n "$GITHUB_STEP_SUMMARY" ]; then
+            BRANCH="${TEST_BRANCH:-$GITHUB_REF_NAME}"
+            echo "## Docker Image Tag Generator" >> "$GITHUB_STEP_SUMMARY"
+            echo "**Branch:** \`$BRANCH\`" >> "$GITHUB_STEP_SUMMARY"
+          fi

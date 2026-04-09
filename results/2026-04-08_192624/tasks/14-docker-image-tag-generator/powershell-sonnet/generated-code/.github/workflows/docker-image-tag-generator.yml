@@ -1,0 +1,268 @@
+name: Docker Image Tag Generator
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - "feature/**"
+      - "fix/**"
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      branch_name:
+        description: "Branch name to generate tags for"
+        required: false
+        default: "main"
+      commit_sha:
+        description: "Commit SHA"
+        required: false
+        default: "abc1234def5678"
+      git_tags:
+        description: "Comma-separated git tags (e.g. v1.2.3)"
+        required: false
+        default: ""
+      pr_number:
+        description: "PR number (if applicable)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  generate-tags:
+    name: Generate Docker Image Tags
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install PowerShell
+        run: |
+          # Install PowerShell on Ubuntu via Microsoft package repository
+          wget -q https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb -O /tmp/packages-microsoft-prod.deb
+          sudo dpkg -i /tmp/packages-microsoft-prod.deb
+          sudo apt-get update -qq
+          sudo apt-get install -y powershell
+          pwsh --version
+
+      - name: Install Pester
+        run: |
+          pwsh -Command "Install-Module -Name Pester -Force -SkipPublisherCheck -Scope CurrentUser"
+
+      - name: Set git context from workflow inputs or git environment
+        id: git-context
+        env:
+          INPUT_BRANCH: ${{ github.event.inputs.branch_name }}
+          INPUT_SHA: ${{ github.event.inputs.commit_sha }}
+          INPUT_TAGS: ${{ github.event.inputs.git_tags }}
+          INPUT_PR: ${{ github.event.inputs.pr_number }}
+          GH_HEAD_REF: ${{ github.head_ref }}
+          GH_PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          # Use workflow_dispatch inputs if provided, otherwise derive from git environment
+          if [ -n "$INPUT_BRANCH" ]; then
+            BRANCH_NAME="$INPUT_BRANCH"
+          elif [ -n "$GH_HEAD_REF" ]; then
+            BRANCH_NAME="$GH_HEAD_REF"
+          else
+            BRANCH_NAME="${GITHUB_REF_NAME:-main}"
+          fi
+
+          if [ -n "$INPUT_SHA" ]; then
+            COMMIT_SHA="$INPUT_SHA"
+          else
+            COMMIT_SHA="${GITHUB_SHA:-abc1234def5678}"
+          fi
+
+          GIT_TAGS="$INPUT_TAGS"
+          PR_NUMBER="$INPUT_PR"
+
+          if [ -z "$PR_NUMBER" ] && [ -n "$GH_PR_NUMBER" ]; then
+            PR_NUMBER="$GH_PR_NUMBER"
+          fi
+
+          {
+            echo "branch_name=${BRANCH_NAME}"
+            echo "commit_sha=${COMMIT_SHA}"
+            echo "git_tags=${GIT_TAGS}"
+            echo "pr_number=${PR_NUMBER}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Generate Docker image tags
+        id: generate-tags
+        env:
+          BRANCH_NAME: ${{ steps.git-context.outputs.branch_name }}
+          COMMIT_SHA: ${{ steps.git-context.outputs.commit_sha }}
+          GIT_TAGS: ${{ steps.git-context.outputs.git_tags }}
+          PR_NUMBER: ${{ steps.git-context.outputs.pr_number }}
+        run: |
+          pwsh -File ./New-DockerImageTags.ps1
+
+      - name: Run Pester unit and structure tests
+        run: |
+          # Run all tests EXCEPT the act integration tests (can't run act inside act)
+          pwsh -Command "
+            \$config = New-PesterConfiguration
+            \$config.Run.Path = './New-DockerImageTags.Tests.ps1'
+            \$config.Output.Verbosity = 'Detailed'
+            \$config.Filter.ExcludeTag = @('Integration')
+            \$config.Run.PassThru = \$true
+            \$result = Invoke-Pester -Configuration \$config
+            if (\$result.FailedCount -gt 0) {
+              Write-Error \"Tests failed: \$(\$result.FailedCount) failures\"
+              exit 1
+            }
+            Write-Host \"All \$(\$result.PassedCount) non-integration tests passed!\"
+          "
+
+  test-fixture-main:
+    name: "Test fixture: main branch -> latest"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install PowerShell
+        run: |
+          wget -q https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb -O /tmp/packages-microsoft-prod.deb
+          sudo dpkg -i /tmp/packages-microsoft-prod.deb
+          sudo apt-get update -qq
+          sudo apt-get install -y powershell
+          pwsh --version
+
+      - name: Run tag generator for main branch
+        id: tags
+        env:
+          BRANCH_NAME: main
+          COMMIT_SHA: abc1234def5678
+          GIT_TAGS: ""
+          PR_NUMBER: ""
+        run: |
+          pwsh -File ./New-DockerImageTags.ps1 | tee /tmp/tags-output.txt
+          cat /tmp/tags-output.txt
+
+      - name: Assert tags contain 'latest'
+        run: |
+          if grep -q "latest" /tmp/tags-output.txt; then
+            echo "PASS: 'latest' tag found for main branch"
+          else
+            echo "FAIL: Expected 'latest' tag for main branch"
+            exit 1
+          fi
+
+  test-fixture-pr:
+    name: "Test fixture: PR branch -> pr-42"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install PowerShell
+        run: |
+          wget -q https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb -O /tmp/packages-microsoft-prod.deb
+          sudo dpkg -i /tmp/packages-microsoft-prod.deb
+          sudo apt-get update -qq
+          sudo apt-get install -y powershell
+          pwsh --version
+
+      - name: Run tag generator for PR branch
+        env:
+          BRANCH_NAME: feature/my-feature
+          COMMIT_SHA: deadbeef12345678
+          GIT_TAGS: ""
+          PR_NUMBER: "42"
+        run: |
+          pwsh -File ./New-DockerImageTags.ps1 | tee /tmp/tags-output.txt
+          cat /tmp/tags-output.txt
+
+      - name: Assert tags contain 'pr-42'
+        run: |
+          if grep -q "pr-42" /tmp/tags-output.txt; then
+            echo "PASS: 'pr-42' tag found for PR branch"
+          else
+            echo "FAIL: Expected 'pr-42' tag for PR #42"
+            exit 1
+          fi
+
+  test-fixture-semver:
+    name: "Test fixture: semver tag -> v1.2.3"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install PowerShell
+        run: |
+          wget -q https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb -O /tmp/packages-microsoft-prod.deb
+          sudo dpkg -i /tmp/packages-microsoft-prod.deb
+          sudo apt-get update -qq
+          sudo apt-get install -y powershell
+          pwsh --version
+
+      - name: Run tag generator for semver tag
+        env:
+          BRANCH_NAME: main
+          COMMIT_SHA: cafebabe12345678
+          GIT_TAGS: v1.2.3
+          PR_NUMBER: ""
+        run: |
+          pwsh -File ./New-DockerImageTags.ps1 | tee /tmp/tags-output.txt
+          cat /tmp/tags-output.txt
+
+      - name: Assert tags contain 'v1.2.3' and 'latest'
+        run: |
+          PASS=true
+          if grep -q "v1.2.3" /tmp/tags-output.txt; then
+            echo "PASS: 'v1.2.3' tag found"
+          else
+            echo "FAIL: Expected 'v1.2.3' tag"
+            PASS=false
+          fi
+          if grep -q "latest" /tmp/tags-output.txt; then
+            echo "PASS: 'latest' tag found alongside semver"
+          else
+            echo "FAIL: Expected 'latest' tag alongside semver for main branch"
+            PASS=false
+          fi
+          if [ "$PASS" = "false" ]; then exit 1; fi
+
+  test-fixture-feature-branch:
+    name: "Test fixture: feature branch -> branch-sha"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install PowerShell
+        run: |
+          wget -q https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb -O /tmp/packages-microsoft-prod.deb
+          sudo dpkg -i /tmp/packages-microsoft-prod.deb
+          sudo apt-get update -qq
+          sudo apt-get install -y powershell
+          pwsh --version
+
+      - name: Run tag generator for feature branch
+        env:
+          BRANCH_NAME: feature/my-cool-feature
+          COMMIT_SHA: 1a2b3c4d5e6f7890
+          GIT_TAGS: ""
+          PR_NUMBER: ""
+        run: |
+          pwsh -File ./New-DockerImageTags.ps1 | tee /tmp/tags-output.txt
+          cat /tmp/tags-output.txt
+
+      - name: Assert tags contain sanitized branch-sha
+        run: |
+          if grep -q "feature-my-cool-feature-1a2b3c4" /tmp/tags-output.txt; then
+            echo "PASS: Correct branch-sha tag found"
+          else
+            echo "FAIL: Expected 'feature-my-cool-feature-1a2b3c4' tag"
+            exit 1
+          fi

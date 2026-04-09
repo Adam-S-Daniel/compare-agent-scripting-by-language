@@ -1,0 +1,75 @@
+name: Docker Image Tag Generator
+
+on:
+  push:
+    branches: ["**"]
+    tags: ["v*"]
+  pull_request:
+  schedule:
+    - cron: "0 0 * * 0"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  generate-tags:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Determine git context
+        id: context
+        env:
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.number }}
+        run: |
+          # Support override env vars for testing (passed via act --env)
+          sha="${OVERRIDE_COMMIT_SHA:-$GITHUB_SHA}"
+          branch=""
+          tag=""
+          pr="${OVERRIDE_PR_NUMBER:-}"
+
+          # Check for explicit overrides first
+          if [[ -n "${OVERRIDE_GIT_TAG:-}" ]]; then
+            tag="$OVERRIDE_GIT_TAG"
+          fi
+          if [[ -n "${OVERRIDE_BRANCH_NAME:-}" ]]; then
+            branch="$OVERRIDE_BRANCH_NAME"
+          fi
+
+          # Derive from GITHUB_REF when no overrides present
+          if [[ -z "$branch" && -z "$tag" ]]; then
+            ref="${GITHUB_REF:-}"
+            case "$ref" in
+              refs/tags/*)  tag="${ref#refs/tags/}" ;;
+              refs/heads/*) branch="${ref#refs/heads/}" ;;
+            esac
+          fi
+
+          # For pull_request events, use PR-specific context (via env vars)
+          if [[ "${GITHUB_EVENT_NAME:-}" == "pull_request" && -z "$pr" ]]; then
+            pr="$PR_NUMBER"
+            branch="$PR_HEAD_REF"
+            sha="$PR_HEAD_SHA"
+          fi
+
+          {
+            echo "branch_name=${branch}"
+            echo "commit_sha=${sha}"
+            echo "git_tag=${tag}"
+            echo "pr_number=${pr}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Generate Docker image tags
+        env:
+          BRANCH_NAME: ${{ steps.context.outputs.branch_name }}
+          COMMIT_SHA: ${{ steps.context.outputs.commit_sha }}
+          GIT_TAG: ${{ steps.context.outputs.git_tag }}
+          PR_NUMBER: ${{ steps.context.outputs.pr_number }}
+        run: |
+          chmod +x docker-tag-generator.sh
+          echo "=== GENERATED DOCKER TAGS ==="
+          ./docker-tag-generator.sh
+          echo "=== END DOCKER TAGS ==="

@@ -1,0 +1,193 @@
+name: Test Results Aggregator
+
+on:
+  push:
+    branches: ["main", "master"]
+  pull_request:
+    branches: ["main", "master"]
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # Run unit tests for the aggregator itself
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run unit tests
+        run: bun test
+
+      - name: Check test count
+        run: |
+          result=$(bun test 2>&1)
+          echo "$result"
+          # Verify all tests pass (no "fail" lines other than "0 fail")
+          if echo "$result" | grep -E "^[1-9][0-9]* fail$"; then
+            echo "Some tests failed!"
+            exit 1
+          fi
+          echo "All unit tests passed!"
+
+  # Simulate a matrix build with multiple test result files, then aggregate
+  aggregate-matrix-results:
+    name: Aggregate Matrix Results
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    env:
+      RESULTS_DIR: test-results
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Create test results directory
+        run: mkdir -p "$RESULTS_DIR"
+
+      - name: Copy fixture files as simulated matrix results
+        run: |
+          cp fixtures/junit-ubuntu.xml "$RESULTS_DIR/junit-ubuntu.xml"
+          cp fixtures/junit-windows.xml "$RESULTS_DIR/junit-windows.xml"
+          cp fixtures/results-macos.json "$RESULTS_DIR/results-macos.json"
+          cp fixtures/results-node18.json "$RESULTS_DIR/results-node18.json"
+
+      - name: Run test results aggregator
+        id: aggregate
+        run: |
+          output=$(bun run index.ts --dir "$RESULTS_DIR" 2>/dev/null)
+          echo "$output"
+
+          # Extract the SUMMARY line for structured output
+          summary_line=$(echo "$output" | grep "^SUMMARY:")
+          echo "summary=$summary_line" >> "$GITHUB_OUTPUT"
+
+          # Parse individual fields
+          passed=$(echo "$summary_line" | grep -oP 'passed=\K[0-9]+')
+          failed=$(echo "$summary_line" | grep -oP 'failed=\K[0-9]+')
+          skipped=$(echo "$summary_line" | grep -oP 'skipped=\K[0-9]+')
+          flaky=$(echo "$summary_line" | grep -oP 'flaky=\K[0-9]+')
+          suites=$(echo "$summary_line" | grep -oP 'suites=\K[0-9]+')
+
+          {
+            echo "passed=$passed"
+            echo "failed=$failed"
+            echo "skipped=$skipped"
+            echo "flaky=$flaky"
+            echo "suites=$suites"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "Aggregation complete: passed=$passed failed=$failed skipped=$skipped flaky=$flaky suites=$suites"
+
+      - name: Assert expected aggregation values
+        run: |
+          passed="${{ steps.aggregate.outputs.passed }}"
+          failed="${{ steps.aggregate.outputs.failed }}"
+          skipped="${{ steps.aggregate.outputs.skipped }}"
+          flaky="${{ steps.aggregate.outputs.flaky }}"
+          suites="${{ steps.aggregate.outputs.suites }}"
+
+          echo "Verifying results..."
+          echo "  Passed:  $passed (expected: 16)"
+          echo "  Failed:  $failed (expected: 2)"
+          echo "  Skipped: $skipped (expected: 4)"
+          echo "  Flaky:   $flaky (expected: 2)"
+          echo "  Suites:  $suites (expected: 6)"
+
+          errors=0
+
+          if [ "$passed" != "16" ]; then
+            echo "FAIL: passed count mismatch: got $passed, expected 16"
+            errors=$((errors + 1))
+          fi
+
+          if [ "$failed" != "2" ]; then
+            echo "FAIL: failed count mismatch: got $failed, expected 2"
+            errors=$((errors + 1))
+          fi
+
+          if [ "$skipped" != "4" ]; then
+            echo "FAIL: skipped count mismatch: got $skipped, expected 4"
+            errors=$((errors + 1))
+          fi
+
+          if [ "$flaky" != "2" ]; then
+            echo "FAIL: flaky count mismatch: got $flaky, expected 2"
+            errors=$((errors + 1))
+          fi
+
+          if [ "$suites" != "6" ]; then
+            echo "FAIL: suite count mismatch: got $suites, expected 6"
+            errors=$((errors + 1))
+          fi
+
+          if [ "$errors" -gt 0 ]; then
+            echo "$errors assertion(s) failed!"
+            exit 1
+          fi
+
+          echo "All assertions passed!"
+
+      - name: Generate step summary
+        if: always()
+        run: |
+          bun run index.ts --dir "$RESULTS_DIR" 2>/dev/null | tail -n +2 >> "$GITHUB_STEP_SUMMARY" || true
+
+  # Validate workflow structure tests
+  validate-workflow:
+    name: Validate Workflow
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install actionlint
+        run: |
+          if ! command -v actionlint &> /dev/null; then
+            bash <(curl -s https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash) 1.7.12
+            sudo mv actionlint /usr/local/bin/
+          fi
+
+      - name: Run actionlint on workflow
+        run: actionlint .github/workflows/test-results-aggregator.yml
+
+      - name: Verify workflow structure
+        run: |
+          echo "Checking workflow file exists..."
+          test -f .github/workflows/test-results-aggregator.yml || { echo "Workflow file missing!"; exit 1; }
+
+          echo "Checking script files exist..."
+          test -f index.ts || { echo "index.ts missing!"; exit 1; }
+          test -f src/parsers/junit.ts || { echo "junit parser missing!"; exit 1; }
+          test -f src/parsers/json.ts || { echo "json parser missing!"; exit 1; }
+          test -f src/aggregator.ts || { echo "aggregator missing!"; exit 1; }
+          test -f src/flaky.ts || { echo "flaky detector missing!"; exit 1; }
+          test -f src/reporter.ts || { echo "reporter missing!"; exit 1; }
+
+          echo "Checking fixture files exist..."
+          test -f fixtures/junit-ubuntu.xml || { echo "ubuntu fixture missing!"; exit 1; }
+          test -f fixtures/junit-windows.xml || { echo "windows fixture missing!"; exit 1; }
+          test -f fixtures/results-macos.json || { echo "macos fixture missing!"; exit 1; }
+          test -f fixtures/results-node18.json || { echo "node18 fixture missing!"; exit 1; }
+
+          echo "All required files verified!"

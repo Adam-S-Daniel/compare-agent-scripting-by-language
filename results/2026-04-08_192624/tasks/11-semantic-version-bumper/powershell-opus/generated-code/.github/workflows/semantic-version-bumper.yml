@@ -1,0 +1,101 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      commit_fixture:
+        description: "Name of the commit fixture file to use (e.g. patch-commits.txt)"
+        required: false
+        default: ""
+      initial_version:
+        description: "Initial version string to use"
+        required: false
+        default: "1.0.0"
+
+permissions:
+  contents: read
+
+env:
+  FIXTURE_FILE: ${{ github.event.inputs.commit_fixture || '' }}
+  INITIAL_VERSION: ${{ github.event.inputs.initial_version || '1.0.0' }}
+
+jobs:
+  version-bump:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install PowerShell
+        shell: bash
+        run: |
+          # PowerShell may already be available; install if missing
+          if ! command -v pwsh &> /dev/null; then
+            apt-get update && apt-get install -y wget apt-transport-https software-properties-common
+            wget -q "https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb"
+            dpkg -i packages-microsoft-prod.deb
+            apt-get update && apt-get install -y powershell
+          fi
+          pwsh --version
+
+      - name: Setup version file
+        shell: pwsh
+        run: |
+          # Create VERSION file with the initial version
+          $version = if ($env:INITIAL_VERSION) { $env:INITIAL_VERSION } else { "1.0.0" }
+          Write-Host "Setting up VERSION file with: $version"
+          $version | Set-Content -Path "VERSION"
+          Get-Content "VERSION"
+
+      - name: Determine commit fixture
+        shell: pwsh
+        run: |
+          # If a fixture file is specified via env, use it. Otherwise use git log.
+          $fixture = $env:FIXTURE_FILE
+          if ($fixture -and (Test-Path "fixtures/$fixture")) {
+            Write-Host "Using fixture file: fixtures/$fixture"
+            Copy-Item "fixtures/$fixture" -Destination "commit-log.txt"
+          } elseif ($fixture -and $fixture -ne '') {
+            Write-Host "::error::Fixture file not found: fixtures/$fixture"
+            exit 1
+          } else {
+            # Generate commit log from git history
+            Write-Host "No fixture specified, using git log"
+            $log = git log --oneline --format="%s" 2>&1
+            if ($log) {
+              $log | Set-Content -Path "commit-log.txt"
+            } else {
+              "chore: initial commit" | Set-Content -Path "commit-log.txt"
+            }
+          }
+          Write-Host "=== Commit Log ==="
+          Get-Content "commit-log.txt"
+
+      - name: Run semantic version bump
+        id: bump
+        shell: pwsh
+        run: |
+          # Run the version bumper script
+          $result = ./Invoke-SemanticVersionBump.ps1 `
+            -VersionFile "VERSION" `
+            -CommitLog "commit-log.txt" `
+            -ChangelogFile "CHANGELOG.md"
+          Write-Host "RESULT=$result"
+
+      - name: Display results
+        shell: pwsh
+        run: |
+          Write-Host "=== VERSION FILE ==="
+          $versionContent = Get-Content "VERSION" -Raw
+          Write-Host $versionContent.Trim()
+          Write-Host "=== CHANGELOG ==="
+          if (Test-Path "CHANGELOG.md") {
+            Get-Content "CHANGELOG.md" -Raw | Write-Host
+          } else {
+            Write-Host "No changelog generated"
+          }
+          Write-Host "=== DONE ==="

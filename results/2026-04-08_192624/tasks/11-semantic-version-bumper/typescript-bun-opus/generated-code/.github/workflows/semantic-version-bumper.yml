@@ -1,0 +1,28 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          echo "${HOME}/.bun/bin" >> "${GITHUB_PATH}"
+
+      - name: Run version bumper
+        run: bun run src/main.ts

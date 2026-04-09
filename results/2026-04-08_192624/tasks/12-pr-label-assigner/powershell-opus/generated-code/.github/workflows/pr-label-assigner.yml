@@ -1,0 +1,97 @@
+name: PR Label Assigner
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      changed_files:
+        description: "JSON array of changed file paths"
+        required: false
+        default: '["docs/readme.md","src/api/handler.ts","app.test.js"]'
+      rules:
+        description: "JSON array of label rules"
+        required: false
+        default: '[{"pattern":"docs/**","label":"documentation","priority":1},{"pattern":"src/api/**","label":"api","priority":2},{"pattern":"*.test.*","label":"tests","priority":3},{"pattern":"src/**","label":"source","priority":10}]'
+
+permissions:
+  contents: read
+
+env:
+  DEFAULT_RULES: '[{"pattern":"docs/**","label":"documentation","priority":1},{"pattern":"src/api/**","label":"api","priority":2},{"pattern":"*.test.*","label":"tests","priority":3},{"pattern":"src/**","label":"source","priority":10},{"pattern":"*.md","label":"markdown","priority":5}]'
+
+jobs:
+  assign-labels:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install PowerShell
+        shell: bash
+        run: |
+          if ! command -v pwsh &> /dev/null; then
+            apt-get update && apt-get install -y wget apt-transport-https software-properties-common
+            wget -q "https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb"
+            dpkg -i packages-microsoft-prod.deb
+            apt-get update && apt-get install -y powershell
+          fi
+          pwsh --version
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          Install-Module -Name Pester -Force -SkipPublisherCheck -MinimumVersion 5.0.0
+          $result = Invoke-Pester -Path ./Invoke-PRLabelAssigner.Tests.ps1 -Output Detailed -PassThru
+          if ($result.FailedCount -gt 0) {
+            Write-Error "Pester tests failed: $($result.FailedCount) failures"
+            exit 1
+          }
+          Write-Output "All $($result.PassedCount) Pester tests passed"
+
+      - name: Run label assigner - test case 1 (docs only)
+        shell: pwsh
+        run: |
+          $rules = $env:DEFAULT_RULES
+          $files = '["docs/readme.md","docs/guide.md"]'
+          Write-Output "=== Test Case 1: docs only ==="
+          Write-Output "Files: $files"
+          ./Invoke-PRLabelAssigner.ps1 -RulesJson $rules -ChangedFilesJson $files
+
+      - name: Run label assigner - test case 2 (api files)
+        shell: pwsh
+        run: |
+          $rules = $env:DEFAULT_RULES
+          $files = '["src/api/handler.ts","src/api/routes.ts"]'
+          Write-Output "=== Test Case 2: api files ==="
+          Write-Output "Files: $files"
+          ./Invoke-PRLabelAssigner.ps1 -RulesJson $rules -ChangedFilesJson $files
+
+      - name: Run label assigner - test case 3 (mixed files)
+        shell: pwsh
+        run: |
+          $rules = $env:DEFAULT_RULES
+          $files = '["docs/guide.md","src/api/handler.ts","app.test.js","src/utils/helper.ts","README.md"]'
+          Write-Output "=== Test Case 3: mixed files ==="
+          Write-Output "Files: $files"
+          ./Invoke-PRLabelAssigner.ps1 -RulesJson $rules -ChangedFilesJson $files
+
+      - name: Run label assigner - test case 4 (no matches)
+        shell: pwsh
+        run: |
+          $rules = $env:DEFAULT_RULES
+          $files = '["Makefile","Dockerfile"]'
+          Write-Output "=== Test Case 4: no matching files ==="
+          Write-Output "Files: $files"
+          ./Invoke-PRLabelAssigner.ps1 -RulesJson $rules -ChangedFilesJson $files
+
+      - name: Run label assigner - test case 5 (test files only)
+        shell: pwsh
+        run: |
+          $rules = $env:DEFAULT_RULES
+          $files = '["auth.test.js","utils.test.ts"]'
+          Write-Output "=== Test Case 5: test files only ==="
+          Write-Output "Files: $files"
+          ./Invoke-PRLabelAssigner.ps1 -RulesJson $rules -ChangedFilesJson $files

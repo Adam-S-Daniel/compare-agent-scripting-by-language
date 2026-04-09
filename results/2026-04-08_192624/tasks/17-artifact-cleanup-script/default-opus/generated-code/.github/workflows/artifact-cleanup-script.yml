@@ -1,0 +1,34 @@
+name: Artifact Cleanup
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate input file exists
+        run: |
+          if [ ! -f input.json ]; then
+            echo "Error: input.json not found in repository root"
+            exit 1
+          fi
+          echo "Found input.json"
+          cat input.json
+
+      - name: Run artifact cleanup
+        run: python artifact_cleanup.py input.json

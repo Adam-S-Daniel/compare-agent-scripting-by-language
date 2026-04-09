@@ -1,0 +1,115 @@
+name: Dependency License Checker
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      manifest:
+        description: "Path to manifest file (package.json or requirements.txt)"
+        required: false
+        default: "fixtures/all-approved-package.json"
+      config:
+        description: "Path to license config file"
+        required: false
+        default: "fixtures/license-config.json"
+
+permissions:
+  contents: read
+
+jobs:
+  license-check-approved:
+    name: Check All-Approved Package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run license check (all-approved)
+        run: bun run src/main.ts fixtures/all-approved-package.json fixtures/license-config.json
+
+  license-check-mixed:
+    name: Check Mixed Package (expect denied)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run license check (mixed - expect failure)
+        run: |
+          set +e
+          bun run src/main.ts fixtures/mixed-package.json fixtures/license-config.json
+          EXIT_CODE=$?
+          if [ "$EXIT_CODE" -eq 2 ]; then
+            echo ""
+            echo "LICENSE_CHECK_EXIT=2"
+            echo "Detected denied licenses as expected (exit code 2)"
+          else
+            echo "Unexpected exit code: $EXIT_CODE"
+            exit 1
+          fi
+
+  license-check-requirements:
+    name: Check Requirements.txt
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run license check (requirements.txt)
+        run: |
+          set +e
+          bun run src/main.ts fixtures/requirements.txt fixtures/license-config.json
+          EXIT_CODE=$?
+          if [ "$EXIT_CODE" -eq 2 ]; then
+            echo ""
+            echo "LICENSE_CHECK_EXIT=2"
+            echo "Detected denied licenses as expected (exit code 2)"
+          else
+            echo "Unexpected exit code: $EXIT_CODE"
+            exit 1
+          fi
+
+  unit-tests:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run tests
+        run: bun test

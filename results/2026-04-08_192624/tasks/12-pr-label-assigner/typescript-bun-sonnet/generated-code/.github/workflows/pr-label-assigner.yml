@@ -1,0 +1,76 @@
+name: PR Label Assigner
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+  workflow_dispatch:
+    inputs:
+      changed_files:
+        description: "Comma-separated list of changed files to label"
+        required: false
+        default: ""
+      test_case:
+        description: "Test case name for output identification"
+        required: false
+        default: "manual"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  assign-labels:
+    name: Assign PR Labels
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run unit tests
+        run: bun test
+
+      - name: Determine changed files
+        id: files
+        run: |
+          if [ -n "${{ github.event.inputs.changed_files }}" ]; then
+            CHANGED_FILES="${{ github.event.inputs.changed_files }}"
+          else
+            # Use mock data when no files provided (push/PR without explicit list)
+            CHANGED_FILES="docs/getting-started.md,src/api/users.ts,src/api/auth/login.ts,src/api/users.test.ts,.github/workflows/ci.yml,README.md"
+          fi
+          echo "files=${CHANGED_FILES}" >> "$GITHUB_OUTPUT"
+          echo "Changed files: ${CHANGED_FILES}"
+
+      - name: Run PR label assigner
+        id: labeler
+        env:
+          CHANGED_FILES: ${{ steps.files.outputs.files }}
+          TEST_CASE: ${{ github.event.inputs.test_case || 'ci' }}
+        run: |
+          echo "=== Test Case: ${TEST_CASE} ==="
+          echo "=== Input files: ${CHANGED_FILES} ==="
+          bun run src/index.ts | tee /tmp/labeler-output.txt
+          LABELS=$(grep '^LABELS_OUTPUT=' /tmp/labeler-output.txt | cut -d= -f2-)
+          echo "labels=${LABELS}" >> "$GITHUB_OUTPUT"
+          echo "=== Labels assigned: ${LABELS} ==="
+
+      - name: Output label results
+        run: |
+          echo "RESULT: ${{ steps.labeler.outputs.labels }}"
+          echo "Test case complete."

@@ -1,0 +1,121 @@
+name: Docker Image Tag Generator
+
+on:
+  push:
+    branches:
+      - "**"
+    tags:
+      - "v*"
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  generate-tags:
+    name: Generate Docker Image Tags
+    runs-on: ubuntu-latest
+
+    steps:
+      # ------------------------------------------------------------------
+      # 1. Check out repository so generate-tags.sh is in the workspace
+      # ------------------------------------------------------------------
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ------------------------------------------------------------------
+      # 2. Install tooling needed by the validation steps
+      # ------------------------------------------------------------------
+      - name: Install shellcheck
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y shellcheck
+
+      # ------------------------------------------------------------------
+      # 3. Validate the script before running it
+      # ------------------------------------------------------------------
+      - name: Syntax check (bash -n)
+        run: bash -n generate-tags.sh
+
+      - name: Lint with shellcheck
+        run: shellcheck generate-tags.sh
+
+      # ------------------------------------------------------------------
+      # 4. Resolve git context
+      #
+      # Priority (highest → lowest):
+      #   INPUT_* env vars (injected via --env-file for test fixtures)
+      #   GitHub Actions context (real CI)
+      #
+      # Using env: to map GitHub expressions to env vars avoids shell
+      # injection warnings from actionlint.
+      # ------------------------------------------------------------------
+      - name: Resolve git context
+        id: context
+        env:
+          GH_REF_NAME: ${{ github.ref_name }}
+          GH_SHA: ${{ github.sha }}
+          GH_REF_TYPE: ${{ github.ref_type }}
+          GH_PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          # Allow test fixtures to override via INPUT_* env vars
+          BRANCH="${INPUT_BRANCH:-${GH_REF_NAME}}"
+          SHA="${INPUT_SHA:-${GH_SHA}}"
+
+          # Tag: use explicit override first, then detect tag push
+          if [[ -n "${INPUT_TAG:-}" ]]; then
+            GIT_TAG="${INPUT_TAG}"
+          elif [[ "${GH_REF_TYPE}" == "tag" ]]; then
+            GIT_TAG="${GH_REF_NAME}"
+          else
+            GIT_TAG=""
+          fi
+
+          # PR number: use override, else GitHub event (treat "0" as empty)
+          PR_NUMBER="${INPUT_PR_NUMBER:-${GH_PR_NUMBER:-}}"
+          if [[ "${PR_NUMBER}" == "0" || "${PR_NUMBER}" == "null" ]]; then
+            PR_NUMBER=""
+          fi
+
+          {
+            echo "branch=${BRANCH}"
+            echo "sha=${SHA}"
+            echo "git_tag=${GIT_TAG}"
+            echo "pr_number=${PR_NUMBER}"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "Resolved context: branch=${BRANCH} sha=${SHA:0:7} tag=${GIT_TAG} pr=${PR_NUMBER}"
+
+      # ------------------------------------------------------------------
+      # 5. Generate Docker image tags
+      #
+      # The step outputs INPUT_* from the resolved context so generate-tags.sh
+      # sees consistent values regardless of how the workflow was triggered.
+      # ------------------------------------------------------------------
+      - name: Generate Docker image tags
+        id: generate-tags
+        env:
+          INPUT_BRANCH: ${{ steps.context.outputs.branch }}
+          INPUT_SHA: ${{ steps.context.outputs.sha }}
+          INPUT_TAG: ${{ steps.context.outputs.git_tag }}
+          INPUT_PR_NUMBER: ${{ steps.context.outputs.pr_number }}
+        run: |
+          TAGS=$(bash generate-tags.sh)
+
+          # The DOCKER_IMAGE_TAGS= line is what integration tests grep for
+          echo "DOCKER_IMAGE_TAGS=${TAGS}"
+          echo "tags=${TAGS}" >> "$GITHUB_OUTPUT"
+
+      # ------------------------------------------------------------------
+      # 6. Display the final tag list
+      # ------------------------------------------------------------------
+      - name: Display image tag list
+        env:
+          TAGS: ${{ steps.generate-tags.outputs.tags }}
+        run: |
+          echo "=== Docker Image Tags ==="
+          for tag in ${TAGS}; do
+            echo "  myimage:${tag}"
+          done
+          echo "========================="

@@ -1,0 +1,131 @@
+name: Test Results Aggregator
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  aggregate-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq jq
+
+      - name: Validate script syntax
+        run: |
+          bash -n aggregate-test-results.sh
+          echo "Script syntax OK"
+
+      - name: Run test results aggregation
+        id: aggregate
+        run: |
+          chmod +x aggregate-test-results.sh
+          ./aggregate-test-results.sh \
+            --output summary.md \
+            fixtures/junit-run1.xml \
+            fixtures/junit-run2.xml \
+            fixtures/results-run1.json \
+            fixtures/results-run2.json
+
+      - name: Display summary
+        run: |
+          echo "=== GENERATED SUMMARY ==="
+          cat summary.md
+          echo "=== END SUMMARY ==="
+
+      - name: Write job summary
+        run: cat summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Verify summary content
+        run: |
+          # Verify the summary was generated and contains expected sections
+          grep -q "Test Results Summary" summary.md
+          grep -q "Total Tests" summary.md
+          grep -q "Passed" summary.md
+          grep -q "Failed" summary.md
+          grep -q "Skipped" summary.md
+          grep -q "Duration" summary.md
+          grep -q "Flaky Tests" summary.md
+          echo "All expected sections present in summary"
+
+      - name: Verify exact totals
+        run: |
+          # Check exact values from our fixture data:
+          # 18 total (5+5 from XML runs + 4+4 from JSON runs)
+          # 10 passed, 4 failed, 4 skipped, 10.70s duration
+          grep -q "| Total Tests | 18 |" summary.md
+          grep -q "| Passed | 10 |" summary.md
+          grep -q "| Failed | 4 |" summary.md
+          grep -q "| Skipped | 4 |" summary.md
+          grep -q "| Duration | 10.70s |" summary.md
+          echo "TOTALS_VERIFIED: passed=10 failed=4 skipped=4 total=18 duration=10.70s"
+
+      - name: Verify flaky test detection
+        run: |
+          # These tests should be detected as flaky (passed in one run, failed in another):
+          # auth.LogoutTest.test_logout - failed in run1, passed in run2
+          # net.NetworkTest.test_flaky_network - failed in run1, passed in run2
+          # api.UsersTest.test_create_user - failed in run1, passed in run2
+          # api.CacheTest.test_flaky_cache - passed in run1, failed in run2
+          grep -q "api.CacheTest.test_flaky_cache" summary.md
+          grep -q "api.UsersTest.test_create_user" summary.md
+          grep -q "auth.LogoutTest.test_logout" summary.md
+          grep -q "net.NetworkTest.test_flaky_network" summary.md
+          echo "FLAKY_VERIFIED: api.CacheTest.test_flaky_cache api.UsersTest.test_create_user auth.LogoutTest.test_logout net.NetworkTest.test_flaky_network"
+
+      - name: Test error handling - no files
+        run: |
+          # Script should fail with meaningful error when no files given
+          if ./aggregate-test-results.sh 2>err.txt; then
+            echo "ERROR: Expected non-zero exit" && exit 1
+          fi
+          grep -q "No input files specified" err.txt
+          echo "ERROR_HANDLING_VERIFIED: no-files"
+
+      - name: Test error handling - missing file
+        run: |
+          if ./aggregate-test-results.sh nonexistent.xml 2>err.txt; then
+            echo "ERROR: Expected non-zero exit" && exit 1
+          fi
+          grep -q "File not found" err.txt
+          echo "ERROR_HANDLING_VERIFIED: missing-file"
+
+      - name: Test error handling - unsupported format
+        run: |
+          touch test.csv
+          if ./aggregate-test-results.sh test.csv 2>err.txt; then
+            echo "ERROR: Expected non-zero exit" && exit 1
+          fi
+          grep -q "Unsupported file format" err.txt
+          echo "ERROR_HANDLING_VERIFIED: unsupported-format"
+
+      - name: Test XML-only aggregation
+        run: |
+          ./aggregate-test-results.sh --output xml-only.md \
+            fixtures/junit-run1.xml fixtures/junit-run2.xml
+          grep -q "| Total Tests | 10 |" xml-only.md
+          grep -q "| Passed | 6 |" xml-only.md
+          grep -q "| Failed | 2 |" xml-only.md
+          grep -q "| Skipped | 2 |" xml-only.md
+          echo "XML_ONLY_VERIFIED: total=10 passed=6 failed=2 skipped=2"
+
+      - name: Test JSON-only aggregation
+        run: |
+          ./aggregate-test-results.sh --output json-only.md \
+            fixtures/results-run1.json fixtures/results-run2.json
+          grep -q "| Total Tests | 8 |" json-only.md
+          grep -q "| Passed | 4 |" json-only.md
+          grep -q "| Failed | 2 |" json-only.md
+          grep -q "| Skipped | 2 |" json-only.md
+          echo "JSON_ONLY_VERIFIED: total=8 passed=4 failed=2 skipped=2"

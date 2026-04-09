@@ -1,0 +1,68 @@
+# Semantic Version Bumper workflow
+# Reads a version file + commit log, bumps the version, generates changelog.
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      version_file:
+        description: "Path to the version file (VERSION or package.json)"
+        required: false
+        default: "VERSION"
+      commit_log:
+        description: "Path to the commit log fixture file"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Determine version file
+        id: config
+        run: |
+          # Use workflow_dispatch input if available, else default
+          VERSION_FILE="${{ github.event.inputs.version_file }}"
+          if [ -z "$VERSION_FILE" ]; then
+            VERSION_FILE="VERSION"
+          fi
+          echo "version_file=$VERSION_FILE" >> "$GITHUB_OUTPUT"
+
+          COMMIT_LOG="${{ github.event.inputs.commit_log }}"
+          echo "commit_log=$COMMIT_LOG" >> "$GITHUB_OUTPUT"
+
+      - name: Run version bumper
+        id: bumper
+        run: |
+          COMMIT_LOG="${{ steps.config.outputs.commit_log }}"
+          if [ -n "$COMMIT_LOG" ]; then
+            python3 version_bumper.py --version-file "${{ steps.config.outputs.version_file }}" --date 2026-04-08 --commit-log "$COMMIT_LOG"
+          else
+            python3 version_bumper.py --version-file "${{ steps.config.outputs.version_file }}" --date 2026-04-08
+          fi
+
+      - name: Show updated version file
+        run: |
+          VERSION_FILE="${{ steps.config.outputs.version_file }}"
+          echo "=== Updated $VERSION_FILE ==="
+          cat "$VERSION_FILE"
+
+      - name: Show changelog
+        run: |
+          echo "=== CHANGELOG.md ==="
+          cat CHANGELOG.md

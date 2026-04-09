@@ -1,0 +1,285 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+    inputs:
+      config_json:
+        description: "Matrix config JSON (inline)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  validate-script:
+    name: Validate Script
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq jq shellcheck
+
+      - name: Syntax check
+        run: bash -n matrix_generator.sh
+
+      - name: Shellcheck
+        run: shellcheck matrix_generator.sh
+
+  test-basic-matrix:
+    name: "Test: Basic Matrix Generation"
+    runs-on: ubuntu-latest
+    needs: validate-script
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq jq
+
+      - name: Run and validate basic matrix
+        run: |
+          cat > /tmp/basic.json <<'EOF'
+          {
+            "os": ["ubuntu-latest", "windows-latest"],
+            "language_versions": ["3.9", "3.10"],
+            "feature_flags": ["default"]
+          }
+          EOF
+          OUTPUT=$(bash matrix_generator.sh /tmp/basic.json)
+          echo "Generated matrix:"
+          echo "$OUTPUT" | jq .
+          COUNT=$(echo "$OUTPUT" | jq '.include | length')
+          echo "Combination count: $COUNT"
+          [ "$COUNT" -eq 4 ] || { echo "Expected 4 combinations, got $COUNT"; exit 1; }
+          echo "RESULT: basic-matrix-count=$COUNT"
+
+  test-exclude-rules:
+    name: "Test: Exclude Rules"
+    runs-on: ubuntu-latest
+    needs: validate-script
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq jq
+
+      - name: Run and validate exclude rules
+        run: |
+          cat > /tmp/exclude.json <<'EOF'
+          {
+            "os": ["ubuntu-latest", "windows-latest"],
+            "language_versions": ["3.9", "3.10"],
+            "feature_flags": ["default"],
+            "exclude": [
+              {"os": "windows-latest", "language_version": "3.9"}
+            ]
+          }
+          EOF
+          OUTPUT=$(bash matrix_generator.sh /tmp/exclude.json)
+          echo "$OUTPUT" | jq .
+          COUNT=$(echo "$OUTPUT" | jq '.include | length')
+          [ "$COUNT" -eq 3 ] || { echo "Expected 3 combinations after exclude, got $COUNT"; exit 1; }
+          EXCLUDED=$(echo "$OUTPUT" | jq '[.include[] | select(.os == "windows-latest" and .language_version == "3.9")] | length')
+          [ "$EXCLUDED" -eq 0 ] || { echo "Excluded combination still present"; exit 1; }
+          echo "RESULT: exclude-rules-count=$COUNT"
+
+  test-fail-fast-max-parallel:
+    name: "Test: fail-fast and max-parallel"
+    runs-on: ubuntu-latest
+    needs: validate-script
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq jq
+
+      - name: Run and validate fail-fast max-parallel
+        run: |
+          cat > /tmp/config.json <<'EOF'
+          {
+            "os": ["ubuntu-latest"],
+            "language_versions": ["3.9", "3.10"],
+            "feature_flags": ["default", "experimental"],
+            "fail_fast": true,
+            "max_parallel": 4
+          }
+          EOF
+          OUTPUT=$(bash matrix_generator.sh /tmp/config.json)
+          echo "$OUTPUT" | jq .
+          FAIL_FAST=$(echo "$OUTPUT" | jq '."fail-fast"')
+          [ "$FAIL_FAST" = "true" ] || { echo "Expected fail-fast=true, got $FAIL_FAST"; exit 1; }
+          MAX_PAR=$(echo "$OUTPUT" | jq '."max-parallel"')
+          [ "$MAX_PAR" -eq 4 ] || { echo "Expected max-parallel=4, got $MAX_PAR"; exit 1; }
+          echo "RESULT: fail-fast=$FAIL_FAST max-parallel=$MAX_PAR"
+
+  test-max-size-validation:
+    name: "Test: Max Size Validation"
+    runs-on: ubuntu-latest
+    needs: validate-script
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq jq python3
+
+      - name: Verify oversized matrix is rejected
+        run: |
+          python3 -c "
+          import json
+          config = {
+              'os': ['ubuntu-latest','windows-latest','macos-latest','ubuntu-22.04','debian-latest'],
+              'language_versions': ['3.8','3.9','3.10','3.11','3.12','3.13'],
+              'feature_flags': ['f1','f2','f3','f4','f5','f6','f7','f8','f9','f10']
+          }
+          print(json.dumps(config))
+          " > /tmp/toobig.json
+          if bash matrix_generator.sh /tmp/toobig.json; then
+            echo "ERROR: Should have failed for oversized matrix"
+            exit 1
+          fi
+          echo "RESULT: oversized-matrix-correctly-rejected"
+
+  test-include-extra:
+    name: "Test: Include Extra Combinations"
+    runs-on: ubuntu-latest
+    needs: validate-script
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq jq
+
+      - name: Run and validate include_extra
+        run: |
+          cat > /tmp/include_extra.json <<'EOF'
+          {
+            "os": ["ubuntu-latest"],
+            "language_versions": ["3.9"],
+            "feature_flags": ["default"],
+            "include_extra": [
+              {"os": "macos-latest", "language_version": "3.11", "feature_flag": "experimental"}
+            ]
+          }
+          EOF
+          OUTPUT=$(bash matrix_generator.sh /tmp/include_extra.json)
+          echo "$OUTPUT" | jq .
+          COUNT=$(echo "$OUTPUT" | jq '.include | length')
+          [ "$COUNT" -eq 2 ] || { echo "Expected 2, got $COUNT"; exit 1; }
+          MACOS=$(echo "$OUTPUT" | jq '[.include[] | select(.os == "macos-latest")] | length')
+          [ "$MACOS" -eq 1 ] || { echo "Missing macos-latest in extra includes"; exit 1; }
+          echo "RESULT: include-extra-count=$COUNT"
+
+  test-full-matrix:
+    name: "Test: Full Matrix with All Options"
+    runs-on: ubuntu-latest
+    needs: validate-script
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq jq
+
+      - name: Run and validate full matrix
+        run: |
+          cat > /tmp/full.json <<'EOF'
+          {
+            "os": ["ubuntu-latest", "windows-latest", "macos-latest"],
+            "language_versions": ["3.9", "3.10", "3.11"],
+            "feature_flags": ["default", "experimental"],
+            "exclude": [
+              {"os": "windows-latest", "feature_flag": "experimental"}
+            ],
+            "include_extra": [
+              {"os": "ubuntu-20.04", "language_version": "3.8", "feature_flag": "legacy"}
+            ],
+            "fail_fast": false,
+            "max_parallel": 8,
+            "max_size": 256
+          }
+          EOF
+          OUTPUT=$(bash matrix_generator.sh /tmp/full.json)
+          echo "$OUTPUT" | jq .
+          # 3*3*2=18 base, minus 3 excluded (windows+experimental for 3 versions), plus 1 extra = 16
+          COUNT=$(echo "$OUTPUT" | jq '.include | length')
+          [ "$COUNT" -eq 16 ] || { echo "Expected 16 combinations, got $COUNT"; exit 1; }
+          FAIL_FAST=$(echo "$OUTPUT" | jq '."fail-fast"')
+          [ "$FAIL_FAST" = "false" ] || { echo "Expected fail-fast=false, got $FAIL_FAST"; exit 1; }
+          MAX_PAR=$(echo "$OUTPUT" | jq '."max-parallel"')
+          [ "$MAX_PAR" -eq 8 ] || { echo "Expected max-parallel=8, got $MAX_PAR"; exit 1; }
+          echo "RESULT: full-matrix-count=$COUNT fail-fast=$FAIL_FAST max-parallel=$MAX_PAR"
+
+  test-error-handling:
+    name: "Test: Error Handling"
+    runs-on: ubuntu-latest
+    needs: validate-script
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq jq
+
+      - name: Test missing os field
+        run: |
+          echo '{"language_versions":["3.9"],"feature_flags":["default"]}' > /tmp/missing_os.json
+          if bash matrix_generator.sh /tmp/missing_os.json 2>&1; then
+            echo "ERROR: Should have failed with missing os field"
+            exit 1
+          fi
+          echo "RESULT: missing-os-correctly-rejected"
+
+      - name: Test invalid JSON
+        run: |
+          echo 'not valid json {{{' > /tmp/invalid.json
+          if bash matrix_generator.sh /tmp/invalid.json 2>&1; then
+            echo "ERROR: Should have failed with invalid JSON"
+            exit 1
+          fi
+          echo "RESULT: invalid-json-correctly-rejected"
+
+  summary:
+    name: All Tests Passed
+    runs-on: ubuntu-latest
+    needs:
+      - test-basic-matrix
+      - test-exclude-rules
+      - test-fail-fast-max-parallel
+      - test-max-size-validation
+      - test-include-extra
+      - test-full-matrix
+      - test-error-handling
+    steps:
+      - name: Summary
+        run: |
+          echo "All environment matrix generator tests passed successfully!"
+          echo "Job succeeded"

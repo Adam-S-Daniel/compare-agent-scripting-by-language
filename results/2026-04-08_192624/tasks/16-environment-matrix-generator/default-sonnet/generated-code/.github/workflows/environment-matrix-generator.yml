@@ -1,0 +1,84 @@
+# GitHub Actions workflow: Environment Matrix Generator
+#
+# This workflow:
+#   1. Runs all unit tests for matrix_generator.py via pytest.
+#   2. Generates example matrices from the bundled fixture files.
+#   3. Processes a custom test-input.json when the test harness provides one.
+#
+# Triggers: push, pull_request, weekly schedule, and manual dispatch.
+# All jobs use the catthehacker ubuntu image which ships Python 3.12.
+
+name: Environment Matrix Generator
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 0 * * 0"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # --------------------------------------------------------------------------
+  # Job 1: unit-tests
+  # Run the full pytest suite — this is the TDD green-phase verification.
+  # --------------------------------------------------------------------------
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pytest
+        run: pip3 install pytest --quiet --break-system-packages
+
+      - name: Run unit tests
+        run: python3 -m pytest test_matrix_generator.py -v
+
+  # --------------------------------------------------------------------------
+  # Job 2: generate-matrix
+  # Demonstrate the matrix generator against fixture data.
+  # When the test harness supplies test-input.json it is processed here;
+  # otherwise the bundled fixtures are used for a dry-run demo.
+  # --------------------------------------------------------------------------
+  generate-matrix:
+    name: Generate Matrix
+    runs-on: ubuntu-latest
+    needs: unit-tests
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Process test-input.json (test-harness path)
+        run: |
+          if [ -f test-input.json ]; then
+            echo "--- Processing test-input.json ---"
+            if python3 matrix_generator.py test-input.json 2>&1; then
+              echo "MATRIX_GENERATION_SUCCESS"
+            else
+              echo "MATRIX_GENERATION_FAILED"
+            fi
+          else
+            echo "No test-input.json found — running fixture demos instead."
+
+            echo ""
+            echo "=== Basic fixture ==="
+            python3 matrix_generator.py fixtures/basic.json
+
+            echo ""
+            echo "=== Complex fixture ==="
+            python3 matrix_generator.py fixtures/complex.json
+
+            echo ""
+            echo "=== Size-validation fixture (expected failure) ==="
+            if python3 matrix_generator.py fixtures/large.json 2>&1; then
+              echo "UNEXPECTED_SUCCESS"
+            else
+              echo "EXPECTED_FAILURE_HANDLED"
+            fi
+          fi

@@ -1,0 +1,103 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      config_file:
+        description: "Path to matrix configuration JSON file"
+        required: false
+        default: "fixtures/basic-matrix.json"
+      max_matrix_size:
+        description: "Maximum matrix size"
+        required: false
+        default: "256"
+
+permissions:
+  contents: read
+
+env:
+  PWSH_TELEMETRY_OPTOUT: "1"
+
+jobs:
+  generate-matrix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install PowerShell
+        run: |
+          if ! command -v pwsh &> /dev/null; then
+            apt-get update && apt-get install -y wget apt-transport-https software-properties-common
+            wget -q "https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb"
+            dpkg -i packages-microsoft-prod.deb
+            apt-get update && apt-get install -y powershell
+          fi
+          pwsh --version
+
+      - name: Run matrix generator - basic
+        id: basic
+        run: |
+          echo "=== TEST: basic-matrix ==="
+          pwsh -NoProfile -File Generate-Matrix.ps1 -ConfigPath fixtures/basic-matrix.json
+          echo "=== END: basic-matrix ==="
+
+      - name: Run matrix generator - with-exclude
+        id: exclude
+        run: |
+          echo "=== TEST: with-exclude ==="
+          pwsh -NoProfile -File Generate-Matrix.ps1 -ConfigPath fixtures/with-exclude.json
+          echo "=== END: with-exclude ==="
+
+      - name: Run matrix generator - with-include
+        id: include
+        run: |
+          echo "=== TEST: with-include ==="
+          pwsh -NoProfile -File Generate-Matrix.ps1 -ConfigPath fixtures/with-include.json
+          echo "=== END: with-include ==="
+
+      - name: Run matrix generator - feature-flags
+        id: features
+        run: |
+          echo "=== TEST: feature-flags ==="
+          pwsh -NoProfile -File Generate-Matrix.ps1 -ConfigPath fixtures/feature-flags.json
+          echo "=== END: feature-flags ==="
+
+      - name: Run matrix generator - single-dimension
+        id: single
+        run: |
+          echo "=== TEST: single-dimension ==="
+          pwsh -NoProfile -File Generate-Matrix.ps1 -ConfigPath fixtures/single-dimension.json
+          echo "=== END: single-dimension ==="
+
+      - name: Run matrix generator - too-large (expect failure)
+        id: toolarge
+        run: |
+          echo "=== TEST: too-large ==="
+          if pwsh -NoProfile -File Generate-Matrix.ps1 -ConfigPath fixtures/too-large.json -MaxMatrixSize 100 2>&1; then
+            echo "ERROR: Should have failed but succeeded"
+            exit 1
+          else
+            echo "PASS: Correctly rejected oversized matrix"
+          fi
+          echo "=== END: too-large ==="
+
+      - name: Run matrix generator - missing file (expect failure)
+        id: missing
+        run: |
+          echo "=== TEST: missing-file ==="
+          if pwsh -NoProfile -File Generate-Matrix.ps1 -ConfigPath nonexistent.json 2>&1; then
+            echo "ERROR: Should have failed but succeeded"
+            exit 1
+          else
+            echo "PASS: Correctly reported missing file"
+          fi
+          echo "=== END: missing-file ==="
+
+      - name: Summary
+        run: |
+          echo "All matrix generation tests completed successfully."

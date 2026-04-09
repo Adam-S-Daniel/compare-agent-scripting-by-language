@@ -1,0 +1,229 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+    inputs:
+      commit_fixture:
+        description: "Commit fixture to use: patch, minor, major, none"
+        required: false
+        default: "minor"
+
+permissions:
+  contents: read
+
+jobs:
+  test-patch-bump:
+    name: Test Patch Version Bump
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install PowerShell
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q powershell
+
+      - name: Set up test environment
+        run: |
+          mkdir -p /tmp/semver-test-patch
+          echo "1.0.0" > /tmp/semver-test-patch/version.txt
+
+      - name: Run patch bump
+        id: patch-bump
+        run: |
+          pwsh -NoProfile -Command "
+            . './SemanticVersionBumper.ps1'
+            \$commits = Get-Content './fixtures/patch-commits.txt'
+            \$result = Invoke-SemanticVersionBump -VersionFile '/tmp/semver-test-patch/version.txt' -Commits \$commits
+            Write-Output \"OLD_VERSION=\$(\$result.OldVersion)\"
+            Write-Output \"NEW_VERSION=\$(\$result.NewVersion)\"
+            Write-Output \"BUMP_TYPE=\$(\$result.BumpType)\"
+            if (\$result.NewVersion -ne '1.0.1') {
+              Write-Error \"Expected 1.0.1 but got \$(\$result.NewVersion)\"
+              exit 1
+            }
+            Write-Output 'ASSERTION PASSED: patch bump 1.0.0 -> 1.0.1'
+          "
+
+  test-minor-bump:
+    name: Test Minor Version Bump
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install PowerShell
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q powershell
+
+      - name: Set up test environment
+        run: |
+          mkdir -p /tmp/semver-test-minor
+          echo "1.1.0" > /tmp/semver-test-minor/version.txt
+
+      - name: Run minor bump
+        id: minor-bump
+        run: |
+          pwsh -NoProfile -Command "
+            . './SemanticVersionBumper.ps1'
+            \$commits = Get-Content './fixtures/minor-commits.txt'
+            \$result = Invoke-SemanticVersionBump -VersionFile '/tmp/semver-test-minor/version.txt' -Commits \$commits
+            Write-Output \"OLD_VERSION=\$(\$result.OldVersion)\"
+            Write-Output \"NEW_VERSION=\$(\$result.NewVersion)\"
+            Write-Output \"BUMP_TYPE=\$(\$result.BumpType)\"
+            if (\$result.NewVersion -ne '1.2.0') {
+              Write-Error \"Expected 1.2.0 but got \$(\$result.NewVersion)\"
+              exit 1
+            }
+            Write-Output 'ASSERTION PASSED: minor bump 1.1.0 -> 1.2.0'
+          "
+
+  test-major-bump:
+    name: Test Major Version Bump
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install PowerShell
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q powershell
+
+      - name: Set up test environment
+        run: |
+          mkdir -p /tmp/semver-test-major
+          echo "1.2.3" > /tmp/semver-test-major/version.txt
+
+      - name: Run major bump
+        id: major-bump
+        run: |
+          pwsh -NoProfile -Command "
+            . './SemanticVersionBumper.ps1'
+            \$commits = Get-Content './fixtures/major-commits.txt'
+            \$result = Invoke-SemanticVersionBump -VersionFile '/tmp/semver-test-major/version.txt' -Commits \$commits
+            Write-Output \"OLD_VERSION=\$(\$result.OldVersion)\"
+            Write-Output \"NEW_VERSION=\$(\$result.NewVersion)\"
+            Write-Output \"BUMP_TYPE=\$(\$result.BumpType)\"
+            if (\$result.NewVersion -ne '2.0.0') {
+              Write-Error \"Expected 2.0.0 but got \$(\$result.NewVersion)\"
+              exit 1
+            }
+            Write-Output 'ASSERTION PASSED: major bump 1.2.3 -> 2.0.0'
+          "
+
+  test-no-bump:
+    name: Test No Version Bump
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install PowerShell
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q powershell
+
+      - name: Set up test environment
+        run: |
+          mkdir -p /tmp/semver-test-none
+          echo "3.0.0" > /tmp/semver-test-none/version.txt
+
+      - name: Run no-bump scenario
+        id: no-bump
+        run: |
+          pwsh -NoProfile -Command "
+            . './SemanticVersionBumper.ps1'
+            \$commits = Get-Content './fixtures/no-bump-commits.txt'
+            \$result = Invoke-SemanticVersionBump -VersionFile '/tmp/semver-test-none/version.txt' -Commits \$commits
+            Write-Output \"OLD_VERSION=\$(\$result.OldVersion)\"
+            Write-Output \"NEW_VERSION=\$(\$result.NewVersion)\"
+            Write-Output \"BUMP_TYPE=\$(\$result.BumpType)\"
+            if (\$result.NewVersion -ne '3.0.0') {
+              Write-Error \"Expected 3.0.0 but got \$(\$result.NewVersion)\"
+              exit 1
+            }
+            if (\$result.BumpType -ne 'none') {
+              Write-Error \"Expected bump type 'none' but got \$(\$result.BumpType)\"
+              exit 1
+            }
+            Write-Output 'ASSERTION PASSED: no bump, version stays 3.0.0'
+          "
+
+  test-package-json:
+    name: Test package.json Version Bump
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install PowerShell
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q powershell
+
+      - name: Set up test environment
+        run: |
+          mkdir -p /tmp/semver-test-pkg
+          echo '{"name":"test-package","version":"2.3.4"}' > /tmp/semver-test-pkg/package.json
+
+      - name: Run package.json bump
+        id: pkg-bump
+        run: |
+          pwsh -NoProfile -Command "
+            . './SemanticVersionBumper.ps1'
+            \$commits = @('feat: add new API endpoint', 'fix: handle timeout')
+            \$result = Invoke-SemanticVersionBump -VersionFile '/tmp/semver-test-pkg/package.json' -Commits \$commits
+            Write-Output \"OLD_VERSION=\$(\$result.OldVersion)\"
+            Write-Output \"NEW_VERSION=\$(\$result.NewVersion)\"
+            Write-Output \"BUMP_TYPE=\$(\$result.BumpType)\"
+            if (\$result.NewVersion -ne '2.4.0') {
+              Write-Error \"Expected 2.4.0 but got \$(\$result.NewVersion)\"
+              exit 1
+            }
+            Write-Output 'ASSERTION PASSED: package.json minor bump 2.3.4 -> 2.4.0'
+          "
+
+  run-pester-tests:
+    name: Run All Pester Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install PowerShell
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q powershell
+
+      - name: Install actionlint
+        run: |
+          curl -s https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash | bash
+          sudo mv actionlint /usr/local/bin/actionlint
+
+      - name: Install Pester
+        run: |
+          pwsh -NoProfile -Command "
+            Install-Module -Name Pester -Force -SkipPublisherCheck -Scope CurrentUser
+          "
+
+      - name: Run Pester tests
+        run: |
+          pwsh -NoProfile -Command "
+            \$result = Invoke-Pester './SemanticVersionBumper.Tests.ps1' -PassThru -Output Detailed
+            if (\$result.FailedCount -gt 0) {
+              Write-Error \"\$(\$result.FailedCount) test(s) failed\"
+              exit 1
+            }
+            Write-Output \"ALL PESTER TESTS PASSED: \$(\$result.PassedCount) tests\"
+          "

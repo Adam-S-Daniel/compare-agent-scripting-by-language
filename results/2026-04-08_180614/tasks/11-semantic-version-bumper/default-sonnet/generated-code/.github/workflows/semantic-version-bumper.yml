@@ -1,0 +1,42 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Skip writing the updated version back to package.json"
+        required: false
+        default: "false"
+
+permissions:
+  contents: write
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository (full history + tags)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run semantic version bumper
+        id: version-bump
+        run: python version_bumper.py
+
+      - name: Show new version
+        run: |
+          echo "Bumped version: ${{ steps.version-bump.outputs.new_version }}"
+          echo "Bump type:      ${{ steps.version-bump.outputs.bump_type }}"

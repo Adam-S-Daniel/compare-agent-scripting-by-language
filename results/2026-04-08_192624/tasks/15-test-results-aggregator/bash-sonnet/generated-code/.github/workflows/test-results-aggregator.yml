@@ -1,0 +1,101 @@
+name: Test Results Aggregator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  aggregate:
+    name: Aggregate Test Results
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          apt-get update -qq
+          apt-get install -y -qq python3 bats
+
+      - name: Make aggregator executable
+        run: chmod +x aggregator.sh
+
+      - name: Run aggregator on JUnit XML fixtures
+        run: |
+          echo "=== JUnit passing suite ==="
+          ./aggregator.sh fixtures/junit-pass.xml
+
+          echo "=== JUnit failing suite ==="
+          ./aggregator.sh fixtures/junit-fail.xml
+
+          echo "=== JUnit skipped suite ==="
+          ./aggregator.sh fixtures/junit-skip.xml
+
+      - name: Run aggregator on JSON fixtures
+        run: |
+          echo "=== JSON results ==="
+          ./aggregator.sh fixtures/results.json
+
+      - name: Aggregate multiple files (matrix simulation)
+        run: |
+          echo "=== Combined JUnit pass + fail ==="
+          ./aggregator.sh fixtures/junit-pass.xml fixtures/junit-fail.xml
+
+      - name: Detect flaky tests
+        run: |
+          echo "=== Flaky test detection ==="
+          ./aggregator.sh --flaky fixtures/run1.json fixtures/run2.json
+
+      - name: Generate markdown summary
+        run: |
+          echo "=== Markdown summary ==="
+          ./aggregator.sh --markdown fixtures/junit-pass.xml
+
+          echo "=== Markdown with flaky ==="
+          ./aggregator.sh --markdown --flaky fixtures/run1.json fixtures/run2.json
+
+      - name: Write GitHub Actions job summary
+        run: |
+          ./aggregator.sh --markdown --flaky \
+            fixtures/junit-pass.xml \
+            fixtures/junit-fail.xml \
+            fixtures/run1.json \
+            fixtures/run2.json >> "$GITHUB_STEP_SUMMARY" || true
+
+      - name: Run bats tests
+        run: bats tests/test_aggregator.bats
+
+      - name: Verify expected values
+        run: |
+          # Assert exact values from aggregation
+          out=$(./aggregator.sh fixtures/junit-pass.xml)
+          echo "$out" | grep -q "passed=3" || { echo "FAIL: expected passed=3, got: $out"; exit 1; }
+          echo "PASS: junit-pass passed=3"
+
+          out=$(./aggregator.sh fixtures/junit-fail.xml)
+          echo "$out" | grep -q "failed=2" || { echo "FAIL: expected failed=2, got: $out"; exit 1; }
+          echo "PASS: junit-fail failed=2"
+
+          out=$(./aggregator.sh fixtures/junit-skip.xml)
+          echo "$out" | grep -q "skipped=1" || { echo "FAIL: expected skipped=1, got: $out"; exit 1; }
+          echo "PASS: junit-skip skipped=1"
+
+          out=$(./aggregator.sh fixtures/results.json)
+          echo "$out" | grep -q "passed=4" || { echo "FAIL: expected passed=4, got: $out"; exit 1; }
+          echo "PASS: json passed=4"
+
+          out=$(./aggregator.sh fixtures/junit-pass.xml fixtures/junit-fail.xml)
+          echo "$out" | grep -q "passed=5" || { echo "FAIL: expected passed=5, got: $out"; exit 1; }
+          echo "$out" | grep -q "failed=2" || { echo "FAIL: expected failed=2, got: $out"; exit 1; }
+          echo "PASS: aggregation passed=5 failed=2"
+
+          out=$(./aggregator.sh --flaky fixtures/run1.json fixtures/run2.json)
+          echo "$out" | grep -q "flaky=1" || { echo "FAIL: expected flaky=1, got: $out"; exit 1; }
+          echo "$out" | grep -q "TestFlaky" || { echo "FAIL: expected TestFlaky, got: $out"; exit 1; }
+          echo "PASS: flaky detection TestFlaky"
+
+          echo "All assertions passed."

@@ -1,0 +1,56 @@
+name: Semantic Version Bumper
+
+# Trigger on push, PRs, manual dispatch, and weekly schedule
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * 1"   # Monday midnight UTC
+
+permissions:
+  contents: write   # required to write the updated version file back
+
+jobs:
+  version-bump:
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── 1. Full history checkout so git log can see all commits ───────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # ── 2. Install Python test dependencies and actionlint ─────────────────
+      - name: Install dependencies
+        run: |
+          pip install pytest pyyaml --break-system-packages
+          # Install actionlint for the workflow-structure unit test
+          ACTIONLINT_VER="1.7.4"
+          curl -sSfL \
+            "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VER}/actionlint_${ACTIONLINT_VER}_linux_amd64.tar.gz" \
+            | tar xz -C /usr/local/bin actionlint
+          actionlint --version
+
+      # ── 3. Full unit-test suite (TDD green phase) ─────────────────────────
+      - name: Run unit tests
+        run: pytest test_bumper.py -v --tb=short
+
+      # ── 4. Run the version bumper ─────────────────────────────────────────
+      #    If fixtures/commits.txt is present, use it (test-fixture mode).
+      #    Otherwise fall back to git log since the last v* tag.
+      - name: Run version bumper
+        run: |
+          if [ -f "fixtures/commits.txt" ]; then
+            echo "Mode: fixture file (fixtures/commits.txt)"
+            python3 bumper.py \
+              --version-file package.json \
+              --commits-file fixtures/commits.txt
+          else
+            echo "Mode: git log"
+            python3 bumper.py \
+              --version-file package.json
+          fi
