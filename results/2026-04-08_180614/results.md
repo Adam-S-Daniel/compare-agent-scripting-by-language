@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-09 02:08:18 PM ET
+**Last updated:** 2026-04-09 02:15:39 PM ET
 
 **Status:** 2/2 runs completed, 0 remaining
 **Total cost so far:** $2.28
@@ -109,8 +109,9 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Trap | Mode | Model | Fell In | Time Lost | % of Time | $ Lost | % of $ |
 |------|------|-------|---------|-----------|-----------|--------|--------|
+| pwsh-runtime-install-overhead | powershell | sonnet | 1 | 1.1min | 4.6% | $0.11 | 4.66% |
 | repeated-test-reruns | default | sonnet | 1 | 1.0min | 4.3% | $0.10 | 4.26% |
-| **Total** | | | **1 runs** | **1.0min** | **4.3%** | **$0.10** | **4.26%** |
+| **Total** | | | **2 runs** | **2.1min** | **8.9%** | **$0.20** | **8.92%** |
 
 
 <details>
@@ -119,6 +120,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | Trap | Mode | Model | Fell In | Time Lost | % of Time | $ Lost | % of $ |
 |------|------|-------|---------|-----------|-----------|--------|--------|
 | repeated-test-reruns | default | sonnet | 1 | 1.0min | 4.3% | $0.10 | 4.26% |
+| pwsh-runtime-install-overhead | powershell | sonnet | 1 | 1.1min | 4.6% | $0.11 | 4.66% |
 
 </details>
 
@@ -128,6 +130,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | Trap | Mode | Model | Fell In | Time Lost | % of Time | $ Lost | % of $ |
 |------|------|-------|---------|-----------|-----------|--------|--------|
 | repeated-test-reruns | default | sonnet | 1 | 1.0min | 4.3% | $0.10 | 4.26% |
+| pwsh-runtime-install-overhead | powershell | sonnet | 1 | 1.1min | 4.6% | $0.11 | 4.66% |
 
 </details>
 
@@ -136,12 +139,14 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Trap | Mode | Model | Fell In | Time Lost | % of Time | $ Lost | % of $ |
 |------|------|-------|---------|-----------|-----------|--------|--------|
+| pwsh-runtime-install-overhead | powershell | sonnet | 1 | 1.1min | 4.6% | $0.11 | 4.66% |
 | repeated-test-reruns | default | sonnet | 1 | 1.0min | 4.3% | $0.10 | 4.26% |
 
 </details>
 
 #### Trap Descriptions
 
+- **pwsh-runtime-install-overhead**: Time spent installing PowerShell and Pester inside act containers. Both are pre-installed on real GitHub runners but must be downloaded (~56MB) and installed in each act job. Measured from act step durations.
 - **repeated-test-reruns**: Same test command executed 4+ times without the underlying code changing.
 
 #### Column Definitions
@@ -158,8 +163,8 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | Mode | Model | Runs | Trapped | Trap Rate | Traps | Time Lost | % of Time | $ Lost | % of $ |
 |------|-------|------|---------|-----------|-------|-----------|-----------|--------|--------|
 | default | sonnet | 1 | 1 | 100% | 1 | 1.0min | 4.3% | $0.10 | 4.26% |
-| powershell | sonnet | 1 | 0 | 0% | 0 | 0.0min | 0.0% | $0.00 | 0.00% |
-| **Total** | | **2** | **1** | **50%** | **1** | **1.0min** | **4.3%** | **$0.10** | **4.26%** |
+| powershell | sonnet | 1 | 1 | 100% | 1 | 1.1min | 4.6% | $0.11 | 4.66% |
+| **Total** | | **2** | **2** | **100%** | **2** | **2.1min** | **8.9%** | **$0.20** | **8.92%** |
 
 
 <details>
@@ -167,8 +172,8 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Mode | Model | Runs | Trapped | Trap Rate | Traps | Time Lost | % of Time | $ Lost | % of $ |
 |------|-------|------|---------|-----------|-------|-----------|-----------|--------|--------|
-| powershell | sonnet | 1 | 0 | 0% | 0 | 0.0min | 0.0% | $0.00 | 0.00% |
 | default | sonnet | 1 | 1 | 100% | 1 | 1.0min | 4.3% | $0.10 | 4.26% |
+| powershell | sonnet | 1 | 1 | 100% | 1 | 1.1min | 4.6% | $0.11 | 4.66% |
 
 </details>
 
@@ -177,8 +182,8 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Mode | Model | Runs | Trapped | Trap Rate | Traps | Time Lost | % of Time | $ Lost | % of $ |
 |------|-------|------|---------|-----------|-------|-----------|-----------|--------|--------|
-| powershell | sonnet | 1 | 0 | 0% | 0 | 0.0min | 0.0% | $0.00 | 0.00% |
 | default | sonnet | 1 | 1 | 100% | 1 | 1.0min | 4.3% | $0.10 | 4.26% |
+| powershell | sonnet | 1 | 1 | 100% | 1 | 1.1min | 4.6% | $0.11 | 4.66% |
 
 </details>
 
@@ -187,8 +192,8 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Mode | Model | Runs | Trapped | Trap Rate | Traps | Time Lost | % of Time | $ Lost | % of $ |
 |------|-------|------|---------|-----------|-------|-----------|-----------|--------|--------|
-| powershell | sonnet | 1 | 0 | 0% | 0 | 0.0min | 0.0% | $0.00 | 0.00% |
 | default | sonnet | 1 | 1 | 100% | 1 | 1.0min | 4.3% | $0.10 | 4.26% |
+| powershell | sonnet | 1 | 1 | 100% | 1 | 1.1min | 4.6% | $0.11 | 4.66% |
 
 </details>
 

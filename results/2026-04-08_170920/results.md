@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-09 02:08:18 PM ET
+**Last updated:** 2026-04-09 02:15:39 PM ET
 
 **Status:** 4/4 runs completed, 0 remaining
 **Total cost so far:** $6.95
@@ -130,8 +130,9 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | repeated-test-reruns | default | opus | 1 | 2.3min | 7.4% | $0.68 | 9.72% |
 | repeated-test-reruns | powershell | opus | 1 | 2.7min | 8.4% | $0.51 | 7.38% |
 | ts-type-error-fix-cycles | typescript-bun | opus | 1 | 1.2min | 3.8% | $0.21 | 2.97% |
+| pwsh-runtime-install-overhead | powershell | opus | 1 | 1.1min | 3.4% | $0.21 | 3.03% |
 | act-push-debug-loops | powershell | opus | 1 | 0.8min | 2.6% | $0.16 | 2.31% |
-| **Total** | | | **3 runs** | **7.0min** | **22.2%** | **$1.55** | **22.38%** |
+| **Total** | | | **3 runs** | **8.1min** | **25.6%** | **$1.76** | **25.40%** |
 
 
 <details>
@@ -140,6 +141,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | Trap | Mode | Model | Fell In | Time Lost | % of Time | $ Lost | % of $ |
 |------|------|-------|---------|-----------|-----------|--------|--------|
 | act-push-debug-loops | powershell | opus | 1 | 0.8min | 2.6% | $0.16 | 2.31% |
+| pwsh-runtime-install-overhead | powershell | opus | 1 | 1.1min | 3.4% | $0.21 | 3.03% |
 | ts-type-error-fix-cycles | typescript-bun | opus | 1 | 1.2min | 3.8% | $0.21 | 2.97% |
 | repeated-test-reruns | default | opus | 1 | 2.3min | 7.4% | $0.68 | 9.72% |
 | repeated-test-reruns | powershell | opus | 1 | 2.7min | 8.4% | $0.51 | 7.38% |
@@ -153,6 +155,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 |------|------|-------|---------|-----------|-----------|--------|--------|
 | act-push-debug-loops | powershell | opus | 1 | 0.8min | 2.6% | $0.16 | 2.31% |
 | ts-type-error-fix-cycles | typescript-bun | opus | 1 | 1.2min | 3.8% | $0.21 | 2.97% |
+| pwsh-runtime-install-overhead | powershell | opus | 1 | 1.1min | 3.4% | $0.21 | 3.03% |
 | repeated-test-reruns | powershell | opus | 1 | 2.7min | 8.4% | $0.51 | 7.38% |
 | repeated-test-reruns | default | opus | 1 | 2.3min | 7.4% | $0.68 | 9.72% |
 
@@ -166,6 +169,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | repeated-test-reruns | default | opus | 1 | 2.3min | 7.4% | $0.68 | 9.72% |
 | repeated-test-reruns | powershell | opus | 1 | 2.7min | 8.4% | $0.51 | 7.38% |
 | ts-type-error-fix-cycles | typescript-bun | opus | 1 | 1.2min | 3.8% | $0.21 | 2.97% |
+| pwsh-runtime-install-overhead | powershell | opus | 1 | 1.1min | 3.4% | $0.21 | 3.03% |
 | act-push-debug-loops | powershell | opus | 1 | 0.8min | 2.6% | $0.16 | 2.31% |
 
 </details>
@@ -173,6 +177,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 #### Trap Descriptions
 
 - **act-push-debug-loops**: Agent ran `act push` more than twice, indicating repeated workflow debugging.
+- **pwsh-runtime-install-overhead**: Time spent installing PowerShell and Pester inside act containers. Both are pre-installed on real GitHub runners but must be downloaded (~56MB) and installed in each act job. Measured from act step durations.
 - **repeated-test-reruns**: Same test command executed 4+ times without the underlying code changing.
 - **ts-type-error-fix-cycles**: TypeScript type errors caught by `tsc --noEmit` hooks; each requires a fix cycle.
 
@@ -191,9 +196,9 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 |------|-------|------|---------|-----------|-------|-----------|-----------|--------|--------|
 | bash | opus | 1 | 0 | 0% | 0 | 0.0min | 0.0% | $0.00 | 0.00% |
 | default | opus | 1 | 1 | 100% | 1 | 2.3min | 7.4% | $0.68 | 9.72% |
-| powershell | opus | 1 | 1 | 100% | 2 | 3.5min | 11.0% | $0.67 | 9.69% |
+| powershell | opus | 1 | 1 | 100% | 3 | 4.6min | 14.5% | $0.88 | 12.71% |
 | typescript-bun | opus | 1 | 1 | 100% | 1 | 1.2min | 3.8% | $0.21 | 2.97% |
-| **Total** | | **4** | **3** | **75%** | **4** | **7.0min** | **22.2%** | **$1.55** | **22.38%** |
+| **Total** | | **4** | **3** | **75%** | **5** | **8.1min** | **25.6%** | **$1.76** | **25.40%** |
 
 
 <details>
@@ -204,7 +209,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | bash | opus | 1 | 0 | 0% | 0 | 0.0min | 0.0% | $0.00 | 0.00% |
 | typescript-bun | opus | 1 | 1 | 100% | 1 | 1.2min | 3.8% | $0.21 | 2.97% |
 | default | opus | 1 | 1 | 100% | 1 | 2.3min | 7.4% | $0.68 | 9.72% |
-| powershell | opus | 1 | 1 | 100% | 2 | 3.5min | 11.0% | $0.67 | 9.69% |
+| powershell | opus | 1 | 1 | 100% | 3 | 4.6min | 14.5% | $0.88 | 12.71% |
 
 </details>
 
@@ -215,8 +220,8 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 |------|-------|------|---------|-----------|-------|-----------|-----------|--------|--------|
 | bash | opus | 1 | 0 | 0% | 0 | 0.0min | 0.0% | $0.00 | 0.00% |
 | typescript-bun | opus | 1 | 1 | 100% | 1 | 1.2min | 3.8% | $0.21 | 2.97% |
-| powershell | opus | 1 | 1 | 100% | 2 | 3.5min | 11.0% | $0.67 | 9.69% |
 | default | opus | 1 | 1 | 100% | 1 | 2.3min | 7.4% | $0.68 | 9.72% |
+| powershell | opus | 1 | 1 | 100% | 3 | 4.6min | 14.5% | $0.88 | 12.71% |
 
 </details>
 
@@ -227,7 +232,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 |------|-------|------|---------|-----------|-------|-----------|-----------|--------|--------|
 | bash | opus | 1 | 0 | 0% | 0 | 0.0min | 0.0% | $0.00 | 0.00% |
 | default | opus | 1 | 1 | 100% | 1 | 2.3min | 7.4% | $0.68 | 9.72% |
-| powershell | opus | 1 | 1 | 100% | 2 | 3.5min | 11.0% | $0.67 | 9.69% |
+| powershell | opus | 1 | 1 | 100% | 3 | 4.6min | 14.5% | $0.88 | 12.71% |
 | typescript-bun | opus | 1 | 1 | 100% | 1 | 1.2min | 3.8% | $0.21 | 2.97% |
 
 </details>

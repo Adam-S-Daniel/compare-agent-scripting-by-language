@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-09 02:08:18 PM ET
+**Last updated:** 2026-04-09 02:15:39 PM ET
 
 **Status:** 3/3 runs completed, 0 remaining
 **Total cost so far:** $2.91

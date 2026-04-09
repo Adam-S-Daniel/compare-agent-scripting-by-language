@@ -416,6 +416,49 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
                 **trap,
             })
 
+        # Trap: PowerShell runtime install overhead (pwsh + Pester pre-installed on
+        # real GitHub runners but must be installed in act containers every run).
+        # Primary source: act-result.txt step timings.  Fallback: event stream.
+        if mode == "powershell":
+            act_result_path = (run_dir / "tasks" / m["task_id"]
+                               / f"{mode}-{model}" / "generated-code" / "act-result.txt")
+            act_text = act_result_path.read_text() if act_result_path.exists() else ""
+            # Primary: parse exact step durations from act output
+            pwsh_times = [float(x) for x in re.findall(
+                r"Install PowerShell \[(\d+\.?\d*)s\]", act_text)]
+            pester_times = [float(x) for x in re.findall(
+                r"Install Pester \[(\d+\.?\d*)s\]", act_text)]
+            # Fallback: if act-result.txt had no timings, check event stream
+            if not pwsh_times and not pester_times:
+                for ev in evts:
+                    if not isinstance(ev, dict) or ev.get("type") != "user":
+                        continue
+                    for c in (ev.get("message", {}).get("content", []) or []):
+                        if isinstance(c, dict) and c.get("type") == "tool_result":
+                            txt = str(c.get("content", ""))
+                            pwsh_times.extend(float(x) for x in re.findall(
+                                r"Install PowerShell \[(\d+\.?\d*)s\]", txt))
+                            pester_times.extend(float(x) for x in re.findall(
+                                r"Install Pester \[(\d+\.?\d*)s\]", txt))
+            pwsh_secs = sum(pwsh_times)
+            pester_secs = sum(pester_times)
+            total_overhead = pwsh_secs + pester_secs
+            if total_overhead >= 15:
+                parts = []
+                if pwsh_times:
+                    parts.append(f"{len(pwsh_times)} pwsh installs ({pwsh_secs:.0f}s)")
+                if pester_times:
+                    parts.append(f"{len(pester_times)} Pester installs ({pester_secs:.0f}s)")
+                trap_instances.append({
+                    "mode": mode, "model": model, "task_id": m["task_id"],
+                    "task_name": m["task_name"],
+                    "dur_s": m["timing"]["grand_total_duration_ms"] / 1000,
+                    "cost": m["cost"]["total_cost_usd"],
+                    "name": "pwsh-runtime-install-overhead",
+                    "time_s": total_overhead,
+                    "desc": "; ".join(parts),
+                })
+
         caught = m.get("hooks", {}).get("hook_errors_caught", 0)
         fires = m.get("hooks", {}).get("hook_fires", 0)
         gross_saved = caught * TEST_RUN_COST_S.get(mode, 10)
@@ -610,6 +653,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
             "bats-setup-issues": "bash",
             "dotnet-install-loop": "csharp-script",
             "pwsh-invoked-from-bash": "powershell",
+            "pwsh-runtime-install-overhead": "powershell",
         }
         trap_descriptions = {
             "act-push-debug-loops": "Agent ran `act push` more than twice, indicating repeated workflow debugging.",
@@ -628,6 +672,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
             "permission-denial-loops": "CLI sandbox blocked commands and agent retried instead of adapting (v1 harness issue).",
             "dotnet-install-loop": "Agent stuck in loop trying to install/verify .NET SDK, blocked by CLI sandbox.",
             "pwsh-invoked-from-bash": "Agent used `pwsh -Command`/`-File` from bash `run:` steps instead of `shell: pwsh`, causing cross-shell debugging (parse errors, quoting issues, scope problems, late pwsh discovery in act).",
+            "pwsh-runtime-install-overhead": "Time spent installing PowerShell and Pester inside act containers. Both are pre-installed on real GitHub runners but must be downloaded (~56MB) and installed in each act job. Measured from act step durations.",
         }
 
         trap_agg = defaultdict(list)
