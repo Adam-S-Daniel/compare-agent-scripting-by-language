@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-09 08:19:02 AM ET
+**Last updated:** 2026-04-09 08:48:28 AM ET
 
 **Status:** 64/64 runs completed, 0 remaining
 **Total cost so far:** $84.2473
@@ -153,6 +153,15 @@
 
 - **Avg cost per run (opus):** $1.3011
 - **Avg cost per run (sonnet):** $1.3317
+
+## Prompt Cache
+
+| Status | Runs | Saved |
+|--------|------|-------|
+| Full hit (100%) | 1 | $0.0588 |
+| Partial | 62 | $7.3027 |
+| Miss | 1 | $0.0000 |
+| **Total** | **64** | **$7.3615** |
 
 
 ---
