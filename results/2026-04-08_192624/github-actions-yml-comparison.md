@@ -188,7 +188,7 @@ This split holds across tasks 11-18.
 **By language mode:**
 - **Default (Python):** Most concise workflows. Language doesn't require runtime installation. Agent keeps workflow simple because Python's stdlib handles most logic.
 - **Bash:** Largest workflows because assertions and logic must be inline shell. Both models produce similarly verbose files. Highest use of shellcheck and syntax validation.
-- **PowerShell:** Installation overhead is the defining challenge. Workflows split between bash (for setup) and pwsh (for logic). Most fragile due to escaping issues.
+- **PowerShell:** Installation overhead is the defining challenge -- 26.2min spent installing pwsh/Pester across 16 runs (both pre-installed on real GitHub runners). Workflows split between bash (for setup) and pwsh (for logic). Net of traps, powershell/opus is actually the cheapest mode ($0.93 avg) and nearly the fastest (6.9min avg).
 - **TypeScript-Bun:** Clean workflows with good tooling support (`oven-sh/setup-bun@v2` + built-in `bun test`). Highest hook catch rate. Compact like default but with explicit typing benefits.
 
 **By model:**

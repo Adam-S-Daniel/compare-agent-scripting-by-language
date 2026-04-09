@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-09 02:15:39 PM ET
+**Last updated:** 2026-04-09 02:23:32 PM ET
 
 **Status:** 4/4 runs completed, 0 remaining
 **Total cost so far:** $6.95
@@ -12,62 +12,90 @@
 - **Slowest (avg):** powershell/opus — 12.5min, then default/opus — 8.3min
 - **Cheapest (avg):** typescript-bun/opus — $0.93, then bash/opus — $1.22
 - **Most expensive (avg):** powershell/opus — $2.40, then default/opus — $2.39
+- **Fastest net of traps:** typescript-bun/opus — 4.2min, then bash/opus — 5.5min
+- **Slowest net of traps:** powershell/opus — 7.9min, then default/opus — 5.9min
+- **Cheapest net of traps:** typescript-bun/opus — $0.73, then bash/opus — $1.22
+- **Most expensive net of traps:** default/opus — $1.72, then powershell/opus — $1.52
 
 ## Comparison by Language/Model
 
-| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|-----------|------------|-----------|----------|------------|
-| bash | opus | 1 | 5.5min | 1016 | 2.0 | 45 | $1.22 | $1.22 |
-| default | opus | 1 | 8.3min | 896 | 1.0 | 77 | $2.39 | $2.39 |
-| powershell | opus | 1 | 12.5min | 1033 | 0.0 | 71 | $2.40 | $2.40 |
-| typescript-bun | opus | 1 | 5.4min | 1029 | 2.0 | 33 | $0.93 | $0.93 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| bash | opus | 1 | 5.5min | 5.5min | 1016 | 2.0 | 45 | $1.22 | $1.22 | $1.22 |
+| default | opus | 1 | 8.3min | 5.9min | 896 | 1.0 | 77 | $2.39 | $1.72 | $2.39 |
+| powershell | opus | 1 | 12.5min | 7.9min | 1033 | 0.0 | 71 | $2.40 | $1.52 | $2.40 |
+| typescript-bun | opus | 1 | 5.4min | 4.2min | 1029 | 2.0 | 33 | $0.93 | $0.73 | $0.93 |
 
 
 <details>
 <summary>Sorted by avg cost (most expensive first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|-----------|------------|-----------|----------|------------|
-| powershell | opus | 1 | 12.5min | 1033 | 0.0 | 71 | $2.40 | $2.40 |
-| default | opus | 1 | 8.3min | 896 | 1.0 | 77 | $2.39 | $2.39 |
-| bash | opus | 1 | 5.5min | 1016 | 2.0 | 45 | $1.22 | $1.22 |
-| typescript-bun | opus | 1 | 5.4min | 1029 | 2.0 | 33 | $0.93 | $0.93 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| powershell | opus | 1 | 12.5min | 7.9min | 1033 | 0.0 | 71 | $2.40 | $1.52 | $2.40 |
+| default | opus | 1 | 8.3min | 5.9min | 896 | 1.0 | 77 | $2.39 | $1.72 | $2.39 |
+| bash | opus | 1 | 5.5min | 5.5min | 1016 | 2.0 | 45 | $1.22 | $1.22 | $1.22 |
+| typescript-bun | opus | 1 | 5.4min | 4.2min | 1029 | 2.0 | 33 | $0.93 | $0.73 | $0.93 |
+
+</details>
+
+<details>
+<summary>Sorted by avg cost net of traps (most expensive first)</summary>
+
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| default | opus | 1 | 8.3min | 5.9min | 896 | 1.0 | 77 | $2.39 | $1.72 | $2.39 |
+| powershell | opus | 1 | 12.5min | 7.9min | 1033 | 0.0 | 71 | $2.40 | $1.52 | $2.40 |
+| bash | opus | 1 | 5.5min | 5.5min | 1016 | 2.0 | 45 | $1.22 | $1.22 | $1.22 |
+| typescript-bun | opus | 1 | 5.4min | 4.2min | 1029 | 2.0 | 33 | $0.93 | $0.73 | $0.93 |
+
+</details>
+
+<details>
+<summary>Sorted by avg duration net of traps (fastest first)</summary>
+
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| typescript-bun | opus | 1 | 5.4min | 4.2min | 1029 | 2.0 | 33 | $0.93 | $0.73 | $0.93 |
+| bash | opus | 1 | 5.5min | 5.5min | 1016 | 2.0 | 45 | $1.22 | $1.22 | $1.22 |
+| default | opus | 1 | 8.3min | 5.9min | 896 | 1.0 | 77 | $2.39 | $1.72 | $2.39 |
+| powershell | opus | 1 | 12.5min | 7.9min | 1033 | 0.0 | 71 | $2.40 | $1.52 | $2.40 |
 
 </details>
 
 <details>
 <summary>Sorted by avg errors (fewest first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|-----------|------------|-----------|----------|------------|
-| powershell | opus | 1 | 12.5min | 1033 | 0.0 | 71 | $2.40 | $2.40 |
-| default | opus | 1 | 8.3min | 896 | 1.0 | 77 | $2.39 | $2.39 |
-| bash | opus | 1 | 5.5min | 1016 | 2.0 | 45 | $1.22 | $1.22 |
-| typescript-bun | opus | 1 | 5.4min | 1029 | 2.0 | 33 | $0.93 | $0.93 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| powershell | opus | 1 | 12.5min | 7.9min | 1033 | 0.0 | 71 | $2.40 | $1.52 | $2.40 |
+| default | opus | 1 | 8.3min | 5.9min | 896 | 1.0 | 77 | $2.39 | $1.72 | $2.39 |
+| bash | opus | 1 | 5.5min | 5.5min | 1016 | 2.0 | 45 | $1.22 | $1.22 | $1.22 |
+| typescript-bun | opus | 1 | 5.4min | 4.2min | 1029 | 2.0 | 33 | $0.93 | $0.73 | $0.93 |
 
 </details>
 
 <details>
 <summary>Sorted by avg lines (fewest first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|-----------|------------|-----------|----------|------------|
-| default | opus | 1 | 8.3min | 896 | 1.0 | 77 | $2.39 | $2.39 |
-| bash | opus | 1 | 5.5min | 1016 | 2.0 | 45 | $1.22 | $1.22 |
-| typescript-bun | opus | 1 | 5.4min | 1029 | 2.0 | 33 | $0.93 | $0.93 |
-| powershell | opus | 1 | 12.5min | 1033 | 0.0 | 71 | $2.40 | $2.40 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| default | opus | 1 | 8.3min | 5.9min | 896 | 1.0 | 77 | $2.39 | $1.72 | $2.39 |
+| bash | opus | 1 | 5.5min | 5.5min | 1016 | 2.0 | 45 | $1.22 | $1.22 | $1.22 |
+| typescript-bun | opus | 1 | 5.4min | 4.2min | 1029 | 2.0 | 33 | $0.93 | $0.73 | $0.93 |
+| powershell | opus | 1 | 12.5min | 7.9min | 1033 | 0.0 | 71 | $2.40 | $1.52 | $2.40 |
 
 </details>
 
 <details>
 <summary>Sorted by avg turns (fewest first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|-----------|------------|-----------|----------|------------|
-| typescript-bun | opus | 1 | 5.4min | 1029 | 2.0 | 33 | $0.93 | $0.93 |
-| bash | opus | 1 | 5.5min | 1016 | 2.0 | 45 | $1.22 | $1.22 |
-| powershell | opus | 1 | 12.5min | 1033 | 0.0 | 71 | $2.40 | $2.40 |
-| default | opus | 1 | 8.3min | 896 | 1.0 | 77 | $2.39 | $2.39 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| typescript-bun | opus | 1 | 5.4min | 4.2min | 1029 | 2.0 | 33 | $0.93 | $0.73 | $0.93 |
+| bash | opus | 1 | 5.5min | 5.5min | 1016 | 2.0 | 45 | $1.22 | $1.22 | $1.22 |
+| powershell | opus | 1 | 12.5min | 7.9min | 1033 | 0.0 | 71 | $2.40 | $1.52 | $2.40 |
+| default | opus | 1 | 8.3min | 5.9min | 896 | 1.0 | 77 | $2.39 | $1.72 | $2.39 |
 
 </details>
 

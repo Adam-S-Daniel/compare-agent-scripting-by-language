@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-09 02:15:39 PM ET
+**Last updated:** 2026-04-09 02:23:33 PM ET
 
 **Status:** 1/1 runs completed, 0 remaining
 **Total cost so far:** $1.07
@@ -8,44 +8,62 @@
 
 ## Comparison by Language/Model
 
-| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|-----------|------------|-----------|----------|------------|
-| default | opus | 1 | 5.4min | 1246 | 2.0 | 32 | $1.07 | $1.07 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| default | opus | 1 | 5.4min | 5.4min | 1246 | 2.0 | 32 | $1.07 | $1.07 | $1.07 |
 
 
 <details>
 <summary>Sorted by avg cost (most expensive first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|-----------|------------|-----------|----------|------------|
-| default | opus | 1 | 5.4min | 1246 | 2.0 | 32 | $1.07 | $1.07 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| default | opus | 1 | 5.4min | 5.4min | 1246 | 2.0 | 32 | $1.07 | $1.07 | $1.07 |
+
+</details>
+
+<details>
+<summary>Sorted by avg cost net of traps (most expensive first)</summary>
+
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| default | opus | 1 | 5.4min | 5.4min | 1246 | 2.0 | 32 | $1.07 | $1.07 | $1.07 |
+
+</details>
+
+<details>
+<summary>Sorted by avg duration net of traps (fastest first)</summary>
+
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| default | opus | 1 | 5.4min | 5.4min | 1246 | 2.0 | 32 | $1.07 | $1.07 | $1.07 |
 
 </details>
 
 <details>
 <summary>Sorted by avg errors (fewest first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|-----------|------------|-----------|----------|------------|
-| default | opus | 1 | 5.4min | 1246 | 2.0 | 32 | $1.07 | $1.07 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| default | opus | 1 | 5.4min | 5.4min | 1246 | 2.0 | 32 | $1.07 | $1.07 | $1.07 |
 
 </details>
 
 <details>
 <summary>Sorted by avg lines (fewest first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|-----------|------------|-----------|----------|------------|
-| default | opus | 1 | 5.4min | 1246 | 2.0 | 32 | $1.07 | $1.07 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| default | opus | 1 | 5.4min | 5.4min | 1246 | 2.0 | 32 | $1.07 | $1.07 | $1.07 |
 
 </details>
 
 <details>
 <summary>Sorted by avg turns (fewest first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|-----------|------------|-----------|----------|------------|
-| default | opus | 1 | 5.4min | 1246 | 2.0 | 32 | $1.07 | $1.07 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| default | opus | 1 | 5.4min | 5.4min | 1246 | 2.0 | 32 | $1.07 | $1.07 | $1.07 |
 
 </details>
 

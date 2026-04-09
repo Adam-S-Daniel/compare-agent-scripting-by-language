@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-09 02:15:39 PM ET
+**Last updated:** 2026-04-09 02:23:32 PM ET
 
 **Status:** 3/3 runs completed, 0 remaining
 **Total cost so far:** $2.91
@@ -12,57 +12,83 @@
 - **Slowest (avg):** powershell/opus — 7.3min, then default/opus — 4.9min
 - **Cheapest (avg):** bash/opus — $0.51, then default/opus — $0.92
 - **Most expensive (avg):** powershell/opus — $1.48, then default/opus — $0.92
+- **Fastest net of traps:** bash/opus — 2.4min, then powershell/opus — 3.6min
+- **Slowest net of traps:** default/opus — 3.9min, then powershell/opus — 3.6min
+- **Cheapest net of traps:** bash/opus — $0.51, then default/opus — $0.74
+- **Most expensive net of traps:** powershell/opus — $0.74, then default/opus — $0.74
 
 ## Comparison by Language/Model
 
-| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|-----------|------------|-----------|----------|------------|
-| bash | opus | 1 | 2.4min | 420 | 1.0 | 22 | $0.51 | $0.51 |
-| default | opus | 1 | 4.9min | 692 | 1.0 | 39 | $0.92 | $0.92 |
-| powershell | opus | 1 | 7.3min | 692 | 0.0 | 54 | $1.48 | $1.48 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| bash | opus | 1 | 2.4min | 2.4min | 420 | 1.0 | 22 | $0.51 | $0.51 | $0.51 |
+| default | opus | 1 | 4.9min | 3.9min | 692 | 1.0 | 39 | $0.92 | $0.74 | $0.92 |
+| powershell | opus | 1 | 7.3min | 3.6min | 692 | 0.0 | 54 | $1.48 | $0.74 | $1.48 |
 
 
 <details>
 <summary>Sorted by avg cost (most expensive first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|-----------|------------|-----------|----------|------------|
-| powershell | opus | 1 | 7.3min | 692 | 0.0 | 54 | $1.48 | $1.48 |
-| default | opus | 1 | 4.9min | 692 | 1.0 | 39 | $0.92 | $0.92 |
-| bash | opus | 1 | 2.4min | 420 | 1.0 | 22 | $0.51 | $0.51 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| powershell | opus | 1 | 7.3min | 3.6min | 692 | 0.0 | 54 | $1.48 | $0.74 | $1.48 |
+| default | opus | 1 | 4.9min | 3.9min | 692 | 1.0 | 39 | $0.92 | $0.74 | $0.92 |
+| bash | opus | 1 | 2.4min | 2.4min | 420 | 1.0 | 22 | $0.51 | $0.51 | $0.51 |
+
+</details>
+
+<details>
+<summary>Sorted by avg cost net of traps (most expensive first)</summary>
+
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| powershell | opus | 1 | 7.3min | 3.6min | 692 | 0.0 | 54 | $1.48 | $0.74 | $1.48 |
+| default | opus | 1 | 4.9min | 3.9min | 692 | 1.0 | 39 | $0.92 | $0.74 | $0.92 |
+| bash | opus | 1 | 2.4min | 2.4min | 420 | 1.0 | 22 | $0.51 | $0.51 | $0.51 |
+
+</details>
+
+<details>
+<summary>Sorted by avg duration net of traps (fastest first)</summary>
+
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| bash | opus | 1 | 2.4min | 2.4min | 420 | 1.0 | 22 | $0.51 | $0.51 | $0.51 |
+| powershell | opus | 1 | 7.3min | 3.6min | 692 | 0.0 | 54 | $1.48 | $0.74 | $1.48 |
+| default | opus | 1 | 4.9min | 3.9min | 692 | 1.0 | 39 | $0.92 | $0.74 | $0.92 |
 
 </details>
 
 <details>
 <summary>Sorted by avg errors (fewest first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|-----------|------------|-----------|----------|------------|
-| powershell | opus | 1 | 7.3min | 692 | 0.0 | 54 | $1.48 | $1.48 |
-| bash | opus | 1 | 2.4min | 420 | 1.0 | 22 | $0.51 | $0.51 |
-| default | opus | 1 | 4.9min | 692 | 1.0 | 39 | $0.92 | $0.92 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| powershell | opus | 1 | 7.3min | 3.6min | 692 | 0.0 | 54 | $1.48 | $0.74 | $1.48 |
+| bash | opus | 1 | 2.4min | 2.4min | 420 | 1.0 | 22 | $0.51 | $0.51 | $0.51 |
+| default | opus | 1 | 4.9min | 3.9min | 692 | 1.0 | 39 | $0.92 | $0.74 | $0.92 |
 
 </details>
 
 <details>
 <summary>Sorted by avg lines (fewest first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|-----------|------------|-----------|----------|------------|
-| bash | opus | 1 | 2.4min | 420 | 1.0 | 22 | $0.51 | $0.51 |
-| default | opus | 1 | 4.9min | 692 | 1.0 | 39 | $0.92 | $0.92 |
-| powershell | opus | 1 | 7.3min | 692 | 0.0 | 54 | $1.48 | $1.48 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| bash | opus | 1 | 2.4min | 2.4min | 420 | 1.0 | 22 | $0.51 | $0.51 | $0.51 |
+| default | opus | 1 | 4.9min | 3.9min | 692 | 1.0 | 39 | $0.92 | $0.74 | $0.92 |
+| powershell | opus | 1 | 7.3min | 3.6min | 692 | 0.0 | 54 | $1.48 | $0.74 | $1.48 |
 
 </details>
 
 <details>
 <summary>Sorted by avg turns (fewest first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|-----------|------------|-----------|----------|------------|
-| bash | opus | 1 | 2.4min | 420 | 1.0 | 22 | $0.51 | $0.51 |
-| default | opus | 1 | 4.9min | 692 | 1.0 | 39 | $0.92 | $0.92 |
-| powershell | opus | 1 | 7.3min | 692 | 0.0 | 54 | $1.48 | $1.48 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| bash | opus | 1 | 2.4min | 2.4min | 420 | 1.0 | 22 | $0.51 | $0.51 | $0.51 |
+| default | opus | 1 | 4.9min | 3.9min | 692 | 1.0 | 39 | $0.92 | $0.74 | $0.92 |
+| powershell | opus | 1 | 7.3min | 3.6min | 692 | 0.0 | 54 | $1.48 | $0.74 | $1.48 |
 
 </details>
 

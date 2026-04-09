@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-09 02:15:39 PM ET
+**Last updated:** 2026-04-09 02:23:33 PM ET
 
 **Status:** 2/2 runs completed, 0 remaining
 **Total cost so far:** $2.28
@@ -12,52 +12,76 @@
 - **Slowest (avg):** default/sonnet — 13.6min, then powershell/sonnet — 9.7min
 - **Cheapest (avg):** powershell/sonnet — $0.96, then default/sonnet — $1.33
 - **Most expensive (avg):** default/sonnet — $1.33, then powershell/sonnet — $0.96
+- **Fastest net of traps:** powershell/sonnet — 8.6min, then default/sonnet — 12.6min
+- **Slowest net of traps:** default/sonnet — 12.6min, then powershell/sonnet — 8.6min
+- **Cheapest net of traps:** powershell/sonnet — $0.85, then default/sonnet — $1.23
+- **Most expensive net of traps:** default/sonnet — $1.23, then powershell/sonnet — $0.85
 
 ## Comparison by Language/Model
 
-| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|-----------|------------|-----------|----------|------------|
-| default | sonnet | 1 | 13.6min | 1300 | 5.0 | 33 | $1.33 | $1.33 |
-| powershell | sonnet | 1 | 9.7min | 1181 | 1.0 | 38 | $0.96 | $0.96 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| default | sonnet | 1 | 13.6min | 12.6min | 1300 | 5.0 | 33 | $1.33 | $1.23 | $1.33 |
+| powershell | sonnet | 1 | 9.7min | 8.6min | 1181 | 1.0 | 38 | $0.96 | $0.85 | $0.96 |
 
 
 <details>
 <summary>Sorted by avg cost (most expensive first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|-----------|------------|-----------|----------|------------|
-| default | sonnet | 1 | 13.6min | 1300 | 5.0 | 33 | $1.33 | $1.33 |
-| powershell | sonnet | 1 | 9.7min | 1181 | 1.0 | 38 | $0.96 | $0.96 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| default | sonnet | 1 | 13.6min | 12.6min | 1300 | 5.0 | 33 | $1.33 | $1.23 | $1.33 |
+| powershell | sonnet | 1 | 9.7min | 8.6min | 1181 | 1.0 | 38 | $0.96 | $0.85 | $0.96 |
+
+</details>
+
+<details>
+<summary>Sorted by avg cost net of traps (most expensive first)</summary>
+
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| default | sonnet | 1 | 13.6min | 12.6min | 1300 | 5.0 | 33 | $1.33 | $1.23 | $1.33 |
+| powershell | sonnet | 1 | 9.7min | 8.6min | 1181 | 1.0 | 38 | $0.96 | $0.85 | $0.96 |
+
+</details>
+
+<details>
+<summary>Sorted by avg duration net of traps (fastest first)</summary>
+
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| powershell | sonnet | 1 | 9.7min | 8.6min | 1181 | 1.0 | 38 | $0.96 | $0.85 | $0.96 |
+| default | sonnet | 1 | 13.6min | 12.6min | 1300 | 5.0 | 33 | $1.33 | $1.23 | $1.33 |
 
 </details>
 
 <details>
 <summary>Sorted by avg errors (fewest first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|-----------|------------|-----------|----------|------------|
-| powershell | sonnet | 1 | 9.7min | 1181 | 1.0 | 38 | $0.96 | $0.96 |
-| default | sonnet | 1 | 13.6min | 1300 | 5.0 | 33 | $1.33 | $1.33 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| powershell | sonnet | 1 | 9.7min | 8.6min | 1181 | 1.0 | 38 | $0.96 | $0.85 | $0.96 |
+| default | sonnet | 1 | 13.6min | 12.6min | 1300 | 5.0 | 33 | $1.33 | $1.23 | $1.33 |
 
 </details>
 
 <details>
 <summary>Sorted by avg lines (fewest first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|-----------|------------|-----------|----------|------------|
-| powershell | sonnet | 1 | 9.7min | 1181 | 1.0 | 38 | $0.96 | $0.96 |
-| default | sonnet | 1 | 13.6min | 1300 | 5.0 | 33 | $1.33 | $1.33 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| powershell | sonnet | 1 | 9.7min | 8.6min | 1181 | 1.0 | 38 | $0.96 | $0.85 | $0.96 |
+| default | sonnet | 1 | 13.6min | 12.6min | 1300 | 5.0 | 33 | $1.33 | $1.23 | $1.33 |
 
 </details>
 
 <details>
 <summary>Sorted by avg turns (fewest first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|-----------|------------|-----------|----------|------------|
-| default | sonnet | 1 | 13.6min | 1300 | 5.0 | 33 | $1.33 | $1.33 |
-| powershell | sonnet | 1 | 9.7min | 1181 | 1.0 | 38 | $0.96 | $0.96 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| default | sonnet | 1 | 13.6min | 12.6min | 1300 | 5.0 | 33 | $1.33 | $1.23 | $1.33 |
+| powershell | sonnet | 1 | 9.7min | 8.6min | 1181 | 1.0 | 38 | $0.96 | $0.85 | $0.96 |
 
 </details>
 

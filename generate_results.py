@@ -472,6 +472,25 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         hook_by_combo[combo]["overhead"] += overhead
         hook_by_combo[combo]["test_time"] += test_time
 
+    # ── Aggregate trap time/cost by (mode, model) for net-of-traps columns ──
+    trap_time_by_combo: dict[tuple, float] = defaultdict(float)
+    trap_cost_by_combo: dict[tuple, float] = defaultdict(float)
+    for t in trap_instances:
+        combo = (t["mode"], t["model"])
+        trap_time_by_combo[combo] += t["time_s"]
+        # Estimate cost proportional to time fraction of the run
+        if t["dur_s"] > 0 and t["cost"] > 0:
+            trap_cost_by_combo[combo] += t["time_s"] / t["dur_s"] * t["cost"]
+
+    for r in cmp_rows:
+        combo = (r["mode"], r["model"])
+        n = r["n"]
+        r["avg_trap_dur"] = trap_time_by_combo.get(combo, 0) / n
+        r["avg_trap_cost"] = trap_cost_by_combo.get(combo, 0) / n
+        r["avg_dur_net"] = r["avg_dur"] - r["avg_trap_dur"]
+        r["avg_cost_net"] = r["avg_cost"] - r["avg_trap_cost"]
+        r["total_cost_net"] = r["total_cost"] - trap_cost_by_combo.get(combo, 0)
+
     # ── Prompt cache data ──
     cache_data = []
     cache_read_rates = {s: COST_PER_MTOK[mid]["cache_read"] for s, mid in MODELS.items() if mid in COST_PER_MTOK}
@@ -510,11 +529,18 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
 
         by_dur = sorted(cmp_rows, key=lambda r: r["avg_dur"])
         by_cost = sorted(cmp_rows, key=lambda r: r["avg_cost"])
+        by_dur_net = sorted(cmp_rows, key=lambda r: r["avg_dur_net"])
+        by_cost_net = sorted(cmp_rows, key=lambda r: r["avg_cost_net"])
 
         lines.append(f"- **Fastest (avg):** {_fmt_combo(by_dur[0], 'avg_dur')}, then {_fmt_combo(by_dur[1], 'avg_dur')}")
         lines.append(f"- **Slowest (avg):** {_fmt_combo(by_dur[-1], 'avg_dur')}, then {_fmt_combo(by_dur[-2], 'avg_dur')}")
         lines.append(f"- **Cheapest (avg):** {_fmt_combo(by_cost[0], 'avg_cost', 'cost')}, then {_fmt_combo(by_cost[1], 'avg_cost', 'cost')}")
         lines.append(f"- **Most expensive (avg):** {_fmt_combo(by_cost[-1], 'avg_cost', 'cost')}, then {_fmt_combo(by_cost[-2], 'avg_cost', 'cost')}")
+        if any(r["avg_trap_dur"] > 0 for r in cmp_rows):
+            lines.append(f"- **Fastest net of traps:** {_fmt_combo(by_dur_net[0], 'avg_dur_net')}, then {_fmt_combo(by_dur_net[1], 'avg_dur_net')}")
+            lines.append(f"- **Slowest net of traps:** {_fmt_combo(by_dur_net[-1], 'avg_dur_net')}, then {_fmt_combo(by_dur_net[-2], 'avg_dur_net')}")
+            lines.append(f"- **Cheapest net of traps:** {_fmt_combo(by_cost_net[0], 'avg_cost_net', 'cost')}, then {_fmt_combo(by_cost_net[1], 'avg_cost_net', 'cost')}")
+            lines.append(f"- **Most expensive net of traps:** {_fmt_combo(by_cost_net[-1], 'avg_cost_net', 'cost')}, then {_fmt_combo(by_cost_net[-2], 'avg_cost_net', 'cost')}")
         lines.append("")
 
         if completed < total_runs and total_duration > 0 and completed > 0:
@@ -551,11 +577,11 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         if failed:
             lines.append("*(averages exclude failed/timed-out runs)*")
         lines.append("")
-        cmp_hdr = "| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |"
-        cmp_sep = "|------|-------|------|-------------|-----------|------------|-----------|----------|------------|"
+        cmp_hdr = "| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |"
+        cmp_sep = "|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|"
         def _fmt_cmp(r):
-            return (f"| {r['mode']} | {r['model']} | {r['n']} | {_dur(r['avg_dur'])} | {r['avg_lines']:.0f} "
-                    f"| {r['avg_errors']:.1f} | {r['avg_turns']:.0f} | ${r['avg_cost']:.2f} | ${r['total_cost']:.2f} |")
+            return (f"| {r['mode']} | {r['model']} | {r['n']} | {_dur(r['avg_dur'])} | {_dur(r['avg_dur_net'])} | {r['avg_lines']:.0f} "
+                    f"| {r['avg_errors']:.1f} | {r['avg_turns']:.0f} | ${r['avg_cost']:.2f} | ${r['avg_cost_net']:.2f} | ${r['total_cost']:.2f} |")
         lines.append(cmp_hdr)
         lines.append(cmp_sep)
         for r in cmp_rows:
@@ -563,6 +589,8 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         lines.append("")
         lines.extend(_emit_sorted_variants(cmp_hdr, cmp_sep, cmp_rows, [
             ("Sorted by avg cost (most expensive first)", "avg_cost", True),
+            ("Sorted by avg cost net of traps (most expensive first)", "avg_cost_net", True),
+            ("Sorted by avg duration net of traps (fastest first)", "avg_dur_net", False),
             ("Sorted by avg errors (fewest first)", "avg_errors", False),
             ("Sorted by avg lines (fewest first)", "avg_lines", False),
             ("Sorted by avg turns (fewest first)", "avg_turns", False),

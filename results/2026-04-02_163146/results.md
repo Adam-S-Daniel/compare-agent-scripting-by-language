@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-09 02:15:38 PM ET
+**Last updated:** 2026-04-09 02:23:25 PM ET
 
 **Status:** 144/144 runs completed, 0 remaining
 **Total cost so far:** $436.67
@@ -12,6 +12,10 @@
 - **Slowest (avg):** powershell-strict/opus — 52.8min, then csharp-script/opus — 40.2min
 - **Cheapest (avg):** default/sonnet — $1.23, then powershell-strict/sonnet — $1.55
 - **Most expensive (avg):** csharp-script/opus — $5.59, then powershell-strict/opus — $4.92
+- **Fastest net of traps:** default/opus — -18.0min, then powershell/opus — 0.9min
+- **Slowest net of traps:** powershell/sonnet — 22.5min, then csharp-script/sonnet — 21.3min
+- **Cheapest net of traps:** default/opus — $-7.52, then powershell-strict/opus — $-4.80
+- **Most expensive net of traps:** powershell-strict/sonnet — $0.96, then csharp-script/sonnet — $0.96
 
 ## Failed / Timed-Out Runs
 
@@ -28,79 +32,111 @@
 ## Comparison by Language/Model
 *(averages exclude failed/timed-out runs)*
 
-| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|-----------|------------|-----------|----------|------------|
-| csharp-script | opus | 16 | 40.2min | 10069 | 154.0 | 163 | $5.59 | $89.38 |
-| csharp-script | sonnet | 17 | 33.1min | 1154 | 59.9 | 86 | $2.77 | $47.12 |
-| default | opus | 18 | 30.8min | 745 | 149.4 | 148 | $3.99 | $71.84 |
-| default | sonnet | 18 | 16.7min | 728 | 35.5 | 51 | $1.23 | $22.08 |
-| powershell | opus | 17 | 30.1min | 764 | 101.4 | 112 | $3.65 | $61.98 |
-| powershell | sonnet | 18 | 31.1min | 634 | 46.9 | 63 | $1.63 | $29.38 |
-| powershell-strict | opus | 18 | 52.8min | 883 | 134.1 | 145 | $4.92 | $88.48 |
-| powershell-strict | sonnet | 17 | 21.9min | 783 | 32.5 | 48 | $1.55 | $26.42 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| csharp-script | opus | 16 | 40.2min | 3.8min | 10069 | 154.0 | 163 | $5.59 | $-3.47 | $89.38 |
+| csharp-script | sonnet | 17 | 33.1min | 21.3min | 1154 | 59.9 | 86 | $2.77 | $0.96 | $47.12 |
+| default | opus | 18 | 30.8min | -18.0min | 745 | 149.4 | 148 | $3.99 | $-7.52 | $71.84 |
+| default | sonnet | 18 | 16.7min | 10.0min | 728 | 35.5 | 51 | $1.23 | $0.35 | $22.08 |
+| powershell | opus | 17 | 30.1min | 0.9min | 764 | 101.4 | 112 | $3.65 | $-3.22 | $61.98 |
+| powershell | sonnet | 18 | 31.1min | 22.5min | 634 | 46.9 | 63 | $1.63 | $0.28 | $29.38 |
+| powershell-strict | opus | 18 | 52.8min | 14.3min | 883 | 134.1 | 145 | $4.92 | $-4.80 | $88.48 |
+| powershell-strict | sonnet | 17 | 21.9min | 16.7min | 783 | 32.5 | 48 | $1.55 | $0.96 | $26.42 |
 
 
 <details>
 <summary>Sorted by avg cost (most expensive first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|-----------|------------|-----------|----------|------------|
-| csharp-script | opus | 16 | 40.2min | 10069 | 154.0 | 163 | $5.59 | $89.38 |
-| powershell-strict | opus | 18 | 52.8min | 883 | 134.1 | 145 | $4.92 | $88.48 |
-| default | opus | 18 | 30.8min | 745 | 149.4 | 148 | $3.99 | $71.84 |
-| powershell | opus | 17 | 30.1min | 764 | 101.4 | 112 | $3.65 | $61.98 |
-| csharp-script | sonnet | 17 | 33.1min | 1154 | 59.9 | 86 | $2.77 | $47.12 |
-| powershell | sonnet | 18 | 31.1min | 634 | 46.9 | 63 | $1.63 | $29.38 |
-| powershell-strict | sonnet | 17 | 21.9min | 783 | 32.5 | 48 | $1.55 | $26.42 |
-| default | sonnet | 18 | 16.7min | 728 | 35.5 | 51 | $1.23 | $22.08 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| csharp-script | opus | 16 | 40.2min | 3.8min | 10069 | 154.0 | 163 | $5.59 | $-3.47 | $89.38 |
+| powershell-strict | opus | 18 | 52.8min | 14.3min | 883 | 134.1 | 145 | $4.92 | $-4.80 | $88.48 |
+| default | opus | 18 | 30.8min | -18.0min | 745 | 149.4 | 148 | $3.99 | $-7.52 | $71.84 |
+| powershell | opus | 17 | 30.1min | 0.9min | 764 | 101.4 | 112 | $3.65 | $-3.22 | $61.98 |
+| csharp-script | sonnet | 17 | 33.1min | 21.3min | 1154 | 59.9 | 86 | $2.77 | $0.96 | $47.12 |
+| powershell | sonnet | 18 | 31.1min | 22.5min | 634 | 46.9 | 63 | $1.63 | $0.28 | $29.38 |
+| powershell-strict | sonnet | 17 | 21.9min | 16.7min | 783 | 32.5 | 48 | $1.55 | $0.96 | $26.42 |
+| default | sonnet | 18 | 16.7min | 10.0min | 728 | 35.5 | 51 | $1.23 | $0.35 | $22.08 |
+
+</details>
+
+<details>
+<summary>Sorted by avg cost net of traps (most expensive first)</summary>
+
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| powershell-strict | sonnet | 17 | 21.9min | 16.7min | 783 | 32.5 | 48 | $1.55 | $0.96 | $26.42 |
+| csharp-script | sonnet | 17 | 33.1min | 21.3min | 1154 | 59.9 | 86 | $2.77 | $0.96 | $47.12 |
+| default | sonnet | 18 | 16.7min | 10.0min | 728 | 35.5 | 51 | $1.23 | $0.35 | $22.08 |
+| powershell | sonnet | 18 | 31.1min | 22.5min | 634 | 46.9 | 63 | $1.63 | $0.28 | $29.38 |
+| powershell | opus | 17 | 30.1min | 0.9min | 764 | 101.4 | 112 | $3.65 | $-3.22 | $61.98 |
+| csharp-script | opus | 16 | 40.2min | 3.8min | 10069 | 154.0 | 163 | $5.59 | $-3.47 | $89.38 |
+| powershell-strict | opus | 18 | 52.8min | 14.3min | 883 | 134.1 | 145 | $4.92 | $-4.80 | $88.48 |
+| default | opus | 18 | 30.8min | -18.0min | 745 | 149.4 | 148 | $3.99 | $-7.52 | $71.84 |
+
+</details>
+
+<details>
+<summary>Sorted by avg duration net of traps (fastest first)</summary>
+
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| default | opus | 18 | 30.8min | -18.0min | 745 | 149.4 | 148 | $3.99 | $-7.52 | $71.84 |
+| powershell | opus | 17 | 30.1min | 0.9min | 764 | 101.4 | 112 | $3.65 | $-3.22 | $61.98 |
+| csharp-script | opus | 16 | 40.2min | 3.8min | 10069 | 154.0 | 163 | $5.59 | $-3.47 | $89.38 |
+| default | sonnet | 18 | 16.7min | 10.0min | 728 | 35.5 | 51 | $1.23 | $0.35 | $22.08 |
+| powershell-strict | opus | 18 | 52.8min | 14.3min | 883 | 134.1 | 145 | $4.92 | $-4.80 | $88.48 |
+| powershell-strict | sonnet | 17 | 21.9min | 16.7min | 783 | 32.5 | 48 | $1.55 | $0.96 | $26.42 |
+| csharp-script | sonnet | 17 | 33.1min | 21.3min | 1154 | 59.9 | 86 | $2.77 | $0.96 | $47.12 |
+| powershell | sonnet | 18 | 31.1min | 22.5min | 634 | 46.9 | 63 | $1.63 | $0.28 | $29.38 |
 
 </details>
 
 <details>
 <summary>Sorted by avg errors (fewest first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|-----------|------------|-----------|----------|------------|
-| powershell-strict | sonnet | 17 | 21.9min | 783 | 32.5 | 48 | $1.55 | $26.42 |
-| default | sonnet | 18 | 16.7min | 728 | 35.5 | 51 | $1.23 | $22.08 |
-| powershell | sonnet | 18 | 31.1min | 634 | 46.9 | 63 | $1.63 | $29.38 |
-| csharp-script | sonnet | 17 | 33.1min | 1154 | 59.9 | 86 | $2.77 | $47.12 |
-| powershell | opus | 17 | 30.1min | 764 | 101.4 | 112 | $3.65 | $61.98 |
-| powershell-strict | opus | 18 | 52.8min | 883 | 134.1 | 145 | $4.92 | $88.48 |
-| default | opus | 18 | 30.8min | 745 | 149.4 | 148 | $3.99 | $71.84 |
-| csharp-script | opus | 16 | 40.2min | 10069 | 154.0 | 163 | $5.59 | $89.38 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| powershell-strict | sonnet | 17 | 21.9min | 16.7min | 783 | 32.5 | 48 | $1.55 | $0.96 | $26.42 |
+| default | sonnet | 18 | 16.7min | 10.0min | 728 | 35.5 | 51 | $1.23 | $0.35 | $22.08 |
+| powershell | sonnet | 18 | 31.1min | 22.5min | 634 | 46.9 | 63 | $1.63 | $0.28 | $29.38 |
+| csharp-script | sonnet | 17 | 33.1min | 21.3min | 1154 | 59.9 | 86 | $2.77 | $0.96 | $47.12 |
+| powershell | opus | 17 | 30.1min | 0.9min | 764 | 101.4 | 112 | $3.65 | $-3.22 | $61.98 |
+| powershell-strict | opus | 18 | 52.8min | 14.3min | 883 | 134.1 | 145 | $4.92 | $-4.80 | $88.48 |
+| default | opus | 18 | 30.8min | -18.0min | 745 | 149.4 | 148 | $3.99 | $-7.52 | $71.84 |
+| csharp-script | opus | 16 | 40.2min | 3.8min | 10069 | 154.0 | 163 | $5.59 | $-3.47 | $89.38 |
 
 </details>
 
 <details>
 <summary>Sorted by avg lines (fewest first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|-----------|------------|-----------|----------|------------|
-| powershell | sonnet | 18 | 31.1min | 634 | 46.9 | 63 | $1.63 | $29.38 |
-| default | sonnet | 18 | 16.7min | 728 | 35.5 | 51 | $1.23 | $22.08 |
-| default | opus | 18 | 30.8min | 745 | 149.4 | 148 | $3.99 | $71.84 |
-| powershell | opus | 17 | 30.1min | 764 | 101.4 | 112 | $3.65 | $61.98 |
-| powershell-strict | sonnet | 17 | 21.9min | 783 | 32.5 | 48 | $1.55 | $26.42 |
-| powershell-strict | opus | 18 | 52.8min | 883 | 134.1 | 145 | $4.92 | $88.48 |
-| csharp-script | sonnet | 17 | 33.1min | 1154 | 59.9 | 86 | $2.77 | $47.12 |
-| csharp-script | opus | 16 | 40.2min | 10069 | 154.0 | 163 | $5.59 | $89.38 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| powershell | sonnet | 18 | 31.1min | 22.5min | 634 | 46.9 | 63 | $1.63 | $0.28 | $29.38 |
+| default | sonnet | 18 | 16.7min | 10.0min | 728 | 35.5 | 51 | $1.23 | $0.35 | $22.08 |
+| default | opus | 18 | 30.8min | -18.0min | 745 | 149.4 | 148 | $3.99 | $-7.52 | $71.84 |
+| powershell | opus | 17 | 30.1min | 0.9min | 764 | 101.4 | 112 | $3.65 | $-3.22 | $61.98 |
+| powershell-strict | sonnet | 17 | 21.9min | 16.7min | 783 | 32.5 | 48 | $1.55 | $0.96 | $26.42 |
+| powershell-strict | opus | 18 | 52.8min | 14.3min | 883 | 134.1 | 145 | $4.92 | $-4.80 | $88.48 |
+| csharp-script | sonnet | 17 | 33.1min | 21.3min | 1154 | 59.9 | 86 | $2.77 | $0.96 | $47.12 |
+| csharp-script | opus | 16 | 40.2min | 3.8min | 10069 | 154.0 | 163 | $5.59 | $-3.47 | $89.38 |
 
 </details>
 
 <details>
 <summary>Sorted by avg turns (fewest first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|-----------|------------|-----------|----------|------------|
-| powershell-strict | sonnet | 17 | 21.9min | 783 | 32.5 | 48 | $1.55 | $26.42 |
-| default | sonnet | 18 | 16.7min | 728 | 35.5 | 51 | $1.23 | $22.08 |
-| powershell | sonnet | 18 | 31.1min | 634 | 46.9 | 63 | $1.63 | $29.38 |
-| csharp-script | sonnet | 17 | 33.1min | 1154 | 59.9 | 86 | $2.77 | $47.12 |
-| powershell | opus | 17 | 30.1min | 764 | 101.4 | 112 | $3.65 | $61.98 |
-| powershell-strict | opus | 18 | 52.8min | 883 | 134.1 | 145 | $4.92 | $88.48 |
-| default | opus | 18 | 30.8min | 745 | 149.4 | 148 | $3.99 | $71.84 |
-| csharp-script | opus | 16 | 40.2min | 10069 | 154.0 | 163 | $5.59 | $89.38 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| powershell-strict | sonnet | 17 | 21.9min | 16.7min | 783 | 32.5 | 48 | $1.55 | $0.96 | $26.42 |
+| default | sonnet | 18 | 16.7min | 10.0min | 728 | 35.5 | 51 | $1.23 | $0.35 | $22.08 |
+| powershell | sonnet | 18 | 31.1min | 22.5min | 634 | 46.9 | 63 | $1.63 | $0.28 | $29.38 |
+| csharp-script | sonnet | 17 | 33.1min | 21.3min | 1154 | 59.9 | 86 | $2.77 | $0.96 | $47.12 |
+| powershell | opus | 17 | 30.1min | 0.9min | 764 | 101.4 | 112 | $3.65 | $-3.22 | $61.98 |
+| powershell-strict | opus | 18 | 52.8min | 14.3min | 883 | 134.1 | 145 | $4.92 | $-4.80 | $88.48 |
+| default | opus | 18 | 30.8min | -18.0min | 745 | 149.4 | 148 | $3.99 | $-7.52 | $71.84 |
+| csharp-script | opus | 16 | 40.2min | 3.8min | 10069 | 154.0 | 163 | $5.59 | $-3.47 | $89.38 |
 
 </details>
 
