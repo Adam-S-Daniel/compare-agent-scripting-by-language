@@ -1,0 +1,64 @@
+name: Dependency License Checker
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  license-check:
+    name: License Compliance Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run unit tests
+        run: bun test tests/parser.test.ts tests/checker.test.ts tests/report.test.ts
+
+      - name: Check all-approved fixture
+        run: |
+          echo "--- Checking all-approved-package.json ---"
+          bun run src/main.ts fixtures/all-approved-package.json fixtures/license-config.json
+          echo "ALL_APPROVED_EXIT=0"
+
+      - name: Check has-denied fixture
+        run: |
+          echo "--- Checking has-denied-package.json ---"
+          set +e
+          bun run src/main.ts fixtures/has-denied-package.json fixtures/license-config.json
+          EXIT_CODE=$?
+          set -e
+          if [ "$EXIT_CODE" -eq 1 ]; then
+            echo "DENIED_EXIT=1"
+            echo "Correctly detected denied licenses"
+          else
+            echo "ERROR: Expected exit code 1 but got $EXIT_CODE"
+            exit 1
+          fi
+
+      - name: Check mixed requirements.txt fixture
+        run: |
+          echo "--- Checking mixed-requirements.txt ---"
+          set +e
+          bun run src/main.ts fixtures/mixed-requirements.txt fixtures/license-config.json
+          EXIT_CODE=$?
+          set -e
+          if [ "$EXIT_CODE" -eq 1 ]; then
+            echo "REQUIREMENTS_EXIT=1"
+            echo "Correctly detected denied licenses in requirements.txt"
+          else
+            echo "ERROR: Expected exit code 1 but got $EXIT_CODE"
+            exit 1
+          fi
