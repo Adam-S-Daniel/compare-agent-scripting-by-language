@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-09 11:44:54 AM ET
+**Last updated:** 2026-04-09 11:56:04 AM ET
 
 **Status:** 64/64 runs completed, 0 remaining
 **Total cost so far:** $84.25
@@ -8,17 +8,10 @@
 
 ## Observations
 
-- **Fastest (avg):** default/opus — 7.0min
-- **Slowest (avg):** powershell/sonnet — 21.0min
-- **Cheapest (avg):** bash/sonnet — $1.06
-- **Most expensive (avg):** powershell/sonnet — $1.67
-- **Fastest single run:** Environment Matrix Generator / default / opus — 4.6min
-- **Slowest single run:** Dependency License Checker / powershell / sonnet — 28.0min
-- **Most errors:** PR Label Assigner / typescript-bun / sonnet — 6 errors
-- **Fewest errors:** Semantic Version Bumper / default / opus — 0 errors
-
-- **Avg cost per run (opus):** $1.30
-- **Avg cost per run (sonnet):** $1.33
+- **Fastest (avg):** default/opus — 7.0min, then bash/opus — 8.7min
+- **Slowest (avg):** powershell/sonnet — 21.0min, then default/sonnet — 14.6min
+- **Cheapest (avg):** bash/sonnet — $1.06, then powershell/opus — $1.20
+- **Most expensive (avg):** powershell/sonnet — $1.67, then default/sonnet — $1.38
 
 ## Comparison by Language/Model
 

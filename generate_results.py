@@ -374,36 +374,23 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     # ==================================================================
     # OBSERVATIONS (at top of document)
     # ==================================================================
-    if len(successful) >= 2 and cmp_rows:
+    if len(successful) >= 2 and len(cmp_rows) >= 2:
         lines.append("## Observations")
         lines.append("")
 
-        fastest_combo = min(cmp_rows, key=lambda r: r["avg_dur"])
-        slowest_combo = max(cmp_rows, key=lambda r: r["avg_dur"])
-        cheapest_combo = min(cmp_rows, key=lambda r: r["avg_cost"])
-        priciest_combo = max(cmp_rows, key=lambda r: r["avg_cost"])
+        def _fmt_combo(r, field, fmt="dur"):
+            label = f"{r['mode']}/{r['model']}"
+            if fmt == "dur":
+                return f"{label} — {_dur(r[field])}"
+            return f"{label} — ${r[field]:.2f}"
 
-        lines.append(f"- **Fastest (avg):** {fastest_combo['mode']}/{fastest_combo['model']} — {_dur(fastest_combo['avg_dur'])}")
-        lines.append(f"- **Slowest (avg):** {slowest_combo['mode']}/{slowest_combo['model']} — {_dur(slowest_combo['avg_dur'])}")
-        lines.append(f"- **Cheapest (avg):** {cheapest_combo['mode']}/{cheapest_combo['model']} — ${cheapest_combo['avg_cost']:.2f}")
-        lines.append(f"- **Most expensive (avg):** {priciest_combo['mode']}/{priciest_combo['model']} — ${priciest_combo['avg_cost']:.2f}")
+        by_dur = sorted(cmp_rows, key=lambda r: r["avg_dur"])
+        by_cost = sorted(cmp_rows, key=lambda r: r["avg_cost"])
 
-        most_err = max(successful, key=lambda m: m["quality"]["error_count"])
-        least_err = min(successful, key=lambda m: m["quality"]["error_count"])
-        slowest_run = max(successful, key=lambda m: m["timing"]["grand_total_duration_ms"])
-        fastest_run = min(successful, key=lambda m: m["timing"]["grand_total_duration_ms"])
-
-        lines.append(f"- **Fastest single run:** {fastest_run['task_name']} / {fastest_run['language_mode']} / {fastest_run['model_short']} — {_dur(fastest_run['timing']['grand_total_duration_ms']/1000)}")
-        lines.append(f"- **Slowest single run:** {slowest_run['task_name']} / {slowest_run['language_mode']} / {slowest_run['model_short']} — {_dur(slowest_run['timing']['grand_total_duration_ms']/1000)}")
-        lines.append(f"- **Most errors:** {most_err['task_name']} / {most_err['language_mode']} / {most_err['model_short']} — {most_err['quality']['error_count']} errors")
-        lines.append(f"- **Fewest errors:** {least_err['task_name']} / {least_err['language_mode']} / {least_err['model_short']} — {least_err['quality']['error_count']} errors")
-        lines.append("")
-
-        for model in models_seen:
-            mm = [m for m in successful if m["model_short"] == model]
-            if mm:
-                avg_cost = sum(m["cost"]["total_cost_usd"] for m in mm) / len(mm)
-                lines.append(f"- **Avg cost per run ({model}):** ${avg_cost:.2f}")
+        lines.append(f"- **Fastest (avg):** {_fmt_combo(by_dur[0], 'avg_dur')}, then {_fmt_combo(by_dur[1], 'avg_dur')}")
+        lines.append(f"- **Slowest (avg):** {_fmt_combo(by_dur[-1], 'avg_dur')}, then {_fmt_combo(by_dur[-2], 'avg_dur')}")
+        lines.append(f"- **Cheapest (avg):** {_fmt_combo(by_cost[0], 'avg_cost', 'cost')}, then {_fmt_combo(by_cost[1], 'avg_cost', 'cost')}")
+        lines.append(f"- **Most expensive (avg):** {_fmt_combo(by_cost[-1], 'avg_cost', 'cost')}, then {_fmt_combo(by_cost[-2], 'avg_cost', 'cost')}")
         lines.append("")
 
         if completed < total_runs and total_duration > 0 and completed > 0:

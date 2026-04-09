@@ -1,6 +1,6 @@
 # compare-agent-scripting-by-language
 
-Benchmarks how well agents perform GitHub Actions scripting tasks when asked to use various languages (and when not asked to use a particular language). **[Latest results](results/2026-04-08_192624/results.md)** | [All results](#benchmark-runs)
+Benchmarks how well agents perform scripting tasks when asked to use various languages (and when not asked to use a particular language). **[Latest results](results/2026-04-08_192624/results.md)** | [All results](#benchmark-runs)
 
 ## Quick Start (Sprites or any VM)
 
