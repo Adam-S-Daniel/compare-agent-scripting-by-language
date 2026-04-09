@@ -127,14 +127,16 @@ def _detect_traps(events: list[dict], console: str, metrics: dict) -> list[dict]
             _add("bats-setup-issues", len(bs) * 15, f"{len(bs)} commands debugging bats setup")
 
     # 9. Fixture rework
-    fc = [c for c in bash_cmds if re.search(r"fixture|sample.*data|test.*data|mock.*data", c, re.I)]
+    # Use word-boundary patterns to avoid matching filenames like "test_database"
+    fc = [c for c in bash_cmds if re.search(
+        r"fixture|sample[_\-\s]data|mock[_\-\s]data|test[_\-\s]data\b", c, re.I)]
     if len(fc) >= 4:
         _add("fixture-rework", (len(fc) - 2) * 15, f"{len(fc)} commands creating/fixing fixtures")
 
     # 10. Repeated identical test reruns
     cmd_cnt: dict[str, int] = {}
     for c in bash_cmds:
-        if re.search(r"pytest|Invoke-Pester|bun\s+test|bats\s+", c):
+        if re.search(r"pytest|Invoke-Pester|bun\s+test|bats\s+|dotnet\s+test|unittest\b", c):
             key = re.sub(r"\s+2>&1.*|\s+\|.*", "", c)[:80]
             cmd_cnt[key] = cmd_cnt.get(key, 0) + 1
     for cmd, count in cmd_cnt.items():
@@ -148,14 +150,40 @@ def _detect_traps(events: list[dict], console: str, metrics: dict) -> list[dict]
         _add("actionlint-fix-cycles", af * 20, f"{len(ar)} actionlint runs, {af} failures")
 
     # 12. Permission/path errors in act container
-    pe = len(re.findall(r"Permission denied|chmod\s+\+x|not found.*act|ENOENT", console, re.I))
-    if pe >= 3:
-        _add("act-permission-path-errors", pe * 15, f"{pe} permission/path errors in act container")
+    # Only check when act was actually used in this run
+    used_act = any(re.search(r"\bact\s+(push|run|pull)\b", c) for c in bash_cmds)
+    if used_act:
+        # Look for errors that specifically indicate act container issues, not general chmod/ENOENT
+        pe = len(re.findall(
+            r"Permission denied.*/home/runner|ENOENT.*/home/runner|"
+            r"chmod\s+\+x.*&&.*act\b|"
+            r"\bact\b.*not found|No such file.*\.github/workflows",
+            console, re.I))
+        if pe >= 2:
+            _add("act-permission-path-errors", pe * 15, f"{pe} permission/path errors in act container")
 
     # 13. act fixture path issues
-    if (re.search(r"Config file not found|fixture.*not found|No such file.*fixture", console, re.I)
+    if used_act and (re.search(r"Config file not found|fixture.*not found|No such file.*fixture", console, re.I)
             and re.search(r"fixture.*path|copy.*fixture|missing.*fixture", all_text, re.I)):
         _add("act-fixture-paths", 60, "Fixtures not found inside act Docker container")
+
+    # 14. Permission denial retry loops (v1 harness issue — sandbox blocked commands)
+    denial_count = len(re.findall(
+        r"\[Result ERROR\].*(?:requires approval|haven't granted it yet|was blocked)", console))
+    if denial_count >= 5:
+        _add("permission-denial-loops", denial_count * 10,
+             f"{denial_count} commands blocked by CLI sandbox (permission denials)")
+
+    # 15. Dotnet SDK install loop (csharp-script agents stuck installing .NET)
+    if mode == "csharp-script":
+        dotnet_cmds = [c for c in bash_cmds if re.search(
+            r"dotnet-install|dot\.net/v1|Install-DotNet|dotnet\s+--version", c, re.I)]
+        dotnet_denials = len(re.findall(
+            r"dotnet.*requires approval|dotnet.*Permission denied", console, re.I))
+        total = len(dotnet_cmds) + dotnet_denials
+        if total >= 5:
+            _add("dotnet-install-loop", total * 12,
+                 f"{total} attempts to install/verify .NET SDK")
 
     return traps
 
@@ -527,6 +555,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
             "mid-run-module-restructure": "powershell",
             "ts-type-error-fix-cycles": "typescript-bun",
             "bats-setup-issues": "bash",
+            "dotnet-install-loop": "csharp-script",
         }
         trap_descriptions = {
             "act-push-debug-loops": "Agent ran `act push` more than twice, indicating repeated workflow debugging.",
@@ -542,6 +571,8 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
             "mid-run-module-restructure": "Agent restructured from a flat .ps1 script to a .psm1 module mid-run.",
             "bats-setup-issues": "Agent struggled with bats-core test framework setup or load helpers.",
             "act-fixture-paths": "Test fixtures not found inside the act Docker container due to path issues.",
+            "permission-denial-loops": "CLI sandbox blocked commands and agent retried instead of adapting (v1 harness issue).",
+            "dotnet-install-loop": "Agent stuck in loop trying to install/verify .NET SDK, blocked by CLI sandbox.",
         }
 
         trap_agg = defaultdict(list)

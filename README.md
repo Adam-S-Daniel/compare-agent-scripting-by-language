@@ -53,7 +53,6 @@ Each benchmark version defines a set of scripting tasks, language modes, and mod
 | 2026-04-08_180255 | ? | 0/? | — | [results.md](results/2026-04-08_180255/results.md) |
 | 2026-04-08_174516 | ? | 1/? | — | [results.md](results/2026-04-08_174516/results.md) |
 | 2026-04-08_170920 | ? | 4/? | — | [results.md](results/2026-04-08_170920/results.md) |
-| 2026-04-08_170824 | ? | 0/? | — | — |
 | 2026-04-08_161536 | ? | 7/? | — | [results.md](results/2026-04-08_161536/results.md) |
 | 2026-04-08_114024 | ? | 3/? | — | [results.md](results/2026-04-08_114024/results.md) |
 | 2026-04-08_113116 | ? | 1/? | — | [results.md](results/2026-04-08_113116/results.md) |
