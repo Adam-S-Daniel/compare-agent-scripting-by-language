@@ -466,21 +466,23 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         fires = m.get("hooks", {}).get("hook_fires", 0)
         gross_saved = caught * TEST_RUN_COST_S.get(mode, 10)
         overhead = fires * HOOK_OVERHEAD_S.get(mode, 0.5)
-        # Prefer recomputing test time from all_tool_uses (full list) if available,
-        # falling back to the pre-computed test_duration_ms (which may be stale or
-        # computed with older patterns).
+        # Only include test time if we have real durations from all_tool_uses.
+        # Older runs that only have top-5/10 slowest_tool_uses produce a lower
+        # bound that's misleading — omit rather than show bad data.
         all_uses = m.get("tool_use_timing", {}).get("all_tool_uses", [])
-        if all_uses:
-            test_time = _categorize_tool_time(all_uses)["test_duration_ms"] / 1000
-        else:
-            test_time = m.get("tool_use_timing", {}).get("test_duration_ms", 0) / 1000
+        has_real_test_time = bool(all_uses)
+        test_time = _categorize_tool_time(all_uses)["test_duration_ms"] / 1000 if all_uses else 0
         if combo not in hook_by_combo:
-            hook_by_combo[combo] = {"fires": 0, "caught": 0, "gross_saved": 0, "overhead": 0, "test_time": 0}
+            hook_by_combo[combo] = {"fires": 0, "caught": 0, "gross_saved": 0, "overhead": 0,
+                                     "test_time": 0, "has_real_test_time": True}
         hook_by_combo[combo]["fires"] += fires
         hook_by_combo[combo]["caught"] += caught
         hook_by_combo[combo]["gross_saved"] += gross_saved
         hook_by_combo[combo]["overhead"] += overhead
-        hook_by_combo[combo]["test_time"] += test_time
+        if has_real_test_time:
+            hook_by_combo[combo]["test_time"] += test_time
+        else:
+            hook_by_combo[combo]["has_real_test_time"] = False
 
     # ── Aggregate trap time/cost by (mode, model) for net-of-traps columns ──
     trap_time_by_combo: dict[tuple, float] = defaultdict(float)
@@ -623,14 +625,24 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     lines.append("")
     lines.append("Each hook-caught error avoids one test run that would otherwise have been needed to discover it.")
     lines.append("Every hook fire (hit or miss) costs execution time for the syntax/type checker.")
-    lines.append("Test Run Time is recomputed from all tool calls when available; otherwise a lower bound from the top 10.")
     lines.append("")
-    hook_hdr = ("| Mode | Model | Fires | Caught | Rate "
-                "| Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time "
-                "| Test Run Time | % of Test Time Saved |")
-    hook_sep = ("|------|-------|-------|--------|------"
-                "|------------|-----------|----------|-----------|-----------|-----------|"
-                "---------------|----------------------|")
+
+    # Determine if we have real test time data (all_tool_uses with durations)
+    has_test_time = all(hs.get("has_real_test_time", False) for hs in hook_by_combo.values() if hs.get("fires", 0) > 0)
+
+    if has_test_time:
+        hook_hdr = ("| Mode | Model | Fires | Caught | Rate "
+                    "| Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time "
+                    "| Test Run Time | % of Test Time Saved |")
+        hook_sep = ("|------|-------|-------|--------|------"
+                    "|------------|-----------|----------|-----------|-----------|-----------|"
+                    "---------------|----------------------|")
+    else:
+        hook_hdr = ("| Mode | Model | Fires | Caught | Rate "
+                    "| Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time |")
+        hook_sep = ("|------|-------|-------|--------|------"
+                    "|------------|-----------|----------|-----------|-----------|-----------|")
+
     hook_rows = []
     for mode in modes_seen:
         for model in models_seen:
@@ -651,12 +663,16 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
                 "net": net, "net_pct": net / total_duration * 100 if total_duration else 0,
                 "test_time": test_t, "test_time_pct": net / test_t * 100 if test_t else 0,
             })
+
     def _fmt_hook(r):
-        return (f"| {r['mode']} | {r['model']} | {r['fires']} | {r['caught']} | {r['rate']:.1f}% "
+        base = (f"| {r['mode']} | {r['model']} | {r['fires']} | {r['caught']} | {r['rate']:.1f}% "
                 f"| {_dur(r['gross'])} | {r['gross_pct']:.1f}% "
                 f"| {_dur(r['overhead'])} | {r['overhead_pct']:.1f}% "
-                f"| {_dur(r['net'])} | {r['net_pct']:.1f}% "
-                f"| {_dur(r['test_time'])} | {r['test_time_pct']:.1f}% |")
+                f"| {_dur(r['net'])} | {r['net_pct']:.1f}%")
+        if has_test_time:
+            return base + f" | {_dur(r['test_time'])} | {r['test_time_pct']:.1f}% |"
+        return base + " |"
+
     lines.append(hook_hdr)
     lines.append(hook_sep)
     for r in hook_rows:
@@ -668,22 +684,24 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     total_net = total_gross - total_overhead
     total_test_time = sum(r["test_time"] for r in hook_rows)
     if total_hook_fires:
-        lines.append(
-            f"| **Total** | | **{total_hook_fires}** | **{total_hook_caught}** "
-            f"| **{total_hook_caught/total_hook_fires*100:.1f}%** "
-            f"| **{_dur(total_gross)}** | **{total_gross/total_duration*100:.1f}%** "
-            f"| **{_dur(total_overhead)}** | **{total_overhead/total_duration*100:.1f}%** "
-            f"| **{_dur(total_net)}** | **{total_net/total_duration*100:.1f}%** "
-            f"| **{_dur(total_test_time)}** "
-            f"| **{total_net/total_test_time*100:.1f}%** |" if total_test_time else
-            f"| **—** | **—** |"
-        )
+        base = (f"| **Total** | | **{total_hook_fires}** | **{total_hook_caught}** "
+                f"| **{total_hook_caught/total_hook_fires*100:.1f}%** "
+                f"| **{_dur(total_gross)}** | **{total_gross/total_duration*100:.1f}%** "
+                f"| **{_dur(total_overhead)}** | **{total_overhead/total_duration*100:.1f}%** "
+                f"| **{_dur(total_net)}** | **{total_net/total_duration*100:.1f}%**")
+        if has_test_time and total_test_time:
+            lines.append(base + f" | **{_dur(total_test_time)}** | **{total_net/total_test_time*100:.1f}%** |")
+        else:
+            lines.append(base + " |" if not has_test_time else base + " | **—** | **—** |")
     lines.append("")
-    lines.extend(_emit_sorted_variants(hook_hdr, hook_sep, hook_rows, [
+
+    sort_specs = [
         ("Sorted by net saved (most first)", "net", True),
-        ("Sorted by net % of test time (most first)", "test_time_pct", True),
         ("Sorted by catch rate (highest first)", "rate", True),
-    ], _fmt_hook))
+    ]
+    if has_test_time:
+        sort_specs.insert(1, ("Sorted by net % of test time saved (most first)", "test_time_pct", True))
+    lines.extend(_emit_sorted_variants(hook_hdr, hook_sep, hook_rows, sort_specs, _fmt_hook))
     lines.append("")
 
     # ── Trap Analysis by Language/Model/Category ──
