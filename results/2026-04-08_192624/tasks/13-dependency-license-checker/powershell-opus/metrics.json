@@ -1,0 +1,311 @@
+{
+  "task_id": "13-dependency-license-checker",
+  "task_name": "Dependency License Checker",
+  "task_category": "GitHub Actions / Compliance",
+  "language_mode": "powershell",
+  "language_chosen": "powershell",
+  "language_breakdown": {
+    "powershell": 100.0
+  },
+  "interpreter_versions": {},
+  "powershell_version": "",
+  "dotnet_version": "",
+  "model": "claude-opus-4-6",
+  "model_short": "opus",
+  "claude_code_version": "2.1.97",
+  "instructions_version": "v3",
+  "timestamp_start": "2026-04-09T02:45:21.563741+00:00",
+  "timestamp_end": "2026-04-09T02:56:26.546182+00:00",
+  "prompt_text": "You are completing a scripting task. You MUST use PowerShell as your implementation language.\n\nTASK: Parse a dependency manifest (package.json, requirements.txt, or similar), extract dependency names and versions, check each against an allow-list and deny-list of licenses (provided as config), and generate a compliance report listing each dependency's license status (approved, denied, unknown). Mock the license lookup for testing.\n\nREQUIREMENTS:\n1. Use red/green TDD methodology: write a failing test FIRST, then write the minimum code to make it pass, then refactor. Repeat for each piece of functionality.\n2. Create mocks and test fixtures as necessary for testability. Use Pester as the testing framework.\n3. All tests must be runnable with `Invoke-Pester` and must pass at the end.\n4. Include clear comments explaining your approach.\n5. Handle errors gracefully with meaningful error messages.\n\nCreate your solution in the current working directory. Start by writing your first failing test.\n\nGITHUB ACTIONS REQUIREMENT:\nCreate a GitHub Actions workflow file at .github/workflows/dependency-license-checker.yml that uses\nyour script in a real CI/CD pipeline. The workflow must:\n- Use appropriate trigger events (push, pull_request, schedule, workflow_dispatch, etc.)\n- Reference your script correctly\n- Pass actionlint validation (valid YAML, valid action references, correct syntax)\n- Include appropriate permissions, environment variables, and job dependencies\n- Actually run successfully when executed locally with `act` (nektos/act)\n\nDesign your workflow so its steps work in an isolated Docker container \u2014 use\n`actions/checkout@v4`, install dependencies your script needs, and run it.\nAvoid steps requiring external services or secrets without sensible defaults.\n\nWORKFLOW VALIDATION:\nRun `actionlint .github/workflows/dependency-license-checker.yml` and fix any errors. actionlint is\npre-installed. Iterate until it passes cleanly.\n\nALL TESTS MUST RUN THROUGH ACT:\nEvery single test case must execute through the GitHub Actions workflow via `act`.\nDo NOT test your script directly \u2014 all testing goes through the pipeline.\n\nStructure your workflow to accept test fixture data and produce verifiable output.\nYour test harness must:\n1. For each test case: set up a temp git repo with your project files + that case's\n   fixture data, run `act push --rm`, capture the output\n2. Save all act output to `act-result.txt` in the current working directory (append\n   each test case's output, clearly delimited)\n3. Assert that act exited with code 0 for each case\n4. Parse the act output and assert on EXACT EXPECTED VALUES \u2014 not just that output\n   appeared, but that it matches the known-good result for that test case's input.\n   For example: if your workflow bumps version 1.1.0 with a feat commit, assert\n   the output contains exactly \"1.2.0\", not just \"a version number\"\n5. Assert every job shows \"Job succeeded\"\n\nThe `act-result.txt` file MUST exist when done. It is a required artifact.\n`act` and Docker are pre-installed.\n\nWORKFLOW STRUCTURE TESTS (also required):\n- Parse the YAML and check expected structure (triggers, jobs, steps)\n- Verify the workflow references your script files correctly (paths exist)\n- Verify actionlint passes (assert exit code 0)\n",
+  "exit_code": 0,
+  "session": {
+    "session_id": "637be715-65a9-417d-9ff2-7830fbccf2fb",
+    "stop_reason": "end_turn",
+    "terminal_reason": "completed",
+    "fast_mode_state": "off",
+    "service_tier": "standard",
+    "speed": "standard",
+    "inference_geo": "",
+    "context_window": 200000,
+    "max_output_tokens": 64000,
+    "permission_mode": "bypassPermissions",
+    "output_style": "default",
+    "tools_available_count": 24,
+    "mcp_servers": [],
+    "permission_denials": []
+  },
+  "model_usage_detail": {
+    "claude-opus-4-6": {
+      "inputTokens": 37,
+      "outputTokens": 26783,
+      "cacheReadInputTokens": 1175293,
+      "cacheCreationInputTokens": 46066,
+      "webSearchRequests": 0,
+      "costUSD": 1.5453190000000003,
+      "contextWindow": 200000,
+      "maxOutputTokens": 64000
+    }
+  },
+  "effort_level": null,
+  "timing": {
+    "grand_total_duration_ms": 664982,
+    "total_api_duration_ms": 407402,
+    "total_execution_duration_ms": 256348,
+    "num_turns": 38
+  },
+  "tokens": {
+    "input_tokens": 37,
+    "output_tokens": 26783,
+    "cache_read_tokens": 1175293,
+    "cache_creation_tokens": 46066,
+    "total_context_consumed": 1221396,
+    "compaction_count": 0
+  },
+  "cost": {
+    "total_cost_usd": 1.5453190000000003,
+    "assumed_input_cost_per_mtok": 15.0,
+    "assumed_output_cost_per_mtok": 75.0,
+    "assumed_cache_read_cost_per_mtok": 1.5,
+    "assumed_cache_write_cost_per_mtok": 18.75
+  },
+  "code_metrics": {
+    "total_lines": 1292,
+    "total_tokens_estimate": 13314,
+    "file_count": 10,
+    "files": [
+      "DependencyLicenseChecker.Tests.ps1",
+      "DependencyLicenseChecker.ps1",
+      "act-result.txt",
+      "license-config.json",
+      "license-db.json",
+      "run-tests.ps1",
+      ".github/workflows/dependency-license-checker.yml",
+      "test-fixtures/approved-requirements.txt",
+      "test-fixtures/denied-package.json",
+      "test-fixtures/mixed-package.json"
+    ]
+  },
+  "quality": {
+    "tests_pass": null,
+    "error_count": 1,
+    "error_details": [
+      "Exit code 126\nbash: line 1: /opt/ps/pwsh: Permission denied"
+    ],
+    "actionlint_pass": true,
+    "actionlint_errors": 0,
+    "actionlint_results": [
+      {
+        "file": ".github/workflows/dependency-license-checker.yml",
+        "passed": true,
+        "errors": ""
+      }
+    ],
+    "act_result_txt_exists": true,
+    "act_result_txt_size": 17300,
+    "areas_of_difficulty": [],
+    "observations": ""
+  },
+  "tool_install": {
+    "tool_install_duration_ms": 71061,
+    "tools_installed": [
+      "docker run --rm catthehacker/ubuntu:act-latest bash -c \"apt-get update -qq && apt-get install -y -qq wget libicu74 >/dev/null 2>&1 && wget -q 'https://github.com/PowerShell/PowerShell/releases/download/v7.4.6/powershell-7.4.6-linux-x64.tar.gz' -O /tmp/ps.tar.gz && mkdir -p /opt/ps && tar zxf /tmp/ps.tar.gz -C /opt/ps && /opt/ps/pwsh -c 'Write-Host \\\"PowerShell OK: \\$(\\$PSVersionTable.PSVersion)\\\"'\" 2>&1",
+      "docker run --rm catthehacker/ubuntu:act-latest bash -c \"apt-get update -qq && apt-get install -y -qq wget libicu74 >/dev/null 2>&1 && wget -q 'https://github.com/PowerShell/PowerShell/releases/download/v7.4.6/powershell-7.4.6-linux-x64.tar.gz' -O /tmp/ps.tar.gz && mkdir -p /opt/ps && tar zxf /tmp/ps.tar.gz -C /opt/ps && chmod +x /opt/ps/pwsh && /opt/ps/pwsh -c 'Write-Host \\\"PowerShell OK: \\$(\\$PSVersionTable.PSVersion)\\\"'\" 2>&1",
+      "docker run --rm catthehacker/ubuntu:act-latest bash -c \"apt-get update -qq && apt-get install -y -qq wget libicu74 >/dev/null 2>&1 && wget -q 'https://github.com/PowerShell/PowerShell/releases/download/v7.4.6/powershell-7.4.6-linux-x64.tar.gz' -O /tmp/ps.tar.gz && mkdir -p /opt/ps && tar zxf /tmp/ps.tar.gz -C /opt/ps && chmod +x /opt/ps/pwsh && ln -sf /opt/ps/pwsh /usr/bin/pwsh && pwsh -c 'Install-Module -Name Pester -MinimumVersion 5.0 -Force -Scope CurrentUser; Import-Module Pester; Write-Host \\\"Pester OK: \\$((Get-Module Pester).Version)\\\"'\" 2>&1"
+    ],
+    "install_commands_count": 3
+  },
+  "tool_use_timing": {
+    "total_tool_uses": 37,
+    "total_tool_duration_ms": 258027,
+    "bash_tool_uses": 19,
+    "bash_total_ms": 255417,
+    "slowest_tool_uses": [
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -File run-tests.ps1 2>&1",
+        "duration_ms": 129889,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /tmp && rm -rf act-test-quick && mkdir act-test-quick && cd act-test-quick && git init -q && git checkout -b main 2>/dev/null && cp -r /home/passp/repos/compare-agent-scripting-by-language/workspac",
+        "duration_ms": 45468,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "docker run --rm catthehacker/ubuntu:act-latest bash -c \"apt-get update -qq && apt-get install -y -qq wget libicu74 >/dev/null 2>&1 && wget -q 'https://github.com/PowerShell/PowerShell/releases/downloa",
+        "duration_ms": 30162,
+        "is_error": false,
+        "is_install": true
+      },
+      {
+        "tool_name": "Bash",
+        "command": "docker run --rm catthehacker/ubuntu:act-latest bash -c \"apt-get update -qq && apt-get install -y -qq wget libicu74 >/dev/null 2>&1 && wget -q 'https://github.com/PowerShell/PowerShell/releases/downloa",
+        "duration_ms": 21455,
+        "is_error": true,
+        "is_install": true
+      },
+      {
+        "tool_name": "Bash",
+        "command": "docker run --rm catthehacker/ubuntu:act-latest bash -c \"apt-get update -qq && apt-get install -y -qq wget libicu74 >/dev/null 2>&1 && wget -q 'https://github.com/PowerShell/PowerShell/releases/downloa",
+        "duration_ms": 19444,
+        "is_error": false,
+        "is_install": true
+      }
+    ]
+  },
+  "hooks": {
+    "hook_fires": 9,
+    "hook_errors_caught": 0,
+    "hook_failures": 0,
+    "hook_events": [
+      {
+        "subtype": "hook_started",
+        "hook_id": "695ae553-8d57-473f-aa74-7bbf3591c8e5",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "695ae553-8d57-473f-aa74-7bbf3591c8e5",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "76e3a0dd-3707-4936-b526-9785e96f8d3f",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "76e3a0dd-3707-4936-b526-9785e96f8d3f",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "ff0d6ebe-d49e-4129-9144-e663b9bd31fa",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "ff0d6ebe-d49e-4129-9144-e663b9bd31fa",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "eae113dc-4b28-43f1-8236-7bce2e535da6",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "eae113dc-4b28-43f1-8236-7bce2e535da6",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "e0c49c01-6bc1-441b-b7ac-abe26abfd367",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "e0c49c01-6bc1-441b-b7ac-abe26abfd367",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "788c1600-d168-4687-a832-6edb8b29613a",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "788c1600-d168-4687-a832-6edb8b29613a",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "791303aa-556e-4c80-93c3-22f32bf7ce73",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "791303aa-556e-4c80-93c3-22f32bf7ce73",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "298df7bd-9657-4c69-8b4c-d7a0044845a6",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "298df7bd-9657-4c69-8b4c-d7a0044845a6",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "36e52cf6-aa8a-42af-9ce7-dc94a4aa26ae",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "36e52cf6-aa8a-42af-9ce7-dc94a4aa26ae",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  }
+}
