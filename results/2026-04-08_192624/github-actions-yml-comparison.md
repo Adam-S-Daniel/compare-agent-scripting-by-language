@@ -149,12 +149,20 @@ Sonnet treats the workflow as a comprehensive CI pipeline (lint -> test -> run).
 - **Bash:** Zero installation needed. This contributes to bash being a fast mode.
 
 ### Matrix Strategies (rare)
-Only 4/64 workflows use `strategy.matrix`. When used:
+Only 5/64 workflows use `strategy.matrix`. When used:
 - bash-opus (task 11): 5 test cases in a matrix
 - default-opus (task 14): single matrix
 - ts-bun-opus (tasks 11, 14): 8 fixture test cases in matrix
+- ts-bun-sonnet (task 13): 3 fixtures parameterized via matrix with `fail-fast: false`
 
-Sonnet prefers explicit parallel jobs over matrix (more descriptive job names but more YAML).
+Sonnet prefers explicit parallel jobs over matrix (more descriptive job names but more YAML), with the lone exception above.
+
+### PowerShell Installation Methods
+Opus and Sonnet consistently differ in how they install pwsh:
+- **Opus:** Downloads a tar.gz from GitHub releases, extracts, and symlinks to `/usr/bin/pwsh` -- manual but idempotent
+- **Sonnet:** Uses the standard Microsoft APT repo (`packages-microsoft-prod.deb` + `apt-get install powershell`) -- conventional but heavier
+
+This split holds across tasks 11-18.
 
 ---
 
@@ -162,12 +170,16 @@ Sonnet prefers explicit parallel jobs over matrix (more descriptive job names bu
 
 | Metric | File | Details |
 |--------|------|---------|
-| **Smallest workflow** | typescript-bun-opus task 17 | 29 lines, 1 job, 4 steps |
-| **Largest workflow** | powershell-sonnet task 14 | 269 lines, 5 jobs |
-| **Most jobs** | bash-opus task 17 | 8 jobs (validate -> 6 test jobs -> summary) |
+| **Smallest workflow** | powershell-sonnet task 16 | 38 lines, 1 job, 3 steps (skeleton dispatcher) |
+| **2nd smallest** | powershell-opus task 15 | 27 lines, 1 job, 2 steps (install pwsh + run script) |
+| **Largest workflow** | bash-opus task 18 | 286 lines, 7 jobs with jq assertions |
+| **Tied largest** | bash-sonnet task 16 / default-opus task 16 | 286 lines each (different structures) |
+| **Most jobs** | bash-sonnet task 16 | 9 jobs (validate -> 7 test jobs -> summary) |
 | **Fewest jobs** | All powershell-opus | Avg 1.0 -- every PS-opus workflow is single-job |
 | **Most elaborate testing** | bash-sonnet task 11 | 7 jobs: shellcheck + bats unit tests + 4 integration jobs + summary |
-| **Most minimal** | default-opus task 17 | 35 lines: checkout, setup-python, validate, run |
+| **Most minimal useful** | default-opus task 17 | 35 lines: checkout, setup-python, validate, run |
+| **Self-inspecting workflow** | default-sonnet task 15 | Imports PyYAML to validate its own workflow structure |
+| **Only `type: choice`** | default-sonnet task 18 | Uses choice input type for output_format dispatch |
 
 ---
 
