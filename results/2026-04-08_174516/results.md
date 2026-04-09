@@ -1,10 +1,53 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-09 10:36:04 AM ET
+**Last updated:** 2026-04-09 11:44:54 AM ET
 
 **Status:** 1/1 runs completed, 0 remaining
 **Total cost so far:** $1.07
-**Total agent time so far:** 326s (5.4 min)
+**Total agent time so far:** 5.4 min
+
+## Comparison by Language/Model
+
+| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
+|------|-------|------|-------------|-----------|------------|-----------|----------|------------|
+| default | opus | 1 | 5.4min | 1246 | 2.0 | 32 | $1.07 | $1.07 |
+
+
+<details>
+<summary>Sorted by avg cost (most expensive first)</summary>
+
+| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
+|------|-------|------|-------------|-----------|------------|-----------|----------|------------|
+| default | opus | 1 | 5.4min | 1246 | 2.0 | 32 | $1.07 | $1.07 |
+
+</details>
+
+<details>
+<summary>Sorted by avg errors (fewest first)</summary>
+
+| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
+|------|-------|------|-------------|-----------|------------|-----------|----------|------------|
+| default | opus | 1 | 5.4min | 1246 | 2.0 | 32 | $1.07 | $1.07 |
+
+</details>
+
+<details>
+<summary>Sorted by avg lines (fewest first)</summary>
+
+| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
+|------|-------|------|-------------|-----------|------------|-----------|----------|------------|
+| default | opus | 1 | 5.4min | 1246 | 2.0 | 32 | $1.07 | $1.07 |
+
+</details>
+
+<details>
+<summary>Sorted by avg turns (fewest first)</summary>
+
+| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
+|------|-------|------|-------------|-----------|------------|-----------|----------|------------|
+| default | opus | 1 | 5.4min | 1246 | 2.0 | 32 | $1.07 | $1.07 |
+
+</details>
 
 ## Savings Analysis
 
@@ -29,25 +72,16 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 </details>
 
 <details>
+<summary>Sorted by net % of test time (most first)</summary>
+
+| Mode | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time | Test Run Time | % of Test Time |
+|------|-------|-------|--------|------|------------|-----------|----------|-----------|-----------|-----------|---------------|----------------|
+| default | opus | 11 | 1 | 9.1% | 0.1min | 2.5% | 0.1min | 1.7% | 0.0min | 0.8% | 0.0min | 0.0% |
+
+</details>
+
+<details>
 <summary>Sorted by catch rate (highest first)</summary>
-
-| Mode | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time | Test Run Time | % of Test Time |
-|------|-------|-------|--------|------|------------|-----------|----------|-----------|-----------|-----------|---------------|----------------|
-| default | opus | 11 | 1 | 9.1% | 0.1min | 2.5% | 0.1min | 1.7% | 0.0min | 0.8% | 0.0min | 0.0% |
-
-</details>
-
-<details>
-<summary>Sorted by overhead (most first)</summary>
-
-| Mode | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time | Test Run Time | % of Test Time |
-|------|-------|-------|--------|------|------------|-----------|----------|-----------|-----------|-----------|---------------|----------------|
-| default | opus | 11 | 1 | 9.1% | 0.1min | 2.5% | 0.1min | 1.7% | 0.0min | 0.8% | 0.0min | 0.0% |
-
-</details>
-
-<details>
-<summary>Sorted by test run time (most first)</summary>
 
 | Mode | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time | Test Run Time | % of Test Time |
 |------|-------|-------|--------|------|------------|-----------|----------|-----------|-----------|-----------|---------------|----------------|
@@ -68,10 +102,53 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Task | Mode | Model | Duration | Turns | Lines | Errors | Cost | Language | Status |
 |------|------|-------|----------|-------|-------|--------|------|----------|--------|
-| Semantic Version Bumper | default | opus | 326s | 32 | 1246 | 2 | $1.07 | python | ok |
+| Semantic Version Bumper | default | opus | 5.4min | 32 | 1246 | 2 | $1.07 | python | ok |
 
-## Observations
 
+<details>
+<summary>Sorted by cost (most expensive first)</summary>
+
+| Task | Mode | Model | Duration | Turns | Lines | Errors | Cost | Language | Status |
+|------|------|-------|----------|-------|-------|--------|------|----------|--------|
+| Semantic Version Bumper | default | opus | 5.4min | 32 | 1246 | 2 | $1.07 | python | ok |
+
+</details>
+
+<details>
+<summary>Sorted by duration (longest first)</summary>
+
+| Task | Mode | Model | Duration | Turns | Lines | Errors | Cost | Language | Status |
+|------|------|-------|----------|-------|-------|--------|------|----------|--------|
+| Semantic Version Bumper | default | opus | 5.4min | 32 | 1246 | 2 | $1.07 | python | ok |
+
+</details>
+
+<details>
+<summary>Sorted by errors (fewest first)</summary>
+
+| Task | Mode | Model | Duration | Turns | Lines | Errors | Cost | Language | Status |
+|------|------|-------|----------|-------|-------|--------|------|----------|--------|
+| Semantic Version Bumper | default | opus | 5.4min | 32 | 1246 | 2 | $1.07 | python | ok |
+
+</details>
+
+<details>
+<summary>Sorted by lines (fewest first)</summary>
+
+| Task | Mode | Model | Duration | Turns | Lines | Errors | Cost | Language | Status |
+|------|------|-------|----------|-------|-------|--------|------|----------|--------|
+| Semantic Version Bumper | default | opus | 5.4min | 32 | 1246 | 2 | $1.07 | python | ok |
+
+</details>
+
+<details>
+<summary>Sorted by turns (fewest first)</summary>
+
+| Task | Mode | Model | Duration | Turns | Lines | Errors | Cost | Language | Status |
+|------|------|-------|----------|-------|-------|--------|------|----------|--------|
+| Semantic Version Bumper | default | opus | 5.4min | 32 | 1246 | 2 | $1.07 | python | ok |
+
+</details>
 
 ---
-*Generated by runner.py, instructions version v3*
+*Generated by generate_results.py, instructions version v3*

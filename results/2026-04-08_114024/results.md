@@ -1,61 +1,74 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-09 10:36:04 AM ET
+**Last updated:** 2026-04-09 11:44:54 AM ET
 
 **Status:** 3/3 runs completed, 0 remaining
 **Total cost so far:** $2.91
-**Total agent time so far:** 878s (14.6 min)
+**Total agent time so far:** 14.6 min
+
+## Observations
+
+- **Fastest (avg):** bash/opus — 2.4min
+- **Slowest (avg):** powershell/opus — 7.3min
+- **Cheapest (avg):** bash/opus — $0.51
+- **Most expensive (avg):** powershell/opus — $1.48
+- **Fastest single run:** Semantic Version Bumper / bash / opus — 2.4min
+- **Slowest single run:** Semantic Version Bumper / powershell / opus — 7.3min
+- **Most errors:** Semantic Version Bumper / bash / opus — 1 errors
+- **Fewest errors:** Semantic Version Bumper / powershell / opus — 0 errors
+
+- **Avg cost per run (opus):** $0.97
 
 ## Comparison by Language/Model
 
 | Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
 |------|-------|------|-------------|-----------|------------|-----------|----------|------------|
-| bash | opus | 1 | 144s | 420 | 1.0 | 22 | $0.51 | $0.51 |
-| default | opus | 1 | 297s | 692 | 1.0 | 39 | $0.92 | $0.92 |
-| powershell | opus | 1 | 438s | 692 | 0.0 | 54 | $1.48 | $1.48 |
+| bash | opus | 1 | 2.4min | 420 | 1.0 | 22 | $0.51 | $0.51 |
+| default | opus | 1 | 4.9min | 692 | 1.0 | 39 | $0.92 | $0.92 |
+| powershell | opus | 1 | 7.3min | 692 | 0.0 | 54 | $1.48 | $1.48 |
 
 
 <details>
-<summary>Sorted by avg duration (fastest first)</summary>
+<summary>Sorted by avg cost (most expensive first)</summary>
 
 | Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
 |------|-------|------|-------------|-----------|------------|-----------|----------|------------|
-| bash | opus | 1 | 144s | 420 | 1.0 | 22 | $0.51 | $0.51 |
-| default | opus | 1 | 297s | 692 | 1.0 | 39 | $0.92 | $0.92 |
-| powershell | opus | 1 | 438s | 692 | 0.0 | 54 | $1.48 | $1.48 |
+| powershell | opus | 1 | 7.3min | 692 | 0.0 | 54 | $1.48 | $1.48 |
+| default | opus | 1 | 4.9min | 692 | 1.0 | 39 | $0.92 | $0.92 |
+| bash | opus | 1 | 2.4min | 420 | 1.0 | 22 | $0.51 | $0.51 |
 
 </details>
 
 <details>
-<summary>Sorted by avg cost (cheapest first)</summary>
+<summary>Sorted by avg errors (fewest first)</summary>
 
 | Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
 |------|-------|------|-------------|-----------|------------|-----------|----------|------------|
-| bash | opus | 1 | 144s | 420 | 1.0 | 22 | $0.51 | $0.51 |
-| default | opus | 1 | 297s | 692 | 1.0 | 39 | $0.92 | $0.92 |
-| powershell | opus | 1 | 438s | 692 | 0.0 | 54 | $1.48 | $1.48 |
+| powershell | opus | 1 | 7.3min | 692 | 0.0 | 54 | $1.48 | $1.48 |
+| bash | opus | 1 | 2.4min | 420 | 1.0 | 22 | $0.51 | $0.51 |
+| default | opus | 1 | 4.9min | 692 | 1.0 | 39 | $0.92 | $0.92 |
 
 </details>
 
 <details>
-<summary>Sorted by avg errors (most first)</summary>
+<summary>Sorted by avg lines (fewest first)</summary>
 
 | Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
 |------|-------|------|-------------|-----------|------------|-----------|----------|------------|
-| bash | opus | 1 | 144s | 420 | 1.0 | 22 | $0.51 | $0.51 |
-| default | opus | 1 | 297s | 692 | 1.0 | 39 | $0.92 | $0.92 |
-| powershell | opus | 1 | 438s | 692 | 0.0 | 54 | $1.48 | $1.48 |
+| bash | opus | 1 | 2.4min | 420 | 1.0 | 22 | $0.51 | $0.51 |
+| default | opus | 1 | 4.9min | 692 | 1.0 | 39 | $0.92 | $0.92 |
+| powershell | opus | 1 | 7.3min | 692 | 0.0 | 54 | $1.48 | $1.48 |
 
 </details>
 
 <details>
-<summary>Sorted by total cost (most first)</summary>
+<summary>Sorted by avg turns (fewest first)</summary>
 
 | Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
 |------|-------|------|-------------|-----------|------------|-----------|----------|------------|
-| powershell | opus | 1 | 438s | 692 | 0.0 | 54 | $1.48 | $1.48 |
-| default | opus | 1 | 297s | 692 | 1.0 | 39 | $0.92 | $0.92 |
-| bash | opus | 1 | 144s | 420 | 1.0 | 22 | $0.51 | $0.51 |
+| bash | opus | 1 | 2.4min | 420 | 1.0 | 22 | $0.51 | $0.51 |
+| default | opus | 1 | 4.9min | 692 | 1.0 | 39 | $0.92 | $0.92 |
+| powershell | opus | 1 | 7.3min | 692 | 0.0 | 54 | $1.48 | $1.48 |
 
 </details>
 
@@ -86,6 +99,17 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 </details>
 
 <details>
+<summary>Sorted by net % of test time (most first)</summary>
+
+| Mode | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time | Test Run Time | % of Test Time |
+|------|-------|-------|--------|------|------------|-----------|----------|-----------|-----------|-----------|---------------|----------------|
+| bash | opus | 11 | 0 | 0.0% | 0.0min | 0.0% | 0.1min | 0.6% | -0.1min | -0.6% | 0.0min | 0.0% |
+| default | opus | 15 | 3 | 20.0% | 0.4min | 2.7% | 0.1min | 0.9% | 0.3min | 1.9% | 0.0min | 0.0% |
+| powershell | opus | 22 | 0 | 0.0% | 0.0min | 0.0% | 0.2min | 1.3% | -0.2min | -1.3% | 0.0min | 0.0% |
+
+</details>
+
+<details>
 <summary>Sorted by catch rate (highest first)</summary>
 
 | Mode | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time | Test Run Time | % of Test Time |
@@ -96,71 +120,57 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 </details>
 
-<details>
-<summary>Sorted by overhead (most first)</summary>
+### Trap Analysis by Language/Model/Category
 
-| Mode | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time | Test Run Time | % of Test Time |
-|------|-------|-------|--------|------|------------|-----------|----------|-----------|-----------|-----------|---------------|----------------|
-| powershell | opus | 22 | 0 | 0.0% | 0.0min | 0.0% | 0.2min | 1.3% | -0.2min | -1.3% | 0.0min | 0.0% |
-| default | opus | 15 | 3 | 20.0% | 0.4min | 2.7% | 0.1min | 0.9% | 0.3min | 1.9% | 0.0min | 0.0% |
-| bash | opus | 11 | 0 | 0.0% | 0.0min | 0.0% | 0.1min | 0.6% | -0.1min | -0.6% | 0.0min | 0.0% |
+| Trap | Mode | Model | Fell In | Time Lost | % of Time | $ Lost | % of $ |
+|------|------|-------|---------|-----------|-----------|--------|--------|
+| repeated-test-reruns | default | opus | 1 | 1.0min | 6.8% | $0.19 | 6.41% |
+| repeated-test-reruns | powershell | opus | 1 | 3.7min | 25.0% | $0.74 | 25.55% |
+| **Total** | | | **2 runs** | **4.7min** | **31.9%** | **$0.93** | **31.97%** |
+
+
+<details>
+<summary>Sorted by time lost (least first)</summary>
+
+| Trap | Mode | Model | Fell In | Time Lost | % of Time | $ Lost | % of $ |
+|------|------|-------|---------|-----------|-----------|--------|--------|
+| repeated-test-reruns | default | opus | 1 | 1.0min | 6.8% | $0.19 | 6.41% |
+| repeated-test-reruns | powershell | opus | 1 | 3.7min | 25.0% | $0.74 | 25.55% |
 
 </details>
 
 <details>
-<summary>Sorted by test run time (most first)</summary>
+<summary>Sorted by $ lost (least first)</summary>
 
-| Mode | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time | Test Run Time | % of Test Time |
-|------|-------|-------|--------|------|------------|-----------|----------|-----------|-----------|-----------|---------------|----------------|
-| bash | opus | 11 | 0 | 0.0% | 0.0min | 0.0% | 0.1min | 0.6% | -0.1min | -0.6% | 0.0min | 0.0% |
-| default | opus | 15 | 3 | 20.0% | 0.4min | 2.7% | 0.1min | 0.9% | 0.3min | 1.9% | 0.0min | 0.0% |
-| powershell | opus | 22 | 0 | 0.0% | 0.0min | 0.0% | 0.2min | 1.3% | -0.2min | -1.3% | 0.0min | 0.0% |
-
-</details>
-
-### Prompt Cache Savings
-
-| Status | Runs | $ Saved | % of $ |
-|--------|------|---------|--------|
-| Full hit (100%) | 0 | $0.00 | 0.00% |
-| Partial | 3 | $0.59 | 20.30% |
-| Miss | 0 | $0.00 | 0.00% |
-| **Total** | **3** | **$0.59** | **20.30%** |
-
-### Trap Analysis by Category
-
-| Trap | Applicable | Fell In | Avoided | Rate | Time Lost | % of Time | $ Lost | % of $ |
-|------|-----------|---------|---------|------|-----------|-----------|--------|--------|
-| repeated-test-reruns | 3 | 2 | 1 | 67% | 4.7min | 31.9% | $0.93 | 31.97% |
-| **Total** | | **2 runs** | | **67%** | **4.7min** | **31.9%** | **$0.93** | **31.97%** |
-
-
-<details>
-<summary>Sorted by $ lost (most first)</summary>
-
-| Trap | Applicable | Fell In | Avoided | Rate | Time Lost | % of Time | $ Lost | % of $ |
-|------|-----------|---------|---------|------|-----------|-----------|--------|--------|
-| repeated-test-reruns | 3 | 2 | 1 | 67% | 4.7min | 31.9% | $0.93 | 31.97% |
+| Trap | Mode | Model | Fell In | Time Lost | % of Time | $ Lost | % of $ |
+|------|------|-------|---------|-----------|-----------|--------|--------|
+| repeated-test-reruns | default | opus | 1 | 1.0min | 6.8% | $0.19 | 6.41% |
+| repeated-test-reruns | powershell | opus | 1 | 3.7min | 25.0% | $0.74 | 25.55% |
 
 </details>
 
 <details>
-<summary>Sorted by rate (highest first)</summary>
+<summary>Sorted by fell-in count (fewest first)</summary>
 
-| Trap | Applicable | Fell In | Avoided | Rate | Time Lost | % of Time | $ Lost | % of $ |
-|------|-----------|---------|---------|------|-----------|-----------|--------|--------|
-| repeated-test-reruns | 3 | 2 | 1 | 67% | 4.7min | 31.9% | $0.93 | 31.97% |
-
-</details>
-
-<details>
-<summary>Sorted by runs affected (most first)</summary>
-
-| Trap | Applicable | Fell In | Avoided | Rate | Time Lost | % of Time | $ Lost | % of $ |
-|------|-----------|---------|---------|------|-----------|-----------|--------|--------|
-| repeated-test-reruns | 3 | 2 | 1 | 67% | 4.7min | 31.9% | $0.93 | 31.97% |
+| Trap | Mode | Model | Fell In | Time Lost | % of Time | $ Lost | % of $ |
+|------|------|-------|---------|-----------|-----------|--------|--------|
+| repeated-test-reruns | default | opus | 1 | 1.0min | 6.8% | $0.19 | 6.41% |
+| repeated-test-reruns | powershell | opus | 1 | 3.7min | 25.0% | $0.74 | 25.55% |
 
 </details>
+
+#### Trap Descriptions
+
+- **repeated-test-reruns**: Same test command executed 4+ times without the underlying code changing.
+
+#### Column Definitions
+
+- **Fell In**: Number of runs (within that mode/model) where this trap was detected.
+- **Time Lost**: Estimated wall-clock seconds wasted on the trap, based on the number of
+  wasted commands multiplied by a per-command cost (15–25s for typical Bash, 45s for Docker runs, 50s for act push).
+- **% of Time**: Time Lost as a percentage of total benchmark duration.
+- **$ Lost**: Proportional cost impact, calculated as (Time Lost / Run Duration) × Run Cost for each affected run.
+- **% of $**: $ Lost as a percentage of total benchmark cost.
 
 ### Traps by Language/Model
 
@@ -173,62 +183,110 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 
 <details>
-<summary>Sorted by time lost (most first)</summary>
+<summary>Sorted by time lost (least first)</summary>
 
 | Mode | Model | Runs | Trapped | Trap Rate | Traps | Time Lost | % of Time | $ Lost | % of $ |
 |------|-------|------|---------|-----------|-------|-----------|-----------|--------|--------|
-| powershell | opus | 1 | 1 | 100% | 1 | 3.7min | 25.0% | $0.74 | 25.55% |
-| default | opus | 1 | 1 | 100% | 1 | 1.0min | 6.8% | $0.19 | 6.41% |
 | bash | opus | 1 | 0 | 0% | 0 | 0.0min | 0.0% | $0.00 | 0.00% |
+| default | opus | 1 | 1 | 100% | 1 | 1.0min | 6.8% | $0.19 | 6.41% |
+| powershell | opus | 1 | 1 | 100% | 1 | 3.7min | 25.0% | $0.74 | 25.55% |
 
 </details>
 
 <details>
-<summary>Sorted by $ lost (most first)</summary>
+<summary>Sorted by $ lost (least first)</summary>
 
 | Mode | Model | Runs | Trapped | Trap Rate | Traps | Time Lost | % of Time | $ Lost | % of $ |
 |------|-------|------|---------|-----------|-------|-----------|-----------|--------|--------|
-| powershell | opus | 1 | 1 | 100% | 1 | 3.7min | 25.0% | $0.74 | 25.55% |
-| default | opus | 1 | 1 | 100% | 1 | 1.0min | 6.8% | $0.19 | 6.41% |
 | bash | opus | 1 | 0 | 0% | 0 | 0.0min | 0.0% | $0.00 | 0.00% |
+| default | opus | 1 | 1 | 100% | 1 | 1.0min | 6.8% | $0.19 | 6.41% |
+| powershell | opus | 1 | 1 | 100% | 1 | 3.7min | 25.0% | $0.74 | 25.55% |
 
 </details>
 
 <details>
-<summary>Sorted by trap rate (highest first)</summary>
+<summary>Sorted by trap rate (lowest first)</summary>
 
 | Mode | Model | Runs | Trapped | Trap Rate | Traps | Time Lost | % of Time | $ Lost | % of $ |
 |------|-------|------|---------|-----------|-------|-----------|-----------|--------|--------|
+| bash | opus | 1 | 0 | 0% | 0 | 0.0min | 0.0% | $0.00 | 0.00% |
 | default | opus | 1 | 1 | 100% | 1 | 1.0min | 6.8% | $0.19 | 6.41% |
 | powershell | opus | 1 | 1 | 100% | 1 | 3.7min | 25.0% | $0.74 | 25.55% |
-| bash | opus | 1 | 0 | 0% | 0 | 0.0min | 0.0% | $0.00 | 0.00% |
 
 </details>
+
+### Prompt Cache Savings
+
+| Status | Runs | $ Saved | % of $ |
+|--------|------|---------|--------|
+| Full hit (100%) | 0 | $0.00 | 0.00% |
+| Partial | 3 | $0.59 | 20.30% |
+| Miss | 0 | $0.00 | 0.00% |
+| **Total** | **3** | **$0.59** | **20.30%** |
 
 ## Per-Run Results
 
 | Task | Mode | Model | Duration | Turns | Lines | Errors | Cost | Language | Status |
 |------|------|-------|----------|-------|-------|--------|------|----------|--------|
-| Semantic Version Bumper | bash | opus | 144s | 22 | 420 | 1 | $0.51 | bash | ok |
-| Semantic Version Bumper | default | opus | 297s | 39 | 692 | 1 | $0.92 | typescript | ok |
-| Semantic Version Bumper | powershell | opus | 438s | 54 | 692 | 0 | $1.48 | powershell | ok |
+| Semantic Version Bumper | bash | opus | 2.4min | 22 | 420 | 1 | $0.51 | bash | ok |
+| Semantic Version Bumper | default | opus | 4.9min | 39 | 692 | 1 | $0.92 | typescript | ok |
+| Semantic Version Bumper | powershell | opus | 7.3min | 54 | 692 | 0 | $1.48 | powershell | ok |
 
-## Head-to-Head: Default vs Constrained Language
 
-| Task | Model | Mode | Default Lang | Def Dur | Mode Dur | Dur Δ | Def Cost | Mode Cost | Cost Δ | Err Δ |
-|------|-------|------|-------------|---------|----------|-------|----------|-----------|--------|-------|
-| Semantic Version Bumper | opus | bash | typescript | 297s | 144s | -52% | $0.92 | $0.51 | -45% | +0 |
-| Semantic Version Bumper | opus | powershell | typescript | 297s | 438s | +48% | $0.92 | $1.48 | +61% | -1 |
+<details>
+<summary>Sorted by cost (most expensive first)</summary>
 
-## Observations
+| Task | Mode | Model | Duration | Turns | Lines | Errors | Cost | Language | Status |
+|------|------|-------|----------|-------|-------|--------|------|----------|--------|
+| Semantic Version Bumper | powershell | opus | 7.3min | 54 | 692 | 0 | $1.48 | powershell | ok |
+| Semantic Version Bumper | default | opus | 4.9min | 39 | 692 | 1 | $0.92 | typescript | ok |
+| Semantic Version Bumper | bash | opus | 2.4min | 22 | 420 | 1 | $0.51 | bash | ok |
 
-- **Fastest run:** Semantic Version Bumper / bash / opus — 144s
-- **Slowest run:** Semantic Version Bumper / powershell / opus — 438s
-- **Most errors:** Semantic Version Bumper / bash / opus — 1 errors
-- **Fewest errors:** Semantic Version Bumper / powershell / opus — 0 errors
+</details>
 
-- **Avg cost per run (opus):** $0.97
+<details>
+<summary>Sorted by duration (longest first)</summary>
 
+| Task | Mode | Model | Duration | Turns | Lines | Errors | Cost | Language | Status |
+|------|------|-------|----------|-------|-------|--------|------|----------|--------|
+| Semantic Version Bumper | powershell | opus | 7.3min | 54 | 692 | 0 | $1.48 | powershell | ok |
+| Semantic Version Bumper | default | opus | 4.9min | 39 | 692 | 1 | $0.92 | typescript | ok |
+| Semantic Version Bumper | bash | opus | 2.4min | 22 | 420 | 1 | $0.51 | bash | ok |
+
+</details>
+
+<details>
+<summary>Sorted by errors (fewest first)</summary>
+
+| Task | Mode | Model | Duration | Turns | Lines | Errors | Cost | Language | Status |
+|------|------|-------|----------|-------|-------|--------|------|----------|--------|
+| Semantic Version Bumper | powershell | opus | 7.3min | 54 | 692 | 0 | $1.48 | powershell | ok |
+| Semantic Version Bumper | bash | opus | 2.4min | 22 | 420 | 1 | $0.51 | bash | ok |
+| Semantic Version Bumper | default | opus | 4.9min | 39 | 692 | 1 | $0.92 | typescript | ok |
+
+</details>
+
+<details>
+<summary>Sorted by lines (fewest first)</summary>
+
+| Task | Mode | Model | Duration | Turns | Lines | Errors | Cost | Language | Status |
+|------|------|-------|----------|-------|-------|--------|------|----------|--------|
+| Semantic Version Bumper | bash | opus | 2.4min | 22 | 420 | 1 | $0.51 | bash | ok |
+| Semantic Version Bumper | default | opus | 4.9min | 39 | 692 | 1 | $0.92 | typescript | ok |
+| Semantic Version Bumper | powershell | opus | 7.3min | 54 | 692 | 0 | $1.48 | powershell | ok |
+
+</details>
+
+<details>
+<summary>Sorted by turns (fewest first)</summary>
+
+| Task | Mode | Model | Duration | Turns | Lines | Errors | Cost | Language | Status |
+|------|------|-------|----------|-------|-------|--------|------|----------|--------|
+| Semantic Version Bumper | bash | opus | 2.4min | 22 | 420 | 1 | $0.51 | bash | ok |
+| Semantic Version Bumper | default | opus | 4.9min | 39 | 692 | 1 | $0.92 | typescript | ok |
+| Semantic Version Bumper | powershell | opus | 7.3min | 54 | 692 | 0 | $1.48 | powershell | ok |
+
+</details>
 
 ---
-*Generated by runner.py, instructions version v3*
+*Generated by generate_results.py, instructions version v3*
