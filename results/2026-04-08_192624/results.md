@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-09 02:23:33 PM ET
+**Last updated:** 2026-04-09 02:30:39 PM ET
 
 **Status:** 64/64 runs completed, 0 remaining
 **Total cost so far:** $84.25
@@ -9,12 +9,12 @@
 ## Observations
 
 - **Fastest (avg):** default/opus — 7.0min, then bash/opus — 8.7min
-- **Slowest (avg):** powershell/sonnet — 21.0min, then default/sonnet — 14.6min
-- **Cheapest (avg):** bash/sonnet — $1.06, then powershell/opus — $1.20
-- **Most expensive (avg):** powershell/sonnet — $1.67, then default/sonnet — $1.38
 - **Fastest net of traps:** default/opus — 6.8min, then powershell/opus — 6.9min
+- **Slowest (avg):** powershell/sonnet — 21.0min, then default/sonnet — 14.6min
 - **Slowest net of traps:** powershell/sonnet — 15.0min, then default/sonnet — 13.6min
+- **Cheapest (avg):** bash/sonnet — $1.06, then powershell/opus — $1.20
 - **Cheapest net of traps:** powershell/opus — $0.93, then bash/sonnet — $0.99
+- **Most expensive (avg):** powershell/sonnet — $1.67, then default/sonnet — $1.38
 - **Most expensive net of traps:** default/sonnet — $1.27, then default/opus — $1.25
 
 ## Comparison by Language/Model

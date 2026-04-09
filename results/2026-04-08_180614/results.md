@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-09 02:23:33 PM ET
+**Last updated:** 2026-04-09 02:30:39 PM ET
 
 **Status:** 2/2 runs completed, 0 remaining
 **Total cost so far:** $2.28
@@ -9,12 +9,12 @@
 ## Observations
 
 - **Fastest (avg):** powershell/sonnet — 9.7min, then default/sonnet — 13.6min
-- **Slowest (avg):** default/sonnet — 13.6min, then powershell/sonnet — 9.7min
-- **Cheapest (avg):** powershell/sonnet — $0.96, then default/sonnet — $1.33
-- **Most expensive (avg):** default/sonnet — $1.33, then powershell/sonnet — $0.96
 - **Fastest net of traps:** powershell/sonnet — 8.6min, then default/sonnet — 12.6min
+- **Slowest (avg):** default/sonnet — 13.6min, then powershell/sonnet — 9.7min
 - **Slowest net of traps:** default/sonnet — 12.6min, then powershell/sonnet — 8.6min
+- **Cheapest (avg):** powershell/sonnet — $0.96, then default/sonnet — $1.33
 - **Cheapest net of traps:** powershell/sonnet — $0.85, then default/sonnet — $1.23
+- **Most expensive (avg):** default/sonnet — $1.33, then powershell/sonnet — $0.96
 - **Most expensive net of traps:** default/sonnet — $1.23, then powershell/sonnet — $0.85
 
 ## Comparison by Language/Model

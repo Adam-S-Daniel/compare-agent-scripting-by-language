@@ -532,14 +532,18 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         by_dur_net = sorted(cmp_rows, key=lambda r: r["avg_dur_net"])
         by_cost_net = sorted(cmp_rows, key=lambda r: r["avg_cost_net"])
 
+        has_traps = any(r["avg_trap_dur"] > 0 for r in cmp_rows)
         lines.append(f"- **Fastest (avg):** {_fmt_combo(by_dur[0], 'avg_dur')}, then {_fmt_combo(by_dur[1], 'avg_dur')}")
-        lines.append(f"- **Slowest (avg):** {_fmt_combo(by_dur[-1], 'avg_dur')}, then {_fmt_combo(by_dur[-2], 'avg_dur')}")
-        lines.append(f"- **Cheapest (avg):** {_fmt_combo(by_cost[0], 'avg_cost', 'cost')}, then {_fmt_combo(by_cost[1], 'avg_cost', 'cost')}")
-        lines.append(f"- **Most expensive (avg):** {_fmt_combo(by_cost[-1], 'avg_cost', 'cost')}, then {_fmt_combo(by_cost[-2], 'avg_cost', 'cost')}")
-        if any(r["avg_trap_dur"] > 0 for r in cmp_rows):
+        if has_traps:
             lines.append(f"- **Fastest net of traps:** {_fmt_combo(by_dur_net[0], 'avg_dur_net')}, then {_fmt_combo(by_dur_net[1], 'avg_dur_net')}")
+        lines.append(f"- **Slowest (avg):** {_fmt_combo(by_dur[-1], 'avg_dur')}, then {_fmt_combo(by_dur[-2], 'avg_dur')}")
+        if has_traps:
             lines.append(f"- **Slowest net of traps:** {_fmt_combo(by_dur_net[-1], 'avg_dur_net')}, then {_fmt_combo(by_dur_net[-2], 'avg_dur_net')}")
+        lines.append(f"- **Cheapest (avg):** {_fmt_combo(by_cost[0], 'avg_cost', 'cost')}, then {_fmt_combo(by_cost[1], 'avg_cost', 'cost')}")
+        if has_traps:
             lines.append(f"- **Cheapest net of traps:** {_fmt_combo(by_cost_net[0], 'avg_cost_net', 'cost')}, then {_fmt_combo(by_cost_net[1], 'avg_cost_net', 'cost')}")
+        lines.append(f"- **Most expensive (avg):** {_fmt_combo(by_cost[-1], 'avg_cost', 'cost')}, then {_fmt_combo(by_cost[-2], 'avg_cost', 'cost')}")
+        if has_traps:
             lines.append(f"- **Most expensive net of traps:** {_fmt_combo(by_cost_net[-1], 'avg_cost_net', 'cost')}, then {_fmt_combo(by_cost_net[-2], 'avg_cost_net', 'cost')}")
         lines.append("")
 

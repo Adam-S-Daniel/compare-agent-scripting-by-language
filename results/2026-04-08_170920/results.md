@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-09 02:23:32 PM ET
+**Last updated:** 2026-04-09 02:30:38 PM ET
 
 **Status:** 4/4 runs completed, 0 remaining
 **Total cost so far:** $6.95
@@ -9,12 +9,12 @@
 ## Observations
 
 - **Fastest (avg):** typescript-bun/opus — 5.4min, then bash/opus — 5.5min
-- **Slowest (avg):** powershell/opus — 12.5min, then default/opus — 8.3min
-- **Cheapest (avg):** typescript-bun/opus — $0.93, then bash/opus — $1.22
-- **Most expensive (avg):** powershell/opus — $2.40, then default/opus — $2.39
 - **Fastest net of traps:** typescript-bun/opus — 4.2min, then bash/opus — 5.5min
+- **Slowest (avg):** powershell/opus — 12.5min, then default/opus — 8.3min
 - **Slowest net of traps:** powershell/opus — 7.9min, then default/opus — 5.9min
+- **Cheapest (avg):** typescript-bun/opus — $0.93, then bash/opus — $1.22
 - **Cheapest net of traps:** typescript-bun/opus — $0.73, then bash/opus — $1.22
+- **Most expensive (avg):** powershell/opus — $2.40, then default/opus — $2.39
 - **Most expensive net of traps:** default/opus — $1.72, then powershell/opus — $1.52
 
 ## Comparison by Language/Model

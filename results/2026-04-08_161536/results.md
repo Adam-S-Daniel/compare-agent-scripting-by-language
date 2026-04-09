@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-09 02:23:32 PM ET
+**Last updated:** 2026-04-09 02:30:38 PM ET
 
 **Status:** 7/7 runs completed, 0 remaining
 **Total cost so far:** $6.59
@@ -9,12 +9,12 @@
 ## Observations
 
 - **Fastest (avg):** bash/sonnet — 2.7min, then default/sonnet — 2.9min
-- **Slowest (avg):** default/opus — 14.3min, then typescript-bun/opus — 9.0min
-- **Cheapest (avg):** bash/sonnet — $0.40, then default/sonnet — $0.45
-- **Most expensive (avg):** typescript-bun/opus — $1.84, then powershell/opus — $1.51
 - **Fastest net of traps:** bash/sonnet — 2.7min, then default/sonnet — 2.9min
+- **Slowest (avg):** default/opus — 14.3min, then typescript-bun/opus — 9.0min
 - **Slowest net of traps:** default/opus — 12.6min, then typescript-bun/opus — 4.9min
+- **Cheapest (avg):** bash/sonnet — $0.40, then default/sonnet — $0.45
 - **Cheapest net of traps:** bash/sonnet — $0.40, then default/sonnet — $0.45
+- **Most expensive (avg):** typescript-bun/opus — $1.84, then powershell/opus — $1.51
 - **Most expensive net of traps:** typescript-bun/opus — $1.00, then default/opus — $0.99
 
 ## Comparison by Language/Model

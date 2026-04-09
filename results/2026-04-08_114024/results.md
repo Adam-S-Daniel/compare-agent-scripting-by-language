@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-09 02:23:32 PM ET
+**Last updated:** 2026-04-09 02:30:38 PM ET
 
 **Status:** 3/3 runs completed, 0 remaining
 **Total cost so far:** $2.91
@@ -9,12 +9,12 @@
 ## Observations
 
 - **Fastest (avg):** bash/opus — 2.4min, then default/opus — 4.9min
-- **Slowest (avg):** powershell/opus — 7.3min, then default/opus — 4.9min
-- **Cheapest (avg):** bash/opus — $0.51, then default/opus — $0.92
-- **Most expensive (avg):** powershell/opus — $1.48, then default/opus — $0.92
 - **Fastest net of traps:** bash/opus — 2.4min, then powershell/opus — 3.6min
+- **Slowest (avg):** powershell/opus — 7.3min, then default/opus — 4.9min
 - **Slowest net of traps:** default/opus — 3.9min, then powershell/opus — 3.6min
+- **Cheapest (avg):** bash/opus — $0.51, then default/opus — $0.92
 - **Cheapest net of traps:** bash/opus — $0.51, then default/opus — $0.74
+- **Most expensive (avg):** powershell/opus — $1.48, then default/opus — $0.92
 - **Most expensive net of traps:** powershell/opus — $0.74, then default/opus — $0.74
 
 ## Comparison by Language/Model

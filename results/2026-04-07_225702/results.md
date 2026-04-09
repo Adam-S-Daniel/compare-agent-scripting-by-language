@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-09 02:23:31 PM ET
+**Last updated:** 2026-04-09 02:30:38 PM ET
 
 **Status:** 111/144 runs completed, 0 remaining
 **Total cost so far:** $76.34
@@ -9,12 +9,12 @@
 ## Observations
 
 - **Fastest (avg):** csharp-script/sonnet — 0.6min, then csharp-script/opus — 1.8min
-- **Slowest (avg):** powershell-strict/sonnet — 6.1min, then powershell-strict/opus — 4.9min
-- **Cheapest (avg):** csharp-script/sonnet — $0.12, then default/sonnet — $0.35
-- **Most expensive (avg):** powershell-strict/opus — $1.20, then powershell/opus — $0.97
 - **Fastest net of traps:** csharp-script/sonnet — 0.6min, then csharp-script/opus — 1.8min
+- **Slowest (avg):** powershell-strict/sonnet — 6.1min, then powershell-strict/opus — 4.9min
 - **Slowest net of traps:** powershell-strict/sonnet — 5.7min, then powershell/sonnet — 3.5min
+- **Cheapest (avg):** csharp-script/sonnet — $0.12, then default/sonnet — $0.35
 - **Cheapest net of traps:** csharp-script/sonnet — $0.12, then default/sonnet — $0.35
+- **Most expensive (avg):** powershell-strict/opus — $1.20, then powershell/opus — $0.97
 - **Most expensive net of traps:** powershell-strict/sonnet — $0.68, then default/opus — $0.49
 
 - **Estimated time remaining:** 0.0min

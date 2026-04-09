@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-09 02:23:30 PM ET
+**Last updated:** 2026-04-09 02:30:38 PM ET
 
 **Status:** 4/1 runs completed, 0 remaining
 **Total cost so far:** $14.13
@@ -9,12 +9,12 @@
 ## Observations
 
 - **Fastest (avg):** powershell/opus — 4.4min, then default/opus — 5.3min
-- **Slowest (avg):** csharp-script/opus — 24.6min, then powershell-strict/opus — 7.9min
-- **Cheapest (avg):** powershell/opus — $1.17, then default/opus — $1.29
-- **Most expensive (avg):** csharp-script/opus — $8.90, then powershell-strict/opus — $2.77
 - **Fastest net of traps:** csharp-script/opus — -47.2min, then default/opus — -20.7min
+- **Slowest (avg):** csharp-script/opus — 24.6min, then powershell-strict/opus — 7.9min
 - **Slowest net of traps:** powershell/opus — -3.6min, then powershell-strict/opus — -9.6min
+- **Cheapest (avg):** powershell/opus — $1.17, then default/opus — $1.29
 - **Cheapest net of traps:** csharp-script/opus — $-17.08, then default/opus — $-5.08
+- **Most expensive (avg):** csharp-script/opus — $8.90, then powershell-strict/opus — $2.77
 - **Most expensive net of traps:** powershell/opus — $-0.94, then powershell-strict/opus — $-3.38
 
 ## Comparison by Language/Model
