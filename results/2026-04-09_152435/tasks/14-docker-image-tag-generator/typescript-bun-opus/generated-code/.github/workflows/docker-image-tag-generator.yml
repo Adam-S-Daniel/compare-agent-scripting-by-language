@@ -1,0 +1,91 @@
+name: Docker Image Tag Generator
+
+on:
+  push:
+    branches: ["*"]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  generate-tags:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      # ---- Real tag generation using actual GitHub context ----
+      # Uses INPUT_* overrides so the script reads GitHub context correctly.
+      # Defaults provided for local act runs where github.* may be empty.
+      - name: Generate Docker Tags
+        run: bun run generate-tags.ts
+        env:
+          INPUT_REF: ${{ github.ref || 'refs/heads/main' }}
+          INPUT_SHA: ${{ github.sha || 'abcdef1234567890abcdef1234567890abcdef12' }}
+          INPUT_EVENT: ${{ github.event_name || 'push' }}
+          INPUT_HEAD_REF: ${{ github.head_ref }}
+          INPUT_PR_NUMBER: ${{ github.event.pull_request.number }}
+
+      # ---- Test scenarios with mock inputs ----
+      - name: "Test: main branch push"
+        run: bun run generate-tags.ts
+        env:
+          INPUT_REF: refs/heads/main
+          INPUT_SHA: abc1234567890def1234567890abcdef12345678
+          INPUT_EVENT: push
+
+      - name: "Test: feature branch push"
+        run: bun run generate-tags.ts
+        env:
+          INPUT_REF: refs/heads/feature/My-Cool_Feature
+          INPUT_SHA: def4567890abcdef1234567890abcdef12345678
+          INPUT_EVENT: push
+
+      - name: "Test: semver tag push"
+        run: bun run generate-tags.ts
+        env:
+          INPUT_REF: refs/tags/v1.2.3
+          INPUT_SHA: aaa7890abcdef01234567890abcdef0123456789
+          INPUT_EVENT: push
+
+      - name: "Test: pull request"
+        run: bun run generate-tags.ts
+        env:
+          INPUT_REF: refs/pull/42/merge
+          INPUT_SHA: bbb0123456789abcdef01234567890abcdef0123
+          INPUT_EVENT: pull_request
+          INPUT_PR_NUMBER: "42"
+          INPUT_HEAD_REF: feature/pr-branch
+
+      - name: "Test: branch with special chars"
+        run: bun run generate-tags.ts
+        env:
+          INPUT_REF: "refs/heads/bugfix/JIRA-1234_Fix@Login!!Page"
+          INPUT_SHA: ccc9876543210fedcba9876543210fedcba98765
+          INPUT_EVENT: push
+
+      - name: "Test: master branch push"
+        run: bun run generate-tags.ts
+        env:
+          INPUT_REF: refs/heads/master
+          INPUT_SHA: ddd1111222233334444555566667777888899990
+          INPUT_EVENT: push
+
+      - name: "Test: pre-release tag"
+        run: bun run generate-tags.ts
+        env:
+          INPUT_REF: refs/tags/v2.0.0-beta.1
+          INPUT_SHA: eee2222333344445555666677778888999900001
+          INPUT_EVENT: push
