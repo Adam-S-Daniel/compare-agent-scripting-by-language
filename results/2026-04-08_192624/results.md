@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-09 08:48:28 AM ET
+**Last updated:** 2026-04-09 09:05:29 AM ET
 
 **Status:** 64/64 runs completed, 0 remaining
 **Total cost so far:** $84.2473
@@ -162,6 +162,20 @@
 | Partial | 62 | $7.3027 |
 | Miss | 1 | $0.0000 |
 | **Total** | **64** | **$7.3615** |
+
+## Traps & Hooks by Language × Model
+
+| Mode | Model | Runs | Trapped | Trap Rate | Traps | Time Lost | Cost Impact | Hook Catches | Hook Time Saved |
+|------|-------|------|---------|-----------|-------|-----------|------------- |--------------|-----------------|
+| bash | opus | 8 | 6 | 75% | 6 | 6.7min | $1.21 | 5 | 2.2min |
+| bash | sonnet | 8 | 5 | 62% | 8 | 7.9min | $0.89 | 14 | 8.6min |
+| default | opus | 8 | 2 | 25% | 2 | 1.5min | $0.30 | 5 | 1.9min |
+| default | sonnet | 8 | 4 | 50% | 7 | 8.7min | $0.92 | 4 | 2.2min |
+| powershell | opus | 8 | 4 | 50% | 5 | 8.0min | $1.18 | 2 | 1.7min |
+| powershell | sonnet | 8 | 7 | 88% | 11 | 25.9min | $1.78 | 1 | 1.0min |
+| typescript-bun | opus | 8 | 8 | 100% | 12 | 13.7min | $2.37 | 50 | 19.2min |
+| typescript-bun | sonnet | 8 | 8 | 100% | 12 | 14.7min | $1.67 | 46 | 25.3min |
+| **Total** | | **64** | **44** | **69%** | **63** | **87.0min** | **$10.31** | **127** | **62.1min** |
 
 
 ---

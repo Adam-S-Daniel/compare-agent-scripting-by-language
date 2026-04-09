@@ -525,6 +525,142 @@ def estimate_tokens(text: str) -> int:
     return len(text) // 4
 
 
+def _detect_traps(events: list[dict], console: str, metrics: dict) -> list[dict]:
+    """Detect time-costly debugging traps from a run's event stream.
+
+    Returns list of {"name": str, "time_s": float, "desc": str} dicts for
+    traps that wasted ≥15 seconds.
+
+    ADDING NEW TRAPS
+    ================
+    When you discover a new recurring pattern that costs agents ≥15 seconds,
+    add a numbered block below following the existing pattern:
+
+    1. Give the trap a kebab-case name (e.g. "yaml-indent-errors").
+    2. Write detection logic that examines bash_cmds, all_text (agent's
+       reasoning), console (tool output), and/or metrics (hook counts, etc.).
+    3. Estimate time_s — use the number of wasted commands × a per-command
+       cost.  For Bash commands, 15-25s is typical (API turn + execution).
+       For act push, use 50s.  For pwsh Pester, use 25-35s.
+    4. Call _add(name, time_s, description_string).
+    5. If the trap only applies to a specific mode, guard with
+       `if mode == "..."`.  Otherwise it is tested on all runs.
+    6. If the trap applies to a specific mode, add it to the trap_mode dict
+       inside generate_results_md (search for "trap_mode") so the
+       "applicable runs" denominator is correct.  Default is "all".
+
+    To find new trap candidates: look at the slowest or highest-error runs
+    in results.md, read their console-log.txt for repeated patterns or long
+    debugging sequences, then generalise into a detection rule.
+    """
+    mode = metrics.get("language_mode", "")
+    bash_cmds: list[str] = []
+    texts: list[str] = []
+    for e in events:
+        if e.get("type") == "assistant":
+            for c in e.get("message", {}).get("content", []):
+                if isinstance(c, dict):
+                    if c.get("type") == "tool_use" and c.get("name") == "Bash":
+                        bash_cmds.append(c.get("input", {}).get("command", ""))
+                    elif c.get("type") == "text":
+                        texts.append(c.get("text", ""))
+    all_text = "\n".join(texts)
+    traps: list[dict] = []
+
+    def _add(name, t, desc):
+        if t >= 15:
+            traps.append({"name": name, "time_s": t, "desc": desc})
+
+    # 1. Pester CmdletBinding parameter binding spiral
+    if mode == "powershell":
+        diag = [c for c in bash_cmds if re.search(r"/tmp/test_\w+\.(?:ps1|Tests\.ps1)", c)]
+        if len(diag) >= 2:
+            _add("pester-cmdletbinding-spiral", len(diag) * 25,
+                 f"{len(diag)} /tmp/test_*.ps1 diagnostic scripts bisecting Pester parameter binding")
+
+    # 2. Wrong Pester assertion names
+    if mode == "powershell":
+        wrong = [n for n, p in [("BeInRange", r"Should\s+-BeInRange"),
+                                 ("BeGreaterOrEqualTo", r"Should\s+-BeGreaterOrEqualTo"),
+                                 ("BeLessOrEqualTo", r"Should\s+-BeLessOrEqualTo")]
+                 if re.search(p, "\n".join(bash_cmds) + all_text)]
+        if wrong and re.search(r"fix|correct|wrong|not.*valid|doesn.t exist", all_text, re.I):
+            _add("pester-wrong-assertions", 45, f"Used nonexistent assertions: {', '.join(wrong)}")
+
+    # 3. Docker PowerShell install exploration
+    if mode == "powershell":
+        dp = [c for c in bash_cmds if re.search(r"docker\s+run.*(?:powershell|pwsh|microsoft-prod)", c, re.I)]
+        if len(dp) >= 2:
+            _add("docker-pwsh-install", len(dp) * 45, f"{len(dp)} Docker runs exploring pwsh install")
+
+    # 4. Module restructure mid-run
+    if mode == "powershell":
+        if (re.search(r"restructur|separate.*into.*module|\.psm1.*fix", all_text, re.I)
+                and any(".psm1" in c for c in bash_cmds)):
+            _add("mid-run-module-restructure", 120, "Restructured to .psm1 module mid-run")
+
+    # 5. act push debug loops (>2 invocations)
+    act_pushes = [c for c in bash_cmds if re.search(r"\bact\s+push", c)]
+    if len(act_pushes) > 2:
+        extra = len(act_pushes) - 2
+        act_times = [t["duration_ms"] for t in metrics.get("tool_use_timing", {}).get("slowest_tool_uses", [])
+                     if re.search(r"\bact\s+push", t.get("command", ""))]
+        t = extra * (sum(act_times) / len(act_times) / 1000 if act_times else 50)
+        _add("act-push-debug-loops", t, f"{len(act_pushes)} act push invocations ({extra} extra)")
+
+    # 6. TypeScript type error fix cycles
+    if mode == "typescript-bun":
+        he = metrics.get("hooks", {}).get("hook_errors_caught", 0)
+        if he >= 2:
+            _add("ts-type-error-fix-cycles", he * 12, f"{he} type errors caught by hooks")
+
+    # 7. Docker package install exploration (non-pwsh)
+    dpkg = [c for c in bash_cmds if re.search(r"docker\s+run.*(?:pip\s+install|apt-get\s+install)", c, re.I)
+            and not re.search(r"powershell|pwsh", c, re.I)]
+    if len(dpkg) >= 2:
+        _add("docker-pkg-install", len(dpkg) * 30, f"{len(dpkg)} Docker runs exploring package install")
+
+    # 8. bats-core setup confusion
+    if mode == "bash":
+        bs = [c for c in bash_cmds if re.search(r"which bats|npm.*bats|install.*bats|load.*test_helper", c, re.I)]
+        be = len(re.findall(r"bats.*not found|load.*error|helper.*not|cannot.*load", console, re.I))
+        if len(bs) >= 3 and be >= 1:
+            _add("bats-setup-issues", len(bs) * 15, f"{len(bs)} commands debugging bats setup")
+
+    # 9. Fixture rework
+    fc = [c for c in bash_cmds if re.search(r"fixture|sample.*data|test.*data|mock.*data", c, re.I)]
+    if len(fc) >= 4:
+        _add("fixture-rework", (len(fc) - 2) * 15, f"{len(fc)} commands creating/fixing fixtures")
+
+    # 10. Repeated identical test reruns
+    cmd_cnt: dict[str, int] = {}
+    for c in bash_cmds:
+        if re.search(r"pytest|Invoke-Pester|bun\s+test|bats\s+", c):
+            key = re.sub(r"\s+2>&1.*|\s+\|.*", "", c)[:80]
+            cmd_cnt[key] = cmd_cnt.get(key, 0) + 1
+    for cmd, count in cmd_cnt.items():
+        if count >= 4:
+            _add("repeated-test-reruns", (count - 2) * 20, f"Same test run {count} times")
+
+    # 11. actionlint fix cycles
+    ar = [c for c in bash_cmds if "actionlint" in c]
+    af = len(re.findall(r"actionlint.*error", console, re.I))
+    if len(ar) >= 3 and af >= 2:
+        _add("actionlint-fix-cycles", af * 20, f"{len(ar)} actionlint runs, {af} failures")
+
+    # 12. Permission/path errors in act container
+    pe = len(re.findall(r"Permission denied|chmod\s+\+x|not found.*act|ENOENT", console, re.I))
+    if pe >= 3:
+        _add("act-permission-path-errors", pe * 15, f"{pe} permission/path errors in act container")
+
+    # 13. act fixture path issues
+    if (re.search(r"Config file not found|fixture.*not found|No such file.*fixture", console, re.I)
+            and re.search(r"fixture.*path|copy.*fixture|missing.*fixture", all_text, re.I)):
+        _add("act-fixture-paths", 60, "Fixtures not found inside act Docker container")
+
+    return traps
+
+
 def _categorize_tool_time(tool_uses: list[dict]) -> dict:
     """Categorize Bash tool use durations into install, test, and act buckets."""
     install_ms = 0
@@ -849,6 +985,104 @@ def generate_results_md(run_dir: Path, all_metrics: list[dict], total_runs: int,
         lines.append(f"| Partial | {partials} | ${sum(d['saved'] for d in cache_data if d['status']=='partial'):.4f} |")
         lines.append(f"| Miss | {misses} | $0.0000 |")
         lines.append(f"| **Total** | **{len(cache_data)}** | **${total_saved:.4f}** |")
+        lines.append("")
+
+    # ── Trap & Hook Analysis ──
+    # Run trap detection on every run that has cli-output.json
+    TEST_RUN_COST_S = {"default": 8, "powershell": 35, "bash": 12, "typescript-bun": 8}
+    API_TURN_COST_S = {"opus": 15, "sonnet": 25}
+    TURN_COST_USD = {"opus": 500 * 75 / 1_000_000, "sonnet": 500 * 15 / 1_000_000}
+
+    trap_instances: list[dict] = []  # each: {mode, model, trap_name, time_s, desc, dur_s, cost}
+    hook_by_combo: dict[tuple, dict] = {}  # (mode, model) -> {fires, caught, time_saved, cost_saved}
+    combo_run_counts: dict[tuple, int] = {}
+
+    for m in all_metrics:
+        mode, model = m["language_mode"], m["model_short"]
+        combo = (mode, model)
+        combo_run_counts[combo] = combo_run_counts.get(combo, 0) + 1
+
+        cli_path = run_dir / "tasks" / m["task_id"] / f"{mode}-{model}" / "cli-output.json"
+        console_path = run_dir / "tasks" / m["task_id"] / f"{mode}-{model}" / "console-log.txt"
+        try:
+            events = json.loads(cli_path.read_text())
+        except Exception:
+            events = []
+        console_text = console_path.read_text() if console_path.exists() else ""
+
+        # Traps
+        for trap in _detect_traps(events, console_text, m):
+            trap_instances.append({
+                "mode": mode, "model": model, "task_id": m["task_id"],
+                "dur_s": m["timing"]["grand_total_duration_ms"] / 1000,
+                "cost": m["cost"]["total_cost_usd"],
+                **trap,
+            })
+
+        # Hook savings
+        caught = m.get("hooks", {}).get("hook_errors_caught", 0)
+        fires = m.get("hooks", {}).get("hook_fires", 0)
+        ts = caught * (TEST_RUN_COST_S.get(mode, 10) + API_TURN_COST_S.get(model, 20))
+        cs = caught * TURN_COST_USD.get(model, 0.02)
+        if combo not in hook_by_combo:
+            hook_by_combo[combo] = {"fires": 0, "caught": 0, "time_saved": 0, "cost_saved": 0}
+        hook_by_combo[combo]["fires"] += fires
+        hook_by_combo[combo]["caught"] += caught
+        hook_by_combo[combo]["time_saved"] += ts
+        hook_by_combo[combo]["cost_saved"] += cs
+
+    if trap_instances or hook_by_combo:
+        # ── Summary by Language × Model ──
+        lines.append("## Traps & Hooks by Language × Model")
+        lines.append("")
+        lines.append("| Mode | Model | Runs | Trapped | Trap Rate | Traps | Time Lost | Cost Impact "
+                      "| Hook Catches | Hook Time Saved |")
+        lines.append("|------|-------|------|---------|-----------|-------|-----------|------------- "
+                      "|--------------|-----------------|")
+
+        trapped_runs_by_combo: dict[tuple, set] = {}
+        trap_count_by_combo: dict[tuple, int] = {}
+        trap_time_by_combo: dict[tuple, float] = {}
+        trap_cost_by_combo: dict[tuple, float] = {}
+        for t in trap_instances:
+            combo = (t["mode"], t["model"])
+            trapped_runs_by_combo.setdefault(combo, set()).add(t["task_id"])
+            trap_count_by_combo[combo] = trap_count_by_combo.get(combo, 0) + 1
+            trap_time_by_combo[combo] = trap_time_by_combo.get(combo, 0) + t["time_s"]
+            if t["dur_s"] > 0 and t["cost"] > 0:
+                trap_cost_by_combo[combo] = trap_cost_by_combo.get(combo, 0) + t["time_s"] / t["dur_s"] * t["cost"]
+
+        for mode in sorted(set(m["language_mode"] for m in all_metrics)):
+            for model in ["opus", "sonnet"]:
+                combo = (mode, model)
+                n = combo_run_counts.get(combo, 0)
+                if n == 0:
+                    continue
+                n_trapped = len(trapped_runs_by_combo.get(combo, set()))
+                rate = n_trapped / n * 100 if n else 0
+                tc = trap_count_by_combo.get(combo, 0)
+                tt = trap_time_by_combo.get(combo, 0)
+                tcc = trap_cost_by_combo.get(combo, 0)
+                hs = hook_by_combo.get(combo, {})
+                lines.append(
+                    f"| {mode} | {model} | {n} | {n_trapped} | {rate:.0f}% "
+                    f"| {tc} | {tt/60:.1f}min | ${tcc:.2f} "
+                    f"| {hs.get('caught', 0)} | {hs.get('time_saved', 0)/60:.1f}min |"
+                )
+
+        # Totals
+        total_trapped = len(set((t["task_id"], t["mode"], t["model"]) for t in trap_instances))
+        total_trap_time = sum(t["time_s"] for t in trap_instances)
+        total_trap_cost = sum(t["time_s"] / t["dur_s"] * t["cost"] for t in trap_instances if t["dur_s"] > 0 and t["cost"] > 0)
+        total_hook_caught = sum(h["caught"] for h in hook_by_combo.values())
+        total_hook_time = sum(h["time_saved"] for h in hook_by_combo.values())
+        lines.append(
+            f"| **Total** | | **{completed}** | **{total_trapped}** "
+            f"| **{total_trapped/completed*100:.0f}%** "
+            f"| **{len(trap_instances)}** | **{total_trap_time/60:.1f}min** "
+            f"| **${total_trap_cost:.2f}** "
+            f"| **{total_hook_caught}** | **{total_hook_time/60:.1f}min** |"
+        )
         lines.append("")
 
     lines.append("")
