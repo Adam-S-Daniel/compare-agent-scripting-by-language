@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-09 09:28:38 AM ET
+**Last updated:** 2026-04-09 09:30:27 AM ET
 
 **Status:** 64/64 runs completed, 0 remaining
 **Total cost so far:** $84.2473
@@ -25,54 +25,54 @@
 
 Each hook-caught error avoids a full test → diagnose → fix → retest cycle.
 
-| Mode | Model | Fires | Caught | Rate | Time Saved | Cost Saved | Turns Saved |
-|------|-------|-------|--------|------|-----------|------------|-------------|
-| bash | opus | 93 | 5 | 5.4% | 2.2min | $0.1875 | 5 |
-| bash | sonnet | 98 | 14 | 14.3% | 8.6min | $0.1050 | 14 |
-| default | opus | 90 | 5 | 5.6% | 1.9min | $0.1875 | 5 |
-| default | sonnet | 81 | 4 | 4.9% | 2.2min | $0.0300 | 4 |
-| powershell | opus | 68 | 2 | 2.9% | 1.7min | $0.0750 | 2 |
-| powershell | sonnet | 82 | 1 | 1.2% | 1.0min | $0.0075 | 1 |
-| typescript-bun | opus | 94 | 50 | 53.2% | 19.2min | $1.8750 | 50 |
-| typescript-bun | sonnet | 99 | 46 | 46.5% | 25.3min | $0.3450 | 46 |
-| **Total** | | **705** | **127** | **18.0%** | **62.1min** | **$2.8125** | **127** |
+| Mode | Model | Fires | Caught | Rate | Time Saved | % of Time | $ Saved | % of $ | Turns Saved |
+|------|-------|-------|--------|------|-----------|-----------|---------|--------|-------------|
+| bash | opus | 93 | 5 | 5.4% | 2.2min | 0.3% | $0.1875 | 0.22% | 5 |
+| bash | sonnet | 98 | 14 | 14.3% | 8.6min | 1.2% | $0.1050 | 0.12% | 14 |
+| default | opus | 90 | 5 | 5.6% | 1.9min | 0.3% | $0.1875 | 0.22% | 5 |
+| default | sonnet | 81 | 4 | 4.9% | 2.2min | 0.3% | $0.0300 | 0.04% | 4 |
+| powershell | opus | 68 | 2 | 2.9% | 1.7min | 0.2% | $0.0750 | 0.09% | 2 |
+| powershell | sonnet | 82 | 1 | 1.2% | 1.0min | 0.1% | $0.0075 | 0.01% | 1 |
+| typescript-bun | opus | 94 | 50 | 53.2% | 19.2min | 2.6% | $1.8750 | 2.23% | 50 |
+| typescript-bun | sonnet | 99 | 46 | 46.5% | 25.3min | 3.5% | $0.3450 | 0.41% | 46 |
+| **Total** | | **705** | **127** | **18.0%** | **62.1min** | **8.6%** | **$2.8125** | **3.34%** | **127** |
 
 ### Prompt Cache Savings
 
-| Status | Runs | Saved |
-|--------|------|-------|
-| Full hit (100%) | 1 | $0.0588 |
-| Partial | 62 | $7.3027 |
-| Miss | 1 | $0.0000 |
-| **Total** | **64** | **$7.3615** |
+| Status | Runs | $ Saved | % of $ |
+|--------|------|---------|--------|
+| Full hit (100%) | 1 | $0.0588 | 0.07% |
+| Partial | 62 | $7.3027 | 8.67% |
+| Miss | 1 | $0.0000 | 0.00% |
+| **Total** | **64** | **$7.3615** | **8.74%** |
 
 ### Trap Analysis by Category
 
-| Trap | Applicable | Fell In | Avoided | Rate | Time Lost | Cost Impact |
-|------|-----------|---------|---------|------|-----------|-------------|
-| act-push-debug-loops | 64 | 9 | 55 | 14% | 24.1min | $1.86 |
-| ts-type-error-fix-cycles | 16 | 16 | 0 | 100% | 19.2min | $2.70 |
-| fixture-rework | 64 | 15 | 49 | 23% | 17.8min | $2.83 |
-| repeated-test-reruns | 64 | 12 | 52 | 19% | 11.3min | $1.17 |
-| docker-pwsh-install | 16 | 3 | 13 | 19% | 7.5min | $0.82 |
-| act-permission-path-errors | 64 | 5 | 59 | 8% | 4.2min | $0.60 |
-| docker-pkg-install | 64 | 1 | 63 | 2% | 1.5min | $0.17 |
-| actionlint-fix-cycles | 64 | 2 | 62 | 3% | 1.3min | $0.17 |
-| **Total** | | **44 runs** | | **69%** | **87.0min** | **$10.31** |
+| Trap | Applicable | Fell In | Avoided | Rate | Time Lost | % of Time | $ Lost | % of $ |
+|------|-----------|---------|---------|------|-----------|-----------|--------|--------|
+| act-push-debug-loops | 64 | 9 | 55 | 14% | 24.1min | 3.3% | $1.86 | 2.21% |
+| ts-type-error-fix-cycles | 16 | 16 | 0 | 100% | 19.2min | 2.6% | $2.70 | 3.21% |
+| fixture-rework | 64 | 15 | 49 | 23% | 17.8min | 2.4% | $2.83 | 3.36% |
+| repeated-test-reruns | 64 | 12 | 52 | 19% | 11.3min | 1.6% | $1.17 | 1.39% |
+| docker-pwsh-install | 16 | 3 | 13 | 19% | 7.5min | 1.0% | $0.82 | 0.97% |
+| act-permission-path-errors | 64 | 5 | 59 | 8% | 4.2min | 0.6% | $0.60 | 0.71% |
+| docker-pkg-install | 64 | 1 | 63 | 2% | 1.5min | 0.2% | $0.17 | 0.20% |
+| actionlint-fix-cycles | 64 | 2 | 62 | 3% | 1.3min | 0.2% | $0.17 | 0.20% |
+| **Total** | | **44 runs** | | **69%** | **87.0min** | **12.0%** | **$10.31** | **12.24%** |
 
 ### Traps by Language × Model
 
-| Mode | Model | Runs | Trapped | Trap Rate | Traps | Time Lost | Cost Impact |
-|------|-------|------|---------|-----------|-------|-----------|-------------|
-| bash | opus | 8 | 6 | 75% | 6 | 6.7min | $1.21 |
-| bash | sonnet | 8 | 5 | 62% | 8 | 7.9min | $0.89 |
-| default | opus | 8 | 2 | 25% | 2 | 1.5min | $0.30 |
-| default | sonnet | 8 | 4 | 50% | 7 | 8.7min | $0.92 |
-| powershell | opus | 8 | 4 | 50% | 5 | 8.0min | $1.18 |
-| powershell | sonnet | 8 | 7 | 88% | 11 | 25.9min | $1.78 |
-| typescript-bun | opus | 8 | 8 | 100% | 12 | 13.7min | $2.37 |
-| typescript-bun | sonnet | 8 | 8 | 100% | 12 | 14.7min | $1.67 |
-| **Total** | | **64** | **44** | **69%** | **63** | **87.0min** | **$10.31** |
+| Mode | Model | Runs | Trapped | Trap Rate | Traps | Time Lost | % of Time | $ Lost | % of $ |
+|------|-------|------|---------|-----------|-------|-----------|-----------|--------|--------|
+| bash | opus | 8 | 6 | 75% | 6 | 6.7min | 0.9% | $1.21 | 1.43% |
+| bash | sonnet | 8 | 5 | 62% | 8 | 7.9min | 1.1% | $0.89 | 1.06% |
+| default | opus | 8 | 2 | 25% | 2 | 1.5min | 0.2% | $0.30 | 0.35% |
+| default | sonnet | 8 | 4 | 50% | 7 | 8.7min | 1.2% | $0.92 | 1.09% |
+| powershell | opus | 8 | 4 | 50% | 5 | 8.0min | 1.1% | $1.18 | 1.40% |
+| powershell | sonnet | 8 | 7 | 88% | 11 | 25.9min | 3.6% | $1.78 | 2.12% |
+| typescript-bun | opus | 8 | 8 | 100% | 12 | 13.7min | 1.9% | $2.37 | 2.81% |
+| typescript-bun | sonnet | 8 | 8 | 100% | 12 | 14.7min | 2.0% | $1.67 | 1.98% |
+| **Total** | | **64** | **44** | **69%** | **63** | **87.0min** | **12.0%** | **$10.31** | **12.24%** |
 
 ## Per-Run Results
 

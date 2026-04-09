@@ -900,8 +900,8 @@ def generate_results_md(run_dir: Path, all_metrics: list[dict], total_runs: int,
     lines.append("")
     lines.append("Each hook-caught error avoids a full test → diagnose → fix → retest cycle.")
     lines.append("")
-    lines.append("| Mode | Model | Fires | Caught | Rate | Time Saved | Cost Saved | Turns Saved |")
-    lines.append("|------|-------|-------|--------|------|-----------|------------|-------------|")
+    lines.append("| Mode | Model | Fires | Caught | Rate | Time Saved | % of Time | $ Saved | % of $ | Turns Saved |")
+    lines.append("|------|-------|-------|--------|------|-----------|-----------|---------|--------|-------------|")
     for mode in modes_seen:
         for model in models_seen:
             hs = hook_by_combo.get((mode, model), {})
@@ -910,19 +910,25 @@ def generate_results_md(run_dir: Path, all_metrics: list[dict], total_runs: int,
             if f_count == 0:
                 continue
             rate = c_count / f_count * 100
+            t_pct = hs["time_saved"] / total_duration * 100 if total_duration else 0
+            c_pct = hs["cost_saved"] / total_cost * 100 if total_cost else 0
             lines.append(
                 f"| {mode} | {model} | {f_count} | {c_count} | {rate:.1f}% "
-                f"| {hs['time_saved']/60:.1f}min | ${hs['cost_saved']:.4f} | {c_count} |"
+                f"| {hs['time_saved']/60:.1f}min | {t_pct:.1f}% "
+                f"| ${hs['cost_saved']:.4f} | {c_pct:.2f}% | {c_count} |"
             )
     total_hook_fires = sum(h.get("fires", 0) for h in hook_by_combo.values())
     total_hook_caught = sum(h.get("caught", 0) for h in hook_by_combo.values())
     total_hook_time = sum(h.get("time_saved", 0) for h in hook_by_combo.values())
     total_hook_cost = sum(h.get("cost_saved", 0) for h in hook_by_combo.values())
     if total_hook_fires:
+        ht_pct = total_hook_time / total_duration * 100 if total_duration else 0
+        hc_pct = total_hook_cost / total_cost * 100 if total_cost else 0
         lines.append(
             f"| **Total** | | **{total_hook_fires}** | **{total_hook_caught}** "
             f"| **{total_hook_caught/total_hook_fires*100:.1f}%** "
-            f"| **{total_hook_time/60:.1f}min** | **${total_hook_cost:.4f}** | **{total_hook_caught}** |"
+            f"| **{total_hook_time/60:.1f}min** | **{ht_pct:.1f}%** "
+            f"| **${total_hook_cost:.4f}** | **{hc_pct:.2f}%** | **{total_hook_caught}** |"
         )
     lines.append("")
 
@@ -932,20 +938,22 @@ def generate_results_md(run_dir: Path, all_metrics: list[dict], total_runs: int,
         full_hits = sum(1 for d in cache_data if d["status"] == "full_hit")
         partials = sum(1 for d in cache_data if d["status"] == "partial")
         misses = sum(1 for d in cache_data if d["status"] == "miss")
+        cache_pct = cache_total_saved / total_cost * 100 if total_cost else 0
 
         lines.append("### Prompt Cache Savings")
         lines.append("")
-        lines.append("| Status | Runs | Saved |")
-        lines.append("|--------|------|-------|")
-        lines.append(f"| Full hit (100%) | {full_hits} | ${sum(d['saved'] for d in cache_data if d['status']=='full_hit'):.4f} |")
-        lines.append(f"| Partial | {partials} | ${sum(d['saved'] for d in cache_data if d['status']=='partial'):.4f} |")
-        lines.append(f"| Miss | {misses} | $0.0000 |")
-        lines.append(f"| **Total** | **{len(cache_data)}** | **${cache_total_saved:.4f}** |")
+        lines.append("| Status | Runs | $ Saved | % of $ |")
+        lines.append("|--------|------|---------|--------|")
+        for label, st in [("Full hit (100%)", "full_hit"), ("Partial", "partial"), ("Miss", "miss")]:
+            sv = sum(d["saved"] for d in cache_data if d["status"] == st)
+            pct = sv / total_cost * 100 if total_cost else 0
+            cnt = sum(1 for d in cache_data if d["status"] == st)
+            lines.append(f"| {label} | {cnt} | ${sv:.4f} | {pct:.2f}% |")
+        lines.append(f"| **Total** | **{len(cache_data)}** | **${cache_total_saved:.4f}** | **{cache_pct:.2f}%** |")
         lines.append("")
 
     # ── Trap Analysis by Category ──
     if trap_instances:
-        # Which mode each trap applies to (for "applicable" denominator)
         trap_applicable_mode = {
             "pester-cmdletbinding-spiral": "powershell",
             "pester-wrong-assertions": "powershell",
@@ -961,8 +969,8 @@ def generate_results_md(run_dir: Path, all_metrics: list[dict], total_runs: int,
 
         lines.append("### Trap Analysis by Category")
         lines.append("")
-        lines.append("| Trap | Applicable | Fell In | Avoided | Rate | Time Lost | Cost Impact |")
-        lines.append("|------|-----------|---------|---------|------|-----------|-------------|")
+        lines.append("| Trap | Applicable | Fell In | Avoided | Rate | Time Lost | % of Time | $ Lost | % of $ |")
+        lines.append("|------|-----------|---------|---------|------|-----------|-----------|--------|--------|")
         mode_run_totals = {md: sum(1 for m in all_metrics if m["language_mode"] == md) for md in modes_seen}
         for trap_name in sorted(trap_agg, key=lambda k: -sum(t["time_s"] for t in trap_agg[k])):
             insts = trap_agg[trap_name]
@@ -972,16 +980,22 @@ def generate_results_md(run_dir: Path, all_metrics: list[dict], total_runs: int,
             t_time = sum(t["time_s"] for t in insts)
             t_cost = sum(t["time_s"] / t["dur_s"] * t["cost"] for t in insts if t["dur_s"] > 0 and t["cost"] > 0)
             rate = n_fell / n_app * 100 if n_app else 0
+            t_pct = t_time / total_duration * 100 if total_duration else 0
+            c_pct = t_cost / total_cost * 100 if total_cost else 0
             lines.append(
                 f"| {trap_name} | {n_app} | {n_fell} | {n_app - n_fell} | {rate:.0f}% "
-                f"| {t_time/60:.1f}min | ${t_cost:.2f} |"
+                f"| {t_time/60:.1f}min | {t_pct:.1f}% | ${t_cost:.2f} | {c_pct:.2f}% |"
             )
         total_trap_time = sum(t["time_s"] for t in trap_instances)
         total_trap_cost = sum(t["time_s"] / t["dur_s"] * t["cost"] for t in trap_instances if t["dur_s"] > 0 and t["cost"] > 0)
         total_trapped = len(set((t["task_id"], t["mode"], t["model"]) for t in trap_instances))
+        tt_pct = total_trap_time / total_duration * 100 if total_duration else 0
+        tc_pct = total_trap_cost / total_cost * 100 if total_cost else 0
         lines.append(
             f"| **Total** | | **{total_trapped} runs** | | "
-            f"**{total_trapped/completed*100:.0f}%** | **{total_trap_time/60:.1f}min** | **${total_trap_cost:.2f}** |"
+            f"**{total_trapped/completed*100:.0f}%** "
+            f"| **{total_trap_time/60:.1f}min** | **{tt_pct:.1f}%** "
+            f"| **${total_trap_cost:.2f}** | **{tc_pct:.2f}%** |"
         )
         lines.append("")
 
@@ -989,8 +1003,8 @@ def generate_results_md(run_dir: Path, all_metrics: list[dict], total_runs: int,
     if trap_instances:
         lines.append("### Traps by Language × Model")
         lines.append("")
-        lines.append("| Mode | Model | Runs | Trapped | Trap Rate | Traps | Time Lost | Cost Impact |")
-        lines.append("|------|-------|------|---------|-----------|-------|-----------|-------------|")
+        lines.append("| Mode | Model | Runs | Trapped | Trap Rate | Traps | Time Lost | % of Time | $ Lost | % of $ |")
+        lines.append("|------|-------|------|---------|-----------|-------|-----------|-----------|--------|--------|")
         trapped_runs_by_combo: dict[tuple, set] = {}
         trap_count_by_combo: dict[tuple, int] = {}
         trap_time_by_combo: dict[tuple, float] = {}
@@ -1014,14 +1028,19 @@ def generate_results_md(run_dir: Path, all_metrics: list[dict], total_runs: int,
                 tc = trap_count_by_combo.get(combo, 0)
                 tt = trap_time_by_combo.get(combo, 0)
                 tcc = trap_cost_by_combo.get(combo, 0)
+                t_pct = tt / total_duration * 100 if total_duration else 0
+                c_pct = tcc / total_cost * 100 if total_cost else 0
                 lines.append(
                     f"| {mode} | {model} | {n} | {n_trapped} | {rate:.0f}% "
-                    f"| {tc} | {tt/60:.1f}min | ${tcc:.2f} |"
+                    f"| {tc} | {tt/60:.1f}min | {t_pct:.1f}% | ${tcc:.2f} | {c_pct:.2f}% |"
                 )
+        tt_pct = total_trap_time / total_duration * 100 if total_duration else 0
+        tc_pct = total_trap_cost / total_cost * 100 if total_cost else 0
         lines.append(
             f"| **Total** | | **{completed}** | **{total_trapped}** "
             f"| **{total_trapped/completed*100:.0f}%** "
-            f"| **{len(trap_instances)}** | **{total_trap_time/60:.1f}min** | **${total_trap_cost:.2f}** |"
+            f"| **{len(trap_instances)}** | **{total_trap_time/60:.1f}min** | **{tt_pct:.1f}%** "
+            f"| **${total_trap_cost:.2f}** | **{tc_pct:.2f}%** |"
         )
         lines.append("")
 
