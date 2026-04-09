@@ -1,0 +1,627 @@
+{
+  "task_id": "18-secret-rotation-validator",
+  "task_name": "Secret Rotation Validator",
+  "task_category": "GitHub Actions / Security",
+  "language_mode": "powershell",
+  "language_chosen": "powershell",
+  "language_breakdown": {
+    "powershell": 100.0
+  },
+  "interpreter_versions": {},
+  "powershell_version": "",
+  "dotnet_version": "",
+  "model": "claude-sonnet-4-6",
+  "model_short": "sonnet",
+  "claude_code_version": "2.1.97",
+  "instructions_version": "v3",
+  "timestamp_start": "2026-04-09T10:55:43.583441+00:00",
+  "timestamp_end": "2026-04-09T11:25:52.635572+00:00",
+  "prompt_text": "You are completing a scripting task. You MUST use PowerShell as your implementation language.\n\nTASK: Given a configuration of secrets with metadata (name, last-rotated date, rotation policy in days, required-by services \u2014 all mock data), identify secrets that are expired or expiring within a configurable warning window, generate a rotation report, and output notifications grouped by urgency (expired, warning, ok). Support multiple output formats (markdown table, JSON).\n\nREQUIREMENTS:\n1. Use red/green TDD methodology: write a failing test FIRST, then write the minimum code to make it pass, then refactor. Repeat for each piece of functionality.\n2. Create mocks and test fixtures as necessary for testability. Use Pester as the testing framework.\n3. All tests must be runnable with `Invoke-Pester` and must pass at the end.\n4. Include clear comments explaining your approach.\n5. Handle errors gracefully with meaningful error messages.\n\nCreate your solution in the current working directory. Start by writing your first failing test.\n\nGITHUB ACTIONS REQUIREMENT:\nCreate a GitHub Actions workflow file at .github/workflows/secret-rotation-validator.yml that uses\nyour script in a real CI/CD pipeline. The workflow must:\n- Use appropriate trigger events (push, pull_request, schedule, workflow_dispatch, etc.)\n- Reference your script correctly\n- Pass actionlint validation (valid YAML, valid action references, correct syntax)\n- Include appropriate permissions, environment variables, and job dependencies\n- Actually run successfully when executed locally with `act` (nektos/act)\n\nDesign your workflow so its steps work in an isolated Docker container \u2014 use\n`actions/checkout@v4`, install dependencies your script needs, and run it.\nAvoid steps requiring external services or secrets without sensible defaults.\n\nWORKFLOW VALIDATION:\nRun `actionlint .github/workflows/secret-rotation-validator.yml` and fix any errors. actionlint is\npre-installed. Iterate until it passes cleanly.\n\nALL TESTS MUST RUN THROUGH ACT:\nEvery single test case must execute through the GitHub Actions workflow via `act`.\nDo NOT test your script directly \u2014 all testing goes through the pipeline.\n\nStructure your workflow to accept test fixture data and produce verifiable output.\nYour test harness must:\n1. For each test case: set up a temp git repo with your project files + that case's\n   fixture data, run `act push --rm`, capture the output\n2. Save all act output to `act-result.txt` in the current working directory (append\n   each test case's output, clearly delimited)\n3. Assert that act exited with code 0 for each case\n4. Parse the act output and assert on EXACT EXPECTED VALUES \u2014 not just that output\n   appeared, but that it matches the known-good result for that test case's input.\n   For example: if your workflow bumps version 1.1.0 with a feat commit, assert\n   the output contains exactly \"1.2.0\", not just \"a version number\"\n5. Assert every job shows \"Job succeeded\"\n\nThe `act-result.txt` file MUST exist when done. It is a required artifact.\n`act` and Docker are pre-installed.\n\nWORKFLOW STRUCTURE TESTS (also required):\n- Parse the YAML and check expected structure (triggers, jobs, steps)\n- Verify the workflow references your script files correctly (paths exist)\n- Verify actionlint passes (assert exit code 0)\n",
+  "exit_code": -9,
+  "session": {
+    "session_id": "",
+    "stop_reason": "",
+    "terminal_reason": "",
+    "fast_mode_state": "",
+    "service_tier": "",
+    "speed": "",
+    "inference_geo": "",
+    "context_window": null,
+    "max_output_tokens": null,
+    "permission_mode": "bypassPermissions",
+    "output_style": "default",
+    "tools_available_count": 24,
+    "mcp_servers": [],
+    "permission_denials": []
+  },
+  "model_usage_detail": {},
+  "effort_level": null,
+  "timing": {
+    "grand_total_duration_ms": 1809052,
+    "total_api_duration_ms": 0,
+    "total_execution_duration_ms": 0,
+    "num_turns": 0
+  },
+  "tokens": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cache_read_tokens": 0,
+    "cache_creation_tokens": 0,
+    "total_context_consumed": 0,
+    "compaction_count": 0
+  },
+  "cost": {
+    "total_cost_usd": 0.0,
+    "assumed_input_cost_per_mtok": 3.0,
+    "assumed_output_cost_per_mtok": 15.0,
+    "assumed_cache_read_cost_per_mtok": 0.3,
+    "assumed_cache_write_cost_per_mtok": 3.75
+  },
+  "code_metrics": {
+    "total_lines": 2395,
+    "total_tokens_estimate": 37797,
+    "file_count": 9,
+    "files": [
+      "Invoke-SecretRotationValidator.ps1",
+      "SecretRotationValidator.Tests.ps1",
+      "SecretRotationValidator.psm1",
+      "Test-WorkflowWithAct.ps1",
+      "act-result.txt",
+      "fixtures/secrets-all-expired.json",
+      "fixtures/secrets-all-ok.json",
+      "fixtures/secrets-mixed.json",
+      ".github/workflows/secret-rotation-validator.yml"
+    ]
+  },
+  "quality": {
+    "tests_pass": null,
+    "error_count": 13,
+    "error_details": [
+      "Exit code 1\n\u001b[31;1mInvoke-Pester: \u001b[0m\n\u001b[31;1m\u001b[36;1mLine |\u001b[0m\n\u001b[31;1m\u001b[36;1m\u001b[36;1m   7 | \u001b[0m \u001b[36;1mInvoke-Pester -Configuration $pesterConfig -Container (New-PesterCont\u001b[0m \u2026\u001b[0m\n\u001b[31;1m\u001b[36;1m\u001b[",
+      "Exit code 1\n\u001b[31;1mInvoke-Pester: \u001b[0m\n\u001b[31;1m\u001b[36;1mLine |\u001b[0m\n\u001b[31;1m\u001b[36;1m\u001b[36;1m   3 | \u001b[0m \u001b[36;1mInvoke-Pester -Configuration ([PesterConfiguration]@{Output=@{Verbosi\u001b[0m \u2026\u001b[0m\n\u001b[31;1m\u001b[36;1m\u001b[",
+      "Exit code 1\n\u001b[31;1mInvoke-Pester: \u001b[0m\n\u001b[31;1m\u001b[36;1mLine |\u001b[0m\n\u001b[31;1m\u001b[36;1m\u001b[36;1m   3 | \u001b[0m \u001b[36;1mInvoke-Pester -Configuration ([PesterConfiguration]@{Output=@{Verbosi\u001b[0m \u2026\u001b[0m\n\u001b[31;1m\u001b[36;1m\u001b[",
+      "Exit code 1\n\u001b[31;1mInvoke-Pester: \u001b[0m\n\u001b[31;1m\u001b[36;1mLine |\u001b[0m\n\u001b[31;1m\u001b[36;1m\u001b[36;1m   6 | \u001b[0m \u001b[36;1mInvoke-Pester -Configuration $config -Container (New-PesterContainer \u001b[0m \u2026\u001b[0m\n\u001b[31;1m\u001b[36;1m\u001b[",
+      "Exit code 2\n/bin/bash: eval: line 60: syntax error near unexpected token `)'\n/bin/bash: eval: line 60: `        . \"$($tmpScriptFile.Replace('\\','/'))\"'",
+      "Exit code 1\n\u001b[31;1mInvoke-Pester: \u001b[0m\n\u001b[31;1m\u001b[36;1mLine |\u001b[0m\n\u001b[31;1m\u001b[36;1m\u001b[36;1m   7 | \u001b[0m \u001b[36;1mInvoke-Pester -Path \"/home/passp/repos/compare-agent-scripting-by-lan\u001b[0m \u2026\u001b[0m\n\u001b[31;1m\u001b[36;1m\u001b[",
+      "Exit code 1\n\u001b[31;1mParserError: \u001b[0m\n\u001b[31;1m\u001b[36;1mLine |\u001b[0m\n\u001b[31;1m\u001b[36;1m\u001b[36;1m  13 | \u001b[0m \u2026  Red; $script:FailedTests++; $script:Failures.Add(\"\u001b[36;1m$TestName:\u001b[0m $Messag \u2026\u001b[0m\n\u001b[31;1m\u001b[36;1m\u001b[",
+      "Exit code 1\n\u001b[31;1mParserError: \u001b[0m/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/18-secret-rotation-validator/powershell-sonnet/Test-WorkflowWithAct.ps1:53\u001b[0m\n\u001b[",
+      "Exit code 1\n\u001b[31;1mParserError: \u001b[0m/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/18-secret-rotation-validator/powershell-sonnet/Test-WorkflowWithAct.ps1:292\u001b[0m\n\u001b",
+      "Exit code 1\n/bin/bash: command substitution: line 8: syntax error near unexpected token `('\n/bin/bash: command substitution: line 8: `$null = [System.Management.Automation.ScriptBlock]::Create((Get-Co",
+      "Exit code 1\n\n=== SECTION 1: Workflow Structure Tests ===\n  [PASS] Workflow file exists\n  [PASS] Trigger: push\n  [PASS] Trigger: pull_request\n  [PASS] Trigger: schedule\n  [PASS] Trigger: workflow_dispa",
+      "Exit code 1\n\n=== SECTION 1: Workflow Structure Tests ===\n  [PASS] Workflow file exists\n  [PASS] Trigger: push\n  [PASS] Trigger: pull_request\n  [PASS] Trigger: schedule\n  [PASS] Trigger: workflow_dispa",
+      "Exit code 1\n\n=== SECTION 1: Workflow Structure Tests ===\n  [PASS] Workflow file exists\n  [PASS] Trigger: push\n  [PASS] Trigger: pull_request\n  [PASS] Trigger: schedule\n  [PASS] Trigger: workflow_dispa"
+    ],
+    "actionlint_pass": true,
+    "actionlint_errors": 0,
+    "actionlint_results": [
+      {
+        "file": ".github/workflows/secret-rotation-validator.yml",
+        "passed": true,
+        "errors": ""
+      }
+    ],
+    "act_result_txt_exists": true,
+    "act_result_txt_size": 110115,
+    "areas_of_difficulty": [],
+    "observations": ""
+  },
+  "tool_install": {
+    "tool_install_duration_ms": 0,
+    "tools_installed": [],
+    "install_commands_count": 0
+  },
+  "tool_use_timing": {
+    "total_tool_uses": 100,
+    "total_tool_duration_ms": 437019,
+    "bash_tool_uses": 70,
+    "bash_total_ms": 421076,
+    "slowest_tool_uses": [
+      {
+        "tool_name": "Bash",
+        "command": "pwsh Test-WorkflowWithAct.ps1 2>&1",
+        "duration_ms": 113427,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh Test-WorkflowWithAct.ps1 2>&1",
+        "duration_ms": 107087,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh Test-WorkflowWithAct.ps1 2>&1",
+        "duration_ms": 43077,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path ./SecretRotationValidator.Tests.ps1 -Output Minimal 2>&1\" | tail -15",
+        "duration_ms": 4905,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path ./SecretRotationValidator.Tests.ps1 -Output Detailed 2>&1\" | tail -60",
+        "duration_ms": 4863,
+        "is_error": false,
+        "is_install": false
+      }
+    ]
+  },
+  "hooks": {
+    "hook_fires": 29,
+    "hook_errors_caught": 0,
+    "hook_failures": 0,
+    "hook_events": [
+      {
+        "subtype": "hook_started",
+        "hook_id": "8050485c-b399-46f2-bf27-1c7e06de5c9b",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "8050485c-b399-46f2-bf27-1c7e06de5c9b",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "7456fbc0-e087-4884-8a2a-b2801517347e",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "7456fbc0-e087-4884-8a2a-b2801517347e",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "1ad34917-5e79-47c7-a72e-d0fbc60892dd",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "1ad34917-5e79-47c7-a72e-d0fbc60892dd",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "c2696777-12be-4dce-8836-d3eccbecb9e3",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "c2696777-12be-4dce-8836-d3eccbecb9e3",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "755f9738-fc98-4f6d-8280-2fc5f9e8f76b",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "755f9738-fc98-4f6d-8280-2fc5f9e8f76b",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "695237cb-e59c-4eb7-b0c7-46229536fead",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "695237cb-e59c-4eb7-b0c7-46229536fead",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "6c4876d9-840d-430e-a429-9dd4123aa787",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "6c4876d9-840d-430e-a429-9dd4123aa787",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "8b649630-8210-4cfc-b99a-c24ac326d286",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "8b649630-8210-4cfc-b99a-c24ac326d286",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "d63a614f-4f22-49d9-a43d-2f59b7d43f67",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "d63a614f-4f22-49d9-a43d-2f59b7d43f67",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "d709b0dc-97e3-4653-bbb0-4436130eac2f",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "d709b0dc-97e3-4653-bbb0-4436130eac2f",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "9c3718dd-27f1-4e3f-ba62-1bc8e635a824",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "9c3718dd-27f1-4e3f-ba62-1bc8e635a824",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "17a61bfe-571c-4437-bc7c-4707fbaaa0f5",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "17a61bfe-571c-4437-bc7c-4707fbaaa0f5",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "10a12f0b-d1a5-4238-9b3c-0155a86c1aef",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "10a12f0b-d1a5-4238-9b3c-0155a86c1aef",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "09bbec74-5e96-413b-83ad-8bf84b431684",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "09bbec74-5e96-413b-83ad-8bf84b431684",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "2088f10b-6309-4860-bea8-d93d430e99c7",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "2088f10b-6309-4860-bea8-d93d430e99c7",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "f6afae90-5886-4e85-8186-03cb6bd1ab0f",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "f6afae90-5886-4e85-8186-03cb6bd1ab0f",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "c9634001-70f2-4f1c-bb28-92c37f11e100",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "c9634001-70f2-4f1c-bb28-92c37f11e100",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "7f58088c-787c-4e40-bf2e-652b39ecd977",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "7f58088c-787c-4e40-bf2e-652b39ecd977",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "c4b246c4-ca05-4ee2-9f70-f46aea61860f",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "c4b246c4-ca05-4ee2-9f70-f46aea61860f",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "7666701e-8d27-42cf-b4b9-033c071e1c76",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "7666701e-8d27-42cf-b4b9-033c071e1c76",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "6f12f54c-92f0-4640-82b6-58155bb884d5",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "6f12f54c-92f0-4640-82b6-58155bb884d5",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "c8840da0-fe13-403d-a211-03e32dcacc3c",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "c8840da0-fe13-403d-a211-03e32dcacc3c",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "c749f842-0450-48f8-9c63-0eafbfee5a63",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "c749f842-0450-48f8-9c63-0eafbfee5a63",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "3edbf060-4215-4689-aa75-24e74f8cda5a",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "3edbf060-4215-4689-aa75-24e74f8cda5a",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "ac406e54-d580-4bdc-8ad9-e35d8e073286",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "ac406e54-d580-4bdc-8ad9-e35d8e073286",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "480b6d48-9e78-4209-a291-eff5630f416f",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "480b6d48-9e78-4209-a291-eff5630f416f",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "1b01de74-99cc-4a18-b5fd-a727c8f798ee",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "1b01de74-99cc-4a18-b5fd-a727c8f798ee",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "c0964548-de05-4170-a2d4-044636133116",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "c0964548-de05-4170-a2d4-044636133116",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "9b1aea58-ca3b-4727-9d41-bce3eada65e3",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "9b1aea58-ca3b-4727-9d41-bce3eada65e3",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  }
+}
