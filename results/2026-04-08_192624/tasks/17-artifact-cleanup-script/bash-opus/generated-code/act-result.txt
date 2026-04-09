@@ -1,0 +1,688 @@
+=== TEST: workflow YAML structure — triggers ===
+PASS: triggers found (push, pull_request, workflow_dispatch)
+
+=== TEST: workflow YAML structure — jobs ===
+PASS: all expected jobs found
+
+=== TEST: workflow YAML structure — script references ===
+PASS: all referenced files exist
+
+=== TEST: workflow YAML structure — checkout action ===
+PASS: uses actions/checkout@v4
+
+=== TEST: actionlint validation ===
+actionlint exit code: 0
+PASS: actionlint clean
+
+=== TEST: act — max-age policy ===
+time="2026-04-09T05:07:50-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Test max-age/test] ⭐ Run Set up job
+[Test max-age/test] 🚀  Start image=catthehacker/ubuntu:act-latest
+[Test max-age/test]   🐳  docker pull image=catthehacker/ubuntu:act-latest platform= username= forcePull=true
+[Test max-age/test] using DockerAuthConfig authentication for docker pull
+[Test max-age/test]   🐳  docker create image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Test max-age/test]   🐳  docker run image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Test max-age/test]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Test max-age/test]   ✅  Success - Set up job
+[Test max-age/test] ⭐ Run Main actions/checkout@v4
+[Test max-age/test]   🐳  docker cp src=/tmp/tmp.nd67tajF2N/. dst=/tmp/tmp.nd67tajF2N
+[Test max-age/test]   ✅  Success - Main actions/checkout@v4 [87.028615ms]
+[Test max-age/test] ⭐ Run Main chmod +x artifact_cleanup.sh
+[Test max-age/test]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Test max-age/test]   ✅  Success - Main chmod +x artifact_cleanup.sh [405.799781ms]
+[Test max-age/test] ⭐ Run Main Run max-age test
+[Test max-age/test]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Test max-age/test]   | ========================================
+[Test max-age/test]   |   ARTIFACT CLEANUP PLAN
+[Test max-age/test]   |   Mode: DRY-RUN (no deletions)
+[Test max-age/test]   | ========================================
+[Test max-age/test]   | 
+[Test max-age/test]   | --- Artifacts to DELETE ---
+[Test max-age/test]   |   [DELETE] month-old-build  size=3000  date=2026-03-01  workflow=wf-300
+[Test max-age/test]   |   [DELETE] ancient-build  size=4000  date=2026-01-01  workflow=wf-300
+[Test max-age/test]   | 
+[Test max-age/test]   | --- Artifacts to KEEP ---
+[Test max-age/test]   |   [KEEP]   recent-build  size=1000  date=2026-04-05  workflow=wf-300
+[Test max-age/test]   |   [KEEP]   week-old-build  size=2000  date=2026-04-01  workflow=wf-300
+[Test max-age/test]   | 
+[Test max-age/test]   | --- Summary ---
+[Test max-age/test]   |   Total artifacts: 4
+[Test max-age/test]   |   Artifacts to delete: 2
+[Test max-age/test]   |   Artifacts to keep: 2
+[Test max-age/test]   |   Space reclaimed: 7000 bytes
+[Test max-age/test]   |   Space retained: 3000 bytes
+[Test max-age/test]   | ========================================
+[Test max-age/test]   ✅  Success - Main Run max-age test [665.954589ms]
+[Test max-age/test] ⭐ Run Complete job
+[Test max-age/test] Cleaning up container for job test
+[Test max-age/test]   ✅  Success - Complete job
+[Test max-age/test] 🏁  Job succeeded
+
+PASS: max-age policy correct
+
+=== TEST: act — keep-latest-n policy ===
+time="2026-04-09T05:07:54-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Test keep-latest-n/test] ⭐ Run Set up job
+[Test keep-latest-n/test] 🚀  Start image=catthehacker/ubuntu:act-latest
+[Test keep-latest-n/test]   🐳  docker pull image=catthehacker/ubuntu:act-latest platform= username= forcePull=true
+[Test keep-latest-n/test] using DockerAuthConfig authentication for docker pull
+[Test keep-latest-n/test]   🐳  docker create image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Test keep-latest-n/test]   🐳  docker run image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Test keep-latest-n/test]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Test keep-latest-n/test]   ✅  Success - Set up job
+[Test keep-latest-n/test] ⭐ Run Main actions/checkout@v4
+[Test keep-latest-n/test]   🐳  docker cp src=/tmp/tmp.jygqfbBQMm/. dst=/tmp/tmp.jygqfbBQMm
+[Test keep-latest-n/test]   ✅  Success - Main actions/checkout@v4 [100.035816ms]
+[Test keep-latest-n/test] ⭐ Run Main chmod +x artifact_cleanup.sh
+[Test keep-latest-n/test]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Test keep-latest-n/test]   ✅  Success - Main chmod +x artifact_cleanup.sh [325.841402ms]
+[Test keep-latest-n/test] ⭐ Run Main Run keep-latest-n test
+[Test keep-latest-n/test]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Test keep-latest-n/test]   | ========================================
+[Test keep-latest-n/test]   |   ARTIFACT CLEANUP PLAN
+[Test keep-latest-n/test]   |   Mode: DRY-RUN (no deletions)
+[Test keep-latest-n/test]   | ========================================
+[Test keep-latest-n/test]   | 
+[Test keep-latest-n/test]   | --- Artifacts to DELETE ---
+[Test keep-latest-n/test]   |   [DELETE] build-v1  size=1000  date=2026-01-01  workflow=wf-500
+[Test keep-latest-n/test]   |   [DELETE] build-v2  size=1000  date=2026-02-01  workflow=wf-500
+[Test keep-latest-n/test]   |   [DELETE] test-v1  size=500  date=2026-01-15  workflow=wf-600
+[Test keep-latest-n/test]   | 
+[Test keep-latest-n/test]   | --- Artifacts to KEEP ---
+[Test keep-latest-n/test]   |   [KEEP]   build-v3  size=1000  date=2026-03-01  workflow=wf-500
+[Test keep-latest-n/test]   |   [KEEP]   build-v4  size=1000  date=2026-04-01  workflow=wf-500
+[Test keep-latest-n/test]   |   [KEEP]   test-v2  size=500  date=2026-03-15  workflow=wf-600
+[Test keep-latest-n/test]   |   [KEEP]   test-v3  size=500  date=2026-04-05  workflow=wf-600
+[Test keep-latest-n/test]   | 
+[Test keep-latest-n/test]   | --- Summary ---
+[Test keep-latest-n/test]   |   Total artifacts: 7
+[Test keep-latest-n/test]   |   Artifacts to delete: 3
+[Test keep-latest-n/test]   |   Artifacts to keep: 4
+[Test keep-latest-n/test]   |   Space reclaimed: 2500 bytes
+[Test keep-latest-n/test]   |   Space retained: 3000 bytes
+[Test keep-latest-n/test]   | ========================================
+[Test keep-latest-n/test]   ✅  Success - Main Run keep-latest-n test [576.554451ms]
+[Test keep-latest-n/test] ⭐ Run Complete job
+[Test keep-latest-n/test] Cleaning up container for job test
+[Test keep-latest-n/test]   ✅  Success - Complete job
+[Test keep-latest-n/test] 🏁  Job succeeded
+
+PASS: keep-latest-n policy correct
+
+=== TEST: act — max-total-size policy ===
+time="2026-04-09T05:07:59-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Test max-total-size/test] ⭐ Run Set up job
+[Test max-total-size/test] 🚀  Start image=catthehacker/ubuntu:act-latest
+[Test max-total-size/test]   🐳  docker pull image=catthehacker/ubuntu:act-latest platform= username= forcePull=true
+[Test max-total-size/test] using DockerAuthConfig authentication for docker pull
+[Test max-total-size/test]   🐳  docker create image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Test max-total-size/test]   🐳  docker run image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Test max-total-size/test]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Test max-total-size/test]   ✅  Success - Set up job
+[Test max-total-size/test] ⭐ Run Main actions/checkout@v4
+[Test max-total-size/test]   🐳  docker cp src=/tmp/tmp.VCW6wemXm2/. dst=/tmp/tmp.VCW6wemXm2
+[Test max-total-size/test]   ✅  Success - Main actions/checkout@v4 [99.55398ms]
+[Test max-total-size/test] ⭐ Run Main chmod +x artifact_cleanup.sh
+[Test max-total-size/test]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Test max-total-size/test]   ✅  Success - Main chmod +x artifact_cleanup.sh [364.879477ms]
+[Test max-total-size/test] ⭐ Run Main Run max-total-size test
+[Test max-total-size/test]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Test max-total-size/test]   | ========================================
+[Test max-total-size/test]   |   ARTIFACT CLEANUP PLAN
+[Test max-total-size/test]   |   Mode: DRY-RUN (no deletions)
+[Test max-total-size/test]   | ========================================
+[Test max-total-size/test]   | 
+[Test max-total-size/test]   | --- Artifacts to DELETE ---
+[Test max-total-size/test]   |   [DELETE] big-artifact  size=4000  date=2026-01-01  workflow=wf-400
+[Test max-total-size/test]   |   [DELETE] medium-artifact  size=3000  date=2026-02-01  workflow=wf-400
+[Test max-total-size/test]   | 
+[Test max-total-size/test]   | --- Artifacts to KEEP ---
+[Test max-total-size/test]   |   [KEEP]   small-artifact  size=2000  date=2026-03-01  workflow=wf-400
+[Test max-total-size/test]   |   [KEEP]   tiny-artifact  size=1000  date=2026-04-01  workflow=wf-400
+[Test max-total-size/test]   | 
+[Test max-total-size/test]   | --- Summary ---
+[Test max-total-size/test]   |   Total artifacts: 4
+[Test max-total-size/test]   |   Artifacts to delete: 2
+[Test max-total-size/test]   |   Artifacts to keep: 2
+[Test max-total-size/test]   |   Space reclaimed: 7000 bytes
+[Test max-total-size/test]   |   Space retained: 3000 bytes
+[Test max-total-size/test]   | ========================================
+[Test max-total-size/test]   ✅  Success - Main Run max-total-size test [481.340468ms]
+[Test max-total-size/test] ⭐ Run Complete job
+[Test max-total-size/test] Cleaning up container for job test
+[Test max-total-size/test]   ✅  Success - Complete job
+[Test max-total-size/test] 🏁  Job succeeded
+
+PASS: max-total-size policy correct
+
+=== TEST: act — combined policies ===
+time="2026-04-09T05:08:03-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Test combined/test] ⭐ Run Set up job
+[Test combined/test] 🚀  Start image=catthehacker/ubuntu:act-latest
+[Test combined/test]   🐳  docker pull image=catthehacker/ubuntu:act-latest platform= username= forcePull=true
+[Test combined/test] using DockerAuthConfig authentication for docker pull
+[Test combined/test]   🐳  docker create image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Test combined/test]   🐳  docker run image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Test combined/test]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Test combined/test]   ✅  Success - Set up job
+[Test combined/test] ⭐ Run Main actions/checkout@v4
+[Test combined/test]   🐳  docker cp src=/tmp/tmp.qVUtOa52EV/. dst=/tmp/tmp.qVUtOa52EV
+[Test combined/test]   ✅  Success - Main actions/checkout@v4 [137.42807ms]
+[Test combined/test] ⭐ Run Main chmod +x artifact_cleanup.sh
+[Test combined/test]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Test combined/test]   ✅  Success - Main chmod +x artifact_cleanup.sh [349.191301ms]
+[Test combined/test] ⭐ Run Main Run combined test
+[Test combined/test]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Test combined/test]   | ========================================
+[Test combined/test]   |   ARTIFACT CLEANUP PLAN
+[Test combined/test]   |   Mode: DRY-RUN (no deletions)
+[Test combined/test]   | ========================================
+[Test combined/test]   | 
+[Test combined/test]   | --- Artifacts to DELETE ---
+[Test combined/test]   |   [DELETE] alpha  size=2000  date=2026-01-01  workflow=wf-700
+[Test combined/test]   |   [DELETE] beta  size=1500  date=2026-02-15  workflow=wf-700
+[Test combined/test]   |   [DELETE] epsilon  size=2000  date=2026-01-10  workflow=wf-800
+[Test combined/test]   | 
+[Test combined/test]   | --- Artifacts to KEEP ---
+[Test combined/test]   |   [KEEP]   gamma  size=1000  date=2026-03-20  workflow=wf-700
+[Test combined/test]   |   [KEEP]   delta  size=500  date=2026-04-05  workflow=wf-700
+[Test combined/test]   |   [KEEP]   zeta  size=1000  date=2026-03-25  workflow=wf-800
+[Test combined/test]   |   [KEEP]   eta  size=500  date=2026-04-08  workflow=wf-800
+[Test combined/test]   | 
+[Test combined/test]   | --- Summary ---
+[Test combined/test]   |   Total artifacts: 7
+[Test combined/test]   |   Artifacts to delete: 3
+[Test combined/test]   |   Artifacts to keep: 4
+[Test combined/test]   |   Space reclaimed: 5500 bytes
+[Test combined/test]   |   Space retained: 3000 bytes
+[Test combined/test]   | ========================================
+[Test combined/test]   ✅  Success - Main Run combined test [411.247107ms]
+[Test combined/test] ⭐ Run Complete job
+[Test combined/test] Cleaning up container for job test
+[Test combined/test]   ✅  Success - Complete job
+[Test combined/test] 🏁  Job succeeded
+
+PASS: combined policies correct
+
+=== TEST: act — dry-run mode ===
+time="2026-04-09T05:08:08-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Test dry-run/test] ⭐ Run Set up job
+[Test dry-run/test] 🚀  Start image=catthehacker/ubuntu:act-latest
+[Test dry-run/test]   🐳  docker pull image=catthehacker/ubuntu:act-latest platform= username= forcePull=true
+[Test dry-run/test] using DockerAuthConfig authentication for docker pull
+[Test dry-run/test]   🐳  docker create image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Test dry-run/test]   🐳  docker run image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Test dry-run/test]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Test dry-run/test]   ✅  Success - Set up job
+[Test dry-run/test] ⭐ Run Main actions/checkout@v4
+[Test dry-run/test]   🐳  docker cp src=/tmp/tmp.hsib7ndgEf/. dst=/tmp/tmp.hsib7ndgEf
+[Test dry-run/test]   ✅  Success - Main actions/checkout@v4 [160.776911ms]
+[Test dry-run/test] ⭐ Run Main chmod +x artifact_cleanup.sh
+[Test dry-run/test]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Test dry-run/test]   ✅  Success - Main chmod +x artifact_cleanup.sh [339.878ms]
+[Test dry-run/test] ⭐ Run Main Run dry-run test
+[Test dry-run/test]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Test dry-run/test]   | ========================================
+[Test dry-run/test]   |   ARTIFACT CLEANUP PLAN
+[Test dry-run/test]   |   Mode: DRY-RUN (no deletions)
+[Test dry-run/test]   | ========================================
+[Test dry-run/test]   | 
+[Test dry-run/test]   | --- Artifacts to DELETE ---
+[Test dry-run/test]   |   [DELETE] build-linux  size=5000  date=2026-01-01  workflow=wf-100
+[Test dry-run/test]   |   [DELETE] build-macos  size=3000  date=2026-01-15  workflow=wf-100
+[Test dry-run/test]   |   [DELETE] build-windows  size=4000  date=2026-02-01  workflow=wf-100
+[Test dry-run/test]   | 
+[Test dry-run/test]   | --- Artifacts to KEEP ---
+[Test dry-run/test]   |   [KEEP]   test-results  size=2000  date=2026-03-01  workflow=wf-200
+[Test dry-run/test]   |   [KEEP]   coverage-report  size=1500  date=2026-03-15  workflow=wf-200
+[Test dry-run/test]   |   [KEEP]   lint-report  size=500  date=2026-04-01  workflow=wf-200
+[Test dry-run/test]   | 
+[Test dry-run/test]   | --- Summary ---
+[Test dry-run/test]   |   Total artifacts: 6
+[Test dry-run/test]   |   Artifacts to delete: 3
+[Test dry-run/test]   |   Artifacts to keep: 3
+[Test dry-run/test]   |   Space reclaimed: 12000 bytes
+[Test dry-run/test]   |   Space retained: 4000 bytes
+[Test dry-run/test]   | ========================================
+[Test dry-run/test]   | dry-run verified
+[Test dry-run/test]   ✅  Success - Main Run dry-run test [382.648533ms]
+[Test dry-run/test] ⭐ Run Complete job
+[Test dry-run/test] Cleaning up container for job test
+[Test dry-run/test]   ✅  Success - Complete job
+[Test dry-run/test] 🏁  Job succeeded
+
+PASS: dry-run mode correct
+
+=== TEST: act — execute mode ===
+time="2026-04-09T05:08:12-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Test execute/test] ⭐ Run Set up job
+[Test execute/test] 🚀  Start image=catthehacker/ubuntu:act-latest
+[Test execute/test]   🐳  docker pull image=catthehacker/ubuntu:act-latest platform= username= forcePull=true
+[Test execute/test] using DockerAuthConfig authentication for docker pull
+[Test execute/test]   🐳  docker create image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Test execute/test]   🐳  docker run image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Test execute/test]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Test execute/test]   ✅  Success - Set up job
+[Test execute/test] ⭐ Run Main actions/checkout@v4
+[Test execute/test]   🐳  docker cp src=/tmp/tmp.bLO5V4gvs2/. dst=/tmp/tmp.bLO5V4gvs2
+[Test execute/test]   ✅  Success - Main actions/checkout@v4 [103.897227ms]
+[Test execute/test] ⭐ Run Main chmod +x artifact_cleanup.sh
+[Test execute/test]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Test execute/test]   ✅  Success - Main chmod +x artifact_cleanup.sh [350.246247ms]
+[Test execute/test] ⭐ Run Main Run execute test
+[Test execute/test]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Test execute/test]   | ========================================
+[Test execute/test]   |   ARTIFACT CLEANUP PLAN
+[Test execute/test]   |   Mode: EXECUTE
+[Test execute/test]   | ========================================
+[Test execute/test]   | 
+[Test execute/test]   | --- Artifacts to DELETE ---
+[Test execute/test]   |   [DELETE] build-linux  size=5000  date=2026-01-01  workflow=wf-100
+[Test execute/test]   |   [DELETE] build-macos  size=3000  date=2026-01-15  workflow=wf-100
+[Test execute/test]   |   [DELETE] build-windows  size=4000  date=2026-02-01  workflow=wf-100
+[Test execute/test]   | 
+[Test execute/test]   | --- Artifacts to KEEP ---
+[Test execute/test]   |   [KEEP]   test-results  size=2000  date=2026-03-01  workflow=wf-200
+[Test execute/test]   |   [KEEP]   coverage-report  size=1500  date=2026-03-15  workflow=wf-200
+[Test execute/test]   |   [KEEP]   lint-report  size=500  date=2026-04-01  workflow=wf-200
+[Test execute/test]   | 
+[Test execute/test]   | --- Summary ---
+[Test execute/test]   |   Total artifacts: 6
+[Test execute/test]   |   Artifacts to delete: 3
+[Test execute/test]   |   Artifacts to keep: 3
+[Test execute/test]   |   Space reclaimed: 12000 bytes
+[Test execute/test]   |   Space retained: 4000 bytes
+[Test execute/test]   | ========================================
+[Test execute/test]   | 
+[Test execute/test]   | --- Deletion Commands ---
+[Test execute/test]   |   gh api -X DELETE /repos/{owner}/{repo}/actions/artifacts/build-linux
+[Test execute/test]   |   gh api -X DELETE /repos/{owner}/{repo}/actions/artifacts/build-macos
+[Test execute/test]   |   gh api -X DELETE /repos/{owner}/{repo}/actions/artifacts/build-windows
+[Test execute/test]   ✅  Success - Main Run execute test [355.423058ms]
+[Test execute/test] ⭐ Run Complete job
+[Test execute/test] Cleaning up container for job test
+[Test execute/test]   ✅  Success - Complete job
+[Test execute/test] 🏁  Job succeeded
+
+PASS: execute mode correct
+
+=== TEST: act — error: missing input file ===
+time="2026-04-09T05:08:17-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Test error handling/test] ⭐ Run Set up job
+[Test error handling/test] 🚀  Start image=catthehacker/ubuntu:act-latest
+[Test error handling/test]   🐳  docker pull image=catthehacker/ubuntu:act-latest platform= username= forcePull=true
+[Test error handling/test] using DockerAuthConfig authentication for docker pull
+[Test error handling/test]   🐳  docker create image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Test error handling/test]   🐳  docker run image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Test error handling/test]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Test error handling/test]   ✅  Success - Set up job
+[Test error handling/test] ⭐ Run Main actions/checkout@v4
+[Test error handling/test]   🐳  docker cp src=/tmp/tmp.NwP1cPLaEP/. dst=/tmp/tmp.NwP1cPLaEP
+[Test error handling/test]   ✅  Success - Main actions/checkout@v4 [105.924833ms]
+[Test error handling/test] ⭐ Run Main chmod +x artifact_cleanup.sh
+[Test error handling/test]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Test error handling/test]   ✅  Success - Main chmod +x artifact_cleanup.sh [326.165755ms]
+[Test error handling/test] ⭐ Run Main Test missing file error
+[Test error handling/test]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Test error handling/test]   | ERROR: Input file not found: nonexistent.tsv
+[Test error handling/test]   | error-handling verified
+[Test error handling/test]   ✅  Success - Main Test missing file error [327.501442ms]
+[Test error handling/test] ⭐ Run Complete job
+[Test error handling/test] Cleaning up container for job test
+[Test error handling/test]   ✅  Success - Complete job
+[Test error handling/test] 🏁  Job succeeded
+
+PASS: error handling correct
+
+=== TEST: act — error: empty input ===
+time="2026-04-09T05:08:21-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Test empty input/test] ⭐ Run Set up job
+[Test empty input/test] 🚀  Start image=catthehacker/ubuntu:act-latest
+[Test empty input/test]   🐳  docker pull image=catthehacker/ubuntu:act-latest platform= username= forcePull=true
+[Test empty input/test] using DockerAuthConfig authentication for docker pull
+[Test empty input/test]   🐳  docker create image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Test empty input/test]   🐳  docker run image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Test empty input/test]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Test empty input/test]   ✅  Success - Set up job
+[Test empty input/test] ⭐ Run Main actions/checkout@v4
+[Test empty input/test]   🐳  docker cp src=/tmp/tmp.QvH36wg8UR/. dst=/tmp/tmp.QvH36wg8UR
+[Test empty input/test]   ✅  Success - Main actions/checkout@v4 [119.95254ms]
+[Test empty input/test] ⭐ Run Main chmod +x artifact_cleanup.sh
+[Test empty input/test]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Test empty input/test]   ✅  Success - Main chmod +x artifact_cleanup.sh [319.756791ms]
+[Test empty input/test] ⭐ Run Main Test empty input error
+[Test empty input/test]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Test empty input/test]   | ERROR: No artifacts loaded
+[Test empty input/test]   | empty-input-error verified
+[Test empty input/test]   ✅  Success - Main Test empty input error [371.521096ms]
+[Test empty input/test] ⭐ Run Complete job
+[Test empty input/test] Cleaning up container for job test
+[Test empty input/test]   ✅  Success - Complete job
+[Test empty input/test] 🏁  Job succeeded
+
+PASS: empty input error handling correct
+
+=== TEST: act — full workflow (all jobs) ===
+time="2026-04-09T05:08:26-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Artifact Cleanup Script/Validate script] ⭐ Run Set up job
+[Artifact Cleanup Script/Validate script] 🚀  Start image=catthehacker/ubuntu:act-latest
+[Artifact Cleanup Script/Validate script]   🐳  docker pull image=catthehacker/ubuntu:act-latest platform= username= forcePull=true
+[Artifact Cleanup Script/Validate script] using DockerAuthConfig authentication for docker pull
+[Artifact Cleanup Script/Validate script]   🐳  docker create image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Validate script]   🐳  docker run image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Validate script]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Artifact Cleanup Script/Validate script]   ✅  Success - Set up job
+[Artifact Cleanup Script/Validate script] ⭐ Run Main actions/checkout@v4
+[Artifact Cleanup Script/Validate script]   🐳  docker cp src=/tmp/tmp.8Db9CgZH2d/. dst=/tmp/tmp.8Db9CgZH2d
+[Artifact Cleanup Script/Validate script]   ✅  Success - Main actions/checkout@v4 [91.318053ms]
+[Artifact Cleanup Script/Validate script] ⭐ Run Main Syntax check
+[Artifact Cleanup Script/Validate script]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Artifact Cleanup Script/Validate script]   ✅  Success - Main Syntax check [322.539364ms]
+[Artifact Cleanup Script/Validate script] ⭐ Run Main Make executable
+[Artifact Cleanup Script/Validate script]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Artifact Cleanup Script/Validate script]   ✅  Success - Main Make executable [546.395563ms]
+[Artifact Cleanup Script/Validate script] ⭐ Run Complete job
+[Artifact Cleanup Script/Validate script] Cleaning up container for job Validate script
+[Artifact Cleanup Script/Validate script]   ✅  Success - Complete job
+[Artifact Cleanup Script/Validate script] 🏁  Job succeeded
+[Artifact Cleanup Script/Test max-age policy           ] ⭐ Run Set up job
+[Artifact Cleanup Script/Test max-age policy           ] 🚀  Start image=catthehacker/ubuntu:act-latest
+[Artifact Cleanup Script/Test keep-latest-n policy     ] ⭐ Run Set up job
+[Artifact Cleanup Script/Test keep-latest-n policy     ] 🚀  Start image=catthehacker/ubuntu:act-latest
+[Artifact Cleanup Script/Test combined policies        ] ⭐ Run Set up job
+[Artifact Cleanup Script/Test combined policies        ] 🚀  Start image=catthehacker/ubuntu:act-latest
+[Artifact Cleanup Script/Test max-total-size policy    ] ⭐ Run Set up job
+[Artifact Cleanup Script/Test dry-run and execute modes] ⭐ Run Set up job
+[Artifact Cleanup Script/Test dry-run and execute modes] 🚀  Start image=catthehacker/ubuntu:act-latest
+[Artifact Cleanup Script/Test error handling           ] ⭐ Run Set up job
+[Artifact Cleanup Script/Test max-total-size policy    ] 🚀  Start image=catthehacker/ubuntu:act-latest
+[Artifact Cleanup Script/Test error handling           ] 🚀  Start image=catthehacker/ubuntu:act-latest
+[Artifact Cleanup Script/Test max-age policy           ]   🐳  docker pull image=catthehacker/ubuntu:act-latest platform= username= forcePull=true
+[Artifact Cleanup Script/Test combined policies        ]   🐳  docker pull image=catthehacker/ubuntu:act-latest platform= username= forcePull=true
+[Artifact Cleanup Script/Test keep-latest-n policy     ]   🐳  docker pull image=catthehacker/ubuntu:act-latest platform= username= forcePull=true
+[Artifact Cleanup Script/Test dry-run and execute modes]   🐳  docker pull image=catthehacker/ubuntu:act-latest platform= username= forcePull=true
+[Artifact Cleanup Script/Test error handling           ]   🐳  docker pull image=catthehacker/ubuntu:act-latest platform= username= forcePull=true
+[Artifact Cleanup Script/Test max-total-size policy    ]   🐳  docker pull image=catthehacker/ubuntu:act-latest platform= username= forcePull=true
+[Artifact Cleanup Script/Test combined policies        ] using DockerAuthConfig authentication for docker pull
+[Artifact Cleanup Script/Test max-age policy           ] using DockerAuthConfig authentication for docker pull
+[Artifact Cleanup Script/Test keep-latest-n policy     ] using DockerAuthConfig authentication for docker pull
+[Artifact Cleanup Script/Test error handling           ] using DockerAuthConfig authentication for docker pull
+[Artifact Cleanup Script/Test dry-run and execute modes] using DockerAuthConfig authentication for docker pull
+[Artifact Cleanup Script/Test max-total-size policy    ] using DockerAuthConfig authentication for docker pull
+[Artifact Cleanup Script/Test combined policies        ]   🐳  docker create image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Test max-age policy           ]   🐳  docker create image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Test combined policies        ]   🐳  docker run image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Test keep-latest-n policy     ]   🐳  docker create image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Test dry-run and execute modes]   🐳  docker create image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Test error handling           ]   🐳  docker create image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Test max-total-size policy    ]   🐳  docker create image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Test max-age policy           ]   🐳  docker run image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Test keep-latest-n policy     ]   🐳  docker run image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Test dry-run and execute modes]   🐳  docker run image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Test error handling           ]   🐳  docker run image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Test max-total-size policy    ]   🐳  docker run image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Test combined policies        ]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Artifact Cleanup Script/Test max-age policy           ]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Artifact Cleanup Script/Test combined policies        ]   ✅  Success - Set up job
+[Artifact Cleanup Script/Test dry-run and execute modes]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Artifact Cleanup Script/Test keep-latest-n policy     ]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Artifact Cleanup Script/Test max-age policy           ]   ✅  Success - Set up job
+[Artifact Cleanup Script/Test max-total-size policy    ]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Artifact Cleanup Script/Test error handling           ]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Artifact Cleanup Script/Test combined policies        ] ⭐ Run Main actions/checkout@v4
+[Artifact Cleanup Script/Test dry-run and execute modes]   ✅  Success - Set up job
+[Artifact Cleanup Script/Test keep-latest-n policy     ]   ✅  Success - Set up job
+[Artifact Cleanup Script/Test combined policies        ]   🐳  docker cp src=/tmp/tmp.8Db9CgZH2d/. dst=/tmp/tmp.8Db9CgZH2d
+[Artifact Cleanup Script/Test error handling           ]   ✅  Success - Set up job
+[Artifact Cleanup Script/Test max-total-size policy    ]   ✅  Success - Set up job
+[Artifact Cleanup Script/Test combined policies        ]   ✅  Success - Main actions/checkout@v4 [278.570024ms]
+[Artifact Cleanup Script/Test max-age policy           ] ⭐ Run Main actions/checkout@v4
+[Artifact Cleanup Script/Test max-age policy           ]   🐳  docker cp src=/tmp/tmp.8Db9CgZH2d/. dst=/tmp/tmp.8Db9CgZH2d
+[Artifact Cleanup Script/Test max-age policy           ]   ✅  Success - Main actions/checkout@v4 [331.505928ms]
+[Artifact Cleanup Script/Test keep-latest-n policy     ] ⭐ Run Main actions/checkout@v4
+[Artifact Cleanup Script/Test dry-run and execute modes] ⭐ Run Main actions/checkout@v4
+[Artifact Cleanup Script/Test error handling           ] ⭐ Run Main actions/checkout@v4
+[Artifact Cleanup Script/Test max-total-size policy    ] ⭐ Run Main actions/checkout@v4
+[Artifact Cleanup Script/Test combined policies        ] ⭐ Run Main Make executable
+[Artifact Cleanup Script/Test keep-latest-n policy     ]   🐳  docker cp src=/tmp/tmp.8Db9CgZH2d/. dst=/tmp/tmp.8Db9CgZH2d
+[Artifact Cleanup Script/Test dry-run and execute modes]   🐳  docker cp src=/tmp/tmp.8Db9CgZH2d/. dst=/tmp/tmp.8Db9CgZH2d
+[Artifact Cleanup Script/Test error handling           ]   🐳  docker cp src=/tmp/tmp.8Db9CgZH2d/. dst=/tmp/tmp.8Db9CgZH2d
+[Artifact Cleanup Script/Test keep-latest-n policy     ]   ✅  Success - Main actions/checkout@v4 [409.867084ms]
+[Artifact Cleanup Script/Test dry-run and execute modes]   ✅  Success - Main actions/checkout@v4 [360.438879ms]
+[Artifact Cleanup Script/Test error handling           ]   ✅  Success - Main actions/checkout@v4 [328.955341ms]
+[Artifact Cleanup Script/Test max-total-size policy    ]   🐳  docker cp src=/tmp/tmp.8Db9CgZH2d/. dst=/tmp/tmp.8Db9CgZH2d
+[Artifact Cleanup Script/Test max-total-size policy    ]   ✅  Success - Main actions/checkout@v4 [407.99013ms]
+[Artifact Cleanup Script/Test max-age policy           ] ⭐ Run Main Make executable
+[Artifact Cleanup Script/Test combined policies        ]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Artifact Cleanup Script/Test keep-latest-n policy     ] ⭐ Run Main Make executable
+[Artifact Cleanup Script/Test dry-run and execute modes] ⭐ Run Main Make executable
+[Artifact Cleanup Script/Test error handling           ] ⭐ Run Main Make executable
+[Artifact Cleanup Script/Test combined policies        ]   ✅  Success - Main Make executable [1.328825586s]
+[Artifact Cleanup Script/Test max-total-size policy    ] ⭐ Run Main Make executable
+[Artifact Cleanup Script/Test max-age policy           ]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Artifact Cleanup Script/Test max-age policy           ]   ✅  Success - Main Make executable [1.364745351s]
+[Artifact Cleanup Script/Test keep-latest-n policy     ]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Artifact Cleanup Script/Test error handling           ]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Artifact Cleanup Script/Test dry-run and execute modes]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Artifact Cleanup Script/Test max-total-size policy    ]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Artifact Cleanup Script/Test combined policies        ] ⭐ Run Main Run combined policy test
+[Artifact Cleanup Script/Test keep-latest-n policy     ]   ✅  Success - Main Make executable [1.541997356s]
+[Artifact Cleanup Script/Test dry-run and execute modes]   ✅  Success - Main Make executable [1.563648943s]
+[Artifact Cleanup Script/Test error handling           ]   ✅  Success - Main Make executable [1.597562241s]
+[Artifact Cleanup Script/Test max-total-size policy    ]   ✅  Success - Main Make executable [1.583466065s]
+[Artifact Cleanup Script/Test max-age policy           ] ⭐ Run Main Run max-age test
+[Artifact Cleanup Script/Test combined policies        ]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Artifact Cleanup Script/Test keep-latest-n policy     ] ⭐ Run Main Run keep-latest-n test
+[Artifact Cleanup Script/Test dry-run and execute modes] ⭐ Run Main Test dry-run mode (default)
+[Artifact Cleanup Script/Test error handling           ] ⭐ Run Main Test missing input file
+[Artifact Cleanup Script/Test max-age policy           ]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Artifact Cleanup Script/Test max-total-size policy    ] ⭐ Run Main Run max-total-size test
+[Artifact Cleanup Script/Test combined policies        ]   | ========================================
+[Artifact Cleanup Script/Test combined policies        ]   |   ARTIFACT CLEANUP PLAN
+[Artifact Cleanup Script/Test combined policies        ]   |   Mode: DRY-RUN (no deletions)
+[Artifact Cleanup Script/Test combined policies        ]   | ========================================
+[Artifact Cleanup Script/Test combined policies        ]   | 
+[Artifact Cleanup Script/Test combined policies        ]   | --- Artifacts to DELETE ---
+[Artifact Cleanup Script/Test combined policies        ]   |   [DELETE] alpha  size=2000  date=2026-01-01  workflow=wf-700
+[Artifact Cleanup Script/Test combined policies        ]   |   [DELETE] beta  size=1500  date=2026-02-15  workflow=wf-700
+[Artifact Cleanup Script/Test combined policies        ]   |   [DELETE] epsilon  size=2000  date=2026-01-10  workflow=wf-800
+[Artifact Cleanup Script/Test combined policies        ]   | 
+[Artifact Cleanup Script/Test combined policies        ]   | --- Artifacts to KEEP ---
+[Artifact Cleanup Script/Test combined policies        ]   |   [KEEP]   gamma  size=1000  date=2026-03-20  workflow=wf-700
+[Artifact Cleanup Script/Test combined policies        ]   |   [KEEP]   delta  size=500  date=2026-04-05  workflow=wf-700
+[Artifact Cleanup Script/Test combined policies        ]   |   [KEEP]   zeta  size=1000  date=2026-03-25  workflow=wf-800
+[Artifact Cleanup Script/Test combined policies        ]   |   [KEEP]   eta  size=500  date=2026-04-08  workflow=wf-800
+[Artifact Cleanup Script/Test combined policies        ]   | 
+[Artifact Cleanup Script/Test combined policies        ]   | --- Summary ---
+[Artifact Cleanup Script/Test combined policies        ]   |   Total artifacts: 7
+[Artifact Cleanup Script/Test combined policies        ]   |   Artifacts to delete: 3
+[Artifact Cleanup Script/Test combined policies        ]   |   Artifacts to keep: 4
+[Artifact Cleanup Script/Test combined policies        ]   |   Space reclaimed: 5500 bytes
+[Artifact Cleanup Script/Test combined policies        ]   |   Space retained: 3000 bytes
+[Artifact Cleanup Script/Test combined policies        ]   | ========================================
+[Artifact Cleanup Script/Test combined policies        ]   | combined policy test PASSED
+[Artifact Cleanup Script/Test combined policies        ]   ✅  Success - Main Run combined policy test [1.478861357s]
+[Artifact Cleanup Script/Test max-age policy           ]   | ========================================
+[Artifact Cleanup Script/Test max-age policy           ]   |   ARTIFACT CLEANUP PLAN
+[Artifact Cleanup Script/Test max-age policy           ]   |   Mode: DRY-RUN (no deletions)
+[Artifact Cleanup Script/Test max-age policy           ]   | ========================================
+[Artifact Cleanup Script/Test max-age policy           ]   | 
+[Artifact Cleanup Script/Test max-age policy           ]   | --- Artifacts to DELETE ---
+[Artifact Cleanup Script/Test max-age policy           ]   |   [DELETE] month-old-build  size=3000  date=2026-03-01  workflow=wf-300
+[Artifact Cleanup Script/Test max-age policy           ]   |   [DELETE] ancient-build  size=4000  date=2026-01-01  workflow=wf-300
+[Artifact Cleanup Script/Test max-age policy           ]   | 
+[Artifact Cleanup Script/Test max-age policy           ]   | --- Artifacts to KEEP ---
+[Artifact Cleanup Script/Test max-age policy           ]   |   [KEEP]   recent-build  size=1000  date=2026-04-05  workflow=wf-300
+[Artifact Cleanup Script/Test max-age policy           ]   |   [KEEP]   week-old-build  size=2000  date=2026-04-01  workflow=wf-300
+[Artifact Cleanup Script/Test max-age policy           ]   | 
+[Artifact Cleanup Script/Test max-age policy           ]   | --- Summary ---
+[Artifact Cleanup Script/Test max-age policy           ]   |   Total artifacts: 4
+[Artifact Cleanup Script/Test max-age policy           ]   |   Artifacts to delete: 2
+[Artifact Cleanup Script/Test max-age policy           ]   |   Artifacts to keep: 2
+[Artifact Cleanup Script/Test max-age policy           ]   |   Space reclaimed: 7000 bytes
+[Artifact Cleanup Script/Test max-age policy           ]   |   Space retained: 3000 bytes
+[Artifact Cleanup Script/Test max-age policy           ]   | ========================================
+[Artifact Cleanup Script/Test max-age policy           ]   | max-age test PASSED
+[Artifact Cleanup Script/Test max-age policy           ]   ✅  Success - Main Run max-age test [1.024718833s]
+[Artifact Cleanup Script/Test keep-latest-n policy     ]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Artifact Cleanup Script/Test combined policies        ] ⭐ Run Complete job
+[Artifact Cleanup Script/Test combined policies        ] Cleaning up container for job Test combined policies
+[Artifact Cleanup Script/Test dry-run and execute modes]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Artifact Cleanup Script/Test error handling           ]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Artifact Cleanup Script/Test max-total-size policy    ]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Artifact Cleanup Script/Test max-age policy           ] ⭐ Run Complete job
+[Artifact Cleanup Script/Test max-age policy           ] Cleaning up container for job Test max-age policy
+[Artifact Cleanup Script/Test error handling           ]   | ERROR: Input file not found: nonexistent.tsv
+[Artifact Cleanup Script/Test error handling           ]   | missing file error test PASSED
+[Artifact Cleanup Script/Test keep-latest-n policy     ]   | ========================================
+[Artifact Cleanup Script/Test keep-latest-n policy     ]   |   ARTIFACT CLEANUP PLAN
+[Artifact Cleanup Script/Test keep-latest-n policy     ]   |   Mode: DRY-RUN (no deletions)
+[Artifact Cleanup Script/Test keep-latest-n policy     ]   | ========================================
+[Artifact Cleanup Script/Test keep-latest-n policy     ]   | 
+[Artifact Cleanup Script/Test keep-latest-n policy     ]   | --- Artifacts to DELETE ---
+[Artifact Cleanup Script/Test keep-latest-n policy     ]   |   [DELETE] build-v1  size=1000  date=2026-01-01  workflow=wf-500
+[Artifact Cleanup Script/Test keep-latest-n policy     ]   |   [DELETE] build-v2  size=1000  date=2026-02-01  workflow=wf-500
+[Artifact Cleanup Script/Test keep-latest-n policy     ]   |   [DELETE] test-v1  size=500  date=2026-01-15  workflow=wf-600
+[Artifact Cleanup Script/Test keep-latest-n policy     ]   | 
+[Artifact Cleanup Script/Test keep-latest-n policy     ]   | --- Artifacts to KEEP ---
+[Artifact Cleanup Script/Test keep-latest-n policy     ]   |   [KEEP]   build-v3  size=1000  date=2026-03-01  workflow=wf-500
+[Artifact Cleanup Script/Test keep-latest-n policy     ]   |   [KEEP]   build-v4  size=1000  date=2026-04-01  workflow=wf-500
+[Artifact Cleanup Script/Test keep-latest-n policy     ]   |   [KEEP]   test-v2  size=500  date=2026-03-15  workflow=wf-600
+[Artifact Cleanup Script/Test keep-latest-n policy     ]   |   [KEEP]   test-v3  size=500  date=2026-04-05  workflow=wf-600
+[Artifact Cleanup Script/Test keep-latest-n policy     ]   | 
+[Artifact Cleanup Script/Test keep-latest-n policy     ]   | --- Summary ---
+[Artifact Cleanup Script/Test keep-latest-n policy     ]   |   Total artifacts: 7
+[Artifact Cleanup Script/Test keep-latest-n policy     ]   |   Artifacts to delete: 3
+[Artifact Cleanup Script/Test keep-latest-n policy     ]   |   Artifacts to keep: 4
+[Artifact Cleanup Script/Test keep-latest-n policy     ]   |   Space reclaimed: 2500 bytes
+[Artifact Cleanup Script/Test keep-latest-n policy     ]   |   Space retained: 3000 bytes
+[Artifact Cleanup Script/Test keep-latest-n policy     ]   | ========================================
+[Artifact Cleanup Script/Test error handling           ]   ✅  Success - Main Test missing input file [1.186705665s]
+[Artifact Cleanup Script/Test dry-run and execute modes]   | ========================================
+[Artifact Cleanup Script/Test dry-run and execute modes]   |   ARTIFACT CLEANUP PLAN
+[Artifact Cleanup Script/Test dry-run and execute modes]   |   Mode: DRY-RUN (no deletions)
+[Artifact Cleanup Script/Test dry-run and execute modes]   | ========================================
+[Artifact Cleanup Script/Test dry-run and execute modes]   | 
+[Artifact Cleanup Script/Test dry-run and execute modes]   | --- Artifacts to DELETE ---
+[Artifact Cleanup Script/Test dry-run and execute modes]   |   [DELETE] build-linux  size=5000  date=2026-01-01  workflow=wf-100
+[Artifact Cleanup Script/Test dry-run and execute modes]   |   [DELETE] build-macos  size=3000  date=2026-01-15  workflow=wf-100
+[Artifact Cleanup Script/Test dry-run and execute modes]   |   [DELETE] build-windows  size=4000  date=2026-02-01  workflow=wf-100
+[Artifact Cleanup Script/Test dry-run and execute modes]   | 
+[Artifact Cleanup Script/Test dry-run and execute modes]   | --- Artifacts to KEEP ---
+[Artifact Cleanup Script/Test dry-run and execute modes]   |   [KEEP]   test-results  size=2000  date=2026-03-01  workflow=wf-200
+[Artifact Cleanup Script/Test dry-run and execute modes]   |   [KEEP]   coverage-report  size=1500  date=2026-03-15  workflow=wf-200
+[Artifact Cleanup Script/Test dry-run and execute modes]   |   [KEEP]   lint-report  size=500  date=2026-04-01  workflow=wf-200
+[Artifact Cleanup Script/Test dry-run and execute modes]   | 
+[Artifact Cleanup Script/Test dry-run and execute modes]   | --- Summary ---
+[Artifact Cleanup Script/Test dry-run and execute modes]   |   Total artifacts: 6
+[Artifact Cleanup Script/Test dry-run and execute modes]   |   Artifacts to delete: 3
+[Artifact Cleanup Script/Test dry-run and execute modes]   |   Artifacts to keep: 3
+[Artifact Cleanup Script/Test dry-run and execute modes]   |   Space reclaimed: 12000 bytes
+[Artifact Cleanup Script/Test dry-run and execute modes]   |   Space retained: 4000 bytes
+[Artifact Cleanup Script/Test dry-run and execute modes]   | ========================================
+[Artifact Cleanup Script/Test keep-latest-n policy     ]   | keep-latest-n test PASSED
+[Artifact Cleanup Script/Test dry-run and execute modes]   | dry-run mode test PASSED
+[Artifact Cleanup Script/Test max-total-size policy    ]   | ========================================
+[Artifact Cleanup Script/Test max-total-size policy    ]   |   ARTIFACT CLEANUP PLAN
+[Artifact Cleanup Script/Test max-total-size policy    ]   |   Mode: DRY-RUN (no deletions)
+[Artifact Cleanup Script/Test max-total-size policy    ]   | ========================================
+[Artifact Cleanup Script/Test max-total-size policy    ]   | 
+[Artifact Cleanup Script/Test max-total-size policy    ]   | --- Artifacts to DELETE ---
+[Artifact Cleanup Script/Test max-total-size policy    ]   |   [DELETE] big-artifact  size=4000  date=2026-01-01  workflow=wf-400
+[Artifact Cleanup Script/Test max-total-size policy    ]   |   [DELETE] medium-artifact  size=3000  date=2026-02-01  workflow=wf-400
+[Artifact Cleanup Script/Test max-total-size policy    ]   | 
+[Artifact Cleanup Script/Test max-total-size policy    ]   | --- Artifacts to KEEP ---
+[Artifact Cleanup Script/Test max-total-size policy    ]   |   [KEEP]   small-artifact  size=2000  date=2026-03-01  workflow=wf-400
+[Artifact Cleanup Script/Test max-total-size policy    ]   |   [KEEP]   tiny-artifact  size=1000  date=2026-04-01  workflow=wf-400
+[Artifact Cleanup Script/Test max-total-size policy    ]   | 
+[Artifact Cleanup Script/Test max-total-size policy    ]   | --- Summary ---
+[Artifact Cleanup Script/Test max-total-size policy    ]   |   Total artifacts: 4
+[Artifact Cleanup Script/Test max-total-size policy    ]   |   Artifacts to delete: 2
+[Artifact Cleanup Script/Test max-total-size policy    ]   |   Artifacts to keep: 2
+[Artifact Cleanup Script/Test max-total-size policy    ]   |   Space reclaimed: 7000 bytes
+[Artifact Cleanup Script/Test max-total-size policy    ]   |   Space retained: 3000 bytes
+[Artifact Cleanup Script/Test max-total-size policy    ]   | ========================================
+[Artifact Cleanup Script/Test keep-latest-n policy     ]   ✅  Success - Main Run keep-latest-n test [1.542913749s]
+[Artifact Cleanup Script/Test dry-run and execute modes]   ✅  Success - Main Test dry-run mode (default) [1.489917877s]
+[Artifact Cleanup Script/Test max-total-size policy    ]   | max-total-size test PASSED
+[Artifact Cleanup Script/Test max-total-size policy    ]   ✅  Success - Main Run max-total-size test [1.544614612s]
+[Artifact Cleanup Script/Test keep-latest-n policy     ] ⭐ Run Complete job
+[Artifact Cleanup Script/Test keep-latest-n policy     ] Cleaning up container for job Test keep-latest-n policy
+[Artifact Cleanup Script/Test combined policies        ]   ✅  Success - Complete job
+[Artifact Cleanup Script/Test combined policies        ] 🏁  Job succeeded
+[Artifact Cleanup Script/Test max-total-size policy    ] ⭐ Run Complete job
+[Artifact Cleanup Script/Test max-total-size policy    ] Cleaning up container for job Test max-total-size policy
+[Artifact Cleanup Script/Test max-age policy           ]   ✅  Success - Complete job
+[Artifact Cleanup Script/Test max-age policy           ] 🏁  Job succeeded
+[Artifact Cleanup Script/Test error handling           ] ⭐ Run Main Test unknown option
+[Artifact Cleanup Script/Test dry-run and execute modes] ⭐ Run Main Test execute mode
+[Artifact Cleanup Script/Test keep-latest-n policy     ]   ✅  Success - Complete job
+[Artifact Cleanup Script/Test keep-latest-n policy     ] 🏁  Job succeeded
+[Artifact Cleanup Script/Test max-total-size policy    ]   ✅  Success - Complete job
+[Artifact Cleanup Script/Test max-total-size policy    ] 🏁  Job succeeded
+[Artifact Cleanup Script/Test error handling           ]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/3] user= workdir=
+[Artifact Cleanup Script/Test dry-run and execute modes]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/3] user= workdir=
+[Artifact Cleanup Script/Test error handling           ]   | ERROR: Unknown option: --bogus
+[Artifact Cleanup Script/Test error handling           ]   | unknown option error test PASSED
+[Artifact Cleanup Script/Test error handling           ]   ✅  Success - Main Test unknown option [677.406947ms]
+[Artifact Cleanup Script/Test dry-run and execute modes]   | ========================================
+[Artifact Cleanup Script/Test dry-run and execute modes]   |   ARTIFACT CLEANUP PLAN
+[Artifact Cleanup Script/Test dry-run and execute modes]   |   Mode: EXECUTE
+[Artifact Cleanup Script/Test dry-run and execute modes]   | ========================================
+[Artifact Cleanup Script/Test dry-run and execute modes]   | 
+[Artifact Cleanup Script/Test dry-run and execute modes]   | --- Artifacts to DELETE ---
+[Artifact Cleanup Script/Test dry-run and execute modes]   |   [DELETE] build-linux  size=5000  date=2026-01-01  workflow=wf-100
+[Artifact Cleanup Script/Test dry-run and execute modes]   |   [DELETE] build-macos  size=3000  date=2026-01-15  workflow=wf-100
+[Artifact Cleanup Script/Test dry-run and execute modes]   |   [DELETE] build-windows  size=4000  date=2026-02-01  workflow=wf-100
+[Artifact Cleanup Script/Test dry-run and execute modes]   | 
+[Artifact Cleanup Script/Test dry-run and execute modes]   | --- Artifacts to KEEP ---
+[Artifact Cleanup Script/Test dry-run and execute modes]   |   [KEEP]   test-results  size=2000  date=2026-03-01  workflow=wf-200
+[Artifact Cleanup Script/Test dry-run and execute modes]   |   [KEEP]   coverage-report  size=1500  date=2026-03-15  workflow=wf-200
+[Artifact Cleanup Script/Test dry-run and execute modes]   |   [KEEP]   lint-report  size=500  date=2026-04-01  workflow=wf-200
+[Artifact Cleanup Script/Test dry-run and execute modes]   | 
+[Artifact Cleanup Script/Test dry-run and execute modes]   | --- Summary ---
+[Artifact Cleanup Script/Test dry-run and execute modes]   |   Total artifacts: 6
+[Artifact Cleanup Script/Test dry-run and execute modes]   |   Artifacts to delete: 3
+[Artifact Cleanup Script/Test dry-run and execute modes]   |   Artifacts to keep: 3
+[Artifact Cleanup Script/Test dry-run and execute modes]   |   Space reclaimed: 12000 bytes
+[Artifact Cleanup Script/Test dry-run and execute modes]   |   Space retained: 4000 bytes
+[Artifact Cleanup Script/Test dry-run and execute modes]   | ========================================
+[Artifact Cleanup Script/Test dry-run and execute modes]   | 
+[Artifact Cleanup Script/Test dry-run and execute modes]   | --- Deletion Commands ---
+[Artifact Cleanup Script/Test dry-run and execute modes]   |   gh api -X DELETE /repos/{owner}/{repo}/actions/artifacts/build-linux
+[Artifact Cleanup Script/Test dry-run and execute modes]   |   gh api -X DELETE /repos/{owner}/{repo}/actions/artifacts/build-macos
+[Artifact Cleanup Script/Test dry-run and execute modes]   |   gh api -X DELETE /repos/{owner}/{repo}/actions/artifacts/build-windows
+[Artifact Cleanup Script/Test dry-run and execute modes]   | execute mode test PASSED
+[Artifact Cleanup Script/Test dry-run and execute modes]   ✅  Success - Main Test execute mode [707.16776ms]
+[Artifact Cleanup Script/Test dry-run and execute modes] ⭐ Run Complete job
+[Artifact Cleanup Script/Test dry-run and execute modes] Cleaning up container for job Test dry-run and execute modes
+[Artifact Cleanup Script/Test error handling           ] ⭐ Run Main Test empty input
+[Artifact Cleanup Script/Test error handling           ]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/4] user= workdir=
+[Artifact Cleanup Script/Test dry-run and execute modes]   ✅  Success - Complete job
+[Artifact Cleanup Script/Test dry-run and execute modes] 🏁  Job succeeded
+[Artifact Cleanup Script/Test error handling           ]   | ERROR: No artifacts loaded
+[Artifact Cleanup Script/Test error handling           ]   | empty input error test PASSED
+[Artifact Cleanup Script/Test error handling           ]   ✅  Success - Main Test empty input [571.72924ms]
+[Artifact Cleanup Script/Test error handling           ] ⭐ Run Complete job
+[Artifact Cleanup Script/Test error handling           ] Cleaning up container for job Test error handling
+[Artifact Cleanup Script/Test error handling           ]   ✅  Success - Complete job
+[Artifact Cleanup Script/Test error handling           ] 🏁  Job succeeded
+[Artifact Cleanup Script/All tests passed              ] ⭐ Run Set up job
+[Artifact Cleanup Script/All tests passed              ] 🚀  Start image=catthehacker/ubuntu:act-latest
+[Artifact Cleanup Script/All tests passed              ]   🐳  docker pull image=catthehacker/ubuntu:act-latest platform= username= forcePull=true
+[Artifact Cleanup Script/All tests passed              ] using DockerAuthConfig authentication for docker pull
+[Artifact Cleanup Script/All tests passed              ]   🐳  docker create image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/All tests passed              ]   🐳  docker run image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/All tests passed              ]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Artifact Cleanup Script/All tests passed              ]   ✅  Success - Set up job
+[Artifact Cleanup Script/All tests passed              ] ⭐ Run Main Report success
+[Artifact Cleanup Script/All tests passed              ]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/0] user= workdir=
+[Artifact Cleanup Script/All tests passed              ]   | All artifact cleanup tests passed successfully!
+[Artifact Cleanup Script/All tests passed              ]   ✅  Success - Main Report success [305.071361ms]
+[Artifact Cleanup Script/All tests passed              ] ⭐ Run Complete job
+[Artifact Cleanup Script/All tests passed              ] Cleaning up container for job All tests passed
+[Artifact Cleanup Script/All tests passed              ]   ✅  Success - Complete job
+[Artifact Cleanup Script/All tests passed              ] 🏁  Job succeeded
+
+PASS: full workflow — all jobs succeeded
+
