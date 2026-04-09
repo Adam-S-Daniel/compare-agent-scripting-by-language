@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-09 12:23:15 PM ET
+**Last updated:** 2026-04-09 01:12:12 PM ET
 
 **Status:** 4/1 runs completed, 0 remaining
 **Total cost so far:** $14.13
@@ -110,12 +110,15 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Trap | Mode | Model | Fell In | Time Lost | % of Time | $ Lost | % of $ |
 |------|------|-------|---------|-----------|-----------|--------|--------|
+| permission-denial-loops | csharp-script | opus | 1 | 41.3min | 98.0% | $14.97 | 105.93% |
+| permission-denial-loops | default | opus | 1 | 11.3min | 26.9% | $2.78 | 19.64% |
+| permission-denial-loops | powershell | opus | 1 | 6.3min | 15.0% | $1.67 | 11.83% |
+| permission-denial-loops | powershell-strict | opus | 1 | 11.5min | 27.3% | $4.04 | 28.58% |
+| dotnet-install-loop | csharp-script | opus | 1 | 30.4min | 72.1% | $11.01 | 77.91% |
 | repeated-test-reruns | default | opus | 2 | 14.7min | 34.8% | $3.59 | 25.42% |
 | repeated-test-reruns | powershell | opus | 1 | 1.7min | 4.0% | $0.44 | 3.11% |
 | repeated-test-reruns | powershell-strict | opus | 3 | 6.0min | 14.2% | $2.11 | 14.91% |
-| act-permission-path-errors | csharp-script | opus | 1 | 3.0min | 7.1% | $1.09 | 7.69% |
-| act-permission-path-errors | powershell-strict | opus | 1 | 1.0min | 2.4% | $0.35 | 2.49% |
-| **Total** | | | **4 runs** | **26.3min** | **62.5%** | **$7.58** | **53.62%** |
+| **Total** | | | **4 runs** | **123.2min** | **292.3%** | **$40.62** | **287.34%** |
 
 
 <details>
@@ -123,11 +126,14 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Trap | Mode | Model | Fell In | Time Lost | % of Time | $ Lost | % of $ |
 |------|------|-------|---------|-----------|-----------|--------|--------|
-| act-permission-path-errors | powershell-strict | opus | 1 | 1.0min | 2.4% | $0.35 | 2.49% |
 | repeated-test-reruns | powershell | opus | 1 | 1.7min | 4.0% | $0.44 | 3.11% |
-| act-permission-path-errors | csharp-script | opus | 1 | 3.0min | 7.1% | $1.09 | 7.69% |
 | repeated-test-reruns | powershell-strict | opus | 3 | 6.0min | 14.2% | $2.11 | 14.91% |
+| permission-denial-loops | powershell | opus | 1 | 6.3min | 15.0% | $1.67 | 11.83% |
+| permission-denial-loops | default | opus | 1 | 11.3min | 26.9% | $2.78 | 19.64% |
+| permission-denial-loops | powershell-strict | opus | 1 | 11.5min | 27.3% | $4.04 | 28.58% |
 | repeated-test-reruns | default | opus | 2 | 14.7min | 34.8% | $3.59 | 25.42% |
+| dotnet-install-loop | csharp-script | opus | 1 | 30.4min | 72.1% | $11.01 | 77.91% |
+| permission-denial-loops | csharp-script | opus | 1 | 41.3min | 98.0% | $14.97 | 105.93% |
 
 </details>
 
@@ -136,11 +142,14 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Trap | Mode | Model | Fell In | Time Lost | % of Time | $ Lost | % of $ |
 |------|------|-------|---------|-----------|-----------|--------|--------|
-| act-permission-path-errors | powershell-strict | opus | 1 | 1.0min | 2.4% | $0.35 | 2.49% |
 | repeated-test-reruns | powershell | opus | 1 | 1.7min | 4.0% | $0.44 | 3.11% |
-| act-permission-path-errors | csharp-script | opus | 1 | 3.0min | 7.1% | $1.09 | 7.69% |
+| permission-denial-loops | powershell | opus | 1 | 6.3min | 15.0% | $1.67 | 11.83% |
 | repeated-test-reruns | powershell-strict | opus | 3 | 6.0min | 14.2% | $2.11 | 14.91% |
+| permission-denial-loops | default | opus | 1 | 11.3min | 26.9% | $2.78 | 19.64% |
 | repeated-test-reruns | default | opus | 2 | 14.7min | 34.8% | $3.59 | 25.42% |
+| permission-denial-loops | powershell-strict | opus | 1 | 11.5min | 27.3% | $4.04 | 28.58% |
+| dotnet-install-loop | csharp-script | opus | 1 | 30.4min | 72.1% | $11.01 | 77.91% |
+| permission-denial-loops | csharp-script | opus | 1 | 41.3min | 98.0% | $14.97 | 105.93% |
 
 </details>
 
@@ -149,9 +158,12 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Trap | Mode | Model | Fell In | Time Lost | % of Time | $ Lost | % of $ |
 |------|------|-------|---------|-----------|-----------|--------|--------|
+| permission-denial-loops | csharp-script | opus | 1 | 41.3min | 98.0% | $14.97 | 105.93% |
+| permission-denial-loops | default | opus | 1 | 11.3min | 26.9% | $2.78 | 19.64% |
+| permission-denial-loops | powershell | opus | 1 | 6.3min | 15.0% | $1.67 | 11.83% |
+| permission-denial-loops | powershell-strict | opus | 1 | 11.5min | 27.3% | $4.04 | 28.58% |
+| dotnet-install-loop | csharp-script | opus | 1 | 30.4min | 72.1% | $11.01 | 77.91% |
 | repeated-test-reruns | powershell | opus | 1 | 1.7min | 4.0% | $0.44 | 3.11% |
-| act-permission-path-errors | csharp-script | opus | 1 | 3.0min | 7.1% | $1.09 | 7.69% |
-| act-permission-path-errors | powershell-strict | opus | 1 | 1.0min | 2.4% | $0.35 | 2.49% |
 | repeated-test-reruns | default | opus | 2 | 14.7min | 34.8% | $3.59 | 25.42% |
 | repeated-test-reruns | powershell-strict | opus | 3 | 6.0min | 14.2% | $2.11 | 14.91% |
 
@@ -159,7 +171,8 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 #### Trap Descriptions
 
-- **act-permission-path-errors**: Files not found or permission denied inside the act Docker container.
+- **dotnet-install-loop**: Agent stuck in loop trying to install/verify .NET SDK, blocked by CLI sandbox.
+- **permission-denial-loops**: CLI sandbox blocked commands and agent retried instead of adapting (v1 harness issue).
 - **repeated-test-reruns**: Same test command executed 4+ times without the underlying code changing.
 
 #### Column Definitions
@@ -175,11 +188,11 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Mode | Model | Runs | Trapped | Trap Rate | Traps | Time Lost | % of Time | $ Lost | % of $ |
 |------|-------|------|---------|-----------|-------|-----------|-----------|--------|--------|
-| csharp-script | opus | 1 | 1 | 100% | 1 | 3.0min | 7.1% | $1.09 | 7.69% |
-| default | opus | 1 | 1 | 100% | 2 | 14.7min | 34.8% | $3.59 | 25.42% |
-| powershell | opus | 1 | 1 | 100% | 1 | 1.7min | 4.0% | $0.44 | 3.11% |
-| powershell-strict | opus | 1 | 1 | 100% | 4 | 7.0min | 16.6% | $2.46 | 17.40% |
-| **Total** | | **4** | **4** | **100%** | **8** | **26.3min** | **62.5%** | **$7.58** | **53.62%** |
+| csharp-script | opus | 1 | 1 | 100% | 2 | 71.7min | 170.1% | $25.98 | 183.83% |
+| default | opus | 1 | 1 | 100% | 3 | 26.0min | 61.7% | $6.37 | 45.07% |
+| powershell | opus | 1 | 1 | 100% | 2 | 8.0min | 19.0% | $2.11 | 14.95% |
+| powershell-strict | opus | 1 | 1 | 100% | 4 | 17.5min | 41.5% | $6.15 | 43.50% |
+| **Total** | | **4** | **4** | **100%** | **11** | **123.2min** | **292.3%** | **$40.62** | **287.34%** |
 
 
 <details>
@@ -187,10 +200,10 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Mode | Model | Runs | Trapped | Trap Rate | Traps | Time Lost | % of Time | $ Lost | % of $ |
 |------|-------|------|---------|-----------|-------|-----------|-----------|--------|--------|
-| powershell | opus | 1 | 1 | 100% | 1 | 1.7min | 4.0% | $0.44 | 3.11% |
-| csharp-script | opus | 1 | 1 | 100% | 1 | 3.0min | 7.1% | $1.09 | 7.69% |
-| powershell-strict | opus | 1 | 1 | 100% | 4 | 7.0min | 16.6% | $2.46 | 17.40% |
-| default | opus | 1 | 1 | 100% | 2 | 14.7min | 34.8% | $3.59 | 25.42% |
+| powershell | opus | 1 | 1 | 100% | 2 | 8.0min | 19.0% | $2.11 | 14.95% |
+| powershell-strict | opus | 1 | 1 | 100% | 4 | 17.5min | 41.5% | $6.15 | 43.50% |
+| default | opus | 1 | 1 | 100% | 3 | 26.0min | 61.7% | $6.37 | 45.07% |
+| csharp-script | opus | 1 | 1 | 100% | 2 | 71.7min | 170.1% | $25.98 | 183.83% |
 
 </details>
 
@@ -199,10 +212,10 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Mode | Model | Runs | Trapped | Trap Rate | Traps | Time Lost | % of Time | $ Lost | % of $ |
 |------|-------|------|---------|-----------|-------|-----------|-----------|--------|--------|
-| powershell | opus | 1 | 1 | 100% | 1 | 1.7min | 4.0% | $0.44 | 3.11% |
-| csharp-script | opus | 1 | 1 | 100% | 1 | 3.0min | 7.1% | $1.09 | 7.69% |
-| powershell-strict | opus | 1 | 1 | 100% | 4 | 7.0min | 16.6% | $2.46 | 17.40% |
-| default | opus | 1 | 1 | 100% | 2 | 14.7min | 34.8% | $3.59 | 25.42% |
+| powershell | opus | 1 | 1 | 100% | 2 | 8.0min | 19.0% | $2.11 | 14.95% |
+| powershell-strict | opus | 1 | 1 | 100% | 4 | 17.5min | 41.5% | $6.15 | 43.50% |
+| default | opus | 1 | 1 | 100% | 3 | 26.0min | 61.7% | $6.37 | 45.07% |
+| csharp-script | opus | 1 | 1 | 100% | 2 | 71.7min | 170.1% | $25.98 | 183.83% |
 
 </details>
 
@@ -211,10 +224,10 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Mode | Model | Runs | Trapped | Trap Rate | Traps | Time Lost | % of Time | $ Lost | % of $ |
 |------|-------|------|---------|-----------|-------|-----------|-----------|--------|--------|
-| csharp-script | opus | 1 | 1 | 100% | 1 | 3.0min | 7.1% | $1.09 | 7.69% |
-| default | opus | 1 | 1 | 100% | 2 | 14.7min | 34.8% | $3.59 | 25.42% |
-| powershell | opus | 1 | 1 | 100% | 1 | 1.7min | 4.0% | $0.44 | 3.11% |
-| powershell-strict | opus | 1 | 1 | 100% | 4 | 7.0min | 16.6% | $2.46 | 17.40% |
+| csharp-script | opus | 1 | 1 | 100% | 2 | 71.7min | 170.1% | $25.98 | 183.83% |
+| default | opus | 1 | 1 | 100% | 3 | 26.0min | 61.7% | $6.37 | 45.07% |
+| powershell | opus | 1 | 1 | 100% | 2 | 8.0min | 19.0% | $2.11 | 14.95% |
+| powershell-strict | opus | 1 | 1 | 100% | 4 | 17.5min | 41.5% | $6.15 | 43.50% |
 
 </details>
 
