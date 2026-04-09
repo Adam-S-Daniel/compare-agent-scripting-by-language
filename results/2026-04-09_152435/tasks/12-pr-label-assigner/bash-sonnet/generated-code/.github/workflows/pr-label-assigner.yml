@@ -1,0 +1,119 @@
+name: PR Label Assigner
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  label-assigner:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Install bats-core and shellcheck from apt (available on ubuntu-latest)
+      - name: Install bats and shellcheck
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q bats shellcheck
+
+      # Install actionlint for workflow validation test inside the container
+      - name: Install actionlint
+        run: |
+          if command -v actionlint >/dev/null 2>&1; then
+            echo "actionlint already present: $(actionlint --version)"
+          else
+            ACTIONLINT_VERSION=1.7.7
+            wget -q \
+              "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz" \
+              -O /tmp/actionlint.tar.gz
+            tar xzf /tmp/actionlint.tar.gz -C /tmp/ actionlint
+            sudo mv /tmp/actionlint /usr/local/bin/actionlint
+            echo "actionlint installed: $(actionlint --version)"
+          fi
+
+      - name: Make script executable
+        run: chmod +x pr-label-assigner.sh
+
+      # -----------------------------------------------------------------------
+      # Run the full bats test suite.  All 33 tests must pass.
+      # -----------------------------------------------------------------------
+      - name: Run bats tests
+        run: bats tests/pr-label-assigner.bats
+
+      # -----------------------------------------------------------------------
+      # Validate workflow YAML with actionlint (mirrors the bats test but runs
+      # unconditionally so the result is always visible in act output).
+      # -----------------------------------------------------------------------
+      - name: Validate workflow with actionlint
+        run: |
+          actionlint .github/workflows/pr-label-assigner.yml
+          echo "ACTIONLINT_RESULT: passed"
+
+      # -----------------------------------------------------------------------
+      # Deterministic test cases used by run-tests.sh to assert exact output.
+      # Each step echoes a TOKEN: VALUE line that the harness greps for.
+      # -----------------------------------------------------------------------
+
+      - name: Test Case 1 - docs file gets documentation label
+        run: |
+          result=$(./pr-label-assigner.sh fixtures/test-rules.conf docs/README.md)
+          labels=$(printf '%s\n' "$result" | tr '\n' ' ' | xargs)
+          echo "LABELS_TC1: $labels"
+          [ "$labels" = "documentation" ]
+
+      - name: Test Case 2 - api file gets api label
+        run: |
+          result=$(./pr-label-assigner.sh fixtures/test-rules.conf src/api/users.ts)
+          labels=$(printf '%s\n' "$result" | tr '\n' ' ' | xargs)
+          echo "LABELS_TC2: $labels"
+          [ "$labels" = "api" ]
+
+      - name: Test Case 3 - test file gets tests label
+        run: |
+          result=$(./pr-label-assigner.sh fixtures/test-rules.conf src/utils.test.ts)
+          labels=$(printf '%s\n' "$result" | tr '\n' ' ' | xargs)
+          echo "LABELS_TC3: $labels"
+          [ "$labels" = "tests" ]
+
+      - name: Test Case 4 - multiple files get multiple labels
+        run: |
+          result=$(./pr-label-assigner.sh fixtures/test-rules.conf docs/README.md src/api/users.ts)
+          labels=$(printf '%s\n' "$result" | tr '\n' ' ' | xargs)
+          echo "LABELS_TC4: $labels"
+          [ "$labels" = "documentation api" ]
+
+      - name: Test Case 5 - complex multi-match produces three labels
+        run: |
+          result=$(./pr-label-assigner.sh fixtures/test-rules.conf docs/README.md src/api/utils.test.ts)
+          labels=$(printf '%s\n' "$result" | tr '\n' ' ' | xargs)
+          echo "LABELS_TC5: $labels"
+          [ "$labels" = "documentation api tests" ]
+
+      - name: Test Case 6 - no matching files yields empty output
+        run: |
+          result=$(./pr-label-assigner.sh fixtures/test-rules.conf unknown/file.xyz 2>/dev/null) || true
+          echo "LABELS_TC6: ${result:-empty}"
+          [ -z "$result" ]
+
+      # -----------------------------------------------------------------------
+      # Demo: run the label assigner with the production config on a realistic
+      # simulated PR diff to show end-to-end behavior.
+      # -----------------------------------------------------------------------
+      - name: Demo with full production config
+        run: |
+          echo "=== PR Label Assigner Demo ==="
+          echo "Simulated changed files:"
+          echo "  src/api/users.ts"
+          echo "  docs/guide.md"
+          echo "  src/utils.test.ts"
+          echo "  package.json"
+          result=$(./pr-label-assigner.sh label-rules.conf \
+            src/api/users.ts docs/guide.md src/utils.test.ts package.json)
+          echo "Applied labels:"
+          printf '%s\n' "$result"
+          echo "DEMO_COMPLETE: true"
