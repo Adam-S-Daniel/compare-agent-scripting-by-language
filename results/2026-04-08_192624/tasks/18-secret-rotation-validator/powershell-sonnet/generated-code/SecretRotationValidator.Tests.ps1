@@ -1,407 +1,382 @@
-#Requires -Modules @{ModuleName='Pester';ModuleVersion='5.0.0'}
-
-# TDD Approach: Tests written FIRST (red), then implementation (green), then refactor.
-# Each Describe block represents one TDD cycle.
+# Secret Rotation Validator - Pester Tests
+# TDD approach: write failing tests first, then implement to make them pass
+#
+# Test reference date: 2026-04-09 (fixed to make tests deterministic)
+# Fixture secrets and expected results are calculated relative to this date.
 
 BeforeAll {
-    # Import the module directly (avoids CmdletBinding param-set conflicts
-    # that arise when dot-sourcing a script with its own param() block).
-    Import-Module -Name "$PSScriptRoot/SecretRotationValidator.psm1" -Force
+    # Source the implementation (will fail until we create it)
+    . "$PSScriptRoot/SecretRotationValidator.ps1"
 
-    # Fixed reference date for deterministic testing (2026-04-09)
-    $script:AsOf = [DateTime]"2026-04-09"
+    # Fixed reference date for deterministic testing
+    $script:TestDate = [datetime]"2026-04-09"
 }
 
-# ============================================================
-# TDD Round 1: Get-SecretDaysUntilExpiry
-# Tests written BEFORE the function exists (red phase)
-# ============================================================
-Describe "Get-SecretDaysUntilExpiry" {
-    It "returns negative value for an expired secret" {
-        # Policy: 90 days. Last rotated 2025-12-01. Expiry: 2026-03-01.
-        # Days from 2026-03-01 to 2026-04-09 = 39 days over expiry => -39
-        $result = Get-SecretDaysUntilExpiry `
-            -LastRotated ([DateTime]"2025-12-01") `
-            -RotationPolicyDays 90 `
-            -AsOf $script:AsOf
-        $result | Should -Be -39
+Describe "Get-SecretStatus" {
+    # Unit tests for individual secret classification
+
+    Context "Expired secrets" {
+        It "marks a secret as EXPIRED when past rotation deadline" {
+            # DB_PASSWORD: lastRotated=2025-12-01, policy=90 days
+            # Deadline = 2026-03-01; today=2026-04-09 -> 39 days overdue
+            $secret = @{
+                name               = "DB_PASSWORD"
+                lastRotated        = "2025-12-01"
+                rotationPolicyDays = 90
+                requiredBy         = @("api-service", "worker-service")
+            }
+            $result = Get-SecretStatus -Secret $secret -ReferenceDate $script:TestDate
+            $result.Status | Should -Be "EXPIRED"
+        }
+
+        It "calculates correct days overdue for expired secrets" {
+            $secret = @{
+                name               = "DB_PASSWORD"
+                lastRotated        = "2025-12-01"
+                rotationPolicyDays = 90
+                requiredBy         = @("api-service")
+            }
+            $result = Get-SecretStatus -Secret $secret -ReferenceDate $script:TestDate
+            # Deadline=2026-03-01, today=2026-04-09, overdue=39 days
+            $result.DaysOverdue | Should -Be 39
+        }
+
+        It "marks a secret expired on the exact deadline day" {
+            # lastRotated=2026-01-09, policy=90 -> deadline=2026-04-09 (today = deadline)
+            $secret = @{
+                name               = "DEADLINE_TODAY"
+                lastRotated        = "2026-01-09"
+                rotationPolicyDays = 90
+                requiredBy         = @()
+            }
+            $result = Get-SecretStatus -Secret $secret -ReferenceDate $script:TestDate
+            # On the deadline day, it should be EXPIRED (0 days remaining means it must rotate now)
+            $result.Status | Should -Be "EXPIRED"
+        }
     }
 
-    It "returns positive value for a secret expiring in the future" {
-        # Policy: 90 days. Last rotated 2026-01-29. Expiry: 2026-04-29.
-        # Days from 2026-04-09 to 2026-04-29 = 20 days remaining
-        $result = Get-SecretDaysUntilExpiry `
-            -LastRotated ([DateTime]"2026-01-29") `
-            -RotationPolicyDays 90 `
-            -AsOf $script:AsOf
-        $result | Should -Be 20
+    Context "Warning secrets" {
+        It "marks a secret as WARNING when within warning window" {
+            # API_KEY_STRIPE: lastRotated=2026-03-20, policy=30 days
+            # Deadline = 2026-04-19; today=2026-04-09 -> 10 days until expiry (within 14-day window)
+            $secret = @{
+                name               = "API_KEY_STRIPE"
+                lastRotated        = "2026-03-20"
+                rotationPolicyDays = 30
+                requiredBy         = @("payment-service")
+            }
+            $result = Get-SecretStatus -Secret $secret -ReferenceDate $script:TestDate -WarningWindowDays 14
+            $result.Status | Should -Be "WARNING"
+        }
+
+        It "calculates correct days remaining for warning secrets" {
+            $secret = @{
+                name               = "API_KEY_STRIPE"
+                lastRotated        = "2026-03-20"
+                rotationPolicyDays = 30
+                requiredBy         = @()
+            }
+            $result = Get-SecretStatus -Secret $secret -ReferenceDate $script:TestDate -WarningWindowDays 14
+            $result.DaysRemaining | Should -Be 10
+        }
+
+        It "marks JWT_SECRET as WARNING with 2 days remaining" {
+            # JWT_SECRET: lastRotated=2026-03-28, policy=14 days
+            # Deadline = 2026-04-11; today=2026-04-09 -> 2 days remaining
+            $secret = @{
+                name               = "JWT_SECRET"
+                lastRotated        = "2026-03-28"
+                rotationPolicyDays = 14
+                requiredBy         = @("auth-service")
+            }
+            $result = Get-SecretStatus -Secret $secret -ReferenceDate $script:TestDate -WarningWindowDays 14
+            $result.Status | Should -Be "WARNING"
+            $result.DaysRemaining | Should -Be 2
+        }
     }
 
-    It "returns a large positive value for a recently rotated secret" {
-        # Policy: 90 days. Last rotated 2026-03-10. Expiry: 2026-06-08.
-        # Days from 2026-04-09 to 2026-06-08 = 60 days remaining
-        $result = Get-SecretDaysUntilExpiry `
-            -LastRotated ([DateTime]"2026-03-10") `
-            -RotationPolicyDays 90 `
-            -AsOf $script:AsOf
-        $result | Should -Be 60
-    }
+    Context "OK secrets" {
+        It "marks a secret as OK when well within rotation period" {
+            # SMTP_PASSWORD: lastRotated=2026-04-01, policy=60 days
+            # Deadline = 2026-05-31; today=2026-04-09 -> 52 days remaining
+            $secret = @{
+                name               = "SMTP_PASSWORD"
+                lastRotated        = "2026-04-01"
+                rotationPolicyDays = 60
+                requiredBy         = @("notification-service")
+            }
+            $result = Get-SecretStatus -Secret $secret -ReferenceDate $script:TestDate -WarningWindowDays 14
+            $result.Status | Should -Be "OK"
+        }
 
-    It "returns 0 when the secret expires exactly today" {
-        # Expired exactly on AsOf date
-        $lastRotated = $script:AsOf.AddDays(-90)
-        $result = Get-SecretDaysUntilExpiry `
-            -LastRotated $lastRotated `
-            -RotationPolicyDays 90 `
-            -AsOf $script:AsOf
-        $result | Should -Be 0
-    }
-
-    It "uses current date as default AsOf when not specified" {
-        $lastRotated = (Get-Date).AddDays(-50)
-        $result = Get-SecretDaysUntilExpiry -LastRotated $lastRotated -RotationPolicyDays 90
-        # Should be approximately 40 days (90 - 50). Use -BeGreaterOrEqual/-BeLessOrEqual
-        # because Pester 5.7 does not have -BeInRange.
-        $result | Should -BeGreaterOrEqual 39
-        $result | Should -BeLessOrEqual 41
+        It "calculates correct days remaining for OK secrets" {
+            $secret = @{
+                name               = "SMTP_PASSWORD"
+                lastRotated        = "2026-04-01"
+                rotationPolicyDays = 60
+                requiredBy         = @()
+            }
+            $result = Get-SecretStatus -Secret $secret -ReferenceDate $script:TestDate -WarningWindowDays 14
+            $result.DaysRemaining | Should -Be 52
+        }
     }
 }
 
-# ============================================================
-# TDD Round 2: Get-SecretUrgency
-# ============================================================
-Describe "Get-SecretUrgency" {
-    It "returns 'expired' when days until expiry is negative" {
-        $result = Get-SecretUrgency -DaysUntilExpiry -39 -WarningWindowDays 30
-        $result | Should -Be "expired"
-    }
-
-    It "returns 'expired' when days until expiry is zero" {
-        $result = Get-SecretUrgency -DaysUntilExpiry 0 -WarningWindowDays 30
-        $result | Should -Be "expired"
-    }
-
-    It "returns 'warning' when days until expiry is within the warning window" {
-        $result = Get-SecretUrgency -DaysUntilExpiry 20 -WarningWindowDays 30
-        $result | Should -Be "warning"
-    }
-
-    It "returns 'warning' when days until expiry equals the warning window boundary" {
-        $result = Get-SecretUrgency -DaysUntilExpiry 30 -WarningWindowDays 30
-        $result | Should -Be "warning"
-    }
-
-    It "returns 'ok' when days until expiry exceeds the warning window" {
-        $result = Get-SecretUrgency -DaysUntilExpiry 60 -WarningWindowDays 30
-        $result | Should -Be "ok"
-    }
-
-    It "uses default warning window of 30 days when not specified" {
-        $result = Get-SecretUrgency -DaysUntilExpiry 25
-        $result | Should -Be "warning"
-    }
-}
-
-# ============================================================
-# TDD Round 3: Get-SecretRotationReport
-# ============================================================
-Describe "Get-SecretRotationReport" {
+Describe "Get-RotationReport" {
     BeforeAll {
-        # Fixture: mixed urgency secrets
-        $script:MixedSecrets = @(
-            [PSCustomObject]@{
-                Name               = "DB_PASSWORD"
-                LastRotated        = [DateTime]"2025-12-01"
-                RotationPolicyDays = 90
-                RequiredByServices = @("api", "database")
-            },
-            [PSCustomObject]@{
-                Name               = "API_KEY"
-                LastRotated        = [DateTime]"2026-01-29"
-                RotationPolicyDays = 90
-                RequiredByServices = @("frontend", "mobile")
-            },
-            [PSCustomObject]@{
-                Name               = "JWT_SECRET"
-                LastRotated        = [DateTime]"2026-03-10"
-                RotationPolicyDays = 90
-                RequiredByServices = @("auth-service")
-            }
-        )
+        $script:Fixture = Get-Content "$PSScriptRoot/fixtures/secrets-fixture.json" -Raw | ConvertFrom-Json
     }
 
-    It "groups secrets by urgency: expired, warning, ok" {
-        $report = Get-SecretRotationReport `
-            -Secrets $script:MixedSecrets `
-            -WarningWindowDays 30 `
-            -AsOf $script:AsOf
-
-        $report.expired | Should -HaveCount 1
-        $report.warning | Should -HaveCount 1
-        $report.ok | Should -HaveCount 1
+    It "returns a report object with grouped secrets" {
+        $report = Get-RotationReport -Config $script:Fixture -ReferenceDate $script:TestDate
+        $report | Should -Not -BeNullOrEmpty
+        $report.Expired | Should -Not -BeNullOrEmpty
+        $report.Warning | Should -Not -BeNullOrEmpty
+        $report.OK | Should -Not -BeNullOrEmpty
     }
 
-    It "puts DB_PASSWORD (expired) in the expired group" {
-        $report = Get-SecretRotationReport `
-            -Secrets $script:MixedSecrets `
-            -WarningWindowDays 30 `
-            -AsOf $script:AsOf
-
-        $report.expired[0].Name | Should -Be "DB_PASSWORD"
-        $report.expired[0].DaysUntilExpiry | Should -Be -39
+    It "correctly classifies 1 expired, 2 warning, 1 ok from fixture" {
+        $report = Get-RotationReport -Config $script:Fixture -ReferenceDate $script:TestDate
+        $report.Expired.Count | Should -Be 1
+        $report.Warning.Count | Should -Be 2
+        $report.OK.Count | Should -Be 1
     }
 
-    It "puts API_KEY (warning) in the warning group with correct days" {
-        $report = Get-SecretRotationReport `
-            -Secrets $script:MixedSecrets `
-            -WarningWindowDays 30 `
-            -AsOf $script:AsOf
-
-        $report.warning[0].Name | Should -Be "API_KEY"
-        $report.warning[0].DaysUntilExpiry | Should -Be 20
+    It "puts DB_PASSWORD in Expired group" {
+        $report = Get-RotationReport -Config $script:Fixture -ReferenceDate $script:TestDate
+        $report.Expired[0].Name | Should -Be "DB_PASSWORD"
     }
 
-    It "puts JWT_SECRET (ok) in the ok group with correct days" {
-        $report = Get-SecretRotationReport `
-            -Secrets $script:MixedSecrets `
-            -WarningWindowDays 30 `
-            -AsOf $script:AsOf
-
-        $report.ok[0].Name | Should -Be "JWT_SECRET"
-        $report.ok[0].DaysUntilExpiry | Should -Be 60
+    It "puts SMTP_PASSWORD in OK group" {
+        $report = Get-RotationReport -Config $script:Fixture -ReferenceDate $script:TestDate
+        $report.OK[0].Name | Should -Be "SMTP_PASSWORD"
     }
 
-    It "preserves RequiredByServices in each enriched secret" {
-        $report = Get-SecretRotationReport `
-            -Secrets $script:MixedSecrets `
-            -WarningWindowDays 30 `
-            -AsOf $script:AsOf
-
-        $report.expired[0].RequiredByServices | Should -Contain "api"
-        $report.expired[0].RequiredByServices | Should -Contain "database"
-    }
-
-    It "includes summary counts in the report" {
-        $report = Get-SecretRotationReport `
-            -Secrets $script:MixedSecrets `
-            -WarningWindowDays 30 `
-            -AsOf $script:AsOf
-
-        $report.summary.expired | Should -Be 1
-        $report.summary.warning | Should -Be 1
-        $report.summary.ok | Should -Be 1
-    }
-
-    It "returns empty groups when all secrets are ok" {
-        $allOkSecrets = @(
-            [PSCustomObject]@{
-                Name               = "NEW_SECRET"
-                LastRotated        = [DateTime]"2026-03-15"
-                RotationPolicyDays = 90
-                RequiredByServices = @("service1")
-            }
-        )
-        $report = Get-SecretRotationReport `
-            -Secrets $allOkSecrets `
-            -WarningWindowDays 30 `
-            -AsOf $script:AsOf
-
-        $report.expired | Should -HaveCount 0
-        $report.warning | Should -HaveCount 0
-        $report.ok | Should -HaveCount 1
+    It "includes required-by services in the report" {
+        $report = Get-RotationReport -Config $script:Fixture -ReferenceDate $script:TestDate
+        $expired = $report.Expired[0]
+        $expired.RequiredBy | Should -Contain "api-service"
+        $expired.RequiredBy | Should -Contain "worker-service"
     }
 }
 
-# ============================================================
-# TDD Round 4: Format-RotationReportMarkdown
-# ============================================================
 Describe "Format-RotationReportMarkdown" {
     BeforeAll {
-        # Build a sample report for formatting tests
-        $secrets = @(
-            [PSCustomObject]@{
-                Name               = "DB_PASSWORD"
-                LastRotated        = [DateTime]"2025-12-01"
-                RotationPolicyDays = 90
-                RequiredByServices = @("api", "database")
-            },
-            [PSCustomObject]@{
-                Name               = "API_KEY"
-                LastRotated        = [DateTime]"2026-01-29"
-                RotationPolicyDays = 90
-                RequiredByServices = @("frontend")
-            },
-            [PSCustomObject]@{
-                Name               = "JWT_SECRET"
-                LastRotated        = [DateTime]"2026-03-10"
-                RotationPolicyDays = 90
-                RequiredByServices = @("auth-service")
-            }
-        )
-        $script:SampleReport = Get-SecretRotationReport `
-            -Secrets $secrets -WarningWindowDays 30 -AsOf $script:AsOf
+        $fixture = Get-Content "$PSScriptRoot/fixtures/secrets-fixture.json" -Raw | ConvertFrom-Json
+        $script:Report = Get-RotationReport -Config $fixture -ReferenceDate $script:TestDate
     }
 
-    It "contains a main title" {
-        $md = Format-RotationReportMarkdown -Report $script:SampleReport
-        $md | Should -Match "# Secret Rotation Report"
+    It "produces output containing markdown table header" {
+        $md = Format-RotationReportMarkdown -Report $script:Report
+        $md | Should -Match "\| Name \|"
+        $md | Should -Match "\| Status \|"
     }
 
-    It "has an Expired Secrets section" {
-        $md = Format-RotationReportMarkdown -Report $script:SampleReport
-        $md | Should -Match "Expired Secrets"
+    It "includes EXPIRED section heading" {
+        $md = Format-RotationReportMarkdown -Report $script:Report
+        $md | Should -Match "## .*Expired"
     }
 
-    It "has a Warning section" {
-        $md = Format-RotationReportMarkdown -Report $script:SampleReport
-        $md | Should -Match "Warning"
+    It "includes WARNING section heading" {
+        $md = Format-RotationReportMarkdown -Report $script:Report
+        $md | Should -Match "## .*Warning"
     }
 
-    It "has an OK section" {
-        $md = Format-RotationReportMarkdown -Report $script:SampleReport
-        $md | Should -Match "OK"
+    It "includes OK section heading" {
+        $md = Format-RotationReportMarkdown -Report $script:Report
+        $md | Should -Match "## .*OK|## .*Ok"
     }
 
-    It "lists expired secret DB_PASSWORD in the table" {
-        $md = Format-RotationReportMarkdown -Report $script:SampleReport
+    It "contains DB_PASSWORD in expired section" {
+        $md = Format-RotationReportMarkdown -Report $script:Report
         $md | Should -Match "DB_PASSWORD"
     }
 
-    It "lists warning secret API_KEY in the table" {
-        $md = Format-RotationReportMarkdown -Report $script:SampleReport
-        $md | Should -Match "API_KEY"
-    }
-
-    It "includes table pipe characters for markdown tables" {
-        $md = Format-RotationReportMarkdown -Report $script:SampleReport
-        $md | Should -Match "\|"
-    }
-
-    It "shows correct days until expiry for expired secret (-39)" {
-        $md = Format-RotationReportMarkdown -Report $script:SampleReport
-        $md | Should -Match "\-39"
-    }
-
-    It "shows correct days until expiry for warning secret (20)" {
-        $md = Format-RotationReportMarkdown -Report $script:SampleReport
-        $md | Should -Match "\b20\b"
+    It "contains SMTP_PASSWORD in ok section" {
+        $md = Format-RotationReportMarkdown -Report $script:Report
+        $md | Should -Match "SMTP_PASSWORD"
     }
 }
 
-# ============================================================
-# TDD Round 5: Format-RotationReportJson
-# ============================================================
 Describe "Format-RotationReportJson" {
     BeforeAll {
-        $secrets = @(
-            [PSCustomObject]@{
-                Name               = "DB_PASSWORD"
-                LastRotated        = [DateTime]"2025-12-01"
-                RotationPolicyDays = 90
-                RequiredByServices = @("api", "database")
-            },
-            [PSCustomObject]@{
-                Name               = "API_KEY"
-                LastRotated        = [DateTime]"2026-01-29"
-                RotationPolicyDays = 90
-                RequiredByServices = @("frontend")
-            }
-        )
-        $script:SmallReport = Get-SecretRotationReport `
-            -Secrets $secrets -WarningWindowDays 30 -AsOf $script:AsOf
+        $fixture = Get-Content "$PSScriptRoot/fixtures/secrets-fixture.json" -Raw | ConvertFrom-Json
+        $script:Report = Get-RotationReport -Config $fixture -ReferenceDate $script:TestDate
     }
 
-    It "produces valid JSON that can be parsed" {
-        $json = Format-RotationReportJson -Report $script:SmallReport
+    It "produces valid JSON output" {
+        $json = Format-RotationReportJson -Report $script:Report
         { $json | ConvertFrom-Json } | Should -Not -Throw
     }
 
-    It "includes summary with correct counts" {
-        $json = Format-RotationReportJson -Report $script:SmallReport
-        $parsed = $json | ConvertFrom-Json
-        $parsed.summary.expired | Should -Be 1
-        $parsed.summary.warning | Should -Be 1
-        $parsed.summary.ok | Should -Be 0
+    It "JSON contains expired array with 1 item" {
+        $json = Format-RotationReportJson -Report $script:Report
+        $obj = $json | ConvertFrom-Json
+        $obj.expired.Count | Should -Be 1
     }
 
-    It "includes expired secrets array with DB_PASSWORD" {
-        $json = Format-RotationReportJson -Report $script:SmallReport
-        $parsed = $json | ConvertFrom-Json
-        $parsed.expired | Should -HaveCount 1
-        $parsed.expired[0].Name | Should -Be "DB_PASSWORD"
+    It "JSON contains warning array with 2 items" {
+        $json = Format-RotationReportJson -Report $script:Report
+        $obj = $json | ConvertFrom-Json
+        $obj.warning.Count | Should -Be 2
     }
 
-    It "includes warning secrets array with API_KEY" {
-        $json = Format-RotationReportJson -Report $script:SmallReport
-        $parsed = $json | ConvertFrom-Json
-        $parsed.warning | Should -HaveCount 1
-        $parsed.warning[0].Name | Should -Be "API_KEY"
+    It "JSON contains ok array with 1 item" {
+        $json = Format-RotationReportJson -Report $script:Report
+        $obj = $json | ConvertFrom-Json
+        $obj.ok.Count | Should -Be 1
     }
 
-    It "includes generatedAt timestamp field" {
-        $json = Format-RotationReportJson -Report $script:SmallReport
-        $parsed = $json | ConvertFrom-Json
-        $parsed.generatedAt | Should -Not -BeNullOrEmpty
-    }
-
-    It "includes DaysUntilExpiry field with exact value for expired secret" {
-        $json = Format-RotationReportJson -Report $script:SmallReport
-        $parsed = $json | ConvertFrom-Json
-        $parsed.expired[0].DaysUntilExpiry | Should -Be -39
+    It "JSON summary has correct total count" {
+        $json = Format-RotationReportJson -Report $script:Report
+        $obj = $json | ConvertFrom-Json
+        $obj.summary.total | Should -Be 4
+        $obj.summary.expiredCount | Should -Be 1
+        $obj.summary.warningCount | Should -Be 2
+        $obj.summary.okCount | Should -Be 1
     }
 }
 
-# ============================================================
-# TDD Round 6: Read-SecretsConfig (load from JSON file)
-# ============================================================
-Describe "Read-SecretsConfig" {
-    BeforeAll {
-        # Create a temporary config file for testing
-        $script:TempConfigFile = Join-Path $TestDrive "test-secrets.json"
-        $configContent = @{
-            warningWindowDays = 30
-            asOf              = "2026-04-09"
-            secrets           = @(
-                @{
-                    name               = "TEST_SECRET"
-                    lastRotated        = "2025-12-01"
-                    rotationPolicyDays = 90
-                    requiredByServices = @("test-service")
-                }
-            )
-        } | ConvertTo-Json -Depth 5
-        Set-Content -Path $script:TempConfigFile -Value $configContent
+Describe "Invoke-SecretRotationValidator (main entry point)" {
+    It "accepts a config file path and returns report" {
+        $result = Invoke-SecretRotationValidator `
+            -ConfigPath "$PSScriptRoot/fixtures/secrets-fixture.json" `
+            -OutputFormat "JSON" `
+            -ReferenceDate $script:TestDate
+        $result | Should -Not -BeNullOrEmpty
     }
 
-    It "reads and parses a valid JSON config file" {
-        $config = Read-SecretsConfig -ConfigFile $script:TempConfigFile
-        $config | Should -Not -BeNullOrEmpty
-        $config.secrets | Should -HaveCount 1
+    It "defaults to markdown output format" {
+        $result = Invoke-SecretRotationValidator `
+            -ConfigPath "$PSScriptRoot/fixtures/secrets-fixture.json" `
+            -ReferenceDate $script:TestDate
+        $result | Should -Match "\|"
     }
 
-    It "returns warningWindowDays from config" {
-        $config = Read-SecretsConfig -ConfigFile $script:TempConfigFile
-        $config.warningWindowDays | Should -Be 30
-    }
-
-    It "returns asOf date from config" {
-        $config = Read-SecretsConfig -ConfigFile $script:TempConfigFile
-        $config.asOf | Should -Be "2026-04-09"
-    }
-
-    It "parses secret name correctly" {
-        $config = Read-SecretsConfig -ConfigFile $script:TempConfigFile
-        $config.secrets[0].name | Should -Be "TEST_SECRET"
-    }
-
-    It "throws a meaningful error for missing file" {
-        { Read-SecretsConfig -ConfigFile "/nonexistent/path/secrets.json" } |
+    It "throws a meaningful error for missing config file" {
+        { Invoke-SecretRotationValidator -ConfigPath "/nonexistent/path.json" } |
             Should -Throw "*not found*"
     }
+}
 
-    It "throws a meaningful error for invalid JSON" {
-        $badFile = Join-Path $TestDrive "bad.json"
-        Set-Content -Path $badFile -Value "{ not valid json"
-        { Read-SecretsConfig -ConfigFile $badFile } | Should -Throw
+Describe "Workflow Structure Tests" {
+    BeforeAll {
+        $script:WorkflowPath = "$PSScriptRoot/.github/workflows/secret-rotation-validator.yml"
+    }
+
+    It "workflow file exists" {
+        Test-Path $script:WorkflowPath | Should -Be $true
+    }
+
+    It "workflow file is valid YAML (actionlint passes)" {
+        $output = & actionlint $script:WorkflowPath 2>&1
+        $LASTEXITCODE | Should -Be 0
+    }
+
+    It "workflow has push trigger" {
+        $content = Get-Content $script:WorkflowPath -Raw
+        $content | Should -Match "push:"
+    }
+
+    It "workflow has workflow_dispatch trigger" {
+        $content = Get-Content $script:WorkflowPath -Raw
+        $content | Should -Match "workflow_dispatch"
+    }
+
+    It "workflow references SecretRotationValidator.ps1" {
+        $content = Get-Content $script:WorkflowPath -Raw
+        $content | Should -Match "SecretRotationValidator"
+    }
+
+    It "script file SecretRotationValidator.ps1 exists" {
+        Test-Path "$PSScriptRoot/SecretRotationValidator.ps1" | Should -Be $true
+    }
+
+    It "fixture file exists" {
+        Test-Path "$PSScriptRoot/fixtures/secrets-fixture.json" | Should -Be $true
+    }
+}
+
+Describe "Act Integration Tests" {
+    # These tests run the workflow via act and verify output
+    # They write to act-result.txt in the working directory
+
+    BeforeAll {
+        $script:ActResultFile = "$PSScriptRoot/act-result.txt"
+        $script:TempRepo = Join-Path ([System.IO.Path]::GetTempPath()) "secret-rotation-test-$(Get-Random)"
+    }
+
+    It "act workflow runs successfully and produces expected output" {
+        # Set up temp git repo
+        New-Item -ItemType Directory -Path $script:TempRepo -Force | Out-Null
+        $projectRoot = $PSScriptRoot
+
+        # Copy all project files to temp repo
+        $filesToCopy = @(
+            "SecretRotationValidator.ps1",
+            "fixtures"
+        )
+        foreach ($item in $filesToCopy) {
+            $src = Join-Path $projectRoot $item
+            if (Test-Path $src) {
+                Copy-Item -Path $src -Destination $script:TempRepo -Recurse -Force
+            }
+        }
+
+        # Copy workflow file
+        $wfDir = Join-Path $script:TempRepo ".github/workflows"
+        New-Item -ItemType Directory -Path $wfDir -Force | Out-Null
+        Copy-Item -Path (Join-Path $projectRoot ".github/workflows/secret-rotation-validator.yml") `
+            -Destination $wfDir -Force
+
+        # Initialize git repo
+        Push-Location $script:TempRepo
+        try {
+            & git init -b main 2>&1 | Out-Null
+            & git config user.email "test@example.com" 2>&1 | Out-Null
+            & git config user.name "Test" 2>&1 | Out-Null
+            & git add -A 2>&1 | Out-Null
+            & git commit -m "test: secret rotation validator" 2>&1 | Out-Null
+
+            # Run act
+            $actOutput = & act push --rm -P ubuntu-latest=catthehacker/ubuntu:act-22.04 2>&1
+            $actExitCode = $LASTEXITCODE
+        }
+        finally {
+            Pop-Location
+        }
+
+        # Save output to act-result.txt
+        $delimiter = "=" * 60
+        $resultContent = @"
+$delimiter
+TEST CASE: fixture secrets-fixture.json (reference date 2026-04-09)
+$delimiter
+$($actOutput -join "`n")
+$delimiter
+Exit code: $actExitCode
+$delimiter
+"@
+        Add-Content -Path $script:ActResultFile -Value $resultContent
+
+        # Assert act succeeded
+        $actExitCode | Should -Be 0
+
+        # Assert job succeeded
+        $actOutput -join "`n" | Should -Match "Job succeeded"
+
+        # Assert exact expected values in output
+        $outputStr = $actOutput -join "`n"
+        $outputStr | Should -Match "DB_PASSWORD"
+        $outputStr | Should -Match "EXPIRED"
+        $outputStr | Should -Match "expiredCount.*1|expired_count.*1|Expired.*1"
+        $outputStr | Should -Match "warningCount.*2|warning_count.*2|Warning.*2"
+    }
+
+    AfterAll {
+        # Clean up temp repo
+        if (Test-Path $script:TempRepo) {
+            Remove-Item -Path $script:TempRepo -Recurse -Force -ErrorAction SilentlyContinue
+        }
     }
 }
