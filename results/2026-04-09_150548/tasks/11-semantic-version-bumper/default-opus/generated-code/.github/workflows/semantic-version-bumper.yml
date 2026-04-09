@@ -1,0 +1,72 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      commit_fixture:
+        description: "Path to commit fixture file (for testing)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  version-bump:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Ensure VERSION file exists
+        run: |
+          if [ ! -f VERSION ]; then
+            echo "0.0.0" > VERSION
+          fi
+          echo "=== VERSION file contents ==="
+          cat VERSION
+
+      - name: Detect commit fixture or use git log
+        id: detect
+        env:
+          INPUT_FIXTURE: ${{ inputs.commit_fixture }}
+        run: |
+          # Prefer COMMIT_FIXTURE env var (from act --env), then workflow input
+          FIXTURE="${COMMIT_FIXTURE:-$INPUT_FIXTURE}"
+          if [ -n "$FIXTURE" ] && [ -f "$FIXTURE" ]; then
+            echo "mode=fixture" >> "$GITHUB_OUTPUT"
+            echo "commit_file=$FIXTURE" >> "$GITHUB_OUTPUT"
+            echo "Using fixture file: $FIXTURE"
+          else
+            echo "mode=git" >> "$GITHUB_OUTPUT"
+            echo "commit_file=" >> "$GITHUB_OUTPUT"
+            echo "Using git log for commit messages"
+          fi
+
+      - name: Run version bumper
+        id: bump
+        run: |
+          if [ -n "${{ steps.detect.outputs.commit_file }}" ]; then
+            python3 version_bumper.py --commit-file "${{ steps.detect.outputs.commit_file }}"
+          else
+            python3 version_bumper.py
+          fi
+
+      - name: Show results
+        run: |
+          echo "=== Updated VERSION ==="
+          cat VERSION
+          echo ""
+          echo "=== CHANGELOG ==="
+          cat CHANGELOG.md
