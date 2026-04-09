@@ -1,0 +1,342 @@
+[Tool: Bash] ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/ && which bats && bats --version && which actionlint && which act
+[Result] total 36
+drwxr-xr-x 4 passp passp  4096 Apr  9 05:43 .
+drwxr-xr-x 9 passp passp  4096 Apr  9 05:43 ..
+drwxr-xr-x 2 passp passp  4096 Apr  9 05:43 .claude
+drwxr-xr-x 7 passp passp  4096 Apr  9 05:43 .git
+-rw-r--r-- 1 passp passp 18474 Apr  8 17:43 benchmark-instructions-v3.md
+/home/passp/.npm-global/bin/bats
+Bats 1.13.0
+/home/passp/.local/bin/actionlint
+/home/passp/.local/bin/act
+[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/benchmark-instructions-v3.md | head -50
+[Result] # Benchmark Instructions v3 — GitHub Actions
+
+**Version**: v3
+**Date**: 2026-04-08
+**Purpose**: Measure how well Claude Code agents perform GitHub Actions workflow authoring tasks across different language constraints.
+
+**Changes from v2**:
+- Focus narrowed to tasks 11-18 (GitHub Actions / CI/CD category only)
+- Each task now requires a valid `.github/workflows/*.yml` workflow file alongside the script and tests
+- Modes changed: removed `csharp-script` and `powershell-strict`, added `bash` and `typescript-bun`
+- Syntax/lint hooks enabled on all runs via PostToolUse hooks (Python, Bash, TypeScript, PowerShell, actionlint for YAML)
+- Post-run `actionlint` validation on all workflow files
+- Pre-installed tools: actionlint, shellcheck, bats-core, Bun
+
+## Methodology
+
+### Overview
+
+Each task is executed by a Claude Code agent under 4 different language constraints ("modes") and with 2 different models, yielding **8 runs per task**. Agents receive only the prompt -- no conversation context, 
+[Tool: Bash] cat ~/.actrc 2>/dev/null || echo "No .actrc found"
+docker images | grep -E "ubuntu|catthehacker" | head -5
+act --list 2>/dev/null | head -10 || true
+[Result] No .actrc found
+WARNING: This output is designed for human readability. For machine-readable output, please use --format.
+catthehacker/ubuntu:act-22.04    754f20d9a184       2.15GB          531MB        
+catthehacker/ubuntu:act-latest   68a2a9700126       2.26GB          559MB
+[Tool: Bash] mkdir -p tests/fixtures .github/workflows
+[Result] (Bash completed with no output)
+[Assistant] Now let me write the failing bats tests first (TDD red phase):
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/tests/artifact_cleanup.bats", "content": "#!/usr/bin/env bats\n
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/tests/artifact_cleanup.bats (file state is current in your context — no need to Read it back)
+[Assistant] Now verify the tests fail (script doesn't exist yet):
+[Tool: Bash] bats tests/artifact_cleanup.bats 2>&1 | head -20
+[Result] 1..12
+not ok 1 max-age policy: old artifact is deleted, new artifact retained
+# (from function `setup' in test file tests/artifact_cleanup.bats, line 11)
+#   `chmod +x "$SCRIPT"' failed
+# chmod: cannot access '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/tests/../artifact_cleanup.sh': No such file or directory
+not ok 2 max-age policy: summary counts are correct
+# (from function `setup' in test file tests/artifact_cleanup.bats, line 11)
+#   `chmod +x "$SCRIPT"' failed
+# chmod: cannot access '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/tests/../artifact_cleanup.sh': No such file or directory
+not ok 3 keep-latest-N policy: oldest artifact in group is deleted
+# (from function `setup' in test file tests/artifact_cleanup.bats, line 11)
+#   `chmod +x "$SCRIPT"' failed
+# chmod: cannot access '/home/passp/repos/compare-agent-scripting-by-lang
+[Assistant] Good - tests fail as expected (red phase). Now write the implementation:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/artifact_cleanup.sh", "content": "#!/usr/bin/env bash\n# artifa
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/artifact_cleanup.sh (file state is current in your context — no need to Read it back)
+[Tool: Bash] chmod +x artifact_cleanup.sh && bash -n artifact_cleanup.sh && shellcheck artifact_cleanup.sh
+[Result] (Bash completed with no output)
+[Tool: Bash] bats tests/artifact_cleanup.bats 2>&1
+[Result] 1..12
+ok 1 max-age policy: old artifact is deleted, new artifact retained
+ok 2 max-age policy: summary counts are correct
+ok 3 keep-latest-N policy: oldest artifact in group is deleted
+ok 4 keep-latest-N policy: different workflow runs are independent
+ok 5 max-total-size policy: oldest artifact deleted when size exceeded
+ok 6 max-total-size policy: no deletion when under limit
+ok 7 combined policies: max-age and keep-latest applied together
+ok 8 dry-run mode: output includes DRY-RUN header
+ok 9 dry-run mode: still reports what would be deleted
+ok 10 error: missing --artifacts flag exits non-zero
+ok 11 error: non-existent artifact file exits non-zero
+ok 12 no policies specified: all artifacts retained
+[Assistant] All 12 tests pass. Now let me create the fixture files and the GitHub Actions workflow:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/tests/fixtures/test_max_age.csv", "content": "name,size_bytes,c
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/tests/fixtures/test_max_age.csv (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/tests/fixtures/test_keep_latest.csv", "content": "name,size_byt
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/tests/fixtures/test_keep_latest.csv (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/tests/fixtures/test_max_size.csv", "content": "name,size_bytes,
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/tests/fixtures/test_max_size.csv (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/tests/fixtures/test_combined.csv", "content": "name,size_bytes,
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/tests/fixtures/test_combined.csv (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/tests/fixtures/test_dry_run.csv", "content": "name,size_bytes,c
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/tests/fixtures/test_dry_run.csv (file state is current in your context — no need to Read it back)
+[Assistant] Now write the GitHub Actions workflow:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/.github/workflows/artifact-cleanup-script.yml", "content": "nam
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/.github/workflows/artifact-cleanup-script.yml (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/artifact-cleanup-script.yml
+[Result] (Bash completed with no output)
+[Assistant] Actionlint passes. Now write the act harness:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/run_act_tests.sh", "content": "#!/usr/bin/env bash\n# run_act_t
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/run_act_tests.sh (file state is current in your context — no need to Read it back)
+[Assistant] Now I need to update the workflow to accept `TC_ID` from the harness's `--env` flag:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/.github/workflows/artifact-cleanup-script.yml", "content": "nam
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/.github/workflows/artifact-cleanup-script.yml has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/artifact-cleanup-script.yml && echo "actionlint: OK"
+[Result] actionlint: OK
+[Tool: Bash] shellcheck run_act_tests.sh && echo "shellcheck: OK"
+[Result ERROR] Exit code 1
+
+In run_act_tests.sh line 224:
+# shellcheck and bash -n on the main script
+^-- SC1073 (error): Couldn't parse this shellcheck directive. Fix to allow more checks.
+                ^-- SC1072 (error): Expected '=' after directive key. Fix any mentioned problems and try again.
+
+For more information:
+  https://www.shellcheck.net/wiki/SC1072 -- Expected '=' after directive key....
+  https://www.shellcheck.net/wiki/SC1073 -- Couldn't parse this shellcheck di...
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/run_act_tests.sh", "offset": 220, "limit": 15}
+[Result] 220	        fail "Workflow missing job: $job"
+221	    fi
+222	done
+223	
+224	# shellcheck and bash -n on the main script
+225	if shellcheck "$SCRIPT_DIR/artifact_cleanup.sh" 2>/dev/null; then
+226	    pass "shellcheck: artifact_cleanup.sh passes"
+227	    echo "SHELLCHECK: passed" >> "$ACT_RESULT"
+228	else
+229	    fail "shellcheck: artifact_cleanup.sh has warnings"
+230	fi
+231	
+232	if bash -n "$SCRIPT_DIR/artifact_cleanup.sh" 2>/dev/null; then
+233	    pass "bash -n: artifact_cleanup.sh syntax valid"
+234	else
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/run_act_tests.sh", "old_string": "# shell
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/run_act_tests.sh has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] shellcheck run_act_tests.sh && echo "shellcheck: OK"
+[Result ERROR] Exit code 1
+
+In run_act_tests.sh line 52:
+    local label="$1" unexpected="$2" file="$3"
+    ^-- SC2317 (info): Command appears to be unreachable. Check usage (or ignore if invoked indirectly).
+
+
+In run_act_tests.sh line 53:
+    if grep -qF "$unexpected" "$file"; then
+    ^-- SC2317 (info): Command appears to be unreachable. Check usage (or ignore if invoked indirectly).
+       ^----------------------------^ SC2317 (info): Command appears to be unreachable. Check usage (or ignore if invoked indirectly).
+
+
+In run_act_tests.sh line 54:
+        fail "$label: unexpected '$unexpected' found in output"
+        ^-- SC2317 (info): Command appears to be unreachable. Check usage (or ignore if invoked indirectly).
+
+
+In run_act_tests.sh line 56:
+        pass "$label: correctly absent '$unexpected'"
+        ^-- SC2317 (info): Command appears to be unreachable. Check usage (or ignore if invoked indirectly).
+
+For more information:
+  https://www.shellcheck.net/wiki/SC2317 -- Command appears to be unre
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/run_act_tests.sh", "old_string": "# asser
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/run_act_tests.sh has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] shellcheck run_act_tests.sh && echo "shellcheck: OK"
+[Result] shellcheck: OK
+[Tool: Bash] chmod +x run_act_tests.sh && bash -n run_act_tests.sh && echo "bash -n: OK"
+[Result] bash -n: OK
+[Assistant] Now commit everything and run the act tests:
+[Tool: Bash] git add artifact_cleanup.sh tests/ .github/ run_act_tests.sh && git status
+[Result] On branch master
+
+No commits yet
+
+Changes to be committed:
+  (use "git rm --cached <file>..." to unstage)
+	new file:   .github/workflows/artifact-cleanup-script.yml
+	new file:   artifact_cleanup.sh
+	new file:   run_act_tests.sh
+	new file:   tests/artifact_cleanup.bats
+	new file:   tests/fixtures/test_combined.csv
+	new file:   tests/fixtures/test_dry_run.csv
+	new file:   tests/fixtures/test_keep_latest.csv
+	new file:   tests/fixtures/test_max_age.csv
+	new file:   tests/fixtures/test_max_size.csv
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	.claude/
+	benchmark-instructions-v3.md
+[Tool: Bash] git commit -m "feat: artifact cleanup script with retention policies and act test harness"
+[Result] [master (root-commit) a137f90] feat: artifact cleanup script with retention policies and act test harness
+ 9 files changed, 983 insertions(+)
+ create mode 100644 .github/workflows/artifact-cleanup-script.yml
+ create mode 100755 artifact_cleanup.sh
+ create mode 100755 run_act_tests.sh
+ create mode 100644 tests/artifact_cleanup.bats
+ create mode 100644 tests/fixtures/test_combined.csv
+ create mode 100644 tests/fixtures/test_dry_run.csv
+ create mode 100644 tests/fixtures/test_keep_latest.csv
+ create mode 100644 tests/fixtures/test_max_age.csv
+ create mode 100644 tests/fixtures/test_max_size.csv
+[Assistant] Now run the full act test harness. This will take several minutes as it runs act 5 times:
+[Tool: Bash] bash run_act_tests.sh 2>&1 | tee /tmp/harness_run.txt; echo "EXIT: $?"
+[Result] <persisted-output>
+Output too large (118.4KB). Full output saved to: /home/passp/.claude/projects/-home-passp-repos-compare-agent-scripting-by-language-workspaces-2026-04-08-192624-17-artifact-cleanup-script-bash-sonnet/d852434d-05cc-4e8d-91ee-5debfd962d33/tool-results/bsgo4js1z.txt
+
+Preview (first 2KB):
+=======================================================
+ SECTION 0: Workflow Structure & Static Validation
+=======================================================
+[PASS]  Workflow file exists at .github/workflows/artifact-cleanup-script.yml
+[PASS]  Workflow references artifact_cleanup.sh
+[PASS]  Script file artifact_cleanup.sh exists
+[PASS]  Fixture exists: tests/fixtures/test_max_age.csv
+[PASS]  Fixture exists: tests/fixtures/test_keep_latest.csv
+[PASS]  Fixture exists: tests/fixtures/test_max_size.csv
+[PASS]  Fixture exists: tests/fixtures/test_combined.csv
+[PASS]  Fixture exists: tests/fixtures/test_dry_run.csv
+[INFO]  Running actionlint...
+[PASS]  actionlint: workflow passes
+[PASS]
+[Tool: Bash] tail -50 /tmp/harness_run.txt
+[Result] [Artifact Cleanup Script/Unit Tests (bats)] ⭐ Run Main Run bats tests
+[Artifact Cleanup Script/Unit Tests (bats)]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Artifact Cleanup Script/Unit Tests (bats)]   | 1..12
+[Artifact Cleanup Script/Unit Tests (bats)]   | ok 1 max-age policy: old artifact is deleted, new artifact retained
+[Artifact Cleanup Script/Unit Tests (bats)]   | ok 2 max-age policy: summary counts are correct
+[Artifact Cleanup Script/Unit Tests (bats)]   | ok 3 keep-latest-N policy: oldest artifact in group is deleted
+[Artifact Cleanup Script/Unit Tests (bats)]   | ok 4 keep-latest-N policy: different workflow runs are independent
+[Artifact Cleanup Script/Unit Tests (bats)]   | ok 5 max-total-size policy: oldest artifact deleted when size exceeded
+[Artifact Cleanup Script/Unit Tests (bats)]   | ok 6 max-total-size policy: no deletion when under limit
+[Artifact Cleanup Script/Unit Tests (bats)]   | ok 7 combined policies: max-age and keep-latest appl
+[Assistant] The harness has a design flaw: calling the function via `$()` captures all stdout (including act output), making the returned log path unusable. Let me fix by using globals instead of command substitution:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/run_act_tests.sh", "content": "#!/usr/bin/env bash\n# run_act_t
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/run_act_tests.sh has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] shellcheck run_act_tests.sh && bash -n run_act_tests.sh && echo "OK"
+[Result ERROR] Exit code 1
+
+In run_act_tests.sh line 61:
+    local fixture_src="$3"
+          ^---------^ SC2034 (warning): fixture_src appears unused. Verify use (or export if used externally).
+
+For more information:
+  https://www.shellcheck.net/wiki/SC2034 -- fixture_src appears unused. Verif...
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/run_act_tests.sh", "old_string": "    loc
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/run_act_tests.sh has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/run_act_tests.sh", "old_string": "    loc
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/run_act_tests.sh has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Also update the function signature comment and callers to only pass 2 args:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/run_act_tests.sh", "old_string": "# run_a
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/run_act_tests.sh has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Now update callers to drop the third argument:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/run_act_tests.sh", "old_string": "run_act
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/run_act_tests.sh has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/run_act_tests.sh", "old_string": "run_act
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/run_act_tests.sh has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/run_act_tests.sh", "old_string": "run_act
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/run_act_tests.sh has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/run_act_tests.sh", "old_string": "run_act
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/run_act_tests.sh has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/run_act_tests.sh", "old_string": "run_act
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/run_act_tests.sh has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] shellcheck run_act_tests.sh && bash -n run_act_tests.sh && echo "OK"
+[Result] OK
+[Assistant] Now run the full test harness:
+[Tool: Bash] bash run_act_tests.sh 2>&1 | tee /tmp/harness_run2.txt; echo "EXIT: $?"
+[Result] <persisted-output>
+Output too large (87.2KB). Full output saved to: /home/passp/.claude/projects/-home-passp-repos-compare-agent-scripting-by-language-workspaces-2026-04-08-192624-17-artifact-cleanup-script-bash-sonnet/d852434d-05cc-4e8d-91ee-5debfd962d33/tool-results/bh7ped8qu.txt
+
+Preview (first 2KB):
+=======================================================
+ SECTION 0: Workflow Structure & Static Validation
+=======================================================
+[PASS]  Workflow file exists at .github/workflows/artifact-cleanup-script.yml
+[PASS]  Workflow references artifact_cleanup.sh
+[PASS]  Script file artifact_cleanup.sh exists
+[PASS]  Fixture exists: tests/fixtures/test_max_age.csv
+[PASS]  Fixture exists: tests/fixtures/test_keep_latest.csv
+[PASS]  Fixture exists: tests/fixtures/test_max_size.csv
+[PASS]  Fixture exists: tests/fixtures/test_combined.csv
+[PASS]  Fixture exists: tests/fixtures/test_dry_run.csv
+[INFO]  Running actionlint...
+[PASS]  actionlint: workflow passes
+[PASS] 
+[Tool: Bash] tail -60 /tmp/harness_run2.txt
+[Result] [Artifact Cleanup Script/Unit Tests (bats)]   | 1..12
+[Artifact Cleanup Script/Unit Tests (bats)]   | ok 1 max-age policy: old artifact is deleted, new artifact retained
+[Artifact Cleanup Script/Unit Tests (bats)]   | ok 2 max-age policy: summary counts are correct
+[Artifact Cleanup Script/Unit Tests (bats)]   | ok 3 keep-latest-N policy: oldest artifact in group is deleted
+[Artifact Cleanup Script/Unit Tests (bats)]   | ok 4 keep-latest-N policy: different workflow runs are independent
+[Artifact Cleanup Script/Unit Tests (bats)]   | ok 5 max-total-size policy: oldest artifact deleted when size exceeded
+[Artifact Cleanup Script/Unit Tests (bats)]   | ok 6 max-total-size policy: no deletion when under limit
+[Artifact Cleanup Script/Unit Tests (bats)]   | ok 7 combined policies: max-age and keep-latest applied together
+[Artifact Cleanup Script/Unit Tests (bats)]   | ok 8 dry-run mode: output includes DRY-RUN header
+[Artifact Cleanup Script/Unit Tests (bats)]   | ok 9 dry-run mode: still 
+[Assistant] All 61 assertions passed. Let me verify `act-result.txt` exists and commit the final state:
+[Tool: Bash] wc -l act-result.txt && head -5 act-result.txt && tail -10 act-result.txt
+[Result] 846 act-result.txt
+
+################################################################
+# SECTION 0: Workflow Structure & Static Validation
+################################################################
+STRUCTURE: workflow file exists at .github/workflows/artifact-cleanup-script.yml
+[Artifact Cleanup Script/Integration Tests] 🏁  Job succeeded
+################################################################
+# END: TC5: dry-run mode
+################################################################
+
+################################################################
+# HARNESS SUMMARY
+# Passed: 61
+# Failed: 0
+################################################################
+[Tool: Bash] bats tests/artifact_cleanup.bats 2>&1 | tail -5
+[Result] ok 8 dry-run mode: output includes DRY-RUN header
+ok 9 dry-run mode: still reports what would be deleted
+ok 10 error: missing --artifacts flag exits non-zero
+ok 11 error: non-existent artifact file exits non-zero
+ok 12 no policies specified: all artifacts retained
+[Tool: Bash] git add run_act_tests.sh act-result.txt && git commit -m "fix: harness uses globals instead of subshell for log path; all 61 assertions pass"
+[Result] [master c633666] fix: harness uses globals instead of subshell for log path; all 61 assertions pass
+ 2 files changed, 927 insertions(+), 101 deletions(-)
+ create mode 100644 act-result.txt
+[Assistant] Everything is complete and passing. Here's a summary of what was built:
+
+## Summary
+
+**Files created:**
+
+| File | Purpose |
+|------|---------|
+| `artifact_cleanup.sh` | Main script — applies max-age, keep-latest-N, max-total-size retention policies with dry-run support |
+| `tests/artifact_cleanup.bats` | 12 bats unit tests (TDD red→green) |
+| `tests/fixtures/*.csv` | 5 fixture files, one per test case |
+| `.github/workflows/artifact-cleanup-script.yml` | 3-job workflow (lint → unit-tests → integration) |
+| `run_act_tests.sh` | Act harness — runs act 5× with `TC_ID` env var, asserts exact values |
+| `act-result.txt` | Required artifact with all act output |
+
+**TDD process:** Tests were written first (all failing), then `artifact_cleanup.sh` was written to make them pass — 12/12 tests green.
+
+**Act harness results:** 61 assertions passed, 0 failed across 5 test cases:
+- TC1: max-age policy — asserts `DELETE old-artifact max_age 1048576`, `space_reclaimed=1048576`
+- TC2: keep-latest-N — asserts `DELETE artifact-v1 keep_latest 524288`, exact counts
+- TC3: max-total-size — asserts `DELETE artifact-a max_total_size 3145728`
+- TC4: combined policies — asserts 3 deletions, `space_reclaimed=3145728`
+- TC5: dry-run mode — asserts `DRY-RUN MODE` header present
+
+Every job shows `Job succeeded` in the act output.
