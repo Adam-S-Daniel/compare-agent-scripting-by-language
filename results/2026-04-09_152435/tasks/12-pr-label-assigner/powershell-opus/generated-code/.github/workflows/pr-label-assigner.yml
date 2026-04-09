@@ -1,0 +1,54 @@
+name: PR Label Assigner
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-label:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Pester Tests
+        shell: pwsh
+        run: |
+          $result = Invoke-Pester -Path './Invoke-PrLabelAssigner.Tests.ps1' -PassThru -Output Detailed
+          Write-Output "PESTER_PASSED=$($result.PassedCount)"
+          Write-Output "PESTER_FAILED=$($result.FailedCount)"
+          Write-Output "PESTER_TOTAL=$($result.TotalCount)"
+          if ($result.FailedCount -gt 0) { exit 1 }
+
+      - name: Test Basic Matching
+        shell: pwsh
+        run: |
+          $output = ./Invoke-PrLabelAssigner.ps1 -ConfigPath './fixtures/basic-config.json' -FilePaths 'docs/readme.md','src/main.ps1'
+          Write-Output "LABEL_RESULT[basic]: $output"
+
+      - name: Test Multiple Labels
+        shell: pwsh
+        run: |
+          $output = ./Invoke-PrLabelAssigner.ps1 -ConfigPath './fixtures/multi-label-config.json' -FilePaths 'docs/readme.md','src/main.ps1','src/app.test.js'
+          Write-Output "LABEL_RESULT[multi]: $output"
+
+      - name: Test Priority with Exclusive
+        shell: pwsh
+        run: |
+          $output = ./Invoke-PrLabelAssigner.ps1 -ConfigPath './fixtures/priority-config.json' -FilePaths 'src/api/handler.ps1','src/utils.ps1'
+          Write-Output "LABEL_RESULT[priority]: $output"
+
+      - name: Test No Matches
+        shell: pwsh
+        run: |
+          $output = ./Invoke-PrLabelAssigner.ps1 -ConfigPath './fixtures/basic-config.json' -FilePaths 'src/main.ps1'
+          Write-Output "LABEL_RESULT[nomatch]: $output"
+
+      - name: Test Wildcard Patterns
+        shell: pwsh
+        run: |
+          $output = ./Invoke-PrLabelAssigner.ps1 -ConfigPath './fixtures/wildcard-config.json' -FilePaths 'src/app.test.js','lib/utils.spec.ts'
+          Write-Output "LABEL_RESULT[wildcard]: $output"
