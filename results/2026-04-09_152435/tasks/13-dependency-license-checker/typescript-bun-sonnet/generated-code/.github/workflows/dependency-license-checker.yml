@@ -1,0 +1,45 @@
+name: Dependency License Checker
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  schedule:
+    - cron: "0 8 * * 1"   # every Monday at 08:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-licenses:
+    name: Check Dependency Licenses
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Run unit tests
+        run: bun test
+
+      - name: Check compliance - sample manifest (NON-COMPLIANT expected)
+        run: |
+          echo "=== Checking fixtures/sample-package.json ==="
+          bun run src/index.ts \
+            --manifest fixtures/sample-package.json \
+            --config fixtures/license-config.json \
+            --mock-licenses fixtures/mock-licenses.json
+
+      - name: Check compliance - approved manifest (COMPLIANT expected)
+        run: |
+          echo "=== Checking fixtures/approved-package.json ==="
+          bun run src/index.ts \
+            --manifest fixtures/approved-package.json \
+            --config fixtures/license-config.json \
+            --mock-licenses fixtures/mock-licenses.json
