@@ -262,6 +262,9 @@ def _categorize_tool_time(tool_uses: list[dict]) -> dict:
         r"bun\s+test",
         r"pwsh\s+.*Tests?\.ps1",
         r"run[-_]tests",
+        r"test_harness",
+        r"python3?\s+test\w*\.py",   # python3 test_*.py
+        r"bash\s+test\w*\.sh",        # bash test_*.sh
     ]
     act_patterns = [
         r"\bact\s+(?:push|pull_request)",
@@ -463,7 +466,14 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         fires = m.get("hooks", {}).get("hook_fires", 0)
         gross_saved = caught * TEST_RUN_COST_S.get(mode, 10)
         overhead = fires * HOOK_OVERHEAD_S.get(mode, 0.5)
-        test_time = m.get("tool_use_timing", {}).get("test_duration_ms", 0) / 1000
+        # Prefer recomputing test time from all_tool_uses (full list) if available,
+        # falling back to the pre-computed test_duration_ms (which may be stale or
+        # computed with older patterns).
+        all_uses = m.get("tool_use_timing", {}).get("all_tool_uses", [])
+        if all_uses:
+            test_time = _categorize_tool_time(all_uses)["test_duration_ms"] / 1000
+        else:
+            test_time = m.get("tool_use_timing", {}).get("test_duration_ms", 0) / 1000
         if combo not in hook_by_combo:
             hook_by_combo[combo] = {"fires": 0, "caught": 0, "gross_saved": 0, "overhead": 0, "test_time": 0}
         hook_by_combo[combo]["fires"] += fires
@@ -613,7 +623,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     lines.append("")
     lines.append("Each hook-caught error avoids one test run that would otherwise have been needed to discover it.")
     lines.append("Every hook fire (hit or miss) costs execution time for the syntax/type checker.")
-    lines.append("Test Run Time is a lower bound (from the 5 slowest tool calls per run).")
+    lines.append("Test Run Time is recomputed from all tool calls when available; otherwise a lower bound from the top 10.")
     lines.append("")
     hook_hdr = ("| Mode | Model | Fires | Caught | Rate "
                 "| Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time "
