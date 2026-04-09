@@ -1,0 +1,163 @@
+name: Dependency License Checker
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unit-tests:
+    name: Pester Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Pester (no-op if pre-installed)
+        shell: pwsh
+        run: |
+          if (-not (Get-Module -ListAvailable -Name Pester)) {
+            Install-Module -Name Pester -Force -Scope CurrentUser
+          }
+          Write-Host "Pester version: $((Get-Module -ListAvailable -Name Pester | Select-Object -First 1).Version)"
+
+      - name: Install actionlint (for workflow structure test)
+        run: |
+          if ! command -v actionlint &>/dev/null; then
+            curl -sSfL "https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash" | bash -s -- -b /usr/local/bin 2>/dev/null || true
+          fi
+          actionlint --version 2>/dev/null || echo "actionlint not available (test will be skipped)"
+
+      - name: Run Pester unit tests
+        shell: pwsh
+        run: |
+          $result = Invoke-Pester -Path ./tests/DependencyLicenseChecker.Tests.ps1 -Output Detailed -PassThru
+          if ($result.FailedCount -gt 0) {
+            Write-Error "Pester tests failed: $($result.FailedCount) test(s) failed"
+            exit 1
+          }
+          $ran = $result.PassedCount + $result.SkippedCount
+          Write-Host "All $($result.PassedCount) tests passed ($($result.SkippedCount) skipped)."
+
+  license-check-approved:
+    name: "TC1: package.json All Approved"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Run as subprocess so any exit code from the checker doesn't kill this step
+      - name: "TC1 - Check approved package.json"
+        shell: pwsh
+        run: |
+          $lines = pwsh -NonInteractive -NoProfile -File ./dependency-license-checker.ps1 `
+            -Manifest ./tests/fixtures/package-approved.json `
+            -Config ./config/license-config.json `
+            -MockLicenses ./tests/fixtures/mock-licenses.json 2>&1
+          $checkExit = $LASTEXITCODE
+          $report = $lines -join "`n"
+          Write-Host "=== TEST CASE 1: package-approved.json ==="
+          Write-Host $report
+          Write-Host "=== END TEST CASE 1 ==="
+          if ($checkExit -ne 0) {
+            Write-Error "TC1: Expected exit 0 (all approved), got $checkExit"
+            exit 1
+          }
+          if ($report -notmatch "express@4\.18\.0: MIT - APPROVED") {
+            Write-Error "TC1: Expected express@4.18.0: MIT - APPROVED"
+            exit 1
+          }
+          if ($report -notmatch "lodash@4\.17\.21: MIT - APPROVED") {
+            Write-Error "TC1: Expected lodash@4.17.21: MIT - APPROVED"
+            exit 1
+          }
+          if ($report -notmatch "COMPLIANCE STATUS: PASSED") {
+            Write-Error "TC1: Expected COMPLIANCE STATUS: PASSED"
+            exit 1
+          }
+          Write-Host "ASSERTION PASSED: express MIT APPROVED"
+          Write-Host "ASSERTION PASSED: lodash MIT APPROVED"
+          Write-Host "ASSERTION PASSED: COMPLIANCE STATUS PASSED"
+
+  license-check-denied:
+    name: "TC2: package.json Denied License"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: "TC2 - Check denied package.json"
+        shell: pwsh
+        run: |
+          $lines = pwsh -NonInteractive -NoProfile -File ./dependency-license-checker.ps1 `
+            -Manifest ./tests/fixtures/package-denied.json `
+            -Config ./config/license-config.json `
+            -MockLicenses ./tests/fixtures/mock-licenses.json 2>&1
+          $checkExit = $LASTEXITCODE
+          $report = $lines -join "`n"
+          Write-Host "=== TEST CASE 2: package-denied.json ==="
+          Write-Host $report
+          Write-Host "=== END TEST CASE 2 ==="
+          # Script exits 1 when denied licenses are found - that is expected
+          if ($checkExit -ne 1) {
+            Write-Error "TC2: Expected exit 1 (denied found), got $checkExit"
+            exit 1
+          }
+          if ($report -notmatch "gpl-package@1\.0\.0: GPL-3\.0 - DENIED") {
+            Write-Error "TC2: Expected gpl-package@1.0.0: GPL-3.0 - DENIED"
+            exit 1
+          }
+          if ($report -notmatch "COMPLIANCE STATUS: FAILED") {
+            Write-Error "TC2: Expected COMPLIANCE STATUS: FAILED"
+            exit 1
+          }
+          Write-Host "ASSERTION PASSED: gpl-package GPL-3.0 DENIED"
+          Write-Host "ASSERTION PASSED: COMPLIANCE STATUS FAILED"
+          # Reset exit code: subprocess returned 1 (expected), step should succeed
+          exit 0
+
+  license-check-requirements:
+    name: "TC3: requirements.txt Approved"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: "TC3 - Check requirements.txt"
+        shell: pwsh
+        run: |
+          $lines = pwsh -NonInteractive -NoProfile -File ./dependency-license-checker.ps1 `
+            -Manifest ./tests/fixtures/requirements-approved.txt `
+            -Config ./config/license-config.json `
+            -MockLicenses ./tests/fixtures/mock-licenses.json 2>&1
+          $checkExit = $LASTEXITCODE
+          $report = $lines -join "`n"
+          Write-Host "=== TEST CASE 3: requirements-approved.txt ==="
+          Write-Host $report
+          Write-Host "=== END TEST CASE 3 ==="
+          if ($checkExit -ne 0) {
+            Write-Error "TC3: Expected exit 0 (all approved), got $checkExit"
+            exit 1
+          }
+          if ($report -notmatch "requests@2\.31\.0: Apache-2\.0 - APPROVED") {
+            Write-Error "TC3: Expected requests@2.31.0: Apache-2.0 - APPROVED"
+            exit 1
+          }
+          if ($report -notmatch "flask@2\.3\.3: BSD-3-Clause - APPROVED") {
+            Write-Error "TC3: Expected flask@2.3.3: BSD-3-Clause - APPROVED"
+            exit 1
+          }
+          if ($report -notmatch "COMPLIANCE STATUS: PASSED") {
+            Write-Error "TC3: Expected COMPLIANCE STATUS: PASSED"
+            exit 1
+          }
+          Write-Host "ASSERTION PASSED: requests Apache-2.0 APPROVED"
+          Write-Host "ASSERTION PASSED: flask BSD-3-Clause APPROVED"
+          Write-Host "ASSERTION PASSED: COMPLIANCE STATUS PASSED"
