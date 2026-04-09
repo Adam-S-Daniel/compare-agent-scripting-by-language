@@ -1,0 +1,63 @@
+name: Docker Image Tag Generator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  generate-tags:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "Test Case 1: Main Branch"
+        shell: pwsh
+        run: |
+          Write-Output "=== TEST CASE 1: Main Branch ==="
+          $tags = ./Get-DockerImageTags.ps1 -BranchName "main" -CommitSha "abc1234def5678901234567890abcdef12345678"
+          $tags | ForEach-Object { Write-Output "TAG: $_" }
+          Write-Output "=== END TEST CASE 1 ==="
+
+      - name: "Test Case 2: Feature Branch"
+        shell: pwsh
+        run: |
+          Write-Output "=== TEST CASE 2: Feature Branch ==="
+          $tags = ./Get-DockerImageTags.ps1 -BranchName "feature/add-login" -CommitSha "def5678abc1234567890123456789012abcdef12"
+          $tags | ForEach-Object { Write-Output "TAG: $_" }
+          Write-Output "=== END TEST CASE 2 ==="
+
+      - name: "Test Case 3: Pull Request"
+        shell: pwsh
+        run: |
+          Write-Output "=== TEST CASE 3: Pull Request ==="
+          $tags = ./Get-DockerImageTags.ps1 -BranchName "feature/fix-bug" -CommitSha "1112223334445556667778889990001112223334" -PrNumber 42
+          $tags | ForEach-Object { Write-Output "TAG: $_" }
+          Write-Output "=== END TEST CASE 3 ==="
+
+      - name: "Test Case 4: Semver Tag"
+        shell: pwsh
+        run: |
+          Write-Output "=== TEST CASE 4: Semver Tag ==="
+          $tags = ./Get-DockerImageTags.ps1 -BranchName "main" -CommitSha "aaa1111bbb2222333444555666777888999000aab" -Tags "v1.2.3"
+          $tags | ForEach-Object { Write-Output "TAG: $_" }
+          Write-Output "=== END TEST CASE 4 ==="
+
+      - name: "Test Case 5: Branch Sanitization"
+        shell: pwsh
+        run: |
+          Write-Output "=== TEST CASE 5: Branch Sanitization ==="
+          $tags = ./Get-DockerImageTags.ps1 -BranchName "Feature/UPPER_Case" -CommitSha "ccc3333ddd4444555666777888999000111222abc"
+          $tags | ForEach-Object { Write-Output "TAG: $_" }
+          Write-Output "=== END TEST CASE 5 ==="
+
+      - name: "Test Case 6: Master Branch"
+        shell: pwsh
+        run: |
+          Write-Output "=== TEST CASE 6: Master Branch ==="
+          $tags = ./Get-DockerImageTags.ps1 -BranchName "master" -CommitSha "eee5555fff6666777888999000111222333444def"
+          $tags | ForEach-Object { Write-Output "TAG: $_" }
+          Write-Output "=== END TEST CASE 6 ==="
