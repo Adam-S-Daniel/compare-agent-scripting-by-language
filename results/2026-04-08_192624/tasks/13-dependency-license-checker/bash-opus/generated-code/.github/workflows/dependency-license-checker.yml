@@ -1,0 +1,107 @@
+name: Dependency License Checker
+
+on:
+  push:
+    branches: ["*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-licenses-packagejson:
+    name: Check package.json licenses
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install bats
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq bats
+
+      - name: Validate script syntax
+        run: |
+          bash -n dependency-license-checker.sh
+          echo "Syntax validation passed"
+
+      - name: Run license check on package.json
+        run: |
+          chmod +x dependency-license-checker.sh
+          ./dependency-license-checker.sh \
+            --manifest test/fixtures/package.json \
+            --config test/fixtures/license-config.json \
+            --license-db test/fixtures/mock-licenses.json
+
+      - name: Run license check JSON output
+        run: |
+          ./dependency-license-checker.sh \
+            --manifest test/fixtures/package.json \
+            --config test/fixtures/license-config.json \
+            --license-db test/fixtures/mock-licenses.json \
+            --format json
+
+  check-licenses-requirements:
+    name: Check requirements.txt licenses
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run license check on requirements.txt
+        run: |
+          chmod +x dependency-license-checker.sh
+          ./dependency-license-checker.sh \
+            --manifest test/fixtures/requirements.txt \
+            --config test/fixtures/license-config.json \
+            --license-db test/fixtures/mock-licenses.json || {
+            echo "DENIED_DEPS_FOUND=true"
+            echo "License check found denied dependencies (expected for test fixture)"
+          }
+
+  run-bats-tests:
+    name: Run bats test suite
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install bats
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq bats
+
+      - name: Run bats tests
+        run: |
+          chmod +x dependency-license-checker.sh
+          bats test/dependency-license-checker.bats
+
+  error-handling:
+    name: Verify error handling
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Test missing manifest error
+        run: |
+          chmod +x dependency-license-checker.sh
+          if ./dependency-license-checker.sh --config test/fixtures/license-config.json --license-db test/fixtures/mock-licenses.json 2>&1; then
+            echo "FAIL: should have exited with error"
+            exit 1
+          else
+            echo "PASS: correctly errored on missing --manifest"
+          fi
+
+      - name: Test unsupported manifest type
+        run: |
+          echo '[deps]' > /tmp/test.toml
+          if ./dependency-license-checker.sh --manifest /tmp/test.toml --config test/fixtures/license-config.json --license-db test/fixtures/mock-licenses.json 2>&1; then
+            echo "FAIL: should have exited with error"
+            exit 1
+          else
+            echo "PASS: correctly errored on unsupported manifest"
+          fi

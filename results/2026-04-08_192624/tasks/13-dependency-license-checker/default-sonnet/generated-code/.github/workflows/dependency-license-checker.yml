@@ -1,0 +1,159 @@
+name: Dependency License Checker
+
+"on":
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install test dependencies
+        run: pip install pytest
+
+      - name: Run unit tests
+        run: pytest test_license_checker.py -v
+
+  check-fixture-1:
+    name: "Check fixture1 (package.json)"
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run license checker on fixture1 (package.json)
+        id: checker
+        # Exit code 1 = non-compliant (denied licenses) — we capture and inspect
+        run: |
+          python license_checker.py \
+            --manifest fixtures/fixture1/package.json \
+            --config  fixtures/fixture1/license-config.json \
+            --mock-db fixtures/fixture1/mock-db.json \
+            --output-json /tmp/fixture1-report.json \
+            || true
+
+      - name: Display fixture1 report
+        run: cat /tmp/fixture1-report.json
+
+      - name: Verify fixture1 expected results
+        run: |
+          python3 - <<'EOF'
+          import json, sys
+
+          with open("/tmp/fixture1-report.json") as f:
+              report = json.load(f)
+
+          by_name = {r["name"]: r for r in report["results"]}
+
+          # express: MIT -> approved
+          assert by_name["express"]["license"] == "MIT", "express should be MIT"
+          assert by_name["express"]["status"] == "approved", "express should be approved"
+
+          # lodash: MIT -> approved
+          assert by_name["lodash"]["license"] == "MIT", "lodash should be MIT"
+          assert by_name["lodash"]["status"] == "approved", "lodash should be approved"
+
+          # gpl-package: GPL-3.0 -> denied
+          assert by_name["gpl-package"]["license"] == "GPL-3.0", "gpl-package should be GPL-3.0"
+          assert by_name["gpl-package"]["status"] == "denied", "gpl-package should be denied"
+
+          # unknown-package: no license -> unknown
+          assert by_name["unknown-package"]["license"] is None, "unknown-package should have no license"
+          assert by_name["unknown-package"]["status"] == "unknown", "unknown-package should be unknown"
+
+          # Summary
+          assert report["summary"]["total"] == 4, f"Expected 4 total, got {report['summary']['total']}"
+          assert report["summary"]["approved"] == 2, f"Expected 2 approved, got {report['summary']['approved']}"
+          assert report["summary"]["denied"] == 1, f"Expected 1 denied, got {report['summary']['denied']}"
+          assert report["summary"]["unknown"] == 1, f"Expected 1 unknown, got {report['summary']['unknown']}"
+
+          print("fixture1: ALL ASSERTIONS PASSED")
+          print(f"  express@4.18.0: MIT - approved")
+          print(f"  lodash@4.17.21: MIT - approved")
+          print(f"  gpl-package@1.0.0: GPL-3.0 - denied")
+          print(f"  unknown-package@2.0.0: unknown")
+          print(f"  Total=4, Approved=2, Denied=1, Unknown=1")
+          EOF
+
+  check-fixture-2:
+    name: "Check fixture2 (requirements.txt)"
+    runs-on: ubuntu-latest
+    needs: [unit-tests, check-fixture-1]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run license checker on fixture2 (requirements.txt)
+        run: |
+          python license_checker.py \
+            --manifest fixtures/fixture2/requirements.txt \
+            --config  fixtures/fixture2/license-config.json \
+            --mock-db fixtures/fixture2/mock-db.json \
+            --output-json /tmp/fixture2-report.json \
+            || true
+
+      - name: Display fixture2 report
+        run: cat /tmp/fixture2-report.json
+
+      - name: Verify fixture2 expected results
+        run: |
+          python3 - <<'EOF'
+          import json, sys
+
+          with open("/tmp/fixture2-report.json") as f:
+              report = json.load(f)
+
+          by_name = {r["name"]: r for r in report["results"]}
+
+          # requests: Apache-2.0 -> approved
+          assert by_name["requests"]["license"] == "Apache-2.0", "requests should be Apache-2.0"
+          assert by_name["requests"]["status"] == "approved", "requests should be approved"
+
+          # flask: BSD-3-Clause -> approved
+          assert by_name["flask"]["license"] == "BSD-3-Clause", "flask should be BSD-3-Clause"
+          assert by_name["flask"]["status"] == "approved", "flask should be approved"
+
+          # gpl-lib: GPL-2.0 -> denied
+          assert by_name["gpl-lib"]["license"] == "GPL-2.0", "gpl-lib should be GPL-2.0"
+          assert by_name["gpl-lib"]["status"] == "denied", "gpl-lib should be denied"
+
+          # numpy: BSD-3-Clause -> approved
+          assert by_name["numpy"]["license"] == "BSD-3-Clause", "numpy should be BSD-3-Clause"
+          assert by_name["numpy"]["status"] == "approved", "numpy should be approved"
+
+          # Summary
+          assert report["summary"]["total"] == 4, f"Expected 4 total, got {report['summary']['total']}"
+          assert report["summary"]["approved"] == 3, f"Expected 3 approved, got {report['summary']['approved']}"
+          assert report["summary"]["denied"] == 1, f"Expected 1 denied, got {report['summary']['denied']}"
+          assert report["summary"]["unknown"] == 0, f"Expected 0 unknown, got {report['summary']['unknown']}"
+
+          print("fixture2: ALL ASSERTIONS PASSED")
+          print(f"  requests==2.31.0: Apache-2.0 - approved")
+          print(f"  flask==3.0.0: BSD-3-Clause - approved")
+          print(f"  gpl-lib==1.0.0: GPL-2.0 - denied")
+          print(f"  numpy==1.24.0: BSD-3-Clause - approved")
+          print(f"  Total=4, Approved=3, Denied=1, Unknown=0")
+          EOF

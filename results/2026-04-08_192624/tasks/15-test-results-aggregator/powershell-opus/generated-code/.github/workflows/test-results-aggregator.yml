@@ -1,0 +1,27 @@
+name: Test Results Aggregator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  aggregate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install PowerShell
+        run: |
+          curl -sSL https://github.com/PowerShell/PowerShell/releases/download/v7.4.6/powershell-7.4.6-linux-x64.tar.gz -o /tmp/pwsh.tar.gz
+          mkdir -p /opt/pwsh
+          tar -xf /tmp/pwsh.tar.gz -C /opt/pwsh
+          chmod +x /opt/pwsh/pwsh
+          ln -sf /opt/pwsh/pwsh /usr/local/bin/pwsh
+          pwsh --version
+
+      - name: Aggregate Test Results
+        run: pwsh -NoProfile -File Aggregate-TestResults.ps1 -ResultsDir fixtures

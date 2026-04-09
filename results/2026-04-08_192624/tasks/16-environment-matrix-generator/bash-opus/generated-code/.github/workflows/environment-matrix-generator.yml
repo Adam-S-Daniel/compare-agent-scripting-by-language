@@ -1,0 +1,169 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      config_file:
+        description: "Path to matrix config JSON file"
+        required: false
+        default: "test-fixtures/basic.json"
+
+permissions:
+  contents: read
+
+env:
+  # Default max combinations guard
+  MAX_COMBINATIONS: "256"
+
+jobs:
+  generate-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix-json: ${{ steps.generate.outputs.matrix }}
+      entry-count: ${{ steps.generate.outputs.entry_count }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          # jq is pre-installed on ubuntu runners, verify it
+          jq --version
+          bash --version | head -1
+
+      - name: Validate script syntax
+        run: |
+          bash -n generate-matrix.sh
+          echo "Syntax validation passed"
+
+      - name: Determine config file
+        id: config
+        run: |
+          if [[ -n "${CONFIG_INPUT:-}" ]]; then
+            echo "config_file=${CONFIG_INPUT}" >> "$GITHUB_OUTPUT"
+          elif [[ -f "test-fixtures/basic.json" ]]; then
+            echo "config_file=test-fixtures/basic.json" >> "$GITHUB_OUTPUT"
+          else
+            echo "ERROR: No config file found" >&2
+            exit 1
+          fi
+        env:
+          CONFIG_INPUT: ${{ inputs.config_file }}
+
+      - name: Generate matrix
+        id: generate
+        run: |
+          CONFIG_FILE="${{ steps.config.outputs.config_file }}"
+          echo "Using config: $CONFIG_FILE"
+          echo "--- Config contents ---"
+          cat "$CONFIG_FILE"
+          echo ""
+          echo "--- Generating matrix ---"
+
+          # Capture the matrix JSON output (stdout), status messages go to stderr
+          MATRIX_JSON=$(bash generate-matrix.sh "$CONFIG_FILE")
+          echo "--- Generated matrix ---"
+          echo "$MATRIX_JSON" | jq .
+
+          # Count entries
+          ENTRY_COUNT=$(echo "$MATRIX_JSON" | jq '.matrix.include | length')
+          echo "Total combinations: $ENTRY_COUNT"
+
+          # Set outputs — use heredoc for multiline JSON
+          {
+            echo "matrix<<MATRIX_EOF"
+            echo "$MATRIX_JSON"
+            echo "MATRIX_EOF"
+          } >> "$GITHUB_OUTPUT"
+          echo "entry_count=$ENTRY_COUNT" >> "$GITHUB_OUTPUT"
+
+      - name: Display results
+        run: |
+          echo "=== Matrix Generation Results ==="
+          echo "Entry count: ${{ steps.generate.outputs.entry_count }}"
+          echo "Matrix JSON:"
+          echo '${{ steps.generate.outputs.matrix }}' | jq .
+          echo "=== Done ==="
+
+  validate-matrix:
+    runs-on: ubuntu-latest
+    needs: generate-matrix
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate matrix JSON
+        run: |
+          MATRIX_JSON='${{ needs.generate-matrix.outputs.matrix-json }}'
+          echo "Validating matrix JSON structure..."
+
+          # Check it's valid JSON
+          echo "$MATRIX_JSON" | jq empty || { echo "ERROR: Invalid JSON"; exit 1; }
+
+          # Check required fields
+          echo "$MATRIX_JSON" | jq -e '.matrix' > /dev/null || { echo "ERROR: Missing .matrix key"; exit 1; }
+          echo "$MATRIX_JSON" | jq -e '.matrix.include' > /dev/null || { echo "ERROR: Missing .matrix.include key"; exit 1; }
+          echo "$MATRIX_JSON" | jq -e '.matrix.include | type == "array"' > /dev/null || { echo "ERROR: .matrix.include must be an array"; exit 1; }
+
+          ENTRY_COUNT=$(echo "$MATRIX_JSON" | jq '.matrix.include | length')
+          echo "VALIDATED: Matrix has $ENTRY_COUNT entries"
+
+          # Validate size limit
+          MAX=256
+          if [[ "$ENTRY_COUNT" -gt "$MAX" ]]; then
+            echo "ERROR: Matrix exceeds $MAX combinations"
+            exit 1
+          fi
+          echo "VALIDATED: Matrix size within limits"
+          echo "VALIDATION_PASSED=true"
+
+  run-all-fixtures:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          jq --version
+
+      - name: Run all test fixtures
+        run: |
+          echo "=== Running all test fixtures ==="
+          PASS=0
+          FAIL=0
+          for fixture in test-fixtures/*.json; do
+            echo "--- Testing: $fixture ---"
+            BASENAME=$(basename "$fixture")
+
+            # Some fixtures are expected to fail (error cases)
+            if [[ "$BASENAME" == error_* ]]; then
+              if bash generate-matrix.sh "$fixture" > /dev/null 2>&1; then
+                echo "FAIL: $fixture should have failed but succeeded"
+                FAIL=$((FAIL + 1))
+              else
+                echo "PASS: $fixture correctly failed"
+                PASS=$((PASS + 1))
+              fi
+            else
+              if OUTPUT=$(bash generate-matrix.sh "$fixture" 2>/dev/null); then
+                echo "$OUTPUT" | jq .
+                ENTRY_COUNT=$(echo "$OUTPUT" | jq '.matrix.include | length')
+                echo "PASS: $fixture — $ENTRY_COUNT entries"
+                PASS=$((PASS + 1))
+              else
+                echo "FAIL: $fixture unexpectedly failed"
+                FAIL=$((FAIL + 1))
+              fi
+            fi
+            echo ""
+          done
+          echo "=== Results: $PASS passed, $FAIL failed ==="
+          if [[ "$FAIL" -gt 0 ]]; then
+            exit 1
+          fi
+          echo "ALL_FIXTURES_PASSED=true"

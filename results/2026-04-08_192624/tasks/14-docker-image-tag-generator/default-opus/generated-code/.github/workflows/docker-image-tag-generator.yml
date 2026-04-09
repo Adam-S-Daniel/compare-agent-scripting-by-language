@@ -1,0 +1,129 @@
+name: Docker Image Tag Generator
+
+on:
+  push:
+    branches: ["*"]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Override branch name"
+        required: false
+        default: ""
+      tag:
+        description: "Override git tag"
+        required: false
+        default: ""
+      pr_number:
+        description: "Override PR number"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  generate-tags:
+    runs-on: ubuntu-latest
+    outputs:
+      tags: ${{ steps.tags.outputs.tags }}
+      tags_json: ${{ steps.tags.outputs.tags_json }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Determine git context
+        id: context
+        env:
+          WF_BRANCH: ${{ github.event.inputs.branch }}
+          WF_TAG: ${{ github.event.inputs.tag }}
+          WF_PR: ${{ github.event.inputs.pr_number }}
+          GH_SHA: ${{ github.sha }}
+          GH_EVENT: ${{ github.event_name }}
+          GH_HEAD_REF: ${{ github.head_ref }}
+          GH_REF: ${{ github.ref }}
+          GH_REF_NAME: ${{ github.ref_name }}
+          GH_PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          # Override priority: OVERRIDE_* env vars > workflow_dispatch inputs > auto-detect
+          # OVERRIDE_* vars allow testing via act --env without clashing with github context
+          BRANCH="${OVERRIDE_BRANCH:-${WF_BRANCH}}"
+          TAG="${OVERRIDE_TAG:-${WF_TAG}}"
+          PR="${OVERRIDE_PR:-${WF_PR}}"
+          SHA="${GH_SHA}"
+
+          # If no override/input, detect from git context
+          if [ -z "$BRANCH" ]; then
+            if [ "$GH_EVENT" = "pull_request" ]; then
+              BRANCH="${GH_HEAD_REF}"
+              PR="${GH_PR_NUMBER}"
+            elif [[ "$GH_REF" == refs/tags/* ]]; then
+              TAG="${GH_REF_NAME}"
+              BRANCH=""
+            else
+              BRANCH="${GH_REF_NAME}"
+            fi
+          fi
+
+          {
+            echo "branch=${BRANCH}"
+            echo "tag=${TAG}"
+            echo "pr=${PR}"
+            echo "sha=${SHA}"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "=== Git Context ==="
+          echo "Branch: ${BRANCH}"
+          echo "Tag: ${TAG}"
+          echo "PR: ${PR}"
+          echo "SHA: ${SHA}"
+
+      - name: Generate Docker image tags
+        id: tags
+        env:
+          CTX_BRANCH: ${{ steps.context.outputs.branch }}
+          CTX_SHA: ${{ steps.context.outputs.sha }}
+          CTX_TAG: ${{ steps.context.outputs.tag }}
+          CTX_PR: ${{ steps.context.outputs.pr }}
+        run: |
+          echo "=== Generating Docker Image Tags ==="
+          TAGS=$(python3 generate_tags.py \
+            --branch "$CTX_BRANCH" \
+            --sha "$CTX_SHA" \
+            --tag "$CTX_TAG" \
+            --pr "$CTX_PR")
+
+          TAGS_JSON=$(python3 generate_tags.py \
+            --branch "$CTX_BRANCH" \
+            --sha "$CTX_SHA" \
+            --tag "$CTX_TAG" \
+            --pr "$CTX_PR" \
+            --json)
+
+          echo "Generated tags:"
+          echo "$TAGS"
+
+          {
+            echo "tags<<TAGSEOF"
+            echo "$TAGS"
+            echo "TAGSEOF"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "tags_json=${TAGS_JSON}" >> "$GITHUB_OUTPUT"
+
+      - name: Display results
+        env:
+          DISPLAY_TAGS: ${{ steps.tags.outputs.tags }}
+          DISPLAY_JSON: ${{ steps.tags.outputs.tags_json }}
+        run: |
+          echo "=== Docker Image Tags ==="
+          echo "$DISPLAY_TAGS"
+          echo "=== JSON ==="
+          echo "$DISPLAY_JSON"

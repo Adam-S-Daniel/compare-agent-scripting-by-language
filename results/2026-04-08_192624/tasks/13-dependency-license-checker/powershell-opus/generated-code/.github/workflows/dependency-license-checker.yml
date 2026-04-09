@@ -1,0 +1,80 @@
+name: Dependency License Checker
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-licenses:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install PowerShell
+        run: |
+          if command -v pwsh &>/dev/null; then
+            echo "PowerShell already installed"
+            pwsh --version
+          else
+            echo "Installing PowerShell 7.4.6..."
+            apt-get update -qq
+            apt-get install -y -qq wget libicu74 >/dev/null 2>&1
+            wget -q "https://github.com/PowerShell/PowerShell/releases/download/v7.4.6/powershell-7.4.6-linux-x64.tar.gz" -O /tmp/powershell.tar.gz
+            mkdir -p /opt/microsoft/powershell/7
+            tar zxf /tmp/powershell.tar.gz -C /opt/microsoft/powershell/7
+            chmod +x /opt/microsoft/powershell/7/pwsh
+            ln -sf /opt/microsoft/powershell/7/pwsh /usr/bin/pwsh
+            echo "PowerShell installed:"
+            pwsh --version
+          fi
+
+      - name: Install Pester
+        shell: pwsh
+        run: |
+          Install-Module -Name Pester -MinimumVersion 5.0 -Force -Scope CurrentUser
+          Import-Module Pester
+          Write-Host "Pester version: $((Get-Module Pester).Version)"
+
+      - name: Run Pester Tests
+        shell: pwsh
+        run: |
+          $results = Invoke-Pester -Path ./DependencyLicenseChecker.Tests.ps1 -Output Detailed -PassThru
+          Write-Host "Tests Passed: $($results.PassedCount), Failed: $($results.FailedCount)"
+          if ($results.FailedCount -gt 0) {
+            Write-Error "Pester tests failed!"
+            exit 1
+          }
+
+      - name: Run License Check - Mixed
+        shell: pwsh
+        run: |
+          . ./DependencyLicenseChecker.ps1
+          $report = New-ComplianceReport `
+            -ManifestPath ./test-fixtures/mixed-package.json `
+            -ConfigPath ./license-config.json `
+            -LicenseDbPath ./license-db.json
+          Write-Host $report
+
+      - name: Run License Check - All Approved
+        shell: pwsh
+        run: |
+          . ./DependencyLicenseChecker.ps1
+          $report = New-ComplianceReport `
+            -ManifestPath ./test-fixtures/approved-requirements.txt `
+            -ConfigPath ./license-config.json `
+            -LicenseDbPath ./license-db.json
+          Write-Host $report
+
+      - name: Run License Check - All Denied
+        shell: pwsh
+        run: |
+          . ./DependencyLicenseChecker.ps1
+          $report = New-ComplianceReport `
+            -ManifestPath ./test-fixtures/denied-package.json `
+            -ConfigPath ./license-config.json `
+            -LicenseDbPath ./license-db.json
+          Write-Host $report

@@ -1,0 +1,156 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      version_file:
+        description: "Path to version file"
+        required: false
+        default: "VERSION"
+      commit_log:
+        description: "Path to commit log fixture"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate script syntax
+        run: |
+          bash -n version-bumper.sh
+          echo "Syntax check passed"
+
+      - name: Run version bumper
+        id: bump
+        shell: bash
+        run: |
+          chmod +x version-bumper.sh
+
+          # Use VERSION file if present, otherwise use fixture for demo
+          if [ ! -f VERSION ]; then
+            echo "1.0.0" > VERSION
+          fi
+
+          # Use commit log fixture if no git history
+          ARGS=(--version-file VERSION)
+          if [ -f test/fixtures/commits-minor.txt ]; then
+            ARGS+=(--commit-log test/fixtures/commits-minor.txt)
+          fi
+
+          # Run the bumper and capture output
+          OUTPUT=$(./version-bumper.sh "${ARGS[@]}" 2>&1) || {
+            echo "$OUTPUT"
+            echo "Version bumper failed"
+            exit 1
+          }
+          echo "$OUTPUT"
+
+          # Extract the new version from output
+          NEW_VERSION=$(echo "$OUTPUT" | grep -oP 'VERSION_BUMPED=\K[0-9]+\.[0-9]+\.[0-9]+')
+          echo "new_version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+          echo "RESULT: version=$NEW_VERSION"
+
+      - name: Show result
+        run: |
+          echo "Bumped to version: ${{ steps.bump.outputs.new_version }}"
+          echo "Updated VERSION file:"
+          cat VERSION 2>/dev/null || cat package.json 2>/dev/null || echo "No version file found"
+          echo ""
+          echo "Generated CHANGELOG.md:"
+          cat CHANGELOG.md 2>/dev/null || echo "No changelog generated"
+
+  test-cases:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        test:
+          - name: patch-bump
+            version_file: test/fixtures/version-1.0.0.txt
+            commit_log: test/fixtures/commits-patch.txt
+            expected_version: "1.0.1"
+            expected_bump: patch
+          - name: minor-bump
+            version_file: test/fixtures/version-1.1.0.txt
+            commit_log: test/fixtures/commits-minor.txt
+            expected_version: "1.2.0"
+            expected_bump: minor
+          - name: major-bump
+            version_file: test/fixtures/version-2.3.4.txt
+            commit_log: test/fixtures/commits-major.txt
+            expected_version: "3.0.0"
+            expected_bump: major
+          - name: breaking-footer
+            version_file: test/fixtures/version-1.0.0.txt
+            commit_log: test/fixtures/commits-breaking-footer.txt
+            expected_version: "2.0.0"
+            expected_bump: major
+          - name: package-json
+            version_file: test/fixtures/package.json
+            commit_log: test/fixtures/commits-minor.txt
+            expected_version: "3.2.0"
+            expected_bump: minor
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run test ${{ matrix.test.name }}
+        shell: bash
+        env:
+          FIXTURE_VERSION_FILE: ${{ matrix.test.version_file }}
+          FIXTURE_COMMIT_LOG: ${{ matrix.test.commit_log }}
+          EXPECTED_VERSION: ${{ matrix.test.expected_version }}
+          EXPECTED_BUMP: ${{ matrix.test.expected_bump }}
+          TEST_NAME: ${{ matrix.test.name }}
+        run: |
+          chmod +x version-bumper.sh
+
+          # Copy fixture version file so we don't modify the original
+          if [[ "$FIXTURE_VERSION_FILE" == *.json ]]; then
+            cp "$FIXTURE_VERSION_FILE" test_version_file.json
+            VERSION_ARG="test_version_file.json"
+          else
+            cp "$FIXTURE_VERSION_FILE" test_version_file
+            VERSION_ARG="test_version_file"
+          fi
+
+          OUTPUT=$(./version-bumper.sh \
+            --version-file "$VERSION_ARG" \
+            --commit-log "$FIXTURE_COMMIT_LOG" 2>&1)
+          echo "$OUTPUT"
+
+          # Assert exact version
+          ACTUAL=$(echo "$OUTPUT" | grep -oP 'VERSION_BUMPED=\K[0-9]+\.[0-9]+\.[0-9]+')
+
+          echo "TEST=$TEST_NAME"
+          echo "EXPECTED_VERSION=$EXPECTED_VERSION"
+          echo "ACTUAL_VERSION=$ACTUAL"
+
+          if [ "$ACTUAL" = "$EXPECTED_VERSION" ]; then
+            echo "PASS: Version matches ($ACTUAL)"
+          else
+            echo "FAIL: Expected $EXPECTED_VERSION but got $ACTUAL"
+            exit 1
+          fi
+
+          # Assert bump type
+          ACTUAL_BUMP=$(echo "$OUTPUT" | grep -oP 'Bump type: \K\w+')
+          echo "EXPECTED_BUMP=$EXPECTED_BUMP"
+          echo "ACTUAL_BUMP=$ACTUAL_BUMP"
+
+          if [ "$ACTUAL_BUMP" = "$EXPECTED_BUMP" ]; then
+            echo "PASS: Bump type matches ($ACTUAL_BUMP)"
+          else
+            echo "FAIL: Expected bump $EXPECTED_BUMP but got $ACTUAL_BUMP"
+            exit 1
+          fi

@@ -1,0 +1,109 @@
+name: Docker Image Tag Generator
+
+on:
+  push:
+    branches: ["*"]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      branch_name:
+        description: "Branch name override"
+        required: false
+        default: ""
+      commit_sha:
+        description: "Commit SHA override"
+        required: false
+        default: ""
+      tag:
+        description: "Git tag override"
+        required: false
+        default: ""
+      pr_number:
+        description: "PR number override"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+env:
+  # Defaults that can be overridden by workflow_dispatch inputs
+  INPUT_BRANCH_NAME: ${{ github.event.inputs.branch_name || '' }}
+  INPUT_COMMIT_SHA: ${{ github.event.inputs.commit_sha || '' }}
+  INPUT_TAG: ${{ github.event.inputs.tag || '' }}
+  INPUT_PR_NUMBER: ${{ github.event.inputs.pr_number || '' }}
+
+jobs:
+  generate-tags:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install PowerShell
+        run: |
+          if ! command -v pwsh &> /dev/null; then
+            apt-get update && apt-get install -y wget apt-transport-https software-properties-common
+            wget -q "https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb"
+            dpkg -i packages-microsoft-prod.deb
+            apt-get update && apt-get install -y powershell
+          fi
+          pwsh --version
+
+      - name: Detect git context
+        id: git-context
+        run: |
+          # Use workflow_dispatch inputs if provided, otherwise detect from git
+          if [ -n "$INPUT_BRANCH_NAME" ]; then
+            BRANCH="$INPUT_BRANCH_NAME"
+          else
+            BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
+          fi
+
+          if [ -n "$INPUT_COMMIT_SHA" ]; then
+            SHA="$INPUT_COMMIT_SHA"
+          else
+            SHA="${GITHUB_SHA:-$(git rev-parse HEAD)}"
+          fi
+
+          if [ -n "$INPUT_TAG" ]; then
+            TAG="$INPUT_TAG"
+          elif [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            TAG="${GITHUB_REF#refs/tags/}"
+          else
+            TAG=""
+          fi
+
+          if [ -n "$INPUT_PR_NUMBER" ]; then
+            PR="$INPUT_PR_NUMBER"
+          else
+            PR="${{ github.event.pull_request.number }}"
+          fi
+
+          {
+            echo "branch=$BRANCH"
+            echo "sha=$SHA"
+            echo "tag=$TAG"
+            echo "pr=$PR"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "Detected context:"
+          echo "  Branch: $BRANCH"
+          echo "  SHA: $SHA"
+          echo "  Tag: $TAG"
+          echo "  PR: $PR"
+
+      - name: Generate Docker image tags
+        id: generate-tags
+        run: |
+          pwsh -File docker-image-tag-generator.ps1 \
+            -BranchName "${{ steps.git-context.outputs.branch }}" \
+            -CommitSha "${{ steps.git-context.outputs.sha }}" \
+            -Tag "${{ steps.git-context.outputs.tag }}" \
+            -PrNumber "${{ steps.git-context.outputs.pr }}"
+
+      - name: Run Pester tests
+        run: |
+          pwsh -Command "Install-Module -Name Pester -MinimumVersion 5.0 -Force -Scope CurrentUser -SkipPublisherCheck; Invoke-Pester -Path ./docker-image-tag-generator.Tests.ps1 -Output Detailed -CI"

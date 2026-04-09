@@ -1,0 +1,138 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      config-file:
+        description: "Path to matrix config JSON file"
+        required: false
+        default: "fixtures/basic.json"
+
+permissions:
+  contents: read
+
+env:
+  BUN_VERSION: "1.3.11"
+
+jobs:
+  generate-matrix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: Run matrix generator on all fixtures
+        run: |
+          echo "=== Matrix Generator Results ==="
+          for fixture in fixtures/*.json; do
+            echo ""
+            echo "--- Fixture: $fixture ---"
+            output=$(bun run matrix-generator.ts "$fixture" 2>&1) || true
+            echo "$output"
+            echo "--- End: $fixture ---"
+          done
+
+      - name: Generate basic matrix
+        id: basic
+        run: |
+          result=$(bun run matrix-generator.ts fixtures/basic.json)
+          {
+            echo "matrix<<MATRIX_EOF"
+            echo "$result"
+            echo "MATRIX_EOF"
+          } >> "$GITHUB_OUTPUT"
+          echo "Basic matrix:"
+          echo "$result"
+
+      - name: Generate single-dimension matrix
+        id: single
+        run: |
+          result=$(bun run matrix-generator.ts fixtures/single-dimension.json)
+          {
+            echo "matrix<<MATRIX_EOF"
+            echo "$result"
+            echo "MATRIX_EOF"
+          } >> "$GITHUB_OUTPUT"
+          echo "Single-dimension matrix:"
+          echo "$result"
+
+      - name: Generate matrix with exclude rules
+        id: exclude
+        run: |
+          result=$(bun run matrix-generator.ts fixtures/with-exclude.json)
+          {
+            echo "matrix<<MATRIX_EOF"
+            echo "$result"
+            echo "MATRIX_EOF"
+          } >> "$GITHUB_OUTPUT"
+          echo "Matrix with exclude:"
+          echo "$result"
+
+      - name: Generate matrix with include rules
+        id: include
+        run: |
+          result=$(bun run matrix-generator.ts fixtures/with-include.json)
+          {
+            echo "matrix<<MATRIX_EOF"
+            echo "$result"
+            echo "MATRIX_EOF"
+          } >> "$GITHUB_OUTPUT"
+          echo "Matrix with include:"
+          echo "$result"
+
+      - name: Generate full config matrix
+        id: full
+        run: |
+          result=$(bun run matrix-generator.ts fixtures/full-config.json)
+          {
+            echo "matrix<<MATRIX_EOF"
+            echo "$result"
+            echo "MATRIX_EOF"
+          } >> "$GITHUB_OUTPUT"
+          echo "Full config matrix:"
+          echo "$result"
+
+      - name: Validate max-size enforcement
+        run: |
+          echo "Testing max-size enforcement..."
+          if bun run matrix-generator.ts fixtures/exceeds-max-size.json 2>/dev/null; then
+            echo "ERROR: Should have failed due to exceeding max-size"
+            exit 1
+          else
+            echo "PASS: Correctly rejected oversized matrix"
+          fi
+
+      - name: Validate error handling
+        run: |
+          echo "Testing empty input..."
+          if echo '' | bun run matrix-generator.ts /dev/stdin 2>/dev/null; then
+            echo "ERROR: Should have failed on empty input"
+            exit 1
+          else
+            echo "PASS: Correctly rejected empty input"
+          fi
+
+          echo "Testing invalid JSON..."
+          if echo 'not json' | bun run matrix-generator.ts /dev/stdin 2>/dev/null; then
+            echo "ERROR: Should have failed on invalid JSON"
+            exit 1
+          else
+            echo "PASS: Correctly rejected invalid JSON"
+          fi
+
+          echo "Testing missing dimensions..."
+          if echo '{}' | bun run matrix-generator.ts /dev/stdin 2>/dev/null; then
+            echo "ERROR: Should have failed on missing dimensions"
+            exit 1
+          else
+            echo "PASS: Correctly rejected missing dimensions"
+          fi

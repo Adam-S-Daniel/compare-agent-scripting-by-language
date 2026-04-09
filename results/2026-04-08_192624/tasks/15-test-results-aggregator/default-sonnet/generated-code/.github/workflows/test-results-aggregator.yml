@@ -1,0 +1,264 @@
+name: Test Results Aggregator
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # -----------------------------------------------------------------------
+  # Unit tests: run the Python test suite for the aggregator module itself.
+  # Uses the Python 3 pre-installed in the runner image.
+  # -----------------------------------------------------------------------
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install test dependencies
+        run: pip install pytest --break-system-packages -q
+
+      - name: Run unit tests
+        run: python3 -m pytest test_aggregator.py -v
+
+      - name: Verify all 29 tests passed
+        run: |
+          result=$(python3 -m pytest test_aggregator.py -v 2>&1)
+          echo "$result"
+          echo "$result" | grep -q "29 passed" || (echo "FAIL: expected 29 tests to pass" && exit 1)
+          echo "VERIFIED: 29 passed"
+
+  # -----------------------------------------------------------------------
+  # Simulate matrix build: process "linux" fixture results
+  # -----------------------------------------------------------------------
+  matrix-tests-linux:
+    name: Matrix Tests (linux)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Process linux fixture results
+        run: |
+          mkdir -p results
+          cp fixtures/junit_matrix_linux.xml results/junit_linux.xml
+          python3 aggregator.py results/junit_linux.xml --output-file results/summary_linux.md
+          cat results/summary_linux.md
+          echo "Linux matrix job completed"
+
+      - name: Verify linux results contain expected output
+        run: |
+          # linux fixture has 1 failure (test_http_post timed out)
+          grep -q "Total Tests" results/summary_linux.md
+          grep -q "# Test Results" results/summary_linux.md
+          echo "Linux results verification passed"
+
+  # -----------------------------------------------------------------------
+  # Simulate matrix build: process "windows" fixture results
+  # -----------------------------------------------------------------------
+  matrix-tests-windows:
+    name: Matrix Tests (windows)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Process windows fixture results
+        run: |
+          mkdir -p results
+          cp fixtures/junit_matrix_windows.xml results/junit_windows.xml
+          python3 aggregator.py results/junit_windows.xml --output-file results/summary_windows.md
+          cat results/summary_windows.md
+          echo "Windows matrix job completed"
+
+      - name: Verify windows results contain expected output
+        run: |
+          # windows fixture has 0 failures - all pass
+          grep -q "# Test Results" results/summary_windows.md
+          grep -q "PASSED" results/summary_windows.md
+          echo "Windows results verification passed"
+
+  # -----------------------------------------------------------------------
+  # Simulate JSON matrix results: process run1 and run2 fixtures.
+  # run1 has test_flaky_network failing; run2 has it passing -> flaky!
+  # -----------------------------------------------------------------------
+  matrix-json-tests:
+    name: JSON Matrix Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Process JSON fixture results (both runs)
+        run: |
+          mkdir -p results
+          # Run 1: test_flaky_network FAILS
+          python3 aggregator.py fixtures/results_matrix_run1.json \
+            --output-file results/summary_run1.md
+          cat results/summary_run1.md
+          # Run 2: test_flaky_network PASSES
+          python3 aggregator.py fixtures/results_matrix_run2.json \
+            --output-file results/summary_run2.md
+          cat results/summary_run2.md
+          echo "JSON matrix jobs completed"
+
+      - name: Verify run1 has a failed test
+        run: |
+          grep -q "FAILED\|❌" results/summary_run1.md
+          echo "Run1 failure verified"
+
+      - name: Verify run2 all passed
+        run: |
+          grep -q "PASSED\|✅" results/summary_run2.md
+          echo "Run2 pass verified"
+
+  # -----------------------------------------------------------------------
+  # Aggregate all results and generate the job summary.
+  # Runs the aggregator against all 4 fixture files (2 XML + 2 JSON),
+  # detects flaky tests (test_flaky_network, test_http_post),
+  # and writes a combined markdown summary.
+  # -----------------------------------------------------------------------
+  aggregate:
+    name: Aggregate Test Results
+    runs-on: ubuntu-latest
+    needs: [unit-tests, matrix-tests-linux, matrix-tests-windows, matrix-json-tests]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Aggregate all fixture results
+        run: |
+          python3 aggregator.py \
+            fixtures/junit_matrix_linux.xml \
+            fixtures/junit_matrix_windows.xml \
+            fixtures/results_matrix_run1.json \
+            fixtures/results_matrix_run2.json \
+            --output-file summary.md
+
+      - name: Show summary
+        run: cat summary.md
+
+      - name: Write to GitHub Step Summary
+        run: cat summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Verify summary contains expected values
+        run: |
+          # Verify key content in the generated summary
+          grep -q "# Test Results" summary.md
+          grep -q "Total Tests" summary.md
+          grep -q "Passed" summary.md
+
+          # linux fixture has 7 tests, windows has 7, run1 has 3, run2 has 3 = 20 total
+          grep -q "20" summary.md
+
+          # test_flaky_network fails in run1 but passes in run2 -> detected as flaky
+          grep -q "test_flaky_network" summary.md
+          grep -q "flaky\|Flaky" summary.md
+
+          echo "Summary verification passed - all expected values found"
+
+      - name: Show flaky test detection
+        run: |
+          echo "=== Flaky Test Report ==="
+          grep -A 5 "Flaky" summary.md || echo "No flaky section"
+
+  # -----------------------------------------------------------------------
+  # Workflow structure validation (meta-test).
+  # Verifies required files exist, validates YAML structure, and tests
+  # the aggregator's parsing and flaky detection logic inline.
+  # -----------------------------------------------------------------------
+  validate-workflow:
+    name: Validate Workflow Structure
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install PyYAML for YAML validation
+        run: pip install pyyaml --break-system-packages -q
+
+      - name: Verify aggregator script exists
+        run: |
+          test -f aggregator.py || (echo "ERROR: aggregator.py not found" && exit 1)
+          test -f test_aggregator.py || (echo "ERROR: test_aggregator.py not found" && exit 1)
+          echo "All required files present"
+
+      - name: Verify fixture files exist
+        run: |
+          test -f fixtures/junit_pass.xml
+          test -f fixtures/junit_fail.xml
+          test -f fixtures/junit_matrix_linux.xml
+          test -f fixtures/junit_matrix_windows.xml
+          test -f fixtures/results.json
+          test -f fixtures/results_matrix_run1.json
+          test -f fixtures/results_matrix_run2.json
+          echo "All fixture files present"
+
+      - name: Verify workflow YAML structure
+        run: |
+          python3 -c "
+          import yaml
+          with open('.github/workflows/test-results-aggregator.yml') as f:
+              data = yaml.safe_load(f)
+          # PyYAML 1.1 parses 'on' as boolean True
+          triggers = data.get(True, data.get('on', {})) or {}
+          assert 'jobs' in data, 'missing jobs key'
+          jobs = data['jobs']
+          expected = ['unit-tests', 'matrix-tests-linux', 'matrix-tests-windows',
+                      'matrix-json-tests', 'aggregate', 'validate-workflow']
+          for j in expected:
+              assert j in jobs, f'missing job: {j}'
+          print('Workflow YAML structure is valid')
+          print(f'Jobs: {list(jobs.keys())}')
+          print(f'Triggers: {list(triggers.keys())}')
+          "
+
+      - name: Test aggregator parses JUnit XML with exact values
+        run: |
+          python3 -c "
+          from aggregator import parse_junit_xml
+          content = open('fixtures/junit_pass.xml').read()
+          result = parse_junit_xml(content)
+          assert result.total == 5, f'Expected 5 tests, got {result.total}'
+          assert result.passed == 4, f'Expected 4 passed, got {result.passed}'
+          assert result.skipped == 1, f'Expected 1 skipped, got {result.skipped}'
+          assert result.failed == 0, f'Expected 0 failed, got {result.failed}'
+          print(f'JUnit parse verified: total={result.total}, passed={result.passed}')
+          "
+
+      - name: Test aggregator parses JSON with exact values
+        run: |
+          python3 -c "
+          from aggregator import parse_json_results
+          content = open('fixtures/results.json').read()
+          result = parse_json_results(content)
+          assert result.total == 5, f'Expected 5 tests, got {result.total}'
+          assert result.passed == 3, f'Expected 3 passed, got {result.passed}'
+          assert result.failed == 1, f'Expected 1 failed, got {result.failed}'
+          assert result.skipped == 1, f'Expected 1 skipped, got {result.skipped}'
+          print(f'JSON parse verified: total={result.total}, passed={result.passed}')
+          "
+
+      - name: Test flaky test detection with exact values
+        run: |
+          python3 -c "
+          from aggregator import parse_json_results, detect_flaky_tests
+          run1 = parse_json_results(open('fixtures/results_matrix_run1.json').read())
+          run2 = parse_json_results(open('fixtures/results_matrix_run2.json').read())
+          flaky = detect_flaky_tests([run1.test_cases, run2.test_cases])
+          assert len(flaky) == 1, f'Expected 1 flaky test, got {len(flaky)}: {flaky}'
+          assert flaky[0]['name'] == 'test_flaky_network', \
+              f'Wrong flaky test: {flaky[0][\"name\"]}'
+          assert flaky[0]['fail_count'] == 1
+          assert flaky[0]['pass_count'] == 1
+          print(f'Flaky detection verified: {flaky[0][\"name\"]} is flaky')
+          "

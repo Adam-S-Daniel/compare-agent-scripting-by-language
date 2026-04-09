@@ -1,0 +1,59 @@
+name: PR Label Assigner
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      changed_files_json:
+        description: "JSON array of changed file paths (inline)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  assign-labels:
+    name: Assign PR Labels
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install PowerShell
+        run: |
+          # Install PowerShell if not present (act containers may not include it)
+          if ! command -v pwsh &>/dev/null; then
+            apt-get update -qq
+            apt-get install -y -qq wget apt-transport-https software-properties-common
+            wget -q "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb"
+            dpkg -i packages-microsoft-prod.deb
+            apt-get update -qq
+            apt-get install -y -qq powershell
+          fi
+          pwsh --version
+
+      - name: Write changed files from input
+        if: ${{ inputs.changed_files_json != '' }}
+        run: |
+          # Write the workflow_dispatch input to changed-files.json so the script can read it
+          echo '${{ inputs.changed_files_json }}' > changed-files.json
+          echo "Wrote changed-files.json from workflow_dispatch input"
+
+      - name: Run PR Label Assigner
+        run: |
+          echo "=== PR Label Assigner ==="
+          # The script reads changed-files.json automatically when no args are given.
+          # RulesFile defaults to label-rules.json in the same directory.
+          pwsh -File ./Invoke-PrLabelAssigner.ps1
+          echo "=== PR Label Assigner Complete ==="
+
+      - name: Summary
+        run: |
+          echo "## PR Label Assigner Results" >> "$GITHUB_STEP_SUMMARY"
+          echo "Workflow completed successfully." >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,125 @@
+name: Dependency License Checker
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  schedule:
+    - cron: "0 9 * * 1"
+  workflow_dispatch:
+    inputs:
+      include_dev:
+        description: "Include devDependencies in check"
+        required: false
+        default: "false"
+      manifest_path:
+        description: "Path to package.json manifest"
+        required: false
+        default: "fixtures/package-approved.json"
+
+permissions:
+  contents: read
+
+jobs:
+  check-licenses:
+    name: License Compliance Check
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        fixture:
+          - name: "approved"
+            manifest: "fixtures/package-approved.json"
+            expect_compliant: "true"
+          - name: "denied"
+            manifest: "fixtures/package-denied.json"
+            expect_compliant: "false"
+          - name: "unknown"
+            manifest: "fixtures/package-unknown.json"
+            expect_compliant: "false"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Run license check on ${{ matrix.fixture.name }} fixture
+        id: license-check
+        run: |
+          echo "=== LICENSE CHECK: ${{ matrix.fixture.name }} ==="
+          echo "Manifest: ${{ matrix.fixture.manifest }}"
+
+          # Run the checker and capture output (allow failure for non-compliant fixtures)
+          set +e
+          bun run src/main.ts \
+            --manifest "${{ matrix.fixture.manifest }}" \
+            --config fixtures/license-config.json \
+            --format markdown
+          EXIT_CODE=$?
+          set -e
+
+          echo "exit_code=$EXIT_CODE" >> "$GITHUB_OUTPUT"
+
+          if [ "$EXIT_CODE" -eq 0 ]; then
+            echo "compliant=true" >> "$GITHUB_OUTPUT"
+            echo "COMPLIANT: true"
+          else
+            echo "compliant=false" >> "$GITHUB_OUTPUT"
+            echo "COMPLIANT: false"
+          fi
+
+      - name: Verify compliance result matches expectation
+        run: |
+          ACTUAL="${{ steps.license-check.outputs.compliant }}"
+          EXPECTED="${{ matrix.fixture.expect_compliant }}"
+
+          echo "Expected compliant: $EXPECTED"
+          echo "Actual compliant:   $ACTUAL"
+
+          if [ "$ACTUAL" = "$EXPECTED" ]; then
+            echo "RESULT: PASS - compliance status matches expectation"
+          else
+            echo "RESULT: FAIL - expected compliant=$EXPECTED but got compliant=$ACTUAL"
+            exit 1
+          fi
+
+      - name: Run JSON format output
+        run: |
+          echo "=== JSON FORMAT OUTPUT ==="
+          set +e
+          bun run src/main.ts \
+            --manifest "${{ matrix.fixture.manifest }}" \
+            --config fixtures/license-config.json \
+            --format json
+          set -e
+
+  run-unit-tests:
+    name: Bun Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Run tests
+        run: bun test src/licenseChecker.test.ts
+
+      - name: Verify all tests pass
+        run: |
+          echo "=== UNIT TEST SUMMARY ==="
+          bun test src/licenseChecker.test.ts 2>&1 | tee /tmp/test-output.txt
+          if grep -q "fail" /tmp/test-output.txt && ! grep -q "0 fail" /tmp/test-output.txt; then
+            echo "Some tests failed!"
+            exit 1
+          fi
+          echo "All tests passed!"

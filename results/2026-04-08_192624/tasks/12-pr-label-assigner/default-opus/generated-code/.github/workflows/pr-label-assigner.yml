@@ -1,0 +1,30 @@
+name: PR Label Assigner
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  assign-labels:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run PR Label Assigner
+        env:
+          CHANGED_FILES: ${{ env.CHANGED_FILES || '' }}
+          CHANGED_FILES_PATH: ${{ env.CHANGED_FILES_PATH || 'changed-files.txt' }}
+          LABEL_CONFIG: ${{ env.LABEL_CONFIG || 'label-config.json' }}
+        run: python3 pr_label_assigner.py

@@ -1,0 +1,219 @@
+name: PR Label Assigner
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      files_json:
+        description: "JSON array of changed file paths to label"
+        required: false
+        default: '["docs/README.md","src/api/users.py","src/utils/helper.test.py"]'
+      config_path:
+        description: "Path to label config JSON file"
+        required: false
+        default: "label-config.json"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  run-tests:
+    name: Run label assigner tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
+
+      - name: Run unit tests
+        run: |
+          pytest test_label_assigner.py -v
+
+  assign-labels:
+    name: Assign PR labels
+    runs-on: ubuntu-latest
+    needs: run-tests
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+
+      - name: Determine changed files
+        id: changed-files
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            FILES_JSON='${{ github.event.inputs.files_json }}'
+          elif [ "${{ github.event_name }}" = "pull_request" ]; then
+            FILES_JSON=$(git diff --name-only origin/${{ github.base_ref }}...HEAD 2>/dev/null | python3 -c "import sys,json; print(json.dumps(sys.stdin.read().strip().splitlines()))" || echo '[]')
+          else
+            FILES_JSON=$(git diff --name-only HEAD~1 HEAD 2>/dev/null | python3 -c "import sys,json; print(json.dumps(sys.stdin.read().strip().splitlines()))" || echo '[]')
+          fi
+          echo "files_json=${FILES_JSON}" >> "$GITHUB_OUTPUT"
+          echo "Changed files: ${FILES_JSON}"
+
+      - name: Run label assigner
+        id: label-assigner
+        run: |
+          CONFIG="${{ github.event.inputs.config_path || 'label-config.json' }}"
+          FILES_JSON='${{ steps.changed-files.outputs.files_json }}'
+          echo "Using config: ${CONFIG}"
+          echo "Files: ${FILES_JSON}"
+          python3 label_assigner.py --config "${CONFIG}" --files-json "${FILES_JSON}" | tee label-output.txt
+          # Extract labels for downstream steps
+          LABELS=$(grep "^LABELS=" label-output.txt | cut -d= -f2-)
+          echo "labels=${LABELS}" >> "$GITHUB_OUTPUT"
+          echo "Assigned labels: ${LABELS}"
+
+      - name: Output label results
+        run: |
+          echo "=== Label Assignment Results ==="
+          cat label-output.txt
+          echo "================================"
+
+  test-fixture-docs-only:
+    name: "Test fixture: docs-only PR"
+    runs-on: ubuntu-latest
+    needs: run-tests
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run label assigner with docs-only fixture
+        run: |
+          FILES='["docs/README.md","docs/api/users.md","CHANGELOG.md"]'
+          python3 label_assigner.py --config label-config.json --files-json "${FILES}" | tee fixture-docs-output.txt
+          cat fixture-docs-output.txt
+          # Assert documentation label is present
+          if grep -q "documentation" fixture-docs-output.txt; then
+            echo "PASS: documentation label found"
+          else
+            echo "FAIL: documentation label not found"
+            exit 1
+          fi
+          # Assert api label is NOT present
+          LABELS=$(grep "^LABELS=" fixture-docs-output.txt | cut -d= -f2-)
+          if echo "${LABELS}" | grep -q "api"; then
+            echo "FAIL: api label should not be present for docs-only PR"
+            exit 1
+          else
+            echo "PASS: api label correctly absent"
+          fi
+
+  test-fixture-api-pr:
+    name: "Test fixture: API PR"
+    runs-on: ubuntu-latest
+    needs: run-tests
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run label assigner with API PR fixture
+        run: |
+          FILES='["src/api/v1/users.py","src/api/v1/orders.py","src/models/user.py"]'
+          python3 label_assigner.py --config label-config.json --files-json "${FILES}" | tee fixture-api-output.txt
+          cat fixture-api-output.txt
+          # Assert api and backend labels are present
+          for label in api backend; do
+            if grep -q "${label}" fixture-api-output.txt; then
+              echo "PASS: ${label} label found"
+            else
+              echo "FAIL: ${label} label not found"
+              exit 1
+            fi
+          done
+
+  test-fixture-full-pr:
+    name: "Test fixture: full mixed PR"
+    runs-on: ubuntu-latest
+    needs: run-tests
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run label assigner with full mixed PR fixture
+        run: |
+          FILES='["src/api/v1/users.py","src/api/v1/orders.py","src/models/user.py","tests/test_users.py","docs/api/users.md","README.md"]'
+          python3 label_assigner.py --config label-config.json --files-json "${FILES}" | tee fixture-full-output.txt
+          cat fixture-full-output.txt
+          # Assert all expected labels are present
+          EXPECTED_LABELS="documentation api backend tests"
+          for label in ${EXPECTED_LABELS}; do
+            if grep -q "${label}" fixture-full-output.txt; then
+              echo "PASS: ${label} label found"
+            else
+              echo "FAIL: ${label} label not found"
+              exit 1
+            fi
+          done
+          # Assert the exact LABELS_COUNT
+          COUNT=$(grep "^LABELS_COUNT=" fixture-full-output.txt | cut -d= -f2-)
+          echo "Label count: ${COUNT}"
+          if [ "${COUNT}" -ge 4 ]; then
+            echo "PASS: at least 4 labels assigned"
+          else
+            echo "FAIL: expected at least 4 labels, got ${COUNT}"
+            exit 1
+          fi
+
+  test-fixture-no-match:
+    name: "Test fixture: no matching files"
+    runs-on: ubuntu-latest
+    needs: run-tests
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run label assigner with no-match fixture
+        run: |
+          FILES='["Makefile","pyproject.toml","setup.cfg"]'
+          python3 label_assigner.py --config label-config.json --files-json "${FILES}" | tee fixture-nomatch-output.txt
+          cat fixture-nomatch-output.txt
+          COUNT=$(grep "^LABELS_COUNT=" fixture-nomatch-output.txt | cut -d= -f2-)
+          echo "Label count: ${COUNT}"
+          if [ "${COUNT}" -eq 0 ]; then
+            echo "PASS: no labels for unmatched files"
+          else
+            echo "FAIL: expected 0 labels, got ${COUNT}"
+            exit 1
+          fi

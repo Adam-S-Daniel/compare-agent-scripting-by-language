@@ -1,0 +1,134 @@
+name: Dependency License Checker
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  schedule:
+    # Run weekly on Monday at 08:00 UTC
+    - cron: "0 8 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-licenses:
+    name: Check Dependency Licenses
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install jq
+        run: |
+          apt-get update -qq && apt-get install -y -qq jq
+
+      - name: Make license checker executable
+        run: chmod +x license-checker.sh
+
+      - name: Run shellcheck on license-checker.sh
+        run: |
+          apt-get install -y -qq shellcheck
+          shellcheck license-checker.sh
+
+      - name: Check package.json licenses
+        run: |
+          echo "=== Checking package.json ==="
+          ./license-checker.sh \
+            --manifest fixtures/package.json \
+            --licenses fixtures/license-config.json \
+            --report || true
+
+      - name: Check requirements.txt licenses
+        run: |
+          echo "=== Checking requirements.txt ==="
+          ./license-checker.sh \
+            --manifest fixtures/requirements.txt \
+            --licenses fixtures/license-config.json \
+            --report || true
+
+      - name: Check clean package (must pass)
+        run: |
+          echo "=== Checking clean package (expect PASS) ==="
+          ./license-checker.sh \
+            --manifest fixtures/package-clean.json \
+            --licenses fixtures/license-config.json \
+            --report
+
+      - name: Verify list-deps output for package.json
+        run: |
+          echo "=== Listing dependencies ==="
+          output="$(./license-checker.sh \
+            --manifest fixtures/package.json \
+            --licenses fixtures/license-config.json \
+            --list-deps)"
+          echo "$output"
+          # Assert expected packages appear in output
+          echo "$output" | grep -q "express"   || { echo "FAIL: express not found"; exit 1; }
+          echo "$output" | grep -q "lodash"    || { echo "FAIL: lodash not found"; exit 1; }
+          echo "$output" | grep -q "axios"     || { echo "FAIL: axios not found"; exit 1; }
+          echo "$output" | grep -q "gpl-package" || { echo "FAIL: gpl-package not found"; exit 1; }
+          echo "$output" | grep -q "mystery-dep" || { echo "FAIL: mystery-dep not found"; exit 1; }
+          echo "PASS: All expected packages found"
+
+      - name: Verify compliance report content
+        run: |
+          echo "=== Verifying compliance report ==="
+          output="$(./license-checker.sh \
+            --manifest fixtures/package.json \
+            --licenses fixtures/license-config.json \
+            --report 2>&1 || true)"
+          echo "$output"
+          # Assert specific statuses appear
+          echo "$output" | grep -q "express.*APPROVED"    || { echo "FAIL: express not APPROVED"; exit 1; }
+          echo "$output" | grep -q "gpl-package.*DENIED"  || { echo "FAIL: gpl-package not DENIED"; exit 1; }
+          echo "$output" | grep -q "mystery-dep.*UNKNOWN" || { echo "FAIL: mystery-dep not UNKNOWN"; exit 1; }
+          # Assert summary counts
+          echo "$output" | grep -q "Approved:" || { echo "FAIL: no Approved count"; exit 1; }
+          echo "$output" | grep -q "Denied:"   || { echo "FAIL: no Denied count"; exit 1; }
+          echo "$output" | grep -q "Unknown:"  || { echo "FAIL: no Unknown count"; exit 1; }
+          echo "PASS: All assertions verified"
+
+      - name: Verify denied packages cause exit code 1
+        run: |
+          echo "=== Verifying exit code for denied packages ==="
+          set +e
+          ./license-checker.sh \
+            --manifest fixtures/package.json \
+            --licenses fixtures/license-config.json \
+            --report > /dev/null 2>&1
+          exit_code=$?
+          set -e
+          if [ "$exit_code" -eq 1 ]; then
+            echo "PASS: Exit code is 1 as expected for denied licenses"
+          else
+            echo "FAIL: Expected exit code 1, got $exit_code"
+            exit 1
+          fi
+
+      - name: Verify clean package exit code 0
+        run: |
+          echo "=== Verifying exit code 0 for clean packages ==="
+          ./license-checker.sh \
+            --manifest fixtures/package-clean.json \
+            --licenses fixtures/license-config.json \
+            --report
+          echo "PASS: Clean package exits with code 0"
+
+      - name: Generate compliance summary
+        run: |
+          report="$(./license-checker.sh \
+            --manifest fixtures/package.json \
+            --licenses fixtures/license-config.json \
+            --report 2>&1 || true)"
+          {
+            echo "## License Compliance Summary"
+            echo ""
+            echo "### package.json"
+            echo '```'
+            echo "$report"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

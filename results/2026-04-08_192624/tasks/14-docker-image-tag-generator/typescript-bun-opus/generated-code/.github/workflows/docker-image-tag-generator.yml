@@ -1,0 +1,192 @@
+name: Docker Image Tag Generator
+
+on:
+  push:
+    branches: ["main", "master"]
+    tags: ["v*"]
+  pull_request:
+    branches: ["main", "master"]
+  workflow_dispatch:
+    inputs:
+      git_branch:
+        description: "Git branch override"
+        required: false
+        type: string
+      git_commit:
+        description: "Git commit SHA override"
+        required: false
+        type: string
+      git_tag:
+        description: "Git tag override"
+        required: false
+        type: string
+      pr_number:
+        description: "PR number override"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  # Defaults – overridden per-step when fixture data is supplied
+  GIT_BRANCH: ${{ github.ref_name }}
+  GIT_COMMIT: ${{ github.sha }}
+
+jobs:
+  generate-tags:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Determine git context
+        id: context
+        shell: bash
+        run: |
+          # Use workflow_dispatch inputs if provided, else derive from event
+          BRANCH="${{ inputs.git_branch }}"
+          COMMIT="${{ inputs.git_commit }}"
+          TAG="${{ inputs.git_tag }}"
+          PR="${{ inputs.pr_number }}"
+
+          # Fall back to environment / event defaults
+          if [ -z "$BRANCH" ]; then
+            BRANCH="${GIT_BRANCH}"
+          fi
+          if [ -z "$COMMIT" ]; then
+            COMMIT="${GIT_COMMIT}"
+          fi
+
+          # Detect tag from ref
+          if [ -z "$TAG" ] && [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            TAG="${GITHUB_REF#refs/tags/}"
+          fi
+
+          # Detect PR number from event
+          if [ -z "$PR" ] && [ "${{ github.event_name }}" = "pull_request" ]; then
+            PR="${{ github.event.pull_request.number }}"
+          fi
+
+          {
+            echo "branch=${BRANCH}"
+            echo "commit=${COMMIT}"
+            echo "tag=${TAG}"
+            echo "pr=${PR}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Generate Docker image tags
+        id: tags
+        shell: bash
+        env:
+          GIT_BRANCH: ${{ steps.context.outputs.branch }}
+          GIT_COMMIT: ${{ steps.context.outputs.commit }}
+          GIT_TAG: ${{ steps.context.outputs.tag }}
+          PR_NUMBER: ${{ steps.context.outputs.pr }}
+        run: |
+          OUTPUT=$(bun run generate-tags.ts)
+          echo "$OUTPUT"
+          # Extract the TAGS= line for downstream jobs
+          TAGS_LINE=$(echo "$OUTPUT" | grep '^TAGS=' | head -1)
+          echo "${TAGS_LINE}" >> "$GITHUB_OUTPUT"
+
+      - name: Display generated tags
+        shell: bash
+        run: |
+          echo "Docker image tags: ${{ steps.tags.outputs.TAGS }}"
+
+  # -----------------------------------------------------------------
+  # Test matrix – exercises the generator with various fixture inputs
+  # -----------------------------------------------------------------
+  test-tags:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - name: main-branch
+            branch: main
+            commit: "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0"
+            tag: ""
+            pr: ""
+            expect: "latest,main-a1b2c3d"
+          - name: feature-branch
+            branch: "feature/awesome-widget"
+            commit: "deadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+            tag: ""
+            pr: ""
+            expect: "feature-awesome-widget-deadbee"
+          - name: pr-event
+            branch: "fix/login-bug"
+            commit: "1234567890abcdef1234567890abcdef12345678"
+            tag: ""
+            pr: "42"
+            expect: "pr-42,fix-login-bug-1234567"
+          - name: semver-tag-on-main
+            branch: main
+            commit: "fedcba9876543210fedcba9876543210fedcba98"
+            tag: "v1.2.3"
+            pr: ""
+            expect: "v1.2.3,latest,main-fedcba9"
+          - name: semver-tag-on-release
+            branch: "release/v2.0.0"
+            commit: "abcdef1234567890abcdef1234567890abcdef12"
+            tag: "v2.0.0"
+            pr: ""
+            expect: "v2.0.0,release-v2.0.0-abcdef1"
+          - name: uppercase-branch
+            branch: "Feature/CAPS-Test"
+            commit: "aabbccddee1122334455aabbccddee1122334455"
+            tag: ""
+            pr: ""
+            expect: "feature-caps-test-aabbccd"
+          - name: special-chars-branch
+            branch: "feat/hello@world#2!"
+            commit: "ff00ff00ff00ff00ff00ff00ff00ff00ff00ff00"
+            tag: ""
+            pr: ""
+            expect: "feat-hello-world-2-ff00ff0"
+          - name: master-branch
+            branch: master
+            commit: "0000000000000000000000000000000000000000"
+            tag: ""
+            pr: ""
+            expect: "latest,master-0000000"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: "Run test: ${{ matrix.name }}"
+        shell: bash
+        env:
+          GIT_BRANCH: ${{ matrix.branch }}
+          GIT_COMMIT: ${{ matrix.commit }}
+          GIT_TAG: ${{ matrix.tag }}
+          PR_NUMBER: ${{ matrix.pr }}
+        run: |
+          echo "=== Test: ${{ matrix.name }} ==="
+          OUTPUT=$(bun run generate-tags.ts)
+          echo "$OUTPUT"
+
+          # Extract actual TAGS= value
+          ACTUAL=$(echo "$OUTPUT" | grep '^TAGS=' | cut -d= -f2)
+          EXPECTED="${{ matrix.expect }}"
+
+          echo "Expected: ${EXPECTED}"
+          echo "Actual:   ${ACTUAL}"
+
+          if [ "$ACTUAL" = "$EXPECTED" ]; then
+            echo "PASS: ${{ matrix.name }}"
+          else
+            echo "FAIL: ${{ matrix.name }} — expected '${EXPECTED}' but got '${ACTUAL}'"
+            exit 1
+          fi

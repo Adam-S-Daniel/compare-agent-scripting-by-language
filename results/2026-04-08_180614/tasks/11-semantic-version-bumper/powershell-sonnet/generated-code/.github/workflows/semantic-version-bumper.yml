@@ -1,0 +1,148 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches: ["main", "master"]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      version_file:
+        description: "Path to version file (plain text or package.json)"
+        required: false
+        default: "version.txt"
+      commit_file:
+        description: "Path to newline-delimited commit log file"
+        required: false
+        default: "commits.txt"
+
+permissions:
+  contents: write
+
+jobs:
+  # ──────────────────────────────────────────────────────────
+  # Job 1: Run the Pester unit tests
+  # ──────────────────────────────────────────────────────────
+  unit-tests:
+    name: Pester Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install PowerShell
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq powershell
+
+      - name: Install Pester
+        shell: pwsh
+        run: |
+          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+          Install-Module -Name Pester -MinimumVersion 5.0.0 -Force -Scope CurrentUser
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = "./SemanticVersionBumper.Tests.ps1"
+          $config.Output.Verbosity = "Detailed"
+          $config.TestResult.Enabled = $true
+          $config.TestResult.OutputPath = "test-results.xml"
+          $result = Invoke-Pester -Configuration $config
+          if ($result.FailedCount -gt 0) {
+            Write-Error "Pester: $($result.FailedCount) test(s) failed."
+            exit 1
+          }
+
+      - name: Upload test results
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: pester-test-results
+          path: test-results.xml
+
+  # ──────────────────────────────────────────────────────────
+  # Job 2: Run the version bumper (version.txt + commits.txt
+  #         are pre-seeded in the repository by the test harness)
+  # ──────────────────────────────────────────────────────────
+  run-bumper:
+    name: Run Version Bumper
+    runs-on: ubuntu-latest
+    outputs:
+      new_version: ${{ steps.bump.outputs.new_version }}
+      bump_type: ${{ steps.bump.outputs.bump_type }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install PowerShell
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq powershell
+
+      - name: Show input files
+        run: |
+          echo "=== version.txt ==="
+          cat version.txt 2>/dev/null || echo "(not found)"
+          echo "=== commits.txt ==="
+          cat commits.txt 2>/dev/null || echo "(not found)"
+
+      - name: Run version bumper
+        id: bump
+        shell: pwsh
+        run: |
+          $vf = if (Test-Path "version.txt") { "version.txt" } else { "package.json" }
+          $cf = if (Test-Path "commits.txt")  { "commits.txt"  } else { "" }
+          $output = & pwsh Run-SemanticVersionBumper.ps1 -VersionFile $vf -CommitFile $cf -Date "2026-04-08"
+          foreach ($line in $output) {
+            Write-Output $line
+            if ($line -match '^NEW_VERSION=(.+)$') {
+              "new_version=$($Matches[1])" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            }
+            if ($line -match '^BUMP_TYPE=(.+)$') {
+              "bump_type=$($Matches[1])" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            }
+          }
+
+      - name: Print new version summary
+        run: |
+          echo "NEW_VERSION=${{ steps.bump.outputs.new_version }}"
+          echo "BUMP_TYPE=${{ steps.bump.outputs.bump_type }}"
+
+  # ──────────────────────────────────────────────────────────
+  # Job 3: Workflow structure validation
+  # ──────────────────────────────────────────────────────────
+  workflow-validation:
+    name: Workflow Structure Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install actionlint
+        run: |
+          bash <(curl -Ls https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash) 2>/dev/null
+          sudo mv actionlint /usr/local/bin/ 2>/dev/null || true
+
+      - name: Validate with actionlint
+        run: actionlint .github/workflows/semantic-version-bumper.yml
+
+      - name: Verify required files exist
+        run: |
+          test -f SemanticVersionBumper.ps1        || (echo "MISSING: SemanticVersionBumper.ps1"        && exit 1)
+          test -f Run-SemanticVersionBumper.ps1    || (echo "MISSING: Run-SemanticVersionBumper.ps1"    && exit 1)
+          test -f SemanticVersionBumper.Tests.ps1  || (echo "MISSING: SemanticVersionBumper.Tests.ps1"  && exit 1)
+          test -f fixtures/patch-commits.txt       || (echo "MISSING: fixtures/patch-commits.txt"       && exit 1)
+          test -f fixtures/minor-commits.txt       || (echo "MISSING: fixtures/minor-commits.txt"       && exit 1)
+          test -f fixtures/major-commits.txt       || (echo "MISSING: fixtures/major-commits.txt"       && exit 1)
+          echo "All required files present."
+
+      - name: Verify workflow triggers
+        run: |
+          wf=".github/workflows/semantic-version-bumper.yml"
+          failed=0
+          if grep -q 'push:' "$wf"; then echo "OK: push trigger"; else echo "MISSING: push trigger"; failed=1; fi
+          if grep -q 'pull_request' "$wf"; then echo "OK: pull_request trigger"; else echo "MISSING: pull_request trigger"; failed=1; fi
+          if grep -q 'workflow_dispatch' "$wf"; then echo "OK: workflow_dispatch trigger"; else echo "MISSING: workflow_dispatch trigger"; failed=1; fi
+          exit $failed

@@ -1,0 +1,265 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - "**"
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+    inputs:
+      test_case:
+        description: "Test case to run (patch|minor|major|package_json)"
+        required: false
+        default: "all"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-workflow:
+    name: Validate Workflow Structure
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check script files exist
+        run: |
+          echo "Verifying required files exist..."
+          test -f bump-version.sh || { echo "ERROR: bump-version.sh not found"; exit 1; }
+          test -f tests/version_bumper.bats || { echo "ERROR: tests/version_bumper.bats not found"; exit 1; }
+          test -f tests/fixtures/patch-commits.txt || { echo "ERROR: fixture patch-commits.txt not found"; exit 1; }
+          test -f tests/fixtures/minor-commits.txt || { echo "ERROR: fixture minor-commits.txt not found"; exit 1; }
+          test -f tests/fixtures/major-commits.txt || { echo "ERROR: fixture major-commits.txt not found"; exit 1; }
+          echo "All required files present."
+
+      - name: Validate script syntax
+        run: |
+          bash -n bump-version.sh
+          echo "Syntax OK"
+
+      - name: Install shellcheck
+        run: |
+          if ! command -v shellcheck >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq shellcheck
+          fi
+
+      - name: Run shellcheck
+        run: shellcheck bump-version.sh
+
+  unit-tests:
+    name: Unit Tests (bats)
+    runs-on: ubuntu-latest
+    needs: validate-workflow
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install bats-core
+        run: |
+          git clone --depth 1 https://github.com/bats-core/bats-core.git /tmp/bats-core
+          sudo /tmp/bats-core/install.sh /usr/local
+
+      - name: Run bats unit tests
+        run: bats tests/version_bumper.bats
+
+  integration-patch:
+    name: "Integration: patch bump (1.0.0 + fix -> 1.0.1)"
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    env:
+      INITIAL_VERSION: "1.0.0"
+      EXPECTED_VERSION: "1.0.1"
+      FIXTURE: "tests/fixtures/patch-commits.txt"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up VERSION file
+        run: echo "$INITIAL_VERSION" > /tmp/VERSION
+
+      - name: Run version bump
+        run: |
+          NEW_VERSION=$(bash bump-version.sh \
+            --version-file /tmp/VERSION \
+            --commits "$FIXTURE" \
+            --changelog /tmp/CHANGELOG.md)
+          echo "new_version=$NEW_VERSION" >> "$GITHUB_ENV"
+          echo "NEW_VERSION=$NEW_VERSION"
+
+      - name: Assert exact version
+        run: |
+          if [ "$new_version" != "$EXPECTED_VERSION" ]; then
+            echo "FAIL: expected $EXPECTED_VERSION, got $new_version"
+            exit 1
+          fi
+          echo "PASS: version is exactly $EXPECTED_VERSION"
+
+      - name: Assert VERSION file updated
+        run: |
+          ACTUAL=$(cat /tmp/VERSION)
+          if [ "$ACTUAL" != "$EXPECTED_VERSION" ]; then
+            echo "FAIL: VERSION file contains '$ACTUAL', expected '$EXPECTED_VERSION'"
+            exit 1
+          fi
+          echo "PASS: VERSION file correctly updated to $EXPECTED_VERSION"
+
+      - name: Assert changelog generated
+        run: |
+          test -f /tmp/CHANGELOG.md || { echo "FAIL: CHANGELOG.md not created"; exit 1; }
+          grep -q "$EXPECTED_VERSION" /tmp/CHANGELOG.md || { echo "FAIL: CHANGELOG.md missing version $EXPECTED_VERSION"; exit 1; }
+          grep -q "resolve login redirect bug" /tmp/CHANGELOG.md || { echo "FAIL: CHANGELOG.md missing commit message"; exit 1; }
+          echo "PASS: CHANGELOG.md contains expected content"
+
+  integration-minor:
+    name: "Integration: minor bump (1.1.0 + feat -> 1.2.0)"
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    env:
+      INITIAL_VERSION: "1.1.0"
+      EXPECTED_VERSION: "1.2.0"
+      FIXTURE: "tests/fixtures/minor-commits.txt"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up VERSION file
+        run: echo "$INITIAL_VERSION" > /tmp/VERSION
+
+      - name: Run version bump
+        run: |
+          NEW_VERSION=$(bash bump-version.sh \
+            --version-file /tmp/VERSION \
+            --commits "$FIXTURE" \
+            --changelog /tmp/CHANGELOG.md)
+          echo "new_version=$NEW_VERSION" >> "$GITHUB_ENV"
+          echo "NEW_VERSION=$NEW_VERSION"
+
+      - name: Assert exact version
+        run: |
+          if [ "$new_version" != "$EXPECTED_VERSION" ]; then
+            echo "FAIL: expected $EXPECTED_VERSION, got $new_version"
+            exit 1
+          fi
+          echo "PASS: version is exactly $EXPECTED_VERSION"
+
+      - name: Assert VERSION file updated
+        run: |
+          ACTUAL=$(cat /tmp/VERSION)
+          if [ "$ACTUAL" != "$EXPECTED_VERSION" ]; then
+            echo "FAIL: VERSION file contains '$ACTUAL', expected '$EXPECTED_VERSION'"
+            exit 1
+          fi
+          echo "PASS: VERSION file correctly updated to $EXPECTED_VERSION"
+
+  integration-major:
+    name: "Integration: major bump (2.3.1 + breaking -> 3.0.0)"
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    env:
+      INITIAL_VERSION: "2.3.1"
+      EXPECTED_VERSION: "3.0.0"
+      FIXTURE: "tests/fixtures/major-commits.txt"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up VERSION file
+        run: echo "$INITIAL_VERSION" > /tmp/VERSION
+
+      - name: Run version bump
+        run: |
+          NEW_VERSION=$(bash bump-version.sh \
+            --version-file /tmp/VERSION \
+            --commits "$FIXTURE" \
+            --changelog /tmp/CHANGELOG.md)
+          echo "new_version=$NEW_VERSION" >> "$GITHUB_ENV"
+          echo "NEW_VERSION=$NEW_VERSION"
+
+      - name: Assert exact version
+        run: |
+          if [ "$new_version" != "$EXPECTED_VERSION" ]; then
+            echo "FAIL: expected $EXPECTED_VERSION, got $new_version"
+            exit 1
+          fi
+          echo "PASS: version is exactly $EXPECTED_VERSION"
+
+      - name: Assert VERSION file updated
+        run: |
+          ACTUAL=$(cat /tmp/VERSION)
+          if [ "$ACTUAL" != "$EXPECTED_VERSION" ]; then
+            echo "FAIL: VERSION file contains '$ACTUAL', expected '$EXPECTED_VERSION'"
+            exit 1
+          fi
+          echo "PASS: VERSION file correctly updated to $EXPECTED_VERSION"
+
+  integration-package-json:
+    name: "Integration: package.json bump (0.9.5 + feat -> 0.10.0)"
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    env:
+      INITIAL_VERSION: "0.9.5"
+      EXPECTED_VERSION: "0.10.0"
+      FIXTURE: "tests/fixtures/minor-commits.txt"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up package.json
+        run: |
+          cat > /tmp/package.json <<'PKGJSON'
+          {
+            "name": "my-app",
+            "version": "0.9.5",
+            "description": "test"
+          }
+          PKGJSON
+
+      - name: Run version bump
+        run: |
+          NEW_VERSION=$(bash bump-version.sh \
+            --version-file /tmp/package.json \
+            --commits "$FIXTURE")
+          echo "new_version=$NEW_VERSION" >> "$GITHUB_ENV"
+          echo "NEW_VERSION=$NEW_VERSION"
+
+      - name: Assert exact version
+        run: |
+          if [ "$new_version" != "$EXPECTED_VERSION" ]; then
+            echo "FAIL: expected $EXPECTED_VERSION, got $new_version"
+            exit 1
+          fi
+          echo "PASS: version is exactly $EXPECTED_VERSION"
+
+      - name: Assert package.json updated
+        run: |
+          grep -q '"0.10.0"' /tmp/package.json || { echo "FAIL: package.json not updated to 0.10.0"; exit 1; }
+          echo "PASS: package.json correctly updated to $EXPECTED_VERSION"
+
+  all-jobs-passed:
+    name: All Tests Passed
+    runs-on: ubuntu-latest
+    needs:
+      - validate-workflow
+      - unit-tests
+      - integration-patch
+      - integration-minor
+      - integration-major
+      - integration-package-json
+    steps:
+      - name: Summary
+        run: |
+          echo "=============================="
+          echo " ALL JOBS SUCCEEDED"
+          echo "=============================="
+          echo "validate-workflow : PASS"
+          echo "unit-tests        : PASS"
+          echo "integration-patch : PASS"
+          echo "integration-minor : PASS"
+          echo "integration-major : PASS"
+          echo "integration-pkg   : PASS"

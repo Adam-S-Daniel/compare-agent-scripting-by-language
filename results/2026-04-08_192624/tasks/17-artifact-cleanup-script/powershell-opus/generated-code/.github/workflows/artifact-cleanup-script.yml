@@ -1,0 +1,88 @@
+name: Artifact Cleanup
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Run in dry-run mode (true/false)"
+        required: false
+        default: "true"
+
+permissions:
+  contents: read
+
+jobs:
+  artifact-cleanup:
+    runs-on: ubuntu-latest
+    env:
+      # Default to dry-run for safety
+      DRY_RUN: ${{ github.event.inputs.dry_run || 'true' }}
+      REFERENCE_DATE: "2026-01-15"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install PowerShell
+        run: |
+          if ! command -v pwsh &> /dev/null; then
+            apt-get update && apt-get install -y wget apt-transport-https software-properties-common
+            wget -q "https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb"
+            dpkg -i packages-microsoft-prod.deb
+            rm packages-microsoft-prod.deb
+            apt-get update && apt-get install -y powershell
+          fi
+          pwsh --version
+
+      - name: Install Pester
+        run: pwsh -NoProfile -Command "Install-Module -Name Pester -MinimumVersion 5.0 -Force -Scope CurrentUser"
+
+      - name: Run Pester tests
+        run: |
+          pwsh -NoProfile -NonInteractive -Command "
+            \$config = New-PesterConfiguration
+            \$config.Run.Path = './Invoke-ArtifactCleanup.Tests.ps1'
+            \$config.Output.Verbosity = 'Detailed'
+            \$config.Run.Exit = \$true
+            Invoke-Pester -Configuration \$config
+          "
+
+      - name: Run cleanup - max age policy
+        run: |
+          ARTIFACTS='[{"name":"build-log-1","size":1000,"createdAt":"2026-01-01","workflowRunId":"run-100"},{"name":"build-log-2","size":2000,"createdAt":"2026-01-05","workflowRunId":"run-100"},{"name":"build-log-3","size":3000,"createdAt":"2026-01-10","workflowRunId":"run-100"},{"name":"test-results-1","size":500,"createdAt":"2026-01-03","workflowRunId":"run-200"},{"name":"test-results-2","size":1500,"createdAt":"2026-01-12","workflowRunId":"run-200"}]'
+          pwsh -NoProfile -NonInteractive -File ./Invoke-ArtifactCleanup.ps1 \
+            -ArtifactsJson "$ARTIFACTS" \
+            -MaxAgeDays 10 \
+            -ReferenceDate "$REFERENCE_DATE" \
+            -DryRun
+
+      - name: Run cleanup - keep latest N policy
+        run: |
+          ARTIFACTS='[{"name":"build-log-1","size":1000,"createdAt":"2026-01-01","workflowRunId":"run-100"},{"name":"build-log-2","size":2000,"createdAt":"2026-01-05","workflowRunId":"run-100"},{"name":"build-log-3","size":3000,"createdAt":"2026-01-10","workflowRunId":"run-100"},{"name":"test-results-1","size":500,"createdAt":"2026-01-03","workflowRunId":"run-200"},{"name":"test-results-2","size":1500,"createdAt":"2026-01-12","workflowRunId":"run-200"}]'
+          pwsh -NoProfile -NonInteractive -File ./Invoke-ArtifactCleanup.ps1 \
+            -ArtifactsJson "$ARTIFACTS" \
+            -KeepLatestN 1 \
+            -ReferenceDate "$REFERENCE_DATE" \
+            -DryRun
+
+      - name: Run cleanup - max total size policy
+        run: |
+          ARTIFACTS='[{"name":"build-log-1","size":1000,"createdAt":"2026-01-01","workflowRunId":"run-100"},{"name":"build-log-2","size":2000,"createdAt":"2026-01-05","workflowRunId":"run-100"},{"name":"build-log-3","size":3000,"createdAt":"2026-01-10","workflowRunId":"run-100"},{"name":"test-results-1","size":500,"createdAt":"2026-01-03","workflowRunId":"run-200"},{"name":"test-results-2","size":1500,"createdAt":"2026-01-12","workflowRunId":"run-200"}]'
+          pwsh -NoProfile -NonInteractive -File ./Invoke-ArtifactCleanup.ps1 \
+            -ArtifactsJson "$ARTIFACTS" \
+            -MaxTotalSizeBytes 5000 \
+            -ReferenceDate "$REFERENCE_DATE" \
+            -DryRun
+
+      - name: Run cleanup - combined policies
+        run: |
+          ARTIFACTS='[{"name":"build-log-1","size":1000,"createdAt":"2026-01-01","workflowRunId":"run-100"},{"name":"build-log-2","size":2000,"createdAt":"2026-01-05","workflowRunId":"run-100"},{"name":"build-log-3","size":3000,"createdAt":"2026-01-10","workflowRunId":"run-100"},{"name":"test-results-1","size":500,"createdAt":"2026-01-03","workflowRunId":"run-200"},{"name":"test-results-2","size":1500,"createdAt":"2026-01-12","workflowRunId":"run-200"}]'
+          pwsh -NoProfile -NonInteractive -File ./Invoke-ArtifactCleanup.ps1 \
+            -ArtifactsJson "$ARTIFACTS" \
+            -MaxAgeDays 10 \
+            -KeepLatestN 1 \
+            -ReferenceDate "$REFERENCE_DATE" \
+            -DryRun

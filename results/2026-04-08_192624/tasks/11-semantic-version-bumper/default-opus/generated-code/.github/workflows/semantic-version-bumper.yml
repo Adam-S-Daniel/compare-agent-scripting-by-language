@@ -1,0 +1,39 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run version bumper
+        id: bump
+        run: |
+          python3 version_bumper.py
+
+      - name: Display updated version file
+        run: |
+          echo "=== VERSION FILE ==="
+          if [ -f VERSION ]; then
+            cat VERSION
+          elif [ -f package.json ]; then
+            python3 -c "import json; print(json.load(open('package.json'))['version'])"
+          fi
+
+      - name: Display changelog
+        run: |
+          echo "=== CHANGELOG ==="
+          cat CHANGELOG.md

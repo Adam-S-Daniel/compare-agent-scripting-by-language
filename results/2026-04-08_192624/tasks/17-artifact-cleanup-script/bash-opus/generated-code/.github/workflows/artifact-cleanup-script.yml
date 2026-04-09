@@ -1,0 +1,249 @@
+name: Artifact Cleanup Script
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      max_age:
+        description: "Max age in days for artifacts"
+        required: false
+        default: "30"
+      max_total_size:
+        description: "Max total size in bytes"
+        required: false
+        default: ""
+      keep_latest_n:
+        description: "Keep N most recent per workflow"
+        required: false
+        default: ""
+      dry_run:
+        description: "Dry-run mode (true/false)"
+        required: false
+        default: "true"
+
+permissions:
+  contents: read
+  actions: write
+
+env:
+  REFERENCE_DATE: "2026-04-09"
+
+jobs:
+  validate:
+    name: Validate script
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Syntax check
+        run: bash -n artifact_cleanup.sh
+
+      - name: Make executable
+        run: chmod +x artifact_cleanup.sh
+
+  test-max-age:
+    name: Test max-age policy
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Make executable
+        run: chmod +x artifact_cleanup.sh
+
+      - name: Run max-age test
+        run: |
+          OUTPUT=$(./artifact_cleanup.sh \
+            --input fixtures/age_test.tsv \
+            --reference-date "$REFERENCE_DATE" \
+            --max-age 30)
+          echo "$OUTPUT"
+          echo "$OUTPUT" | grep -q '\[DELETE\] month-old-build'
+          echo "$OUTPUT" | grep -q '\[DELETE\] ancient-build'
+          echo "$OUTPUT" | grep -q '\[KEEP\]   recent-build'
+          echo "$OUTPUT" | grep -q '\[KEEP\]   week-old-build'
+          echo "$OUTPUT" | grep -q 'Artifacts to delete: 2'
+          echo "$OUTPUT" | grep -q 'Artifacts to keep: 2'
+          echo "$OUTPUT" | grep -q 'Space reclaimed: 7000 bytes'
+          echo "max-age test PASSED"
+
+  test-keep-latest-n:
+    name: Test keep-latest-n policy
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Make executable
+        run: chmod +x artifact_cleanup.sh
+
+      - name: Run keep-latest-n test
+        run: |
+          OUTPUT=$(./artifact_cleanup.sh \
+            --input fixtures/keep_latest_test.tsv \
+            --keep-latest-n 2)
+          echo "$OUTPUT"
+          echo "$OUTPUT" | grep -q '\[DELETE\] build-v1'
+          echo "$OUTPUT" | grep -q '\[DELETE\] build-v2'
+          echo "$OUTPUT" | grep -q '\[DELETE\] test-v1'
+          echo "$OUTPUT" | grep -q '\[KEEP\]   build-v3'
+          echo "$OUTPUT" | grep -q '\[KEEP\]   build-v4'
+          echo "$OUTPUT" | grep -q '\[KEEP\]   test-v2'
+          echo "$OUTPUT" | grep -q '\[KEEP\]   test-v3'
+          echo "$OUTPUT" | grep -q 'Artifacts to delete: 3'
+          echo "$OUTPUT" | grep -q 'Artifacts to keep: 4'
+          echo "$OUTPUT" | grep -q 'Space reclaimed: 2500 bytes'
+          echo "keep-latest-n test PASSED"
+
+  test-max-total-size:
+    name: Test max-total-size policy
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Make executable
+        run: chmod +x artifact_cleanup.sh
+
+      - name: Run max-total-size test
+        run: |
+          OUTPUT=$(./artifact_cleanup.sh \
+            --input fixtures/size_test.tsv \
+            --max-total-size 5000)
+          echo "$OUTPUT"
+          echo "$OUTPUT" | grep -q '\[DELETE\] big-artifact'
+          echo "$OUTPUT" | grep -q '\[DELETE\] medium-artifact'
+          echo "$OUTPUT" | grep -q '\[KEEP\]   small-artifact'
+          echo "$OUTPUT" | grep -q '\[KEEP\]   tiny-artifact'
+          echo "$OUTPUT" | grep -q 'Artifacts to delete: 2'
+          echo "$OUTPUT" | grep -q 'Artifacts to keep: 2'
+          echo "$OUTPUT" | grep -q 'Space reclaimed: 7000 bytes'
+          echo "$OUTPUT" | grep -q 'Space retained: 3000 bytes'
+          echo "max-total-size test PASSED"
+
+  test-combined-policies:
+    name: Test combined policies
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Make executable
+        run: chmod +x artifact_cleanup.sh
+
+      - name: Run combined policy test
+        run: |
+          OUTPUT=$(./artifact_cleanup.sh \
+            --input fixtures/combined_test.tsv \
+            --reference-date "$REFERENCE_DATE" \
+            --max-age 60 \
+            --keep-latest-n 2 \
+            --max-total-size 5000)
+          echo "$OUTPUT"
+          echo "$OUTPUT" | grep -q '\[DELETE\] alpha'
+          echo "$OUTPUT" | grep -q '\[DELETE\] beta'
+          echo "$OUTPUT" | grep -q '\[DELETE\] epsilon'
+          echo "$OUTPUT" | grep -q '\[KEEP\]   gamma'
+          echo "$OUTPUT" | grep -q '\[KEEP\]   delta'
+          echo "$OUTPUT" | grep -q '\[KEEP\]   zeta'
+          echo "$OUTPUT" | grep -q '\[KEEP\]   eta'
+          echo "$OUTPUT" | grep -q 'Artifacts to delete: 3'
+          echo "$OUTPUT" | grep -q 'Artifacts to keep: 4'
+          echo "$OUTPUT" | grep -q 'Space reclaimed: 5500 bytes'
+          echo "$OUTPUT" | grep -q 'Space retained: 3000 bytes'
+          echo "combined policy test PASSED"
+
+  test-dry-run-mode:
+    name: Test dry-run and execute modes
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Make executable
+        run: chmod +x artifact_cleanup.sh
+
+      - name: Test dry-run mode (default)
+        run: |
+          OUTPUT=$(./artifact_cleanup.sh \
+            --input fixtures/basic_artifacts.tsv \
+            --reference-date "$REFERENCE_DATE" \
+            --max-age 60)
+          echo "$OUTPUT"
+          echo "$OUTPUT" | grep -q 'Mode: DRY-RUN'
+          # Should NOT contain deletion commands in dry-run
+          if echo "$OUTPUT" | grep -q 'Deletion Commands'; then
+            echo "FAIL: dry-run should not show deletion commands"
+            exit 1
+          fi
+          echo "dry-run mode test PASSED"
+
+      - name: Test execute mode
+        run: |
+          OUTPUT=$(./artifact_cleanup.sh \
+            --input fixtures/basic_artifacts.tsv \
+            --reference-date "$REFERENCE_DATE" \
+            --max-age 60 \
+            --execute)
+          echo "$OUTPUT"
+          echo "$OUTPUT" | grep -q 'Mode: EXECUTE'
+          echo "$OUTPUT" | grep -q 'Deletion Commands'
+          echo "$OUTPUT" | grep -q 'gh api -X DELETE'
+          echo "execute mode test PASSED"
+
+  test-error-handling:
+    name: Test error handling
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Make executable
+        run: chmod +x artifact_cleanup.sh
+
+      - name: Test missing input file
+        run: |
+          if ./artifact_cleanup.sh --input nonexistent.tsv 2>err.txt; then
+            echo "FAIL: should have exited with error"
+            exit 1
+          fi
+          cat err.txt
+          grep -q 'Input file not found' err.txt
+          echo "missing file error test PASSED"
+
+      - name: Test unknown option
+        run: |
+          if ./artifact_cleanup.sh --bogus 2>err.txt; then
+            echo "FAIL: should have exited with error"
+            exit 1
+          fi
+          cat err.txt
+          grep -q 'Unknown option' err.txt
+          echo "unknown option error test PASSED"
+
+      - name: Test empty input
+        run: |
+          if echo "" | ./artifact_cleanup.sh 2>err.txt; then
+            echo "FAIL: should have exited with error for empty input"
+            exit 1
+          fi
+          cat err.txt
+          grep -q 'No artifacts loaded' err.txt
+          echo "empty input error test PASSED"
+
+  summary:
+    name: All tests passed
+    runs-on: ubuntu-latest
+    needs:
+      - test-max-age
+      - test-keep-latest-n
+      - test-max-total-size
+      - test-combined-policies
+      - test-dry-run-mode
+      - test-error-handling
+    steps:
+      - name: Report success
+        run: echo "All artifact cleanup tests passed successfully!"

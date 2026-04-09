@@ -1,0 +1,35 @@
+name: Test Results Aggregator
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  RESULTS_DIR: fixtures
+
+jobs:
+  aggregate-results:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run aggregator and verify
+        run: |
+          output=$(python3 aggregator.py "${{ env.RESULTS_DIR }}" 2>/dev/null || true)
+          echo "$output"
+          echo "$output" | grep -q "=== AGGREGATED TOTALS ==="
+          echo "$output" | grep -q "=== END TOTALS ==="
+          echo "$output" | grep -q "# Test Results Summary"
+          echo "Output format verified successfully"

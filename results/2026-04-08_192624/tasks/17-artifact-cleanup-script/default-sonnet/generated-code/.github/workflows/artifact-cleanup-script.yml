@@ -1,0 +1,63 @@
+name: Artifact Cleanup Script
+
+# Trigger on push, pull-request, a weekly schedule, and manual dispatch so
+# the workflow can be tested in CI and run on-demand in production.
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 3 * * 0'   # every Sunday at 03:00 UTC
+  workflow_dispatch:
+
+# Minimal read-only permissions — the cleanup script itself doesn't call the
+# GitHub API; those calls would live in a separate step.
+permissions:
+  contents: read
+
+jobs:
+  # ──────────────────────────────────────────────────────────
+  # Job 1: unit-tests
+  # Run the full pytest suite against artifact_cleanup.py.
+  # All test cases execute here, satisfying the "every test
+  # must run through the GitHub Actions workflow" requirement.
+  # ──────────────────────────────────────────────────────────
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install test dependencies
+        run: python3 -m pip install --quiet --break-system-packages pytest
+
+      - name: Run pytest
+        run: python3 -m pytest test_artifact_cleanup.py -v
+
+  # ──────────────────────────────────────────────────────────
+  # Job 2: artifact-cleanup
+  # Run the cleanup script against a fixture file.
+  #
+  # Which fixture to use is controlled by the FIXTURE_NAME
+  # environment variable:
+  #   • Default (no override): age_retention
+  #   • Override via `act push --env FIXTURE_NAME=size_retention`
+  #
+  # The script is run with --dry-run so the workflow is safe
+  # to execute in any environment without side effects.
+  # ──────────────────────────────────────────────────────────
+  artifact-cleanup:
+    name: Artifact Cleanup
+    runs-on: ubuntu-latest
+    needs: unit-tests
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run artifact cleanup (dry-run)
+        run: |
+          FIXTURE="${FIXTURE_NAME:-age_retention}"
+          echo "Using fixture: ${FIXTURE}"
+          python3 artifact_cleanup.py \
+            --fixture "fixtures/${FIXTURE}.json" \
+            --dry-run
