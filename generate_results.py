@@ -916,8 +916,8 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         lines.append(_fmt_pr(r))
     lines.append("")
     lines.extend(_emit_sorted_variants(pr_hdr, pr_sep, pr_rows, [
-        ("Sorted by cost (most expensive first)", "cost", True),
-        ("Sorted by duration (longest first)", "dur", True),
+        ("Sorted by cost (cheapest first)", "cost", False),
+        ("Sorted by duration (fastest first)", "dur", False),
         ("Sorted by errors (fewest first)", "errors", False),
         ("Sorted by lines (fewest first)", "lines", False),
         ("Sorted by turns (fewest first)", "turns", False),
