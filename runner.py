@@ -1618,7 +1618,6 @@ def main():
 
     # When resuming, load ALL existing metrics (not just ones matching current filters)
     # so that results.md reflects the full picture
-    # Also use the full task count for total_runs in results.md reporting
     total_runs_for_report = total_runs
     if args.resume:
         for mf in sorted((run_dir / "tasks").rglob("metrics.json")):
@@ -1628,8 +1627,18 @@ def main():
                 pass
         if all_metrics:
             log(f"Loaded {len(all_metrics)} previously completed run(s) from {run_dir}")
-        # Use full benchmark size for reporting, not the filtered subset
-        total_runs_for_report = len(TASKS) * len(MODELS) * len(PROMPT_TEMPLATES)
+        # Derive total from the run manifest if available, otherwise from loaded metrics
+        manifest_path = run_dir / "run-manifest.json"
+        if manifest_path.exists():
+            try:
+                manifest = json.loads(manifest_path.read_text())
+                total_runs_for_report = manifest.get("total_runs", total_runs)
+            except Exception:
+                pass
+        if total_runs_for_report == total_runs:
+            # Fallback: count distinct (task, mode, model) combos in loaded metrics
+            combos = set((m["task_id"], m["language_mode"], m["model_short"]) for m in all_metrics)
+            total_runs_for_report = max(len(combos), total_runs)
 
     # Detect git branch for periodic pushing
     try:
@@ -1732,8 +1741,8 @@ def main():
 
     # Final results.md and push — squashes any remaining incremental commits
     pusher.stop()
-    generate_results_md(run_dir, all_metrics, total_runs, run_count)
-    git_push_results(repo_root, git_branch, run_count, total_runs, final=True)
+    generate_results_md(run_dir, all_metrics, total_runs_for_report, run_count)
+    git_push_results(repo_root, git_branch, run_count, total_runs_for_report, final=True)
     log(f"Final results pushed to {git_branch}")
 
     log(f"\nResults saved to: {run_dir}")
