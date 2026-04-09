@@ -21,7 +21,7 @@ from pathlib import Path
 
 from models import COST_PER_MTOK, MODELS  # noqa: E402  (single source of truth)
 
-INSTRUCTIONS_VERSION = "v3"
+INSTRUCTIONS_VERSION = "v4"
 
 
 def _detect_traps(events: list[dict], console: str, metrics: dict) -> list[dict]:
@@ -947,7 +947,7 @@ def update_readme(repo_root: Path) -> None:
             name = f"**{name}** (latest)"
         ver_raw = r.get("version", "?")
         # Linkify version to the instructions doc
-        ver_links = {"v1": "benchmark-instructions-v1.md", "v2": "benchmark-instructions-v2.md", "v3": "benchmark-instructions-v3.md"}
+        ver_links = {"v1": "benchmark-instructions-v1.md", "v2": "benchmark-instructions-v2.md", "v3": "benchmark-instructions-v3.md", "v4": "benchmark-instructions-v4.md"}
         ver = f"[{ver_raw}]({ver_links[ver_raw]})" if ver_raw in ver_links else ver_raw
         count = f"{r['n_runs']}/{r.get('total_planned', '?')}"
         cost = f"${r.get('cost', 0):.2f}" if r.get("cost") else "—"

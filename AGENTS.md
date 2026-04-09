@@ -14,8 +14,11 @@ python3 -c "from generate_results import generate_results_md"
 # Regenerate all reports
 python3 generate_results.py --all
 
-# Run a benchmark (v3, all tasks/modes/models)
+# Run a benchmark (v4, all tasks/modes/models)
 python3 runner.py --tasks 11,12,13,14,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
+
+# Build custom act container (optional, eliminates pwsh install overhead)
+docker build -t act-ubuntu-pwsh:latest -f Dockerfile.act .
 ```
 
 ## Code style

@@ -20,8 +20,8 @@ from pathlib import Path
 # Constants
 # ---------------------------------------------------------------------------
 
-INSTRUCTIONS_FILE = "benchmark-instructions-v3.md"
-INSTRUCTIONS_VERSION = "v3"
+INSTRUCTIONS_FILE = "benchmark-instructions-v4.md"
+INSTRUCTIONS_VERSION = "v4"
 
 from models import COST_PER_MTOK, MODELS  # noqa: E402  (single source of truth)
 
@@ -324,9 +324,15 @@ Design your workflow so its steps work in an isolated Docker container — use
 `actions/checkout@v4`, install dependencies your script needs, and run it.
 Avoid steps requiring external services or secrets without sensible defaults.
 
+IMPORTANT for PowerShell mode: Use `shell: pwsh` on your workflow run: steps instead
+of invoking `pwsh -Command` or `pwsh -File` from bash. This avoids escaping issues
+and works correctly in act containers. pwsh and Pester are pre-installed in the
+container.
+
 WORKFLOW VALIDATION:
 Run `actionlint .github/workflows/{task_slug}.yml` and fix any errors. actionlint is
-pre-installed. Iterate until it passes cleanly.
+pre-installed. Iterate until it passes cleanly. Validate with actionlint BEFORE
+running act — actionlint is instant, act takes 30-90 seconds per run.
 
 ALL TESTS MUST RUN THROUGH ACT:
 Every single test case must execute through the GitHub Actions workflow via `act`.
@@ -346,7 +352,8 @@ Your test harness must:
 5. Assert every job shows "Job succeeded"
 
 The `act-result.txt` file MUST exist when done. It is a required artifact.
-`act` and Docker are pre-installed.
+`act` and Docker are pre-installed. Limit yourself to at most 3 `act push` runs —
+diagnose errors from the output rather than re-running blindly.
 
 WORKFLOW STRUCTURE TESTS (also required):
 - Parse the YAML and check expected structure (triggers, jobs, steps)
