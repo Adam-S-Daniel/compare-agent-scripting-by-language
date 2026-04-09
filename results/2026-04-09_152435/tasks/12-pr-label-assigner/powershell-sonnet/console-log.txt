@@ -1,0 +1,229 @@
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/AGENTS.md"}
+[Result] 1	# Agent Instructions
+2	
+3	All agent-facing instructions live in this file. `CLAUDE.md` contains only a
+4	reference here. If you are a Claude Code agent, you have already loaded this
+5	via `CLAUDE.md`. Other agents: read this file directly.
+6	
+7	## Build and test
+8	
+9	```bash
+10	# Validate imports
+11	python3 -c "from runner import main"
+12	python3 -c "from generate_results import generate_results_md"
+13	
+14	# Regenerate all reports
+15	python3 generate_results.py --all
+16	
+17	# Run a benchmark (v4, all tasks/modes/models)
+18	python3 runner.py --tasks 11,12,13,14,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
+19	
+20	# Build custom act container (optional, eliminates pwsh install overhead)
+21	docker build -t act-ubuntu-pwsh:latest -f Dockerfile.act .
+22	```
+23	
+24	## Code style
+25	
+26	- Python 3.12+. No type stubs or mypy. Use type hints where they aid readability.
+27	- Dollar amounts in results.md: round to nearest penny (`.2f`).
+28	- Durations in result
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/benchmark-instructions-v4.md"}
+[Result] 1	# Benchmark Instructions v4 — GitHub Actions
+2	
+3	**Version**: v4
+4	**Date**: 2026-04-09
+5	**Purpose**: Measure how well Claude Code agents perform GitHub Actions workflow authoring tasks across different language constraints, with trap-awareness guidance from v3 findings.
+6	
+7	**Changes from v3**:
+8	- Added "Common Pitfalls" section with guidance derived from v3 trap analysis (115min, 15.8% of v3 time lost to traps)
+9	- Act container now has pwsh and Pester pre-installed (matching real GitHub runners). Agents still need an install step for workflows that will run on vanilla act, but the benchmarking container already has them.
+10	- GHA workflow addendum expanded with `shell: pwsh` guidance for PowerShell mode
+11	- All other methodology, tasks, modes, and models are unchanged from v3
+12	
+13	## Methodology
+14	
+15	### Overview
+16	
+17	Each task is executed by a Claude Code agent under 4 different language constraints ("modes") and with 2 different models, yielding **8 runs per task**. A
+[Assistant] Let me check the environment files and start planning.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/12-pr-label-assigner/powershell-sonnet/.actrc"}
+[Result] 1	-P ubuntu-latest=act-ubuntu-pwsh:latest
+2	
+[Tool: Bash] ls /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/12-pr-label-assigner/powershell-sonnet/
+[Result] benchmark-instructions-v4.md
+[Tool: Bash] docker inspect act-ubuntu-pwsh:latest 2>/dev/null | python3 -c "import json,sys; d=json.load(sys.stdin); print(d[0].get('Config',{}).get('Cmd',[]))" 2>/dev/null || echo "Image not found or can't inspect"
+[Result] ['/bin/bash']
+[Tool: Bash] actionlint --version 2>/dev/null && which actionlint
+[Result] 1.7.12
+installed by downloading from release page
+built with go1.26.1 compiler for linux/amd64
+/home/passp/.local/bin/actionlint
+[Tool: Bash] docker run --rm act-ubuntu-pwsh:latest bash -c "which actionlint 2>/dev/null && actionlint --version 2>/dev/null || echo 'actionlint not found'; which pwsh 2>/dev/null || echo 'pwsh not found'; pwsh -c 'Get-Module -ListAvailable Pester | Select-Object -First 1 | Format-Table Name,Version' 2>/dev/null || echo 'pester check failed'"
+[Result] actionlint not found
+/usr/bin/pwsh
+
+[32;1mName  [0m[32;1m Version[0m
+[32;1m----  [0m [32;1m-------[0m
+Pester 5.7.1
+[Tool: Bash] docker run --rm act-ubuntu-pwsh:latest bash -c "curl --version 2>/dev/null | head -1; go version 2>/dev/null || echo 'no go'; apt list --installed 2>/dev/null | grep -i action | head -5; ls /usr/local/bin/ | head -20"
+[Result] curl 8.5.0 (x86_64-pc-linux-gnu) libcurl/8.5.0 OpenSSL/3.0.13 zlib/1.3 brotli/1.1.0 zstd/1.5.5 libidn2/2.3.7 libpsl/0.21.2 (+libidn2/2.3.7) libssh/0.10.6/openssl/zlib nghttp2/1.59.0 librtmp/2.3 OpenLDAP/2.6.10
+no go
+python
+[Tool: Bash] docker run --rm act-ubuntu-pwsh:latest bash -c "curl -fsSL 'https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash' 2>&1 | head -5 || echo 'no internet or failed'"
+[Result] #!/bin/bash
+
+set -e -o pipefail
+
+function usage() {
+[Tool: ToolSearch] {"query": "select:TodoWrite", "max_results": 1}
+[Result] {'type': 'tool_reference', 'tool_name': 'TodoWrite'}
+[Tool: TodoWrite] {"todos": [{"content": "Write failing Pester test for Test-GlobPattern", "activeForm": "Writing failing test for Test-GlobPattern", "status": "in_progress"}, {"content": "Implement Test-GlobPattern to
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Assistant] Now let me write the failing test first (TDD: red phase):
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/12-pr-label-assigner/powershell-sonnet/PRLabelAssigner.Tests.ps1", "content": "# PRLabelAssigner.Tests
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/12-pr-label-assigner/powershell-sonnet/PRLabelAssigner.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Tool: TodoWrite] {"todos": [{"content": "Write failing Pester test for Test-GlobPattern", "activeForm": "Writing failing test for Test-GlobPattern", "status": "completed"}, {"content": "Implement Test-GlobPattern to p
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Assistant] Now implement the main script to make tests pass (green phase):
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/12-pr-label-assigner/powershell-sonnet/Invoke-PRLabelAssigner.ps1", "content": "# Invoke-PRLabelAssign
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/12-pr-label-assigner/powershell-sonnet/Invoke-PRLabelAssigner.ps1 (file state is current in your context — no need to Read it back)
+[Tool: TodoWrite] {"todos": [{"content": "Write failing Pester test for Test-GlobPattern", "activeForm": "Writing failing test for Test-GlobPattern", "status": "completed"}, {"content": "Implement Test-GlobPattern to p
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Assistant] Now create the label config and verify tests pass locally:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/12-pr-label-assigner/powershell-sonnet/label-config.json", "content": "{\n  \"rules\": [\n    {\n     
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/12-pr-label-assigner/powershell-sonnet/label-config.json (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -c "Invoke-Pester ./PRLabelAssigner.Tests.ps1 -Output Detailed 2>&1" | head -100
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 38 tests in 451ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/12-pr-label-assigner/powershell-sonnet/PRLabelAssigner.Tests.ps1'[0m
+[92mDescribing Test-GlobPattern[0m
+[96m Context docs/** pattern[0m
+[32m   [+] matches a file directly under docs/[0m[90m 176ms (99ms|77ms)[0m
+[32m   [+] matches a file nested under docs/[0m[90m 27ms (24ms|3ms)[0m
+[32m   [+] does NOT match a file outside docs/[0m[90m 13ms (9ms|5ms)[0m
+[96m Context src/api/** pattern[0m
+[32m   [+] matches a file directly under src/api/[0m[90m 10ms (6ms|4ms)[0m
+[32m   [+] does NOT match a file under src/ but not src/api/[0m[90m 9ms (6ms|3ms)[0m
+[96m Context *.test.* pattern (test files anywhere)[0m
+[32m   [+] matches a test file at repo root[0m[90m 16ms (10ms|6ms)[0m
+[32m   [+] matches a test file in a subdi
+[Assistant] All unit tests pass. Now create the workflow directory and file:
+[Tool: Bash] mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/12-pr-label-assigner/powershell-sonnet/.github/workflows
+[Result] (Bash completed with no output)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/12-pr-label-assigner/powershell-sonnet/.github/workflows/pr-label-assigner.yml", "content": "name: PR 
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/12-pr-label-assigner/powershell-sonnet/.github/workflows/pr-label-assigner.yml (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/pr-label-assigner.yml
+[Result] (Bash completed with no output)
+[Assistant] Actionlint passes. Now run all Pester tests:
+[Tool: Bash] pwsh -c "Invoke-Pester ./PRLabelAssigner.Tests.ps1 -Output Detailed 2>&1"
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 38 tests in 668ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/12-pr-label-assigner/powershell-sonnet/PRLabelAssigner.Tests.ps1'[0m
+[92mDescribing Test-GlobPattern[0m
+[96m Context docs/** pattern[0m
+[32m   [+] matches a file directly under docs/[0m[90m 247ms (140ms|107ms)[0m
+[32m   [+] matches a file nested under docs/[0m[90m 28ms (6ms|22ms)[0m
+[32m   [+] does NOT match a file outside docs/[0m[90m 14ms (10ms|3ms)[0m
+[96m Context src/api/** pattern[0m
+[32m   [+] matches a file directly under src/api/[0m[90m 10ms (5ms|5ms)[0m
+[32m   [+] does NOT match a file under src/ but not src/api/[0m[90m 10ms (7ms|3ms)[0m
+[96m Context *.test.* pattern (test files anywhere)[0m
+[32m   [+] matches a test file at repo root[0m[90m 13ms (6ms|7ms)[0m
+[32m   [+] matches a test file in a su
+[Assistant] All 38 tests pass. Now create the act test harness:
+[Tool: TodoWrite] {"todos": [{"content": "Write failing Pester test for Test-GlobPattern", "activeForm": "Writing failing test for Test-GlobPattern", "status": "completed"}, {"content": "Implement Test-GlobPattern to p
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/12-pr-label-assigner/powershell-sonnet/Run-ActTests.ps1", "content": "# Run-ActTests.ps1\n# Act test h
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/12-pr-label-assigner/powershell-sonnet/Run-ActTests.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -c "./Run-ActTests.ps1" 2>&1
+[Result ERROR] Exit code 1
+Creating temp repo at: /tmp/pr-label-assigner-act-1045245131
+
+======================================================================
+  Running: act push --rm
+======================================================================
+
+time="2026-04-09T17:25:17-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[PR Label Assigner/assign-labels] ⭐ Run Set up job
+[PR Label Assigner/assign-labels] 🚀  Start image=act-ubuntu-pwsh:latest
+[PR Label Assigner/assign-labels]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=true
+[PR Label Assigner/assign-labels] using DockerAuthConfig authentication for docker pull
+[PR Label Assigner/assign-labels] Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+[PR Label Assigner/assign-labels]   ❌  Failure - Set up job
+[PR Label Assigner/assign-labels] 🏁  Job failed
+Error: Error respon
+[Assistant] The image exists locally but act is force-pulling. Need to add `--pull=false`:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/12-pr-label-assigner/powershell-sonnet/Run-ActTests.ps1", "old_string": "    $ac
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/12-pr-label-assigner/powershell-sonnet/Run-ActTests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -c "./Run-ActTests.ps1" 2>&1
+[Result] Creating temp repo at: /tmp/pr-label-assigner-act-1272640084
+
+======================================================================
+  Running: act push --rm
+======================================================================
+
+time="2026-04-09T17:25:35-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[PR Label Assigner/assign-labels] ⭐ Run Set up job
+[PR Label Assigner/assign-labels] 🚀  Start image=act-ubuntu-pwsh:latest
+[PR Label Assigner/assign-labels]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[PR Label Assigner/assign-labels]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[PR Label Assigner/assign-labels]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[PR Label Assigner/assign-labels]   🐳  docker exec cmd=[node --no-warnings -e console
+[Assistant] All assertions pass. Let me verify the final state:
+[Tool: Bash] ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/12-pr-label-assigner/powershell-sonnet/ && echo "---" && pwsh -c "Invoke-Pester ./PRLabelAssigner.Tests.ps1 -Output Normal 2>&1 | tail -5"
+[Result] total 92
+drwxr-xr-x 5 passp passp  4096 Apr  9 17:25 .
+drwxr-xr-x 8 passp passp  4096 Apr  9 17:17 ..
+-rw-r--r-- 1 passp passp    40 Apr  9 17:17 .actrc
+drwxr-xr-x 2 passp passp  4096 Apr  9 17:17 .claude
+drwxr-xr-x 7 passp passp  4096 Apr  9 17:17 .git
+drwxr-xr-x 3 passp passp  4096 Apr  9 17:24 .github
+-rw-r--r-- 1 passp passp  7173 Apr  9 17:22 Invoke-PRLabelAssigner.ps1
+-rw-r--r-- 1 passp passp 11434 Apr  9 17:22 PRLabelAssigner.Tests.ps1
+-rw-r--r-- 1 passp passp  6469 Apr  9 17:25 Run-ActTests.ps1
+-rw-r--r-- 1 passp passp  9981 Apr  9 17:25 act-result.txt
+-rw-r--r-- 1 passp passp 21666 Apr  9 15:03 benchmark-instructions-v4.md
+-rw-r--r-- 1 passp passp   559 Apr  9 17:22 label-config.json
+---
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 38 tests in 578ms.[0m
+[95mRunning tests.[0m
+[32m[+] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/12-pr-label-assigner/powershell-sonnet/PRLabelAssigner.Tests.ps1[0m[90m 3.03s (1.36s|1
+[Tool: TodoWrite] {"todos": [{"content": "Write failing Pester test for Test-GlobPattern", "activeForm": "Writing failing test for Test-GlobPattern", "status": "completed"}, {"content": "Implement Test-GlobPattern to p
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Assistant] Everything is complete. Here's a summary of what was built:
+
+## Files Created
+
+| File | Purpose |
+|------|---------|
+| `Invoke-PRLabelAssigner.ps1` | Core library + CLI. Functions: `Test-GlobPattern`, `Get-MatchingLabels`, `Get-LabelRulesFromConfig`, `Invoke-PRLabelAssigner` |
+| `PRLabelAssigner.Tests.ps1` | 38 Pester tests (unit + workflow structure + actionlint) |
+| `label-config.json` | Default rules: `docs/**`→documentation, `src/api/**`→api, `*.test.*`→tests, `src/**`→backend, `.github/**`→ci/cd |
+| `.github/workflows/pr-label-assigner.yml` | GHA workflow: checkout → install Pester/actionlint → run Pester → integration tests |
+| `Run-ActTests.ps1` | Act test harness that runs `act push --rm` and asserts exact expected values |
+| `act-result.txt` | Required artifact with full act output |
+
+## Results
+- **38/38 Pester tests pass** (unit tests, config loading, end-to-end, workflow structure, actionlint)
+- **actionlint passes** with no errors
+- **act workflow passes** — all 5 integration test cases verified with exact expected labels:
+  - `docs/README.md` → `documentation`
+  - `src/api/users.js` → `api, backend`
+  - `src/api/users.test.js` → `api, tests, backend`
+  - `.github/workflows/ci.yml` → `ci/cd`
+  - `random-file.txt` → `(none)`
+
+## Design Decisions
+- **Glob matching**: PowerShell `-like` operator after converting `**`→`*`; special-cased `**/` prefix patterns to match root-level files
+- **Priority ordering**: Higher priority labels appear first in output; deduplication keeps the highest-priority occurrence
+- **TDD**: Tests written first (all failing on workflow structure until the workflow existed), then implementation
