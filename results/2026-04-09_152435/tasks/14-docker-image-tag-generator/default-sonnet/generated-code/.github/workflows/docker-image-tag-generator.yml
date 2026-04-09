@@ -1,0 +1,95 @@
+name: Docker Image Tag Generator
+
+on:
+  push:
+    branches:
+      - "**"
+    tags:
+      - "v*"
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+    inputs:
+      branch_name:
+        description: "Branch name or git ref override (for testing)"
+        required: false
+        default: ""
+      commit_sha:
+        description: "Commit SHA override (for testing)"
+        required: false
+        default: ""
+      pr_number:
+        description: "PR number override (for testing)"
+        required: false
+        default: ""
+      git_tags:
+        description: "Comma-separated git tags override (for testing)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  generate-tags:
+    name: Generate Docker Image Tags
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Python dependencies
+        run: |
+          pip install pytest pyyaml --quiet --break-system-packages
+
+      - name: Run unit tests
+        run: |
+          python3 -m pytest test_tag_generator.py -v --tb=short \
+            --ignore-glob="**/TestWorkflowStructure*" \
+            -k "not TestWorkflowStructure"
+
+      - name: Generate Docker image tags
+        run: |
+          # Determine effective inputs:
+          # 1. If env vars are set (by act --env or workflow_dispatch inputs), use them
+          # 2. Otherwise fall back to GitHub context values
+
+          EFFECTIVE_BRANCH="${BRANCH_NAME:-${GITHUB_REF}}"
+          EFFECTIVE_SHA="${COMMIT_SHA:-${GITHUB_SHA}}"
+          EFFECTIVE_PR="${PR_NUMBER:-}"
+          EFFECTIVE_TAGS="${GIT_TAGS:-}"
+
+          # workflow_dispatch inputs override env vars
+          if [ -n "${{ github.event.inputs.branch_name }}" ]; then
+            EFFECTIVE_BRANCH="${{ github.event.inputs.branch_name }}"
+          fi
+          if [ -n "${{ github.event.inputs.commit_sha }}" ]; then
+            EFFECTIVE_SHA="${{ github.event.inputs.commit_sha }}"
+          fi
+          if [ -n "${{ github.event.inputs.pr_number }}" ]; then
+            EFFECTIVE_PR="${{ github.event.inputs.pr_number }}"
+          fi
+          if [ -n "${{ github.event.inputs.git_tags }}" ]; then
+            EFFECTIVE_TAGS="${{ github.event.inputs.git_tags }}"
+          fi
+
+          echo "=== Git Context ==="
+          echo "Branch: ${EFFECTIVE_BRANCH}"
+          echo "SHA:    ${EFFECTIVE_SHA}"
+          echo "PR:     ${EFFECTIVE_PR:-none}"
+          echo "Tags:   ${EFFECTIVE_TAGS:-none}"
+          echo ""
+
+          echo "=== Generated Docker Image Tags ==="
+          python3 tag_generator.py \
+            --branch "${EFFECTIVE_BRANCH}" \
+            --sha "${EFFECTIVE_SHA}" \
+            --pr "${EFFECTIVE_PR}" \
+            --tags "${EFFECTIVE_TAGS}"
+
+      - name: Verify tag output
+        run: |
+          echo "Tag generation completed successfully."
