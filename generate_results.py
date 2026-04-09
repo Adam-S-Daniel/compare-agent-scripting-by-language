@@ -271,7 +271,7 @@ def generate_results_md(run_dir: Path, all_metrics: list[dict], total_runs: int,
     lines.append(f"**Last updated:** {now_et}")
     lines.append("")
     lines.append(f"**Status:** {completed}/{total_runs} runs completed, {remaining} remaining")
-    lines.append(f"**Total cost so far:** ${total_cost:.4f}")
+    lines.append(f"**Total cost so far:** ${total_cost:.2f}")
     lines.append(f"**Total agent time so far:** {total_duration:.0f}s ({total_duration/60:.1f} min)")
     lines.append("")
 
@@ -331,7 +331,7 @@ def generate_results_md(run_dir: Path, all_metrics: list[dict], total_runs: int,
                 })
         def _fmt_cmp(r):
             return (f"| {r['mode']} | {r['model']} | {r['n']} | {r['avg_dur']:.0f}s | {r['avg_lines']:.0f} "
-                    f"| {r['avg_errors']:.1f} | {r['avg_turns']:.0f} | ${r['avg_cost']:.4f} | ${r['total_cost']:.4f} |")
+                    f"| {r['avg_errors']:.1f} | {r['avg_turns']:.0f} | ${r['avg_cost']:.2f} | ${r['total_cost']:.2f} |")
         lines.append(cmp_hdr)
         lines.append(cmp_sep)
         for r in cmp_rows:
@@ -525,8 +525,8 @@ def generate_results_md(run_dir: Path, all_metrics: list[dict], total_runs: int,
             sv = sum(d["saved"] for d in cache_data if d["status"] == st)
             pct = sv / total_cost * 100 if total_cost else 0
             cnt = sum(1 for d in cache_data if d["status"] == st)
-            lines.append(f"| {label} | {cnt} | ${sv:.4f} | {pct:.2f}% |")
-        lines.append(f"| **Total** | **{len(cache_data)}** | **${cache_total_saved:.4f}** | **{cache_pct:.2f}%** |")
+            lines.append(f"| {label} | {cnt} | ${sv:.2f} | {pct:.2f}% |")
+        lines.append(f"| **Total** | **{len(cache_data)}** | **${cache_total_saved:.2f}** | **{cache_pct:.2f}%** |")
         lines.append("")
 
     # ── Trap Analysis by Category ──
@@ -663,7 +663,7 @@ def generate_results_md(run_dir: Path, all_metrics: list[dict], total_runs: int,
         lines.append(
             f"| {m['task_name'][:30]} | {m['language_mode']} | {m['model_short']} "
             f"| {dur:.0f}s | {m['timing']['num_turns']} | {m['code_metrics']['total_lines']} "
-            f"| {m['quality']['error_count']} | ${m['cost']['total_cost_usd']:.4f} "
+            f"| {m['quality']['error_count']} | ${m['cost']['total_cost_usd']:.2f} "
             f"| {m['language_chosen']} | {status} |"
         )
     lines.append("")
@@ -710,7 +710,7 @@ def generate_results_md(run_dir: Path, all_metrics: list[dict], total_runs: int,
             lines.append(
                 f"| {r['task']} | {r['model']} | {r['mode']} | {r['default_lang']} "
                 f"| {r['def_dur']:.0f}s | {r['mode_dur']:.0f}s | {ds}{r['dur_delta']:.0f}% "
-                f"| ${r['def_cost']:.4f} | ${r['mode_cost']:.4f} | {cs}{r['cost_delta']:.0f}% "
+                f"| ${r['def_cost']:.2f} | ${r['mode_cost']:.2f} | {cs}{r['cost_delta']:.0f}% "
                 f"| {es}{r['err_delta']} |"
             )
         lines.append("")
@@ -735,7 +735,7 @@ def generate_results_md(run_dir: Path, all_metrics: list[dict], total_runs: int,
             mm = [m for m in successful if m["model_short"] == model]
             if mm:
                 avg_cost = sum(m["cost"]["total_cost_usd"] for m in mm) / len(mm)
-                lines.append(f"- **Avg cost per run ({model}):** ${avg_cost:.4f}")
+                lines.append(f"- **Avg cost per run ({model}):** ${avg_cost:.2f}")
         lines.append("")
 
     if completed < total_runs:
