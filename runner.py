@@ -525,6 +525,48 @@ def estimate_tokens(text: str) -> int:
     return len(text) // 4
 
 
+def _categorize_tool_time(tool_uses: list[dict]) -> dict:
+    """Categorize Bash tool use durations into install, test, and act buckets."""
+    install_ms = 0
+    test_ms = 0
+    act_ms = 0
+    install_patterns = [
+        r"docker\s+run.*(?:install|apt-get|wget|dpkg|curl.*download)",
+        r"apt-get\s+(?:update|install)",
+        r"pip3?\s+install",
+        r"npm\s+install",
+        r"Install-Module",
+        r"dotnet\s+tool\s+install",
+    ]
+    test_patterns = [
+        r"Invoke-Pester",
+        r"pytest|python3?\s+-m\s+pytest",
+        r"\bbats\b",
+        r"bun\s+test",
+        r"pwsh\s+.*Tests?\.ps1",
+        r"run[-_]tests",
+    ]
+    act_patterns = [
+        r"\bact\s+(?:push|pull_request)",
+    ]
+    for t in tool_uses:
+        if t.get("tool_name") != "Bash":
+            continue
+        cmd = t.get("command", "")
+        dur = t["duration_ms"]
+        if any(re.search(p, cmd, re.IGNORECASE) for p in act_patterns):
+            act_ms += dur
+        elif any(re.search(p, cmd, re.IGNORECASE) for p in test_patterns):
+            test_ms += dur
+        elif any(re.search(p, cmd, re.IGNORECASE) for p in install_patterns):
+            install_ms += dur
+    return {
+        "install_duration_ms": install_ms,
+        "test_duration_ms": test_ms,
+        "act_duration_ms": act_ms,
+    }
+
+
 def compute_language_breakdown(directory: Path) -> dict:
     """Compute language breakdown by lines of code from file extensions."""
     lang_lines: dict[str, int] = {}
@@ -578,7 +620,7 @@ def generate_results_md(run_dir: Path, all_metrics: list[dict], total_runs: int,
     total_duration = sum(m["timing"]["grand_total_duration_ms"] for m in all_metrics) / 1000
 
     lines = []
-    lines.append("# Benchmark Results: PowerShell vs Default Language")
+    lines.append("# Benchmark Results: Language Mode Comparison")
     lines.append("")
     lines.append(f"**Last updated:** {now_et}")
     lines.append("")
@@ -592,14 +634,44 @@ def generate_results_md(run_dir: Path, all_metrics: list[dict], total_runs: int,
         (run_dir / "results.md").write_text("\n".join(lines))
         return
 
+    # Separate successful and failed runs
+    successful = [m for m in all_metrics if m.get("run_success", m["exit_code"] == 0 and m["timing"]["num_turns"] > 0)]
+    failed = [m for m in all_metrics if m not in successful]
+
+    # ── Failed runs (if any) ──
+    if failed:
+        lines.append("## Failed / Timed-Out Runs")
+        lines.append("")
+        lines.append("| Task | Mode | Model | Duration | Reason | Lines | actionlint | act-result.txt |")
+        lines.append("|------|------|-------|----------|--------|-------|------------|----------------|")
+        for m in failed:
+            dur = m["timing"]["grand_total_duration_ms"] / 1000
+            reason = m.get("failure_reason", "exit_code=" + str(m["exit_code"]))
+            alint = "pass" if m["quality"]["actionlint_pass"] else ("fail" if m["quality"]["actionlint_pass"] is False else "n/a")
+            act = "yes" if m["quality"]["act_result_txt_exists"] else "no"
+            lines.append(
+                f"| {m['task_name'][:30]} "
+                f"| {m['language_mode']} "
+                f"| {m['model_short']} "
+                f"| {dur:.0f}s "
+                f"| {reason} "
+                f"| {m['code_metrics']['total_lines']} "
+                f"| {alint} "
+                f"| {act} |"
+            )
+        lines.append("")
+        lines.append(f"*{len(failed)} run(s) excluded from averages below.*")
+        lines.append("")
+
     # ── Per-run detail table ──
     lines.append("## Per-Run Results")
     lines.append("")
-    lines.append("| Task | Mode | Model | Duration | Turns | Lines | Errors | Cost | Language |")
-    lines.append("|------|------|-------|----------|-------|-------|--------|------|----------|")
+    lines.append("| Task | Mode | Model | Duration | Turns | Lines | Errors | Cost | Language | Status |")
+    lines.append("|------|------|-------|----------|-------|-------|--------|------|----------|--------|")
 
     for m in all_metrics:
         dur = m["timing"]["grand_total_duration_ms"] / 1000
+        status = "ok" if m in successful else m.get("failure_reason", "failed")
         lines.append(
             f"| {m['task_name'][:30]} "
             f"| {m['language_mode']} "
@@ -609,21 +681,27 @@ def generate_results_md(run_dir: Path, all_metrics: list[dict], total_runs: int,
             f"| {m['code_metrics']['total_lines']} "
             f"| {m['quality']['error_count']} "
             f"| ${m['cost']['total_cost_usd']:.4f} "
-            f"| {m['language_chosen']} |"
+            f"| {m['language_chosen']} "
+            f"| {status} |"
         )
 
     lines.append("")
 
-    # ── Comparison by mode ──
+    # ── Comparison by mode (successful runs only) ──
     modes_seen = sorted(set(m["language_mode"] for m in all_metrics))
     if len(modes_seen) > 1:
         lines.append("## Comparison by Language Mode")
+        if failed:
+            lines.append("*(averages exclude failed/timed-out runs)*")
         lines.append("")
         lines.append("| Mode | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Total Cost |")
         lines.append("|------|------|-------------|-----------|------------|-----------|------------|")
         for mode in modes_seen:
-            mm = [m for m in all_metrics if m["language_mode"] == mode]
+            mm = [m for m in successful if m["language_mode"] == mode]
             n = len(mm)
+            if n == 0:
+                lines.append(f"| {mode} | 0 | — | — | — | — | — |")
+                continue
             avg_dur = sum(m["timing"]["grand_total_duration_ms"] for m in mm) / n / 1000
             avg_lines = sum(m["code_metrics"]["total_lines"] for m in mm) / n
             avg_errors = sum(m["quality"]["error_count"] for m in mm) / n
@@ -632,16 +710,21 @@ def generate_results_md(run_dir: Path, all_metrics: list[dict], total_runs: int,
             lines.append(f"| {mode} | {n} | {avg_dur:.0f}s | {avg_lines:.0f} | {avg_errors:.1f} | {avg_turns:.0f} | ${cost:.4f} |")
         lines.append("")
 
-    # ── Comparison by model ──
+    # ── Comparison by model (successful runs only) ──
     models_seen = sorted(set(m["model_short"] for m in all_metrics))
     if len(models_seen) > 1:
         lines.append("## Comparison by Model")
+        if failed:
+            lines.append("*(averages exclude failed/timed-out runs)*")
         lines.append("")
         lines.append("| Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Total Cost |")
         lines.append("|-------|------|-------------|-----------|------------|-----------|------------|")
         for model in models_seen:
-            mm = [m for m in all_metrics if m["model_short"] == model]
+            mm = [m for m in successful if m["model_short"] == model]
             n = len(mm)
+            if n == 0:
+                lines.append(f"| {model} | 0 | — | — | — | — | — |")
+                continue
             avg_dur = sum(m["timing"]["grand_total_duration_ms"] for m in mm) / n / 1000
             avg_lines = sum(m["code_metrics"]["total_lines"] for m in mm) / n
             avg_errors = sum(m["quality"]["error_count"] for m in mm) / n
@@ -650,12 +733,12 @@ def generate_results_md(run_dir: Path, all_metrics: list[dict], total_runs: int,
             lines.append(f"| {model} | {n} | {avg_dur:.0f}s | {avg_lines:.0f} | {avg_errors:.1f} | {avg_turns:.0f} | ${cost:.4f} |")
         lines.append("")
 
-    # ── Head-to-head: same task, different modes ──
-    tasks_seen = sorted(set(m["task_id"] for m in all_metrics))
+    # ── Head-to-head: same task + model, different modes (successful only) ──
+    task_model_pairs = sorted(set((m["task_id"], m["model_short"]) for m in successful))
     h2h_rows = []
-    for task_id in tasks_seen:
-        task_metrics = [m for m in all_metrics if m["task_id"] == task_id]
-        task_modes = {m["language_mode"]: m for m in task_metrics}
+    for task_id, model_short in task_model_pairs:
+        group = [m for m in successful if m["task_id"] == task_id and m["model_short"] == model_short]
+        task_modes = {m["language_mode"]: m for m in group}
         if "default" in task_modes and any(k != "default" for k in task_modes):
             default = task_modes["default"]
             for mode, m in task_modes.items():
@@ -671,7 +754,7 @@ def generate_results_md(run_dir: Path, all_metrics: list[dict], total_runs: int,
                 m_lines = m["code_metrics"]["total_lines"]
                 h2h_rows.append({
                     "task": default["task_name"][:25],
-                    "model": m["model_short"],
+                    "model": model_short,
                     "mode": mode,
                     "default_lang": default["language_chosen"],
                     "def_dur": d_dur, "mode_dur": m_dur, "dur_delta": dur_delta,
@@ -699,12 +782,12 @@ def generate_results_md(run_dir: Path, all_metrics: list[dict], total_runs: int,
     lines.append("## Observations")
     lines.append("")
 
-    if completed >= 2:
-        # Find most/least errors
-        most_err = max(all_metrics, key=lambda m: m["quality"]["error_count"])
-        least_err = min(all_metrics, key=lambda m: m["quality"]["error_count"])
-        slowest = max(all_metrics, key=lambda m: m["timing"]["grand_total_duration_ms"])
-        fastest = min(all_metrics, key=lambda m: m["timing"]["grand_total_duration_ms"])
+    if len(successful) >= 2:
+        # Find most/least errors (among successful runs only)
+        most_err = max(successful, key=lambda m: m["quality"]["error_count"])
+        least_err = min(successful, key=lambda m: m["quality"]["error_count"])
+        slowest = max(successful, key=lambda m: m["timing"]["grand_total_duration_ms"])
+        fastest = min(successful, key=lambda m: m["timing"]["grand_total_duration_ms"])
 
         lines.append(f"- **Fastest run:** {fastest['task_name']} / {fastest['language_mode']} / {fastest['model_short']} — {fastest['timing']['grand_total_duration_ms']/1000:.0f}s")
         lines.append(f"- **Slowest run:** {slowest['task_name']} / {slowest['language_mode']} / {slowest['model_short']} — {slowest['timing']['grand_total_duration_ms']/1000:.0f}s")
@@ -890,8 +973,9 @@ def parse_stream_output(timestamped_lines: list[tuple[int, str]]) -> dict:
                 hook_entry["stderr"] = (obj.get("stderr", "") or "")[:500]
             hook_events.append(hook_entry)
 
-        # Result event
-        if event_type == "result":
+        # Result event — keep the first one (background task notifications
+        # can emit a second init+result pair that would overwrite the real data)
+        if event_type == "result" and not result_data:
             result_data = obj
 
     # Extract timing and usage from result
@@ -972,6 +1056,7 @@ def run_single_task(
     run_dir: Path,
     repo_root: Path,
     effort: str | None = None,
+    timeout_minutes: int = 30,
 ) -> dict:
     """Run a single task/mode/model combination and return metrics."""
     task_id = task["id"]
@@ -1039,7 +1124,7 @@ def run_single_task(
         "--dangerously-skip-permissions",
         "--include-hook-events",
         "--verbose",
-        "--mcp-config", "{}",
+        "--mcp-config", '{"mcpServers":{}}',
         "--strict-mcp-config",
     ]
     if effort:
@@ -1073,13 +1158,13 @@ def run_single_task(
             env=env,
         )
         # Read stdout line-by-line, stamping each with current time
-        deadline = wall_start + 1800  # 30 minute timeout
+        deadline = wall_start + timeout_minutes * 60 if timeout_minutes > 0 else float('inf')
         for line in proc.stdout:
             ts_ms = int(time.time() * 1000)
             timestamped_lines.append((ts_ms, line.rstrip("\n")))
             if time.time() > deadline:
                 proc.kill()
-                raw_stderr = "TIMEOUT: Process exceeded 30 minute limit"
+                raw_stderr = f"TIMEOUT: Process exceeded {timeout_minutes} minute limit"
                 log(f"  TIMEOUT: {task_id} | {mode} | {model_short}")
                 break
         proc.wait(timeout=30)
@@ -1191,6 +1276,14 @@ def run_single_task(
         "timestamp_end": timestamp_end,
         "prompt_text": prompt,
         "exit_code": exit_code,
+        "run_success": exit_code == 0 and parsed["num_turns"] > 0,
+        "failure_reason": (
+            "timeout" if exit_code == -9 else
+            "killed" if exit_code < 0 else
+            "cli_error" if exit_code != 0 else
+            "no_result" if parsed["num_turns"] == 0 else
+            None
+        ),
         # Session & environment metadata — everything the CLI exposes
         "session": {
             "session_id": parsed.get("result_meta", {}).get("session_id", ""),
@@ -1259,7 +1352,9 @@ def run_single_task(
             "total_tool_duration_ms": sum(d["duration_ms"] for d in parsed["tool_use_durations"]),
             "bash_tool_uses": len([d for d in parsed["tool_use_durations"] if d["tool_name"] == "Bash"]),
             "bash_total_ms": sum(d["duration_ms"] for d in parsed["tool_use_durations"] if d["tool_name"] == "Bash"),
-            "slowest_tool_uses": sorted(parsed["tool_use_durations"], key=lambda d: -d["duration_ms"])[:5],
+            "slowest_tool_uses": sorted(parsed["tool_use_durations"], key=lambda d: -d["duration_ms"])[:10],
+            "all_tool_uses": parsed["tool_use_durations"],  # full list for post-analysis
+            **_categorize_tool_time(parsed["tool_use_durations"]),
         },
         "hooks": {
             "hook_fires": len([h for h in parsed.get("hook_events", []) if h["subtype"] == "hook_response"]),
@@ -1292,19 +1387,24 @@ def run_single_task(
 
 def print_summary_table(all_metrics: list[dict]) -> None:
     """Print a summary table of all runs."""
-    print("\n" + "=" * 120)
+    print("\n" + "=" * 130)
     print("BENCHMARK RESULTS SUMMARY")
-    print("=" * 120)
-    print(f"{'Task':<35} {'Mode':<18} {'Model':<8} {'Duration':>10} {'Turns':>6} {'Lines':>6} {'Errors':>7} {'Cost':>10} {'Lang':<12}")
-    print("-" * 120)
+    print("=" * 130)
+    print(f"{'Task':<35} {'Mode':<18} {'Model':<8} {'Duration':>10} {'Turns':>6} {'Lines':>6} {'Errors':>7} {'Cost':>10} {'Lang':<12} {'Status':<8}")
+    print("-" * 130)
 
     total_cost = 0
     total_duration = 0
+    failed_count = 0
 
     for m in all_metrics:
         duration_s = m["timing"]["grand_total_duration_ms"] / 1000
         total_cost += m["cost"]["total_cost_usd"]
         total_duration += duration_s
+        is_ok = m.get("run_success", m["exit_code"] == 0 and m["timing"]["num_turns"] > 0)
+        status = "ok" if is_ok else m.get("failure_reason", "failed")
+        if not is_ok:
+            failed_count += 1
 
         print(
             f"{m['task_name'][:34]:<35} "
@@ -1316,11 +1416,14 @@ def print_summary_table(all_metrics: list[dict]) -> None:
             f"{m['quality']['error_count']:>7} "
             f"${m['cost']['total_cost_usd']:>9.4f} "
             f"{m['language_chosen'][:11]:<12}"
+            f"{status:<8}"
         )
 
-    print("-" * 120)
+    print("-" * 130)
     print(f"{'TOTALS':<63} {total_duration:>9.1f}s {'':>6} {'':>6} {'':>7} ${total_cost:>9.4f}")
-    print("=" * 120)
+    if failed_count:
+        print(f"  ({failed_count} run(s) failed/timed-out — excluded from averages)")
+    print("=" * 130)
 
 
 def probe_model_metadata(model_id: str) -> dict:
@@ -1430,6 +1533,10 @@ def main():
     parser.add_argument(
         "--effort", default=None, choices=["low", "medium", "high", "max"],
         help="Reasoning effort level passed to claude CLI (default: not set, uses CLI default)"
+    )
+    parser.add_argument(
+        "--timeout", default=30, type=int,
+        help="Per-run timeout in minutes (default: 30). Use 0 for unlimited."
     )
     args = parser.parse_args()
 
@@ -1560,6 +1667,7 @@ def main():
                         run_dir=run_dir,
                         repo_root=repo_root,
                         effort=args.effort,
+                        timeout_minutes=args.timeout,
                     )
                     all_metrics.append(metrics)
                 except Exception as e:
