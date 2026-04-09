@@ -1,0 +1,357 @@
+{
+  "task_id": "15-test-results-aggregator",
+  "task_name": "Test Results Aggregator",
+  "task_category": "GitHub Actions / CI Reporting",
+  "language_mode": "powershell",
+  "language_chosen": "powershell",
+  "language_breakdown": {
+    "powershell": 100.0
+  },
+  "interpreter_versions": {},
+  "powershell_version": "",
+  "dotnet_version": "",
+  "model": "claude-sonnet-4-6",
+  "model_short": "sonnet",
+  "claude_code_version": "2.1.97",
+  "instructions_version": "v3",
+  "timestamp_start": "2026-04-09T06:36:00.913622+00:00",
+  "timestamp_end": "2026-04-09T06:55:56.009076+00:00",
+  "prompt_text": "You are completing a scripting task. You MUST use PowerShell as your implementation language.\n\nTASK: Parse test result files in multiple formats (JUnit XML, and JSON), aggregate results across multiple files (simulating a matrix build), compute totals (passed, failed, skipped, duration), identify flaky tests (passed in some runs, failed in others), and generate a markdown summary suitable for a GitHub Actions job summary. Create sample test result files as fixtures.\n\nREQUIREMENTS:\n1. Use red/green TDD methodology: write a failing test FIRST, then write the minimum code to make it pass, then refactor. Repeat for each piece of functionality.\n2. Create mocks and test fixtures as necessary for testability. Use Pester as the testing framework.\n3. All tests must be runnable with `Invoke-Pester` and must pass at the end.\n4. Include clear comments explaining your approach.\n5. Handle errors gracefully with meaningful error messages.\n\nCreate your solution in the current working directory. Start by writing your first failing test.\n\nGITHUB ACTIONS REQUIREMENT:\nCreate a GitHub Actions workflow file at .github/workflows/test-results-aggregator.yml that uses\nyour script in a real CI/CD pipeline. The workflow must:\n- Use appropriate trigger events (push, pull_request, schedule, workflow_dispatch, etc.)\n- Reference your script correctly\n- Pass actionlint validation (valid YAML, valid action references, correct syntax)\n- Include appropriate permissions, environment variables, and job dependencies\n- Actually run successfully when executed locally with `act` (nektos/act)\n\nDesign your workflow so its steps work in an isolated Docker container \u2014 use\n`actions/checkout@v4`, install dependencies your script needs, and run it.\nAvoid steps requiring external services or secrets without sensible defaults.\n\nWORKFLOW VALIDATION:\nRun `actionlint .github/workflows/test-results-aggregator.yml` and fix any errors. actionlint is\npre-installed. Iterate until it passes cleanly.\n\nALL TESTS MUST RUN THROUGH ACT:\nEvery single test case must execute through the GitHub Actions workflow via `act`.\nDo NOT test your script directly \u2014 all testing goes through the pipeline.\n\nStructure your workflow to accept test fixture data and produce verifiable output.\nYour test harness must:\n1. For each test case: set up a temp git repo with your project files + that case's\n   fixture data, run `act push --rm`, capture the output\n2. Save all act output to `act-result.txt` in the current working directory (append\n   each test case's output, clearly delimited)\n3. Assert that act exited with code 0 for each case\n4. Parse the act output and assert on EXACT EXPECTED VALUES \u2014 not just that output\n   appeared, but that it matches the known-good result for that test case's input.\n   For example: if your workflow bumps version 1.1.0 with a feat commit, assert\n   the output contains exactly \"1.2.0\", not just \"a version number\"\n5. Assert every job shows \"Job succeeded\"\n\nThe `act-result.txt` file MUST exist when done. It is a required artifact.\n`act` and Docker are pre-installed.\n\nWORKFLOW STRUCTURE TESTS (also required):\n- Parse the YAML and check expected structure (triggers, jobs, steps)\n- Verify the workflow references your script files correctly (paths exist)\n- Verify actionlint passes (assert exit code 0)\n",
+  "exit_code": 0,
+  "session": {
+    "session_id": "5459a129-8d00-4a8d-93be-f0d00661c803",
+    "stop_reason": "end_turn",
+    "terminal_reason": "completed",
+    "fast_mode_state": "off",
+    "service_tier": "standard",
+    "speed": "standard",
+    "inference_geo": "",
+    "context_window": 200000,
+    "max_output_tokens": 32000,
+    "permission_mode": "bypassPermissions",
+    "output_style": "default",
+    "tools_available_count": 24,
+    "mcp_servers": [],
+    "permission_denials": []
+  },
+  "model_usage_detail": {
+    "claude-sonnet-4-6": {
+      "inputTokens": 37,
+      "outputTokens": 56188,
+      "cacheReadInputTokens": 2071558,
+      "cacheCreationInputTokens": 81957,
+      "webSearchRequests": 0,
+      "costUSD": 1.77173715,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "effort_level": null,
+  "timing": {
+    "grand_total_duration_ms": 1195095,
+    "total_api_duration_ms": 933850,
+    "total_execution_duration_ms": 259664,
+    "num_turns": 43
+  },
+  "tokens": {
+    "input_tokens": 36,
+    "output_tokens": 55978,
+    "cache_read_tokens": 1982778,
+    "cache_creation_tokens": 80851,
+    "total_context_consumed": 2063665,
+    "compaction_count": 0
+  },
+  "cost": {
+    "total_cost_usd": 1.77173715,
+    "assumed_input_cost_per_mtok": 3.0,
+    "assumed_output_cost_per_mtok": 15.0,
+    "assumed_cache_read_cost_per_mtok": 0.3,
+    "assumed_cache_write_cost_per_mtok": 3.75
+  },
+  "code_metrics": {
+    "total_lines": 1501,
+    "total_tokens_estimate": 15360,
+    "file_count": 10,
+    "files": [
+      "Invoke-TestResultsAggregator.ps1",
+      "TestResultsAggregator.Tests.ps1",
+      "act-result.txt",
+      "fixtures/json-results.json",
+      "fixtures/junit-basic.xml",
+      ".github/workflows/test-results-aggregator.yml",
+      "test-fixtures/tc2/json-results.json",
+      "test-fixtures/tc3/run1.xml",
+      "test-fixtures/tc3/run2.xml",
+      "test-fixtures/tc1/junit-results.xml"
+    ]
+  },
+  "quality": {
+    "tests_pass": null,
+    "error_count": 0,
+    "error_details": [],
+    "actionlint_pass": true,
+    "actionlint_errors": 0,
+    "actionlint_results": [
+      {
+        "file": ".github/workflows/test-results-aggregator.yml",
+        "passed": true,
+        "errors": ""
+      }
+    ],
+    "act_result_txt_exists": true,
+    "act_result_txt_size": 23562,
+    "areas_of_difficulty": [],
+    "observations": ""
+  },
+  "tool_install": {
+    "tool_install_duration_ms": 39542,
+    "tools_installed": [
+      "docker run --rm catthehacker/ubuntu:act-latest bash -c \"apt-get install -y powershell 2>&1 | tail -5\" 2>&1 | head -10",
+      "# Check how to install pwsh on Ubuntu 24.04 inside docker quickly\ndocker run --rm catthehacker/ubuntu:act-latest bash -c \"\n# Try installing via Microsoft package\napt-get update -qq 2>/dev/null\napt-get install -y wget 2>/dev/null | tail -1\n\n# Try snap\nwhich snap 2>/dev/null || echo 'no snap'\n\n# Check available\napt-cache search powershell 2>/dev/null | head -5 || echo 'not found in cache'\n\" 2>&1 | tail -10",
+      "time docker run --rm catthehacker/ubuntu:act-latest bash -c \"\nexport DEBIAN_FRONTEND=noninteractive\napt-get update -qq 2>&1 | tail -1\napt-get install -y curl 2>&1 | tail -1\ncurl -fsSL https://packages.microsoft.com/config/ubuntu/24.04/packages-microsoft-prod.deb -o /tmp/packages-microsoft-prod.deb 2>&1 | tail -1\ndpkg -i /tmp/packages-microsoft-prod.deb 2>&1 | tail -1\napt-get update -qq 2>&1 | tail -1\napt-get install -y powershell 2>&1 | tail -1\npwsh --version\n\" 2>&1 | tail -20"
+    ],
+    "install_commands_count": 3
+  },
+  "tool_use_timing": {
+    "total_tool_uses": 42,
+    "total_tool_duration_ms": 269081,
+    "bash_tool_uses": 22,
+    "bash_total_ms": 262910,
+    "slowest_tool_uses": [
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"\nInvoke-Pester ./TestResultsAggregator.Tests.ps1 -Output Detailed\n\" 2>&1 | tail -30",
+        "duration_ms": 101811,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"\nInvoke-Pester ./TestResultsAggregator.Tests.ps1 -TagFilter Act -Output Detailed\n\" 2>&1",
+        "duration_ms": 98947,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "time docker run --rm catthehacker/ubuntu:act-latest bash -c \"\nexport DEBIAN_FRONTEND=noninteractive\napt-get update -qq 2>&1 | tail -1\napt-get install -y curl 2>&1 | tail -1\ncurl -fsSL https://packages",
+        "duration_ms": 25706,
+        "is_error": false,
+        "is_install": true
+      },
+      {
+        "tool_name": "Bash",
+        "command": "# Check how to install pwsh on Ubuntu 24.04 inside docker quickly\ndocker run --rm catthehacker/ubuntu:act-latest bash -c \"\n# Try installing via Microsoft package\napt-get update -qq 2>/dev/null\napt-get",
+        "duration_ms": 13001,
+        "is_error": false,
+        "is_install": true
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"\nInvoke-Pester ./TestResultsAggregator.Tests.ps1 -ExcludeTagFilter Act -Output Detailed\n\" 2>&1",
+        "duration_ms": 6374,
+        "is_error": false,
+        "is_install": false
+      }
+    ]
+  },
+  "hooks": {
+    "hook_fires": 12,
+    "hook_errors_caught": 0,
+    "hook_failures": 0,
+    "hook_events": [
+      {
+        "subtype": "hook_started",
+        "hook_id": "a8624343-8138-4139-993d-93de2b5e6f68",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "a8624343-8138-4139-993d-93de2b5e6f68",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "a400ff4a-1239-4593-9486-9d84dae7c5ff",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "a400ff4a-1239-4593-9486-9d84dae7c5ff",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "87bec1bf-c76d-4e2a-a11d-70add23f9ab1",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "87bec1bf-c76d-4e2a-a11d-70add23f9ab1",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "39d995a3-cdd6-47fe-85b7-c4bf28d4c897",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "39d995a3-cdd6-47fe-85b7-c4bf28d4c897",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "d4b746ac-c17f-4596-8348-74b3163e7055",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "d4b746ac-c17f-4596-8348-74b3163e7055",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "4bc5729b-2ae9-4b89-8e54-77dc019cd9b6",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "4bc5729b-2ae9-4b89-8e54-77dc019cd9b6",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "c7725e3b-250c-431d-baff-2d3a2fb47f5b",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "c7725e3b-250c-431d-baff-2d3a2fb47f5b",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "b9c74ccf-f81a-4d48-b81e-d102812ab365",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "b9c74ccf-f81a-4d48-b81e-d102812ab365",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "067a76c5-aede-4881-ac0e-84a9505f8520",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "067a76c5-aede-4881-ac0e-84a9505f8520",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "2a840680-f80f-404e-9ba4-7213ae2796a9",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "2a840680-f80f-404e-9ba4-7213ae2796a9",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "159e1f90-13a4-426f-add4-a6ce550eef4b",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "159e1f90-13a4-426f-add4-a6ce550eef4b",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "ff78f114-29ce-4fa3-8869-bf53d266df46",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "ff78f114-29ce-4fa3-8869-bf53d266df46",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  }
+}
