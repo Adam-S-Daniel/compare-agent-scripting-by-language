@@ -53,3 +53,22 @@ Per run: exact model, Claude Code version, timestamp, full prompt, grand total d
 ## Results
 
 Live results are pushed to git every 60 seconds during a run. See `results/<timestamp>/results.md` for the latest summary with comparison tables.
+
+## Benchmark Runs
+
+<!-- BEGIN BENCHMARK RUNS -->
+| Run | Version | Runs | Cost | Results |
+|-----|---------|------|------|---------|
+| **2026-04-08_192624** (latest) | v3 | 64/64 | $85.10 | [results.md](results/2026-04-08_192624/results.md) |
+| 2026-04-08_180614 | ? | 2/? | — | [results.md](results/2026-04-08_180614/results.md) |
+| 2026-04-08_180255 | ? | 0/? | — | [results.md](results/2026-04-08_180255/results.md) |
+| 2026-04-08_174516 | ? | 1/? | — | [results.md](results/2026-04-08_174516/results.md) |
+| 2026-04-08_170920 | ? | 4/? | — | [results.md](results/2026-04-08_170920/results.md) |
+| 2026-04-08_170824 | ? | 0/? | — | — |
+| 2026-04-08_161536 | ? | 7/? | — | [results.md](results/2026-04-08_161536/results.md) |
+| 2026-04-08_114024 | ? | 3/? | — | [results.md](results/2026-04-08_114024/results.md) |
+| 2026-04-08_113116 | ? | 1/? | — | [results.md](results/2026-04-08_113116/results.md) |
+| 2026-04-07_225702 | v2 | 111/144 | $75.38 | [results.md](results/2026-04-07_225702/results.md) |
+| 2026-04-02_181500 | v1 | 4/1 | $8.90 | [results.md](results/2026-04-02_181500/results.md) |
+| 2026-04-02_163146 | v1 | 144/144 | $436.67 | [results.md](results/2026-04-02_163146/results.md) |
+<!-- END BENCHMARK RUNS -->
