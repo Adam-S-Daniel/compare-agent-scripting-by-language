@@ -28,6 +28,16 @@ MODELS = {
     "sonnet": "claude-sonnet-4-6",
 }
 
+# ---------------------------------------------------------------------------
+# Model Token Pricing — SINGLE SOURCE OF TRUTH
+# ---------------------------------------------------------------------------
+# All per-million-token costs in USD.  Every cost calculation in this file
+# and in generate_results_md references this dict.
+#
+# TO UPDATE: check https://docs.anthropic.com/en/docs/about-claude/models
+# and https://www.anthropic.com/pricing for current prices.  Update the
+# values below and re-run the report generation.
+# ---------------------------------------------------------------------------
 COST_PER_MTOK = {
     "claude-opus-4-6":   {"input": 15.0, "output": 75.0, "cache_read": 1.5, "cache_write": 18.75},
     "claude-sonnet-4-6": {"input": 3.0,  "output": 15.0, "cache_read": 0.3, "cache_write": 3.75},
@@ -741,6 +751,33 @@ def get_all_code_text(directory: Path) -> str:
     return "\n".join(texts)
 
 
+def _collapsible_table(summary: str, header: str, separator: str, rows: list[str]) -> list[str]:
+    """Wrap a markdown table in a <details> block."""
+    out = ["", "<details>", f"<summary>{summary}</summary>", ""]
+    out.append(header)
+    out.append(separator)
+    out.extend(rows)
+    out.append("")
+    out.append("</details>")
+    return out
+
+
+def _emit_sorted_variants(header: str, separator: str, data_rows: list[dict],
+                           sort_specs: list[tuple[str, str, bool]],
+                           row_formatter) -> list[str]:
+    """Emit multiple collapsed copies of a table, each sorted differently.
+
+    sort_specs: list of (summary_label, sort_key, reverse).
+    row_formatter: callable(row_dict) -> markdown row string.
+    """
+    out: list[str] = []
+    for label, key, reverse in sort_specs:
+        sorted_rows = sorted(data_rows, key=lambda r: (r.get(key, 0) if isinstance(r.get(key, 0), (int, float)) else str(r.get(key, ""))), reverse=reverse)
+        row_strs = [row_formatter(r) for r in sorted_rows]
+        out.extend(_collapsible_table(label, header, separator, row_strs))
+    return out
+
+
 def generate_results_md(run_dir: Path, all_metrics: list[dict], total_runs: int, run_count: int) -> None:
     """Generate/update a results.md file with tables, commentary, and status."""
     from zoneinfo import ZoneInfo
@@ -795,30 +832,44 @@ def generate_results_md(run_dir: Path, all_metrics: list[dict], total_runs: int,
         lines.append(f"*{len(failed)} run(s) excluded from averages below.*")
         lines.append("")
 
-    # ── Comparison by Language × Model (replaces separate mode/model tables) ──
+    # ── Comparison by Language/Model (replaces separate mode/model tables) ──
     if len(modes_seen) > 1 or len(models_seen) > 1:
-        lines.append("## Comparison by Language × Model")
+        lines.append("## Comparison by Language/Model")
         if failed:
             lines.append("*(averages exclude failed/timed-out runs)*")
         lines.append("")
-        lines.append("| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |")
-        lines.append("|------|-------|------|-------------|-----------|------------|-----------|----------|------------|")
+        cmp_hdr = "| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |"
+        cmp_sep = "|------|-------|------|-------------|-----------|------------|-----------|----------|------------|"
+        cmp_rows: list[dict] = []
         for mode in modes_seen:
             for model in models_seen:
                 mm = [m for m in successful if m["language_mode"] == mode and m["model_short"] == model]
                 n = len(mm)
                 if n == 0:
                     continue
-                avg_dur = sum(m["timing"]["grand_total_duration_ms"] for m in mm) / n / 1000
-                avg_lines = sum(m["code_metrics"]["total_lines"] for m in mm) / n
-                avg_errors = sum(m["quality"]["error_count"] for m in mm) / n
-                avg_turns = sum(m["timing"]["num_turns"] for m in mm) / n
-                avg_cost = sum(m["cost"]["total_cost_usd"] for m in mm) / n
-                total_c = sum(m["cost"]["total_cost_usd"] for m in mm)
-                lines.append(
-                    f"| {mode} | {model} | {n} | {avg_dur:.0f}s | {avg_lines:.0f} "
-                    f"| {avg_errors:.1f} | {avg_turns:.0f} | ${avg_cost:.4f} | ${total_c:.4f} |"
-                )
+                cmp_rows.append({
+                    "mode": mode, "model": model, "n": n,
+                    "avg_dur": sum(m["timing"]["grand_total_duration_ms"] for m in mm) / n / 1000,
+                    "avg_lines": sum(m["code_metrics"]["total_lines"] for m in mm) / n,
+                    "avg_errors": sum(m["quality"]["error_count"] for m in mm) / n,
+                    "avg_turns": sum(m["timing"]["num_turns"] for m in mm) / n,
+                    "avg_cost": sum(m["cost"]["total_cost_usd"] for m in mm) / n,
+                    "total_cost": sum(m["cost"]["total_cost_usd"] for m in mm),
+                })
+        def _fmt_cmp(r):
+            return (f"| {r['mode']} | {r['model']} | {r['n']} | {r['avg_dur']:.0f}s | {r['avg_lines']:.0f} "
+                    f"| {r['avg_errors']:.1f} | {r['avg_turns']:.0f} | ${r['avg_cost']:.4f} | ${r['total_cost']:.4f} |")
+        lines.append(cmp_hdr)
+        lines.append(cmp_sep)
+        for r in cmp_rows:
+            lines.append(_fmt_cmp(r))
+        lines.append("")
+        lines.extend(_emit_sorted_variants(cmp_hdr, cmp_sep, cmp_rows, [
+            ("Sorted by avg duration (fastest first)", "avg_dur", False),
+            ("Sorted by avg cost (cheapest first)", "avg_cost", False),
+            ("Sorted by avg errors (most first)", "avg_errors", True),
+            ("Sorted by total cost (most first)", "total_cost", True),
+        ], _fmt_cmp))
         lines.append("")
 
     # ==================================================================
@@ -827,10 +878,24 @@ def generate_results_md(run_dir: Path, all_metrics: list[dict], total_runs: int,
     # Collect all data first, then emit tables
 
     # ── Collect trap & hook data ──
-    # Estimated wall-clock cost of one test run, by mode.  A hook-caught
-    # error avoids one test run that would otherwise have surfaced the error.
-    # The agent still does the same diagnose→fix work either way.
+    # A hook-caught error avoids one test run that would otherwise have
+    # surfaced the error.  But every hook fire (hit or miss) costs execution
+    # time for the syntax/type checker itself.
     TEST_RUN_COST_S = {"default": 8, "powershell": 35, "bash": 12, "typescript-bun": 8}
+
+    # Compute per-mode hook overhead dynamically from Write/Edit tool_use
+    # durations.  Each Write/Edit that triggers a hook has its execution time
+    # inflated by the hook's checker.  Without hooks a Write is ~0.05s.
+    _write_durs_by_mode: dict[str, list[float]] = {}
+    for m in all_metrics:
+        md = m["language_mode"]
+        for t in m.get("tool_use_timing", {}).get("slowest_tool_uses", []):
+            if t["tool_name"] in ("Write", "Edit"):
+                _write_durs_by_mode.setdefault(md, []).append(t["duration_ms"] / 1000)
+    HOOK_OVERHEAD_S = {
+        md: max(0, (sum(ds) / len(ds)) - 0.05) if ds else 0.5
+        for md, ds in _write_durs_by_mode.items()
+    }
 
     trap_instances: list[dict] = []
     hook_by_combo: dict[tuple, dict] = {}
@@ -860,21 +925,20 @@ def generate_results_md(run_dir: Path, all_metrics: list[dict], total_runs: int,
 
         caught = m.get("hooks", {}).get("hook_errors_caught", 0)
         fires = m.get("hooks", {}).get("hook_fires", 0)
-        ts = caught * TEST_RUN_COST_S.get(mode, 10)
-        # Dollar savings are negligible — the avoided test run consumes
-        # tool-execution time, not meaningful extra API tokens.
-        cs = 0.0
+        gross_saved = caught * TEST_RUN_COST_S.get(mode, 10)
+        overhead = fires * HOOK_OVERHEAD_S.get(mode, 0.5)
         if combo not in hook_by_combo:
-            hook_by_combo[combo] = {"fires": 0, "caught": 0, "time_saved": 0, "cost_saved": 0}
+            hook_by_combo[combo] = {"fires": 0, "caught": 0, "gross_saved": 0, "overhead": 0}
         hook_by_combo[combo]["fires"] += fires
         hook_by_combo[combo]["caught"] += caught
-        hook_by_combo[combo]["time_saved"] += ts
-        hook_by_combo[combo]["cost_saved"] += cs
+        hook_by_combo[combo]["gross_saved"] += gross_saved
+        hook_by_combo[combo]["overhead"] += overhead
 
     # ── Collect prompt cache data ──
     cache_data: list[dict] = []
-    cache_read_rates = {"opus": 1.5, "sonnet": 0.3}
-    cache_create_rates = {"opus": 18.75, "sonnet": 3.75}
+    # Derive cache rates from the single source of truth (COST_PER_MTOK)
+    cache_read_rates = {s: COST_PER_MTOK[mid]["cache_read"] for s, mid in MODELS.items() if mid in COST_PER_MTOK}
+    cache_create_rates = {s: COST_PER_MTOK[mid]["cache_write"] for s, mid in MODELS.items() if mid in COST_PER_MTOK}
     for m in all_metrics:
         cli_path = run_dir / "tasks" / m["task_id"] / f"{m['language_mode']}-{m['model_short']}" / "cli-output.json"
         if not cli_path.exists():
@@ -898,13 +962,15 @@ def generate_results_md(run_dir: Path, all_metrics: list[dict], total_runs: int,
     lines.append("## Savings Analysis")
     lines.append("")
 
-    # ── Hook Savings by Language × Model ──
-    lines.append("### Hook Savings by Language × Model")
+    # ── Hook Savings by Language/Model ──
+    lines.append("### Hook Savings by Language/Model")
     lines.append("")
     lines.append("Each hook-caught error avoids one test run that would otherwise have been needed to discover it.")
+    lines.append("Every hook fire (hit or miss) costs execution time for the syntax/type checker.")
     lines.append("")
-    lines.append("| Mode | Model | Fires | Caught | Rate | Time Saved | % of Time | Turns Saved |")
-    lines.append("|------|-------|-------|--------|------|-----------|-----------|-------------|")
+    hook_hdr = "| Mode | Model | Fires | Caught | Rate | Gross Saved | Overhead | Net Saved | % of Time |"
+    hook_sep = "|------|-------|-------|--------|------|------------|----------|-----------|-----------|"
+    hook_rows: list[dict] = []
     for mode in modes_seen:
         for model in models_seen:
             hs = hook_by_combo.get((mode, model), {})
@@ -912,22 +978,42 @@ def generate_results_md(run_dir: Path, all_metrics: list[dict], total_runs: int,
             c_count = hs.get("caught", 0)
             if f_count == 0:
                 continue
-            rate = c_count / f_count * 100
-            t_pct = hs["time_saved"] / total_duration * 100 if total_duration else 0
-            lines.append(
-                f"| {mode} | {model} | {f_count} | {c_count} | {rate:.1f}% "
-                f"| {hs['time_saved']/60:.1f}min | {t_pct:.1f}% | {c_count} |"
-            )
-    total_hook_fires = sum(h.get("fires", 0) for h in hook_by_combo.values())
-    total_hook_caught = sum(h.get("caught", 0) for h in hook_by_combo.values())
-    total_hook_time = sum(h.get("time_saved", 0) for h in hook_by_combo.values())
+            gross = hs["gross_saved"]
+            overhead = hs["overhead"]
+            net = gross - overhead
+            hook_rows.append({
+                "mode": mode, "model": model, "fires": f_count, "caught": c_count,
+                "rate": c_count / f_count * 100,
+                "gross": gross, "overhead": overhead, "net": net,
+                "net_pct": net / total_duration * 100 if total_duration else 0,
+            })
+    def _fmt_hook(r):
+        return (f"| {r['mode']} | {r['model']} | {r['fires']} | {r['caught']} | {r['rate']:.1f}% "
+                f"| {r['gross']/60:.1f}min | {r['overhead']/60:.1f}min "
+                f"| {r['net']/60:.1f}min | {r['net_pct']:.1f}% |")
+    lines.append(hook_hdr)
+    lines.append(hook_sep)
+    for r in hook_rows:
+        lines.append(_fmt_hook(r))
+    total_hook_fires = sum(r["fires"] for r in hook_rows)
+    total_hook_caught = sum(r["caught"] for r in hook_rows)
+    total_gross = sum(r["gross"] for r in hook_rows)
+    total_overhead = sum(r["overhead"] for r in hook_rows)
+    total_net = total_gross - total_overhead
     if total_hook_fires:
-        ht_pct = total_hook_time / total_duration * 100 if total_duration else 0
+        net_pct = total_net / total_duration * 100 if total_duration else 0
         lines.append(
             f"| **Total** | | **{total_hook_fires}** | **{total_hook_caught}** "
             f"| **{total_hook_caught/total_hook_fires*100:.1f}%** "
-            f"| **{total_hook_time/60:.1f}min** | **{ht_pct:.1f}%** | **{total_hook_caught}** |"
+            f"| **{total_gross/60:.1f}min** | **{total_overhead/60:.1f}min** "
+            f"| **{total_net/60:.1f}min** | **{net_pct:.1f}%** |"
         )
+    lines.append("")
+    lines.extend(_emit_sorted_variants(hook_hdr, hook_sep, hook_rows, [
+        ("Sorted by net saved (most first)", "net", True),
+        ("Sorted by catch rate (highest first)", "rate", True),
+        ("Sorted by overhead (most first)", "overhead", True),
+    ], _fmt_hook))
     lines.append("")
 
     # ── Prompt Cache Savings ──
@@ -967,9 +1053,10 @@ def generate_results_md(run_dir: Path, all_metrics: list[dict], total_runs: int,
 
         lines.append("### Trap Analysis by Category")
         lines.append("")
-        lines.append("| Trap | Applicable | Fell In | Avoided | Rate | Time Lost | % of Time | $ Lost | % of $ |")
-        lines.append("|------|-----------|---------|---------|------|-----------|-----------|--------|--------|")
+        tcat_hdr = "| Trap | Applicable | Fell In | Avoided | Rate | Time Lost | % of Time | $ Lost | % of $ |"
+        tcat_sep = "|------|-----------|---------|---------|------|-----------|-----------|--------|--------|"
         mode_run_totals = {md: sum(1 for m in all_metrics if m["language_mode"] == md) for md in modes_seen}
+        tcat_rows: list[dict] = []
         for trap_name in sorted(trap_agg, key=lambda k: -sum(t["time_s"] for t in trap_agg[k])):
             insts = trap_agg[trap_name]
             tmode = trap_applicable_mode.get(trap_name, "all")
@@ -978,12 +1065,19 @@ def generate_results_md(run_dir: Path, all_metrics: list[dict], total_runs: int,
             t_time = sum(t["time_s"] for t in insts)
             t_cost = sum(t["time_s"] / t["dur_s"] * t["cost"] for t in insts if t["dur_s"] > 0 and t["cost"] > 0)
             rate = n_fell / n_app * 100 if n_app else 0
-            t_pct = t_time / total_duration * 100 if total_duration else 0
-            c_pct = t_cost / total_cost * 100 if total_cost else 0
-            lines.append(
-                f"| {trap_name} | {n_app} | {n_fell} | {n_app - n_fell} | {rate:.0f}% "
-                f"| {t_time/60:.1f}min | {t_pct:.1f}% | ${t_cost:.2f} | {c_pct:.2f}% |"
-            )
+            tcat_rows.append({
+                "trap": trap_name, "applicable": n_app, "fell_in": n_fell,
+                "avoided": n_app - n_fell, "rate": rate,
+                "time_lost": t_time, "time_pct": t_time / total_duration * 100 if total_duration else 0,
+                "cost_lost": t_cost, "cost_pct": t_cost / total_cost * 100 if total_cost else 0,
+            })
+        def _fmt_tcat(r):
+            return (f"| {r['trap']} | {r['applicable']} | {r['fell_in']} | {r['avoided']} | {r['rate']:.0f}% "
+                    f"| {r['time_lost']/60:.1f}min | {r['time_pct']:.1f}% | ${r['cost_lost']:.2f} | {r['cost_pct']:.2f}% |")
+        lines.append(tcat_hdr)
+        lines.append(tcat_sep)
+        for r in tcat_rows:
+            lines.append(_fmt_tcat(r))
         total_trap_time = sum(t["time_s"] for t in trap_instances)
         total_trap_cost = sum(t["time_s"] / t["dur_s"] * t["cost"] for t in trap_instances if t["dur_s"] > 0 and t["cost"] > 0)
         total_trapped = len(set((t["task_id"], t["mode"], t["model"]) for t in trap_instances))
@@ -996,13 +1090,19 @@ def generate_results_md(run_dir: Path, all_metrics: list[dict], total_runs: int,
             f"| **${total_trap_cost:.2f}** | **{tc_pct:.2f}%** |"
         )
         lines.append("")
-
-    # ── Trap Summary by Language × Model ──
-    if trap_instances:
-        lines.append("### Traps by Language × Model")
+        lines.extend(_emit_sorted_variants(tcat_hdr, tcat_sep, tcat_rows, [
+            ("Sorted by $ lost (most first)", "cost_lost", True),
+            ("Sorted by rate (highest first)", "rate", True),
+            ("Sorted by runs affected (most first)", "fell_in", True),
+        ], _fmt_tcat))
         lines.append("")
-        lines.append("| Mode | Model | Runs | Trapped | Trap Rate | Traps | Time Lost | % of Time | $ Lost | % of $ |")
-        lines.append("|------|-------|------|---------|-----------|-------|-----------|-----------|--------|--------|")
+
+    # ── Trap Summary by Language/Model ──
+    if trap_instances:
+        lines.append("### Traps by Language/Model")
+        lines.append("")
+        tlm_hdr = "| Mode | Model | Runs | Trapped | Trap Rate | Traps | Time Lost | % of Time | $ Lost | % of $ |"
+        tlm_sep = "|------|-------|------|---------|-----------|-------|-----------|-----------|--------|--------|"
         trapped_runs_by_combo: dict[tuple, set] = {}
         trap_count_by_combo: dict[tuple, int] = {}
         trap_time_by_combo: dict[tuple, float] = {}
@@ -1015,6 +1115,7 @@ def generate_results_md(run_dir: Path, all_metrics: list[dict], total_runs: int,
             if t["dur_s"] > 0 and t["cost"] > 0:
                 trap_cost_by_combo[combo] = trap_cost_by_combo.get(combo, 0) + t["time_s"] / t["dur_s"] * t["cost"]
 
+        tlm_rows: list[dict] = []
         for mode in modes_seen:
             for model in models_seen:
                 combo = (mode, model)
@@ -1026,20 +1127,32 @@ def generate_results_md(run_dir: Path, all_metrics: list[dict], total_runs: int,
                 tc = trap_count_by_combo.get(combo, 0)
                 tt = trap_time_by_combo.get(combo, 0)
                 tcc = trap_cost_by_combo.get(combo, 0)
-                t_pct = tt / total_duration * 100 if total_duration else 0
-                c_pct = tcc / total_cost * 100 if total_cost else 0
-                lines.append(
-                    f"| {mode} | {model} | {n} | {n_trapped} | {rate:.0f}% "
-                    f"| {tc} | {tt/60:.1f}min | {t_pct:.1f}% | ${tcc:.2f} | {c_pct:.2f}% |"
-                )
-        tt_pct = total_trap_time / total_duration * 100 if total_duration else 0
-        tc_pct = total_trap_cost / total_cost * 100 if total_cost else 0
+                tlm_rows.append({
+                    "mode": mode, "model": model, "n": n, "trapped": n_trapped,
+                    "rate": rate, "traps": tc,
+                    "time_lost": tt, "time_pct": tt / total_duration * 100 if total_duration else 0,
+                    "cost_lost": tcc, "cost_pct": tcc / total_cost * 100 if total_cost else 0,
+                })
+        def _fmt_tlm(r):
+            return (f"| {r['mode']} | {r['model']} | {r['n']} | {r['trapped']} | {r['rate']:.0f}% "
+                    f"| {r['traps']} | {r['time_lost']/60:.1f}min | {r['time_pct']:.1f}% "
+                    f"| ${r['cost_lost']:.2f} | {r['cost_pct']:.2f}% |")
+        lines.append(tlm_hdr)
+        lines.append(tlm_sep)
+        for r in tlm_rows:
+            lines.append(_fmt_tlm(r))
         lines.append(
             f"| **Total** | | **{completed}** | **{total_trapped}** "
             f"| **{total_trapped/completed*100:.0f}%** "
             f"| **{len(trap_instances)}** | **{total_trap_time/60:.1f}min** | **{tt_pct:.1f}%** "
             f"| **${total_trap_cost:.2f}** | **{tc_pct:.2f}%** |"
         )
+        lines.append("")
+        lines.extend(_emit_sorted_variants(tlm_hdr, tlm_sep, tlm_rows, [
+            ("Sorted by time lost (most first)", "time_lost", True),
+            ("Sorted by $ lost (most first)", "cost_lost", True),
+            ("Sorted by trap rate (highest first)", "rate", True),
+        ], _fmt_tlm))
         lines.append("")
 
     # ==================================================================
