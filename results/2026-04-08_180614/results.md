@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-09 11:44:54 AM ET
+**Last updated:** 2026-04-09 12:15:24 PM ET
 
 **Status:** 2/2 runs completed, 0 remaining
 **Total cost so far:** $2.28
@@ -8,16 +8,10 @@
 
 ## Observations
 
-- **Fastest (avg):** powershell/sonnet — 9.7min
-- **Slowest (avg):** default/sonnet — 13.6min
-- **Cheapest (avg):** powershell/sonnet — $0.96
-- **Most expensive (avg):** default/sonnet — $1.33
-- **Fastest single run:** Semantic Version Bumper / powershell / sonnet — 9.7min
-- **Slowest single run:** Semantic Version Bumper / default / sonnet — 13.6min
-- **Most errors:** Semantic Version Bumper / default / sonnet — 5 errors
-- **Fewest errors:** Semantic Version Bumper / powershell / sonnet — 1 errors
-
-- **Avg cost per run (sonnet):** $1.14
+- **Fastest (avg):** powershell/sonnet — 9.7min, then default/sonnet — 13.6min
+- **Slowest (avg):** default/sonnet — 13.6min, then powershell/sonnet — 9.7min
+- **Cheapest (avg):** powershell/sonnet — $0.96, then default/sonnet — $1.33
+- **Most expensive (avg):** default/sonnet — $1.33, then powershell/sonnet — $0.96
 
 ## Comparison by Language/Model
 

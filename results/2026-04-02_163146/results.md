@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-09 11:44:50 AM ET
+**Last updated:** 2026-04-09 12:15:20 PM ET
 
 **Status:** 144/144 runs completed, 0 remaining
 **Total cost so far:** $436.67
@@ -8,17 +8,10 @@
 
 ## Observations
 
-- **Fastest (avg):** default/sonnet — 16.7min
-- **Slowest (avg):** powershell-strict/opus — 52.8min
-- **Cheapest (avg):** default/sonnet — $1.23
-- **Most expensive (avg):** csharp-script/opus — $5.59
-- **Fastest single run:** Dependency License Checker / powershell / sonnet — 3.0min
-- **Slowest single run:** REST API Client / powershell-strict / opus — 378.5min
-- **Most errors:** CSV Report Generator / default / opus — 225 errors
-- **Fewest errors:** Secret Rotation Validator / powershell-strict / sonnet — 6 errors
-
-- **Avg cost per run (opus):** $4.52
-- **Avg cost per run (sonnet):** $1.79
+- **Fastest (avg):** default/sonnet — 16.7min, then powershell-strict/sonnet — 21.9min
+- **Slowest (avg):** powershell-strict/opus — 52.8min, then csharp-script/opus — 40.2min
+- **Cheapest (avg):** default/sonnet — $1.23, then powershell-strict/sonnet — $1.55
+- **Most expensive (avg):** csharp-script/opus — $5.59, then powershell-strict/opus — $4.92
 
 ## Failed / Timed-Out Runs
 

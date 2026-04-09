@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-09 11:44:54 AM ET
+**Last updated:** 2026-04-09 12:15:24 PM ET
 
 **Status:** 7/7 runs completed, 0 remaining
 **Total cost so far:** $6.59
@@ -8,17 +8,10 @@
 
 ## Observations
 
-- **Fastest (avg):** bash/sonnet — 2.7min
-- **Slowest (avg):** default/opus — 14.3min
-- **Cheapest (avg):** bash/sonnet — $0.40
-- **Most expensive (avg):** typescript-bun/opus — $1.84
-- **Fastest single run:** Semantic Version Bumper / bash / sonnet — 2.7min
-- **Slowest single run:** Semantic Version Bumper / default / opus — 14.3min
-- **Most errors:** Semantic Version Bumper / typescript-bun / opus — 8 errors
-- **Fewest errors:** Semantic Version Bumper / powershell / sonnet — 0 errors
-
-- **Avg cost per run (opus):** $1.31
-- **Avg cost per run (sonnet):** $0.45
+- **Fastest (avg):** bash/sonnet — 2.7min, then default/sonnet — 2.9min
+- **Slowest (avg):** default/opus — 14.3min, then typescript-bun/opus — 9.0min
+- **Cheapest (avg):** bash/sonnet — $0.40, then default/sonnet — $0.45
+- **Most expensive (avg):** typescript-bun/opus — $1.84, then powershell/opus — $1.51
 
 ## Comparison by Language/Model
 

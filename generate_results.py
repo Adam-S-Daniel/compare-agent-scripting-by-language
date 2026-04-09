@@ -782,7 +782,10 @@ def update_readme(repo_root: Path) -> None:
         name = r["dir"]
         if i == 0:
             name = f"**{name}** (latest)"
-        ver = r.get("version", "?")
+        ver_raw = r.get("version", "?")
+        # Linkify version to the instructions doc
+        ver_links = {"v1": "benchmark-instructions-v1.md", "v2": "benchmark-instructions-v2.md", "v3": "benchmark-instructions-v3.md"}
+        ver = f"[{ver_raw}]({ver_links[ver_raw]})" if ver_raw in ver_links else ver_raw
         count = f"{r['n_runs']}/{r.get('total_planned', '?')}"
         cost = f"${r.get('cost', 0):.2f}" if r.get("cost") else "—"
         link = f"[results.md]({r['link']})" if r.get("has_results") else "—"

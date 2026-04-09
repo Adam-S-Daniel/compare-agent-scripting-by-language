@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-09 11:44:53 AM ET
+**Last updated:** 2026-04-09 12:15:23 PM ET
 
 **Status:** 4/1 runs completed, 0 remaining
 **Total cost so far:** $14.13
@@ -8,16 +8,10 @@
 
 ## Observations
 
-- **Fastest (avg):** powershell/opus — 4.4min
-- **Slowest (avg):** csharp-script/opus — 24.6min
-- **Cheapest (avg):** powershell/opus — $1.17
-- **Most expensive (avg):** csharp-script/opus — $8.90
-- **Fastest single run:** CSV Report Generator / powershell / opus — 4.4min
-- **Slowest single run:** CSV Report Generator / csharp-script / opus — 24.6min
-- **Most errors:** CSV Report Generator / csharp-script / opus — 270 errors
-- **Fewest errors:** CSV Report Generator / powershell / opus — 43 errors
-
-- **Avg cost per run (opus):** $3.53
+- **Fastest (avg):** powershell/opus — 4.4min, then default/opus — 5.3min
+- **Slowest (avg):** csharp-script/opus — 24.6min, then powershell-strict/opus — 7.9min
+- **Cheapest (avg):** powershell/opus — $1.17, then default/opus — $1.29
+- **Most expensive (avg):** csharp-script/opus — $8.90, then powershell-strict/opus — $2.77
 
 ## Comparison by Language/Model
 

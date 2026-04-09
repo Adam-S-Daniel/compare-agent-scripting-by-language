@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-09 11:44:54 AM ET
+**Last updated:** 2026-04-09 12:15:24 PM ET
 
 **Status:** 3/3 runs completed, 0 remaining
 **Total cost so far:** $2.91
@@ -8,16 +8,10 @@
 
 ## Observations
 
-- **Fastest (avg):** bash/opus — 2.4min
-- **Slowest (avg):** powershell/opus — 7.3min
-- **Cheapest (avg):** bash/opus — $0.51
-- **Most expensive (avg):** powershell/opus — $1.48
-- **Fastest single run:** Semantic Version Bumper / bash / opus — 2.4min
-- **Slowest single run:** Semantic Version Bumper / powershell / opus — 7.3min
-- **Most errors:** Semantic Version Bumper / bash / opus — 1 errors
-- **Fewest errors:** Semantic Version Bumper / powershell / opus — 0 errors
-
-- **Avg cost per run (opus):** $0.97
+- **Fastest (avg):** bash/opus — 2.4min, then default/opus — 4.9min
+- **Slowest (avg):** powershell/opus — 7.3min, then default/opus — 4.9min
+- **Cheapest (avg):** bash/opus — $0.51, then default/opus — $0.92
+- **Most expensive (avg):** powershell/opus — $1.48, then default/opus — $0.92
 
 ## Comparison by Language/Model
 

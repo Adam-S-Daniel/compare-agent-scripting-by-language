@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-09 11:44:53 AM ET
+**Last updated:** 2026-04-09 12:15:23 PM ET
 
 **Status:** 111/144 runs completed, 0 remaining
 **Total cost so far:** $76.34
@@ -8,17 +8,10 @@
 
 ## Observations
 
-- **Fastest (avg):** csharp-script/sonnet — 0.6min
-- **Slowest (avg):** powershell-strict/sonnet — 6.1min
-- **Cheapest (avg):** csharp-script/sonnet — $0.12
-- **Most expensive (avg):** powershell-strict/opus — $1.20
-- **Fastest single run:** CSV Report Generator / csharp-script / sonnet — 0.6min
-- **Slowest single run:** Config File Migrator / powershell-strict / sonnet — 13.9min
-- **Most errors:** Semantic Version Bumper / default / opus — 5 errors
-- **Fewest errors:** CSV Report Generator / csharp-script / opus — 0 errors
-
-- **Avg cost per run (opus):** $0.99
-- **Avg cost per run (sonnet):** $0.48
+- **Fastest (avg):** csharp-script/sonnet — 0.6min, then csharp-script/opus — 1.8min
+- **Slowest (avg):** powershell-strict/sonnet — 6.1min, then powershell-strict/opus — 4.9min
+- **Cheapest (avg):** csharp-script/sonnet — $0.12, then default/sonnet — $0.35
+- **Most expensive (avg):** powershell-strict/opus — $1.20, then powershell/opus — $0.97
 
 - **Estimated time remaining:** 0.0min
 - **Estimated total cost:** $99.03
