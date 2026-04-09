@@ -1,10 +1,10 @@
 # Benchmark Results: PowerShell vs Default Language
 
-**Last updated:** 2026-04-09 06:38:12 AM ET
+**Last updated:** 2026-04-09 06:39:13 AM ET
 
-**Status:** 58/64 runs completed, 6 remaining
-**Total cost so far:** $77.7613
-**Total agent time so far:** 39636s (660.6 min)
+**Status:** 59/64 runs completed, 5 remaining
+**Total cost so far:** $79.1053
+**Total agent time so far:** 40326s (672.1 min)
 
 ## Per-Run Results
 
@@ -68,12 +68,13 @@
 | Artifact Cleanup Script | typescript-bun | sonnet | 702s | 30 | 718 | 1 | $1.1760 | typescript |
 | Secret Rotation Validator | default | opus | 332s | 32 | 1589 | 1 | $1.1860 | python |
 | Secret Rotation Validator | powershell | opus | 640s | 34 | 1857 | 0 | $1.3539 | powershell |
+| Secret Rotation Validator | bash | opus | 690s | 33 | 1565 | 1 | $1.3439 | bash |
 
 ## Comparison by Language Mode
 
 | Mode | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Total Cost |
 |------|------|-------------|-----------|------------|-----------|------------|
-| bash | 14 | 549s | 1463 | 3.0 | 39 | $17.0925 |
+| bash | 15 | 559s | 1470 | 2.9 | 39 | $18.4364 |
 | default | 15 | 647s | 1668 | 1.1 | 34 | $19.8440 |
 | powershell | 15 | 910s | 1384 | 0.9 | 29 | $22.7965 |
 | typescript-bun | 14 | 613s | 1501 | 1.6 | 38 | $18.0283 |
@@ -82,7 +83,7 @@
 
 | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Total Cost |
 |-------|------|-------------|-----------|------------|-----------|------------|
-| opus | 30 | 505s | 1411 | 1.3 | 37 | $39.1147 |
+| opus | 31 | 511s | 1416 | 1.3 | 37 | $40.4587 |
 | sonnet | 28 | 875s | 1605 | 2.0 | 33 | $38.6466 |
 
 ## Head-to-Head: Default vs Constrained Language
@@ -111,6 +112,7 @@
 | Artifact Cleanup Script | sonnet | bash | python | 955s | 927s | -3% | 1 | 3 | +2 | 1766 | 1894 |
 | Artifact Cleanup Script | sonnet | typescript-bun | python | 955s | 702s | -26% | 1 | 1 | +0 | 1766 | 718 |
 | Secret Rotation Validator | opus | powershell | python | 332s | 640s | +93% | 1 | 0 | -1 | 1589 | 1857 |
+| Secret Rotation Validator | opus | bash | python | 332s | 690s | +108% | 1 | 1 | +0 | 1589 | 1565 |
 
 ## Observations
 
@@ -119,10 +121,10 @@
 - **Most errors:** PR Label Assigner / typescript-bun / sonnet — 6 errors
 - **Fewest errors:** Semantic Version Bumper / default / opus — 0 errors
 
-- **Avg cost per run (opus):** $1.3038
+- **Avg cost per run (opus):** $1.3051
 - **Avg cost per run (sonnet):** $1.3802
 
-- **Estimated time remaining:** 1.1 hours (based on avg 683s per run)
+- **Estimated time remaining:** 0.9 hours (based on avg 683s per run)
 - **Estimated total cost:** $85.81
 
 ---
