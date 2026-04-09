@@ -1,0 +1,63 @@
+name: Dependency License Checker
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  license-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $result = Invoke-Pester -Path ./DependencyLicenseChecker.Tests.ps1 -Output Detailed -PassThru
+          if ($result.FailedCount -gt 0) {
+            throw "Pester tests failed: $($result.FailedCount) failures"
+          }
+          Write-Output "All $($result.TotalCount) tests passed"
+
+      - name: Check package.json licenses
+        shell: pwsh
+        run: |
+          ./Invoke-LicenseCheck.ps1 -ManifestPath ./fixtures/package.json -ConfigPath ./fixtures/license-config.json
+
+      - name: Check requirements.txt licenses
+        shell: pwsh
+        run: |
+          ./Invoke-LicenseCheck.ps1 -ManifestPath ./fixtures/requirements.txt -ConfigPath ./fixtures/license-config.json
+
+      - name: Check denied license detection
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Continue'
+          pwsh -File ./Invoke-LicenseCheck.ps1 -ManifestPath ./fixtures/package.json -ConfigPath ./fixtures/denied-config.json
+          $exitCode = $LASTEXITCODE
+          $global:LASTEXITCODE = 0
+          if ($exitCode -eq 1) {
+            Write-Output "Correctly detected denied licenses (exit code 1)"
+          } else {
+            throw "Expected exit code 1 for denied licenses, got $exitCode"
+          }
+
+      - name: Check mixed config detection
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Continue'
+          pwsh -File ./Invoke-LicenseCheck.ps1 -ManifestPath ./fixtures/package.json -ConfigPath ./fixtures/mixed-config.json
+          $exitCode = $LASTEXITCODE
+          $global:LASTEXITCODE = 0
+          if ($exitCode -eq 1) {
+            Write-Output "Correctly detected denied licenses with mixed config (exit code 1)"
+          } else {
+            throw "Expected exit code 1 for mixed config, got $exitCode"
+          }
