@@ -1,0 +1,251 @@
+{
+  "task_id": "17-artifact-cleanup-script",
+  "task_name": "Artifact Cleanup Script",
+  "task_category": "GitHub Actions / Maintenance",
+  "language_mode": "powershell",
+  "language_chosen": "powershell",
+  "language_breakdown": {
+    "powershell": 100.0
+  },
+  "interpreter_versions": {},
+  "powershell_version": "",
+  "dotnet_version": "",
+  "model": "claude-sonnet-4-6",
+  "model_short": "sonnet",
+  "claude_code_version": "2.1.97",
+  "instructions_version": "v3",
+  "timestamp_start": "2026-04-09T09:37:23.190502+00:00",
+  "timestamp_end": "2026-04-09T09:43:54.295163+00:00",
+  "prompt_text": "You are completing a scripting task. You MUST use PowerShell as your implementation language.\n\nTASK: Given a list of artifacts with metadata (name, size, creation date, workflow run ID \u2014 provided as mock data), apply retention policies (max age, max total size, keep-latest-N per workflow), determine which artifacts to delete, and generate a deletion plan with a summary (total space reclaimed, artifacts retained vs deleted). Support dry-run mode.\n\nREQUIREMENTS:\n1. Use red/green TDD methodology: write a failing test FIRST, then write the minimum code to make it pass, then refactor. Repeat for each piece of functionality.\n2. Create mocks and test fixtures as necessary for testability. Use Pester as the testing framework.\n3. All tests must be runnable with `Invoke-Pester` and must pass at the end.\n4. Include clear comments explaining your approach.\n5. Handle errors gracefully with meaningful error messages.\n\nCreate your solution in the current working directory. Start by writing your first failing test.\n\nGITHUB ACTIONS REQUIREMENT:\nCreate a GitHub Actions workflow file at .github/workflows/artifact-cleanup-script.yml that uses\nyour script in a real CI/CD pipeline. The workflow must:\n- Use appropriate trigger events (push, pull_request, schedule, workflow_dispatch, etc.)\n- Reference your script correctly\n- Pass actionlint validation (valid YAML, valid action references, correct syntax)\n- Include appropriate permissions, environment variables, and job dependencies\n- Actually run successfully when executed locally with `act` (nektos/act)\n\nDesign your workflow so its steps work in an isolated Docker container \u2014 use\n`actions/checkout@v4`, install dependencies your script needs, and run it.\nAvoid steps requiring external services or secrets without sensible defaults.\n\nWORKFLOW VALIDATION:\nRun `actionlint .github/workflows/artifact-cleanup-script.yml` and fix any errors. actionlint is\npre-installed. Iterate until it passes cleanly.\n\nALL TESTS MUST RUN THROUGH ACT:\nEvery single test case must execute through the GitHub Actions workflow via `act`.\nDo NOT test your script directly \u2014 all testing goes through the pipeline.\n\nStructure your workflow to accept test fixture data and produce verifiable output.\nYour test harness must:\n1. For each test case: set up a temp git repo with your project files + that case's\n   fixture data, run `act push --rm`, capture the output\n2. Save all act output to `act-result.txt` in the current working directory (append\n   each test case's output, clearly delimited)\n3. Assert that act exited with code 0 for each case\n4. Parse the act output and assert on EXACT EXPECTED VALUES \u2014 not just that output\n   appeared, but that it matches the known-good result for that test case's input.\n   For example: if your workflow bumps version 1.1.0 with a feat commit, assert\n   the output contains exactly \"1.2.0\", not just \"a version number\"\n5. Assert every job shows \"Job succeeded\"\n\nThe `act-result.txt` file MUST exist when done. It is a required artifact.\n`act` and Docker are pre-installed.\n\nWORKFLOW STRUCTURE TESTS (also required):\n- Parse the YAML and check expected structure (triggers, jobs, steps)\n- Verify the workflow references your script files correctly (paths exist)\n- Verify actionlint passes (assert exit code 0)\n",
+  "exit_code": 0,
+  "session": {
+    "session_id": "77751661-f120-4edd-9bbc-3aa412c65f82",
+    "stop_reason": "end_turn",
+    "terminal_reason": "completed",
+    "fast_mode_state": "off",
+    "service_tier": "standard",
+    "speed": "standard",
+    "inference_geo": "",
+    "context_window": 200000,
+    "max_output_tokens": 32000,
+    "permission_mode": "bypassPermissions",
+    "output_style": "default",
+    "tools_available_count": 24,
+    "mcp_servers": [],
+    "permission_denials": []
+  },
+  "model_usage_detail": {
+    "claude-sonnet-4-6": {
+      "inputTokens": 33,
+      "outputTokens": 16433,
+      "cacheReadInputTokens": 1007635,
+      "cacheCreationInputTokens": 39078,
+      "webSearchRequests": 0,
+      "costUSD": 0.695427,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "effort_level": null,
+  "timing": {
+    "grand_total_duration_ms": 391104,
+    "total_api_duration_ms": 257844,
+    "total_execution_duration_ms": 131851,
+    "num_turns": 31
+  },
+  "tokens": {
+    "input_tokens": 33,
+    "output_tokens": 16433,
+    "cache_read_tokens": 1007635,
+    "cache_creation_tokens": 39078,
+    "total_context_consumed": 1046746,
+    "compaction_count": 0
+  },
+  "cost": {
+    "total_cost_usd": 0.695427,
+    "assumed_input_cost_per_mtok": 3.0,
+    "assumed_output_cost_per_mtok": 15.0,
+    "assumed_cache_read_cost_per_mtok": 0.3,
+    "assumed_cache_write_cost_per_mtok": 3.75
+  },
+  "code_metrics": {
+    "total_lines": 975,
+    "total_tokens_estimate": 15792,
+    "file_count": 4,
+    "files": [
+      "ArtifactCleanup.Tests.ps1",
+      "ArtifactCleanup.ps1",
+      "act-result.txt",
+      ".github/workflows/artifact-cleanup-script.yml"
+    ]
+  },
+  "quality": {
+    "tests_pass": null,
+    "error_count": 0,
+    "error_details": [],
+    "actionlint_pass": true,
+    "actionlint_errors": 0,
+    "actionlint_results": [
+      {
+        "file": ".github/workflows/artifact-cleanup-script.yml",
+        "passed": true,
+        "errors": ""
+      }
+    ],
+    "act_result_txt_exists": true,
+    "act_result_txt_size": 44170,
+    "areas_of_difficulty": [],
+    "observations": ""
+  },
+  "tool_install": {
+    "tool_install_duration_ms": 0,
+    "tools_installed": [],
+    "install_commands_count": 0
+  },
+  "tool_use_timing": {
+    "total_tool_uses": 30,
+    "total_tool_duration_ms": 132443,
+    "bash_tool_uses": 17,
+    "bash_total_ms": 129561,
+    "slowest_tool_uses": [
+      {
+        "tool_name": "Bash",
+        "command": "act push --rm 2>&1 | tee /tmp/act-raw.txt; echo \"ACT_EXIT=$?\"",
+        "duration_ms": 64457,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "act push --rm 2>&1 | tee /tmp/act-raw.txt; echo \"EXIT_CODE=$?\"",
+        "duration_ms": 43888,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "echo \"=== Files created ===\" && ls -la . && echo \"\" && echo \"=== Pester tests (local) ===\" && pwsh -Command \"Invoke-Pester ./ArtifactCleanup.Tests.ps1 -Output Minimal\" 2>&1 && echo \"\" && echo \"=== act",
+        "duration_ms": 5373,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester ./ArtifactCleanup.Tests.ps1 -Output Detailed\" 2>&1",
+        "duration_ms": 4536,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester ./ArtifactCleanup.Tests.ps1 -Output Minimal\" 2>&1",
+        "duration_ms": 4476,
+        "is_error": false,
+        "is_install": false
+      }
+    ]
+  },
+  "hooks": {
+    "hook_fires": 6,
+    "hook_errors_caught": 0,
+    "hook_failures": 0,
+    "hook_events": [
+      {
+        "subtype": "hook_started",
+        "hook_id": "4facca82-4c8e-49b7-b98c-f7468b1ae3d3",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "4facca82-4c8e-49b7-b98c-f7468b1ae3d3",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "7adcf5de-7b73-47fa-90fd-b2508a37f02f",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "7adcf5de-7b73-47fa-90fd-b2508a37f02f",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "331369aa-f1ee-4940-9c1a-59424d4f5ce4",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "331369aa-f1ee-4940-9c1a-59424d4f5ce4",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "3a2ee151-142e-4a4d-9559-ac5316f32bbe",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "3a2ee151-142e-4a4d-9559-ac5316f32bbe",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "850692a6-c06a-4fd4-b0a8-250ec758f065",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "850692a6-c06a-4fd4-b0a8-250ec758f065",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "b0cbe6e3-2822-4992-8a39-d100f1bb77df",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "b0cbe6e3-2822-4992-8a39-d100f1bb77df",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  }
+}
