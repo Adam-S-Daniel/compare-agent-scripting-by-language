@@ -792,6 +792,20 @@ def run_single_task(
     # Copy instructions file
     shutil.copy2(repo_root / INSTRUCTIONS_FILE, workspace / INSTRUCTIONS_FILE)
 
+    # Inject .actrc so act uses a custom image with pwsh/Pester pre-installed
+    # (if the image exists). This eliminates ~24s/job install overhead that
+    # wouldn't exist on real GitHub runners where pwsh is pre-installed.
+    ACT_CUSTOM_IMAGE = "act-ubuntu-pwsh:latest"
+    try:
+        probe = subprocess.run(
+            ["docker", "image", "inspect", ACT_CUSTOM_IMAGE],
+            capture_output=True, timeout=10)
+        if probe.returncode == 0:
+            (workspace / ".actrc").write_text(
+                f"-P ubuntu-latest={ACT_CUSTOM_IMAGE}\n")
+    except Exception:
+        pass  # docker not available or image not built — use act default
+
     # Set up workspace hooks — syntax/lint checking on Write/Edit
     hook_script = (repo_root / "hooks" / "syntax-check.py").resolve()
     if hook_script.exists():

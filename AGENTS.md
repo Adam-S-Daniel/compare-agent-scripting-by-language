@@ -43,6 +43,7 @@ python3 runner.py --tasks 11,12,13,14,15,16,17,18 --modes default,powershell,bas
 - `generate_results.py` — generates `results.md` reports and updates `README.md`. Can run standalone: `python3 generate_results.py --all`.
 - `benchmark-instructions-v*.md` — per-version specs given to agents during runs.
 - `hooks/syntax-check.py` — PostToolUse hook for syntax/lint checking.
+- `Dockerfile.act` — custom act container image with pwsh + Pester pre-installed. Build with `docker build -t act-ubuntu-pwsh:latest -f Dockerfile.act .`. Runner.py auto-detects it and injects `.actrc` into workspaces.
 - `skills/` — agent skills following [agentskills.io](https://agentskills.io/specification) spec.
 
 ### Adding new trap detectors
