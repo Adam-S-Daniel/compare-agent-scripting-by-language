@@ -1,0 +1,229 @@
+name: Docker Image Tag Generator
+
+# Trigger on push, pull_request, scheduled, and manual dispatch
+on:
+  push:
+    branches: ["*"]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 0 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  IMAGE_NAME: myorg/myapp
+
+jobs:
+  # Job 1: Generate tags for the actual CI context
+  generate-tags:
+    runs-on: ubuntu-latest
+    outputs:
+      tags: ${{ steps.gen.outputs.tags }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate Docker image tags
+        id: gen
+        run: |
+          BRANCH="${GITHUB_REF_NAME:-}"
+          SHA="${GITHUB_SHA:-}"
+          TAG=""
+          PR=""
+
+          # Detect tag push
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            TAG="${GITHUB_REF#refs/tags/}"
+          fi
+
+          # Detect PR number from event
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+            PR="${{ github.event.pull_request.number }}"
+          fi
+
+          echo "--- Input Context ---"
+          echo "Branch: ${BRANCH}"
+          echo "SHA:    ${SHA}"
+          echo "Tag:    ${TAG}"
+          echo "PR:     ${PR}"
+          echo "---------------------"
+
+          TAGS=$(python3 docker_tag_generator.py \
+            --branch "${BRANCH}" \
+            --sha "${SHA}" \
+            --tag "${TAG}" \
+            --pr "${PR}")
+
+          echo "Generated tags:"
+          echo "${TAGS}"
+
+          {
+            echo "tags<<EOF"
+            echo "${TAGS}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+  # Job 2: Run all test cases with mock inputs
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # --- TDD Round 1: main branch -> 'latest' ---
+      - name: "Test 1: Main branch produces latest tag"
+        run: |
+          echo "=== TEST CASE 1: main-branch ==="
+          OUTPUT=$(python3 docker_tag_generator.py --branch main --sha abc1234567890def)
+          echo "$OUTPUT"
+          if ! echo "$OUTPUT" | grep -qx "latest"; then
+            echo "FAIL: expected 'latest'"
+            exit 1
+          fi
+          echo "PASS: latest tag present"
+          if ! echo "$OUTPUT" | grep -qx "sha-abc1234"; then
+            echo "FAIL: expected 'sha-abc1234'"
+            exit 1
+          fi
+          echo "PASS: sha tag present"
+          echo "=== END TEST CASE 1 ==="
+
+      # --- TDD Round 1b: master branch -> 'latest' ---
+      - name: "Test 2: Master branch also produces latest tag"
+        run: |
+          echo "=== TEST CASE 2: master-branch ==="
+          OUTPUT=$(python3 docker_tag_generator.py --branch master --sha fedcba9876543210)
+          echo "$OUTPUT"
+          if ! echo "$OUTPUT" | grep -qx "latest"; then
+            echo "FAIL: expected 'latest' for master"
+            exit 1
+          fi
+          echo "PASS: latest tag for master"
+          if ! echo "$OUTPUT" | grep -qx "sha-fedcba9"; then
+            echo "FAIL: expected 'sha-fedcba9'"
+            exit 1
+          fi
+          echo "PASS: sha tag present"
+          echo "=== END TEST CASE 2 ==="
+
+      # --- TDD Round 2: PR -> 'pr-{number}' ---
+      - name: "Test 3: Pull request produces pr-number tag"
+        run: |
+          echo "=== TEST CASE 3: pull-request ==="
+          OUTPUT=$(python3 docker_tag_generator.py --branch feature/pr-branch --sha 1234567890abcdef --pr 42)
+          echo "$OUTPUT"
+          if ! echo "$OUTPUT" | grep -qx "pr-42"; then
+            echo "FAIL: expected 'pr-42'"
+            exit 1
+          fi
+          echo "PASS: pr-42 tag present"
+          if ! echo "$OUTPUT" | grep -qx "feature-pr-branch-1234567"; then
+            echo "FAIL: expected 'feature-pr-branch-1234567'"
+            exit 1
+          fi
+          echo "PASS: branch-sha tag present"
+          if ! echo "$OUTPUT" | grep -qx "sha-1234567"; then
+            echo "FAIL: expected 'sha-1234567'"
+            exit 1
+          fi
+          echo "PASS: sha tag present"
+          echo "=== END TEST CASE 3 ==="
+
+      # --- TDD Round 3: semver tag -> 'v{x.y.z}' ---
+      - name: "Test 4: Semver tag with v prefix"
+        run: |
+          echo "=== TEST CASE 4: semver-tag ==="
+          OUTPUT=$(python3 docker_tag_generator.py --branch main --sha aabbccdd11223344 --tag v1.2.3)
+          echo "$OUTPUT"
+          if ! echo "$OUTPUT" | grep -qx "latest"; then
+            echo "FAIL: expected 'latest'"
+            exit 1
+          fi
+          echo "PASS: latest tag present"
+          if ! echo "$OUTPUT" | grep -qx "v1.2.3"; then
+            echo "FAIL: expected 'v1.2.3'"
+            exit 1
+          fi
+          echo "PASS: v1.2.3 tag present"
+          if ! echo "$OUTPUT" | grep -qx "sha-aabbccd"; then
+            echo "FAIL: expected 'sha-aabbccd'"
+            exit 1
+          fi
+          echo "PASS: sha tag present"
+          echo "=== END TEST CASE 4 ==="
+
+      - name: "Test 5: Semver tag without v prefix"
+        run: |
+          echo "=== TEST CASE 5: semver-no-prefix ==="
+          OUTPUT=$(python3 docker_tag_generator.py --branch main --sha abcdef1234567890 --tag 2.0.0)
+          echo "$OUTPUT"
+          if ! echo "$OUTPUT" | grep -qx "v2.0.0"; then
+            echo "FAIL: expected 'v2.0.0'"
+            exit 1
+          fi
+          echo "PASS: v2.0.0 tag normalized"
+          echo "=== END TEST CASE 5 ==="
+
+      # --- TDD Round 4: feature branch -> '{branch}-{sha}' ---
+      - name: "Test 6: Feature branch produces sanitized branch-sha tag"
+        run: |
+          echo "=== TEST CASE 6: feature-branch ==="
+          OUTPUT=$(python3 docker_tag_generator.py --branch feature/my-feature --sha def4567890123abc)
+          echo "$OUTPUT"
+          if ! echo "$OUTPUT" | grep -qx "feature-my-feature-def4567"; then
+            echo "FAIL: expected 'feature-my-feature-def4567'"
+            exit 1
+          fi
+          echo "PASS: branch-sha tag present"
+          if ! echo "$OUTPUT" | grep -qx "sha-def4567"; then
+            echo "FAIL: expected 'sha-def4567'"
+            exit 1
+          fi
+          echo "PASS: sha tag present"
+          # Must NOT have 'latest'
+          if echo "$OUTPUT" | grep -qx "latest"; then
+            echo "FAIL: feature branch should not produce 'latest'"
+            exit 1
+          fi
+          echo "PASS: no latest tag for feature branch"
+          echo "=== END TEST CASE 6 ==="
+
+      # --- TDD Round 5: sanitization ---
+      - name: "Test 7: Branch name sanitization"
+        run: |
+          echo "=== TEST CASE 7: sanitization ==="
+          OUTPUT=$(python3 docker_tag_generator.py --branch "Feature/UPPER_Case---Special@Chars!" --sha 9988776655443322)
+          echo "$OUTPUT"
+          if ! echo "$OUTPUT" | grep -qx "feature-upper-case-special-chars-9988776"; then
+            echo "FAIL: expected 'feature-upper-case-special-chars-9988776'"
+            exit 1
+          fi
+          echo "PASS: sanitized branch tag"
+          echo "=== END TEST CASE 7 ==="
+
+      # --- TDD Round 6: error handling ---
+      - name: "Test 8: Error on no inputs"
+        run: |
+          echo "=== TEST CASE 8: no-inputs-error ==="
+          if python3 docker_tag_generator.py 2>/dev/null; then
+            echo "FAIL: should have exited non-zero"
+            exit 1
+          fi
+          echo "PASS: exits with error when no inputs"
+          echo "=== END TEST CASE 8 ==="
+
+      - name: "Test 9: Semver pre-release tag"
+        run: |
+          echo "=== TEST CASE 9: semver-prerelease ==="
+          OUTPUT=$(python3 docker_tag_generator.py --branch develop --sha 1111222233334444 --tag v3.0.0-rc.1)
+          echo "$OUTPUT"
+          if ! echo "$OUTPUT" | grep -qx "v3.0.0-rc.1"; then
+            echo "FAIL: expected 'v3.0.0-rc.1'"
+            exit 1
+          fi
+          echo "PASS: pre-release semver tag"
+          echo "=== END TEST CASE 9 ==="
+
+      - name: All tests passed
+        run: echo "SUCCESS - All 9 test cases passed."
