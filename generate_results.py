@@ -21,7 +21,7 @@ from pathlib import Path
 
 from models import COST_PER_MTOK, MODELS  # noqa: E402  (single source of truth)
 
-INSTRUCTIONS_VERSION = "v3"
+INSTRUCTIONS_VERSION = "v4"
 
 
 def _detect_traps(events: list[dict], console: str, metrics: dict) -> list[dict]:
@@ -184,6 +184,59 @@ def _detect_traps(events: list[dict], console: str, metrics: dict) -> list[dict]
         if total >= 5:
             _add("dotnet-install-loop", total * 12,
                  f"{total} attempts to install/verify .NET SDK")
+
+    # 16. PowerShell invoked from bash instead of shell: pwsh
+    # When agents use `pwsh -Command "..."` or `pwsh -File` inside bash run: steps,
+    # they can hit: (a) bash parser errors from PS syntax (e.g. @'...'@ heredocs),
+    # (b) variable/quoting issues passing structured data through bash to pwsh,
+    # (c) scope/invocation issues requiring diagnostic scripts.
+    # shell: pwsh works fine in act containers (act translates to docker exec pwsh),
+    # but agents that invoke pwsh from bash waste time on cross-shell debugging.
+    if mode == "powershell":
+        # Signal 1: /tmp/scope_test*.ps1 diagnostic scripts (bisecting pwsh invocation)
+        scope_scripts = [c for c in bash_cmds if re.search(
+            r"/tmp/scope_test\d*\.ps1|/tmp/pwsh_debug\d*\.ps1", c)]
+        # Signal 2: bash parser errors from PS syntax inside bash
+        ps_in_bash_errors = len(re.findall(
+            r"Unrecognized token in source text", console))
+        # Signal 3: pwsh command not found inside act container (late discovery)
+        pwsh_not_found_act = len(re.findall(
+            r"line \d+: pwsh: command not found|"
+            r"exec:.*pwsh.*executable file not found",
+            console, re.I))
+        # Signal 4: agent reasoning about quoting/escaping between bash and pwsh
+        quoting_issues = len(re.findall(
+            r"(?:quot|escap).*(?:bash.*pwsh|pwsh.*bash|variable.*pass)|"
+            r"output isn.t visible.*(?:pwsh|PowerShell|JSON)|"
+            r"(?:pwsh|PowerShell).*(?:quoting|embedded quotes)",
+            all_text, re.I))
+        # Signal 5: pwsh -Command invocations used as diagnostic probes (not normal script runs)
+        pwsh_diag = [c for c in bash_cmds if re.search(
+            r"pwsh\s+-Command.*(?:MyInvocation|ScriptName|InvocationName|Write-Host.*test|scope|param\b)",
+            c, re.I)]
+        total_signals = (len(scope_scripts) + ps_in_bash_errors + pwsh_not_found_act
+                         + (1 if quoting_issues >= 1 else 0) + len(pwsh_diag))
+        if total_signals >= 2:
+            parts = []
+            if scope_scripts:
+                parts.append(f"{len(scope_scripts)} scope-test scripts")
+            if ps_in_bash_errors:
+                parts.append(f"{ps_in_bash_errors} bash parser errors from PS syntax")
+            if pwsh_not_found_act:
+                parts.append(f"{pwsh_not_found_act} pwsh-not-found in act")
+            if quoting_issues:
+                parts.append(f"{quoting_issues} quoting issue mentions")
+            if pwsh_diag:
+                parts.append(f"{len(pwsh_diag)} diagnostic pwsh probes")
+            # Time estimate: scope scripts ~25s each (write + run + analyze),
+            # parse errors ~30s each (error + investigate + fix),
+            # not-found ~45s (act run + error + workflow rewrite),
+            # quoting ~60s (investigate + rewrite workflow),
+            # diagnostic probes ~20s each
+            t = (len(scope_scripts) * 25 + ps_in_bash_errors * 30
+                 + pwsh_not_found_act * 45 + quoting_issues * 60
+                 + len(pwsh_diag) * 20)
+            _add("pwsh-invoked-from-bash", t, "; ".join(parts))
 
     return traps
 
@@ -363,6 +416,49 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
                 **trap,
             })
 
+        # Trap: PowerShell runtime install overhead (pwsh + Pester pre-installed on
+        # real GitHub runners but must be installed in act containers every run).
+        # Primary source: act-result.txt step timings.  Fallback: event stream.
+        if mode == "powershell":
+            act_result_path = (run_dir / "tasks" / m["task_id"]
+                               / f"{mode}-{model}" / "generated-code" / "act-result.txt")
+            act_text = act_result_path.read_text() if act_result_path.exists() else ""
+            # Primary: parse exact step durations from act output
+            pwsh_times = [float(x) for x in re.findall(
+                r"Install PowerShell \[(\d+\.?\d*)s\]", act_text)]
+            pester_times = [float(x) for x in re.findall(
+                r"Install Pester \[(\d+\.?\d*)s\]", act_text)]
+            # Fallback: if act-result.txt had no timings, check event stream
+            if not pwsh_times and not pester_times:
+                for ev in evts:
+                    if not isinstance(ev, dict) or ev.get("type") != "user":
+                        continue
+                    for c in (ev.get("message", {}).get("content", []) or []):
+                        if isinstance(c, dict) and c.get("type") == "tool_result":
+                            txt = str(c.get("content", ""))
+                            pwsh_times.extend(float(x) for x in re.findall(
+                                r"Install PowerShell \[(\d+\.?\d*)s\]", txt))
+                            pester_times.extend(float(x) for x in re.findall(
+                                r"Install Pester \[(\d+\.?\d*)s\]", txt))
+            pwsh_secs = sum(pwsh_times)
+            pester_secs = sum(pester_times)
+            total_overhead = pwsh_secs + pester_secs
+            if total_overhead >= 15:
+                parts = []
+                if pwsh_times:
+                    parts.append(f"{len(pwsh_times)} pwsh installs ({pwsh_secs:.0f}s)")
+                if pester_times:
+                    parts.append(f"{len(pester_times)} Pester installs ({pester_secs:.0f}s)")
+                trap_instances.append({
+                    "mode": mode, "model": model, "task_id": m["task_id"],
+                    "task_name": m["task_name"],
+                    "dur_s": m["timing"]["grand_total_duration_ms"] / 1000,
+                    "cost": m["cost"]["total_cost_usd"],
+                    "name": "pwsh-runtime-install-overhead",
+                    "time_s": total_overhead,
+                    "desc": "; ".join(parts),
+                })
+
         caught = m.get("hooks", {}).get("hook_errors_caught", 0)
         fires = m.get("hooks", {}).get("hook_fires", 0)
         gross_saved = caught * TEST_RUN_COST_S.get(mode, 10)
@@ -375,6 +471,25 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         hook_by_combo[combo]["gross_saved"] += gross_saved
         hook_by_combo[combo]["overhead"] += overhead
         hook_by_combo[combo]["test_time"] += test_time
+
+    # ── Aggregate trap time/cost by (mode, model) for net-of-traps columns ──
+    trap_time_by_combo: dict[tuple, float] = defaultdict(float)
+    trap_cost_by_combo: dict[tuple, float] = defaultdict(float)
+    for t in trap_instances:
+        combo = (t["mode"], t["model"])
+        trap_time_by_combo[combo] += t["time_s"]
+        # Estimate cost proportional to time fraction of the run
+        if t["dur_s"] > 0 and t["cost"] > 0:
+            trap_cost_by_combo[combo] += t["time_s"] / t["dur_s"] * t["cost"]
+
+    for r in cmp_rows:
+        combo = (r["mode"], r["model"])
+        n = r["n"]
+        r["avg_trap_dur"] = trap_time_by_combo.get(combo, 0) / n
+        r["avg_trap_cost"] = trap_cost_by_combo.get(combo, 0) / n
+        r["avg_dur_net"] = r["avg_dur"] - r["avg_trap_dur"]
+        r["avg_cost_net"] = r["avg_cost"] - r["avg_trap_cost"]
+        r["total_cost_net"] = r["total_cost"] - trap_cost_by_combo.get(combo, 0)
 
     # ── Prompt cache data ──
     cache_data = []
@@ -414,11 +529,22 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
 
         by_dur = sorted(cmp_rows, key=lambda r: r["avg_dur"])
         by_cost = sorted(cmp_rows, key=lambda r: r["avg_cost"])
+        by_dur_net = sorted(cmp_rows, key=lambda r: r["avg_dur_net"])
+        by_cost_net = sorted(cmp_rows, key=lambda r: r["avg_cost_net"])
 
+        has_traps = any(r["avg_trap_dur"] > 0 for r in cmp_rows)
         lines.append(f"- **Fastest (avg):** {_fmt_combo(by_dur[0], 'avg_dur')}, then {_fmt_combo(by_dur[1], 'avg_dur')}")
+        if has_traps:
+            lines.append(f"- **Fastest net of traps:** {_fmt_combo(by_dur_net[0], 'avg_dur_net')}, then {_fmt_combo(by_dur_net[1], 'avg_dur_net')}")
         lines.append(f"- **Slowest (avg):** {_fmt_combo(by_dur[-1], 'avg_dur')}, then {_fmt_combo(by_dur[-2], 'avg_dur')}")
+        if has_traps:
+            lines.append(f"- **Slowest net of traps:** {_fmt_combo(by_dur_net[-1], 'avg_dur_net')}, then {_fmt_combo(by_dur_net[-2], 'avg_dur_net')}")
         lines.append(f"- **Cheapest (avg):** {_fmt_combo(by_cost[0], 'avg_cost', 'cost')}, then {_fmt_combo(by_cost[1], 'avg_cost', 'cost')}")
+        if has_traps:
+            lines.append(f"- **Cheapest net of traps:** {_fmt_combo(by_cost_net[0], 'avg_cost_net', 'cost')}, then {_fmt_combo(by_cost_net[1], 'avg_cost_net', 'cost')}")
         lines.append(f"- **Most expensive (avg):** {_fmt_combo(by_cost[-1], 'avg_cost', 'cost')}, then {_fmt_combo(by_cost[-2], 'avg_cost', 'cost')}")
+        if has_traps:
+            lines.append(f"- **Most expensive net of traps:** {_fmt_combo(by_cost_net[-1], 'avg_cost_net', 'cost')}, then {_fmt_combo(by_cost_net[-2], 'avg_cost_net', 'cost')}")
         lines.append("")
 
         if completed < total_runs and total_duration > 0 and completed > 0:
@@ -455,11 +581,11 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         if failed:
             lines.append("*(averages exclude failed/timed-out runs)*")
         lines.append("")
-        cmp_hdr = "| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |"
-        cmp_sep = "|------|-------|------|-------------|-----------|------------|-----------|----------|------------|"
+        cmp_hdr = "| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |"
+        cmp_sep = "|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|"
         def _fmt_cmp(r):
-            return (f"| {r['mode']} | {r['model']} | {r['n']} | {_dur(r['avg_dur'])} | {r['avg_lines']:.0f} "
-                    f"| {r['avg_errors']:.1f} | {r['avg_turns']:.0f} | ${r['avg_cost']:.2f} | ${r['total_cost']:.2f} |")
+            return (f"| {r['mode']} | {r['model']} | {r['n']} | {_dur(r['avg_dur'])} | {_dur(r['avg_dur_net'])} | {r['avg_lines']:.0f} "
+                    f"| {r['avg_errors']:.1f} | {r['avg_turns']:.0f} | ${r['avg_cost']:.2f} | ${r['avg_cost_net']:.2f} | ${r['total_cost']:.2f} |")
         lines.append(cmp_hdr)
         lines.append(cmp_sep)
         for r in cmp_rows:
@@ -467,6 +593,8 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         lines.append("")
         lines.extend(_emit_sorted_variants(cmp_hdr, cmp_sep, cmp_rows, [
             ("Sorted by avg cost (most expensive first)", "avg_cost", True),
+            ("Sorted by avg cost net of traps (most expensive first)", "avg_cost_net", True),
+            ("Sorted by avg duration net of traps (fastest first)", "avg_dur_net", False),
             ("Sorted by avg errors (fewest first)", "avg_errors", False),
             ("Sorted by avg lines (fewest first)", "avg_lines", False),
             ("Sorted by avg turns (fewest first)", "avg_turns", False),
@@ -556,6 +684,8 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
             "ts-type-error-fix-cycles": "typescript-bun",
             "bats-setup-issues": "bash",
             "dotnet-install-loop": "csharp-script",
+            "pwsh-invoked-from-bash": "powershell",
+            "pwsh-runtime-install-overhead": "powershell",
         }
         trap_descriptions = {
             "act-push-debug-loops": "Agent ran `act push` more than twice, indicating repeated workflow debugging.",
@@ -573,6 +703,8 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
             "act-fixture-paths": "Test fixtures not found inside the act Docker container due to path issues.",
             "permission-denial-loops": "CLI sandbox blocked commands and agent retried instead of adapting (v1 harness issue).",
             "dotnet-install-loop": "Agent stuck in loop trying to install/verify .NET SDK, blocked by CLI sandbox.",
+            "pwsh-invoked-from-bash": "Agent used `pwsh -Command`/`-File` from bash `run:` steps instead of `shell: pwsh`, causing cross-shell debugging (parse errors, quoting issues, scope problems, late pwsh discovery in act).",
+            "pwsh-runtime-install-overhead": "Time spent installing PowerShell and Pester inside act containers. Both are pre-installed on real GitHub runners but must be downloaded (~56MB) and installed in each act job. Measured from act step durations.",
         }
 
         trap_agg = defaultdict(list)
@@ -763,7 +895,13 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     lines.append("")
 
     lines.append("---")
-    lines.append(f"*Generated by generate_results.py, instructions version {INSTRUCTIONS_VERSION}*")
+    # Determine the instructions version from the run data, not from the
+    # current generate_results.py constant (which may have moved on to a
+    # newer version since these runs were executed).
+    run_versions = sorted(set(
+        m.get("instructions_version", "?") for m in all_metrics if m.get("instructions_version")))
+    run_ver_str = ", ".join(run_versions) if run_versions else "unknown"
+    lines.append(f"*Generated by generate_results.py — benchmark instructions {run_ver_str}*")
 
     (run_dir / "results.md").write_text("\n".join(lines))
 
@@ -815,7 +953,7 @@ def update_readme(repo_root: Path) -> None:
             name = f"**{name}** (latest)"
         ver_raw = r.get("version", "?")
         # Linkify version to the instructions doc
-        ver_links = {"v1": "benchmark-instructions-v1.md", "v2": "benchmark-instructions-v2.md", "v3": "benchmark-instructions-v3.md"}
+        ver_links = {"v1": "benchmark-instructions-v1.md", "v2": "benchmark-instructions-v2.md", "v3": "benchmark-instructions-v3.md", "v4": "benchmark-instructions-v4.md"}
         ver = f"[{ver_raw}]({ver_links[ver_raw]})" if ver_raw in ver_links else ver_raw
         count = f"{r['n_runs']}/{r.get('total_planned', '?')}"
         cost = f"${r.get('cost', 0):.2f}" if r.get("cost") else "—"

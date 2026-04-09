@@ -20,8 +20,8 @@ from pathlib import Path
 # Constants
 # ---------------------------------------------------------------------------
 
-INSTRUCTIONS_FILE = "benchmark-instructions-v3.md"
-INSTRUCTIONS_VERSION = "v3"
+INSTRUCTIONS_FILE = "benchmark-instructions-v4.md"
+INSTRUCTIONS_VERSION = "v4"
 
 from models import COST_PER_MTOK, MODELS  # noqa: E402  (single source of truth)
 
@@ -324,9 +324,15 @@ Design your workflow so its steps work in an isolated Docker container — use
 `actions/checkout@v4`, install dependencies your script needs, and run it.
 Avoid steps requiring external services or secrets without sensible defaults.
 
+IMPORTANT for PowerShell mode: Use `shell: pwsh` on your workflow run: steps instead
+of invoking `pwsh -Command` or `pwsh -File` from bash. This avoids escaping issues
+and works correctly in act containers. pwsh and Pester are pre-installed in the
+container.
+
 WORKFLOW VALIDATION:
 Run `actionlint .github/workflows/{task_slug}.yml` and fix any errors. actionlint is
-pre-installed. Iterate until it passes cleanly.
+pre-installed. Iterate until it passes cleanly. Validate with actionlint BEFORE
+running act — actionlint is instant, act takes 30-90 seconds per run.
 
 ALL TESTS MUST RUN THROUGH ACT:
 Every single test case must execute through the GitHub Actions workflow via `act`.
@@ -346,7 +352,8 @@ Your test harness must:
 5. Assert every job shows "Job succeeded"
 
 The `act-result.txt` file MUST exist when done. It is a required artifact.
-`act` and Docker are pre-installed.
+`act` and Docker are pre-installed. Limit yourself to at most 3 `act push` runs —
+diagnose errors from the output rather than re-running blindly.
 
 WORKFLOW STRUCTURE TESTS (also required):
 - Parse the YAML and check expected structure (triggers, jobs, steps)
@@ -791,6 +798,20 @@ def run_single_task(
 
     # Copy instructions file
     shutil.copy2(repo_root / INSTRUCTIONS_FILE, workspace / INSTRUCTIONS_FILE)
+
+    # Inject .actrc so act uses a custom image with pwsh/Pester pre-installed
+    # (if the image exists). This eliminates ~24s/job install overhead that
+    # wouldn't exist on real GitHub runners where pwsh is pre-installed.
+    ACT_CUSTOM_IMAGE = "act-ubuntu-pwsh:latest"
+    try:
+        probe = subprocess.run(
+            ["docker", "image", "inspect", ACT_CUSTOM_IMAGE],
+            capture_output=True, timeout=10)
+        if probe.returncode == 0:
+            (workspace / ".actrc").write_text(
+                f"-P ubuntu-latest={ACT_CUSTOM_IMAGE}\n")
+    except Exception:
+        pass  # docker not available or image not built — use act default
 
     # Set up workspace hooks — syntax/lint checking on Write/Edit
     hook_script = (repo_root / "hooks" / "syntax-check.py").resolve()

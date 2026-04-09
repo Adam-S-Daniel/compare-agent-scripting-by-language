@@ -14,8 +14,11 @@ python3 -c "from generate_results import generate_results_md"
 # Regenerate all reports
 python3 generate_results.py --all
 
-# Run a benchmark (v3, all tasks/modes/models)
+# Run a benchmark (v4, all tasks/modes/models)
 python3 runner.py --tasks 11,12,13,14,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
+
+# Build custom act container (optional, eliminates pwsh install overhead)
+docker build -t act-ubuntu-pwsh:latest -f Dockerfile.act .
 ```
 
 ## Code style
@@ -43,6 +46,7 @@ python3 runner.py --tasks 11,12,13,14,15,16,17,18 --modes default,powershell,bas
 - `generate_results.py` — generates `results.md` reports and updates `README.md`. Can run standalone: `python3 generate_results.py --all`.
 - `benchmark-instructions-v*.md` — per-version specs given to agents during runs.
 - `hooks/syntax-check.py` — PostToolUse hook for syntax/lint checking.
+- `Dockerfile.act` — custom act container image with pwsh + Pester pre-installed. Build with `docker build -t act-ubuntu-pwsh:latest -f Dockerfile.act .`. Runner.py auto-detects it and injects `.actrc` into workspaces.
 - `skills/` — agent skills following [agentskills.io](https://agentskills.io/specification) spec.
 
 ### Adding new trap detectors
@@ -88,9 +92,11 @@ bug (background task notifications created spurious second CLI result events).
 - Opus is 1.84x faster than Sonnet on average (won 25 of 31 paired comparisons).
 - Default mode always chose Python (except once: Opus chose Bash for task 16).
 - PowerShell is the slowest mode (avg 15min vs 9min for default/opus).
+- Net of traps, powershell/opus is the cheapest ($0.93) and nearly tied for fastest (6.9min vs 6.8min for default/opus).
 - TypeScript hooks are the most productive (50% catch rate, net positive time savings).
 - PowerShell hooks are net negative (low catch rate, high overhead from Invoke-ScriptAnalyzer).
-- Traps consumed 12% of total benchmark time; hooks saved 0.7% net.
+- Traps consumed 15.8% of total benchmark time ($12.71, 115min); hooks saved 0.4% net.
+- pwsh-runtime-install-overhead is the largest trap by total time (26.2min across 15 runs) — wouldn't exist on real GitHub runners.
 - No context compactions occurred — 200K window was always sufficient.
 
 ### Earlier versions

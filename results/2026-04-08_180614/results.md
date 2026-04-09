@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-09 01:12:13 PM ET
+**Last updated:** 2026-04-09 02:52:54 PM ET
 
 **Status:** 2/2 runs completed, 0 remaining
 **Total cost so far:** $2.28
@@ -9,55 +9,79 @@
 ## Observations
 
 - **Fastest (avg):** powershell/sonnet — 9.7min, then default/sonnet — 13.6min
+- **Fastest net of traps:** powershell/sonnet — 8.6min, then default/sonnet — 12.6min
 - **Slowest (avg):** default/sonnet — 13.6min, then powershell/sonnet — 9.7min
+- **Slowest net of traps:** default/sonnet — 12.6min, then powershell/sonnet — 8.6min
 - **Cheapest (avg):** powershell/sonnet — $0.96, then default/sonnet — $1.33
+- **Cheapest net of traps:** powershell/sonnet — $0.85, then default/sonnet — $1.23
 - **Most expensive (avg):** default/sonnet — $1.33, then powershell/sonnet — $0.96
+- **Most expensive net of traps:** default/sonnet — $1.23, then powershell/sonnet — $0.85
 
 ## Comparison by Language/Model
 
-| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|-----------|------------|-----------|----------|------------|
-| default | sonnet | 1 | 13.6min | 1300 | 5.0 | 33 | $1.33 | $1.33 |
-| powershell | sonnet | 1 | 9.7min | 1181 | 1.0 | 38 | $0.96 | $0.96 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| default | sonnet | 1 | 13.6min | 12.6min | 1300 | 5.0 | 33 | $1.33 | $1.23 | $1.33 |
+| powershell | sonnet | 1 | 9.7min | 8.6min | 1181 | 1.0 | 38 | $0.96 | $0.85 | $0.96 |
 
 
 <details>
 <summary>Sorted by avg cost (most expensive first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|-----------|------------|-----------|----------|------------|
-| default | sonnet | 1 | 13.6min | 1300 | 5.0 | 33 | $1.33 | $1.33 |
-| powershell | sonnet | 1 | 9.7min | 1181 | 1.0 | 38 | $0.96 | $0.96 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| default | sonnet | 1 | 13.6min | 12.6min | 1300 | 5.0 | 33 | $1.33 | $1.23 | $1.33 |
+| powershell | sonnet | 1 | 9.7min | 8.6min | 1181 | 1.0 | 38 | $0.96 | $0.85 | $0.96 |
+
+</details>
+
+<details>
+<summary>Sorted by avg cost net of traps (most expensive first)</summary>
+
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| default | sonnet | 1 | 13.6min | 12.6min | 1300 | 5.0 | 33 | $1.33 | $1.23 | $1.33 |
+| powershell | sonnet | 1 | 9.7min | 8.6min | 1181 | 1.0 | 38 | $0.96 | $0.85 | $0.96 |
+
+</details>
+
+<details>
+<summary>Sorted by avg duration net of traps (fastest first)</summary>
+
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| powershell | sonnet | 1 | 9.7min | 8.6min | 1181 | 1.0 | 38 | $0.96 | $0.85 | $0.96 |
+| default | sonnet | 1 | 13.6min | 12.6min | 1300 | 5.0 | 33 | $1.33 | $1.23 | $1.33 |
 
 </details>
 
 <details>
 <summary>Sorted by avg errors (fewest first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|-----------|------------|-----------|----------|------------|
-| powershell | sonnet | 1 | 9.7min | 1181 | 1.0 | 38 | $0.96 | $0.96 |
-| default | sonnet | 1 | 13.6min | 1300 | 5.0 | 33 | $1.33 | $1.33 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| powershell | sonnet | 1 | 9.7min | 8.6min | 1181 | 1.0 | 38 | $0.96 | $0.85 | $0.96 |
+| default | sonnet | 1 | 13.6min | 12.6min | 1300 | 5.0 | 33 | $1.33 | $1.23 | $1.33 |
 
 </details>
 
 <details>
 <summary>Sorted by avg lines (fewest first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|-----------|------------|-----------|----------|------------|
-| powershell | sonnet | 1 | 9.7min | 1181 | 1.0 | 38 | $0.96 | $0.96 |
-| default | sonnet | 1 | 13.6min | 1300 | 5.0 | 33 | $1.33 | $1.33 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| powershell | sonnet | 1 | 9.7min | 8.6min | 1181 | 1.0 | 38 | $0.96 | $0.85 | $0.96 |
+| default | sonnet | 1 | 13.6min | 12.6min | 1300 | 5.0 | 33 | $1.33 | $1.23 | $1.33 |
 
 </details>
 
 <details>
 <summary>Sorted by avg turns (fewest first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|-----------|------------|-----------|----------|------------|
-| default | sonnet | 1 | 13.6min | 1300 | 5.0 | 33 | $1.33 | $1.33 |
-| powershell | sonnet | 1 | 9.7min | 1181 | 1.0 | 38 | $0.96 | $0.96 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| default | sonnet | 1 | 13.6min | 12.6min | 1300 | 5.0 | 33 | $1.33 | $1.23 | $1.33 |
+| powershell | sonnet | 1 | 9.7min | 8.6min | 1181 | 1.0 | 38 | $0.96 | $0.85 | $0.96 |
 
 </details>
 
@@ -109,8 +133,9 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Trap | Mode | Model | Fell In | Time Lost | % of Time | $ Lost | % of $ |
 |------|------|-------|---------|-----------|-----------|--------|--------|
+| pwsh-runtime-install-overhead | powershell | sonnet | 1 | 1.1min | 4.6% | $0.11 | 4.66% |
 | repeated-test-reruns | default | sonnet | 1 | 1.0min | 4.3% | $0.10 | 4.26% |
-| **Total** | | | **1 runs** | **1.0min** | **4.3%** | **$0.10** | **4.26%** |
+| **Total** | | | **2 runs** | **2.1min** | **8.9%** | **$0.20** | **8.92%** |
 
 
 <details>
@@ -119,6 +144,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | Trap | Mode | Model | Fell In | Time Lost | % of Time | $ Lost | % of $ |
 |------|------|-------|---------|-----------|-----------|--------|--------|
 | repeated-test-reruns | default | sonnet | 1 | 1.0min | 4.3% | $0.10 | 4.26% |
+| pwsh-runtime-install-overhead | powershell | sonnet | 1 | 1.1min | 4.6% | $0.11 | 4.66% |
 
 </details>
 
@@ -128,6 +154,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | Trap | Mode | Model | Fell In | Time Lost | % of Time | $ Lost | % of $ |
 |------|------|-------|---------|-----------|-----------|--------|--------|
 | repeated-test-reruns | default | sonnet | 1 | 1.0min | 4.3% | $0.10 | 4.26% |
+| pwsh-runtime-install-overhead | powershell | sonnet | 1 | 1.1min | 4.6% | $0.11 | 4.66% |
 
 </details>
 
@@ -136,12 +163,14 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Trap | Mode | Model | Fell In | Time Lost | % of Time | $ Lost | % of $ |
 |------|------|-------|---------|-----------|-----------|--------|--------|
+| pwsh-runtime-install-overhead | powershell | sonnet | 1 | 1.1min | 4.6% | $0.11 | 4.66% |
 | repeated-test-reruns | default | sonnet | 1 | 1.0min | 4.3% | $0.10 | 4.26% |
 
 </details>
 
 #### Trap Descriptions
 
+- **pwsh-runtime-install-overhead**: Time spent installing PowerShell and Pester inside act containers. Both are pre-installed on real GitHub runners but must be downloaded (~56MB) and installed in each act job. Measured from act step durations.
 - **repeated-test-reruns**: Same test command executed 4+ times without the underlying code changing.
 
 #### Column Definitions
@@ -158,8 +187,8 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | Mode | Model | Runs | Trapped | Trap Rate | Traps | Time Lost | % of Time | $ Lost | % of $ |
 |------|-------|------|---------|-----------|-------|-----------|-----------|--------|--------|
 | default | sonnet | 1 | 1 | 100% | 1 | 1.0min | 4.3% | $0.10 | 4.26% |
-| powershell | sonnet | 1 | 0 | 0% | 0 | 0.0min | 0.0% | $0.00 | 0.00% |
-| **Total** | | **2** | **1** | **50%** | **1** | **1.0min** | **4.3%** | **$0.10** | **4.26%** |
+| powershell | sonnet | 1 | 1 | 100% | 1 | 1.1min | 4.6% | $0.11 | 4.66% |
+| **Total** | | **2** | **2** | **100%** | **2** | **2.1min** | **8.9%** | **$0.20** | **8.92%** |
 
 
 <details>
@@ -167,8 +196,8 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Mode | Model | Runs | Trapped | Trap Rate | Traps | Time Lost | % of Time | $ Lost | % of $ |
 |------|-------|------|---------|-----------|-------|-----------|-----------|--------|--------|
-| powershell | sonnet | 1 | 0 | 0% | 0 | 0.0min | 0.0% | $0.00 | 0.00% |
 | default | sonnet | 1 | 1 | 100% | 1 | 1.0min | 4.3% | $0.10 | 4.26% |
+| powershell | sonnet | 1 | 1 | 100% | 1 | 1.1min | 4.6% | $0.11 | 4.66% |
 
 </details>
 
@@ -177,8 +206,8 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Mode | Model | Runs | Trapped | Trap Rate | Traps | Time Lost | % of Time | $ Lost | % of $ |
 |------|-------|------|---------|-----------|-------|-----------|-----------|--------|--------|
-| powershell | sonnet | 1 | 0 | 0% | 0 | 0.0min | 0.0% | $0.00 | 0.00% |
 | default | sonnet | 1 | 1 | 100% | 1 | 1.0min | 4.3% | $0.10 | 4.26% |
+| powershell | sonnet | 1 | 1 | 100% | 1 | 1.1min | 4.6% | $0.11 | 4.66% |
 
 </details>
 
@@ -187,8 +216,8 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Mode | Model | Runs | Trapped | Trap Rate | Traps | Time Lost | % of Time | $ Lost | % of $ |
 |------|-------|------|---------|-----------|-------|-----------|-----------|--------|--------|
-| powershell | sonnet | 1 | 0 | 0% | 0 | 0.0min | 0.0% | $0.00 | 0.00% |
 | default | sonnet | 1 | 1 | 100% | 1 | 1.0min | 4.3% | $0.10 | 4.26% |
+| powershell | sonnet | 1 | 1 | 100% | 1 | 1.1min | 4.6% | $0.11 | 4.66% |
 
 </details>
 
@@ -260,4 +289,4 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 </details>
 
 ---
-*Generated by generate_results.py, instructions version v3*
+*Generated by generate_results.py — benchmark instructions v3*

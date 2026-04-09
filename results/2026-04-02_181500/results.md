@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-09 01:12:12 PM ET
+**Last updated:** 2026-04-09 02:52:52 PM ET
 
 **Status:** 4/1 runs completed, 0 remaining
 **Total cost so far:** $14.13
@@ -9,65 +9,93 @@
 ## Observations
 
 - **Fastest (avg):** powershell/opus — 4.4min, then default/opus — 5.3min
+- **Fastest net of traps:** csharp-script/opus — -47.2min, then default/opus — -20.7min
 - **Slowest (avg):** csharp-script/opus — 24.6min, then powershell-strict/opus — 7.9min
+- **Slowest net of traps:** powershell/opus — -3.6min, then powershell-strict/opus — -9.6min
 - **Cheapest (avg):** powershell/opus — $1.17, then default/opus — $1.29
+- **Cheapest net of traps:** csharp-script/opus — $-17.08, then default/opus — $-5.08
 - **Most expensive (avg):** csharp-script/opus — $8.90, then powershell-strict/opus — $2.77
+- **Most expensive net of traps:** powershell/opus — $-0.94, then powershell-strict/opus — $-3.38
 
 ## Comparison by Language/Model
 
-| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|-----------|------------|-----------|----------|------------|
-| csharp-script | opus | 1 | 24.6min | 653 | 270.0 | 19 | $8.90 | $8.90 |
-| default | opus | 1 | 5.3min | 469 | 69.0 | 75 | $1.29 | $1.29 |
-| powershell | opus | 1 | 4.4min | 95 | 43.0 | 63 | $1.17 | $1.17 |
-| powershell-strict | opus | 1 | 7.9min | 641 | 79.0 | 102 | $2.77 | $2.77 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| csharp-script | opus | 1 | 24.6min | -47.2min | 653 | 270.0 | 19 | $8.90 | $-17.08 | $8.90 |
+| default | opus | 1 | 5.3min | -20.7min | 469 | 69.0 | 75 | $1.29 | $-5.08 | $1.29 |
+| powershell | opus | 1 | 4.4min | -3.6min | 95 | 43.0 | 63 | $1.17 | $-0.94 | $1.17 |
+| powershell-strict | opus | 1 | 7.9min | -9.6min | 641 | 79.0 | 102 | $2.77 | $-3.38 | $2.77 |
 
 
 <details>
 <summary>Sorted by avg cost (most expensive first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|-----------|------------|-----------|----------|------------|
-| csharp-script | opus | 1 | 24.6min | 653 | 270.0 | 19 | $8.90 | $8.90 |
-| powershell-strict | opus | 1 | 7.9min | 641 | 79.0 | 102 | $2.77 | $2.77 |
-| default | opus | 1 | 5.3min | 469 | 69.0 | 75 | $1.29 | $1.29 |
-| powershell | opus | 1 | 4.4min | 95 | 43.0 | 63 | $1.17 | $1.17 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| csharp-script | opus | 1 | 24.6min | -47.2min | 653 | 270.0 | 19 | $8.90 | $-17.08 | $8.90 |
+| powershell-strict | opus | 1 | 7.9min | -9.6min | 641 | 79.0 | 102 | $2.77 | $-3.38 | $2.77 |
+| default | opus | 1 | 5.3min | -20.7min | 469 | 69.0 | 75 | $1.29 | $-5.08 | $1.29 |
+| powershell | opus | 1 | 4.4min | -3.6min | 95 | 43.0 | 63 | $1.17 | $-0.94 | $1.17 |
+
+</details>
+
+<details>
+<summary>Sorted by avg cost net of traps (most expensive first)</summary>
+
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| powershell | opus | 1 | 4.4min | -3.6min | 95 | 43.0 | 63 | $1.17 | $-0.94 | $1.17 |
+| powershell-strict | opus | 1 | 7.9min | -9.6min | 641 | 79.0 | 102 | $2.77 | $-3.38 | $2.77 |
+| default | opus | 1 | 5.3min | -20.7min | 469 | 69.0 | 75 | $1.29 | $-5.08 | $1.29 |
+| csharp-script | opus | 1 | 24.6min | -47.2min | 653 | 270.0 | 19 | $8.90 | $-17.08 | $8.90 |
+
+</details>
+
+<details>
+<summary>Sorted by avg duration net of traps (fastest first)</summary>
+
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| csharp-script | opus | 1 | 24.6min | -47.2min | 653 | 270.0 | 19 | $8.90 | $-17.08 | $8.90 |
+| default | opus | 1 | 5.3min | -20.7min | 469 | 69.0 | 75 | $1.29 | $-5.08 | $1.29 |
+| powershell-strict | opus | 1 | 7.9min | -9.6min | 641 | 79.0 | 102 | $2.77 | $-3.38 | $2.77 |
+| powershell | opus | 1 | 4.4min | -3.6min | 95 | 43.0 | 63 | $1.17 | $-0.94 | $1.17 |
 
 </details>
 
 <details>
 <summary>Sorted by avg errors (fewest first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|-----------|------------|-----------|----------|------------|
-| powershell | opus | 1 | 4.4min | 95 | 43.0 | 63 | $1.17 | $1.17 |
-| default | opus | 1 | 5.3min | 469 | 69.0 | 75 | $1.29 | $1.29 |
-| powershell-strict | opus | 1 | 7.9min | 641 | 79.0 | 102 | $2.77 | $2.77 |
-| csharp-script | opus | 1 | 24.6min | 653 | 270.0 | 19 | $8.90 | $8.90 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| powershell | opus | 1 | 4.4min | -3.6min | 95 | 43.0 | 63 | $1.17 | $-0.94 | $1.17 |
+| default | opus | 1 | 5.3min | -20.7min | 469 | 69.0 | 75 | $1.29 | $-5.08 | $1.29 |
+| powershell-strict | opus | 1 | 7.9min | -9.6min | 641 | 79.0 | 102 | $2.77 | $-3.38 | $2.77 |
+| csharp-script | opus | 1 | 24.6min | -47.2min | 653 | 270.0 | 19 | $8.90 | $-17.08 | $8.90 |
 
 </details>
 
 <details>
 <summary>Sorted by avg lines (fewest first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|-----------|------------|-----------|----------|------------|
-| powershell | opus | 1 | 4.4min | 95 | 43.0 | 63 | $1.17 | $1.17 |
-| default | opus | 1 | 5.3min | 469 | 69.0 | 75 | $1.29 | $1.29 |
-| powershell-strict | opus | 1 | 7.9min | 641 | 79.0 | 102 | $2.77 | $2.77 |
-| csharp-script | opus | 1 | 24.6min | 653 | 270.0 | 19 | $8.90 | $8.90 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| powershell | opus | 1 | 4.4min | -3.6min | 95 | 43.0 | 63 | $1.17 | $-0.94 | $1.17 |
+| default | opus | 1 | 5.3min | -20.7min | 469 | 69.0 | 75 | $1.29 | $-5.08 | $1.29 |
+| powershell-strict | opus | 1 | 7.9min | -9.6min | 641 | 79.0 | 102 | $2.77 | $-3.38 | $2.77 |
+| csharp-script | opus | 1 | 24.6min | -47.2min | 653 | 270.0 | 19 | $8.90 | $-17.08 | $8.90 |
 
 </details>
 
 <details>
 <summary>Sorted by avg turns (fewest first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|-----------|------------|-----------|----------|------------|
-| csharp-script | opus | 1 | 24.6min | 653 | 270.0 | 19 | $8.90 | $8.90 |
-| powershell | opus | 1 | 4.4min | 95 | 43.0 | 63 | $1.17 | $1.17 |
-| default | opus | 1 | 5.3min | 469 | 69.0 | 75 | $1.29 | $1.29 |
-| powershell-strict | opus | 1 | 7.9min | 641 | 79.0 | 102 | $2.77 | $2.77 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| csharp-script | opus | 1 | 24.6min | -47.2min | 653 | 270.0 | 19 | $8.90 | $-17.08 | $8.90 |
+| powershell | opus | 1 | 4.4min | -3.6min | 95 | 43.0 | 63 | $1.17 | $-0.94 | $1.17 |
+| default | opus | 1 | 5.3min | -20.7min | 469 | 69.0 | 75 | $1.29 | $-5.08 | $1.29 |
+| powershell-strict | opus | 1 | 7.9min | -9.6min | 641 | 79.0 | 102 | $2.77 | $-3.38 | $2.77 |
 
 </details>
 
@@ -311,4 +339,4 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 </details>
 
 ---
-*Generated by generate_results.py, instructions version v3*
+*Generated by generate_results.py — benchmark instructions v1*
