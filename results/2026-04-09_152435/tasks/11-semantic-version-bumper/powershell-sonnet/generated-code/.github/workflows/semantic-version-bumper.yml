@@ -1,0 +1,109 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: "Override bump type (patch/minor/major)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    name: Run Pester Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          Import-Module Pester -MinimumVersion 5.0
+          $config = New-PesterConfiguration
+          $config.Run.Path = "./VersionBumper.Tests.ps1"
+          $config.Output.Verbosity = "Detailed"
+          $config.TestResult.Enabled = $true
+          $config.TestResult.OutputPath = "test-results.xml"
+          $result = Invoke-Pester -Configuration $config
+          if ($result.FailedCount -gt 0) {
+            Write-Error "Pester tests failed: $($result.FailedCount) test(s) failed"
+            exit 1
+          }
+          Write-Host "All $($result.PassedCount) tests passed ($($result.SkippedCount) skipped)"
+
+  bump-version:
+    name: Bump Version
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup test fixture
+        shell: pwsh
+        run: |
+          # Create version.txt if it doesn't exist (fixture for demo)
+          if (-not (Test-Path "version.txt")) {
+            Set-Content -Path "version.txt" -Value "1.0.0"
+            Write-Host "Created version.txt with initial version 1.0.0"
+          }
+
+      - name: Collect recent commits
+        shell: pwsh
+        run: |
+          # Collect commits since last tag or last 10 commits
+          $commits = git log --pretty=format:"%s" -10 2>$null
+          if (-not $commits) {
+            # Fallback fixture commits if git history is unavailable
+            $commits = @("feat: initial setup", "fix: resolve startup issue")
+          }
+          # Save commits to file for next step
+          $commits | Set-Content -Path "commits.txt"
+          Write-Host "Collected $($commits.Count) commits"
+          $commits | ForEach-Object { Write-Host "  - $_" }
+
+      - name: Run version bumper
+        shell: pwsh
+        run: |
+          . ./VersionBumper.ps1
+
+          $commits = Get-Content -Path "commits.txt"
+          $today = Get-Date -Format "yyyy-MM-dd"
+
+          $newVersion = Invoke-VersionBump `
+            -VersionFilePath "version.txt" `
+            -ChangelogPath "CHANGELOG.md" `
+            -Commits $commits `
+            -Date $today
+
+          Write-Host "NEW_VERSION=$newVersion"
+          Write-Host "Version bumped to: $newVersion"
+
+          # Show changelog entry
+          if (Test-Path "CHANGELOG.md") {
+            Write-Host "--- CHANGELOG.md (first 30 lines) ---"
+            Get-Content "CHANGELOG.md" | Select-Object -First 30 | ForEach-Object { Write-Host $_ }
+          }
+
+      - name: Show results
+        shell: pwsh
+        run: |
+          Write-Host "=== Version Bump Results ==="
+          Write-Host "Current version file contents:"
+          Get-Content "version.txt"
+          Write-Host ""
+          Write-Host "Changelog preview:"
+          if (Test-Path "CHANGELOG.md") {
+            Get-Content "CHANGELOG.md" | Select-Object -First 20 | ForEach-Object { Write-Host $_ }
+          }
