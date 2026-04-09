@@ -19,25 +19,7 @@ from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
 
-# ---------------------------------------------------------------------------
-# Model Token Pricing — SINGLE SOURCE OF TRUTH
-# ---------------------------------------------------------------------------
-# All per-million-token costs in USD.  Every cost calculation in this file
-# references this dict.
-#
-# TO UPDATE: check https://docs.anthropic.com/en/docs/about-claude/models
-# and https://www.anthropic.com/pricing for current prices.  Update the
-# values below and re-run the report generation.
-# ---------------------------------------------------------------------------
-COST_PER_MTOK = {
-    "claude-opus-4-6":   {"input": 15.0, "output": 75.0, "cache_read": 1.5, "cache_write": 18.75},
-    "claude-sonnet-4-6": {"input": 3.0,  "output": 15.0, "cache_read": 0.3, "cache_write": 3.75},
-}
-
-MODELS = {
-    "opus": "claude-opus-4-6",
-    "sonnet": "claude-sonnet-4-6",
-}
+from models import COST_PER_MTOK, MODELS  # noqa: E402  (single source of truth)
 
 INSTRUCTIONS_VERSION = "v3"
 
@@ -295,8 +277,9 @@ def generate_results_md(run_dir: Path, all_metrics: list[dict], total_runs: int,
         for m in failed:
             dur = m["timing"]["grand_total_duration_ms"] / 1000
             reason = m.get("failure_reason", "exit_code=" + str(m["exit_code"]))
-            alint = "pass" if m["quality"]["actionlint_pass"] else ("fail" if m["quality"]["actionlint_pass"] is False else "n/a")
-            act = "yes" if m["quality"]["act_result_txt_exists"] else "no"
+            alint_val = m.get("quality", {}).get("actionlint_pass")
+            alint = "pass" if alint_val else ("fail" if alint_val is False else "n/a")
+            act = "yes" if m.get("quality", {}).get("act_result_txt_exists") else "no"
             lines.append(
                 f"| {m['task_name'][:30]} | {m['language_mode']} | {m['model_short']} "
                 f"| {dur:.0f}s | {reason} | {m['code_metrics']['total_lines']} | {alint} | {act} |"

@@ -23,12 +23,7 @@ from pathlib import Path
 INSTRUCTIONS_FILE = "benchmark-instructions-v3.md"
 INSTRUCTIONS_VERSION = "v3"
 
-MODELS = {
-    "opus": "claude-opus-4-6",
-    "sonnet": "claude-sonnet-4-6",
-}
-
-# COST_PER_MTOK is imported from generate_results.py (single source of truth).
+from models import COST_PER_MTOK, MODELS  # noqa: E402  (single source of truth)
 
 LANGUAGE_EXTENSIONS = {
     ".py": "python", ".js": "javascript", ".ts": "typescript", ".sh": "bash",
@@ -529,7 +524,6 @@ from generate_results import (  # noqa: E402
     generate_results_md,
     _detect_traps,
     _categorize_tool_time,
-    COST_PER_MTOK,
 )
 
 
