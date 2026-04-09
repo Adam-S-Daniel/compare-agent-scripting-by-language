@@ -1,0 +1,81 @@
+name: Semantic Version Bumper
+
+# Trigger on push, pull requests, and manual dispatch.
+# workflow_dispatch allows manual version bumps with custom inputs.
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      version_file:
+        description: "Path to version file (version.txt or package.json)"
+        required: false
+        default: "version.txt"
+      commits_file:
+        description: "Path to commits file"
+        required: false
+        default: "commits.txt"
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    name: Test Semantic Version Bumper
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install bats-core
+        run: npm install -g bats
+
+      - name: Install actionlint
+        run: |
+          ACTIONLINT_VERSION="1.7.4"
+          curl -sL "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz" \
+            | tar -xz -C /usr/local/bin actionlint
+
+      - name: Validate script syntax
+        run: bash -n bump-version.sh
+
+      - name: Run bats unit tests
+        run: bats tests/version_bumper.bats
+
+      - name: Demo patch bump (1.0.0 + fix -> 1.0.1)
+        run: |
+          echo "1.0.0" > /tmp/demo-version.txt
+          printf 'fix: correct null pointer exception\nfix: handle edge case\n' > /tmp/demo-commits.txt
+          NEW_VERSION=$(bash bump-version.sh /tmp/demo-version.txt /tmp/demo-commits.txt)
+          echo "DEMO_PATCH: ${NEW_VERSION}"
+
+      - name: Demo minor bump (1.1.0 + feat -> 1.2.0)
+        run: |
+          echo "1.1.0" > /tmp/demo-version.txt
+          printf 'feat: add user profile page\nfix: fix button color\n' > /tmp/demo-commits.txt
+          NEW_VERSION=$(bash bump-version.sh /tmp/demo-version.txt /tmp/demo-commits.txt)
+          echo "DEMO_MINOR: ${NEW_VERSION}"
+
+      - name: Demo major bump (1.2.3 + breaking -> 2.0.0)
+        run: |
+          echo "1.2.3" > /tmp/demo-version.txt
+          printf 'feat!: redesign entire API\nfeat: add new endpoint\n' > /tmp/demo-commits.txt
+          NEW_VERSION=$(bash bump-version.sh /tmp/demo-version.txt /tmp/demo-commits.txt)
+          echo "DEMO_MAJOR: ${NEW_VERSION}"
+
+      - name: Demo package.json bump (2.0.1 + feat -> 2.1.0)
+        run: |
+          printf '{\n  "name": "my-app",\n  "version": "2.0.1",\n  "description": "demo"\n}\n' > /tmp/demo-package.json
+          printf 'feat: add dark mode\n' > /tmp/demo-commits.txt
+          NEW_VERSION=$(bash bump-version.sh /tmp/demo-package.json /tmp/demo-commits.txt)
+          echo "DEMO_PKG_MINOR: ${NEW_VERSION}"
+
+      - name: Show generated changelog sample
+        run: |
+          echo "1.0.0" > /tmp/changelog-version.txt
+          printf 'feat: add login\nfix: fix redirect\n' > /tmp/changelog-commits.txt
+          bash bump-version.sh /tmp/changelog-version.txt /tmp/changelog-commits.txt
+          echo "CHANGELOG_SAMPLE_START"
+          cat /tmp/CHANGELOG.md
