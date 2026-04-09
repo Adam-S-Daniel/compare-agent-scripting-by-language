@@ -1,0 +1,126 @@
+PR Label Assigner - Test Harness Results
+Date: Wed Apr  8 22:20:35 EDT 2026
+
+================================================================
+SECTION 1: YAML Structure Tests
+================================================================
+PASS: actionlint validation
+PASS: workflow has push trigger
+PASS: workflow has pull_request trigger
+PASS: workflow has workflow_dispatch trigger
+PASS: workflow references pr_label_assigner.sh
+PASS: workflow uses actions/checkout@v4
+PASS: pr_label_assigner.sh is executable
+PASS: fixture exists: fixtures/rules.conf
+PASS: fixture exists: fixtures/changed_files_docs.txt
+PASS: fixture exists: fixtures/changed_files_api.txt
+PASS: fixture exists: fixtures/changed_files_mixed.txt
+
+================================================================
+SECTION 2: ACT Integration Tests
+================================================================
+Setting up temp git repo in /tmp/tmp.JlGPs9dGvO
+Running: act push --rm --no-cache-server
+--- ACT OUTPUT START ---
+time="2026-04-08T22:20:35-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[PR Label Assigner/Assign PR Labels] ⭐ Run Set up job
+[PR Label Assigner/Assign PR Labels] 🚀  Start image=catthehacker/ubuntu:act-latest
+[PR Label Assigner/Assign PR Labels]   🐳  docker pull image=catthehacker/ubuntu:act-latest platform= username= forcePull=true
+[PR Label Assigner/Assign PR Labels] using DockerAuthConfig authentication for docker pull
+[PR Label Assigner/Assign PR Labels]   🐳  docker create image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[PR Label Assigner/Assign PR Labels]   🐳  docker run image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[PR Label Assigner/Assign PR Labels]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[PR Label Assigner/Assign PR Labels]   ✅  Success - Set up job
+[PR Label Assigner/Assign PR Labels] ⭐ Run Main Checkout repository
+[PR Label Assigner/Assign PR Labels]   🐳  docker cp src=/tmp/tmp.JlGPs9dGvO/. dst=/tmp/tmp.JlGPs9dGvO
+[PR Label Assigner/Assign PR Labels]   ✅  Success - Main Checkout repository [94.583437ms]
+[PR Label Assigner/Assign PR Labels] ⭐ Run Main Install bats-core
+[PR Label Assigner/Assign PR Labels]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[PR Label Assigner/Assign PR Labels]   | 
+[PR Label Assigner/Assign PR Labels]   | added 1 package in 753ms
+[PR Label Assigner/Assign PR Labels]   ✅  Success - Main Install bats-core [1.306944896s]
+[PR Label Assigner/Assign PR Labels] ⭐ Run Main Validate script syntax
+[PR Label Assigner/Assign PR Labels]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[PR Label Assigner/Assign PR Labels]   | Syntax OK
+[PR Label Assigner/Assign PR Labels]   ✅  Success - Main Validate script syntax [341.256691ms]
+[PR Label Assigner/Assign PR Labels] ⭐ Run Main Run bats tests
+[PR Label Assigner/Assign PR Labels]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/3] user= workdir=
+[PR Label Assigner/Assign PR Labels]   | 1..15
+[PR Label Assigner/Assign PR Labels]   | ok 1 script exists and is executable
+[PR Label Assigner/Assign PR Labels]   | ok 2 docs file matches documentation label
+[PR Label Assigner/Assign PR Labels]   | ok 3 src/api file matches api label
+[PR Label Assigner/Assign PR Labels]   | ok 4 test file matches tests label
+[PR Label Assigner/Assign PR Labels]   | ok 5 multiple files produce multiple labels
+[PR Label Assigner/Assign PR Labels]   | ok 6 duplicate labels are deduplicated
+[PR Label Assigner/Assign PR Labels]   | ok 7 unmatched files produce no labels
+[PR Label Assigner/Assign PR Labels]   | ok 8 higher priority rules appear first in output
+[PR Label Assigner/Assign PR Labels]   | ok 9 missing config file produces error
+[PR Label Assigner/Assign PR Labels]   | ok 10 missing files list produces error
+[PR Label Assigner/Assign PR Labels]   | ok 11 root level wildcard matches files
+[PR Label Assigner/Assign PR Labels]   | ok 12 multiple rules matching same file produce multiple labels
+[PR Label Assigner/Assign PR Labels]   | ok 13 config file comments are ignored
+[PR Label Assigner/Assign PR Labels]   | ok 14 empty files list produces no labels
+[PR Label Assigner/Assign PR Labels]   | ok 15 output format is one label per line
+[PR Label Assigner/Assign PR Labels]   ✅  Success - Main Run bats tests [2.010101335s]
+[PR Label Assigner/Assign PR Labels] ⭐ Run Main Demo - docs-only PR
+[PR Label Assigner/Assign PR Labels]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/4] user= workdir=
+[PR Label Assigner/Assign PR Labels]   | === Test Case: docs-only PR ===
+[PR Label Assigner/Assign PR Labels]   | documentation
+[PR Label Assigner/Assign PR Labels]   ✅  Success - Main Demo - docs-only PR [285.254704ms]
+[PR Label Assigner/Assign PR Labels] ⭐ Run Main Demo - API PR
+[PR Label Assigner/Assign PR Labels]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/5] user= workdir=
+[PR Label Assigner/Assign PR Labels]   | === Test Case: API-only PR ===
+[PR Label Assigner/Assign PR Labels]   | api
+[PR Label Assigner/Assign PR Labels]   | backend
+[PR Label Assigner/Assign PR Labels]   ✅  Success - Main Demo - API PR [339.441573ms]
+[PR Label Assigner/Assign PR Labels] ⭐ Run Main Demo - mixed PR
+[PR Label Assigner/Assign PR Labels]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/6] user= workdir=
+[PR Label Assigner/Assign PR Labels]   | === Test Case: mixed PR (api + tests + docs + backend) ===
+[PR Label Assigner/Assign PR Labels]   | api
+[PR Label Assigner/Assign PR Labels]   | tests
+[PR Label Assigner/Assign PR Labels]   | documentation
+[PR Label Assigner/Assign PR Labels]   | backend
+[PR Label Assigner/Assign PR Labels]   ✅  Success - Main Demo - mixed PR [341.968272ms]
+[PR Label Assigner/Assign PR Labels] ⭐ Run Complete job
+[PR Label Assigner/Assign PR Labels] Cleaning up container for job Assign PR Labels
+[PR Label Assigner/Assign PR Labels]   ✅  Success - Complete job
+[PR Label Assigner/Assign PR Labels] 🏁  Job succeeded
+--- ACT OUTPUT END ---
+act exit code: 0
+PASS: act push exit code 0
+PASS: Job succeeded
+
+--- Test Case: docs-only PR ---
+Captured labels: documentation
+PASS: docs-only PR: label 'documentation' (exact)
+PASS: docs-only PR: no unexpected labels
+
+--- Test Case: API-only PR ---
+Captured labels: api
+backend
+PASS: API-only PR: label 'api' (exact)
+PASS: API-only PR: label 'backend' (exact)
+PASS: API-only PR: label 'documentation' absent
+PASS: API-only PR: label 'tests' absent
+
+--- Test Case: mixed PR ---
+Captured labels: api
+tests
+documentation
+backend
+PASS: mixed PR: label 'api' (exact)
+PASS: mixed PR: label 'tests' (exact)
+PASS: mixed PR: label 'documentation' (exact)
+PASS: mixed PR: label 'backend' (exact)
+Priority order check: api=1 tests=2 doc=3 backend=4
+PASS: mixed PR: priority order api before tests
+PASS: mixed PR: priority order tests before documentation
+PASS: mixed PR: priority order documentation before backend
+
+================================================================
+TEST SUMMARY
+================================================================
+PASSED: 26
+FAILED: 0
+
+ALL TESTS PASSED

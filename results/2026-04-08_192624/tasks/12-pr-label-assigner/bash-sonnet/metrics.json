@@ -1,0 +1,390 @@
+{
+  "task_id": "12-pr-label-assigner",
+  "task_name": "PR Label Assigner",
+  "task_category": "GitHub Actions / Triage",
+  "language_mode": "bash",
+  "language_chosen": "bash",
+  "language_breakdown": {
+    "bash": 100.0
+  },
+  "interpreter_versions": {},
+  "powershell_version": "",
+  "dotnet_version": "",
+  "model": "claude-sonnet-4-6",
+  "model_short": "sonnet",
+  "claude_code_version": "2.1.97",
+  "instructions_version": "v3",
+  "timestamp_start": "2026-04-09T02:14:14.528936+00:00",
+  "timestamp_end": "2026-04-09T02:21:01.856950+00:00",
+  "prompt_text": "You are completing a scripting task. You MUST use Bash as your implementation language.\n\nTASK: Given a list of changed file paths (simulating a PR's changed files), apply labels based on configurable path-to-label mapping rules (e.g., docs/** -> documentation, src/api/** -> api, *.test.* -> tests). Support glob patterns, multiple labels per file, and priority ordering when rules conflict. Output the final label set. Mock the file list for testing.\n\nREQUIREMENTS:\n1. Use red/green TDD methodology: write a failing test FIRST, then write the minimum code to make it pass, then refactor. Repeat for each piece of functionality.\n2. Create mocks and test fixtures as necessary for testability. Use bats-core (bats) as the testing framework.\n3. All tests must be runnable with `bats` and must pass at the end.\n4. Include clear comments explaining your approach.\n5. Handle errors gracefully with meaningful error messages.\n6. Use `#!/usr/bin/env bash` shebang. Scripts must pass `shellcheck` and `bash -n` syntax validation.\n\nCreate your solution in the current working directory. Start by writing your first failing test.\n\nGITHUB ACTIONS REQUIREMENT:\nCreate a GitHub Actions workflow file at .github/workflows/pr-label-assigner.yml that uses\nyour script in a real CI/CD pipeline. The workflow must:\n- Use appropriate trigger events (push, pull_request, schedule, workflow_dispatch, etc.)\n- Reference your script correctly\n- Pass actionlint validation (valid YAML, valid action references, correct syntax)\n- Include appropriate permissions, environment variables, and job dependencies\n- Actually run successfully when executed locally with `act` (nektos/act)\n\nDesign your workflow so its steps work in an isolated Docker container \u2014 use\n`actions/checkout@v4`, install dependencies your script needs, and run it.\nAvoid steps requiring external services or secrets without sensible defaults.\n\nWORKFLOW VALIDATION:\nRun `actionlint .github/workflows/pr-label-assigner.yml` and fix any errors. actionlint is\npre-installed. Iterate until it passes cleanly.\n\nALL TESTS MUST RUN THROUGH ACT:\nEvery single test case must execute through the GitHub Actions workflow via `act`.\nDo NOT test your script directly \u2014 all testing goes through the pipeline.\n\nStructure your workflow to accept test fixture data and produce verifiable output.\nYour test harness must:\n1. For each test case: set up a temp git repo with your project files + that case's\n   fixture data, run `act push --rm`, capture the output\n2. Save all act output to `act-result.txt` in the current working directory (append\n   each test case's output, clearly delimited)\n3. Assert that act exited with code 0 for each case\n4. Parse the act output and assert on EXACT EXPECTED VALUES \u2014 not just that output\n   appeared, but that it matches the known-good result for that test case's input.\n   For example: if your workflow bumps version 1.1.0 with a feat commit, assert\n   the output contains exactly \"1.2.0\", not just \"a version number\"\n5. Assert every job shows \"Job succeeded\"\n\nThe `act-result.txt` file MUST exist when done. It is a required artifact.\n`act` and Docker are pre-installed.\n\nWORKFLOW STRUCTURE TESTS (also required):\n- Parse the YAML and check expected structure (triggers, jobs, steps)\n- Verify the workflow references your script files correctly (paths exist)\n- Verify actionlint passes (assert exit code 0)\n",
+  "exit_code": 0,
+  "session": {
+    "session_id": "0fd443f8-b2ec-4386-a853-1bf20b01022d",
+    "stop_reason": "end_turn",
+    "terminal_reason": "completed",
+    "fast_mode_state": "off",
+    "service_tier": "standard",
+    "speed": "standard",
+    "inference_geo": "",
+    "context_window": 200000,
+    "max_output_tokens": 32000,
+    "permission_mode": "bypassPermissions",
+    "output_style": "default",
+    "tools_available_count": 24,
+    "mcp_servers": [],
+    "permission_denials": []
+  },
+  "model_usage_detail": {
+    "claude-sonnet-4-6": {
+      "inputTokens": 40,
+      "outputTokens": 24754,
+      "cacheReadInputTokens": 1249347,
+      "cacheCreationInputTokens": 39740,
+      "webSearchRequests": 0,
+      "costUSD": 0.8952590999999999,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "effort_level": null,
+  "timing": {
+    "grand_total_duration_ms": 407327,
+    "total_api_duration_ms": 366828,
+    "total_execution_duration_ms": 38173,
+    "num_turns": 39
+  },
+  "tokens": {
+    "input_tokens": 40,
+    "output_tokens": 24754,
+    "cache_read_tokens": 1249347,
+    "cache_creation_tokens": 39740,
+    "total_context_consumed": 1289127,
+    "compaction_count": 0
+  },
+  "cost": {
+    "total_cost_usd": 0.8952590999999999,
+    "assumed_input_cost_per_mtok": 3.0,
+    "assumed_output_cost_per_mtok": 15.0,
+    "assumed_cache_read_cost_per_mtok": 0.3,
+    "assumed_cache_write_cost_per_mtok": 3.75
+  },
+  "code_metrics": {
+    "total_lines": 921,
+    "total_tokens_estimate": 8046,
+    "file_count": 9,
+    "files": [
+      "act-result.txt",
+      "pr_label_assigner.sh",
+      "run_act_tests.sh",
+      "fixtures/changed_files_api.txt",
+      "fixtures/changed_files_docs.txt",
+      "fixtures/changed_files_mixed.txt",
+      "fixtures/rules.conf",
+      ".github/workflows/pr-label-assigner.yml",
+      "tests/pr_label_assigner.bats"
+    ]
+  },
+  "quality": {
+    "tests_pass": null,
+    "error_count": 5,
+    "error_details": [
+      "Exit code 1\n\nIn /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/bash-sonnet/pr_label_assigner.sh line 110:\n    if [[ \"$filepath\" == $pattern ]];",
+      "Exit code 1\n\nIn pr_label_assigner.sh line 103:\nmatch_glob() {\n             ^-- SC1009 (info): The mentioned syntax error was in this brace group.\n\n\nIn pr_label_assigner.sh line 110:\n    # shellcheck d",
+      "Exit code 1\n1..15\nok 1 script exists and is executable\nok 2 docs file matches documentation label\nok 3 src/api file matches api label\nok 4 test file matches tests label\nok 5 multiple files produce mul",
+      "Exit code 1\n\nIn /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/bash-sonnet/run_act_tests.sh line 19:\n> \"$ACT_RESULT\"\n^-------------^ SC2188 (wa",
+      "Exit code 1\n\nIn /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/bash-sonnet/run_act_tests.sh line 135:\ncleanup() { rm -rf \"$TMPDIR_REPO\"; }\n    "
+    ],
+    "actionlint_pass": true,
+    "actionlint_errors": 0,
+    "actionlint_results": [
+      {
+        "file": ".github/workflows/pr-label-assigner.yml",
+        "passed": true,
+        "errors": ""
+      }
+    ],
+    "act_result_txt_exists": true,
+    "act_result_txt_size": 7328,
+    "areas_of_difficulty": [],
+    "observations": ""
+  },
+  "tool_install": {
+    "tool_install_duration_ms": 0,
+    "tools_installed": [],
+    "install_commands_count": 0
+  },
+  "tool_use_timing": {
+    "total_tool_uses": 38,
+    "total_tool_duration_ms": 39208,
+    "bash_tool_uses": 24,
+    "bash_total_ms": 37372,
+    "slowest_tool_uses": [
+      {
+        "tool_name": "Bash",
+        "command": "./run_act_tests.sh 2>&1; echo \"Exit: $?\"",
+        "duration_ms": 11445,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "act push --rm --no-cache-server -q 2>&1 | tail -30; echo \"Exit: $?\"",
+        "duration_ms": 9670,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "act push --rm --no-cache-server 2>&1 | grep -E \"(documentation|api|backend|tests|Job succeeded|Demo)\" | head -30; echo \"Exit: $?\"",
+        "duration_ms": 9165,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "echo \"=== bats tests ===\" && bats tests/pr_label_assigner.bats && echo \"\" && echo \"=== shellcheck ===\" && shellcheck pr_label_assigner.sh run_act_tests.sh && echo \"shellcheck PASSED\" && echo \"\" && ech",
+        "duration_ms": 1534,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "shellcheck pr_label_assigner.sh && bats tests/pr_label_assigner.bats 2>&1",
+        "duration_ms": 1079,
+        "is_error": false,
+        "is_install": false
+      }
+    ]
+  },
+  "hooks": {
+    "hook_fires": 14,
+    "hook_errors_caught": 3,
+    "hook_failures": 0,
+    "hook_events": [
+      {
+        "subtype": "hook_started",
+        "hook_id": "3f7051a9-f117-432d-836f-5e090b6da28f",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "3f7051a9-f117-432d-836f-5e090b6da28f",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "ab0ee16a-06be-4545-af62-be5968dbc1b9",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "ab0ee16a-06be-4545-af62-be5968dbc1b9",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\n/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/bash-sonnet/pr_label_assigner.sh:110:26: warning: Quote the right-hand side of == in [[ ]] to prevent glob matching. [SC2053]\"}",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "bf7fee7b-c336-43a6-9f54-314e33dcb914",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "bf7fee7b-c336-43a6-9f54-314e33dcb914",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\n/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/bash-sonnet/pr_label_assigner.sh:110:5: error: Couldn't parse this shellcheck directive. Fix to allow more checks. [SC1073]\\n/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/bash-sonnet/pr_label_assigner.sh:110:34: error: ",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "04b9820c-20d7-4db9-b9e0-e7565115338f",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "04b9820c-20d7-4db9-b9e0-e7565115338f",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "842ab9d0-15fe-4b52-a2c4-49c50ddf5037",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "842ab9d0-15fe-4b52-a2c4-49c50ddf5037",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "130664d0-e7d9-4411-8a2b-763aeae3b616",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "130664d0-e7d9-4411-8a2b-763aeae3b616",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "e9445dbf-e6f1-41cf-adac-44c456f10d43",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "e9445dbf-e6f1-41cf-adac-44c456f10d43",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "766b7f43-72e7-43b6-b490-f0c960bd4454",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "766b7f43-72e7-43b6-b490-f0c960bd4454",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "d6abdec9-d394-49fc-b76e-5a9abb52eb4e",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "d6abdec9-d394-49fc-b76e-5a9abb52eb4e",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "6cf880ab-022d-4873-956f-58e99f54dc80",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "6cf880ab-022d-4873-956f-58e99f54dc80",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "909e65de-b9fc-4992-b622-94fe08025f01",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "909e65de-b9fc-4992-b622-94fe08025f01",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\n/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/bash-sonnet/run_act_tests.sh:19:1: warning: This redirection doesn't have a command. Move to its command (or use 'true' as no-op). [SC2188]\"}",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "2bdf7309-31ee-4d0f-8a7a-7175903ffa15",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "2bdf7309-31ee-4d0f-8a7a-7175903ffa15",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "7398acb8-9c75-4977-ae37-d1ca0e0d1492",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "7398acb8-9c75-4977-ae37-d1ca0e0d1492",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "b652a085-6dc3-4347-82da-22c966524b82",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "b652a085-6dc3-4347-82da-22c966524b82",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  }
+}
