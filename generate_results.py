@@ -592,8 +592,9 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
             lines.append(_fmt_cmp(r))
         lines.append("")
         lines.extend(_emit_sorted_variants(cmp_hdr, cmp_sep, cmp_rows, [
-            ("Sorted by avg cost (most expensive first)", "avg_cost", True),
-            ("Sorted by avg cost net of traps (most expensive first)", "avg_cost_net", True),
+            ("Sorted by avg cost (cheapest first)", "avg_cost", False),
+            ("Sorted by avg cost net of traps (cheapest first)", "avg_cost_net", False),
+            ("Sorted by avg duration (fastest first)", "avg_dur", False),
             ("Sorted by avg duration net of traps (fastest first)", "avg_dur_net", False),
             ("Sorted by avg errors (fewest first)", "avg_errors", False),
             ("Sorted by avg lines (fewest first)", "avg_lines", False),
@@ -612,13 +613,14 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     lines.append("")
     lines.append("Each hook-caught error avoids one test run that would otherwise have been needed to discover it.")
     lines.append("Every hook fire (hit or miss) costs execution time for the syntax/type checker.")
+    lines.append("Test Run Time is a lower bound (from the 5 slowest tool calls per run).")
     lines.append("")
     hook_hdr = ("| Mode | Model | Fires | Caught | Rate "
                 "| Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time "
-                "| Test Run Time | % of Test Time |")
+                "| Test Run Time | % of Test Time Saved |")
     hook_sep = ("|------|-------|-------|--------|------"
                 "|------------|-----------|----------|-----------|-----------|-----------|"
-                "---------------|----------------|")
+                "---------------|----------------------|")
     hook_rows = []
     for mode in modes_seen:
         for model in models_seen:

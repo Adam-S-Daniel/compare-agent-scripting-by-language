@@ -1,6 +1,6 @@
 # compare-agent-scripting-by-language
 
-Benchmarks how well agents perform scripting tasks when asked to use various languages (and when not asked to use a particular language). **[Latest results](results/2026-04-08_192624/results.md)** | [All results](#benchmark-runs)
+Benchmarks how well agents perform scripting tasks when asked to use various languages (and when not asked to use a particular language). **[Latest results](results/2026-04-09_152435/results.md)** | [All results](#benchmark-runs)
 
 ## Benchmark Versions
 
@@ -48,11 +48,13 @@ Each benchmark version defines a set of scripting tasks, language modes, and mod
 <!-- BEGIN BENCHMARK RUNS -->
 | Run | Version | Runs | Cost | Results |
 |-----|---------|------|------|---------|
-| **2026-04-08_192624** (latest) | [v3](benchmark-instructions-v3.md) | 64/64 | $85.10 | [results.md](results/2026-04-08_192624/results.md) |
+| **2026-04-09_152435** (latest) | ? | 10/? | — | [results.md](results/2026-04-09_152435/results.md) |
+| 2026-04-08_192624 | [v3](benchmark-instructions-v3.md) | 64/64 | $85.10 | [results.md](results/2026-04-08_192624/results.md) |
 | 2026-04-08_180614 | ? | 2/? | — | [results.md](results/2026-04-08_180614/results.md) |
 | 2026-04-08_180255 | ? | 0/? | — | [results.md](results/2026-04-08_180255/results.md) |
 | 2026-04-08_174516 | ? | 1/? | — | [results.md](results/2026-04-08_174516/results.md) |
 | 2026-04-08_170920 | ? | 4/? | — | [results.md](results/2026-04-08_170920/results.md) |
+| 2026-04-08_170824 | ? | 0/? | — | — |
 | 2026-04-08_161536 | ? | 7/? | — | [results.md](results/2026-04-08_161536/results.md) |
 | 2026-04-08_114024 | ? | 3/? | — | [results.md](results/2026-04-08_114024/results.md) |
 | 2026-04-08_113116 | ? | 1/? | — | [results.md](results/2026-04-08_113116/results.md) |
