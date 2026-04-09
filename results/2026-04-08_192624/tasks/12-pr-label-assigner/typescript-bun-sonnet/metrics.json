@@ -1,0 +1,357 @@
+{
+  "task_id": "12-pr-label-assigner",
+  "task_name": "PR Label Assigner",
+  "task_category": "GitHub Actions / Triage",
+  "language_mode": "typescript-bun",
+  "language_chosen": "typescript",
+  "language_breakdown": {
+    "typescript": 100.0
+  },
+  "interpreter_versions": {},
+  "powershell_version": "",
+  "dotnet_version": "",
+  "model": "claude-sonnet-4-6",
+  "model_short": "sonnet",
+  "claude_code_version": "2.1.97",
+  "instructions_version": "v3",
+  "timestamp_start": "2026-04-09T02:21:01.978924+00:00",
+  "timestamp_end": "2026-04-09T02:34:42.440724+00:00",
+  "prompt_text": "You are completing a scripting task. You MUST use TypeScript with Bun as your implementation language and runtime.\n\nTASK: Given a list of changed file paths (simulating a PR's changed files), apply labels based on configurable path-to-label mapping rules (e.g., docs/** -> documentation, src/api/** -> api, *.test.* -> tests). Support glob patterns, multiple labels per file, and priority ordering when rules conflict. Output the final label set. Mock the file list for testing.\n\nREQUIREMENTS:\n1. Use red/green TDD methodology: write a failing test FIRST, then write the minimum code to make it pass, then refactor. Repeat for each piece of functionality.\n2. Create mocks and test fixtures as necessary for testability. Use Bun's built-in test runner (`bun test`).\n3. All tests must be runnable with `bun test` and must pass at the end.\n4. Include clear comments explaining your approach.\n5. Handle errors gracefully with meaningful error messages.\n6. Use TypeScript features: explicit types, interfaces, and type annotations. Run scripts with `bun run <file>.ts`.\n\nCreate your solution in the current working directory. Start by writing your first failing test.\n\nGITHUB ACTIONS REQUIREMENT:\nCreate a GitHub Actions workflow file at .github/workflows/pr-label-assigner.yml that uses\nyour script in a real CI/CD pipeline. The workflow must:\n- Use appropriate trigger events (push, pull_request, schedule, workflow_dispatch, etc.)\n- Reference your script correctly\n- Pass actionlint validation (valid YAML, valid action references, correct syntax)\n- Include appropriate permissions, environment variables, and job dependencies\n- Actually run successfully when executed locally with `act` (nektos/act)\n\nDesign your workflow so its steps work in an isolated Docker container \u2014 use\n`actions/checkout@v4`, install dependencies your script needs, and run it.\nAvoid steps requiring external services or secrets without sensible defaults.\n\nWORKFLOW VALIDATION:\nRun `actionlint .github/workflows/pr-label-assigner.yml` and fix any errors. actionlint is\npre-installed. Iterate until it passes cleanly.\n\nALL TESTS MUST RUN THROUGH ACT:\nEvery single test case must execute through the GitHub Actions workflow via `act`.\nDo NOT test your script directly \u2014 all testing goes through the pipeline.\n\nStructure your workflow to accept test fixture data and produce verifiable output.\nYour test harness must:\n1. For each test case: set up a temp git repo with your project files + that case's\n   fixture data, run `act push --rm`, capture the output\n2. Save all act output to `act-result.txt` in the current working directory (append\n   each test case's output, clearly delimited)\n3. Assert that act exited with code 0 for each case\n4. Parse the act output and assert on EXACT EXPECTED VALUES \u2014 not just that output\n   appeared, but that it matches the known-good result for that test case's input.\n   For example: if your workflow bumps version 1.1.0 with a feat commit, assert\n   the output contains exactly \"1.2.0\", not just \"a version number\"\n5. Assert every job shows \"Job succeeded\"\n\nThe `act-result.txt` file MUST exist when done. It is a required artifact.\n`act` and Docker are pre-installed.\n\nWORKFLOW STRUCTURE TESTS (also required):\n- Parse the YAML and check expected structure (triggers, jobs, steps)\n- Verify the workflow references your script files correctly (paths exist)\n- Verify actionlint passes (assert exit code 0)\n",
+  "exit_code": 0,
+  "session": {
+    "session_id": "9c5a6765-6b0e-4f21-85c7-c7bc19d98fc9",
+    "stop_reason": "end_turn",
+    "terminal_reason": "completed",
+    "fast_mode_state": "off",
+    "service_tier": "standard",
+    "speed": "standard",
+    "inference_geo": "",
+    "context_window": 200000,
+    "max_output_tokens": 32000,
+    "permission_mode": "bypassPermissions",
+    "output_style": "default",
+    "tools_available_count": 24,
+    "mcp_servers": [],
+    "permission_denials": []
+  },
+  "model_usage_detail": {
+    "claude-sonnet-4-6": {
+      "inputTokens": 49,
+      "outputTokens": 32908,
+      "cacheReadInputTokens": 2104611,
+      "cacheCreationInputTokens": 61038,
+      "webSearchRequests": 0,
+      "costUSD": 1.3540428,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "effort_level": null,
+  "timing": {
+    "grand_total_duration_ms": 820461,
+    "total_api_duration_ms": 507106,
+    "total_execution_duration_ms": 312194,
+    "num_turns": 46
+  },
+  "tokens": {
+    "input_tokens": 49,
+    "output_tokens": 32908,
+    "cache_read_tokens": 2104611,
+    "cache_creation_tokens": 61038,
+    "total_context_consumed": 2165698,
+    "compaction_count": 0
+  },
+  "cost": {
+    "total_cost_usd": 1.3540428,
+    "assumed_input_cost_per_mtok": 3.0,
+    "assumed_output_cost_per_mtok": 15.0,
+    "assumed_cache_read_cost_per_mtok": 0.3,
+    "assumed_cache_write_cost_per_mtok": 3.75
+  },
+  "code_metrics": {
+    "total_lines": 2944,
+    "total_tokens_estimate": 52439,
+    "file_count": 7,
+    "files": [
+      "act-result.txt",
+      "package.json",
+      "run-act-tests.ts",
+      "src/index.ts",
+      "src/labeler.test.ts",
+      "src/labeler.ts",
+      ".github/workflows/pr-label-assigner.yml"
+    ]
+  },
+  "quality": {
+    "tests_pass": null,
+    "error_count": 6,
+    "error_details": [
+      "Exit code 1\nbun test v1.3.11 (af24e281)\n\nsrc/labeler.test.ts:\n24 | describe(\"assignLabels\", () => {\n25 |   // RED: Basic documentation label\n26 |   it(\"assigns 'documentation' label for docs/** files\"",
+      "Exit code 1\nbun test v1.3.11 (af24e281)\n\nsrc/labeler.test.ts:\n24 | describe(\"assignLabels\", () => {\n25 |   // RED: Basic documentation label\n26 |   it(\"assigns 'documentation' label for docs/** files\"",
+      "Exit code 1\nbun test v1.3.11 (af24e281)\n\nsrc/labeler.test.ts:\n\n# Unhandled error between tests\n-------------------------------\n63 |  *      - Leading .* / \u2192 (?:.*/)? (zero or more directory prefix)\n  ",
+      "<tool_use_error>String to replace not found in file.\nString:    *      - Leading .* / \u2192 (?:.*/)? (zero or more directory prefix)\n   *      - /.*/  in middle \u2192 (?:/.*/|/) (allow zero intermediate dirs)",
+      "Exit code 1\nbun test v1.3.11 (af24e281)\n\nsrc/labeler.test.ts:\n\n# Unhandled error between tests\n-------------------------------\n63 |  *      - Leading .*/ becomes (?:.*/)? (zero or more directory prefi",
+      "Exit code 1\nStarting PR Label Assigner Act Test Suite\nWorking directory: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/typescript-bun-sonnet\nT"
+    ],
+    "actionlint_pass": true,
+    "actionlint_errors": 0,
+    "actionlint_results": [
+      {
+        "file": ".github/workflows/pr-label-assigner.yml",
+        "passed": true,
+        "errors": ""
+      }
+    ],
+    "act_result_txt_exists": true,
+    "act_result_txt_size": 186357,
+    "areas_of_difficulty": [],
+    "observations": ""
+  },
+  "tool_install": {
+    "tool_install_duration_ms": 0,
+    "tools_installed": [],
+    "install_commands_count": 0
+  },
+  "tool_use_timing": {
+    "total_tool_uses": 45,
+    "total_tool_duration_ms": 313567,
+    "bash_tool_uses": 22,
+    "bash_total_ms": 287418,
+    "slowest_tool_uses": [
+      {
+        "tool_name": "Bash",
+        "command": "bun run run-act-tests.ts 2>&1 | grep -E \"^\\[|^OVERALL|^Structure|^Act integration|^Failed|^=====|TEST CASE:|--- Assert\"",
+        "duration_ms": 128682,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun run run-act-tests.ts 2>&1",
+        "duration_ms": 127241,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "act workflow_dispatch --rm -W .github/workflows/pr-label-assigner.yml --input changed_files=\"docs/getting-started.md\" --input test_case=\"docs-only\" 2>&1 | tail -40",
+        "duration_ms": 14889,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "act workflow_dispatch --rm -W .github/workflows/pr-label-assigner.yml --input changed_files=\"src/api/users.test.ts,src/components/Button.spec.tsx\" --input test_case=\"test-files\" 2>&1 | grep -E \"LABELS",
+        "duration_ms": 14581,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 5331,
+        "is_error": false,
+        "is_install": false
+      }
+    ]
+  },
+  "hooks": {
+    "hook_fires": 12,
+    "hook_errors_caught": 7,
+    "hook_failures": 0,
+    "hook_events": [
+      {
+        "subtype": "hook_started",
+        "hook_id": "836d57a3-e37b-4496-b9dd-68bcc4ae895e",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "836d57a3-e37b-4496-b9dd-68bcc4ae895e",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "aeb88882-3c06-48ad-9c55-5f5c7c831a97",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "aeb88882-3c06-48ad-9c55-5f5c7c831a97",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\nsrc/labeler.test.ts(6,38): error TS2307: Cannot find module 'bun:test' or its corresponding type declarations.\\nsrc/labeler.test.ts(7,64): error TS2307: Cannot find module './labeler' or its corresponding type declarations.\\nsrc/labeler.test.ts(75,44): error TS7006: Parameter 'l' implicitly has an 'any' type.\\nsrc/labeler.test.ts(111,49): error TS7006: Parameter 'r' implicitly h",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "4214b3a9-2825-459a-8e41-ed2a54cf240e",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "4214b3a9-2825-459a-8e41-ed2a54cf240e",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "37ef9611-f9f5-4a51-a8ac-59a9b0af0dd2",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "37ef9611-f9f5-4a51-a8ac-59a9b0af0dd2",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "b37879a8-5fc4-410a-b860-e1df56590b4e",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "b37879a8-5fc4-410a-b860-e1df56590b4e",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\nsrc/labeler.ts(63,32): error TS1128: Declaration or statement expected.\\nsrc/labeler.ts(63,33): error TS1128: Declaration or statement expected.\\nsrc/labeler.ts(63,41): error TS1005: ')' expected.\\nsrc/labeler.ts(63,44): error TS1434: Unexpected keyword or identifier.\\nsrc/labeler.ts(63,49): error TS1434: Unexpected keyword or identifier.\\nsrc/labeler.ts(63,59): error TS1434: Un",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "2630bc84-b603-4094-bcf9-88421cf23633",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "2630bc84-b603-4094-bcf9-88421cf23633",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\nsrc/labeler.ts(63,32): error TS1135: Argument expression expected.\\nsrc/labeler.ts(63,33): error TS1135: Argument expression expected.\\nsrc/labeler.ts(63,34): error TS1135: Argument expression expected.\\nsrc/labeler.ts(63,35): error TS1109: Expression expected.\\nsrc/labeler.ts(63,36): error TS1161: Unterminated regular expression literal.\\nsrc/labeler.ts(63,46): error TS1005: ')",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "8e68506f-196b-455d-a085-9aa02e404b70",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "8e68506f-196b-455d-a085-9aa02e404b70",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "8e4b96d9-5303-4989-a0ef-2bcfd5c0752d",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "8e4b96d9-5303-4989-a0ef-2bcfd5c0752d",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\nsrc/index.ts(14,42): error TS2591: Cannot find name 'fs'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.\\nsrc/index.ts(42,41): error TS2366: Function lacks ending return statement and return type does not include 'undefined'.\\nsrc/index.ts(47,5): error TS2591: Cannot find name 'process",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "8b40e5ce-1db1-4f5a-9362-de916fc55170",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "8b40e5ce-1db1-4f5a-9362-de916fc55170",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "74229317-5823-4df6-a2f7-11e89edfc7e6",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "74229317-5823-4df6-a2f7-11e89edfc7e6",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\nrun-act-tests.ts(12,27): error TS2591: Cannot find name 'child_process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.\\nrun-act-tests.ts(13,71): error TS2591: Cannot find name 'fs'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "5b1a6d7a-e035-414a-aa35-def20ef69260",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "5b1a6d7a-e035-414a-aa35-def20ef69260",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\nrun-act-tests.ts(13,27): error TS2591: Cannot find name 'child_process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.\\nrun-act-tests.ts(14,85): error TS2591: Cannot find name 'fs'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "70fc3a64-e285-4d03-8229-02635b03d89c",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "70fc3a64-e285-4d03-8229-02635b03d89c",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\nrun-act-tests.ts(13,27): error TS2591: Cannot find name 'child_process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.\\nrun-act-tests.ts(14,85): error TS2591: Cannot find name 'fs'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node",
+        "stderr": ""
+      }
+    ]
+  }
+}
