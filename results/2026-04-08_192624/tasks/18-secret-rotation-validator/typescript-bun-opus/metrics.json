@@ -1,0 +1,383 @@
+{
+  "task_id": "18-secret-rotation-validator",
+  "task_name": "Secret Rotation Validator",
+  "task_category": "GitHub Actions / Security",
+  "language_mode": "typescript-bun",
+  "language_chosen": "typescript",
+  "language_breakdown": {
+    "typescript": 100.0
+  },
+  "interpreter_versions": {},
+  "powershell_version": "",
+  "dotnet_version": "",
+  "model": "claude-opus-4-6",
+  "model_short": "opus",
+  "claude_code_version": "2.1.97",
+  "instructions_version": "v3",
+  "timestamp_start": "2026-04-09T10:38:47.129773+00:00",
+  "timestamp_end": "2026-04-09T10:44:11.858457+00:00",
+  "prompt_text": "You are completing a scripting task. You MUST use TypeScript with Bun as your implementation language and runtime.\n\nTASK: Given a configuration of secrets with metadata (name, last-rotated date, rotation policy in days, required-by services \u2014 all mock data), identify secrets that are expired or expiring within a configurable warning window, generate a rotation report, and output notifications grouped by urgency (expired, warning, ok). Support multiple output formats (markdown table, JSON).\n\nREQUIREMENTS:\n1. Use red/green TDD methodology: write a failing test FIRST, then write the minimum code to make it pass, then refactor. Repeat for each piece of functionality.\n2. Create mocks and test fixtures as necessary for testability. Use Bun's built-in test runner (`bun test`).\n3. All tests must be runnable with `bun test` and must pass at the end.\n4. Include clear comments explaining your approach.\n5. Handle errors gracefully with meaningful error messages.\n6. Use TypeScript features: explicit types, interfaces, and type annotations. Run scripts with `bun run <file>.ts`.\n\nCreate your solution in the current working directory. Start by writing your first failing test.\n\nGITHUB ACTIONS REQUIREMENT:\nCreate a GitHub Actions workflow file at .github/workflows/secret-rotation-validator.yml that uses\nyour script in a real CI/CD pipeline. The workflow must:\n- Use appropriate trigger events (push, pull_request, schedule, workflow_dispatch, etc.)\n- Reference your script correctly\n- Pass actionlint validation (valid YAML, valid action references, correct syntax)\n- Include appropriate permissions, environment variables, and job dependencies\n- Actually run successfully when executed locally with `act` (nektos/act)\n\nDesign your workflow so its steps work in an isolated Docker container \u2014 use\n`actions/checkout@v4`, install dependencies your script needs, and run it.\nAvoid steps requiring external services or secrets without sensible defaults.\n\nWORKFLOW VALIDATION:\nRun `actionlint .github/workflows/secret-rotation-validator.yml` and fix any errors. actionlint is\npre-installed. Iterate until it passes cleanly.\n\nALL TESTS MUST RUN THROUGH ACT:\nEvery single test case must execute through the GitHub Actions workflow via `act`.\nDo NOT test your script directly \u2014 all testing goes through the pipeline.\n\nStructure your workflow to accept test fixture data and produce verifiable output.\nYour test harness must:\n1. For each test case: set up a temp git repo with your project files + that case's\n   fixture data, run `act push --rm`, capture the output\n2. Save all act output to `act-result.txt` in the current working directory (append\n   each test case's output, clearly delimited)\n3. Assert that act exited with code 0 for each case\n4. Parse the act output and assert on EXACT EXPECTED VALUES \u2014 not just that output\n   appeared, but that it matches the known-good result for that test case's input.\n   For example: if your workflow bumps version 1.1.0 with a feat commit, assert\n   the output contains exactly \"1.2.0\", not just \"a version number\"\n5. Assert every job shows \"Job succeeded\"\n\nThe `act-result.txt` file MUST exist when done. It is a required artifact.\n`act` and Docker are pre-installed.\n\nWORKFLOW STRUCTURE TESTS (also required):\n- Parse the YAML and check expected structure (triggers, jobs, steps)\n- Verify the workflow references your script files correctly (paths exist)\n- Verify actionlint passes (assert exit code 0)\n",
+  "exit_code": 0,
+  "session": {
+    "session_id": "7a70821e-d87a-407d-8cf8-bd451a0e28ff",
+    "stop_reason": "end_turn",
+    "terminal_reason": "completed",
+    "fast_mode_state": "off",
+    "service_tier": "standard",
+    "speed": "standard",
+    "inference_geo": "",
+    "context_window": 200000,
+    "max_output_tokens": 64000,
+    "permission_mode": "bypassPermissions",
+    "output_style": "default",
+    "tools_available_count": 24,
+    "mcp_servers": [],
+    "permission_denials": []
+  },
+  "model_usage_detail": {
+    "claude-opus-4-6": {
+      "inputTokens": 41,
+      "outputTokens": 15486,
+      "cacheReadInputTokens": 1118038,
+      "cacheCreationInputTokens": 36572,
+      "webSearchRequests": 0,
+      "costUSD": 1.174949,
+      "contextWindow": 200000,
+      "maxOutputTokens": 64000
+    }
+  },
+  "effort_level": null,
+  "timing": {
+    "grand_total_duration_ms": 324728,
+    "total_api_duration_ms": 251070,
+    "total_execution_duration_ms": 72246,
+    "num_turns": 44
+  },
+  "tokens": {
+    "input_tokens": 41,
+    "output_tokens": 15486,
+    "cache_read_tokens": 1118038,
+    "cache_creation_tokens": 36572,
+    "total_context_consumed": 1154651,
+    "compaction_count": 0
+  },
+  "cost": {
+    "total_cost_usd": 1.174949,
+    "assumed_input_cost_per_mtok": 15.0,
+    "assumed_output_cost_per_mtok": 75.0,
+    "assumed_cache_read_cost_per_mtok": 1.5,
+    "assumed_cache_write_cost_per_mtok": 18.75
+  },
+  "code_metrics": {
+    "total_lines": 1089,
+    "total_tokens_estimate": 14353,
+    "file_count": 13,
+    "files": [
+      "act-result.txt",
+      "bun.lock",
+      "formatter.ts",
+      "main.ts",
+      "package.json",
+      "tsconfig.json",
+      "types.ts",
+      "validator.test.ts",
+      "validator.ts",
+      "fixtures/all-expired.json",
+      "fixtures/all-ok.json",
+      "fixtures/mixed-urgency.json",
+      ".github/workflows/secret-rotation-validator.yml"
+    ]
+  },
+  "quality": {
+    "tests_pass": null,
+    "error_count": 5,
+    "error_details": [
+      "Exit code 2\n{\n  \"generatedAt\": \"2026-04-09\",\n  \"warningWindowDays\": 14,\n  \"secrets\": [\n    {\n      \"name\": \"DB_PASSWORD\",\n      \"urgency\": \"expired\",\n      \"daysSinceRotation\": 98,\n      \"daysUntilExp",
+      "Exit code 2\n# Secret Rotation Report\n\n**Generated:** 2026-04-09  \n**Warning window:** 14 days  \n**Total secrets:** 3  \n**Expired:** 1 | **Warning:** 1 | **OK:** 1\n\n| Name | Status | Days Since Rotatio",
+      "<tool_use_error>Cancelled: parallel tool call Bash(bun run main.ts --config fixtures/mixed-\u2026) errored</tool_use_error>",
+      "<tool_use_error>Cancelled: parallel tool call Bash(bun run main.ts --config fixtures/mixed-\u2026) errored</tool_use_error>",
+      "Exit code 1\n.github/workflows/secret-rotation-validator.yml:35:25: property \"fixture_file\" is not defined in object type {output_format: string; reference_date: string; warning_days: string} [expressi"
+    ],
+    "actionlint_pass": true,
+    "actionlint_errors": 0,
+    "actionlint_results": [
+      {
+        "file": ".github/workflows/secret-rotation-validator.yml",
+        "passed": true,
+        "errors": ""
+      }
+    ],
+    "act_result_txt_exists": true,
+    "act_result_txt_size": 33464,
+    "areas_of_difficulty": [],
+    "observations": ""
+  },
+  "tool_install": {
+    "tool_install_duration_ms": 0,
+    "tools_installed": [],
+    "install_commands_count": 0
+  },
+  "tool_use_timing": {
+    "total_tool_uses": 43,
+    "total_tool_duration_ms": 75310,
+    "bash_tool_uses": 21,
+    "bash_total_ms": 71400,
+    "slowest_tool_uses": [
+      {
+        "tool_name": "Bash",
+        "command": "bun test 2>&1",
+        "duration_ms": 44082,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /tmp/act-test-sr && act push --rm -W .github/workflows/secret-rotation-validator.yml 2>&1 | tail -30",
+        "duration_ms": 14289,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /tmp/act-test-sr && act push --rm -W .github/workflows/secret-rotation-validator.yml 2>&1 | head -80",
+        "duration_ms": 11034,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 927,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 464,
+        "is_error": false,
+        "is_install": false
+      }
+    ],
+    "install_duration_ms": 0,
+    "test_duration_ms": 44082,
+    "act_duration_ms": 25323
+  },
+  "hooks": {
+    "hook_fires": 13,
+    "hook_errors_caught": 6,
+    "hook_failures": 0,
+    "hook_events": [
+      {
+        "subtype": "hook_started",
+        "hook_id": "a17e5b9d-7d65-4635-853b-5ee1d161584c",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "a17e5b9d-7d65-4635-853b-5ee1d161584c",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "6ade34cf-12d3-4fff-b4a0-9058123d3c02",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "6ade34cf-12d3-4fff-b4a0-9058123d3c02",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "e071b7e4-6faf-4eb5-ae7d-9e1eb48f9d6e",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "e071b7e4-6faf-4eb5-ae7d-9e1eb48f9d6e",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\nerror TS5112: tsconfig.json is present but will not be loaded if files are specified on commandline. Use '--ignoreConfig' to skip this error.\"}",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "9bf2fd16-3cc8-4eb8-a995-cd188913b2c6",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "9bf2fd16-3cc8-4eb8-a995-cd188913b2c6",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\nerror TS5112: tsconfig.json is present but will not be loaded if files are specified on commandline. Use '--ignoreConfig' to skip this error.\"}",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "2bcb58a9-c218-4acf-bd79-d9b93b99c82b",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "2bcb58a9-c218-4acf-bd79-d9b93b99c82b",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\nerror TS5112: tsconfig.json is present but will not be loaded if files are specified on commandline. Use '--ignoreConfig' to skip this error.\"}",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "65642590-3886-453d-83df-7e4c23021151",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "65642590-3886-453d-83df-7e4c23021151",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\nerror TS5112: tsconfig.json is present but will not be loaded if files are specified on commandline. Use '--ignoreConfig' to skip this error.\"}",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "a9849da7-f438-43a1-b574-808b3eefb247",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "a9849da7-f438-43a1-b574-808b3eefb247",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "ad8930bc-bd30-4a1c-b0eb-bc21b008425e",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "ad8930bc-bd30-4a1c-b0eb-bc21b008425e",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "a25bf901-8aea-4f58-923d-cbd2e6387c7e",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "a25bf901-8aea-4f58-923d-cbd2e6387c7e",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "6e323fcc-dd23-4c95-9a18-21481f156674",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "6e323fcc-dd23-4c95-9a18-21481f156674",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "3910ad37-0480-4cce-93c1-f7d297ba6f16",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "3910ad37-0480-4cce-93c1-f7d297ba6f16",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\n.github/workflows/secret-rotation-validator.yml:35:25: property \\\"fixture_file\\\" is not defined in object type {output_format: string; reference_date: string; warning_days: string} [expression]\\n   |\\n35 |       FIXTURE_FILE: ${{ github.event.inputs.fixture_file || 'fixtures/mixed-urgency.json' }}\\n   |                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\"}",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "8fa64f13-4d97-4a73-8f45-38e336ce67df",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "8fa64f13-4d97-4a73-8f45-38e336ce67df",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "dce37414-0d69-4c35-ba22-4b112cb21768",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "dce37414-0d69-4c35-ba22-4b112cb21768",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\nerror TS5112: tsconfig.json is present but will not be loaded if files are specified on commandline. Use '--ignoreConfig' to skip this error.\"}",
+        "stderr": ""
+      }
+    ]
+  },
+  "run_success": true,
+  "failure_reason": null
+}

@@ -1,0 +1,140 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Run without writing changes (print new version only)"
+        required: false
+        default: "false"
+
+permissions:
+  contents: write
+
+jobs:
+  bump-version:
+    name: Determine and bump semantic version
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # full history needed to read commit messages
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      - name: Create version file if missing
+        run: |
+          if [ ! -f version.txt ] && [ ! -f package.json ]; then
+            echo "0.1.0" > version.txt
+            echo "Initialised version.txt with 0.1.0"
+          fi
+
+      - name: Collect recent commit messages
+        id: commits
+        run: |
+          # Gather commits since the last tag, or last 20 commits as a fallback
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -n "$LAST_TAG" ]; then
+            RANGE="${LAST_TAG}..HEAD"
+          else
+            RANGE="HEAD~20..HEAD"
+          fi
+          # Write each commit message (subject + body) separated by NUL
+          git log "$RANGE" --format="%s%n%n%b%x00" > /tmp/commits.txt
+          echo "Collected commits from range: $RANGE"
+          cat /tmp/commits.txt
+
+      - name: Run semantic version bumper
+        id: version_bump
+        run: |
+          # Determine the version file to use
+          if [ -f package.json ]; then
+            VERSION_FILE="package.json"
+          else
+            VERSION_FILE="version.txt"
+          fi
+
+          DRY_RUN="${{ github.event.inputs.dry_run }}"
+
+          if [ "$DRY_RUN" = "true" ]; then
+            # Dry-run: work on a temp copy, only print result
+            TMP_FILE=$(mktemp)
+            cp "$VERSION_FILE" "$TMP_FILE"
+            NEW_VERSION=$(python3 version_bumper.py "$TMP_FILE" < /tmp/commits.txt)
+            rm -f "$TMP_FILE"
+            echo "Dry run — new version would be: $NEW_VERSION"
+          else
+            NEW_VERSION=$(python3 version_bumper.py "$VERSION_FILE" CHANGELOG.md < /tmp/commits.txt)
+          fi
+
+          echo "new_version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+          echo "New version: $NEW_VERSION"
+
+      - name: Show changelog entry
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: |
+          if [ -f CHANGELOG.md ]; then
+            echo "=== CHANGELOG.md (first 40 lines) ==="
+            head -40 CHANGELOG.md
+          fi
+
+      - name: Commit updated version files
+        if: >-
+          github.event_name == 'push' &&
+          github.event.inputs.dry_run != 'true'
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A version.txt package.json CHANGELOG.md 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "No version changes to commit."
+          else
+            git commit -m "chore: bump version to ${{ steps.version_bump.outputs.new_version }} [skip ci]"
+            git push
+          fi
+
+  test:
+    name: Run test suite
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install test dependencies
+        run: pip install pytest pyyaml
+
+      - name: Install actionlint
+        run: |
+          # Download actionlint binary
+          curl -sSfL \
+            https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash \
+            | bash -s -- latest /usr/local/bin || \
+          (echo "curl install failed, trying apt" && \
+           apt-get install -y actionlint 2>/dev/null || \
+           go install github.com/rhysd/actionlint/cmd/actionlint@latest 2>/dev/null || \
+           echo "actionlint not available; workflow lint test will be skipped")
+
+      - name: Run tests
+        run: python3 -m pytest test_version_bumper.py -v

@@ -1,0 +1,506 @@
+{
+  "task_id": "17-artifact-cleanup-script",
+  "task_name": "Artifact Cleanup Script",
+  "task_category": "GitHub Actions / Maintenance",
+  "language_mode": "bash",
+  "language_chosen": "bash",
+  "language_breakdown": {
+    "bash": 100.0
+  },
+  "interpreter_versions": {},
+  "powershell_version": "",
+  "dotnet_version": "",
+  "model": "claude-sonnet-4-6",
+  "model_short": "sonnet",
+  "claude_code_version": "2.1.97",
+  "instructions_version": "v3",
+  "timestamp_start": "2026-04-09T09:43:54.385972+00:00",
+  "timestamp_end": "2026-04-09T09:59:21.274715+00:00",
+  "prompt_text": "You are completing a scripting task. You MUST use Bash as your implementation language.\n\nTASK: Given a list of artifacts with metadata (name, size, creation date, workflow run ID \u2014 provided as mock data), apply retention policies (max age, max total size, keep-latest-N per workflow), determine which artifacts to delete, and generate a deletion plan with a summary (total space reclaimed, artifacts retained vs deleted). Support dry-run mode.\n\nREQUIREMENTS:\n1. Use red/green TDD methodology: write a failing test FIRST, then write the minimum code to make it pass, then refactor. Repeat for each piece of functionality.\n2. Create mocks and test fixtures as necessary for testability. Use bats-core (bats) as the testing framework.\n3. All tests must be runnable with `bats` and must pass at the end.\n4. Include clear comments explaining your approach.\n5. Handle errors gracefully with meaningful error messages.\n6. Use `#!/usr/bin/env bash` shebang. Scripts must pass `shellcheck` and `bash -n` syntax validation.\n\nCreate your solution in the current working directory. Start by writing your first failing test.\n\nGITHUB ACTIONS REQUIREMENT:\nCreate a GitHub Actions workflow file at .github/workflows/artifact-cleanup-script.yml that uses\nyour script in a real CI/CD pipeline. The workflow must:\n- Use appropriate trigger events (push, pull_request, schedule, workflow_dispatch, etc.)\n- Reference your script correctly\n- Pass actionlint validation (valid YAML, valid action references, correct syntax)\n- Include appropriate permissions, environment variables, and job dependencies\n- Actually run successfully when executed locally with `act` (nektos/act)\n\nDesign your workflow so its steps work in an isolated Docker container \u2014 use\n`actions/checkout@v4`, install dependencies your script needs, and run it.\nAvoid steps requiring external services or secrets without sensible defaults.\n\nWORKFLOW VALIDATION:\nRun `actionlint .github/workflows/artifact-cleanup-script.yml` and fix any errors. actionlint is\npre-installed. Iterate until it passes cleanly.\n\nALL TESTS MUST RUN THROUGH ACT:\nEvery single test case must execute through the GitHub Actions workflow via `act`.\nDo NOT test your script directly \u2014 all testing goes through the pipeline.\n\nStructure your workflow to accept test fixture data and produce verifiable output.\nYour test harness must:\n1. For each test case: set up a temp git repo with your project files + that case's\n   fixture data, run `act push --rm`, capture the output\n2. Save all act output to `act-result.txt` in the current working directory (append\n   each test case's output, clearly delimited)\n3. Assert that act exited with code 0 for each case\n4. Parse the act output and assert on EXACT EXPECTED VALUES \u2014 not just that output\n   appeared, but that it matches the known-good result for that test case's input.\n   For example: if your workflow bumps version 1.1.0 with a feat commit, assert\n   the output contains exactly \"1.2.0\", not just \"a version number\"\n5. Assert every job shows \"Job succeeded\"\n\nThe `act-result.txt` file MUST exist when done. It is a required artifact.\n`act` and Docker are pre-installed.\n\nWORKFLOW STRUCTURE TESTS (also required):\n- Parse the YAML and check expected structure (triggers, jobs, steps)\n- Verify the workflow references your script files correctly (paths exist)\n- Verify actionlint passes (assert exit code 0)\n",
+  "exit_code": 0,
+  "session": {
+    "session_id": "d852434d-05cc-4e8d-91ee-5debfd962d33",
+    "stop_reason": "end_turn",
+    "terminal_reason": "completed",
+    "fast_mode_state": "off",
+    "service_tier": "standard",
+    "speed": "standard",
+    "inference_geo": "",
+    "context_window": 200000,
+    "max_output_tokens": 32000,
+    "permission_mode": "bypassPermissions",
+    "output_style": "default",
+    "tools_available_count": 24,
+    "mcp_servers": [],
+    "permission_denials": []
+  },
+  "model_usage_detail": {
+    "claude-sonnet-4-6": {
+      "inputTokens": 48,
+      "outputTokens": 43838,
+      "cacheReadInputTokens": 2270584,
+      "cacheCreationInputTokens": 68275,
+      "webSearchRequests": 0,
+      "costUSD": 1.5949204499999998,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "effort_level": null,
+  "timing": {
+    "grand_total_duration_ms": 926888,
+    "total_api_duration_ms": 684868,
+    "total_execution_duration_ms": 240965,
+    "num_turns": 47
+  },
+  "tokens": {
+    "input_tokens": 48,
+    "output_tokens": 43838,
+    "cache_read_tokens": 2270584,
+    "cache_creation_tokens": 68275,
+    "total_context_consumed": 2338907,
+    "compaction_count": 0
+  },
+  "cost": {
+    "total_cost_usd": 1.5949204499999998,
+    "assumed_input_cost_per_mtok": 3.0,
+    "assumed_output_cost_per_mtok": 15.0,
+    "assumed_cache_read_cost_per_mtok": 0.3,
+    "assumed_cache_write_cost_per_mtok": 3.75
+  },
+  "code_metrics": {
+    "total_lines": 1894,
+    "total_tokens_estimate": 29154,
+    "file_count": 10,
+    "files": [
+      "act-result.txt",
+      "artifact_cleanup.sh",
+      "run_act_tests.sh",
+      ".github/workflows/artifact-cleanup-script.yml",
+      "tests/artifact_cleanup.bats",
+      "tests/fixtures/test_combined.csv",
+      "tests/fixtures/test_dry_run.csv",
+      "tests/fixtures/test_keep_latest.csv",
+      "tests/fixtures/test_max_age.csv",
+      "tests/fixtures/test_max_size.csv"
+    ]
+  },
+  "quality": {
+    "tests_pass": null,
+    "error_count": 3,
+    "error_details": [
+      "Exit code 1\n\nIn run_act_tests.sh line 224:\n# shellcheck and bash -n on the main script\n^-- SC1073 (error): Couldn't parse this shellcheck directive. Fix to allow more checks.\n                ^-- SC107",
+      "Exit code 1\n\nIn run_act_tests.sh line 52:\n    local label=\"$1\" unexpected=\"$2\" file=\"$3\"\n    ^-- SC2317 (info): Command appears to be unreachable. Check usage (or ignore if invoked indirectly).\n\n\nIn r",
+      "Exit code 1\n\nIn run_act_tests.sh line 61:\n    local fixture_src=\"$3\"\n          ^---------^ SC2034 (warning): fixture_src appears unused. Verify use (or export if used externally).\n\nFor more informatio"
+    ],
+    "actionlint_pass": true,
+    "actionlint_errors": 0,
+    "actionlint_results": [
+      {
+        "file": ".github/workflows/artifact-cleanup-script.yml",
+        "passed": true,
+        "errors": ""
+      }
+    ],
+    "act_result_txt_exists": true,
+    "act_result_txt_size": 87001,
+    "areas_of_difficulty": [],
+    "observations": ""
+  },
+  "tool_install": {
+    "tool_install_duration_ms": 0,
+    "tools_installed": [],
+    "install_commands_count": 0
+  },
+  "tool_use_timing": {
+    "total_tool_uses": 46,
+    "total_tool_duration_ms": 242158,
+    "bash_tool_uses": 24,
+    "bash_total_ms": 237722,
+    "slowest_tool_uses": [
+      {
+        "tool_name": "Bash",
+        "command": "bash run_act_tests.sh 2>&1 | tee /tmp/harness_run2.txt; echo \"EXIT: $?\"",
+        "duration_ms": 194461,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bash run_act_tests.sh 2>&1 | tee /tmp/harness_run.txt; echo \"EXIT: $?\"",
+        "duration_ms": 37704,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bats tests/artifact_cleanup.bats 2>&1 | tail -5",
+        "duration_ms": 1046,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bats tests/artifact_cleanup.bats 2>&1",
+        "duration_ms": 894,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bats tests/artifact_cleanup.bats 2>&1 | head -20",
+        "duration_ms": 725,
+        "is_error": false,
+        "is_install": false
+      }
+    ],
+    "install_duration_ms": 0,
+    "test_duration_ms": 2665,
+    "act_duration_ms": 0
+  },
+  "hooks": {
+    "hook_fires": 21,
+    "hook_errors_caught": 2,
+    "hook_failures": 0,
+    "hook_events": [
+      {
+        "subtype": "hook_started",
+        "hook_id": "8cd95f3a-e90a-4fe6-b6c3-11ccb4755ece",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "8cd95f3a-e90a-4fe6-b6c3-11ccb4755ece",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "0b211ae3-63e2-41f5-8dda-47b74fd09db9",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "0b211ae3-63e2-41f5-8dda-47b74fd09db9",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "5f94663e-1601-40c6-8e37-1c73d2bfd1c2",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "5f94663e-1601-40c6-8e37-1c73d2bfd1c2",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "f9facb24-2e4f-4f6c-861d-11cb86e7bf10",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "f9facb24-2e4f-4f6c-861d-11cb86e7bf10",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "16123dc4-b3cc-49a2-9443-c5d7754a4af1",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "16123dc4-b3cc-49a2-9443-c5d7754a4af1",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "f5045aed-53af-41aa-9bcb-0861839a2380",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "f5045aed-53af-41aa-9bcb-0861839a2380",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "ce013bcf-a959-4ae2-a395-54d30dec2782",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "ce013bcf-a959-4ae2-a395-54d30dec2782",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "fe23c992-e1d4-47c7-b04c-bdcaf39712ee",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "fe23c992-e1d4-47c7-b04c-bdcaf39712ee",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "e1e8843b-dc01-4ac2-af65-fd2592a4a63f",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "e1e8843b-dc01-4ac2-af65-fd2592a4a63f",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\n/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/run_act_tests.sh:224:1: error: Couldn't parse this shellcheck directive. Fix to allow more checks. [SC1073]\\n/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/run_act_tests.sh:224:17: err",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "5845cabb-1b66-45ec-9050-a5fab48d0978",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "5845cabb-1b66-45ec-9050-a5fab48d0978",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "0da53833-9e90-4bfa-babf-cf77e500b6fb",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "0da53833-9e90-4bfa-babf-cf77e500b6fb",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "286d6c08-7860-4db0-adcb-7c8cf8ba2da6",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "286d6c08-7860-4db0-adcb-7c8cf8ba2da6",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "d4242855-c4d3-4f9f-96ae-404f1e3ece38",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "d4242855-c4d3-4f9f-96ae-404f1e3ece38",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\n/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/17-artifact-cleanup-script/bash-sonnet/run_act_tests.sh:61:11: warning: fixture_src appears unused. Verify use (or export if used externally). [SC2034]\"}",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "f0120013-322e-486d-bfa9-e749b28c392d",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "f0120013-322e-486d-bfa9-e749b28c392d",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "0da888ab-f841-4efd-abaf-b38144a47051",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "0da888ab-f841-4efd-abaf-b38144a47051",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "000728f4-022f-4050-995b-09bd7b0b6be3",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "000728f4-022f-4050-995b-09bd7b0b6be3",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "7ea99570-a3c5-41fc-8653-559629b55ac4",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "7ea99570-a3c5-41fc-8653-559629b55ac4",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "e72d18ed-8618-422b-94dd-c922d4f309d0",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "e72d18ed-8618-422b-94dd-c922d4f309d0",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "2ff0c181-a209-4129-b28b-757307e6d68f",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "2ff0c181-a209-4129-b28b-757307e6d68f",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "abae06f8-54d7-4e79-b788-d6ab4888bc62",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "abae06f8-54d7-4e79-b788-d6ab4888bc62",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "6c52562e-d556-4fbf-86d2-05b144dc0380",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "6c52562e-d556-4fbf-86d2-05b144dc0380",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  },
+  "run_success": true,
+  "failure_reason": null
+}

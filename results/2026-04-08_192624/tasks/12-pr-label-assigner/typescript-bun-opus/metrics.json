@@ -1,0 +1,262 @@
+{
+  "task_id": "12-pr-label-assigner",
+  "task_name": "PR Label Assigner",
+  "task_category": "GitHub Actions / Triage",
+  "language_mode": "typescript-bun",
+  "language_chosen": "typescript",
+  "language_breakdown": {
+    "typescript": 100.0
+  },
+  "interpreter_versions": {},
+  "powershell_version": "",
+  "dotnet_version": "",
+  "model": "claude-opus-4-6",
+  "model_short": "opus",
+  "claude_code_version": "2.1.97",
+  "instructions_version": "v3",
+  "timestamp_start": "2026-04-09T01:21:31.550107+00:00",
+  "timestamp_end": "2026-04-09T01:30:39.812347+00:00",
+  "prompt_text": "You are completing a scripting task. You MUST use TypeScript with Bun as your implementation language and runtime.\n\nTASK: Given a list of changed file paths (simulating a PR's changed files), apply labels based on configurable path-to-label mapping rules (e.g., docs/** -> documentation, src/api/** -> api, *.test.* -> tests). Support glob patterns, multiple labels per file, and priority ordering when rules conflict. Output the final label set. Mock the file list for testing.\n\nREQUIREMENTS:\n1. Use red/green TDD methodology: write a failing test FIRST, then write the minimum code to make it pass, then refactor. Repeat for each piece of functionality.\n2. Create mocks and test fixtures as necessary for testability. Use Bun's built-in test runner (`bun test`).\n3. All tests must be runnable with `bun test` and must pass at the end.\n4. Include clear comments explaining your approach.\n5. Handle errors gracefully with meaningful error messages.\n6. Use TypeScript features: explicit types, interfaces, and type annotations. Run scripts with `bun run <file>.ts`.\n\nCreate your solution in the current working directory. Start by writing your first failing test.\n\nGITHUB ACTIONS REQUIREMENT:\nCreate a GitHub Actions workflow file at .github/workflows/pr-label-assigner.yml that uses\nyour script in a real CI/CD pipeline. The workflow must:\n- Use appropriate trigger events (push, pull_request, schedule, workflow_dispatch, etc.)\n- Reference your script correctly\n- Pass actionlint validation (valid YAML, valid action references, correct syntax)\n- Include appropriate permissions, environment variables, and job dependencies\n- Actually run successfully when executed locally with `act` (nektos/act)\n\nDesign your workflow so its steps work in an isolated Docker container \u2014 use\n`actions/checkout@v4`, install dependencies your script needs, and run it.\nAvoid steps requiring external services or secrets without sensible defaults.\n\nWORKFLOW VALIDATION:\nRun `actionlint .github/workflows/pr-label-assigner.yml` and fix any errors. actionlint is\npre-installed. Iterate until it passes cleanly.\n\nALL TESTS MUST RUN THROUGH ACT:\nEvery single test case must execute through the GitHub Actions workflow via `act`.\nDo NOT test your script directly \u2014 all testing goes through the pipeline.\n\nStructure your workflow to accept test fixture data and produce verifiable output.\nYour test harness must:\n1. For each test case: set up a temp git repo with your project files + that case's\n   fixture data, run `act push --rm`, capture the output\n2. Save all act output to `act-result.txt` in the current working directory (append\n   each test case's output, clearly delimited)\n3. Assert that act exited with code 0 for each case\n4. Parse the act output and assert on EXACT EXPECTED VALUES \u2014 not just that output\n   appeared, but that it matches the known-good result for that test case's input.\n   For example: if your workflow bumps version 1.1.0 with a feat commit, assert\n   the output contains exactly \"1.2.0\", not just \"a version number\"\n5. Assert every job shows \"Job succeeded\"\n\nThe `act-result.txt` file MUST exist when done. It is a required artifact.\n`act` and Docker are pre-installed.\n\nWORKFLOW STRUCTURE TESTS (also required):\n- Parse the YAML and check expected structure (triggers, jobs, steps)\n- Verify the workflow references your script files correctly (paths exist)\n- Verify actionlint passes (assert exit code 0)\n",
+  "exit_code": 0,
+  "session": {
+    "session_id": "9a06e5aa-030f-47c7-a823-f963d24b58e1",
+    "stop_reason": "end_turn",
+    "terminal_reason": "completed",
+    "fast_mode_state": "off",
+    "service_tier": "standard",
+    "speed": "standard",
+    "inference_geo": "",
+    "context_window": 200000,
+    "max_output_tokens": 64000,
+    "permission_mode": "bypassPermissions",
+    "output_style": "default",
+    "tools_available_count": 24,
+    "mcp_servers": [],
+    "permission_denials": []
+  },
+  "model_usage_detail": {
+    "claude-opus-4-6": {
+      "inputTokens": 33,
+      "outputTokens": 14049,
+      "cacheReadInputTokens": 853487,
+      "cacheCreationInputTokens": 29284,
+      "webSearchRequests": 0,
+      "costUSD": 0.9611584999999998,
+      "contextWindow": 200000,
+      "maxOutputTokens": 64000
+    }
+  },
+  "effort_level": null,
+  "timing": {
+    "grand_total_duration_ms": 548262,
+    "total_api_duration_ms": 231506,
+    "total_execution_duration_ms": 315477,
+    "num_turns": 31
+  },
+  "tokens": {
+    "input_tokens": 33,
+    "output_tokens": 14049,
+    "cache_read_tokens": 853487,
+    "cache_creation_tokens": 29284,
+    "total_context_consumed": 882804,
+    "compaction_count": 0
+  },
+  "cost": {
+    "total_cost_usd": 0.9611584999999998,
+    "assumed_input_cost_per_mtok": 15.0,
+    "assumed_output_cost_per_mtok": 75.0,
+    "assumed_cache_read_cost_per_mtok": 1.5,
+    "assumed_cache_write_cost_per_mtok": 18.75
+  },
+  "code_metrics": {
+    "total_lines": 1228,
+    "total_tokens_estimate": 15272,
+    "file_count": 8,
+    "files": [
+      "act-result.txt",
+      "bun.lock",
+      "label-assigner.test.ts",
+      "label-assigner.ts",
+      "package.json",
+      "tsconfig.json",
+      "yaml-parser.ts",
+      ".github/workflows/pr-label-assigner.yml"
+    ]
+  },
+  "quality": {
+    "tests_pass": null,
+    "error_count": 1,
+    "error_details": [
+      "Exit code 1\nbun test v1.3.11 (af24e281)\n\nlabel-assigner.test.ts:\n374 | \n375 |           if (result) {\n376 |             // Assert exact expected labels (sorted for comparison)\n377 |             const "
+    ],
+    "actionlint_pass": true,
+    "actionlint_errors": 0,
+    "actionlint_results": [
+      {
+        "file": ".github/workflows/pr-label-assigner.yml",
+        "passed": true,
+        "errors": ""
+      }
+    ],
+    "act_result_txt_exists": true,
+    "act_result_txt_size": 38760,
+    "areas_of_difficulty": [],
+    "observations": ""
+  },
+  "tool_install": {
+    "tool_install_duration_ms": 0,
+    "tools_installed": [],
+    "install_commands_count": 0
+  },
+  "tool_use_timing": {
+    "total_tool_uses": 30,
+    "total_tool_duration_ms": 316200,
+    "bash_tool_uses": 16,
+    "bash_total_ms": 277632,
+    "slowest_tool_uses": [
+      {
+        "tool_name": "Bash",
+        "command": "bun test --timeout 600000 2>&1",
+        "duration_ms": 93317,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test --timeout 600000 2>&1",
+        "duration_ms": 91751,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test --timeout 300000 2>&1 | head -80",
+        "duration_ms": 90663,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 9135,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 8507,
+        "is_error": false,
+        "is_install": false
+      }
+    ],
+    "install_duration_ms": 0,
+    "test_duration_ms": 275731,
+    "act_duration_ms": 0
+  },
+  "hooks": {
+    "hook_fires": 6,
+    "hook_errors_caught": 5,
+    "hook_failures": 0,
+    "hook_events": [
+      {
+        "subtype": "hook_started",
+        "hook_id": "a29c7b98-b7b6-4632-93ee-c2437d3d32d3",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "a29c7b98-b7b6-4632-93ee-c2437d3d32d3",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\nlabel-assigner.ts(158,31): error TS2802: Type 'Set<string>' can only be iterated through when using the '--downlevelIteration' flag or with a '--target' of 'es2015' or higher.\\nlabel-assigner.ts(231,3): error TS1343: The 'import.meta' meta-property is only allowed when the '--module' option is 'es2020', 'es2022', 'esnext', 'system', 'node16', 'node18', 'node20', or 'nodenext'.\"}",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "c3724688-7299-4d72-abb8-9f9c593a2cec",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "c3724688-7299-4d72-abb8-9f9c593a2cec",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "bd5e4770-0693-42b5-8956-e437c1286523",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "bd5e4770-0693-42b5-8956-e437c1286523",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\nlabel-assigner.test.ts(20,36): error TS2307: Cannot find module './yaml-parser' or its corresponding type declarations.\\nlabel-assigner.test.ts(23,22): error TS1343: The 'import.meta' meta-property is only allowed when the '--module' option is 'es2020', 'es2022', 'esnext', 'system', 'node16', 'node18', 'node20', or 'nodenext'.\"}",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "4d961f79-df3e-4cf9-a8e7-28d70e8caecb",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "4d961f79-df3e-4cf9-a8e7-28d70e8caecb",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\nyaml-parser.ts(7,20): error TS2307: Cannot find module 'js-yaml' or its corresponding type declarations.\"}",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "a0968344-2547-493e-a64b-c65b7f7025c0",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "a0968344-2547-493e-a64b-c65b7f7025c0",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\nlabel-assigner.test.ts(23,22): error TS1343: The 'import.meta' meta-property is only allowed when the '--module' option is 'es2020', 'es2022', 'esnext', 'system', 'node16', 'node18', 'node20', or 'nodenext'.\\nyaml-parser.ts(7,8): error TS1192: Module '\\\"/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/typescript-bun-opus/nod",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "84476db7-b1a7-4a0b-8457-6983fb6fdf63",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "84476db7-b1a7-4a0b-8457-6983fb6fdf63",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\nlabel-assigner.ts(164,31): error TS2802: Type 'Set<string>' can only be iterated through when using the '--downlevelIteration' flag or with a '--target' of 'es2015' or higher.\\nlabel-assigner.ts(237,3): error TS1343: The 'import.meta' meta-property is only allowed when the '--module' option is 'es2020', 'es2022', 'esnext', 'system', 'node16', 'node18', 'node20', or 'nodenext'.\"}",
+        "stderr": ""
+      }
+    ]
+  },
+  "run_success": true,
+  "failure_reason": null
+}

@@ -1,0 +1,374 @@
+{
+  "task_id": "12-pr-label-assigner",
+  "task_name": "PR Label Assigner",
+  "task_category": "GitHub Actions / Triage",
+  "language_mode": "powershell",
+  "language_chosen": "powershell",
+  "language_breakdown": {
+    "powershell": 100.0
+  },
+  "interpreter_versions": {},
+  "powershell_version": "",
+  "dotnet_version": "",
+  "model": "claude-sonnet-4-6",
+  "model_short": "sonnet",
+  "claude_code_version": "2.1.97",
+  "instructions_version": "v3",
+  "timestamp_start": "2026-04-09T01:47:09.134023+00:00",
+  "timestamp_end": "2026-04-09T02:14:13.470211+00:00",
+  "prompt_text": "You are completing a scripting task. You MUST use PowerShell as your implementation language.\n\nTASK: Given a list of changed file paths (simulating a PR's changed files), apply labels based on configurable path-to-label mapping rules (e.g., docs/** -> documentation, src/api/** -> api, *.test.* -> tests). Support glob patterns, multiple labels per file, and priority ordering when rules conflict. Output the final label set. Mock the file list for testing.\n\nREQUIREMENTS:\n1. Use red/green TDD methodology: write a failing test FIRST, then write the minimum code to make it pass, then refactor. Repeat for each piece of functionality.\n2. Create mocks and test fixtures as necessary for testability. Use Pester as the testing framework.\n3. All tests must be runnable with `Invoke-Pester` and must pass at the end.\n4. Include clear comments explaining your approach.\n5. Handle errors gracefully with meaningful error messages.\n\nCreate your solution in the current working directory. Start by writing your first failing test.\n\nGITHUB ACTIONS REQUIREMENT:\nCreate a GitHub Actions workflow file at .github/workflows/pr-label-assigner.yml that uses\nyour script in a real CI/CD pipeline. The workflow must:\n- Use appropriate trigger events (push, pull_request, schedule, workflow_dispatch, etc.)\n- Reference your script correctly\n- Pass actionlint validation (valid YAML, valid action references, correct syntax)\n- Include appropriate permissions, environment variables, and job dependencies\n- Actually run successfully when executed locally with `act` (nektos/act)\n\nDesign your workflow so its steps work in an isolated Docker container \u2014 use\n`actions/checkout@v4`, install dependencies your script needs, and run it.\nAvoid steps requiring external services or secrets without sensible defaults.\n\nWORKFLOW VALIDATION:\nRun `actionlint .github/workflows/pr-label-assigner.yml` and fix any errors. actionlint is\npre-installed. Iterate until it passes cleanly.\n\nALL TESTS MUST RUN THROUGH ACT:\nEvery single test case must execute through the GitHub Actions workflow via `act`.\nDo NOT test your script directly \u2014 all testing goes through the pipeline.\n\nStructure your workflow to accept test fixture data and produce verifiable output.\nYour test harness must:\n1. For each test case: set up a temp git repo with your project files + that case's\n   fixture data, run `act push --rm`, capture the output\n2. Save all act output to `act-result.txt` in the current working directory (append\n   each test case's output, clearly delimited)\n3. Assert that act exited with code 0 for each case\n4. Parse the act output and assert on EXACT EXPECTED VALUES \u2014 not just that output\n   appeared, but that it matches the known-good result for that test case's input.\n   For example: if your workflow bumps version 1.1.0 with a feat commit, assert\n   the output contains exactly \"1.2.0\", not just \"a version number\"\n5. Assert every job shows \"Job succeeded\"\n\nThe `act-result.txt` file MUST exist when done. It is a required artifact.\n`act` and Docker are pre-installed.\n\nWORKFLOW STRUCTURE TESTS (also required):\n- Parse the YAML and check expected structure (triggers, jobs, steps)\n- Verify the workflow references your script files correctly (paths exist)\n- Verify actionlint passes (assert exit code 0)\n",
+  "exit_code": 0,
+  "session": {
+    "session_id": "9d5f86b2-686a-42f7-8da1-f7308e3b5634",
+    "stop_reason": "end_turn",
+    "terminal_reason": "completed",
+    "fast_mode_state": "off",
+    "service_tier": "standard",
+    "speed": "standard",
+    "inference_geo": "",
+    "context_window": 200000,
+    "max_output_tokens": 32000,
+    "permission_mode": "bypassPermissions",
+    "output_style": "default",
+    "tools_available_count": 24,
+    "mcp_servers": [],
+    "permission_denials": []
+  },
+  "model_usage_detail": {
+    "claude-sonnet-4-6": {
+      "inputTokens": 52,
+      "outputTokens": 77698,
+      "cacheReadInputTokens": 3293899,
+      "cacheCreationInputTokens": 197588,
+      "webSearchRequests": 0,
+      "costUSD": 2.8947507,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "effort_level": null,
+  "timing": {
+    "grand_total_duration_ms": 1624336,
+    "total_api_duration_ms": 1117398,
+    "total_execution_duration_ms": 501931,
+    "num_turns": 50
+  },
+  "tokens": {
+    "input_tokens": 49,
+    "output_tokens": 77677,
+    "cache_read_tokens": 3282618,
+    "cache_creation_tokens": 96739,
+    "total_context_consumed": 3379406,
+    "compaction_count": 0
+  },
+  "cost": {
+    "total_cost_usd": 2.51285865,
+    "assumed_input_cost_per_mtok": 3.0,
+    "assumed_output_cost_per_mtok": 15.0,
+    "assumed_cache_read_cost_per_mtok": 0.3,
+    "assumed_cache_write_cost_per_mtok": 3.75
+  },
+  "code_metrics": {
+    "total_lines": 1157,
+    "total_tokens_estimate": 13756,
+    "file_count": 6,
+    "files": [
+      "Invoke-PrLabelAssigner.Tests.ps1",
+      "Invoke-PrLabelAssigner.ps1",
+      "act-result.txt",
+      "changed-files.json",
+      "label-rules.json",
+      ".github/workflows/pr-label-assigner.yml"
+    ]
+  },
+  "quality": {
+    "tests_pass": null,
+    "error_count": 3,
+    "error_details": [
+      "Exit code 1\n\u001b[95m\n\u001b[95mStarting discovery in 1 files.\u001b[0m\n\u001b[95mDiscovery found 70 tests in 412ms.\u001b[0m\n\u001b[95mRunning tests.\u001b[0m\n\u001b[91m[-] Get-PrLabels.returns results as an array (not null)\u001b[0m\u001b[90m 53ms",
+      "Exit code 1\n/bin/bash: line 44: Invoke-Pester: command not found\n\u001b[31;1mParserError: \u001b[0m\n\u001b[31;1m\u001b[36;1mLine |\u001b[0m\n\u001b[31;1m\u001b[36;1m\u001b[36;1m   1 | \u001b[0m \u001b[36;1m@\u001b[0m\n\u001b[31;1m\u001b[36;1m\u001b[36;1m\u001b[0m\u001b[36;1m\u001b[0m\u001b[3",
+      "Exit code 1\n\u001b[95m\n\u001b[95mStarting discovery in 1 files.\u001b[0m\n\u001b[95mDiscovery found 70 tests in 410ms.\u001b[0m\n\u001b[95mRunning tests.\u001b[0m\n  [act] Running: docs-only ...\n  [act] Done: docs-only (exit=1)\n  [act] Ru"
+    ],
+    "actionlint_pass": true,
+    "actionlint_errors": 0,
+    "actionlint_results": [
+      {
+        "file": ".github/workflows/pr-label-assigner.yml",
+        "passed": true,
+        "errors": ""
+      }
+    ],
+    "act_result_txt_exists": true,
+    "act_result_txt_size": 26304,
+    "areas_of_difficulty": [],
+    "observations": ""
+  },
+  "tool_install": {
+    "tool_install_duration_ms": 0,
+    "tools_installed": [],
+    "install_commands_count": 0
+  },
+  "tool_use_timing": {
+    "total_tool_uses": 49,
+    "total_tool_duration_ms": 505976,
+    "bash_tool_uses": 35,
+    "bash_total_ms": 497256,
+    "slowest_tool_uses": [
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester ./Invoke-PrLabelAssigner.Tests.ps1 -Output Normal 2>&1 | tail -30\" 2>&1",
+        "duration_ms": 173946,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester ./Invoke-PrLabelAssigner.Tests.ps1 -Output Normal 2>&1 | grep -E '(\\[[-+]\\].*label|Tests completed|Passed|Failed)'\" 2>&1 | head -10",
+        "duration_ms": 118520,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /tmp/pla-act-test-manual && act push --rm --no-cache-server 2>&1 | grep -E \"(Error|failed|error|exit|LABEL|PR Label|pwsh|=)\" | head -30",
+        "duration_ms": 33396,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /tmp/pla-act-test-manual && act push --rm --no-cache-server 2>&1 | tail -20",
+        "duration_ms": 32673,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /tmp && TMPDIR=/tmp/pla-act-test-manual && mkdir -p $TMPDIR\ncp -r /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/* $TMPDIR",
+        "duration_ms": 30538,
+        "is_error": false,
+        "is_install": false
+      }
+    ],
+    "install_duration_ms": 0,
+    "test_duration_ms": 292466,
+    "act_duration_ms": 66069
+  },
+  "hooks": {
+    "hook_fires": 13,
+    "hook_errors_caught": 0,
+    "hook_failures": 0,
+    "hook_events": [
+      {
+        "subtype": "hook_started",
+        "hook_id": "7736a221-40ce-43e5-8f0a-ba97feacd69f",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "7736a221-40ce-43e5-8f0a-ba97feacd69f",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "e402e150-f4dd-491f-9700-3d3cefd0b400",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "e402e150-f4dd-491f-9700-3d3cefd0b400",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "76541b88-951e-4e88-bdc3-0f2cce70f200",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "76541b88-951e-4e88-bdc3-0f2cce70f200",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "e1d45e68-f721-4f7d-aac2-6a7be4a665ad",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "e1d45e68-f721-4f7d-aac2-6a7be4a665ad",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "f4f6db6a-60d1-4f3e-9de8-6337f92f9354",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "f4f6db6a-60d1-4f3e-9de8-6337f92f9354",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "4b7ff544-f9eb-480c-a54a-6a01ba267589",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "4b7ff544-f9eb-480c-a54a-6a01ba267589",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "f1467e0a-c096-4044-926b-bed3123c0606",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "f1467e0a-c096-4044-926b-bed3123c0606",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "7d97fdcd-2819-4771-9acc-0885cad93c57",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "7d97fdcd-2819-4771-9acc-0885cad93c57",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "5456b21b-b3b5-4f11-8027-6cc96371846e",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "5456b21b-b3b5-4f11-8027-6cc96371846e",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "066b5da9-5f4f-41d0-b01a-1c51474ab948",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "066b5da9-5f4f-41d0-b01a-1c51474ab948",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "7a3bfe6c-0232-4f80-aef5-8ea458725805",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "7a3bfe6c-0232-4f80-aef5-8ea458725805",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "03a726ae-7d98-44d7-8e56-a22f07f0d478",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "03a726ae-7d98-44d7-8e56-a22f07f0d478",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "dd3dc2a3-7a76-436a-bf33-d3a104ed4e32",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "dd3dc2a3-7a76-436a-bf33-d3a104ed4e32",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  },
+  "run_success": true,
+  "failure_reason": null
+}

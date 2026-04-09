@@ -1,0 +1,928 @@
+======================================================================
+SECTION A: Workflow Structure Tests
+======================================================================
+
+  PASS: workflow structure (triggers, jobs, dependencies)
+  PASS: all referenced files exist on disk
+
+--- actionlint output ---
+(no output)
+  PASS: actionlint (exit code 0)
+
+======================================================================
+SECTION B: Act Execution Tests
+======================================================================
+
+======================================================================
+TEST CASE: test_all_ok_markdown
+Description: All secrets are fresh — no expired or warnings
+Fixture: [
+  {
+    "name": "fresh-key",
+    "last_rotated": "2024-01-14",
+    "rotation_days": 90,
+    "required_by": [
+      "service-a"
+    ]
+  },
+  {
+    "name": "fresh-token",
+    "last_rotated": "2024-01-10",
+    "rotation_days": 90,
+    "required_by": [
+      "service-b"
+    ]
+  }
+]
+
+--- act output ---
+time="2026-04-09T06:54:37-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Secret Rotation Validator/Run Unit Tests] ⭐ Run Set up job
+[Secret Rotation Validator/Run Unit Tests] 🚀  Start image=catthehacker/ubuntu:act-22.04
+[Secret Rotation Validator/Run Unit Tests]   🐳  docker pull image=catthehacker/ubuntu:act-22.04 platform= username= forcePull=false
+[Secret Rotation Validator/Run Unit Tests]   🐳  docker create image=catthehacker/ubuntu:act-22.04 platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/Run Unit Tests]   🐳  docker run image=catthehacker/ubuntu:act-22.04 platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/Run Unit Tests]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Secret Rotation Validator/Run Unit Tests]   ✅  Success - Set up job
+[Secret Rotation Validator/Run Unit Tests] ⭐ Run Main Checkout code
+[Secret Rotation Validator/Run Unit Tests]   🐳  docker cp src=/tmp/act-test-zgdjxpyl/. dst=/tmp/act-test-zgdjxpyl
+[Secret Rotation Validator/Run Unit Tests]   ✅  Success - Main Checkout code [116.552098ms]
+[Secret Rotation Validator/Run Unit Tests] ⭐ Run Main Install dependencies
+[Secret Rotation Validator/Run Unit Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Secret Rotation Validator/Run Unit Tests]   | Collecting pytest>=7.0.0
+[Secret Rotation Validator/Run Unit Tests]   |   Downloading pytest-9.0.3-py3-none-any.whl (375 kB)
+[Secret Rotation Validator/Run Unit Tests]   |      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 375.2/375.2 KB 4.7 MB/s eta 0:00:00
+[Secret Rotation Validator/Run Unit Tests]   | Collecting pygments>=2.7.2
+[Secret Rotation Validator/Run Unit Tests]   |   Downloading pygments-2.20.0-py3-none-any.whl (1.2 MB)
+[Secret Rotation Validator/Run Unit Tests]   |      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.2/1.2 MB 10.1 MB/s eta 0:00:00
+[Secret Rotation Validator/Run Unit Tests]   | Collecting packaging>=22
+[Secret Rotation Validator/Run Unit Tests]   |   Downloading packaging-26.0-py3-none-any.whl (74 kB)
+[Secret Rotation Validator/Run Unit Tests]   |      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 74.4/74.4 KB 6.4 MB/s eta 0:00:00
+[Secret Rotation Validator/Run Unit Tests]   | Collecting iniconfig>=1.0.1
+[Secret Rotation Validator/Run Unit Tests]   |   Downloading iniconfig-2.3.0-py3-none-any.whl (7.5 kB)
+[Secret Rotation Validator/Run Unit Tests]   | Collecting exceptiongroup>=1
+[Secret Rotation Validator/Run Unit Tests]   |   Downloading exceptiongroup-1.3.1-py3-none-any.whl (16 kB)
+[Secret Rotation Validator/Run Unit Tests]   | Collecting pluggy<2,>=1.5
+[Secret Rotation Validator/Run Unit Tests]   |   Downloading pluggy-1.6.0-py3-none-any.whl (20 kB)
+[Secret Rotation Validator/Run Unit Tests]   | Collecting tomli>=1
+[Secret Rotation Validator/Run Unit Tests]   |   Downloading tomli-2.4.1-py3-none-any.whl (14 kB)
+[Secret Rotation Validator/Run Unit Tests]   | Collecting typing-extensions>=4.6.0
+[Secret Rotation Validator/Run Unit Tests]   |   Downloading typing_extensions-4.15.0-py3-none-any.whl (44 kB)
+[Secret Rotation Validator/Run Unit Tests]   |      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 44.6/44.6 KB 3.3 MB/s eta 0:00:00
+[Secret Rotation Validator/Run Unit Tests]   | Installing collected packages: typing-extensions, tomli, pygments, pluggy, packaging, iniconfig, exceptiongroup, pytest
+[Secret Rotation Validator/Run Unit Tests]   |   Attempting uninstall: packaging
+[Secret Rotation Validator/Run Unit Tests]   |     Found existing installation: packaging 21.3
+[Secret Rotation Validator/Run Unit Tests]   |     Not uninstalling packaging at /usr/lib/python3/dist-packages, outside environment /usr
+[Secret Rotation Validator/Run Unit Tests]   |     Can't uninstall 'packaging'. No files were found to uninstall.
+[Secret Rotation Validator/Run Unit Tests]   | ERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.
+[Secret Rotation Validator/Run Unit Tests]   | pipx 1.0.0 requires argcomplete>=1.9.4, but you have argcomplete 1.8.1 which is incompatible.
+[Secret Rotation Validator/Run Unit Tests]   | Successfully installed exceptiongroup-1.3.1 iniconfig-2.3.0 packaging-26.0 pluggy-1.6.0 pygments-2.20.0 pytest-9.0.3 tomli-2.4.1 typing-extensions-4.15.0
+[Secret Rotation Validator/Run Unit Tests]   | WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+[Secret Rotation Validator/Run Unit Tests]   ✅  Success - Main Install dependencies [4.66784526s]
+[Secret Rotation Validator/Run Unit Tests] ⭐ Run Main Run unit tests
+[Secret Rotation Validator/Run Unit Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Secret Rotation Validator/Run Unit Tests]   | ============================= test session starts ==============================
+[Secret Rotation Validator/Run Unit Tests]   | platform linux -- Python 3.10.12, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+[Secret Rotation Validator/Run Unit Tests]   | cachedir: .pytest_cache
+[Secret Rotation Validator/Run Unit Tests]   | rootdir: /tmp/act-test-zgdjxpyl
+[Secret Rotation Validator/Run Unit Tests]   | collecting ... collected 45 items
+[Secret Rotation Validator/Run Unit Tests]   | 
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_expired_secret_gets_expired_status PASSED [  2%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_expired_secret_days_until_expiry_is_negative PASSED [  4%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_warning_secret_gets_warning_status PASSED [  6%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_ok_secret_gets_ok_status PASSED [  8%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_days_since_rotation_is_correct PASSED [ 11%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_days_until_expiry_is_correct PASSED [ 13%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_warning_window_is_configurable PASSED [ 15%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_secret_expiring_exactly_on_boundary_is_warning PASSED [ 17%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_missing_required_field_raises_value_error PASSED [ 20%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_invalid_date_format_raises_value_error PASSED [ 22%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_original_fields_preserved_in_result PASSED [ 24%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_today_used_when_reference_date_is_none PASSED [ 26%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestAnalyzeSecrets::test_result_has_three_urgency_groups PASSED [ 28%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestAnalyzeSecrets::test_expired_secret_lands_in_expired_group PASSED [ 31%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestAnalyzeSecrets::test_warning_secret_lands_in_warning_group PASSED [ 33%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestAnalyzeSecrets::test_ok_secret_lands_in_ok_group PASSED [ 35%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestAnalyzeSecrets::test_empty_input_returns_empty_groups PASSED [ 37%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestAnalyzeSecrets::test_all_secrets_accounted_for PASSED [ 40%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestAnalyzeSecrets::test_single_ok_secret PASSED [ 42%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_contains_report_header PASSED [ 44%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_contains_expired_section PASSED [ 46%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_contains_warning_section PASSED [ 48%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_contains_ok_section PASSED [ 51%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_summary_shows_correct_total PASSED [ 53%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_summary_shows_expired_count PASSED [ 55%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_summary_shows_warning_count PASSED [ 57%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_summary_shows_ok_count PASSED [ 60%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_contains_secret_names PASSED [ 62%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_contains_table_headers PASSED [ 64%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_empty_section_shows_placeholder PASSED [ 66%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_expired_secret_shows_overdue_label PASSED [ 68%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatJson::test_output_is_valid_json PASSED [ 71%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatJson::test_summary_section_exists PASSED [ 73%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatJson::test_summary_total_is_correct PASSED [ 75%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatJson::test_summary_expired_count PASSED [ 77%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatJson::test_summary_warning_count PASSED [ 80%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatJson::test_summary_ok_count PASSED    [ 82%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatJson::test_secrets_grouped_by_urgency PASSED [ 84%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatJson::test_expired_group_has_correct_secret PASSED [ 86%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatJson::test_ok_group_has_correct_secret PASSED [ 88%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestLoadSecrets::test_load_valid_json_file PASSED [ 91%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestLoadSecrets::test_nonexistent_file_raises_file_not_found PASSED [ 93%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestLoadSecrets::test_invalid_json_raises_value_error PASSED [ 95%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestLoadSecrets::test_non_array_json_raises_value_error PASSED [ 97%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestLoadSecrets::test_empty_array_is_valid PASSED [100%]
+[Secret Rotation Validator/Run Unit Tests]   | 
+[Secret Rotation Validator/Run Unit Tests]   | ============================== 45 passed in 0.17s ==============================
+[Secret Rotation Validator/Run Unit Tests]   ✅  Success - Main Run unit tests [862.024924ms]
+[Secret Rotation Validator/Run Unit Tests] ⭐ Run Complete job
+[Secret Rotation Validator/Run Unit Tests] Cleaning up container for job Run Unit Tests
+[Secret Rotation Validator/Run Unit Tests]   ✅  Success - Complete job
+[Secret Rotation Validator/Run Unit Tests] 🏁  Job succeeded
+[Secret Rotation Validator/Rotation Report (Markdown)] ⭐ Run Set up job
+[Secret Rotation Validator/Rotation Report (JSON)    ] ⭐ Run Set up job
+[Secret Rotation Validator/Rotation Report (Markdown)] 🚀  Start image=catthehacker/ubuntu:act-22.04
+[Secret Rotation Validator/Rotation Report (JSON)    ] 🚀  Start image=catthehacker/ubuntu:act-22.04
+[Secret Rotation Validator/Rotation Report (JSON)    ]   🐳  docker pull image=catthehacker/ubuntu:act-22.04 platform= username= forcePull=false
+[Secret Rotation Validator/Rotation Report (Markdown)]   🐳  docker pull image=catthehacker/ubuntu:act-22.04 platform= username= forcePull=false
+[Secret Rotation Validator/Rotation Report (JSON)    ]   🐳  docker create image=catthehacker/ubuntu:act-22.04 platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/Rotation Report (Markdown)]   🐳  docker create image=catthehacker/ubuntu:act-22.04 platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/Rotation Report (JSON)    ]   🐳  docker run image=catthehacker/ubuntu:act-22.04 platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/Rotation Report (Markdown)]   🐳  docker run image=catthehacker/ubuntu:act-22.04 platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/Rotation Report (Markdown)]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Secret Rotation Validator/Rotation Report (JSON)    ]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Secret Rotation Validator/Rotation Report (JSON)    ]   ✅  Success - Set up job
+[Secret Rotation Validator/Rotation Report (Markdown)]   ✅  Success - Set up job
+[Secret Rotation Validator/Rotation Report (Markdown)] ⭐ Run Main Checkout code
+[Secret Rotation Validator/Rotation Report (JSON)    ] ⭐ Run Main Checkout code
+[Secret Rotation Validator/Rotation Report (JSON)    ]   🐳  docker cp src=/tmp/act-test-zgdjxpyl/. dst=/tmp/act-test-zgdjxpyl
+[Secret Rotation Validator/Rotation Report (Markdown)]   🐳  docker cp src=/tmp/act-test-zgdjxpyl/. dst=/tmp/act-test-zgdjxpyl
+[Secret Rotation Validator/Rotation Report (Markdown)]   ✅  Success - Main Checkout code [139.359312ms]
+[Secret Rotation Validator/Rotation Report (JSON)    ]   ✅  Success - Main Checkout code [139.429377ms]
+[Secret Rotation Validator/Rotation Report (Markdown)] ⭐ Run Main Run secret rotation validator (markdown)
+[Secret Rotation Validator/Rotation Report (JSON)    ] ⭐ Run Main Run secret rotation validator (JSON)
+[Secret Rotation Validator/Rotation Report (JSON)    ]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Secret Rotation Validator/Rotation Report (Markdown)]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Secret Rotation Validator/Rotation Report (Markdown)]   | # Secret Rotation Report
+[Secret Rotation Validator/Rotation Report (Markdown)]   | 
+[Secret Rotation Validator/Rotation Report (Markdown)]   | **Total secrets:** 2
+[Secret Rotation Validator/Rotation Report (Markdown)]   | **Expired:** 0
+[Secret Rotation Validator/Rotation Report (Markdown)]   | **Warning:** 0
+[Secret Rotation Validator/Rotation Report (Markdown)]   | **OK:** 2
+[Secret Rotation Validator/Rotation Report (Markdown)]   | 
+[Secret Rotation Validator/Rotation Report (Markdown)]   | ## EXPIRED (0)
+[Secret Rotation Validator/Rotation Report (Markdown)]   | 
+[Secret Rotation Validator/Rotation Report (Markdown)]   | _No secrets in this category._
+[Secret Rotation Validator/Rotation Report (Markdown)]   | 
+[Secret Rotation Validator/Rotation Report (Markdown)]   | ## WARNING (0)
+[Secret Rotation Validator/Rotation Report (Markdown)]   | 
+[Secret Rotation Validator/Rotation Report (Markdown)]   | _No secrets in this category._
+[Secret Rotation Validator/Rotation Report (Markdown)]   | 
+[Secret Rotation Validator/Rotation Report (Markdown)]   | ## OK (2)
+[Secret Rotation Validator/Rotation Report (Markdown)]   | 
+[Secret Rotation Validator/Rotation Report (Markdown)]   | | Name | Last Rotated | Days Since Rotation | Days Until Expiry | Required By |
+[Secret Rotation Validator/Rotation Report (Markdown)]   | |------|-------------|---------------------|-------------------|-------------|
+[Secret Rotation Validator/Rotation Report (Markdown)]   | | fresh-key | 2024-01-14 | 1 | 89 | service-a |
+[Secret Rotation Validator/Rotation Report (Markdown)]   | | fresh-token | 2024-01-10 | 5 | 85 | service-b |
+[Secret Rotation Validator/Rotation Report (Markdown)]   | 
+[Secret Rotation Validator/Rotation Report (JSON)    ]   | {
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |   "summary": {
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |     "total": 2,
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |     "expired": 0,
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |     "warning": 0,
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |     "ok": 2
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |   },
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |   "secrets": {
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |     "expired": [],
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |     "warning": [],
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |     "ok": [
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |       {
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "name": "fresh-key",
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "last_rotated": "2024-01-14",
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "rotation_days": 90,
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "required_by": [
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |           "service-a"
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         ],
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "days_since_rotation": 1,
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "days_until_expiry": 89,
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "status": "ok"
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |       },
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |       {
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "name": "fresh-token",
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "last_rotated": "2024-01-10",
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "rotation_days": 90,
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "required_by": [
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |           "service-b"
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         ],
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "days_since_rotation": 5,
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "days_until_expiry": 85,
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "status": "ok"
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |       }
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |     ]
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |   }
+[Secret Rotation Validator/Rotation Report (JSON)    ]   | }
+[Secret Rotation Validator/Rotation Report (Markdown)]   ✅  Success - Main Run secret rotation validator (markdown) [558.148289ms]
+[Secret Rotation Validator/Rotation Report (JSON)    ]   ✅  Success - Main Run secret rotation validator (JSON) [553.984366ms]
+[Secret Rotation Validator/Rotation Report (Markdown)] ⭐ Run Complete job
+[Secret Rotation Validator/Rotation Report (Markdown)] Cleaning up container for job Rotation Report (Markdown)
+[Secret Rotation Validator/Rotation Report (JSON)    ] ⭐ Run Complete job
+[Secret Rotation Validator/Rotation Report (JSON)    ] Cleaning up container for job Rotation Report (JSON)
+[Secret Rotation Validator/Rotation Report (JSON)    ]   ✅  Success - Complete job
+[Secret Rotation Validator/Rotation Report (JSON)    ] 🏁  Job succeeded
+[Secret Rotation Validator/Rotation Report (Markdown)]   ✅  Success - Complete job
+[Secret Rotation Validator/Rotation Report (Markdown)] 🏁  Job succeeded
+
+
+ASSERT exit_code == 0: PASS
+ASSERT 'Job succeeded' x3: PASS (3 occurrences)
+ASSERT '**Expired:** 0': PASS
+ASSERT '**Warning:** 0': PASS
+ASSERT '**OK:** 2': PASS
+ASSERT 'fresh-key': PASS
+ASSERT 'fresh-token': PASS
+
+RESULT: PASS (all assertions passed)
+
+======================================================================
+TEST CASE: test_expired_markdown
+Description: One expired secret appears in the EXPIRED section
+Fixture: [
+  {
+    "name": "old-db-password",
+    "last_rotated": "2023-09-01",
+    "rotation_days": 90,
+    "required_by": [
+      "backend-api"
+    ]
+  }
+]
+
+--- act output ---
+time="2026-04-09T06:54:50-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Secret Rotation Validator/Run Unit Tests] ⭐ Run Set up job
+[Secret Rotation Validator/Run Unit Tests] 🚀  Start image=catthehacker/ubuntu:act-22.04
+[Secret Rotation Validator/Run Unit Tests]   🐳  docker pull image=catthehacker/ubuntu:act-22.04 platform= username= forcePull=false
+[Secret Rotation Validator/Run Unit Tests]   🐳  docker create image=catthehacker/ubuntu:act-22.04 platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/Run Unit Tests]   🐳  docker run image=catthehacker/ubuntu:act-22.04 platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/Run Unit Tests]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Secret Rotation Validator/Run Unit Tests]   ✅  Success - Set up job
+[Secret Rotation Validator/Run Unit Tests] ⭐ Run Main Checkout code
+[Secret Rotation Validator/Run Unit Tests]   🐳  docker cp src=/tmp/act-test-4lj1iehh/. dst=/tmp/act-test-4lj1iehh
+[Secret Rotation Validator/Run Unit Tests]   ✅  Success - Main Checkout code [83.357002ms]
+[Secret Rotation Validator/Run Unit Tests] ⭐ Run Main Install dependencies
+[Secret Rotation Validator/Run Unit Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Secret Rotation Validator/Run Unit Tests]   | Collecting pytest>=7.0.0
+[Secret Rotation Validator/Run Unit Tests]   |   Downloading pytest-9.0.3-py3-none-any.whl (375 kB)
+[Secret Rotation Validator/Run Unit Tests]   |      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 375.2/375.2 KB 4.6 MB/s eta 0:00:00
+[Secret Rotation Validator/Run Unit Tests]   | Collecting packaging>=22
+[Secret Rotation Validator/Run Unit Tests]   |   Downloading packaging-26.0-py3-none-any.whl (74 kB)
+[Secret Rotation Validator/Run Unit Tests]   |      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 74.4/74.4 KB 5.2 MB/s eta 0:00:00
+[Secret Rotation Validator/Run Unit Tests]   | Collecting tomli>=1
+[Secret Rotation Validator/Run Unit Tests]   |   Downloading tomli-2.4.1-py3-none-any.whl (14 kB)
+[Secret Rotation Validator/Run Unit Tests]   | Collecting pygments>=2.7.2
+[Secret Rotation Validator/Run Unit Tests]   |   Downloading pygments-2.20.0-py3-none-any.whl (1.2 MB)
+[Secret Rotation Validator/Run Unit Tests]   |      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.2/1.2 MB 10.3 MB/s eta 0:00:00
+[Secret Rotation Validator/Run Unit Tests]   | Collecting iniconfig>=1.0.1
+[Secret Rotation Validator/Run Unit Tests]   |   Downloading iniconfig-2.3.0-py3-none-any.whl (7.5 kB)
+[Secret Rotation Validator/Run Unit Tests]   | Collecting pluggy<2,>=1.5
+[Secret Rotation Validator/Run Unit Tests]   |   Downloading pluggy-1.6.0-py3-none-any.whl (20 kB)
+[Secret Rotation Validator/Run Unit Tests]   | Collecting exceptiongroup>=1
+[Secret Rotation Validator/Run Unit Tests]   |   Downloading exceptiongroup-1.3.1-py3-none-any.whl (16 kB)
+[Secret Rotation Validator/Run Unit Tests]   | Collecting typing-extensions>=4.6.0
+[Secret Rotation Validator/Run Unit Tests]   |   Downloading typing_extensions-4.15.0-py3-none-any.whl (44 kB)
+[Secret Rotation Validator/Run Unit Tests]   |      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 44.6/44.6 KB 4.3 MB/s eta 0:00:00
+[Secret Rotation Validator/Run Unit Tests]   | Installing collected packages: typing-extensions, tomli, pygments, pluggy, packaging, iniconfig, exceptiongroup, pytest
+[Secret Rotation Validator/Run Unit Tests]   |   Attempting uninstall: packaging
+[Secret Rotation Validator/Run Unit Tests]   |     Found existing installation: packaging 21.3
+[Secret Rotation Validator/Run Unit Tests]   |     Not uninstalling packaging at /usr/lib/python3/dist-packages, outside environment /usr
+[Secret Rotation Validator/Run Unit Tests]   |     Can't uninstall 'packaging'. No files were found to uninstall.
+[Secret Rotation Validator/Run Unit Tests]   | ERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.
+[Secret Rotation Validator/Run Unit Tests]   | pipx 1.0.0 requires argcomplete>=1.9.4, but you have argcomplete 1.8.1 which is incompatible.
+[Secret Rotation Validator/Run Unit Tests]   | WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+[Secret Rotation Validator/Run Unit Tests]   | Successfully installed exceptiongroup-1.3.1 iniconfig-2.3.0 packaging-26.0 pluggy-1.6.0 pygments-2.20.0 pytest-9.0.3 tomli-2.4.1 typing-extensions-4.15.0
+[Secret Rotation Validator/Run Unit Tests]   ✅  Success - Main Install dependencies [4.75255947s]
+[Secret Rotation Validator/Run Unit Tests] ⭐ Run Main Run unit tests
+[Secret Rotation Validator/Run Unit Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Secret Rotation Validator/Run Unit Tests]   | ============================= test session starts ==============================
+[Secret Rotation Validator/Run Unit Tests]   | platform linux -- Python 3.10.12, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+[Secret Rotation Validator/Run Unit Tests]   | cachedir: .pytest_cache
+[Secret Rotation Validator/Run Unit Tests]   | rootdir: /tmp/act-test-4lj1iehh
+[Secret Rotation Validator/Run Unit Tests]   | collecting ... collected 45 items
+[Secret Rotation Validator/Run Unit Tests]   | 
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_expired_secret_gets_expired_status PASSED [  2%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_expired_secret_days_until_expiry_is_negative PASSED [  4%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_warning_secret_gets_warning_status PASSED [  6%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_ok_secret_gets_ok_status PASSED [  8%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_days_since_rotation_is_correct PASSED [ 11%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_days_until_expiry_is_correct PASSED [ 13%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_warning_window_is_configurable PASSED [ 15%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_secret_expiring_exactly_on_boundary_is_warning PASSED [ 17%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_missing_required_field_raises_value_error PASSED [ 20%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_invalid_date_format_raises_value_error PASSED [ 22%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_original_fields_preserved_in_result PASSED [ 24%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_today_used_when_reference_date_is_none PASSED [ 26%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestAnalyzeSecrets::test_result_has_three_urgency_groups PASSED [ 28%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestAnalyzeSecrets::test_expired_secret_lands_in_expired_group PASSED [ 31%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestAnalyzeSecrets::test_warning_secret_lands_in_warning_group PASSED [ 33%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestAnalyzeSecrets::test_ok_secret_lands_in_ok_group PASSED [ 35%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestAnalyzeSecrets::test_empty_input_returns_empty_groups PASSED [ 37%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestAnalyzeSecrets::test_all_secrets_accounted_for PASSED [ 40%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestAnalyzeSecrets::test_single_ok_secret PASSED [ 42%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_contains_report_header PASSED [ 44%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_contains_expired_section PASSED [ 46%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_contains_warning_section PASSED [ 48%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_contains_ok_section PASSED [ 51%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_summary_shows_correct_total PASSED [ 53%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_summary_shows_expired_count PASSED [ 55%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_summary_shows_warning_count PASSED [ 57%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_summary_shows_ok_count PASSED [ 60%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_contains_secret_names PASSED [ 62%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_contains_table_headers PASSED [ 64%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_empty_section_shows_placeholder PASSED [ 66%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_expired_secret_shows_overdue_label PASSED [ 68%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatJson::test_output_is_valid_json PASSED [ 71%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatJson::test_summary_section_exists PASSED [ 73%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatJson::test_summary_total_is_correct PASSED [ 75%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatJson::test_summary_expired_count PASSED [ 77%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatJson::test_summary_warning_count PASSED [ 80%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatJson::test_summary_ok_count PASSED    [ 82%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatJson::test_secrets_grouped_by_urgency PASSED [ 84%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatJson::test_expired_group_has_correct_secret PASSED [ 86%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatJson::test_ok_group_has_correct_secret PASSED [ 88%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestLoadSecrets::test_load_valid_json_file PASSED [ 91%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestLoadSecrets::test_nonexistent_file_raises_file_not_found PASSED [ 93%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestLoadSecrets::test_invalid_json_raises_value_error PASSED [ 95%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestLoadSecrets::test_non_array_json_raises_value_error PASSED [ 97%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestLoadSecrets::test_empty_array_is_valid PASSED [100%]
+[Secret Rotation Validator/Run Unit Tests]   | 
+[Secret Rotation Validator/Run Unit Tests]   | ============================== 45 passed in 0.15s ==============================
+[Secret Rotation Validator/Run Unit Tests]   ✅  Success - Main Run unit tests [802.661958ms]
+[Secret Rotation Validator/Run Unit Tests] ⭐ Run Complete job
+[Secret Rotation Validator/Run Unit Tests] Cleaning up container for job Run Unit Tests
+[Secret Rotation Validator/Run Unit Tests]   ✅  Success - Complete job
+[Secret Rotation Validator/Run Unit Tests] 🏁  Job succeeded
+[Secret Rotation Validator/Rotation Report (Markdown)] ⭐ Run Set up job
+[Secret Rotation Validator/Rotation Report (JSON)    ] ⭐ Run Set up job
+[Secret Rotation Validator/Rotation Report (Markdown)] 🚀  Start image=catthehacker/ubuntu:act-22.04
+[Secret Rotation Validator/Rotation Report (JSON)    ] 🚀  Start image=catthehacker/ubuntu:act-22.04
+[Secret Rotation Validator/Rotation Report (Markdown)]   🐳  docker pull image=catthehacker/ubuntu:act-22.04 platform= username= forcePull=false
+[Secret Rotation Validator/Rotation Report (JSON)    ]   🐳  docker pull image=catthehacker/ubuntu:act-22.04 platform= username= forcePull=false
+[Secret Rotation Validator/Rotation Report (Markdown)]   🐳  docker create image=catthehacker/ubuntu:act-22.04 platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/Rotation Report (JSON)    ]   🐳  docker create image=catthehacker/ubuntu:act-22.04 platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/Rotation Report (Markdown)]   🐳  docker run image=catthehacker/ubuntu:act-22.04 platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/Rotation Report (JSON)    ]   🐳  docker run image=catthehacker/ubuntu:act-22.04 platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/Rotation Report (Markdown)]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Secret Rotation Validator/Rotation Report (JSON)    ]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Secret Rotation Validator/Rotation Report (JSON)    ]   ✅  Success - Set up job
+[Secret Rotation Validator/Rotation Report (Markdown)]   ✅  Success - Set up job
+[Secret Rotation Validator/Rotation Report (Markdown)] ⭐ Run Main Checkout code
+[Secret Rotation Validator/Rotation Report (JSON)    ] ⭐ Run Main Checkout code
+[Secret Rotation Validator/Rotation Report (Markdown)]   🐳  docker cp src=/tmp/act-test-4lj1iehh/. dst=/tmp/act-test-4lj1iehh
+[Secret Rotation Validator/Rotation Report (JSON)    ]   🐳  docker cp src=/tmp/act-test-4lj1iehh/. dst=/tmp/act-test-4lj1iehh
+[Secret Rotation Validator/Rotation Report (Markdown)]   ✅  Success - Main Checkout code [153.104746ms]
+[Secret Rotation Validator/Rotation Report (JSON)    ]   ✅  Success - Main Checkout code [148.722858ms]
+[Secret Rotation Validator/Rotation Report (JSON)    ] ⭐ Run Main Run secret rotation validator (JSON)
+[Secret Rotation Validator/Rotation Report (Markdown)] ⭐ Run Main Run secret rotation validator (markdown)
+[Secret Rotation Validator/Rotation Report (Markdown)]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Secret Rotation Validator/Rotation Report (JSON)    ]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Secret Rotation Validator/Rotation Report (JSON)    ]   | {
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |   "summary": {
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |     "total": 1,
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |     "expired": 1,
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |     "warning": 0,
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |     "ok": 0
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |   },
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |   "secrets": {
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |     "expired": [
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |       {
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "name": "old-db-password",
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "last_rotated": "2023-09-01",
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "rotation_days": 90,
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "required_by": [
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |           "backend-api"
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         ],
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "days_since_rotation": 136,
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "days_until_expiry": -46,
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "status": "expired"
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |       }
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |     ],
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |     "warning": [],
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |     "ok": []
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |   }
+[Secret Rotation Validator/Rotation Report (JSON)    ]   | }
+[Secret Rotation Validator/Rotation Report (Markdown)]   | # Secret Rotation Report
+[Secret Rotation Validator/Rotation Report (Markdown)]   | 
+[Secret Rotation Validator/Rotation Report (Markdown)]   | **Total secrets:** 1
+[Secret Rotation Validator/Rotation Report (Markdown)]   | **Expired:** 1
+[Secret Rotation Validator/Rotation Report (Markdown)]   | **Warning:** 0
+[Secret Rotation Validator/Rotation Report (Markdown)]   | **OK:** 0
+[Secret Rotation Validator/Rotation Report (Markdown)]   | 
+[Secret Rotation Validator/Rotation Report (Markdown)]   | ## EXPIRED (1)
+[Secret Rotation Validator/Rotation Report (Markdown)]   | 
+[Secret Rotation Validator/Rotation Report (Markdown)]   | | Name | Last Rotated | Days Since Rotation | Days Until Expiry | Required By |
+[Secret Rotation Validator/Rotation Report (Markdown)]   | |------|-------------|---------------------|-------------------|-------------|
+[Secret Rotation Validator/Rotation Report (Markdown)]   | | old-db-password | 2023-09-01 | 136 | OVERDUE by 46 days | backend-api |
+[Secret Rotation Validator/Rotation Report (Markdown)]   | 
+[Secret Rotation Validator/Rotation Report (Markdown)]   | ## WARNING (0)
+[Secret Rotation Validator/Rotation Report (Markdown)]   | 
+[Secret Rotation Validator/Rotation Report (Markdown)]   | _No secrets in this category._
+[Secret Rotation Validator/Rotation Report (Markdown)]   | 
+[Secret Rotation Validator/Rotation Report (Markdown)]   | ## OK (0)
+[Secret Rotation Validator/Rotation Report (Markdown)]   | 
+[Secret Rotation Validator/Rotation Report (Markdown)]   | _No secrets in this category._
+[Secret Rotation Validator/Rotation Report (Markdown)]   | 
+[Secret Rotation Validator/Rotation Report (Markdown)]   ✅  Success - Main Run secret rotation validator (markdown) [569.951166ms]
+[Secret Rotation Validator/Rotation Report (JSON)    ]   ✅  Success - Main Run secret rotation validator (JSON) [605.725255ms]
+[Secret Rotation Validator/Rotation Report (Markdown)] ⭐ Run Complete job
+[Secret Rotation Validator/Rotation Report (Markdown)] Cleaning up container for job Rotation Report (Markdown)
+[Secret Rotation Validator/Rotation Report (JSON)    ] ⭐ Run Complete job
+[Secret Rotation Validator/Rotation Report (JSON)    ] Cleaning up container for job Rotation Report (JSON)
+[Secret Rotation Validator/Rotation Report (Markdown)]   ✅  Success - Complete job
+[Secret Rotation Validator/Rotation Report (Markdown)] 🏁  Job succeeded
+[Secret Rotation Validator/Rotation Report (JSON)    ]   ✅  Success - Complete job
+[Secret Rotation Validator/Rotation Report (JSON)    ] 🏁  Job succeeded
+
+
+ASSERT exit_code == 0: PASS
+ASSERT 'Job succeeded' x3: PASS (3 occurrences)
+ASSERT '**Expired:** 1': PASS
+ASSERT '**Warning:** 0': PASS
+ASSERT '**OK:** 0': PASS
+ASSERT 'old-db-password': PASS
+ASSERT '## EXPIRED (1)': PASS
+ASSERT 'OVERDUE': PASS
+
+RESULT: PASS (all assertions passed)
+
+======================================================================
+TEST CASE: test_warning_markdown
+Description: One near-expiry secret appears in the WARNING section
+Fixture: [
+  {
+    "name": "expiring-api-key",
+    "last_rotated": "2023-12-20",
+    "rotation_days": 30,
+    "required_by": [
+      "frontend"
+    ]
+  }
+]
+
+--- act output ---
+time="2026-04-09T06:55:03-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Secret Rotation Validator/Run Unit Tests] ⭐ Run Set up job
+[Secret Rotation Validator/Run Unit Tests] 🚀  Start image=catthehacker/ubuntu:act-22.04
+[Secret Rotation Validator/Run Unit Tests]   🐳  docker pull image=catthehacker/ubuntu:act-22.04 platform= username= forcePull=false
+[Secret Rotation Validator/Run Unit Tests]   🐳  docker create image=catthehacker/ubuntu:act-22.04 platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/Run Unit Tests]   🐳  docker run image=catthehacker/ubuntu:act-22.04 platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/Run Unit Tests]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Secret Rotation Validator/Run Unit Tests]   ✅  Success - Set up job
+[Secret Rotation Validator/Run Unit Tests] ⭐ Run Main Checkout code
+[Secret Rotation Validator/Run Unit Tests]   🐳  docker cp src=/tmp/act-test-7xujwwc1/. dst=/tmp/act-test-7xujwwc1
+[Secret Rotation Validator/Run Unit Tests]   ✅  Success - Main Checkout code [141.759689ms]
+[Secret Rotation Validator/Run Unit Tests] ⭐ Run Main Install dependencies
+[Secret Rotation Validator/Run Unit Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Secret Rotation Validator/Run Unit Tests]   | Collecting pytest>=7.0.0
+[Secret Rotation Validator/Run Unit Tests]   |   Downloading pytest-9.0.3-py3-none-any.whl (375 kB)
+[Secret Rotation Validator/Run Unit Tests]   |      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 375.2/375.2 KB 4.3 MB/s eta 0:00:00
+[Secret Rotation Validator/Run Unit Tests]   | Collecting iniconfig>=1.0.1
+[Secret Rotation Validator/Run Unit Tests]   |   Downloading iniconfig-2.3.0-py3-none-any.whl (7.5 kB)
+[Secret Rotation Validator/Run Unit Tests]   | Collecting pygments>=2.7.2
+[Secret Rotation Validator/Run Unit Tests]   |   Downloading pygments-2.20.0-py3-none-any.whl (1.2 MB)
+[Secret Rotation Validator/Run Unit Tests]   |      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.2/1.2 MB 11.8 MB/s eta 0:00:00
+[Secret Rotation Validator/Run Unit Tests]   | Collecting pluggy<2,>=1.5
+[Secret Rotation Validator/Run Unit Tests]   |   Downloading pluggy-1.6.0-py3-none-any.whl (20 kB)
+[Secret Rotation Validator/Run Unit Tests]   | Collecting packaging>=22
+[Secret Rotation Validator/Run Unit Tests]   |   Downloading packaging-26.0-py3-none-any.whl (74 kB)
+[Secret Rotation Validator/Run Unit Tests]   |      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 74.4/74.4 KB 5.9 MB/s eta 0:00:00
+[Secret Rotation Validator/Run Unit Tests]   | Collecting tomli>=1
+[Secret Rotation Validator/Run Unit Tests]   |   Downloading tomli-2.4.1-py3-none-any.whl (14 kB)
+[Secret Rotation Validator/Run Unit Tests]   | Collecting exceptiongroup>=1
+[Secret Rotation Validator/Run Unit Tests]   |   Downloading exceptiongroup-1.3.1-py3-none-any.whl (16 kB)
+[Secret Rotation Validator/Run Unit Tests]   | Collecting typing-extensions>=4.6.0
+[Secret Rotation Validator/Run Unit Tests]   |   Downloading typing_extensions-4.15.0-py3-none-any.whl (44 kB)
+[Secret Rotation Validator/Run Unit Tests]   |      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 44.6/44.6 KB 3.9 MB/s eta 0:00:00
+[Secret Rotation Validator/Run Unit Tests]   | Installing collected packages: typing-extensions, tomli, pygments, pluggy, packaging, iniconfig, exceptiongroup, pytest
+[Secret Rotation Validator/Run Unit Tests]   |   Attempting uninstall: packaging
+[Secret Rotation Validator/Run Unit Tests]   |     Found existing installation: packaging 21.3
+[Secret Rotation Validator/Run Unit Tests]   |     Not uninstalling packaging at /usr/lib/python3/dist-packages, outside environment /usr
+[Secret Rotation Validator/Run Unit Tests]   |     Can't uninstall 'packaging'. No files were found to uninstall.
+[Secret Rotation Validator/Run Unit Tests]   | ERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.
+[Secret Rotation Validator/Run Unit Tests]   | pipx 1.0.0 requires argcomplete>=1.9.4, but you have argcomplete 1.8.1 which is incompatible.
+[Secret Rotation Validator/Run Unit Tests]   | Successfully installed exceptiongroup-1.3.1 iniconfig-2.3.0 packaging-26.0 pluggy-1.6.0 pygments-2.20.0 pytest-9.0.3 tomli-2.4.1 typing-extensions-4.15.0
+[Secret Rotation Validator/Run Unit Tests]   | WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+[Secret Rotation Validator/Run Unit Tests]   ✅  Success - Main Install dependencies [4.769594783s]
+[Secret Rotation Validator/Run Unit Tests] ⭐ Run Main Run unit tests
+[Secret Rotation Validator/Run Unit Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Secret Rotation Validator/Run Unit Tests]   | ============================= test session starts ==============================
+[Secret Rotation Validator/Run Unit Tests]   | platform linux -- Python 3.10.12, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+[Secret Rotation Validator/Run Unit Tests]   | cachedir: .pytest_cache
+[Secret Rotation Validator/Run Unit Tests]   | rootdir: /tmp/act-test-7xujwwc1
+[Secret Rotation Validator/Run Unit Tests]   | collecting ... collected 45 items
+[Secret Rotation Validator/Run Unit Tests]   | 
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_expired_secret_gets_expired_status PASSED [  2%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_expired_secret_days_until_expiry_is_negative PASSED [  4%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_warning_secret_gets_warning_status PASSED [  6%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_ok_secret_gets_ok_status PASSED [  8%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_days_since_rotation_is_correct PASSED [ 11%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_days_until_expiry_is_correct PASSED [ 13%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_warning_window_is_configurable PASSED [ 15%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_secret_expiring_exactly_on_boundary_is_warning PASSED [ 17%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_missing_required_field_raises_value_error PASSED [ 20%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_invalid_date_format_raises_value_error PASSED [ 22%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_original_fields_preserved_in_result PASSED [ 24%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_today_used_when_reference_date_is_none PASSED [ 26%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestAnalyzeSecrets::test_result_has_three_urgency_groups PASSED [ 28%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestAnalyzeSecrets::test_expired_secret_lands_in_expired_group PASSED [ 31%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestAnalyzeSecrets::test_warning_secret_lands_in_warning_group PASSED [ 33%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestAnalyzeSecrets::test_ok_secret_lands_in_ok_group PASSED [ 35%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestAnalyzeSecrets::test_empty_input_returns_empty_groups PASSED [ 37%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestAnalyzeSecrets::test_all_secrets_accounted_for PASSED [ 40%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestAnalyzeSecrets::test_single_ok_secret PASSED [ 42%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_contains_report_header PASSED [ 44%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_contains_expired_section PASSED [ 46%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_contains_warning_section PASSED [ 48%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_contains_ok_section PASSED [ 51%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_summary_shows_correct_total PASSED [ 53%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_summary_shows_expired_count PASSED [ 55%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_summary_shows_warning_count PASSED [ 57%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_summary_shows_ok_count PASSED [ 60%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_contains_secret_names PASSED [ 62%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_contains_table_headers PASSED [ 64%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_empty_section_shows_placeholder PASSED [ 66%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_expired_secret_shows_overdue_label PASSED [ 68%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatJson::test_output_is_valid_json PASSED [ 71%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatJson::test_summary_section_exists PASSED [ 73%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatJson::test_summary_total_is_correct PASSED [ 75%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatJson::test_summary_expired_count PASSED [ 77%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatJson::test_summary_warning_count PASSED [ 80%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatJson::test_summary_ok_count PASSED    [ 82%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatJson::test_secrets_grouped_by_urgency PASSED [ 84%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatJson::test_expired_group_has_correct_secret PASSED [ 86%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatJson::test_ok_group_has_correct_secret PASSED [ 88%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestLoadSecrets::test_load_valid_json_file PASSED [ 91%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestLoadSecrets::test_nonexistent_file_raises_file_not_found PASSED [ 93%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestLoadSecrets::test_invalid_json_raises_value_error PASSED [ 95%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestLoadSecrets::test_non_array_json_raises_value_error PASSED [ 97%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestLoadSecrets::test_empty_array_is_valid PASSED [100%]
+[Secret Rotation Validator/Run Unit Tests]   | 
+[Secret Rotation Validator/Run Unit Tests]   | ============================== 45 passed in 0.16s ==============================
+[Secret Rotation Validator/Run Unit Tests]   ✅  Success - Main Run unit tests [1.03065748s]
+[Secret Rotation Validator/Run Unit Tests] ⭐ Run Complete job
+[Secret Rotation Validator/Run Unit Tests] Cleaning up container for job Run Unit Tests
+[Secret Rotation Validator/Run Unit Tests]   ✅  Success - Complete job
+[Secret Rotation Validator/Run Unit Tests] 🏁  Job succeeded
+[Secret Rotation Validator/Rotation Report (Markdown)] ⭐ Run Set up job
+[Secret Rotation Validator/Rotation Report (Markdown)] 🚀  Start image=catthehacker/ubuntu:act-22.04
+[Secret Rotation Validator/Rotation Report (JSON)    ] ⭐ Run Set up job
+[Secret Rotation Validator/Rotation Report (JSON)    ] 🚀  Start image=catthehacker/ubuntu:act-22.04
+[Secret Rotation Validator/Rotation Report (JSON)    ]   🐳  docker pull image=catthehacker/ubuntu:act-22.04 platform= username= forcePull=false
+[Secret Rotation Validator/Rotation Report (Markdown)]   🐳  docker pull image=catthehacker/ubuntu:act-22.04 platform= username= forcePull=false
+[Secret Rotation Validator/Rotation Report (JSON)    ]   🐳  docker create image=catthehacker/ubuntu:act-22.04 platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/Rotation Report (Markdown)]   🐳  docker create image=catthehacker/ubuntu:act-22.04 platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/Rotation Report (Markdown)]   🐳  docker run image=catthehacker/ubuntu:act-22.04 platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/Rotation Report (JSON)    ]   🐳  docker run image=catthehacker/ubuntu:act-22.04 platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/Rotation Report (JSON)    ]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Secret Rotation Validator/Rotation Report (Markdown)]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Secret Rotation Validator/Rotation Report (JSON)    ]   ✅  Success - Set up job
+[Secret Rotation Validator/Rotation Report (Markdown)]   ✅  Success - Set up job
+[Secret Rotation Validator/Rotation Report (JSON)    ] ⭐ Run Main Checkout code
+[Secret Rotation Validator/Rotation Report (Markdown)] ⭐ Run Main Checkout code
+[Secret Rotation Validator/Rotation Report (Markdown)]   🐳  docker cp src=/tmp/act-test-7xujwwc1/. dst=/tmp/act-test-7xujwwc1
+[Secret Rotation Validator/Rotation Report (JSON)    ]   🐳  docker cp src=/tmp/act-test-7xujwwc1/. dst=/tmp/act-test-7xujwwc1
+[Secret Rotation Validator/Rotation Report (Markdown)]   ✅  Success - Main Checkout code [107.94103ms]
+[Secret Rotation Validator/Rotation Report (JSON)    ]   ✅  Success - Main Checkout code [136.836915ms]
+[Secret Rotation Validator/Rotation Report (Markdown)] ⭐ Run Main Run secret rotation validator (markdown)
+[Secret Rotation Validator/Rotation Report (JSON)    ] ⭐ Run Main Run secret rotation validator (JSON)
+[Secret Rotation Validator/Rotation Report (Markdown)]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Secret Rotation Validator/Rotation Report (JSON)    ]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Secret Rotation Validator/Rotation Report (Markdown)]   | # Secret Rotation Report
+[Secret Rotation Validator/Rotation Report (Markdown)]   | 
+[Secret Rotation Validator/Rotation Report (Markdown)]   | **Total secrets:** 1
+[Secret Rotation Validator/Rotation Report (Markdown)]   | **Expired:** 0
+[Secret Rotation Validator/Rotation Report (Markdown)]   | **Warning:** 1
+[Secret Rotation Validator/Rotation Report (Markdown)]   | **OK:** 0
+[Secret Rotation Validator/Rotation Report (Markdown)]   | 
+[Secret Rotation Validator/Rotation Report (Markdown)]   | ## EXPIRED (0)
+[Secret Rotation Validator/Rotation Report (Markdown)]   | 
+[Secret Rotation Validator/Rotation Report (Markdown)]   | _No secrets in this category._
+[Secret Rotation Validator/Rotation Report (Markdown)]   | 
+[Secret Rotation Validator/Rotation Report (Markdown)]   | ## WARNING (1)
+[Secret Rotation Validator/Rotation Report (Markdown)]   | 
+[Secret Rotation Validator/Rotation Report (Markdown)]   | | Name | Last Rotated | Days Since Rotation | Days Until Expiry | Required By |
+[Secret Rotation Validator/Rotation Report (Markdown)]   | |------|-------------|---------------------|-------------------|-------------|
+[Secret Rotation Validator/Rotation Report (Markdown)]   | | expiring-api-key | 2023-12-20 | 26 | 4 | frontend |
+[Secret Rotation Validator/Rotation Report (Markdown)]   | 
+[Secret Rotation Validator/Rotation Report (Markdown)]   | ## OK (0)
+[Secret Rotation Validator/Rotation Report (Markdown)]   | 
+[Secret Rotation Validator/Rotation Report (Markdown)]   | _No secrets in this category._
+[Secret Rotation Validator/Rotation Report (Markdown)]   | 
+[Secret Rotation Validator/Rotation Report (JSON)    ]   | {
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |   "summary": {
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |     "total": 1,
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |     "expired": 0,
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |     "warning": 1,
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |     "ok": 0
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |   },
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |   "secrets": {
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |     "expired": [],
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |     "warning": [
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |       {
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "name": "expiring-api-key",
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "last_rotated": "2023-12-20",
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "rotation_days": 30,
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "required_by": [
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |           "frontend"
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         ],
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "days_since_rotation": 26,
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "days_until_expiry": 4,
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "status": "warning"
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |       }
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |     ],
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |     "ok": []
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |   }
+[Secret Rotation Validator/Rotation Report (JSON)    ]   | }
+[Secret Rotation Validator/Rotation Report (JSON)    ]   ✅  Success - Main Run secret rotation validator (JSON) [489.945121ms]
+[Secret Rotation Validator/Rotation Report (Markdown)]   ✅  Success - Main Run secret rotation validator (markdown) [507.198193ms]
+[Secret Rotation Validator/Rotation Report (JSON)    ] ⭐ Run Complete job
+[Secret Rotation Validator/Rotation Report (JSON)    ] Cleaning up container for job Rotation Report (JSON)
+[Secret Rotation Validator/Rotation Report (Markdown)] ⭐ Run Complete job
+[Secret Rotation Validator/Rotation Report (Markdown)] Cleaning up container for job Rotation Report (Markdown)
+[Secret Rotation Validator/Rotation Report (JSON)    ]   ✅  Success - Complete job
+[Secret Rotation Validator/Rotation Report (JSON)    ] 🏁  Job succeeded
+[Secret Rotation Validator/Rotation Report (Markdown)]   ✅  Success - Complete job
+[Secret Rotation Validator/Rotation Report (Markdown)] 🏁  Job succeeded
+
+
+ASSERT exit_code == 0: PASS
+ASSERT 'Job succeeded' x3: PASS (3 occurrences)
+ASSERT '**Expired:** 0': PASS
+ASSERT '**Warning:** 1': PASS
+ASSERT '**OK:** 0': PASS
+ASSERT 'expiring-api-key': PASS
+ASSERT '## WARNING (1)': PASS
+
+RESULT: PASS (all assertions passed)
+
+======================================================================
+TEST CASE: test_mixed_json
+Description: Mixed secrets with JSON output — verify exact counts
+Fixture: [
+  {
+    "name": "db-password",
+    "last_rotated": "2023-09-01",
+    "rotation_days": 90,
+    "required_by": [
+      "backend-api",
+      "worker"
+    ]
+  },
+  {
+    "name": "api-key",
+    "last_rotated": "2023-12-20",
+    "rotation_days": 30,
+    "required_by": [
+      "frontend"
+    ]
+  },
+  {
+    "name": "jwt-secret",
+    "last_rotated": "2024-01-01",
+    "rotation_days": 90,
+    "required_by": [
+      "auth-service"
+    ]
+  }
+]
+
+--- act output ---
+time="2026-04-09T06:55:16-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Secret Rotation Validator/Run Unit Tests] ⭐ Run Set up job
+[Secret Rotation Validator/Run Unit Tests] 🚀  Start image=catthehacker/ubuntu:act-22.04
+[Secret Rotation Validator/Run Unit Tests]   🐳  docker pull image=catthehacker/ubuntu:act-22.04 platform= username= forcePull=false
+[Secret Rotation Validator/Run Unit Tests]   🐳  docker create image=catthehacker/ubuntu:act-22.04 platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/Run Unit Tests]   🐳  docker run image=catthehacker/ubuntu:act-22.04 platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/Run Unit Tests]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Secret Rotation Validator/Run Unit Tests]   ✅  Success - Set up job
+[Secret Rotation Validator/Run Unit Tests] ⭐ Run Main Checkout code
+[Secret Rotation Validator/Run Unit Tests]   🐳  docker cp src=/tmp/act-test-f2x44d2_/. dst=/tmp/act-test-f2x44d2_
+[Secret Rotation Validator/Run Unit Tests]   ✅  Success - Main Checkout code [91.252458ms]
+[Secret Rotation Validator/Run Unit Tests] ⭐ Run Main Install dependencies
+[Secret Rotation Validator/Run Unit Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Secret Rotation Validator/Run Unit Tests]   | Collecting pytest>=7.0.0
+[Secret Rotation Validator/Run Unit Tests]   |   Downloading pytest-9.0.3-py3-none-any.whl (375 kB)
+[Secret Rotation Validator/Run Unit Tests]   |      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 375.2/375.2 KB 4.6 MB/s eta 0:00:00
+[Secret Rotation Validator/Run Unit Tests]   | Collecting tomli>=1
+[Secret Rotation Validator/Run Unit Tests]   |   Downloading tomli-2.4.1-py3-none-any.whl (14 kB)
+[Secret Rotation Validator/Run Unit Tests]   | Collecting pluggy<2,>=1.5
+[Secret Rotation Validator/Run Unit Tests]   |   Downloading pluggy-1.6.0-py3-none-any.whl (20 kB)
+[Secret Rotation Validator/Run Unit Tests]   | Collecting packaging>=22
+[Secret Rotation Validator/Run Unit Tests]   |   Downloading packaging-26.0-py3-none-any.whl (74 kB)
+[Secret Rotation Validator/Run Unit Tests]   |      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 74.4/74.4 KB 6.5 MB/s eta 0:00:00
+[Secret Rotation Validator/Run Unit Tests]   | Collecting exceptiongroup>=1
+[Secret Rotation Validator/Run Unit Tests]   |   Downloading exceptiongroup-1.3.1-py3-none-any.whl (16 kB)
+[Secret Rotation Validator/Run Unit Tests]   | Collecting pygments>=2.7.2
+[Secret Rotation Validator/Run Unit Tests]   |   Downloading pygments-2.20.0-py3-none-any.whl (1.2 MB)
+[Secret Rotation Validator/Run Unit Tests]   |      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.2/1.2 MB 10.3 MB/s eta 0:00:00
+[Secret Rotation Validator/Run Unit Tests]   | Collecting iniconfig>=1.0.1
+[Secret Rotation Validator/Run Unit Tests]   |   Downloading iniconfig-2.3.0-py3-none-any.whl (7.5 kB)
+[Secret Rotation Validator/Run Unit Tests]   | Collecting typing-extensions>=4.6.0
+[Secret Rotation Validator/Run Unit Tests]   |   Downloading typing_extensions-4.15.0-py3-none-any.whl (44 kB)
+[Secret Rotation Validator/Run Unit Tests]   |      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 44.6/44.6 KB 5.0 MB/s eta 0:00:00
+[Secret Rotation Validator/Run Unit Tests]   | Installing collected packages: typing-extensions, tomli, pygments, pluggy, packaging, iniconfig, exceptiongroup, pytest
+[Secret Rotation Validator/Run Unit Tests]   |   Attempting uninstall: packaging
+[Secret Rotation Validator/Run Unit Tests]   |     Found existing installation: packaging 21.3
+[Secret Rotation Validator/Run Unit Tests]   |     Not uninstalling packaging at /usr/lib/python3/dist-packages, outside environment /usr
+[Secret Rotation Validator/Run Unit Tests]   |     Can't uninstall 'packaging'. No files were found to uninstall.
+[Secret Rotation Validator/Run Unit Tests]   | ERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.
+[Secret Rotation Validator/Run Unit Tests]   | pipx 1.0.0 requires argcomplete>=1.9.4, but you have argcomplete 1.8.1 which is incompatible.
+[Secret Rotation Validator/Run Unit Tests]   | Successfully installed exceptiongroup-1.3.1 iniconfig-2.3.0 packaging-26.0 pluggy-1.6.0 pygments-2.20.0 pytest-9.0.3 tomli-2.4.1 typing-extensions-4.15.0
+[Secret Rotation Validator/Run Unit Tests]   | WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+[Secret Rotation Validator/Run Unit Tests]   ✅  Success - Main Install dependencies [4.413205653s]
+[Secret Rotation Validator/Run Unit Tests] ⭐ Run Main Run unit tests
+[Secret Rotation Validator/Run Unit Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Secret Rotation Validator/Run Unit Tests]   | ============================= test session starts ==============================
+[Secret Rotation Validator/Run Unit Tests]   | platform linux -- Python 3.10.12, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+[Secret Rotation Validator/Run Unit Tests]   | cachedir: .pytest_cache
+[Secret Rotation Validator/Run Unit Tests]   | rootdir: /tmp/act-test-f2x44d2_
+[Secret Rotation Validator/Run Unit Tests]   | collecting ... collected 45 items
+[Secret Rotation Validator/Run Unit Tests]   | 
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_expired_secret_gets_expired_status PASSED [  2%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_expired_secret_days_until_expiry_is_negative PASSED [  4%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_warning_secret_gets_warning_status PASSED [  6%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_ok_secret_gets_ok_status PASSED [  8%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_days_since_rotation_is_correct PASSED [ 11%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_days_until_expiry_is_correct PASSED [ 13%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_warning_window_is_configurable PASSED [ 15%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_secret_expiring_exactly_on_boundary_is_warning PASSED [ 17%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_missing_required_field_raises_value_error PASSED [ 20%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_invalid_date_format_raises_value_error PASSED [ 22%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_original_fields_preserved_in_result PASSED [ 24%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestCalculateSecretStatus::test_today_used_when_reference_date_is_none PASSED [ 26%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestAnalyzeSecrets::test_result_has_three_urgency_groups PASSED [ 28%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestAnalyzeSecrets::test_expired_secret_lands_in_expired_group PASSED [ 31%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestAnalyzeSecrets::test_warning_secret_lands_in_warning_group PASSED [ 33%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestAnalyzeSecrets::test_ok_secret_lands_in_ok_group PASSED [ 35%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestAnalyzeSecrets::test_empty_input_returns_empty_groups PASSED [ 37%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestAnalyzeSecrets::test_all_secrets_accounted_for PASSED [ 40%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestAnalyzeSecrets::test_single_ok_secret PASSED [ 42%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_contains_report_header PASSED [ 44%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_contains_expired_section PASSED [ 46%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_contains_warning_section PASSED [ 48%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_contains_ok_section PASSED [ 51%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_summary_shows_correct_total PASSED [ 53%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_summary_shows_expired_count PASSED [ 55%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_summary_shows_warning_count PASSED [ 57%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_summary_shows_ok_count PASSED [ 60%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_contains_secret_names PASSED [ 62%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_contains_table_headers PASSED [ 64%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_empty_section_shows_placeholder PASSED [ 66%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatMarkdown::test_expired_secret_shows_overdue_label PASSED [ 68%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatJson::test_output_is_valid_json PASSED [ 71%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatJson::test_summary_section_exists PASSED [ 73%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatJson::test_summary_total_is_correct PASSED [ 75%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatJson::test_summary_expired_count PASSED [ 77%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatJson::test_summary_warning_count PASSED [ 80%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatJson::test_summary_ok_count PASSED    [ 82%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatJson::test_secrets_grouped_by_urgency PASSED [ 84%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatJson::test_expired_group_has_correct_secret PASSED [ 86%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestFormatJson::test_ok_group_has_correct_secret PASSED [ 88%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestLoadSecrets::test_load_valid_json_file PASSED [ 91%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestLoadSecrets::test_nonexistent_file_raises_file_not_found PASSED [ 93%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestLoadSecrets::test_invalid_json_raises_value_error PASSED [ 95%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestLoadSecrets::test_non_array_json_raises_value_error PASSED [ 97%]
+[Secret Rotation Validator/Run Unit Tests]   | tests/test_validator.py::TestLoadSecrets::test_empty_array_is_valid PASSED [100%]
+[Secret Rotation Validator/Run Unit Tests]   | 
+[Secret Rotation Validator/Run Unit Tests]   | ============================== 45 passed in 0.14s ==============================
+[Secret Rotation Validator/Run Unit Tests]   ✅  Success - Main Run unit tests [795.00177ms]
+[Secret Rotation Validator/Run Unit Tests] ⭐ Run Complete job
+[Secret Rotation Validator/Run Unit Tests] Cleaning up container for job Run Unit Tests
+[Secret Rotation Validator/Run Unit Tests]   ✅  Success - Complete job
+[Secret Rotation Validator/Run Unit Tests] 🏁  Job succeeded
+[Secret Rotation Validator/Rotation Report (Markdown)] ⭐ Run Set up job
+[Secret Rotation Validator/Rotation Report (Markdown)] 🚀  Start image=catthehacker/ubuntu:act-22.04
+[Secret Rotation Validator/Rotation Report (JSON)    ] ⭐ Run Set up job
+[Secret Rotation Validator/Rotation Report (JSON)    ] 🚀  Start image=catthehacker/ubuntu:act-22.04
+[Secret Rotation Validator/Rotation Report (Markdown)]   🐳  docker pull image=catthehacker/ubuntu:act-22.04 platform= username= forcePull=false
+[Secret Rotation Validator/Rotation Report (JSON)    ]   🐳  docker pull image=catthehacker/ubuntu:act-22.04 platform= username= forcePull=false
+[Secret Rotation Validator/Rotation Report (Markdown)]   🐳  docker create image=catthehacker/ubuntu:act-22.04 platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/Rotation Report (JSON)    ]   🐳  docker create image=catthehacker/ubuntu:act-22.04 platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/Rotation Report (Markdown)]   🐳  docker run image=catthehacker/ubuntu:act-22.04 platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/Rotation Report (JSON)    ]   🐳  docker run image=catthehacker/ubuntu:act-22.04 platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/Rotation Report (Markdown)]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Secret Rotation Validator/Rotation Report (JSON)    ]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Secret Rotation Validator/Rotation Report (Markdown)]   ✅  Success - Set up job
+[Secret Rotation Validator/Rotation Report (JSON)    ]   ✅  Success - Set up job
+[Secret Rotation Validator/Rotation Report (Markdown)] ⭐ Run Main Checkout code
+[Secret Rotation Validator/Rotation Report (JSON)    ] ⭐ Run Main Checkout code
+[Secret Rotation Validator/Rotation Report (Markdown)]   🐳  docker cp src=/tmp/act-test-f2x44d2_/. dst=/tmp/act-test-f2x44d2_
+[Secret Rotation Validator/Rotation Report (JSON)    ]   🐳  docker cp src=/tmp/act-test-f2x44d2_/. dst=/tmp/act-test-f2x44d2_
+[Secret Rotation Validator/Rotation Report (Markdown)]   ✅  Success - Main Checkout code [147.018342ms]
+[Secret Rotation Validator/Rotation Report (JSON)    ]   ✅  Success - Main Checkout code [177.816977ms]
+[Secret Rotation Validator/Rotation Report (Markdown)] ⭐ Run Main Run secret rotation validator (markdown)
+[Secret Rotation Validator/Rotation Report (JSON)    ] ⭐ Run Main Run secret rotation validator (JSON)
+[Secret Rotation Validator/Rotation Report (Markdown)]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Secret Rotation Validator/Rotation Report (JSON)    ]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Secret Rotation Validator/Rotation Report (Markdown)]   | # Secret Rotation Report
+[Secret Rotation Validator/Rotation Report (Markdown)]   | 
+[Secret Rotation Validator/Rotation Report (Markdown)]   | **Total secrets:** 3
+[Secret Rotation Validator/Rotation Report (Markdown)]   | **Expired:** 1
+[Secret Rotation Validator/Rotation Report (Markdown)]   | **Warning:** 1
+[Secret Rotation Validator/Rotation Report (Markdown)]   | **OK:** 1
+[Secret Rotation Validator/Rotation Report (Markdown)]   | 
+[Secret Rotation Validator/Rotation Report (Markdown)]   | ## EXPIRED (1)
+[Secret Rotation Validator/Rotation Report (Markdown)]   | 
+[Secret Rotation Validator/Rotation Report (Markdown)]   | | Name | Last Rotated | Days Since Rotation | Days Until Expiry | Required By |
+[Secret Rotation Validator/Rotation Report (Markdown)]   | |------|-------------|---------------------|-------------------|-------------|
+[Secret Rotation Validator/Rotation Report (Markdown)]   | | db-password | 2023-09-01 | 136 | OVERDUE by 46 days | backend-api, worker |
+[Secret Rotation Validator/Rotation Report (Markdown)]   | 
+[Secret Rotation Validator/Rotation Report (Markdown)]   | ## WARNING (1)
+[Secret Rotation Validator/Rotation Report (Markdown)]   | 
+[Secret Rotation Validator/Rotation Report (Markdown)]   | | Name | Last Rotated | Days Since Rotation | Days Until Expiry | Required By |
+[Secret Rotation Validator/Rotation Report (Markdown)]   | |------|-------------|---------------------|-------------------|-------------|
+[Secret Rotation Validator/Rotation Report (Markdown)]   | | api-key | 2023-12-20 | 26 | 4 | frontend |
+[Secret Rotation Validator/Rotation Report (Markdown)]   | 
+[Secret Rotation Validator/Rotation Report (Markdown)]   | ## OK (1)
+[Secret Rotation Validator/Rotation Report (Markdown)]   | 
+[Secret Rotation Validator/Rotation Report (Markdown)]   | | Name | Last Rotated | Days Since Rotation | Days Until Expiry | Required By |
+[Secret Rotation Validator/Rotation Report (Markdown)]   | |------|-------------|---------------------|-------------------|-------------|
+[Secret Rotation Validator/Rotation Report (Markdown)]   | | jwt-secret | 2024-01-01 | 14 | 76 | auth-service |
+[Secret Rotation Validator/Rotation Report (Markdown)]   | 
+[Secret Rotation Validator/Rotation Report (JSON)    ]   | {
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |   "summary": {
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |     "total": 3,
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |     "expired": 1,
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |     "warning": 1,
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |     "ok": 1
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |   },
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |   "secrets": {
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |     "expired": [
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |       {
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "name": "db-password",
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "last_rotated": "2023-09-01",
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "rotation_days": 90,
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "required_by": [
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |           "backend-api",
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |           "worker"
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         ],
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "days_since_rotation": 136,
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "days_until_expiry": -46,
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "status": "expired"
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |       }
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |     ],
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |     "warning": [
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |       {
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "name": "api-key",
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "last_rotated": "2023-12-20",
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "rotation_days": 30,
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "required_by": [
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |           "frontend"
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         ],
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "days_since_rotation": 26,
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "days_until_expiry": 4,
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "status": "warning"
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |       }
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |     ],
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |     "ok": [
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |       {
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "name": "jwt-secret",
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "last_rotated": "2024-01-01",
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "rotation_days": 90,
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "required_by": [
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |           "auth-service"
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         ],
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "days_since_rotation": 14,
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "days_until_expiry": 76,
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |         "status": "ok"
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |       }
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |     ]
+[Secret Rotation Validator/Rotation Report (JSON)    ]   |   }
+[Secret Rotation Validator/Rotation Report (JSON)    ]   | }
+[Secret Rotation Validator/Rotation Report (Markdown)]   ✅  Success - Main Run secret rotation validator (markdown) [530.689823ms]
+[Secret Rotation Validator/Rotation Report (JSON)    ]   ✅  Success - Main Run secret rotation validator (JSON) [497.084809ms]
+[Secret Rotation Validator/Rotation Report (Markdown)] ⭐ Run Complete job
+[Secret Rotation Validator/Rotation Report (Markdown)] Cleaning up container for job Rotation Report (Markdown)
+[Secret Rotation Validator/Rotation Report (JSON)    ] ⭐ Run Complete job
+[Secret Rotation Validator/Rotation Report (JSON)    ] Cleaning up container for job Rotation Report (JSON)
+[Secret Rotation Validator/Rotation Report (JSON)    ]   ✅  Success - Complete job
+[Secret Rotation Validator/Rotation Report (JSON)    ] 🏁  Job succeeded
+[Secret Rotation Validator/Rotation Report (Markdown)]   ✅  Success - Complete job
+[Secret Rotation Validator/Rotation Report (Markdown)] 🏁  Job succeeded
+
+
+ASSERT exit_code == 0: PASS
+ASSERT 'Job succeeded' x3: PASS (3 occurrences)
+ASSERT '"total": 3': PASS
+ASSERT '"expired": 1': PASS
+ASSERT '"warning": 1': PASS
+ASSERT '"ok": 1': PASS
+ASSERT 'db-password': PASS
+ASSERT 'api-key': PASS
+ASSERT 'jwt-secret': PASS
+
+RESULT: PASS (all assertions passed)
+
+
+======================================================================
+FINAL RESULT: PASS (0 total failure(s))
+======================================================================

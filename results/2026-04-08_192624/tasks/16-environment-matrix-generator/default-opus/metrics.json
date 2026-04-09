@@ -1,0 +1,362 @@
+{
+  "task_id": "16-environment-matrix-generator",
+  "task_name": "Environment Matrix Generator",
+  "task_category": "GitHub Actions / CI Configuration",
+  "language_mode": "default",
+  "language_chosen": "bash",
+  "language_breakdown": {
+    "bash": 50.6,
+    "python": 49.4
+  },
+  "interpreter_versions": {},
+  "powershell_version": "",
+  "dotnet_version": "",
+  "model": "claude-opus-4-6",
+  "model_short": "opus",
+  "claude_code_version": "2.1.97",
+  "instructions_version": "v3",
+  "timestamp_start": "2026-04-09T07:20:05.258515+00:00",
+  "timestamp_end": "2026-04-09T07:24:39.668424+00:00",
+  "prompt_text": "You are completing a scripting task. Choose whatever programming language you think is best for this task.\n\nTASK: Given a configuration describing OS options, language versions, and feature flags, generate a build matrix (as JSON) suitable for GitHub Actions strategy.matrix. Support include/exclude rules, max-parallel limits, and fail-fast configuration. Validate that the matrix doesn't exceed a maximum size. Output the complete matrix JSON.\n\nREQUIREMENTS:\n1. Use red/green TDD methodology: write a failing test FIRST, then write the minimum code to make it pass, then refactor. Repeat for each piece of functionality.\n2. Create mocks and test fixtures as necessary for testability.\n3. All tests must be runnable and must pass at the end.\n4. Include clear comments explaining your approach.\n5. Handle errors gracefully with meaningful error messages.\n\nCreate your solution in the current working directory. Start by writing your first failing test.\n\nGITHUB ACTIONS REQUIREMENT:\nCreate a GitHub Actions workflow file at .github/workflows/environment-matrix-generator.yml that uses\nyour script in a real CI/CD pipeline. The workflow must:\n- Use appropriate trigger events (push, pull_request, schedule, workflow_dispatch, etc.)\n- Reference your script correctly\n- Pass actionlint validation (valid YAML, valid action references, correct syntax)\n- Include appropriate permissions, environment variables, and job dependencies\n- Actually run successfully when executed locally with `act` (nektos/act)\n\nDesign your workflow so its steps work in an isolated Docker container \u2014 use\n`actions/checkout@v4`, install dependencies your script needs, and run it.\nAvoid steps requiring external services or secrets without sensible defaults.\n\nWORKFLOW VALIDATION:\nRun `actionlint .github/workflows/environment-matrix-generator.yml` and fix any errors. actionlint is\npre-installed. Iterate until it passes cleanly.\n\nALL TESTS MUST RUN THROUGH ACT:\nEvery single test case must execute through the GitHub Actions workflow via `act`.\nDo NOT test your script directly \u2014 all testing goes through the pipeline.\n\nStructure your workflow to accept test fixture data and produce verifiable output.\nYour test harness must:\n1. For each test case: set up a temp git repo with your project files + that case's\n   fixture data, run `act push --rm`, capture the output\n2. Save all act output to `act-result.txt` in the current working directory (append\n   each test case's output, clearly delimited)\n3. Assert that act exited with code 0 for each case\n4. Parse the act output and assert on EXACT EXPECTED VALUES \u2014 not just that output\n   appeared, but that it matches the known-good result for that test case's input.\n   For example: if your workflow bumps version 1.1.0 with a feat commit, assert\n   the output contains exactly \"1.2.0\", not just \"a version number\"\n5. Assert every job shows \"Job succeeded\"\n\nThe `act-result.txt` file MUST exist when done. It is a required artifact.\n`act` and Docker are pre-installed.\n\nWORKFLOW STRUCTURE TESTS (also required):\n- Parse the YAML and check expected structure (triggers, jobs, steps)\n- Verify the workflow references your script files correctly (paths exist)\n- Verify actionlint passes (assert exit code 0)\n",
+  "exit_code": 0,
+  "session": {
+    "session_id": "b7a02e92-dcbf-4219-a373-37809a6e8fd2",
+    "stop_reason": "end_turn",
+    "terminal_reason": "completed",
+    "fast_mode_state": "off",
+    "service_tier": "standard",
+    "speed": "standard",
+    "inference_geo": "",
+    "context_window": 200000,
+    "max_output_tokens": 64000,
+    "permission_mode": "bypassPermissions",
+    "output_style": "default",
+    "tools_available_count": 24,
+    "mcp_servers": [],
+    "permission_denials": []
+  },
+  "model_usage_detail": {
+    "claude-opus-4-6": {
+      "inputTokens": 32,
+      "outputTokens": 14754,
+      "cacheReadInputTokens": 828798,
+      "cacheCreationInputTokens": 32076,
+      "webSearchRequests": 0,
+      "costUSD": 0.983884,
+      "contextWindow": 200000,
+      "maxOutputTokens": 64000
+    }
+  },
+  "effort_level": null,
+  "timing": {
+    "grand_total_duration_ms": 274409,
+    "total_api_duration_ms": 238189,
+    "total_execution_duration_ms": 34998,
+    "num_turns": 36
+  },
+  "tokens": {
+    "input_tokens": 32,
+    "output_tokens": 14754,
+    "cache_read_tokens": 828798,
+    "cache_creation_tokens": 32076,
+    "total_context_consumed": 860906,
+    "compaction_count": 0
+  },
+  "cost": {
+    "total_cost_usd": 0.983884,
+    "assumed_input_cost_per_mtok": 15.0,
+    "assumed_output_cost_per_mtok": 75.0,
+    "assumed_cache_read_cost_per_mtok": 1.5,
+    "assumed_cache_write_cost_per_mtok": 18.75
+  },
+  "code_metrics": {
+    "total_lines": 1298,
+    "total_tokens_estimate": 15999,
+    "file_count": 11,
+    "files": [
+      "act-result.txt",
+      "matrix_generator.py",
+      "run_tests.sh",
+      "fixtures/basic.json",
+      "fixtures/full_strategy.json",
+      "fixtures/invalid_empty.json",
+      "fixtures/invalid_no_matrix.json",
+      "fixtures/too_large.json",
+      "fixtures/with_exclude.json",
+      "fixtures/with_include.json",
+      ".github/workflows/environment-matrix-generator.yml"
+    ]
+  },
+  "quality": {
+    "tests_pass": null,
+    "error_count": 1,
+    "error_details": [
+      "Exit code 1\n================================================\n  Environment Matrix Generator - Test Suite\n================================================\n\n--- Workflow Structure Tests ---\nTraceback (m"
+    ],
+    "actionlint_pass": true,
+    "actionlint_errors": 0,
+    "actionlint_results": [
+      {
+        "file": ".github/workflows/environment-matrix-generator.yml",
+        "passed": true,
+        "errors": ""
+      }
+    ],
+    "act_result_txt_exists": true,
+    "act_result_txt_size": 46452,
+    "areas_of_difficulty": [],
+    "observations": ""
+  },
+  "tool_install": {
+    "tool_install_duration_ms": 0,
+    "tools_installed": [],
+    "install_commands_count": 0
+  },
+  "tool_use_timing": {
+    "total_tool_uses": 35,
+    "total_tool_duration_ms": 38940,
+    "bash_tool_uses": 15,
+    "bash_total_ms": 34325,
+    "slowest_tool_uses": [
+      {
+        "tool_name": "Bash",
+        "command": "bash run_tests.sh 2>&1",
+        "duration_ms": 28613,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /tmp && rm -rf test_act_quick && mkdir test_act_quick && cd test_act_quick && cp /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/16-environment-matrix-generator/d",
+        "duration_ms": 3776,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 945,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bash run_tests.sh 2>&1",
+        "duration_ms": 793,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 467,
+        "is_error": false,
+        "is_install": false
+      }
+    ],
+    "install_duration_ms": 0,
+    "test_duration_ms": 29406,
+    "act_duration_ms": 0
+  },
+  "hooks": {
+    "hook_fires": 12,
+    "hook_errors_caught": 3,
+    "hook_failures": 0,
+    "hook_events": [
+      {
+        "subtype": "hook_started",
+        "hook_id": "08e0e9bc-aef0-4907-99b1-a355e085cd77",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "08e0e9bc-aef0-4907-99b1-a355e085cd77",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "cdce30b2-21f4-47ac-aaf5-69260e40c0a1",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "cdce30b2-21f4-47ac-aaf5-69260e40c0a1",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "26edd655-17a1-4851-9886-f7a4a35f3d31",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "26edd655-17a1-4851-9886-f7a4a35f3d31",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "51d0caca-37aa-4c4f-abde-036fb96f723b",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "51d0caca-37aa-4c4f-abde-036fb96f723b",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "b9c737ec-0612-4e14-8ec8-7302f45992b2",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "b9c737ec-0612-4e14-8ec8-7302f45992b2",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "c0582cda-018a-4db9-ad23-d435e044b3dc",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "c0582cda-018a-4db9-ad23-d435e044b3dc",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "41798ffc-c021-4414-b1e1-84d1fad3797d",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "41798ffc-c021-4414-b1e1-84d1fad3797d",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "d117eba6-25dd-4864-bf91-997e235a235d",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "d117eba6-25dd-4864-bf91-997e235a235d",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "73e89ce9-4b9d-47fa-97ef-48f91db2b3a8",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "73e89ce9-4b9d-47fa-97ef-48f91db2b3a8",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "02298a87-5fcc-49ca-aaa9-b833e6fff70d",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "02298a87-5fcc-49ca-aaa9-b833e6fff70d",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\n/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/16-environment-matrix-generator/default-opus/run_tests.sh:21:1: warning: This redirection doesn't have a command. Move to its command (or use 'true' as no-op). [SC2188]\"}",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "659ae997-2769-4d86-94d4-3fb07d85092a",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "659ae997-2769-4d86-94d4-3fb07d85092a",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\n/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/16-environment-matrix-generator/default-opus/run_tests.sh:21:1: warning: This redirection doesn't have a command. Move to its command (or use 'true' as no-op). [SC2188]\"}",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "a6b15eaa-d4b0-4d34-90a4-f0022b4499ad",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "a6b15eaa-d4b0-4d34-90a4-f0022b4499ad",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\n/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/16-environment-matrix-generator/default-opus/run_tests.sh:21:1: warning: This redirection doesn't have a command. Move to its command (or use 'true' as no-op). [SC2188]\"}",
+        "stderr": ""
+      }
+    ]
+  },
+  "run_success": true,
+  "failure_reason": null
+}

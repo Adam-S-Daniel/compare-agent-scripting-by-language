@@ -1,0 +1,521 @@
+
+========================================================================
+ARTIFACT CLEANUP SCRIPT — TEST HARNESS RESULTS
+========================================================================
+
+
+========================================================================
+STRUCTURE TESTS
+========================================================================
+  [PASS] file exists: artifact_cleanup.py
+  [PASS] file exists: test_artifact_cleanup.py
+  [PASS] file exists: .github/workflows/artifact-cleanup-script.yml
+  [PASS] file exists: fixtures/age_retention.json
+  [PASS] file exists: fixtures/size_retention.json
+  [PASS] file exists: fixtures/keep_latest_n.json
+  [PASS] file exists: fixtures/combined.json
+  [PASS] file exists: fixtures/dry_run.json
+  [PASS] workflow contains 'push:'
+  [PASS] workflow contains 'pull_request:'
+  [PASS] workflow contains 'schedule:'
+  [PASS] workflow contains 'workflow_dispatch:'
+  [PASS] workflow contains 'unit-tests:'
+  [PASS] workflow contains 'artifact-cleanup:'
+  [PASS] workflow contains 'needs: unit-tests'
+  [PASS] workflow contains 'actions/checkout@v4'
+  [PASS] workflow contains 'artifact_cleanup.py'
+  [PASS] actionlint exit code 0
+
+
+========================================================================
+ACT-BASED TESTS
+========================================================================
+
+========================================================================
+TEST CASE: age_retention
+========================================================================
+[Artifact Cleanup Script/Unit Tests] ⭐ Run Set up job
+[Artifact Cleanup Script/Unit Tests] 🚀  Start image=catthehacker/ubuntu:act-latest
+[Artifact Cleanup Script/Unit Tests]   🐳  docker pull image=catthehacker/ubuntu:act-latest platform= username= forcePull=true
+[Artifact Cleanup Script/Unit Tests] using DockerAuthConfig authentication for docker pull
+[Artifact Cleanup Script/Unit Tests]   🐳  docker create image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Unit Tests]   🐳  docker run image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Unit Tests]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Artifact Cleanup Script/Unit Tests]   ✅  Success - Set up job
+[Artifact Cleanup Script/Unit Tests] ⭐ Run Main actions/checkout@v4
+[Artifact Cleanup Script/Unit Tests]   🐳  docker cp src=/tmp/artifact_cleanup_age_retention_de9u3zgp/. dst=/tmp/artifact_cleanup_age_retention_de9u3zgp
+[Artifact Cleanup Script/Unit Tests]   ✅  Success - Main actions/checkout@v4 [114.450929ms]
+[Artifact Cleanup Script/Unit Tests] ⭐ Run Main Install test dependencies
+[Artifact Cleanup Script/Unit Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Artifact Cleanup Script/Unit Tests]   | WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+[Artifact Cleanup Script/Unit Tests]   ✅  Success - Main Install test dependencies [4.834012443s]
+[Artifact Cleanup Script/Unit Tests] ⭐ Run Main Run pytest
+[Artifact Cleanup Script/Unit Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Artifact Cleanup Script/Unit Tests]   | ============================= test session starts ==============================
+[Artifact Cleanup Script/Unit Tests]   | platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+[Artifact Cleanup Script/Unit Tests]   | cachedir: .pytest_cache
+[Artifact Cleanup Script/Unit Tests]   | rootdir: /tmp/artifact_cleanup_age_retention_de9u3zgp
+[Artifact Cleanup Script/Unit Tests]   | collecting ... collected 23 items
+[Artifact Cleanup Script/Unit Tests]   | 
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestAgePolicy::test_old_artifact_is_marked_for_deletion PASSED [  4%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestAgePolicy::test_recent_artifact_is_retained PASSED [  8%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestAgePolicy::test_artifact_exactly_at_age_limit_is_retained PASSED [ 13%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestAgePolicy::test_mixed_ages_only_old_ones_deleted PASSED [ 17%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestAgePolicy::test_empty_list_returns_empty_set PASSED [ 21%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestSizePolicy::test_under_limit_nothing_deleted PASSED [ 26%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestSizePolicy::test_exactly_at_limit_nothing_deleted PASSED [ 30%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestSizePolicy::test_over_limit_deletes_oldest_first PASSED [ 34%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestSizePolicy::test_deletes_minimum_required PASSED [ 39%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestKeepLatestNPolicy::test_within_limit_nothing_deleted PASSED [ 43%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestKeepLatestNPolicy::test_over_limit_deletes_oldest_runs PASSED [ 47%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestKeepLatestNPolicy::test_multiple_workflows_counted_independently PASSED [ 52%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestKeepLatestNPolicy::test_multiple_artifacts_per_run_deleted_together PASSED [ 56%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestCombinedPolicies::test_age_and_size_combined PASSED [ 60%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestCombinedPolicies::test_all_three_policies_combined PASSED [ 65%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestCombinedPolicies::test_empty_artifacts_returns_empty_plan PASSED [ 69%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestCombinedPolicies::test_no_policies_retains_everything PASSED [ 73%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestDeletionPlan::test_summary_counts_are_correct PASSED [ 78%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestDeletionPlan::test_dry_run_flag_propagates_to_plan PASSED [ 82%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestDeletionPlan::test_plan_includes_deletion_reasons PASSED [ 86%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestDeletionPlan::test_format_plan_shows_dry_run_header PASSED [ 91%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestDeletionPlan::test_format_plan_shows_space_reclaimed_in_mb PASSED [ 95%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestDeletionPlan::test_format_plan_contains_machine_readable_summary_line PASSED [100%]
+[Artifact Cleanup Script/Unit Tests]   | 
+[Artifact Cleanup Script/Unit Tests]   | ============================== 23 passed in 0.22s ==============================
+[Artifact Cleanup Script/Unit Tests]   ✅  Success - Main Run pytest [1.176517345s]
+[Artifact Cleanup Script/Unit Tests] ⭐ Run Complete job
+[Artifact Cleanup Script/Unit Tests] Cleaning up container for job Unit Tests
+[Artifact Cleanup Script/Unit Tests]   ✅  Success - Complete job
+[Artifact Cleanup Script/Unit Tests] 🏁  Job succeeded
+[Artifact Cleanup Script/Artifact Cleanup] ⭐ Run Set up job
+[Artifact Cleanup Script/Artifact Cleanup] 🚀  Start image=catthehacker/ubuntu:act-latest
+[Artifact Cleanup Script/Artifact Cleanup]   🐳  docker pull image=catthehacker/ubuntu:act-latest platform= username= forcePull=true
+[Artifact Cleanup Script/Artifact Cleanup] using DockerAuthConfig authentication for docker pull
+[Artifact Cleanup Script/Artifact Cleanup]   🐳  docker create image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Artifact Cleanup]   🐳  docker run image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Artifact Cleanup]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Artifact Cleanup Script/Artifact Cleanup]   ✅  Success - Set up job
+[Artifact Cleanup Script/Artifact Cleanup] ⭐ Run Main actions/checkout@v4
+[Artifact Cleanup Script/Artifact Cleanup]   🐳  docker cp src=/tmp/artifact_cleanup_age_retention_de9u3zgp/. dst=/tmp/artifact_cleanup_age_retention_de9u3zgp
+[Artifact Cleanup Script/Artifact Cleanup]   ✅  Success - Main actions/checkout@v4 [106.930165ms]
+[Artifact Cleanup Script/Artifact Cleanup] ⭐ Run Main Run artifact cleanup (dry-run)
+[Artifact Cleanup Script/Artifact Cleanup]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Artifact Cleanup Script/Artifact Cleanup]   | Using fixture: age_retention
+[Artifact Cleanup Script/Artifact Cleanup]   | === DRY RUN — no artifacts will be deleted ===
+[Artifact Cleanup Script/Artifact Cleanup]   | Total artifacts  : 3
+[Artifact Cleanup Script/Artifact Cleanup]   | To delete        : 2
+[Artifact Cleanup Script/Artifact Cleanup]   | To retain        : 1
+[Artifact Cleanup Script/Artifact Cleanup]   | Space to reclaim : 1.5 MB (1572864 bytes)
+[Artifact Cleanup Script/Artifact Cleanup]   | 
+[Artifact Cleanup Script/Artifact Cleanup]   | ARTIFACTS TO DELETE:
+[Artifact Cleanup Script/Artifact Cleanup]   |   - build-output-old-1 (1048576 bytes, created 2026-03-01T00:00:00+00:00) [reason: older than 30 days]
+[Artifact Cleanup Script/Artifact Cleanup]   |   - logs-very-old (524288 bytes, created 2025-12-01T00:00:00+00:00) [reason: older than 30 days]
+[Artifact Cleanup Script/Artifact Cleanup]   | 
+[Artifact Cleanup Script/Artifact Cleanup]   | ARTIFACTS TO RETAIN:
+[Artifact Cleanup Script/Artifact Cleanup]   |   - build-output-recent (2097152 bytes)
+[Artifact Cleanup Script/Artifact Cleanup]   | 
+[Artifact Cleanup Script/Artifact Cleanup]   | ARTIFACT_CLEANUP_SUMMARY: total=3 deleted=2 retained=1 space_bytes=1572864 space_mb=1.5 dry_run=true
+[Artifact Cleanup Script/Artifact Cleanup]   ✅  Success - Main Run artifact cleanup (dry-run) [437.003001ms]
+[Artifact Cleanup Script/Artifact Cleanup] ⭐ Run Complete job
+[Artifact Cleanup Script/Artifact Cleanup] Cleaning up container for job Artifact Cleanup
+[Artifact Cleanup Script/Artifact Cleanup]   ✅  Success - Complete job
+[Artifact Cleanup Script/Artifact Cleanup] 🏁  Job succeeded
+time="2026-04-09T05:36:08-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+
+========================================================================
+RESULT: PASS
+========================================================================
+
+
+========================================================================
+TEST CASE: size_retention
+========================================================================
+[Artifact Cleanup Script/Unit Tests] ⭐ Run Set up job
+[Artifact Cleanup Script/Unit Tests] 🚀  Start image=catthehacker/ubuntu:act-latest
+[Artifact Cleanup Script/Unit Tests]   🐳  docker pull image=catthehacker/ubuntu:act-latest platform= username= forcePull=true
+[Artifact Cleanup Script/Unit Tests] using DockerAuthConfig authentication for docker pull
+[Artifact Cleanup Script/Unit Tests]   🐳  docker create image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Unit Tests]   🐳  docker run image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Unit Tests]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Artifact Cleanup Script/Unit Tests]   ✅  Success - Set up job
+[Artifact Cleanup Script/Unit Tests] ⭐ Run Main actions/checkout@v4
+[Artifact Cleanup Script/Unit Tests]   🐳  docker cp src=/tmp/artifact_cleanup_size_retention_ln298bdm/. dst=/tmp/artifact_cleanup_size_retention_ln298bdm
+[Artifact Cleanup Script/Unit Tests]   ✅  Success - Main actions/checkout@v4 [102.812239ms]
+[Artifact Cleanup Script/Unit Tests] ⭐ Run Main Install test dependencies
+[Artifact Cleanup Script/Unit Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Artifact Cleanup Script/Unit Tests]   | WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+[Artifact Cleanup Script/Unit Tests]   ✅  Success - Main Install test dependencies [4.667602298s]
+[Artifact Cleanup Script/Unit Tests] ⭐ Run Main Run pytest
+[Artifact Cleanup Script/Unit Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Artifact Cleanup Script/Unit Tests]   | ============================= test session starts ==============================
+[Artifact Cleanup Script/Unit Tests]   | platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+[Artifact Cleanup Script/Unit Tests]   | cachedir: .pytest_cache
+[Artifact Cleanup Script/Unit Tests]   | rootdir: /tmp/artifact_cleanup_size_retention_ln298bdm
+[Artifact Cleanup Script/Unit Tests]   | collecting ... collected 23 items
+[Artifact Cleanup Script/Unit Tests]   | 
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestAgePolicy::test_old_artifact_is_marked_for_deletion PASSED [  4%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestAgePolicy::test_recent_artifact_is_retained PASSED [  8%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestAgePolicy::test_artifact_exactly_at_age_limit_is_retained PASSED [ 13%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestAgePolicy::test_mixed_ages_only_old_ones_deleted PASSED [ 17%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestAgePolicy::test_empty_list_returns_empty_set PASSED [ 21%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestSizePolicy::test_under_limit_nothing_deleted PASSED [ 26%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestSizePolicy::test_exactly_at_limit_nothing_deleted PASSED [ 30%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestSizePolicy::test_over_limit_deletes_oldest_first PASSED [ 34%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestSizePolicy::test_deletes_minimum_required PASSED [ 39%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestKeepLatestNPolicy::test_within_limit_nothing_deleted PASSED [ 43%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestKeepLatestNPolicy::test_over_limit_deletes_oldest_runs PASSED [ 47%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestKeepLatestNPolicy::test_multiple_workflows_counted_independently PASSED [ 52%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestKeepLatestNPolicy::test_multiple_artifacts_per_run_deleted_together PASSED [ 56%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestCombinedPolicies::test_age_and_size_combined PASSED [ 60%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestCombinedPolicies::test_all_three_policies_combined PASSED [ 65%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestCombinedPolicies::test_empty_artifacts_returns_empty_plan PASSED [ 69%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestCombinedPolicies::test_no_policies_retains_everything PASSED [ 73%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestDeletionPlan::test_summary_counts_are_correct PASSED [ 78%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestDeletionPlan::test_dry_run_flag_propagates_to_plan PASSED [ 82%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestDeletionPlan::test_plan_includes_deletion_reasons PASSED [ 86%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestDeletionPlan::test_format_plan_shows_dry_run_header PASSED [ 91%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestDeletionPlan::test_format_plan_shows_space_reclaimed_in_mb PASSED [ 95%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestDeletionPlan::test_format_plan_contains_machine_readable_summary_line PASSED [100%]
+[Artifact Cleanup Script/Unit Tests]   | 
+[Artifact Cleanup Script/Unit Tests]   | ============================== 23 passed in 0.11s ==============================
+[Artifact Cleanup Script/Unit Tests]   ✅  Success - Main Run pytest [901.036058ms]
+[Artifact Cleanup Script/Unit Tests] ⭐ Run Complete job
+[Artifact Cleanup Script/Unit Tests] Cleaning up container for job Unit Tests
+[Artifact Cleanup Script/Unit Tests]   ✅  Success - Complete job
+[Artifact Cleanup Script/Unit Tests] 🏁  Job succeeded
+[Artifact Cleanup Script/Artifact Cleanup] ⭐ Run Set up job
+[Artifact Cleanup Script/Artifact Cleanup] 🚀  Start image=catthehacker/ubuntu:act-latest
+[Artifact Cleanup Script/Artifact Cleanup]   🐳  docker pull image=catthehacker/ubuntu:act-latest platform= username= forcePull=true
+[Artifact Cleanup Script/Artifact Cleanup] using DockerAuthConfig authentication for docker pull
+[Artifact Cleanup Script/Artifact Cleanup]   🐳  docker create image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Artifact Cleanup]   🐳  docker run image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Artifact Cleanup]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Artifact Cleanup Script/Artifact Cleanup]   ✅  Success - Set up job
+[Artifact Cleanup Script/Artifact Cleanup] ⭐ Run Main actions/checkout@v4
+[Artifact Cleanup Script/Artifact Cleanup]   🐳  docker cp src=/tmp/artifact_cleanup_size_retention_ln298bdm/. dst=/tmp/artifact_cleanup_size_retention_ln298bdm
+[Artifact Cleanup Script/Artifact Cleanup]   ✅  Success - Main actions/checkout@v4 [106.044072ms]
+[Artifact Cleanup Script/Artifact Cleanup] ⭐ Run Main Run artifact cleanup (dry-run)
+[Artifact Cleanup Script/Artifact Cleanup]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Artifact Cleanup Script/Artifact Cleanup]   | Using fixture: size_retention
+[Artifact Cleanup Script/Artifact Cleanup]   | === DRY RUN — no artifacts will be deleted ===
+[Artifact Cleanup Script/Artifact Cleanup]   | Total artifacts  : 3
+[Artifact Cleanup Script/Artifact Cleanup]   | To delete        : 2
+[Artifact Cleanup Script/Artifact Cleanup]   | To retain        : 1
+[Artifact Cleanup Script/Artifact Cleanup]   | Space to reclaim : 15.0 MB (15728640 bytes)
+[Artifact Cleanup Script/Artifact Cleanup]   | 
+[Artifact Cleanup Script/Artifact Cleanup]   | ARTIFACTS TO DELETE:
+[Artifact Cleanup Script/Artifact Cleanup]   |   - artifact-middle (8388608 bytes, created 2026-04-03T00:00:00+00:00) [reason: total size exceeds 12582912 bytes]
+[Artifact Cleanup Script/Artifact Cleanup]   |   - artifact-oldest (7340032 bytes, created 2026-04-01T00:00:00+00:00) [reason: total size exceeds 12582912 bytes]
+[Artifact Cleanup Script/Artifact Cleanup]   | 
+[Artifact Cleanup Script/Artifact Cleanup]   | ARTIFACTS TO RETAIN:
+[Artifact Cleanup Script/Artifact Cleanup]   |   - artifact-newest (10485760 bytes)
+[Artifact Cleanup Script/Artifact Cleanup]   | 
+[Artifact Cleanup Script/Artifact Cleanup]   | ARTIFACT_CLEANUP_SUMMARY: total=3 deleted=2 retained=1 space_bytes=15728640 space_mb=15.0 dry_run=true
+[Artifact Cleanup Script/Artifact Cleanup]   ✅  Success - Main Run artifact cleanup (dry-run) [377.406198ms]
+[Artifact Cleanup Script/Artifact Cleanup] ⭐ Run Complete job
+[Artifact Cleanup Script/Artifact Cleanup] Cleaning up container for job Artifact Cleanup
+[Artifact Cleanup Script/Artifact Cleanup]   ✅  Success - Complete job
+[Artifact Cleanup Script/Artifact Cleanup] 🏁  Job succeeded
+time="2026-04-09T05:36:22-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+
+========================================================================
+RESULT: PASS
+========================================================================
+
+
+========================================================================
+TEST CASE: keep_latest_n
+========================================================================
+[Artifact Cleanup Script/Unit Tests] ⭐ Run Set up job
+[Artifact Cleanup Script/Unit Tests] 🚀  Start image=catthehacker/ubuntu:act-latest
+[Artifact Cleanup Script/Unit Tests]   🐳  docker pull image=catthehacker/ubuntu:act-latest platform= username= forcePull=true
+[Artifact Cleanup Script/Unit Tests] using DockerAuthConfig authentication for docker pull
+[Artifact Cleanup Script/Unit Tests]   🐳  docker create image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Unit Tests]   🐳  docker run image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Unit Tests]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Artifact Cleanup Script/Unit Tests]   ✅  Success - Set up job
+[Artifact Cleanup Script/Unit Tests] ⭐ Run Main actions/checkout@v4
+[Artifact Cleanup Script/Unit Tests]   🐳  docker cp src=/tmp/artifact_cleanup_keep_latest_n_hjrsy0ec/. dst=/tmp/artifact_cleanup_keep_latest_n_hjrsy0ec
+[Artifact Cleanup Script/Unit Tests]   ✅  Success - Main actions/checkout@v4 [108.956764ms]
+[Artifact Cleanup Script/Unit Tests] ⭐ Run Main Install test dependencies
+[Artifact Cleanup Script/Unit Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Artifact Cleanup Script/Unit Tests]   | WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+[Artifact Cleanup Script/Unit Tests]   ✅  Success - Main Install test dependencies [4.135009049s]
+[Artifact Cleanup Script/Unit Tests] ⭐ Run Main Run pytest
+[Artifact Cleanup Script/Unit Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Artifact Cleanup Script/Unit Tests]   | ============================= test session starts ==============================
+[Artifact Cleanup Script/Unit Tests]   | platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+[Artifact Cleanup Script/Unit Tests]   | cachedir: .pytest_cache
+[Artifact Cleanup Script/Unit Tests]   | rootdir: /tmp/artifact_cleanup_keep_latest_n_hjrsy0ec
+[Artifact Cleanup Script/Unit Tests]   | collecting ... collected 23 items
+[Artifact Cleanup Script/Unit Tests]   | 
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestAgePolicy::test_old_artifact_is_marked_for_deletion PASSED [  4%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestAgePolicy::test_recent_artifact_is_retained PASSED [  8%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestAgePolicy::test_artifact_exactly_at_age_limit_is_retained PASSED [ 13%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestAgePolicy::test_mixed_ages_only_old_ones_deleted PASSED [ 17%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestAgePolicy::test_empty_list_returns_empty_set PASSED [ 21%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestSizePolicy::test_under_limit_nothing_deleted PASSED [ 26%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestSizePolicy::test_exactly_at_limit_nothing_deleted PASSED [ 30%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestSizePolicy::test_over_limit_deletes_oldest_first PASSED [ 34%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestSizePolicy::test_deletes_minimum_required PASSED [ 39%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestKeepLatestNPolicy::test_within_limit_nothing_deleted PASSED [ 43%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestKeepLatestNPolicy::test_over_limit_deletes_oldest_runs PASSED [ 47%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestKeepLatestNPolicy::test_multiple_workflows_counted_independently PASSED [ 52%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestKeepLatestNPolicy::test_multiple_artifacts_per_run_deleted_together PASSED [ 56%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestCombinedPolicies::test_age_and_size_combined PASSED [ 60%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestCombinedPolicies::test_all_three_policies_combined PASSED [ 65%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestCombinedPolicies::test_empty_artifacts_returns_empty_plan PASSED [ 69%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestCombinedPolicies::test_no_policies_retains_everything PASSED [ 73%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestDeletionPlan::test_summary_counts_are_correct PASSED [ 78%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestDeletionPlan::test_dry_run_flag_propagates_to_plan PASSED [ 82%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestDeletionPlan::test_plan_includes_deletion_reasons PASSED [ 86%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestDeletionPlan::test_format_plan_shows_dry_run_header PASSED [ 91%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestDeletionPlan::test_format_plan_shows_space_reclaimed_in_mb PASSED [ 95%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestDeletionPlan::test_format_plan_contains_machine_readable_summary_line PASSED [100%]
+[Artifact Cleanup Script/Unit Tests]   | 
+[Artifact Cleanup Script/Unit Tests]   | ============================== 23 passed in 0.09s ==============================
+[Artifact Cleanup Script/Unit Tests]   ✅  Success - Main Run pytest [745.745294ms]
+[Artifact Cleanup Script/Unit Tests] ⭐ Run Complete job
+[Artifact Cleanup Script/Unit Tests] Cleaning up container for job Unit Tests
+[Artifact Cleanup Script/Unit Tests]   ✅  Success - Complete job
+[Artifact Cleanup Script/Unit Tests] 🏁  Job succeeded
+[Artifact Cleanup Script/Artifact Cleanup] ⭐ Run Set up job
+[Artifact Cleanup Script/Artifact Cleanup] 🚀  Start image=catthehacker/ubuntu:act-latest
+[Artifact Cleanup Script/Artifact Cleanup]   🐳  docker pull image=catthehacker/ubuntu:act-latest platform= username= forcePull=true
+[Artifact Cleanup Script/Artifact Cleanup] using DockerAuthConfig authentication for docker pull
+[Artifact Cleanup Script/Artifact Cleanup]   🐳  docker create image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Artifact Cleanup]   🐳  docker run image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Artifact Cleanup]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Artifact Cleanup Script/Artifact Cleanup]   ✅  Success - Set up job
+[Artifact Cleanup Script/Artifact Cleanup] ⭐ Run Main actions/checkout@v4
+[Artifact Cleanup Script/Artifact Cleanup]   🐳  docker cp src=/tmp/artifact_cleanup_keep_latest_n_hjrsy0ec/. dst=/tmp/artifact_cleanup_keep_latest_n_hjrsy0ec
+[Artifact Cleanup Script/Artifact Cleanup]   ✅  Success - Main actions/checkout@v4 [98.09931ms]
+[Artifact Cleanup Script/Artifact Cleanup] ⭐ Run Main Run artifact cleanup (dry-run)
+[Artifact Cleanup Script/Artifact Cleanup]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Artifact Cleanup Script/Artifact Cleanup]   | Using fixture: keep_latest_n
+[Artifact Cleanup Script/Artifact Cleanup]   | === DRY RUN — no artifacts will be deleted ===
+[Artifact Cleanup Script/Artifact Cleanup]   | Total artifacts  : 4
+[Artifact Cleanup Script/Artifact Cleanup]   | To delete        : 2
+[Artifact Cleanup Script/Artifact Cleanup]   | To retain        : 2
+[Artifact Cleanup Script/Artifact Cleanup]   | Space to reclaim : 0.0 MB (1000 bytes)
+[Artifact Cleanup Script/Artifact Cleanup]   | 
+[Artifact Cleanup Script/Artifact Cleanup]   | ARTIFACTS TO DELETE:
+[Artifact Cleanup Script/Artifact Cleanup]   |   - ci-run1-artifact (500 bytes, created 2026-03-25T00:00:00+00:00) [reason: exceeds keep-latest-2 runs per workflow]
+[Artifact Cleanup Script/Artifact Cleanup]   |   - ci-run2-artifact (500 bytes, created 2026-03-27T00:00:00+00:00) [reason: exceeds keep-latest-2 runs per workflow]
+[Artifact Cleanup Script/Artifact Cleanup]   | 
+[Artifact Cleanup Script/Artifact Cleanup]   | ARTIFACTS TO RETAIN:
+[Artifact Cleanup Script/Artifact Cleanup]   |   - ci-run3-artifact (500 bytes)
+[Artifact Cleanup Script/Artifact Cleanup]   |   - ci-run4-artifact (500 bytes)
+[Artifact Cleanup Script/Artifact Cleanup]   | 
+[Artifact Cleanup Script/Artifact Cleanup]   | ARTIFACT_CLEANUP_SUMMARY: total=4 deleted=2 retained=2 space_bytes=1000 space_mb=0.0 dry_run=true
+[Artifact Cleanup Script/Artifact Cleanup]   ✅  Success - Main Run artifact cleanup (dry-run) [410.569317ms]
+[Artifact Cleanup Script/Artifact Cleanup] ⭐ Run Complete job
+[Artifact Cleanup Script/Artifact Cleanup] Cleaning up container for job Artifact Cleanup
+[Artifact Cleanup Script/Artifact Cleanup]   ✅  Success - Complete job
+[Artifact Cleanup Script/Artifact Cleanup] 🏁  Job succeeded
+time="2026-04-09T05:36:34-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+
+========================================================================
+RESULT: PASS
+========================================================================
+
+
+========================================================================
+TEST CASE: combined
+========================================================================
+[Artifact Cleanup Script/Unit Tests] ⭐ Run Set up job
+[Artifact Cleanup Script/Unit Tests] 🚀  Start image=catthehacker/ubuntu:act-latest
+[Artifact Cleanup Script/Unit Tests]   🐳  docker pull image=catthehacker/ubuntu:act-latest platform= username= forcePull=true
+[Artifact Cleanup Script/Unit Tests] using DockerAuthConfig authentication for docker pull
+[Artifact Cleanup Script/Unit Tests]   🐳  docker create image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Unit Tests]   🐳  docker run image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Unit Tests]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Artifact Cleanup Script/Unit Tests]   ✅  Success - Set up job
+[Artifact Cleanup Script/Unit Tests] ⭐ Run Main actions/checkout@v4
+[Artifact Cleanup Script/Unit Tests]   🐳  docker cp src=/tmp/artifact_cleanup_combined_ifxy9xfi/. dst=/tmp/artifact_cleanup_combined_ifxy9xfi
+[Artifact Cleanup Script/Unit Tests]   ✅  Success - Main actions/checkout@v4 [99.164559ms]
+[Artifact Cleanup Script/Unit Tests] ⭐ Run Main Install test dependencies
+[Artifact Cleanup Script/Unit Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Artifact Cleanup Script/Unit Tests]   | WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+[Artifact Cleanup Script/Unit Tests]   ✅  Success - Main Install test dependencies [3.965792996s]
+[Artifact Cleanup Script/Unit Tests] ⭐ Run Main Run pytest
+[Artifact Cleanup Script/Unit Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Artifact Cleanup Script/Unit Tests]   | ============================= test session starts ==============================
+[Artifact Cleanup Script/Unit Tests]   | platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+[Artifact Cleanup Script/Unit Tests]   | cachedir: .pytest_cache
+[Artifact Cleanup Script/Unit Tests]   | rootdir: /tmp/artifact_cleanup_combined_ifxy9xfi
+[Artifact Cleanup Script/Unit Tests]   | collecting ... collected 23 items
+[Artifact Cleanup Script/Unit Tests]   | 
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestAgePolicy::test_old_artifact_is_marked_for_deletion PASSED [  4%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestAgePolicy::test_recent_artifact_is_retained PASSED [  8%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestAgePolicy::test_artifact_exactly_at_age_limit_is_retained PASSED [ 13%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestAgePolicy::test_mixed_ages_only_old_ones_deleted PASSED [ 17%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestAgePolicy::test_empty_list_returns_empty_set PASSED [ 21%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestSizePolicy::test_under_limit_nothing_deleted PASSED [ 26%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestSizePolicy::test_exactly_at_limit_nothing_deleted PASSED [ 30%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestSizePolicy::test_over_limit_deletes_oldest_first PASSED [ 34%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestSizePolicy::test_deletes_minimum_required PASSED [ 39%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestKeepLatestNPolicy::test_within_limit_nothing_deleted PASSED [ 43%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestKeepLatestNPolicy::test_over_limit_deletes_oldest_runs PASSED [ 47%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestKeepLatestNPolicy::test_multiple_workflows_counted_independently PASSED [ 52%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestKeepLatestNPolicy::test_multiple_artifacts_per_run_deleted_together PASSED [ 56%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestCombinedPolicies::test_age_and_size_combined PASSED [ 60%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestCombinedPolicies::test_all_three_policies_combined PASSED [ 65%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestCombinedPolicies::test_empty_artifacts_returns_empty_plan PASSED [ 69%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestCombinedPolicies::test_no_policies_retains_everything PASSED [ 73%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestDeletionPlan::test_summary_counts_are_correct PASSED [ 78%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestDeletionPlan::test_dry_run_flag_propagates_to_plan PASSED [ 82%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestDeletionPlan::test_plan_includes_deletion_reasons PASSED [ 86%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestDeletionPlan::test_format_plan_shows_dry_run_header PASSED [ 91%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestDeletionPlan::test_format_plan_shows_space_reclaimed_in_mb PASSED [ 95%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestDeletionPlan::test_format_plan_contains_machine_readable_summary_line PASSED [100%]
+[Artifact Cleanup Script/Unit Tests]   | 
+[Artifact Cleanup Script/Unit Tests]   | ============================== 23 passed in 0.11s ==============================
+[Artifact Cleanup Script/Unit Tests]   ✅  Success - Main Run pytest [849.907797ms]
+[Artifact Cleanup Script/Unit Tests] ⭐ Run Complete job
+[Artifact Cleanup Script/Unit Tests] Cleaning up container for job Unit Tests
+[Artifact Cleanup Script/Unit Tests]   ✅  Success - Complete job
+[Artifact Cleanup Script/Unit Tests] 🏁  Job succeeded
+[Artifact Cleanup Script/Artifact Cleanup] ⭐ Run Set up job
+[Artifact Cleanup Script/Artifact Cleanup] 🚀  Start image=catthehacker/ubuntu:act-latest
+[Artifact Cleanup Script/Artifact Cleanup]   🐳  docker pull image=catthehacker/ubuntu:act-latest platform= username= forcePull=true
+[Artifact Cleanup Script/Artifact Cleanup] using DockerAuthConfig authentication for docker pull
+[Artifact Cleanup Script/Artifact Cleanup]   🐳  docker create image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Artifact Cleanup]   🐳  docker run image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Artifact Cleanup]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Artifact Cleanup Script/Artifact Cleanup]   ✅  Success - Set up job
+[Artifact Cleanup Script/Artifact Cleanup] ⭐ Run Main actions/checkout@v4
+[Artifact Cleanup Script/Artifact Cleanup]   🐳  docker cp src=/tmp/artifact_cleanup_combined_ifxy9xfi/. dst=/tmp/artifact_cleanup_combined_ifxy9xfi
+[Artifact Cleanup Script/Artifact Cleanup]   ✅  Success - Main actions/checkout@v4 [82.106021ms]
+[Artifact Cleanup Script/Artifact Cleanup] ⭐ Run Main Run artifact cleanup (dry-run)
+[Artifact Cleanup Script/Artifact Cleanup]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Artifact Cleanup Script/Artifact Cleanup]   | Using fixture: combined
+[Artifact Cleanup Script/Artifact Cleanup]   | === DRY RUN — no artifacts will be deleted ===
+[Artifact Cleanup Script/Artifact Cleanup]   | Total artifacts  : 5
+[Artifact Cleanup Script/Artifact Cleanup]   | To delete        : 3
+[Artifact Cleanup Script/Artifact Cleanup]   | To retain        : 2
+[Artifact Cleanup Script/Artifact Cleanup]   | Space to reclaim : 0.0 MB (1600 bytes)
+[Artifact Cleanup Script/Artifact Cleanup]   | 
+[Artifact Cleanup Script/Artifact Cleanup]   | ARTIFACTS TO DELETE:
+[Artifact Cleanup Script/Artifact Cleanup]   |   - ancient (1000 bytes, created 2025-01-01T00:00:00+00:00) [reason: older than 30 days]
+[Artifact Cleanup Script/Artifact Cleanup]   |   - big-old (500 bytes, created 2026-04-02T00:00:00+00:00) [reason: exceeds keep-latest-1 runs per workflow]
+[Artifact Cleanup Script/Artifact Cleanup]   |   - extra-run (100 bytes, created 2026-04-04T00:00:00+00:00) [reason: exceeds keep-latest-1 runs per workflow]
+[Artifact Cleanup Script/Artifact Cleanup]   | 
+[Artifact Cleanup Script/Artifact Cleanup]   | ARTIFACTS TO RETAIN:
+[Artifact Cleanup Script/Artifact Cleanup]   |   - big-new (500 bytes)
+[Artifact Cleanup Script/Artifact Cleanup]   |   - latest-run (100 bytes)
+[Artifact Cleanup Script/Artifact Cleanup]   | 
+[Artifact Cleanup Script/Artifact Cleanup]   | ARTIFACT_CLEANUP_SUMMARY: total=5 deleted=3 retained=2 space_bytes=1600 space_mb=0.0 dry_run=true
+[Artifact Cleanup Script/Artifact Cleanup]   ✅  Success - Main Run artifact cleanup (dry-run) [396.293931ms]
+[Artifact Cleanup Script/Artifact Cleanup] ⭐ Run Complete job
+[Artifact Cleanup Script/Artifact Cleanup] Cleaning up container for job Artifact Cleanup
+[Artifact Cleanup Script/Artifact Cleanup]   ✅  Success - Complete job
+[Artifact Cleanup Script/Artifact Cleanup] 🏁  Job succeeded
+time="2026-04-09T05:36:46-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+
+========================================================================
+RESULT: PASS
+========================================================================
+
+
+========================================================================
+TEST CASE: dry_run
+========================================================================
+[Artifact Cleanup Script/Unit Tests] ⭐ Run Set up job
+[Artifact Cleanup Script/Unit Tests] 🚀  Start image=catthehacker/ubuntu:act-latest
+[Artifact Cleanup Script/Unit Tests]   🐳  docker pull image=catthehacker/ubuntu:act-latest platform= username= forcePull=true
+[Artifact Cleanup Script/Unit Tests] using DockerAuthConfig authentication for docker pull
+[Artifact Cleanup Script/Unit Tests]   🐳  docker create image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Unit Tests]   🐳  docker run image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Unit Tests]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Artifact Cleanup Script/Unit Tests]   ✅  Success - Set up job
+[Artifact Cleanup Script/Unit Tests] ⭐ Run Main actions/checkout@v4
+[Artifact Cleanup Script/Unit Tests]   🐳  docker cp src=/tmp/artifact_cleanup_dry_run_heyozrep/. dst=/tmp/artifact_cleanup_dry_run_heyozrep
+[Artifact Cleanup Script/Unit Tests]   ✅  Success - Main actions/checkout@v4 [96.09835ms]
+[Artifact Cleanup Script/Unit Tests] ⭐ Run Main Install test dependencies
+[Artifact Cleanup Script/Unit Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Artifact Cleanup Script/Unit Tests]   | WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+[Artifact Cleanup Script/Unit Tests]   ✅  Success - Main Install test dependencies [4.126134094s]
+[Artifact Cleanup Script/Unit Tests] ⭐ Run Main Run pytest
+[Artifact Cleanup Script/Unit Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Artifact Cleanup Script/Unit Tests]   | ============================= test session starts ==============================
+[Artifact Cleanup Script/Unit Tests]   | platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+[Artifact Cleanup Script/Unit Tests]   | cachedir: .pytest_cache
+[Artifact Cleanup Script/Unit Tests]   | rootdir: /tmp/artifact_cleanup_dry_run_heyozrep
+[Artifact Cleanup Script/Unit Tests]   | collecting ... collected 23 items
+[Artifact Cleanup Script/Unit Tests]   | 
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestAgePolicy::test_old_artifact_is_marked_for_deletion PASSED [  4%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestAgePolicy::test_recent_artifact_is_retained PASSED [  8%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestAgePolicy::test_artifact_exactly_at_age_limit_is_retained PASSED [ 13%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestAgePolicy::test_mixed_ages_only_old_ones_deleted PASSED [ 17%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestAgePolicy::test_empty_list_returns_empty_set PASSED [ 21%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestSizePolicy::test_under_limit_nothing_deleted PASSED [ 26%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestSizePolicy::test_exactly_at_limit_nothing_deleted PASSED [ 30%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestSizePolicy::test_over_limit_deletes_oldest_first PASSED [ 34%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestSizePolicy::test_deletes_minimum_required PASSED [ 39%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestKeepLatestNPolicy::test_within_limit_nothing_deleted PASSED [ 43%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestKeepLatestNPolicy::test_over_limit_deletes_oldest_runs PASSED [ 47%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestKeepLatestNPolicy::test_multiple_workflows_counted_independently PASSED [ 52%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestKeepLatestNPolicy::test_multiple_artifacts_per_run_deleted_together PASSED [ 56%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestCombinedPolicies::test_age_and_size_combined PASSED [ 60%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestCombinedPolicies::test_all_three_policies_combined PASSED [ 65%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestCombinedPolicies::test_empty_artifacts_returns_empty_plan PASSED [ 69%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestCombinedPolicies::test_no_policies_retains_everything PASSED [ 73%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestDeletionPlan::test_summary_counts_are_correct PASSED [ 78%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestDeletionPlan::test_dry_run_flag_propagates_to_plan PASSED [ 82%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestDeletionPlan::test_plan_includes_deletion_reasons PASSED [ 86%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestDeletionPlan::test_format_plan_shows_dry_run_header PASSED [ 91%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestDeletionPlan::test_format_plan_shows_space_reclaimed_in_mb PASSED [ 95%]
+[Artifact Cleanup Script/Unit Tests]   | test_artifact_cleanup.py::TestDeletionPlan::test_format_plan_contains_machine_readable_summary_line PASSED [100%]
+[Artifact Cleanup Script/Unit Tests]   | 
+[Artifact Cleanup Script/Unit Tests]   | ============================== 23 passed in 0.09s ==============================
+[Artifact Cleanup Script/Unit Tests]   ✅  Success - Main Run pytest [787.855167ms]
+[Artifact Cleanup Script/Unit Tests] ⭐ Run Complete job
+[Artifact Cleanup Script/Unit Tests] Cleaning up container for job Unit Tests
+[Artifact Cleanup Script/Unit Tests]   ✅  Success - Complete job
+[Artifact Cleanup Script/Unit Tests] 🏁  Job succeeded
+[Artifact Cleanup Script/Artifact Cleanup] ⭐ Run Set up job
+[Artifact Cleanup Script/Artifact Cleanup] 🚀  Start image=catthehacker/ubuntu:act-latest
+[Artifact Cleanup Script/Artifact Cleanup]   🐳  docker pull image=catthehacker/ubuntu:act-latest platform= username= forcePull=true
+[Artifact Cleanup Script/Artifact Cleanup] using DockerAuthConfig authentication for docker pull
+[Artifact Cleanup Script/Artifact Cleanup]   🐳  docker create image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Artifact Cleanup]   🐳  docker run image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Artifact Cleanup]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Artifact Cleanup Script/Artifact Cleanup]   ✅  Success - Set up job
+[Artifact Cleanup Script/Artifact Cleanup] ⭐ Run Main actions/checkout@v4
+[Artifact Cleanup Script/Artifact Cleanup]   🐳  docker cp src=/tmp/artifact_cleanup_dry_run_heyozrep/. dst=/tmp/artifact_cleanup_dry_run_heyozrep
+[Artifact Cleanup Script/Artifact Cleanup]   ✅  Success - Main actions/checkout@v4 [102.92864ms]
+[Artifact Cleanup Script/Artifact Cleanup] ⭐ Run Main Run artifact cleanup (dry-run)
+[Artifact Cleanup Script/Artifact Cleanup]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Artifact Cleanup Script/Artifact Cleanup]   | Using fixture: dry_run
+[Artifact Cleanup Script/Artifact Cleanup]   | === DRY RUN — no artifacts will be deleted ===
+[Artifact Cleanup Script/Artifact Cleanup]   | Total artifacts  : 3
+[Artifact Cleanup Script/Artifact Cleanup]   | To delete        : 2
+[Artifact Cleanup Script/Artifact Cleanup]   | To retain        : 1
+[Artifact Cleanup Script/Artifact Cleanup]   | Space to reclaim : 1.5 MB (1572864 bytes)
+[Artifact Cleanup Script/Artifact Cleanup]   | 
+[Artifact Cleanup Script/Artifact Cleanup]   | ARTIFACTS TO DELETE:
+[Artifact Cleanup Script/Artifact Cleanup]   |   - build-output-old-1 (1048576 bytes, created 2026-03-01T00:00:00+00:00) [reason: older than 30 days]
+[Artifact Cleanup Script/Artifact Cleanup]   |   - logs-very-old (524288 bytes, created 2025-12-01T00:00:00+00:00) [reason: older than 30 days]
+[Artifact Cleanup Script/Artifact Cleanup]   | 
+[Artifact Cleanup Script/Artifact Cleanup]   | ARTIFACTS TO RETAIN:
+[Artifact Cleanup Script/Artifact Cleanup]   |   - build-output-recent (2097152 bytes)
+[Artifact Cleanup Script/Artifact Cleanup]   | 
+[Artifact Cleanup Script/Artifact Cleanup]   | ARTIFACT_CLEANUP_SUMMARY: total=3 deleted=2 retained=1 space_bytes=1572864 space_mb=1.5 dry_run=true
+[Artifact Cleanup Script/Artifact Cleanup]   ✅  Success - Main Run artifact cleanup (dry-run) [420.729145ms]
+[Artifact Cleanup Script/Artifact Cleanup] ⭐ Run Complete job
+[Artifact Cleanup Script/Artifact Cleanup] Cleaning up container for job Artifact Cleanup
+[Artifact Cleanup Script/Artifact Cleanup]   ✅  Success - Complete job
+[Artifact Cleanup Script/Artifact Cleanup] 🏁  Job succeeded
+time="2026-04-09T05:36:58-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+
+========================================================================
+RESULT: PASS
+========================================================================
+
+
+========================================================================
+FINAL SUMMARY
+========================================================================
+
+FINAL: 66/66 passed, 0 failed

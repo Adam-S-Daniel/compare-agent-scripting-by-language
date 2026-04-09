@@ -1,0 +1,109 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+    inputs:
+      commit_fixture:
+        description: "Fixture file to use for commits (relative to repo root)"
+        required: false
+        default: "fixtures/mock-commits.txt"
+
+permissions:
+  contents: write
+
+jobs:
+  bump-version:
+    name: Bump Semantic Version
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install PowerShell
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y wget apt-transport-https software-properties-common
+          wget -q "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb"
+          sudo dpkg -i packages-microsoft-prod.deb
+          sudo apt-get update -y
+          sudo apt-get install -y powershell
+
+      - name: Install Pester
+        shell: pwsh
+        run: |
+          Install-Module -Name Pester -Force -Scope CurrentUser -MinimumVersion 5.0.0
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $result = Invoke-Pester -Path "./SemanticVersionBumper.Tests.ps1" -Output Detailed -PassThru
+          if ($result.FailedCount -gt 0) {
+            Write-Error "Tests failed: $($result.FailedCount) test(s) failed"
+            exit 1
+          }
+
+      - name: Determine commit messages
+        id: get-commits
+        shell: pwsh
+        run: |
+          $fixtureFile = "${{ github.event.inputs.commit_fixture }}"
+          if (-not $fixtureFile) { $fixtureFile = "fixtures/mock-commits.txt" }
+
+          if (Test-Path $fixtureFile) {
+            $commits = Get-Content $fixtureFile
+            Write-Output "Using fixture file: $fixtureFile"
+          } else {
+            # Fall back to recent git commits
+            $commits = & git log --pretty=format:"%s" -n 20
+            Write-Output "Using git log commits"
+          }
+
+          # Write commits to a temp file to pass between steps
+          $commits | Set-Content -Path "$env:RUNNER_TEMP/commits.txt"
+          echo "commit_source=$fixtureFile" >> $env:GITHUB_OUTPUT
+
+      - name: Run semantic version bump
+        id: version-bump
+        shell: pwsh
+        run: |
+          . ./SemanticVersionBumper.ps1
+
+          $commits = Get-Content "$env:RUNNER_TEMP/commits.txt"
+          $result = Invoke-SemanticVersionBump -VersionFile "./version.txt" -Commits $commits
+
+          Write-Output "Old version: $($result.OldVersion)"
+          Write-Output "New version: $($result.NewVersion)"
+          Write-Output "Bump type:   $($result.BumpType)"
+          Write-Output ""
+          Write-Output "=== Changelog Entry ==="
+          Write-Output $result.ChangelogEntry
+
+          echo "old_version=$($result.OldVersion)" >> $env:GITHUB_OUTPUT
+          echo "new_version=$($result.NewVersion)" >> $env:GITHUB_OUTPUT
+          echo "bump_type=$($result.BumpType)" >> $env:GITHUB_OUTPUT
+
+      - name: Write to GitHub Actions Job Summary
+        shell: pwsh
+        run: |
+          $summary = @"
+          ## Semantic Version Bump
+
+          | Field       | Value                        |
+          |-------------|------------------------------|
+          | Old Version | ${{ steps.version-bump.outputs.old_version }} |
+          | New Version | ${{ steps.version-bump.outputs.new_version }} |
+          | Bump Type   | ${{ steps.version-bump.outputs.bump_type }}   |
+
+          "@
+          $summary | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append

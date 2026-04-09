@@ -1,0 +1,243 @@
+{
+  "task_id": "14-docker-image-tag-generator",
+  "task_name": "Docker Image Tag Generator",
+  "task_category": "GitHub Actions / CI/CD",
+  "language_mode": "bash",
+  "language_chosen": "bash",
+  "language_breakdown": {
+    "bash": 100.0
+  },
+  "interpreter_versions": {},
+  "powershell_version": "",
+  "dotnet_version": "",
+  "model": "claude-opus-4-6",
+  "model_short": "opus",
+  "claude_code_version": "2.1.97",
+  "instructions_version": "v3",
+  "timestamp_start": "2026-04-09T04:18:14.868132+00:00",
+  "timestamp_end": "2026-04-09T04:32:42.556594+00:00",
+  "prompt_text": "You are completing a scripting task. You MUST use Bash as your implementation language.\n\nTASK: Given git context (branch name, commit SHA, tags, PR number \u2014 all provided as mock inputs), generate appropriate Docker image tags following common conventions: latest for main, pr-{number} for PRs, v{semver} for tags, {branch}-{short-sha} for feature branches. Handle tag sanitization (lowercase, no special chars). Output the tag list.\n\nREQUIREMENTS:\n1. Use red/green TDD methodology: write a failing test FIRST, then write the minimum code to make it pass, then refactor. Repeat for each piece of functionality.\n2. Create mocks and test fixtures as necessary for testability. Use bats-core (bats) as the testing framework.\n3. All tests must be runnable with `bats` and must pass at the end.\n4. Include clear comments explaining your approach.\n5. Handle errors gracefully with meaningful error messages.\n6. Use `#!/usr/bin/env bash` shebang. Scripts must pass `shellcheck` and `bash -n` syntax validation.\n\nCreate your solution in the current working directory. Start by writing your first failing test.\n\nGITHUB ACTIONS REQUIREMENT:\nCreate a GitHub Actions workflow file at .github/workflows/docker-image-tag-generator.yml that uses\nyour script in a real CI/CD pipeline. The workflow must:\n- Use appropriate trigger events (push, pull_request, schedule, workflow_dispatch, etc.)\n- Reference your script correctly\n- Pass actionlint validation (valid YAML, valid action references, correct syntax)\n- Include appropriate permissions, environment variables, and job dependencies\n- Actually run successfully when executed locally with `act` (nektos/act)\n\nDesign your workflow so its steps work in an isolated Docker container \u2014 use\n`actions/checkout@v4`, install dependencies your script needs, and run it.\nAvoid steps requiring external services or secrets without sensible defaults.\n\nWORKFLOW VALIDATION:\nRun `actionlint .github/workflows/docker-image-tag-generator.yml` and fix any errors. actionlint is\npre-installed. Iterate until it passes cleanly.\n\nALL TESTS MUST RUN THROUGH ACT:\nEvery single test case must execute through the GitHub Actions workflow via `act`.\nDo NOT test your script directly \u2014 all testing goes through the pipeline.\n\nStructure your workflow to accept test fixture data and produce verifiable output.\nYour test harness must:\n1. For each test case: set up a temp git repo with your project files + that case's\n   fixture data, run `act push --rm`, capture the output\n2. Save all act output to `act-result.txt` in the current working directory (append\n   each test case's output, clearly delimited)\n3. Assert that act exited with code 0 for each case\n4. Parse the act output and assert on EXACT EXPECTED VALUES \u2014 not just that output\n   appeared, but that it matches the known-good result for that test case's input.\n   For example: if your workflow bumps version 1.1.0 with a feat commit, assert\n   the output contains exactly \"1.2.0\", not just \"a version number\"\n5. Assert every job shows \"Job succeeded\"\n\nThe `act-result.txt` file MUST exist when done. It is a required artifact.\n`act` and Docker are pre-installed.\n\nWORKFLOW STRUCTURE TESTS (also required):\n- Parse the YAML and check expected structure (triggers, jobs, steps)\n- Verify the workflow references your script files correctly (paths exist)\n- Verify actionlint passes (assert exit code 0)\n",
+  "exit_code": 0,
+  "session": {
+    "session_id": "5322b7e8-b2ad-49c1-852e-671bf82f7f4b",
+    "stop_reason": "end_turn",
+    "terminal_reason": "completed",
+    "fast_mode_state": "off",
+    "service_tier": "standard",
+    "speed": "standard",
+    "inference_geo": "",
+    "context_window": 200000,
+    "max_output_tokens": 64000,
+    "permission_mode": "bypassPermissions",
+    "output_style": "default",
+    "tools_available_count": 24,
+    "mcp_servers": [],
+    "permission_denials": []
+  },
+  "model_usage_detail": {
+    "claude-opus-4-6": {
+      "inputTokens": 36,
+      "outputTokens": 45848,
+      "cacheReadInputTokens": 1265085,
+      "cacheCreationInputTokens": 44756,
+      "webSearchRequests": 0,
+      "costUSD": 2.0586475,
+      "contextWindow": 200000,
+      "maxOutputTokens": 64000
+    }
+  },
+  "effort_level": null,
+  "timing": {
+    "grand_total_duration_ms": 867688,
+    "total_api_duration_ms": 771441,
+    "total_execution_duration_ms": 95087,
+    "num_turns": 33
+  },
+  "tokens": {
+    "input_tokens": 36,
+    "output_tokens": 45848,
+    "cache_read_tokens": 1265085,
+    "cache_creation_tokens": 44756,
+    "total_context_consumed": 1309877,
+    "compaction_count": 0
+  },
+  "cost": {
+    "total_cost_usd": 2.0586475,
+    "assumed_input_cost_per_mtok": 15.0,
+    "assumed_output_cost_per_mtok": 75.0,
+    "assumed_cache_read_cost_per_mtok": 1.5,
+    "assumed_cache_write_cost_per_mtok": 18.75
+  },
+  "code_metrics": {
+    "total_lines": 698,
+    "total_tokens_estimate": 9725,
+    "file_count": 4,
+    "files": [
+      "act-result.txt",
+      "docker-tag-generator.sh",
+      "test_docker_tags.bats",
+      ".github/workflows/docker-image-tag-generator.yml"
+    ]
+  },
+  "quality": {
+    "tests_pass": null,
+    "error_count": 2,
+    "error_details": [
+      "Exit code 1\n.github/workflows/docker-image-tag-generator.yml:23:9: shellcheck reported issue in this script: SC2129:style:31:1: Consider using { cmd1; cmd2; } >> file instead of individual redirects [",
+      "Exit code 1\n1..17\nok 1 workflow YAML file exists\nok 2 script file exists and is executable\nok 3 workflow references docker-tag-generator.sh\nok 4 workflow has correct triggers (push, pull_request, sche"
+    ],
+    "actionlint_pass": true,
+    "actionlint_errors": 0,
+    "actionlint_results": [
+      {
+        "file": ".github/workflows/docker-image-tag-generator.yml",
+        "passed": true,
+        "errors": ""
+      }
+    ],
+    "act_result_txt_exists": true,
+    "act_result_txt_size": 27533,
+    "areas_of_difficulty": [],
+    "observations": ""
+  },
+  "tool_install": {
+    "tool_install_duration_ms": 0,
+    "tools_installed": [],
+    "install_commands_count": 0
+  },
+  "tool_use_timing": {
+    "total_tool_uses": 32,
+    "total_tool_duration_ms": 98330,
+    "bash_tool_uses": 18,
+    "bash_total_ms": 97412,
+    "slowest_tool_uses": [
+      {
+        "tool_name": "Bash",
+        "command": "bats test_docker_tags.bats 2>&1",
+        "duration_ms": 42531,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "rm -f act-result.txt && bats test_docker_tags.bats 2>&1",
+        "duration_ms": 42128,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bats test_docker_tags.bats --filter \"branch name sanitization\" 2>&1",
+        "duration_ms": 4896,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /tmp && rm -rf act-smoke-test && mkdir act-smoke-test && cd act-smoke-test && git init && git config user.email \"test@test.com\" && git config user.name \"Test\" && cp /home/passp/repos/compare-agent-",
+        "duration_ms": 4243,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "chmod +x /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/14-docker-image-tag-generator/bash-opus/docker-tag-generator.sh",
+        "duration_ms": 1229,
+        "is_error": false,
+        "is_install": false
+      }
+    ],
+    "install_duration_ms": 0,
+    "test_duration_ms": 89555,
+    "act_duration_ms": 0
+  },
+  "hooks": {
+    "hook_fires": 5,
+    "hook_errors_caught": 1,
+    "hook_failures": 0,
+    "hook_events": [
+      {
+        "subtype": "hook_started",
+        "hook_id": "37845193-b532-4980-bb4e-2483832fd0de",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "37845193-b532-4980-bb4e-2483832fd0de",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "07172f1e-9a10-493d-8890-54ac1be2a48c",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "07172f1e-9a10-493d-8890-54ac1be2a48c",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\n.github/workflows/docker-image-tag-generator.yml:23:9: shellcheck reported issue in this script: SC2129:style:31:1: Consider using { cmd1; cmd2; } >> file instead of individual redirects [shellcheck]\\n   |\\n23 |         run: |\\n   |         ^~~~\\n.github/workflows/docker-image-tag-generator.yml:23:764: \\\"github.event.pull_request.head.ref\\\" is potentially untrusted. avoid using ",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "33889e30-67c7-46f2-9306-7e98f91866b5",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "33889e30-67c7-46f2-9306-7e98f91866b5",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "973e4be6-3704-44f4-85f6-a69cb52b734d",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "973e4be6-3704-44f4-85f6-a69cb52b734d",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "38fe8596-9c79-4669-b45e-c2582aa870b1",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "38fe8596-9c79-4669-b45e-c2582aa870b1",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  },
+  "run_success": true,
+  "failure_reason": null
+}

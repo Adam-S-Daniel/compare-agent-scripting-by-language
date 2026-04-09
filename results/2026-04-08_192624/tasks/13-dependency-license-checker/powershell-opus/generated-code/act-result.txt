@@ -1,0 +1,232 @@
+
+======================================================================
+TEST: Workflow Structure Validation
+======================================================================
+  [PASS] Workflow YAML file exists at .github/workflows/dependency-license-checker.yml
+  [PASS] Workflow has correct name: Dependency License Checker
+  [PASS] Workflow has trigger section (on:)
+  [PASS] Workflow triggers on push
+  [PASS] Workflow triggers on pull_request
+  [PASS] Workflow triggers on workflow_dispatch
+  [PASS] Workflow has jobs section
+  [PASS] Workflow has check-licenses job
+  [PASS] Workflow uses actions/checkout@v4
+  [PASS] Workflow has permissions section
+  [PASS] Workflow references DependencyLicenseChecker.ps1
+  [PASS] DependencyLicenseChecker.ps1 exists
+  [PASS] Workflow references DependencyLicenseChecker.Tests.ps1
+  [PASS] DependencyLicenseChecker.Tests.ps1 exists
+  [PASS] Workflow references license-config.json
+  [PASS] license-config.json exists
+  [PASS] Workflow references license-db.json
+  [PASS] license-db.json exists
+
+Running actionlint...
+  [PASS] actionlint passes with exit code 0
+
+======================================================================
+TEST: ACT Test Case 1: Mixed Licenses (package.json)
+======================================================================
+
+--- act output (last 60 lines) ---
+  [Dependency License Checker/check-licenses]   | [32m   [+] marks requests as APPROVED[0m[90m 8ms (6ms|3ms)[0m
+  [Dependency License Checker/check-licenses]   | [32m   [+] marks flask as APPROVED[0m[90m 8ms (5ms|3ms)[0m
+  [Dependency License Checker/check-licenses]   | [32m   [+] shows PASS overall status[0m[90m 8ms (5ms|3ms)[0m
+  [Dependency License Checker/check-licenses]   | [32m   [+] shows correct summary: 2 approved, 0 denied, 0 unknown[0m[90m 8ms (5ms|3ms)[0m
+  [Dependency License Checker/check-licenses]   | [96m Context All denied[0m
+  [Dependency License Checker/check-licenses]   | [32m   [+] shows total dependency count of 2[0m[90m 9ms (5ms|4ms)[0m
+  [Dependency License Checker/check-licenses]   | [32m   [+] marks gpl-pkg as DENIED[0m[90m 5ms (3ms|2ms)[0m
+  [Dependency License Checker/check-licenses]   | [32m   [+] marks agpl-pkg as DENIED[0m[90m 17ms (5ms|12ms)[0m
+  [Dependency License Checker/check-licenses]   | [32m   [+] shows FAIL overall status[0m[90m 17ms (11ms|6ms)[0m
+  [Dependency License Checker/check-licenses]   | [32m   [+] shows correct summary: 0 approved, 2 denied, 0 unknown[0m[90m 10ms (5ms|5ms)[0m
+  [Dependency License Checker/check-licenses]   | [0m
+  [Dependency License Checker/check-licenses]   | [92mDescribing Error Handling[0m
+  [Dependency License Checker/check-licenses]   | [32m  [+] throws for unsupported manifest format[0m[90m 60ms (36ms|24ms)[0m
+  [Dependency License Checker/check-licenses]   | [32m  [+] throws for missing license config[0m[90m 20ms (17ms|3ms)[0m
+  [Dependency License Checker/check-licenses]   | [97mTests completed in 2.39s[0m
+  [Dependency License Checker/check-licenses]   | [32mTests Passed: 37, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+  [Dependency License Checker/check-licenses]   | Tests Passed: 37, Failed: 0
+  [Dependency License Checker/check-licenses]   ✅  Success - Main Run Pester Tests [5.380489278s]
+  [Dependency License Checker/check-licenses] ⭐ Run Main Run License Check - Mixed
+  [Dependency License Checker/check-licenses]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/4.ps1] user= workdir=
+  [Dependency License Checker/check-licenses]   | === Dependency License Compliance Report ===
+  [Dependency License Checker/check-licenses]   | Manifest: mixed-package.json
+  [Dependency License Checker/check-licenses]   | Total Dependencies: 4
+  [Dependency License Checker/check-licenses]   | 
+  [Dependency License Checker/check-licenses]   | [APPROVED] express@4.18.2 - MIT
+  [Dependency License Checker/check-licenses]   | [APPROVED] lodash@4.17.21 - MIT
+  [Dependency License Checker/check-licenses]   | [DENIED] gpl-pkg@1.0.0 - GPL-3.0
+  [Dependency License Checker/check-licenses]   | [UNKNOWN] mystery-pkg@0.1.0 - Unknown
+  [Dependency License Checker/check-licenses]   | 
+  [Dependency License Checker/check-licenses]   | Summary: 2 approved, 1 denied, 1 unknown
+  [Dependency License Checker/check-licenses]   | Overall Status: FAIL
+  [Dependency License Checker/check-licenses]   ✅  Success - Main Run License Check - Mixed [1.185095409s]
+  [Dependency License Checker/check-licenses] ⭐ Run Main Run License Check - All Approved
+  [Dependency License Checker/check-licenses]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/5.ps1] user= workdir=
+  [Dependency License Checker/check-licenses]   | === Dependency License Compliance Report ===
+  [Dependency License Checker/check-licenses]   | Manifest: approved-requirements.txt
+  [Dependency License Checker/check-licenses]   | Total Dependencies: 2
+  [Dependency License Checker/check-licenses]   | 
+  [Dependency License Checker/check-licenses]   | [APPROVED] requests@2.31.0 - Apache-2.0
+  [Dependency License Checker/check-licenses]   | [APPROVED] flask@3.0.0 - BSD-3-Clause
+  [Dependency License Checker/check-licenses]   | 
+  [Dependency License Checker/check-licenses]   | Summary: 2 approved, 0 denied, 0 unknown
+  [Dependency License Checker/check-licenses]   | Overall Status: PASS
+  [Dependency License Checker/check-licenses]   ✅  Success - Main Run License Check - All Approved [1.120501689s]
+  [Dependency License Checker/check-licenses] ⭐ Run Main Run License Check - All Denied
+  [Dependency License Checker/check-licenses]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/6.ps1] user= workdir=
+  [Dependency License Checker/check-licenses]   | === Dependency License Compliance Report ===
+  [Dependency License Checker/check-licenses]   | Manifest: denied-package.json
+  [Dependency License Checker/check-licenses]   | Total Dependencies: 2
+  [Dependency License Checker/check-licenses]   | 
+  [Dependency License Checker/check-licenses]   | [DENIED] gpl-pkg@1.0.0 - GPL-3.0
+  [Dependency License Checker/check-licenses]   | [DENIED] agpl-pkg@2.0.0 - AGPL-3.0
+  [Dependency License Checker/check-licenses]   | 
+  [Dependency License Checker/check-licenses]   | Summary: 0 approved, 2 denied, 0 unknown
+  [Dependency License Checker/check-licenses]   | Overall Status: FAIL
+  [Dependency License Checker/check-licenses]   ✅  Success - Main Run License Check - All Denied [1.195903583s]
+  [Dependency License Checker/check-licenses] ⭐ Run Complete job
+  [Dependency License Checker/check-licenses] Cleaning up container for job check-licenses
+  [Dependency License Checker/check-licenses]   ✅  Success - Complete job
+  [Dependency License Checker/check-licenses] 🏁  Job succeeded
+--- end act output ---
+
+  [PASS] act exited with code 0
+  [PASS] Job shows "Job succeeded"
+  [PASS] All 37 Pester tests passed
+  [PASS] Zero Pester test failures
+  [PASS] express@4.18.2 is APPROVED with MIT license
+  [PASS] lodash@4.17.21 is APPROVED with MIT license
+  [PASS] gpl-pkg@1.0.0 is DENIED with GPL-3.0 license
+  [PASS] mystery-pkg@0.1.0 is UNKNOWN
+  [PASS] Mixed report summary: 2 approved, 1 denied, 1 unknown
+  [PASS] Mixed report overall status: FAIL
+  [PASS] Mixed report total dependencies: 4
+  [PASS] Mixed report manifest: mixed-package.json
+  [PASS] requests@2.31.0 is APPROVED with Apache-2.0
+  [PASS] flask@3.0.0 is APPROVED with BSD-3-Clause
+  [PASS] Approved report summary: 2 approved, 0 denied, 0 unknown
+  [PASS] Approved report overall status: PASS
+  [PASS] agpl-pkg@2.0.0 is DENIED with AGPL-3.0
+  [PASS] Denied report summary: 0 approved, 2 denied, 0 unknown
+
+======================================================================
+TEST: ACT Test Case 2: Stricter Config (BSD denied)
+======================================================================
+
+--- act output (last 40 lines) ---
+  [Dependency License Checker/check-licenses]   | [32m   [+] marks gpl-pkg as DENIED with GPL-3.0[0m[90m 19ms (8ms|12ms)[0m
+  [Dependency License Checker/check-licenses]   | [32m   [+] marks mystery-pkg as UNKNOWN[0m[90m 12ms (9ms|3ms)[0m
+  [Dependency License Checker/check-licenses]   | [32m   [+] shows correct summary counts[0m[90m 41ms (32ms|9ms)[0m
+  [Dependency License Checker/check-licenses]   | [32m   [+] shows FAIL overall status[0m[90m 23ms (9ms|14ms)[0m
+  [Dependency License Checker/check-licenses]   | [96m Context All approved (requirements.txt)[0m
+  [Dependency License Checker/check-licenses]   | [32m   [+] shows total dependency count of 2[0m[90m 12ms (7ms|5ms)[0m
+  [Dependency License Checker/check-licenses]   | [32m   [+] marks requests as APPROVED[0m[90m 16ms (11ms|4ms)[0m
+  [Dependency License Checker/check-licenses]   | [32m   [+] marks flask as APPROVED[0m[90m 10ms (6ms|5ms)[0m
+  [Dependency License Checker/check-licenses]   | [32m   [+] shows PASS overall status[0m[90m 14ms (7ms|7ms)[0m
+  [Dependency License Checker/check-licenses]   | [32m   [+] shows correct summary: 2 approved, 0 denied, 0 unknown[0m[90m 13ms (8ms|5ms)[0m
+  [Dependency License Checker/check-licenses]   | [96m Context All denied[0m
+  [Dependency License Checker/check-licenses]   | [32m   [+] shows total dependency count of 2[0m[90m 12ms (6ms|6ms)[0m
+  [Dependency License Checker/check-licenses]   | [32m   [+] marks gpl-pkg as DENIED[0m[90m 9ms (6ms|3ms)[0m
+  [Dependency License Checker/check-licenses]   | [32m   [+] marks agpl-pkg as DENIED[0m[90m 27ms (10ms|17ms)[0m
+  [Dependency License Checker/check-licenses]   | [32m   [+] shows FAIL overall status[0m[90m 17ms (10ms|7ms)[0m
+  [Dependency License Checker/check-licenses]   | [32m   [+] shows correct summary: 0 approved, 2 denied, 0 unknown[0m[90m 11ms (7ms|4ms)[0m
+  [Dependency License Checker/check-licenses]   | [0m
+  [Dependency License Checker/check-licenses]   | [92mDescribing Error Handling[0m
+  [Dependency License Checker/check-licenses]   | [32m  [+] throws for unsupported manifest format[0m[90m 42ms (35ms|7ms)[0m
+  [Dependency License Checker/check-licenses]   | [32m  [+] throws for missing license config[0m[90m 21ms (17ms|4ms)[0m
+  [Dependency License Checker/check-licenses]   | [97mTests completed in 2.71s[0m
+  [Dependency License Checker/check-licenses]   | [32mTests Passed: 37, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+  [Dependency License Checker/check-licenses]   | Tests Passed: 37, Failed: 0
+  [Dependency License Checker/check-licenses]   ✅  Success - Main Run Pester Tests [5.930573309s]
+  [Dependency License Checker/check-licenses] ⭐ Run Main Run License Check - Strict
+  [Dependency License Checker/check-licenses]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/4.ps1] user= workdir=
+  [Dependency License Checker/check-licenses]   | === Dependency License Compliance Report ===
+  [Dependency License Checker/check-licenses]   | Manifest: strict-manifest.json
+  [Dependency License Checker/check-licenses]   | Total Dependencies: 2
+  [Dependency License Checker/check-licenses]   | 
+  [Dependency License Checker/check-licenses]   | [APPROVED] express@4.18.2 - MIT
+  [Dependency License Checker/check-licenses]   | [DENIED] left-pad@1.3.0 - BSD-3-Clause
+  [Dependency License Checker/check-licenses]   | 
+  [Dependency License Checker/check-licenses]   | Summary: 1 approved, 1 denied, 0 unknown
+  [Dependency License Checker/check-licenses]   | Overall Status: FAIL
+  [Dependency License Checker/check-licenses]   ✅  Success - Main Run License Check - Strict [1.296722153s]
+  [Dependency License Checker/check-licenses] ⭐ Run Complete job
+  [Dependency License Checker/check-licenses] Cleaning up container for job check-licenses
+  [Dependency License Checker/check-licenses]   ✅  Success - Complete job
+  [Dependency License Checker/check-licenses] 🏁  Job succeeded
+--- end act output ---
+
+  [PASS] act exited with code 0
+  [PASS] Job shows "Job succeeded"
+  [PASS] express@4.18.2 is APPROVED (MIT in strict config)
+  [PASS] left-pad@1.3.0 is DENIED (BSD-3-Clause denied in strict config)
+  [PASS] Strict report summary: 1 approved, 1 denied, 0 unknown
+  [PASS] Strict report overall status: FAIL
+  [PASS] Strict report total dependencies: 2
+
+======================================================================
+TEST: ACT Test Case 3: Requirements.txt Only - All Pass
+======================================================================
+
+--- act output (last 40 lines) ---
+  [Dependency License Checker/check-licenses]   | [32m   [+] marks mystery-pkg as UNKNOWN[0m[90m 11ms (7ms|4ms)[0m
+  [Dependency License Checker/check-licenses]   | [32m   [+] shows correct summary counts[0m[90m 8ms (5ms|3ms)[0m
+  [Dependency License Checker/check-licenses]   | [32m   [+] shows FAIL overall status[0m[90m 12ms (8ms|4ms)[0m
+  [Dependency License Checker/check-licenses]   | [96m Context All approved (requirements.txt)[0m
+  [Dependency License Checker/check-licenses]   | [32m   [+] shows total dependency count of 2[0m[90m 9ms (5ms|4ms)[0m
+  [Dependency License Checker/check-licenses]   | [32m   [+] marks requests as APPROVED[0m[90m 8ms (6ms|2ms)[0m
+  [Dependency License Checker/check-licenses]   | [32m   [+] marks flask as APPROVED[0m[90m 10ms (6ms|3ms)[0m
+  [Dependency License Checker/check-licenses]   | [32m   [+] shows PASS overall status[0m[90m 7ms (5ms|2ms)[0m
+  [Dependency License Checker/check-licenses]   | [32m   [+] shows correct summary: 2 approved, 0 denied, 0 unknown[0m[90m 10ms (7ms|3ms)[0m
+  [Dependency License Checker/check-licenses]   | [96m Context All denied[0m
+  [Dependency License Checker/check-licenses]   | [32m   [+] shows total dependency count of 2[0m[90m 13ms (7ms|6ms)[0m
+  [Dependency License Checker/check-licenses]   | [32m   [+] marks gpl-pkg as DENIED[0m[90m 13ms (9ms|4ms)[0m
+  [Dependency License Checker/check-licenses]   | [32m   [+] marks agpl-pkg as DENIED[0m[90m 29ms (24ms|5ms)[0m
+  [Dependency License Checker/check-licenses]   | [32m   [+] shows FAIL overall status[0m[90m 10ms (7ms|3ms)[0m
+  [Dependency License Checker/check-licenses]   | [32m   [+] shows correct summary: 0 approved, 2 denied, 0 unknown[0m[90m 15ms (8ms|7ms)[0m
+  [Dependency License Checker/check-licenses]   | [0m
+  [Dependency License Checker/check-licenses]   | [92mDescribing Error Handling[0m
+  [Dependency License Checker/check-licenses]   | [32m  [+] throws for unsupported manifest format[0m[90m 73ms (49ms|24ms)[0m
+  [Dependency License Checker/check-licenses]   | [32m  [+] throws for missing license config[0m[90m 24ms (15ms|9ms)[0m
+  [Dependency License Checker/check-licenses]   | [97mTests completed in 2.51s[0m
+  [Dependency License Checker/check-licenses]   | [32mTests Passed: 37, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+  [Dependency License Checker/check-licenses]   | Tests Passed: 37, Failed: 0
+  [Dependency License Checker/check-licenses]   ✅  Success - Main Run Pester Tests [5.649338649s]
+  [Dependency License Checker/check-licenses] ⭐ Run Main Run License Check - Python
+  [Dependency License Checker/check-licenses]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/4.ps1] user= workdir=
+  [Dependency License Checker/check-licenses]   | === Dependency License Compliance Report ===
+  [Dependency License Checker/check-licenses]   | Manifest: py-requirements.txt
+  [Dependency License Checker/check-licenses]   | Total Dependencies: 3
+  [Dependency License Checker/check-licenses]   | 
+  [Dependency License Checker/check-licenses]   | [APPROVED] requests@2.31.0 - Apache-2.0
+  [Dependency License Checker/check-licenses]   | [APPROVED] flask@3.0.0 - BSD-3-Clause
+  [Dependency License Checker/check-licenses]   | [APPROVED] numpy@1.26.0 - BSD-3-Clause
+  [Dependency License Checker/check-licenses]   | 
+  [Dependency License Checker/check-licenses]   | Summary: 3 approved, 0 denied, 0 unknown
+  [Dependency License Checker/check-licenses]   | Overall Status: PASS
+  [Dependency License Checker/check-licenses]   ✅  Success - Main Run License Check - Python [1.151823469s]
+  [Dependency License Checker/check-licenses] ⭐ Run Complete job
+  [Dependency License Checker/check-licenses] Cleaning up container for job check-licenses
+  [Dependency License Checker/check-licenses]   ✅  Success - Complete job
+  [Dependency License Checker/check-licenses] 🏁  Job succeeded
+--- end act output ---
+
+  [PASS] act exited with code 0
+  [PASS] Job shows "Job succeeded"
+  [PASS] requests@2.31.0 is APPROVED with Apache-2.0
+  [PASS] flask@3.0.0 is APPROVED with BSD-3-Clause
+  [PASS] numpy@1.26.0 is APPROVED with BSD-3-Clause
+  [PASS] Python report summary: 3 approved, 0 denied, 0 unknown
+  [PASS] Python report overall status: PASS
+  [PASS] Python report total dependencies: 3
+  [PASS] Python report manifest: py-requirements.txt
+
+======================================================================
+TEST SUMMARY
+======================================================================
+Total assertions: 53
+Passed: 53
+Failed: 0
+
+RESULT: ALL TESTS PASSED

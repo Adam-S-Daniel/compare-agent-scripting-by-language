@@ -1,0 +1,330 @@
+{
+  "task_id": "11-semantic-version-bumper",
+  "task_name": "Semantic Version Bumper",
+  "task_category": "GitHub Actions / Release Automation",
+  "language_mode": "typescript-bun",
+  "language_chosen": "typescript",
+  "language_breakdown": {
+    "typescript": 100.0
+  },
+  "interpreter_versions": {},
+  "powershell_version": "",
+  "dotnet_version": "",
+  "model": "claude-opus-4-6",
+  "model_short": "opus",
+  "claude_code_version": "2.1.96",
+  "instructions_version": "v3",
+  "timestamp_start": "2026-04-08T21:37:17.353159+00:00",
+  "timestamp_end": "2026-04-08T21:42:42.567466+00:00",
+  "prompt_text": "You are completing a scripting task. You MUST use TypeScript with Bun as your implementation language and runtime.\n\nTASK: Parse a version file (or package.json) containing a semantic version string, determine the next version based on conventional commit messages (feat -> minor, fix -> patch, breaking -> major), update the version file, generate a changelog entry from the commits, and output the new version. Create mock commit logs as test fixtures.\n\nREQUIREMENTS:\n1. Use red/green TDD methodology: write a failing test FIRST, then write the minimum code to make it pass, then refactor. Repeat for each piece of functionality.\n2. Create mocks and test fixtures as necessary for testability. Use Bun's built-in test runner (`bun test`).\n3. All tests must be runnable with `bun test` and must pass at the end.\n4. Include clear comments explaining your approach.\n5. Handle errors gracefully with meaningful error messages.\n6. Use TypeScript features: explicit types, interfaces, and type annotations. Run scripts with `bun run <file>.ts`.\n\nCreate your solution in the current working directory. Start by writing your first failing test.\n\nGITHUB ACTIONS REQUIREMENT:\nIn addition to the script and tests, create a GitHub Actions workflow file at\n.github/workflows/semantic-version-bumper.yml that uses your script in a real CI/CD pipeline.\nThe workflow must:\n- Use appropriate trigger events (push, pull_request, schedule, workflow_dispatch, etc.)\n- Reference your script correctly\n- Pass actionlint validation (valid YAML, valid action references, correct syntax)\n- Include appropriate permissions, environment variables, and job dependencies\n- Actually run successfully when executed locally with `act` (nektos/act)\n\nThe workflow WILL be executed in a Docker container via `act push` after you finish.\nIt must complete without errors. Design your workflow so that its steps work in an\nisolated container environment \u2014 use `actions/checkout@v4`, install any dependencies\nyour script needs, and run the script. Avoid steps that require external services or\nsecrets unless they have sensible defaults/fallbacks.\n\nWORKFLOW VALIDATION:\nYou MUST validate your workflow file by running `actionlint .github/workflows/semantic-version-bumper.yml`\nand fix any errors it reports. actionlint is pre-installed. Iterate until it passes cleanly.\n\nWORKFLOW EXECUTION TEST (MANDATORY):\nYour workflow must actually run in Docker via `act`. You MUST include a test that:\n1. Initializes a git repo in a temp directory and copies your project files into it\n2. Runs: git add -A && git commit -m \"test\" && act push --rm 2>&1\n3. Saves the full output to a file called `act-result.txt` in the current working directory\n4. Asserts that the act command exited with code 0\n5. Parses `act-result.txt` and asserts the workflow produced correct results:\n   - Assert that each job shows \"Job succeeded\"\n   - Assert that your script's outputs have the correct expected values \u2014 not just that\n     they appear, but that they match known-good values. For example, if the workflow\n     runs your version bumper with fixture data, assert the exact version string\n     (e.g. \"1.2.0\") appears in the output, not just \"some version was printed\"\n   - If the workflow sets step outputs, assert their values match expectations\n   - Use your test fixtures as the input data for the workflow run so you know exactly\n     what the correct output should be\n\nThe `act-result.txt` file MUST exist when your tests finish. It is a required artifact.\nIf act fails, debug the workflow until it passes \u2014 check the output for errors.\n`act` and Docker are pre-installed.\n\nWORKFLOW STRUCTURE TESTS:\nAlso write tests that verify your workflow file:\n- Parse the YAML and check that it has the expected structure (triggers, jobs, steps)\n- Verify the workflow references your script files correctly (paths exist)\n- Verify actionlint passes (run it as a subprocess in your test and assert exit code 0)\nThese tests should be part of your main test suite and must pass at the end.\n",
+  "exit_code": 0,
+  "session": {
+    "session_id": "ced13cbd-23fe-4e4a-a1a3-907840491f91",
+    "stop_reason": "end_turn",
+    "terminal_reason": "completed",
+    "fast_mode_state": "off",
+    "service_tier": "standard",
+    "speed": "standard",
+    "inference_geo": "",
+    "context_window": 200000,
+    "max_output_tokens": 64000,
+    "permission_mode": "bypassPermissions",
+    "output_style": "default",
+    "tools_available_count": 31,
+    "mcp_servers": [
+      {
+        "name": "claude.ai Microsoft Learn",
+        "status": "connected"
+      },
+      {
+        "name": "claude.ai Gmail",
+        "status": "needs-auth"
+      },
+      {
+        "name": "claude.ai Google Calendar",
+        "status": "needs-auth"
+      }
+    ],
+    "permission_denials": []
+  },
+  "model_usage_detail": {
+    "claude-opus-4-6": {
+      "inputTokens": 33,
+      "outputTokens": 13236,
+      "cacheReadInputTokens": 842512,
+      "cacheCreationInputTokens": 28945,
+      "webSearchRequests": 0,
+      "costUSD": 0.9332272500000004,
+      "contextWindow": 200000,
+      "maxOutputTokens": 64000
+    }
+  },
+  "effort_level": null,
+  "timing": {
+    "grand_total_duration_ms": 325214,
+    "total_api_duration_ms": 229194,
+    "total_execution_duration_ms": 91918,
+    "num_turns": 33
+  },
+  "tokens": {
+    "input_tokens": 33,
+    "output_tokens": 13236,
+    "cache_read_tokens": 842512,
+    "cache_creation_tokens": 28945,
+    "total_context_consumed": 871490,
+    "compaction_count": 0
+  },
+  "cost": {
+    "total_cost_usd": 0.9332272500000004,
+    "assumed_input_cost_per_mtok": 15.0,
+    "assumed_output_cost_per_mtok": 75.0,
+    "assumed_cache_read_cost_per_mtok": 1.5,
+    "assumed_cache_write_cost_per_mtok": 18.75
+  },
+  "code_metrics": {
+    "total_lines": 1029,
+    "total_tokens_estimate": 10689,
+    "file_count": 10,
+    "files": [
+      "act-result.txt",
+      "bump.ts",
+      "bun.lock",
+      "package.json",
+      "tsconfig.json",
+      "version-bumper.test.ts",
+      "version-bumper.ts",
+      "workflow.test.ts",
+      "fixtures/commits.ts",
+      ".github/workflows/semantic-version-bumper.yml"
+    ]
+  },
+  "quality": {
+    "tests_pass": null,
+    "error_count": 2,
+    "error_details": [
+      "Exit code 1\nbun test v1.3.11 (af24e281)\n\nversion-bumper.test.ts:\n117 |   test(\"returns none for non-conventional commits\", () => {\n118 |     expect(determineBumpType(NO_CONVENTIONAL_COMMITS.commits)).",
+      "Exit code 1\n.github/workflows/semantic-version-bumper.yml:58:9: shellcheck reported issue in this script: SC2129:style:4:18: Consider using { cmd1; cmd2; } >> file instead of individual redirects [she"
+    ],
+    "actionlint_pass": true,
+    "actionlint_errors": 0,
+    "actionlint_results": [
+      {
+        "file": ".github/workflows/semantic-version-bumper.yml",
+        "passed": true,
+        "errors": ""
+      }
+    ],
+    "act_ran": true,
+    "act_pass": true,
+    "act_duration_ms": 22158,
+    "act_output": "mp]   \ud83d\udc33  docker exec cmd=[/opt/acttoolcache/node/24.14.1/x64/bin/node /var/run/act/actions/oven-sh-setup-bun@v2/dist/cache-save/index.js] user= workdir=\n[Semantic Version Bumper/Version Bump]   \u2705  Success - Post Setup Bun [443.891485ms]\n[Semantic Version Bumper/Version Bump] \u2b50 Run Complete job\n[Semantic Version Bumper/Version Bump] Cleaning up container for job Version Bump\n[Semantic Version Bumper/Version Bump]   \u2705  Success - Complete job\n[Semantic Version Bumper/Version Bump] \ud83c\udfc1  Job succeeded\n",
+    "act_error": "time=\"2026-04-08T17:42:42-04:00\" level=info msg=\"Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'\"\n",
+    "act_result_txt_exists": true,
+    "areas_of_difficulty": [],
+    "observations": ""
+  },
+  "tool_install": {
+    "tool_install_duration_ms": 0,
+    "tools_installed": [],
+    "install_commands_count": 0
+  },
+  "hooks": {
+    "hook_fires": 12,
+    "hook_errors_caught": 6,
+    "hook_failures": 0,
+    "hook_events": [
+      {
+        "subtype": "hook_started",
+        "hook_id": "1382a1ae-837c-49b0-9c8f-1c8594bd87be",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "1382a1ae-837c-49b0-9c8f-1c8594bd87be",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "18e7ee16-a055-4935-befc-f31b175bc078",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "18e7ee16-a055-4935-befc-f31b175bc078",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\nversion-bumper.test.ts(13,8): error TS2307: Cannot find module './version-bumper' or its corresponding type declarations.\"}",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "e63d68cf-b822-4e1a-ac63-02ffa344dccb",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "e63d68cf-b822-4e1a-ac63-02ffa344dccb",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "eee61973-1ea8-4616-b287-fdb76de3f28c",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "eee61973-1ea8-4616-b287-fdb76de3f28c",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "ded52c74-a87a-4680-8a87-0a0df115734e",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "ded52c74-a87a-4680-8a87-0a0df115734e",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "fb574f02-0dd5-4f4e-a787-1a818e7bf627",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "fb574f02-0dd5-4f4e-a787-1a818e7bf627",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\n.github/workflows/semantic-version-bumper.yml:58:9: shellcheck reported issue in this script: SC2129:style:4:18: Consider using { cmd1; cmd2; } >> file instead of individual redirects [shellcheck]\\n   |\\n58 |         run: |\\n   |         ^~~~\"}",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "91d344cb-de88-4abc-9bc8-aeef7bdd4bdc",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "91d344cb-de88-4abc-9bc8-aeef7bdd4bdc",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "10affea5-d0a5-448e-99bc-197807e8e128",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "10affea5-d0a5-448e-99bc-197807e8e128",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "a818fb84-6ebf-412e-bba3-ebcc4f1ce6f2",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "a818fb84-6ebf-412e-bba3-ebcc4f1ce6f2",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\nworkflow.test.ts(10,18): error TS2307: Cannot find module './yaml-parser' or its corresponding type declarations.\\nworkflow.test.ts(12,28): error TS1343: The 'import.meta' meta-property is only allowed when the '--module' option is 'es2020', 'es2022', 'esnext', 'system', 'node16', 'node18', 'node20', or 'nodenext'.\\nworkflow.test.ts(13,21): error TS1343: The 'import.meta' meta-p",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "877df59a-33cc-4f9f-9020-70390daaf838",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "877df59a-33cc-4f9f-9020-70390daaf838",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\nworkflow.test.ts(10,8): error TS1192: Module '\\\"/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_170920/11-semantic-version-bumper/typescript-bun-opus/node_modules/@types/js-yaml/index\\\"' has no default export.\\nworkflow.test.ts(12,28): error TS1343: The 'import.meta' meta-property is only allowed when the '--module' option is 'es2020', 'es2022', 'esne",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "b9c07bb0-8b24-4058-ad81-0c1b401785f9",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "b9c07bb0-8b24-4058-ad81-0c1b401785f9",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\nworkflow.test.ts(10,8): error TS1192: Module '\\\"/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_170920/11-semantic-version-bumper/typescript-bun-opus/node_modules/@types/js-yaml/index\\\"' has no default export.\\nworkflow.test.ts(12,28): error TS1343: The 'import.meta' meta-property is only allowed when the '--module' option is 'es2020', 'es2022', 'esne",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "772f545a-9577-47bc-84e7-9829aaaf58b4",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "772f545a-9577-47bc-84e7-9829aaaf58b4",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\nworkflow.test.ts(10,8): error TS1192: Module '\\\"/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_170920/11-semantic-version-bumper/typescript-bun-opus/node_modules/@types/js-yaml/index\\\"' has no default export.\\nworkflow.test.ts(12,28): error TS1343: The 'import.meta' meta-property is only allowed when the '--module' option is 'es2020', 'es2022', 'esne",
+        "stderr": ""
+      }
+    ]
+  }
+}

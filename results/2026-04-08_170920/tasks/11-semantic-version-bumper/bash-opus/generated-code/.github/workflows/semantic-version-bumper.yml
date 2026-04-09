@@ -1,0 +1,89 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint and Validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install shellcheck
+        run: |
+          apt-get update -qq && apt-get install -y -qq shellcheck 2>/dev/null || \
+          sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
+
+      - name: Shellcheck
+        run: shellcheck version_lib.sh version_bumper.sh
+
+      - name: Bash syntax check
+        run: |
+          bash -n version_lib.sh
+          bash -n version_bumper.sh
+
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install bats
+        run: |
+          apt-get update -qq && apt-get install -y -qq bats 2>/dev/null || \
+          sudo apt-get update -qq && sudo apt-get install -y -qq bats
+
+      - name: Run bats tests
+        run: bats test/version_bumper.bats
+
+  bump:
+    name: Version Bump
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create version file
+        run: echo "1.0.0" > VERSION
+
+      - name: Generate commit log
+        id: commits
+        run: |
+          # Use fixture data for reproducible output in CI
+          cp test/fixtures/commits_minor.txt commits.txt
+          echo "commits_file=commits.txt" >> "$GITHUB_OUTPUT"
+
+      - name: Run version bumper
+        id: bumper
+        run: |
+          chmod +x version_bumper.sh
+          NEW_VERSION=$(./version_bumper.sh \
+            --version-file VERSION \
+            --commits commits.txt \
+            --changelog CHANGELOG.md)
+          echo "new_version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+          echo "Version bumped to: $NEW_VERSION"
+
+      - name: Display results
+        run: |
+          echo "=== New Version ==="
+          cat VERSION
+          echo ""
+          echo "=== Changelog ==="
+          cat CHANGELOG.md
+          echo ""
+          echo "new_version=${{ steps.bumper.outputs.new_version }}"

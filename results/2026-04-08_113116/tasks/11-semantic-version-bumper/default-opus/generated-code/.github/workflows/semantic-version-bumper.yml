@@ -1,0 +1,90 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "If true, print the new version without committing"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "true"
+          - "false"
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    name: Run tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install test dependencies
+        run: pip install pytest
+
+      - name: Run tests
+        run: python -m pytest test_version_bumper.py -v
+
+  bump:
+    name: Bump version
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    outputs:
+      new_version: ${{ steps.bump.outputs.new_version }}
+      changed: ${{ steps.bump.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Get commits since last tag
+        id: commits
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$LAST_TAG" ]; then
+            git log --format="%s%n%b---" > /tmp/commits.txt
+          else
+            git log "${LAST_TAG}..HEAD" --format="%s%n%b---" > /tmp/commits.txt
+          fi
+
+      - name: Run version bumper
+        id: bump
+        env:
+          DRY_RUN: ${{ inputs.dry_run || 'false' }}
+        run: |
+          OUTPUT=$(python version_bumper.py VERSION /tmp/commits.txt 2>&1) || true
+          echo "$OUTPUT"
+          # Extract the new version from the output
+          NEW_VERSION=$(grep -oP '\d+\.\d+\.\d+' VERSION)
+          echo "new_version=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+          if echo "$OUTPUT" | grep -q "unchanged"; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit version bump
+        if: steps.bump.outputs.changed == 'true' && inputs.dry_run != 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add VERSION CHANGELOG.md
+          git commit -m "chore: bump version to ${{ steps.bump.outputs.new_version }}"
+          git tag "v${{ steps.bump.outputs.new_version }}"
+          git push origin main --tags

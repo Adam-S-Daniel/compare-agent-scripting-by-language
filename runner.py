@@ -20,24 +20,17 @@ from pathlib import Path
 # Constants
 # ---------------------------------------------------------------------------
 
-INSTRUCTIONS_FILE = "benchmark-instructions-v1.md"
-INSTRUCTIONS_VERSION = "v1"
+INSTRUCTIONS_FILE = "benchmark-instructions-v3.md"
+INSTRUCTIONS_VERSION = "v3"
 
-MODELS = {
-    "opus": "claude-opus-4-6",
-    "sonnet": "claude-sonnet-4-6",
-}
-
-COST_PER_MTOK = {
-    "claude-opus-4-6":   {"input": 15.0, "output": 75.0, "cache_read": 1.5, "cache_write": 18.75},
-    "claude-sonnet-4-6": {"input": 3.0,  "output": 15.0, "cache_read": 0.3, "cache_write": 3.75},
-}
+from models import COST_PER_MTOK, MODELS  # noqa: E402  (single source of truth)
 
 LANGUAGE_EXTENSIONS = {
     ".py": "python", ".js": "javascript", ".ts": "typescript", ".sh": "bash",
     ".ps1": "powershell", ".psm1": "powershell", ".psd1": "powershell",
     ".cs": "csharp", ".rb": "ruby", ".go": "go", ".rs": "rust",
     ".java": "java", ".pl": "perl", ".lua": "lua", ".r": "r",
+    ".yml": "yaml", ".yaml": "yaml",
 }
 
 INSTALL_PATTERNS = [
@@ -277,45 +270,99 @@ PROMPT_TEMPLATES = {
         "5. Handle errors gracefully with meaningful error messages.\n\n"
         "Create your solution in the current working directory. Start by writing your first failing test."
     ),
-    "powershell-strict": (
-        "You are completing a scripting task. You MUST use PowerShell with strict mode as your implementation language.\n\n"
+    "bash": (
+        "You are completing a scripting task. You MUST use Bash as your implementation language.\n\n"
         "TASK: {task_description}\n\n"
         "REQUIREMENTS:\n"
         "1. Use red/green TDD methodology: write a failing test FIRST, then write the minimum code to make it pass, then refactor. Repeat for each piece of functionality.\n"
-        "2. Create mocks and test fixtures as necessary for testability. Use Pester as the testing framework.\n"
-        "3. All tests must be runnable with `Invoke-Pester` and must pass at the end.\n"
+        "2. Create mocks and test fixtures as necessary for testability. Use bats-core (bats) as the testing framework.\n"
+        "3. All tests must be runnable with `bats` and must pass at the end.\n"
         "4. Include clear comments explaining your approach.\n"
         "5. Handle errors gracefully with meaningful error messages.\n"
-        "6. STRICT MODE REQUIREMENTS — every script and module file must include:\n"
-        "   - `Set-StrictMode -Latest` at the top\n"
-        "   - `$ErrorActionPreference = 'Stop'`\n"
-        "   - All function parameters must be explicitly typed (e.g., `[string]$Name`, `[int]$Count`, `[hashtable]$Options`)\n"
-        "   - All functions must declare `[OutputType()]` attributes\n"
-        "   - No implicit type conversions — cast explicitly where needed\n"
-        "   - Use `[CmdletBinding()]` on all functions\n\n"
+        "6. Use `#!/usr/bin/env bash` shebang. Scripts must pass `shellcheck` and `bash -n` syntax validation.\n\n"
         "Create your solution in the current working directory. Start by writing your first failing test."
     ),
-    "csharp-script": (
-        "You are completing a scripting task. You MUST use C# with .NET 10 file-based apps as your implementation language.\n\n"
+    "typescript-bun": (
+        "You are completing a scripting task. You MUST use TypeScript with Bun as your implementation language and runtime.\n\n"
         "TASK: {task_description}\n\n"
         "REQUIREMENTS:\n"
         "1. Use red/green TDD methodology: write a failing test FIRST, then write the minimum code to make it pass, then refactor. Repeat for each piece of functionality.\n"
-        "2. Create mocks and test fixtures as necessary for testability.\n"
-        "3. Use .NET 10 file-based apps: write C# files with top-level statements that can be run directly with `dotnet run <file>.cs`. For tests, use a standard test project with `dotnet test`.\n"
-        "4. All tests must be runnable with `dotnet test` and must pass at the end.\n"
-        "5. Include clear comments explaining your approach.\n"
-        "6. Handle errors gracefully with meaningful error messages.\n\n"
+        "2. Create mocks and test fixtures as necessary for testability. Use Bun's built-in test runner (`bun test`).\n"
+        "3. All tests must be runnable with `bun test` and must pass at the end.\n"
+        "4. Include clear comments explaining your approach.\n"
+        "5. Handle errors gracefully with meaningful error messages.\n"
+        "6. Use TypeScript features: explicit types, interfaces, and type annotations. Run scripts with `bun run <file>.ts`.\n\n"
         "Create your solution in the current working directory. Start by writing your first failing test."
     ),
 }
 
 MODES = list(PROMPT_TEMPLATES.keys())
 
+# GHA workflow requirement addendum — appended to prompts for tasks 11-18
+GHA_TASK_IDS = {
+    "11-semantic-version-bumper",
+    "12-pr-label-assigner",
+    "13-dependency-license-checker",
+    "14-docker-image-tag-generator",
+    "15-test-results-aggregator",
+    "16-environment-matrix-generator",
+    "17-artifact-cleanup-script",
+    "18-secret-rotation-validator",
+}
+
+GHA_WORKFLOW_ADDENDUM = """
+GITHUB ACTIONS REQUIREMENT:
+Create a GitHub Actions workflow file at .github/workflows/{task_slug}.yml that uses
+your script in a real CI/CD pipeline. The workflow must:
+- Use appropriate trigger events (push, pull_request, schedule, workflow_dispatch, etc.)
+- Reference your script correctly
+- Pass actionlint validation (valid YAML, valid action references, correct syntax)
+- Include appropriate permissions, environment variables, and job dependencies
+- Actually run successfully when executed locally with `act` (nektos/act)
+
+Design your workflow so its steps work in an isolated Docker container — use
+`actions/checkout@v4`, install dependencies your script needs, and run it.
+Avoid steps requiring external services or secrets without sensible defaults.
+
+WORKFLOW VALIDATION:
+Run `actionlint .github/workflows/{task_slug}.yml` and fix any errors. actionlint is
+pre-installed. Iterate until it passes cleanly.
+
+ALL TESTS MUST RUN THROUGH ACT:
+Every single test case must execute through the GitHub Actions workflow via `act`.
+Do NOT test your script directly — all testing goes through the pipeline.
+
+Structure your workflow to accept test fixture data and produce verifiable output.
+Your test harness must:
+1. For each test case: set up a temp git repo with your project files + that case's
+   fixture data, run `act push --rm`, capture the output
+2. Save all act output to `act-result.txt` in the current working directory (append
+   each test case's output, clearly delimited)
+3. Assert that act exited with code 0 for each case
+4. Parse the act output and assert on EXACT EXPECTED VALUES — not just that output
+   appeared, but that it matches the known-good result for that test case's input.
+   For example: if your workflow bumps version 1.1.0 with a feat commit, assert
+   the output contains exactly "1.2.0", not just "a version number"
+5. Assert every job shows "Job succeeded"
+
+The `act-result.txt` file MUST exist when done. It is a required artifact.
+`act` and Docker are pre-installed.
+
+WORKFLOW STRUCTURE TESTS (also required):
+- Parse the YAML and check expected structure (triggers, jobs, steps)
+- Verify the workflow references your script files correctly (paths exist)
+- Verify actionlint passes (assert exit code 0)
+"""
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
 PUSH_INTERVAL = 60  # seconds between incremental git pushes
+INCREMENTAL_PREFIX = "Incremental benchmark results:"
+
+# Directories to skip in workspace walkers (noise that inflates metrics)
+SKIP_DIRS = {"node_modules", "__pycache__", ".pytest_cache", ".mypy_cache", "obj", "bin"}
 
 
 def log(msg: str) -> None:
@@ -323,32 +370,57 @@ def log(msg: str) -> None:
     print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}", file=sys.stderr, flush=True)
 
 
-def git_push_results(repo_root: Path, branch: str, run_count: int, total_runs: int) -> None:
-    """Commit and push any new results to the remote branch."""
-    try:
-        status = subprocess.run(
-            ["git", "status", "--porcelain", "results/"],
-            cwd=str(repo_root), capture_output=True, text=True, timeout=10,
-        )
-        if not status.stdout.strip():
-            return  # nothing new
+# Lock protects all git operations so the PeriodicPusher background thread
+# and any foreground git work never overlap.
+_git_lock = threading.Lock()
 
-        subprocess.run(
-            ["git", "add", "results/"],
-            cwd=str(repo_root), capture_output=True, timeout=10,
-        )
-        msg = f"Incremental benchmark results: {run_count}/{total_runs} runs completed"
-        subprocess.run(
-            ["git", "commit", "-m", msg],
-            cwd=str(repo_root), capture_output=True, timeout=30,
-        )
-        subprocess.run(
-            ["git", "push", "-u", "origin", branch],
-            cwd=str(repo_root), capture_output=True, timeout=60,
-        )
-        log(f"  [push] Pushed results ({run_count}/{total_runs} done)")
-    except Exception as e:
-        log(f"  [push] Warning: push failed: {e}")
+
+def git_push_results(
+    repo_root: Path,
+    branch: str,
+    run_count: int,
+    total_runs: int,
+    *,
+    final: bool = False,
+) -> None:
+    """Commit and push results (append-only, no history rewriting).
+
+    Earlier versions squashed incremental commits via ``git reset --soft``,
+    which corrupted the repo when concurrent git operations occurred (e.g.
+    manual rebase while the background pusher was running).  Now we simply
+    append commits — safe for concurrency, easy to squash later if desired.
+    """
+    with _git_lock:
+        try:
+            status = subprocess.run(
+                ["git", "status", "--porcelain", "results/"],
+                cwd=str(repo_root), capture_output=True, text=True, timeout=10,
+            )
+            if not status.stdout.strip():
+                return  # nothing new to commit
+
+            # Stage results
+            subprocess.run(
+                ["git", "add", "results/"],
+                cwd=str(repo_root), capture_output=True, timeout=10,
+            )
+
+            if final:
+                msg = f"Benchmark results: {run_count}/{total_runs} runs completed"
+            else:
+                msg = f"{INCREMENTAL_PREFIX} {run_count}/{total_runs} runs completed"
+
+            subprocess.run(
+                ["git", "commit", "-m", msg],
+                cwd=str(repo_root), capture_output=True, timeout=30,
+            )
+
+            push_args = ["git", "push", "-u", "origin", branch]
+            subprocess.run(push_args, capture_output=True, timeout=60, cwd=str(repo_root))
+
+            log(f"  [push] Pushed results ({run_count}/{total_runs} done{', FINAL' if final else ''})")
+        except Exception as e:
+            log(f"  [push] Warning: push failed: {e}")
 
 
 class PeriodicPusher:
@@ -388,8 +460,8 @@ def capture_workspace_listing(workspace: Path) -> str:
     """Return a recursive file listing of the workspace directory."""
     lines = []
     for root, dirs, files in os.walk(workspace):
-        # skip hidden dirs
-        dirs[:] = [d for d in dirs if not d.startswith(".")]
+        # skip hidden dirs, but allow .github/
+        dirs[:] = [d for d in dirs if (not d.startswith(".") or d == ".github") and d not in SKIP_DIRS]
         level = len(Path(root).relative_to(workspace).parts)
         indent = "  " * level
         lines.append(f"{indent}{Path(root).name}/")
@@ -409,7 +481,7 @@ def copy_generated_files(workspace: Path, dest: Path) -> list[str]:
     dest.mkdir(parents=True, exist_ok=True)
     copied = []
     for root, dirs, files in os.walk(workspace):
-        dirs[:] = [d for d in dirs if not d.startswith(".")]
+        dirs[:] = [d for d in dirs if (not d.startswith(".") or d == ".github") and d not in SKIP_DIRS]
         for f in sorted(files):
             if f.startswith(".") or f == INSTRUCTIONS_FILE:
                 continue
@@ -429,7 +501,7 @@ def count_lines(directory: Path) -> int:
     """Count total lines of code in a directory."""
     total = 0
     for root, dirs, files in os.walk(directory):
-        dirs[:] = [d for d in dirs if not d.startswith(".")]
+        dirs[:] = [d for d in dirs if not d.startswith(".") and d not in SKIP_DIRS]
         for f in files:
             if f.startswith("."):
                 continue
@@ -445,240 +517,53 @@ def estimate_tokens(text: str) -> int:
     return len(text) // 4
 
 
-def compute_language_breakdown(directory: Path) -> dict:
-    """Compute language breakdown by lines of code from file extensions."""
-    lang_lines: dict[str, int] = {}
-    total = 0
-    for root, dirs, files in os.walk(directory):
-        dirs[:] = [d for d in dirs if not d.startswith(".")]
-        for f in files:
-            if f.startswith("."):
-                continue
-            ext = Path(f).suffix.lower()
-            lang = LANGUAGE_EXTENSIONS.get(ext)
-            if lang:
-                try:
-                    lines = len((Path(root) / f).read_text(errors="replace").splitlines())
-                    lang_lines[lang] = lang_lines.get(lang, 0) + lines
-                    total += lines
-                except Exception:
-                    pass
-    if total == 0:
-        return {}
-    return {lang: round(100 * count / total, 1) for lang, count in sorted(lang_lines.items(), key=lambda x: -x[1])}
+# Import results generation from the standalone module.
+# These were previously defined here; they now live in generate_results.py
+# so they can be run independently.
+from generate_results import (  # noqa: E402
+    generate_results_md,
+    _detect_traps,
+    _categorize_tool_time,
+)
 
-
-def get_all_code_text(directory: Path) -> str:
-    """Get all code text from files in directory for token counting."""
-    texts = []
-    for root, dirs, files in os.walk(directory):
-        dirs[:] = [d for d in dirs if not d.startswith(".")]
-        for f in files:
-            if f.startswith(".") or f == INSTRUCTIONS_FILE:
-                continue
-            try:
-                texts.append((Path(root) / f).read_text(errors="replace"))
-            except Exception:
-                pass
-    return "\n".join(texts)
-
-
-def generate_results_md(run_dir: Path, all_metrics: list[dict], total_runs: int, run_count: int) -> None:
-    """Generate/update a results.md file with tables, commentary, and status."""
-    from zoneinfo import ZoneInfo
-
-    et = ZoneInfo("America/New_York")
-    now_et = datetime.now(et).strftime("%Y-%m-%d %I:%M:%S %p ET")
-
-    completed = len(all_metrics)
-    remaining = total_runs - run_count
-    in_progress = run_count - completed
-
-    total_cost = sum(m["cost"]["total_cost_usd"] for m in all_metrics)
-    total_duration = sum(m["timing"]["grand_total_duration_ms"] for m in all_metrics) / 1000
-
-    lines = []
-    lines.append("# Benchmark Results: PowerShell vs Default Language")
-    lines.append("")
-    lines.append(f"**Last updated:** {now_et}")
-    lines.append("")
-    lines.append(f"**Status:** {completed}/{total_runs} runs completed, {remaining} remaining")
-    lines.append(f"**Total cost so far:** ${total_cost:.4f}")
-    lines.append(f"**Total agent time so far:** {total_duration:.0f}s ({total_duration/60:.1f} min)")
-    lines.append("")
-
-    if not all_metrics:
-        lines.append("*No completed runs yet.*")
-        (run_dir / "results.md").write_text("\n".join(lines))
-        return
-
-    # ── Per-run detail table ──
-    lines.append("## Per-Run Results")
-    lines.append("")
-    lines.append("| Task | Mode | Model | Duration | Turns | Lines | Errors | Cost | Language |")
-    lines.append("|------|------|-------|----------|-------|-------|--------|------|----------|")
-
-    for m in all_metrics:
-        dur = m["timing"]["grand_total_duration_ms"] / 1000
-        lines.append(
-            f"| {m['task_name'][:30]} "
-            f"| {m['language_mode']} "
-            f"| {m['model_short']} "
-            f"| {dur:.0f}s "
-            f"| {m['timing']['num_turns']} "
-            f"| {m['code_metrics']['total_lines']} "
-            f"| {m['quality']['error_count']} "
-            f"| ${m['cost']['total_cost_usd']:.4f} "
-            f"| {m['language_chosen']} |"
-        )
-
-    lines.append("")
-
-    # ── Comparison by mode ──
-    modes_seen = sorted(set(m["language_mode"] for m in all_metrics))
-    if len(modes_seen) > 1:
-        lines.append("## Comparison by Language Mode")
-        lines.append("")
-        lines.append("| Mode | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Total Cost |")
-        lines.append("|------|------|-------------|-----------|------------|-----------|------------|")
-        for mode in modes_seen:
-            mm = [m for m in all_metrics if m["language_mode"] == mode]
-            n = len(mm)
-            avg_dur = sum(m["timing"]["grand_total_duration_ms"] for m in mm) / n / 1000
-            avg_lines = sum(m["code_metrics"]["total_lines"] for m in mm) / n
-            avg_errors = sum(m["quality"]["error_count"] for m in mm) / n
-            avg_turns = sum(m["timing"]["num_turns"] for m in mm) / n
-            cost = sum(m["cost"]["total_cost_usd"] for m in mm)
-            lines.append(f"| {mode} | {n} | {avg_dur:.0f}s | {avg_lines:.0f} | {avg_errors:.1f} | {avg_turns:.0f} | ${cost:.4f} |")
-        lines.append("")
-
-    # ── Comparison by model ──
-    models_seen = sorted(set(m["model_short"] for m in all_metrics))
-    if len(models_seen) > 1:
-        lines.append("## Comparison by Model")
-        lines.append("")
-        lines.append("| Model | Runs | Avg Duration | Avg Lines | Avg Errors | Avg Turns | Total Cost |")
-        lines.append("|-------|------|-------------|-----------|------------|-----------|------------|")
-        for model in models_seen:
-            mm = [m for m in all_metrics if m["model_short"] == model]
-            n = len(mm)
-            avg_dur = sum(m["timing"]["grand_total_duration_ms"] for m in mm) / n / 1000
-            avg_lines = sum(m["code_metrics"]["total_lines"] for m in mm) / n
-            avg_errors = sum(m["quality"]["error_count"] for m in mm) / n
-            avg_turns = sum(m["timing"]["num_turns"] for m in mm) / n
-            cost = sum(m["cost"]["total_cost_usd"] for m in mm)
-            lines.append(f"| {model} | {n} | {avg_dur:.0f}s | {avg_lines:.0f} | {avg_errors:.1f} | {avg_turns:.0f} | ${cost:.4f} |")
-        lines.append("")
-
-    # ── Head-to-head: same task, different modes ──
-    tasks_seen = sorted(set(m["task_id"] for m in all_metrics))
-    h2h_rows = []
-    for task_id in tasks_seen:
-        task_metrics = [m for m in all_metrics if m["task_id"] == task_id]
-        task_modes = {m["language_mode"]: m for m in task_metrics}
-        if "default" in task_modes and any(k != "default" for k in task_modes):
-            default = task_modes["default"]
-            for mode, m in task_modes.items():
-                if mode == "default":
-                    continue
-                d_dur = default["timing"]["grand_total_duration_ms"] / 1000
-                m_dur = m["timing"]["grand_total_duration_ms"] / 1000
-                dur_delta = ((m_dur - d_dur) / d_dur * 100) if d_dur > 0 else 0
-                d_err = default["quality"]["error_count"]
-                m_err = m["quality"]["error_count"]
-                err_delta = m_err - d_err
-                d_lines = default["code_metrics"]["total_lines"]
-                m_lines = m["code_metrics"]["total_lines"]
-                h2h_rows.append({
-                    "task": default["task_name"][:25],
-                    "model": m["model_short"],
-                    "mode": mode,
-                    "default_lang": default["language_chosen"],
-                    "def_dur": d_dur, "mode_dur": m_dur, "dur_delta": dur_delta,
-                    "def_err": d_err, "mode_err": m_err, "err_delta": err_delta,
-                    "def_lines": d_lines, "mode_lines": m_lines,
-                })
-
-    if h2h_rows:
-        lines.append("## Head-to-Head: Default vs Constrained Language")
-        lines.append("")
-        lines.append("| Task | Model | Mode | Default Lang | Def Dur | Mode Dur | Dur Delta | Def Err | Mode Err | Err Delta | Def Lines | Mode Lines |")
-        lines.append("|------|-------|------|-------------|---------|----------|-----------|---------|----------|-----------|-----------|------------|")
-        for r in h2h_rows:
-            sign = "+" if r["dur_delta"] >= 0 else ""
-            esign = "+" if r["err_delta"] >= 0 else ""
-            lines.append(
-                f"| {r['task']} | {r['model']} | {r['mode']} | {r['default_lang']} "
-                f"| {r['def_dur']:.0f}s | {r['mode_dur']:.0f}s | {sign}{r['dur_delta']:.0f}% "
-                f"| {r['def_err']} | {r['mode_err']} | {esign}{r['err_delta']} "
-                f"| {r['def_lines']} | {r['mode_lines']} |"
-            )
-        lines.append("")
-
-    # ── Commentary ──
-    lines.append("## Observations")
-    lines.append("")
-
-    if completed >= 2:
-        # Find most/least errors
-        most_err = max(all_metrics, key=lambda m: m["quality"]["error_count"])
-        least_err = min(all_metrics, key=lambda m: m["quality"]["error_count"])
-        slowest = max(all_metrics, key=lambda m: m["timing"]["grand_total_duration_ms"])
-        fastest = min(all_metrics, key=lambda m: m["timing"]["grand_total_duration_ms"])
-
-        lines.append(f"- **Fastest run:** {fastest['task_name']} / {fastest['language_mode']} / {fastest['model_short']} — {fastest['timing']['grand_total_duration_ms']/1000:.0f}s")
-        lines.append(f"- **Slowest run:** {slowest['task_name']} / {slowest['language_mode']} / {slowest['model_short']} — {slowest['timing']['grand_total_duration_ms']/1000:.0f}s")
-        lines.append(f"- **Most errors:** {most_err['task_name']} / {most_err['language_mode']} / {most_err['model_short']} — {most_err['quality']['error_count']} errors")
-        lines.append(f"- **Fewest errors:** {least_err['task_name']} / {least_err['language_mode']} / {least_err['model_short']} — {least_err['quality']['error_count']} errors")
-        lines.append("")
-
-        # Avg cost by model
-        for model in models_seen:
-            mm = [m for m in all_metrics if m["model_short"] == model]
-            avg_cost = sum(m["cost"]["total_cost_usd"] for m in mm) / len(mm)
-            lines.append(f"- **Avg cost per run ({model}):** ${avg_cost:.4f}")
-        lines.append("")
-
-    if completed < total_runs:
-        if total_duration > 0 and completed > 0:
-            est_remaining_s = (total_duration / completed) * (total_runs - run_count)
-            est_remaining_h = est_remaining_s / 3600
-            lines.append(f"- **Estimated time remaining:** {est_remaining_h:.1f} hours (based on avg {total_duration/completed:.0f}s per run)")
-            est_total_cost = (total_cost / completed) * total_runs
-            lines.append(f"- **Estimated total cost:** ${est_total_cost:.2f}")
-
-    lines.append("")
-    lines.append("---")
-    lines.append(f"*Generated by runner.py, instructions version {INSTRUCTIONS_VERSION}*")
-
-    (run_dir / "results.md").write_text("\n".join(lines))
 
 # ---------------------------------------------------------------------------
 # Stream Parsing
 # ---------------------------------------------------------------------------
 
-def parse_stream_output(raw_output: str) -> dict:
-    """Parse the JSON stream output from claude CLI and extract metrics."""
-    events = []
+def parse_stream_output(timestamped_lines: list[tuple[int, str]]) -> dict:
+    """Parse timestamped JSON stream lines from claude CLI and extract metrics.
+
+    Each entry is (timestamp_ms, json_line) where timestamp_ms is wall-clock
+    milliseconds since epoch, captured in real-time as lines arrived from the
+    CLI subprocess.
+    """
+    events = []  # (timestamp_ms, parsed_obj)
     console_lines = []
     claude_code_version = ""
     model_used = ""
     result_data = {}
+    init_data = {}
     compaction_count = 0
     error_count = 0
     error_details = []
     install_commands = []
-    install_duration_ms = 0
     tools_installed = []
     interpreter_versions = {}
+    hook_events = []  # Collected from --include-hook-events
 
-    for line in raw_output.splitlines():
+    # Track pending tool_use events by ID for duration calculation
+    pending_tool_uses: dict[str, tuple[int, str, str]] = {}  # id -> (timestamp_ms, tool_name, command)
+    tool_use_durations: list[dict] = []  # completed tool uses with duration
+    install_duration_ms = 0
+
+    for ts_ms, line in timestamped_lines:
         line = line.strip()
         if not line:
             continue
         try:
             obj = json.loads(line)
-            events.append(obj)
+            events.append((ts_ms, obj))
         except json.JSONDecodeError:
             continue
 
@@ -686,10 +571,24 @@ def parse_stream_output(raw_output: str) -> dict:
         msg = obj.get("message", {}) if isinstance(obj.get("message"), dict) else {}
         content = msg.get("content", []) if isinstance(msg.get("content"), list) else []
 
-        # Init event
+        # Init event — capture all metadata about the session
         if event_type == "system" and obj.get("subtype") == "init":
             claude_code_version = obj.get("claude_code_version", "")
             model_used = obj.get("model", "")
+            init_data = {
+                "session_id": obj.get("session_id", ""),
+                "model": model_used,
+                "claude_code_version": claude_code_version,
+                "permission_mode": obj.get("permissionMode", ""),
+                "output_style": obj.get("output_style", ""),
+                "fast_mode_state": obj.get("fast_mode_state", ""),
+                "tools_available": obj.get("tools", []),
+                "mcp_servers": obj.get("mcp_servers", []),
+                "agents_available": obj.get("agents", []),
+                "skills_available": obj.get("skills", []),
+                "plugins": obj.get("plugins", []),
+                "cwd": obj.get("cwd", ""),
+            }
 
         # Assistant text
         if event_type == "assistant":
@@ -703,7 +602,10 @@ def parse_stream_output(raw_output: str) -> dict:
             for c in content:
                 if isinstance(c, dict) and c.get("type") == "tool_use":
                     tool_name = c.get("name", "")
+                    tool_id = c.get("id", "")
                     tool_input = c.get("input", {})
+                    is_install = False
+                    cmd = ""
                     if tool_name == "Bash":
                         cmd = tool_input.get("command", "")
                         console_lines.append(f"[Tool: {tool_name}] {cmd}")
@@ -711,22 +613,38 @@ def parse_stream_output(raw_output: str) -> dict:
                         for pattern in INSTALL_PATTERNS:
                             if re.search(pattern, cmd, re.IGNORECASE):
                                 install_commands.append(cmd)
-                                # Extract package names roughly
                                 tools_installed.append(cmd.strip())
+                                is_install = True
                                 break
-                        # Check for version commands
-                        if re.search(r"--version|version|\$PSVersionTable|dotnet --info", cmd, re.IGNORECASE):
-                            pass  # Version info will be in tool results
                     else:
                         detail = json.dumps(tool_input)[:200] if tool_input else ""
                         console_lines.append(f"[Tool: {tool_name}] {detail}")
+                    # Track this tool_use for duration measurement
+                    if tool_id:
+                        pending_tool_uses[tool_id] = (ts_ms, tool_name, cmd if tool_name == "Bash" else "", is_install)
 
         # Tool results
         if event_type == "user":
             for c in content:
                 if isinstance(c, dict) and c.get("type") == "tool_result":
+                    tool_use_id = c.get("tool_use_id", "")
                     result_content = c.get("content", "")
                     is_error = c.get("is_error", False)
+
+                    # Compute duration if we have the matching tool_use
+                    if tool_use_id and tool_use_id in pending_tool_uses:
+                        start_ms, t_name, t_cmd, t_is_install = pending_tool_uses.pop(tool_use_id)
+                        dur = ts_ms - start_ms
+                        tool_use_durations.append({
+                            "tool_name": t_name,
+                            "command": t_cmd[:200],
+                            "duration_ms": dur,
+                            "is_error": is_error,
+                            "is_install": t_is_install,
+                        })
+                        if t_is_install:
+                            install_duration_ms += dur
+
                     if isinstance(result_content, str):
                         console_lines.append(f"[Result{' ERROR' if is_error else ''}] {result_content[:1000]}")
                         if is_error:
@@ -739,7 +657,6 @@ def parse_stream_output(raw_output: str) -> dict:
                                 if len(parts) >= 2:
                                     interpreter_versions["powershell"] = parts[-1]
                             if re.match(r"^\d+\.\d+\.\d+", vline.strip()) and "dotnet" not in interpreter_versions:
-                                # Could be dotnet version output
                                 pass
                     elif isinstance(result_content, list):
                         for rc in result_content:
@@ -751,8 +668,25 @@ def parse_stream_output(raw_output: str) -> dict:
         if "compact" in event_type.lower() or "compact" in str(obj.get("subtype", "")).lower():
             compaction_count += 1
 
-        # Result event
-        if event_type == "result":
+        # Hook events (from --include-hook-events)
+        subtype = obj.get("subtype", "")
+        if subtype in ("hook_started", "hook_response"):
+            hook_entry = {
+                "subtype": subtype,
+                "hook_id": obj.get("hook_id", ""),
+                "hook_name": obj.get("hook_name", ""),
+                "hook_event": obj.get("hook_event", ""),
+            }
+            if subtype == "hook_response":
+                hook_entry["exit_code"] = obj.get("exit_code")
+                hook_entry["outcome"] = obj.get("outcome", "")
+                hook_entry["stdout"] = (obj.get("stdout", "") or "")[:500]
+                hook_entry["stderr"] = (obj.get("stderr", "") or "")[:500]
+            hook_events.append(hook_entry)
+
+        # Result event — keep the first one (background task notifications
+        # can emit a second init+result pair that would overwrite the real data)
+        if event_type == "result" and not result_data:
             result_data = obj
 
     # Extract timing and usage from result
@@ -771,11 +705,36 @@ def parse_stream_output(raw_output: str) -> dict:
     # We'll use a heuristic: count install commands and note them
     # A more precise approach would require correlating tool_use IDs with their results
 
+    # Extract detailed metadata from result event
+    model_usage = result_data.get("modelUsage", {})
+    result_meta = {
+        "session_id": result_data.get("session_id", ""),
+        "stop_reason": result_data.get("stop_reason", ""),
+        "terminal_reason": result_data.get("terminal_reason", ""),
+        "fast_mode_state": result_data.get("fast_mode_state", ""),
+        "service_tier": usage.get("service_tier", ""),
+        "speed": usage.get("speed", ""),
+        "inference_geo": usage.get("inference_geo", ""),
+        "model_usage": model_usage,
+        "permission_denials": result_data.get("permission_denials", []),
+        "context_window": None,
+        "max_output_tokens": None,
+    }
+    # Extract context_window and max_output_tokens from modelUsage
+    for model_key, model_info in model_usage.items():
+        result_meta["context_window"] = model_info.get("contextWindow")
+        result_meta["max_output_tokens"] = model_info.get("maxOutputTokens")
+        break  # just take the first (should be only one)
+
     return {
-        "events": events,
+        "events": [obj for _, obj in events],
+        "timestamped_events": events,  # (ts_ms, obj) for analysis
         "console_log": "\n".join(console_lines),
         "claude_code_version": claude_code_version,
         "model_used": model_used,
+        "init_data": init_data,
+        "result_meta": result_meta,
+        "hook_events": hook_events,
         "duration_ms": duration_ms,
         "duration_api_ms": duration_api_ms,
         "num_turns": num_turns,
@@ -789,8 +748,10 @@ def parse_stream_output(raw_output: str) -> dict:
         "error_count": error_count,
         "error_details": error_details,
         "install_commands": install_commands,
+        "install_duration_ms": install_duration_ms,
         "tools_installed": tools_installed,
         "interpreter_versions": interpreter_versions,
+        "tool_use_durations": tool_use_durations,
         "result_data": result_data,
     }
 
@@ -805,18 +766,54 @@ def run_single_task(
     model_short: str,
     run_dir: Path,
     repo_root: Path,
+    effort: str | None = None,
+    timeout_minutes: int = 30,
 ) -> dict:
     """Run a single task/mode/model combination and return metrics."""
     task_id = task["id"]
     task_name = task["name"]
     prompt = PROMPT_TEMPLATES[mode].format(task_description=task["description"])
 
+    # Append GHA workflow requirement for tasks 11-18
+    if task_id in GHA_TASK_IDS:
+        task_slug = task_id.split("-", 1)[1] if "-" in task_id else task_id
+        prompt += "\n" + GHA_WORKFLOW_ADDENDUM.format(task_slug=task_slug)
+
     # Create workspace
     workspace = repo_root / "workspaces" / run_dir.name / task_id / f"{mode}-{model_short}"
     workspace.mkdir(parents=True, exist_ok=True)
 
+    # Initialize workspace as a git repo (act requires one)
+    if not (workspace / ".git").exists():
+        subprocess.run(["git", "init", "-q"], cwd=str(workspace), capture_output=True, timeout=10)
+        subprocess.run(["git", "config", "user.email", "benchmark@test"], cwd=str(workspace), capture_output=True, timeout=5)
+        subprocess.run(["git", "config", "user.name", "benchmark"], cwd=str(workspace), capture_output=True, timeout=5)
+
     # Copy instructions file
     shutil.copy2(repo_root / INSTRUCTIONS_FILE, workspace / INSTRUCTIONS_FILE)
+
+    # Set up workspace hooks — syntax/lint checking on Write/Edit
+    hook_script = (repo_root / "hooks" / "syntax-check.py").resolve()
+    if hook_script.exists():
+        claude_dir = workspace / ".claude"
+        claude_dir.mkdir(parents=True, exist_ok=True)
+        hook_config = {
+            "hooks": {
+                "PostToolUse": [
+                    {
+                        "matcher": "Write|Edit",
+                        "hooks": [
+                            {
+                                "type": "command",
+                                "command": f"python3 {hook_script}",
+                                "timeout": 15,
+                            }
+                        ],
+                    }
+                ]
+            }
+        }
+        (claude_dir / "settings.json").write_text(json.dumps(hook_config, indent=2))
 
     # Create results directory
     result_dir = run_dir / "tasks" / task_id / f"{mode}-{model_short}"
@@ -835,44 +832,70 @@ def run_single_task(
         "-p", prompt,
         "--model", model_id,
         "--output-format", "stream-json",
-        "--permission-mode", "acceptEdits",
-        "--allowedTools", "Bash(command:*)",
+        "--dangerously-skip-permissions",
+        "--include-hook-events",
         "--verbose",
+        "--mcp-config", '{"mcpServers":{}}',
+        "--strict-mcp-config",
     ]
+    if effort:
+        cmd.extend(["--effort", effort])
 
     # Record timing
     timestamp_start = datetime.now(timezone.utc).isoformat()
     wall_start = time.time()
 
-    # Execute
+    # Ensure tools are on PATH for the agent subprocess
+    env = os.environ.copy()
+    local_bin = Path.home() / ".local" / "bin"
+    if local_bin.exists():
+        env["PATH"] = f"{local_bin}:{env.get('PATH', '')}"
+    dotnet_root = Path.home() / ".dotnet"
+    if dotnet_root.exists():
+        env["DOTNET_ROOT"] = str(dotnet_root)
+        env["PATH"] = f"{dotnet_root}:{env.get('PATH', '')}"
+
+    # Execute with real-time line timestamping
+    timestamped_lines: list[tuple[int, str]] = []  # (epoch_ms, line)
+    raw_stderr = ""
+    exit_code = -1
     try:
-        result = subprocess.run(
+        proc = subprocess.Popen(
             cmd,
             cwd=str(workspace),
-            capture_output=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             text=True,
-            timeout=1800,  # 30 minutes
+            env=env,
         )
-        raw_stdout = result.stdout
-        raw_stderr = result.stderr
-        exit_code = result.returncode
-    except subprocess.TimeoutExpired:
-        raw_stdout = ""
-        raw_stderr = "TIMEOUT: Process exceeded 30 minute limit"
-        exit_code = -1
-        log(f"  TIMEOUT: {task_id} | {mode} | {model_short}")
+        # Read stdout line-by-line, stamping each with current time
+        deadline = wall_start + timeout_minutes * 60 if timeout_minutes > 0 else float('inf')
+        for line in proc.stdout:
+            ts_ms = int(time.time() * 1000)
+            timestamped_lines.append((ts_ms, line.rstrip("\n")))
+            if time.time() > deadline:
+                proc.kill()
+                raw_stderr = f"TIMEOUT: Process exceeded {timeout_minutes} minute limit"
+                log(f"  TIMEOUT: {task_id} | {mode} | {model_short}")
+                break
+        proc.wait(timeout=30)
+        exit_code = proc.returncode
+        raw_stderr = proc.stderr.read() if proc.stderr else ""
     except Exception as e:
-        raw_stdout = ""
         raw_stderr = f"ERROR: {str(e)}"
         exit_code = -2
         log(f"  ERROR: {task_id} | {mode} | {model_short}: {e}")
+        try:
+            proc.kill()
+        except Exception:
+            pass
 
     wall_end = time.time()
     timestamp_end = datetime.now(timezone.utc).isoformat()
     grand_total_duration_ms = int((wall_end - wall_start) * 1000)
 
-    # Parse stream output
-    parsed = parse_stream_output(raw_stdout)
+    # Parse stream output (now with per-line timestamps)
+    parsed = parse_stream_output(timestamped_lines)
 
     # Capture workspace after
     workspace_after = capture_workspace_listing(workspace)
@@ -881,6 +904,42 @@ def run_single_task(
     # Copy generated files
     gen_dir = result_dir / "generated-code"
     generated_files = copy_generated_files(workspace, gen_dir)
+
+    # Post-run actionlint validation on any workflow files
+    actionlint_results = []
+    workflow_dir = workspace / ".github" / "workflows"
+    if workflow_dir.exists():
+        for wf in sorted(workflow_dir.glob("*.yml")) + sorted(workflow_dir.glob("*.yaml")):
+            try:
+                r = subprocess.run(
+                    ["actionlint", str(wf)],
+                    capture_output=True, text=True, timeout=15,
+                )
+                actionlint_results.append({
+                    "file": str(wf.relative_to(workspace)),
+                    "passed": r.returncode == 0,
+                    "errors": (r.stdout.strip() or r.stderr.strip()) if r.returncode != 0 else "",
+                })
+            except FileNotFoundError:
+                actionlint_results.append({
+                    "file": str(wf.relative_to(workspace)),
+                    "passed": None,
+                    "errors": "actionlint not found",
+                })
+            except Exception as e:
+                actionlint_results.append({
+                    "file": str(wf.relative_to(workspace)),
+                    "passed": None,
+                    "errors": str(e),
+                })
+
+    actionlint_pass = all(r["passed"] for r in actionlint_results) if actionlint_results else None
+    actionlint_error_count = sum(1 for r in actionlint_results if r["passed"] is False)
+
+    # Check for agent-produced act-result.txt (proof the agent ran act in its tests)
+    act_result_path = workspace / "act-result.txt"
+    act_result_txt_exists = act_result_path.exists()
+    act_result_txt_size = act_result_path.stat().st_size if act_result_txt_exists else 0
 
     # Code metrics
     total_lines = count_lines(gen_dir) if gen_dir.exists() else 0
@@ -892,10 +951,12 @@ def run_single_task(
     language_chosen = ""
     if language_breakdown:
         language_chosen = max(language_breakdown, key=language_breakdown.get)
-    elif mode in ("powershell", "powershell-strict"):
+    elif mode in ("powershell",):
         language_chosen = "powershell"
-    elif mode == "csharp-script":
-        language_chosen = "csharp"
+    elif mode == "bash":
+        language_chosen = "bash"
+    elif mode == "typescript-bun":
+        language_chosen = "typescript"
 
     # Get runtime versions
     powershell_version = parsed["interpreter_versions"].get("powershell", "")
@@ -926,6 +987,33 @@ def run_single_task(
         "timestamp_end": timestamp_end,
         "prompt_text": prompt,
         "exit_code": exit_code,
+        "run_success": exit_code == 0 and parsed["num_turns"] > 0,
+        "failure_reason": (
+            "timeout" if exit_code == -9 else
+            "killed" if exit_code < 0 else
+            "cli_error" if exit_code != 0 else
+            "no_result" if parsed["num_turns"] == 0 else
+            None
+        ),
+        # Session & environment metadata — everything the CLI exposes
+        "session": {
+            "session_id": parsed.get("result_meta", {}).get("session_id", ""),
+            "stop_reason": parsed.get("result_meta", {}).get("stop_reason", ""),
+            "terminal_reason": parsed.get("result_meta", {}).get("terminal_reason", ""),
+            "fast_mode_state": parsed.get("result_meta", {}).get("fast_mode_state", ""),
+            "service_tier": parsed.get("result_meta", {}).get("service_tier", ""),
+            "speed": parsed.get("result_meta", {}).get("speed", ""),
+            "inference_geo": parsed.get("result_meta", {}).get("inference_geo", ""),
+            "context_window": parsed.get("result_meta", {}).get("context_window"),
+            "max_output_tokens": parsed.get("result_meta", {}).get("max_output_tokens"),
+            "permission_mode": parsed.get("init_data", {}).get("permission_mode", ""),
+            "output_style": parsed.get("init_data", {}).get("output_style", ""),
+            "tools_available_count": len(parsed.get("init_data", {}).get("tools_available", [])),
+            "mcp_servers": parsed.get("init_data", {}).get("mcp_servers", []),
+            "permission_denials": parsed.get("result_meta", {}).get("permission_denials", []),
+        },
+        "model_usage_detail": parsed.get("result_meta", {}).get("model_usage", {}),
+        "effort_level": effort,
         "timing": {
             "grand_total_duration_ms": grand_total_duration_ms,
             "total_api_duration_ms": api_duration_ms,
@@ -957,13 +1045,39 @@ def run_single_task(
             "tests_pass": None,  # Would need to actually run tests to determine
             "error_count": parsed["error_count"],
             "error_details": parsed["error_details"][:20],  # Cap at 20
+            "actionlint_pass": actionlint_pass,
+            "actionlint_errors": actionlint_error_count,
+            "actionlint_results": actionlint_results,
+            "act_result_txt_exists": act_result_txt_exists,
+            "act_result_txt_size": act_result_txt_size,
             "areas_of_difficulty": [],
             "observations": "",
         },
         "tool_install": {
-            "tool_install_duration_ms": 0,  # Approximate — see install_commands
+            "tool_install_duration_ms": parsed["install_duration_ms"],
             "tools_installed": parsed["tools_installed"][:20],
             "install_commands_count": len(parsed["install_commands"]),
+        },
+        "tool_use_timing": {
+            "total_tool_uses": len(parsed["tool_use_durations"]),
+            "total_tool_duration_ms": sum(d["duration_ms"] for d in parsed["tool_use_durations"]),
+            "bash_tool_uses": len([d for d in parsed["tool_use_durations"] if d["tool_name"] == "Bash"]),
+            "bash_total_ms": sum(d["duration_ms"] for d in parsed["tool_use_durations"] if d["tool_name"] == "Bash"),
+            "slowest_tool_uses": sorted(parsed["tool_use_durations"], key=lambda d: -d["duration_ms"])[:10],
+            "all_tool_uses": parsed["tool_use_durations"],  # full list for post-analysis
+            **_categorize_tool_time(parsed["tool_use_durations"]),
+        },
+        "hooks": {
+            "hook_fires": len([h for h in parsed.get("hook_events", []) if h["subtype"] == "hook_response"]),
+            "hook_errors_caught": len([
+                h for h in parsed.get("hook_events", [])
+                if h["subtype"] == "hook_response" and h.get("stdout", "").strip()
+            ]),
+            "hook_failures": len([
+                h for h in parsed.get("hook_events", [])
+                if h["subtype"] == "hook_response" and h.get("exit_code", 0) != 0
+            ]),
+            "hook_events": parsed.get("hook_events", []),
         },
     }
 
@@ -984,19 +1098,24 @@ def run_single_task(
 
 def print_summary_table(all_metrics: list[dict]) -> None:
     """Print a summary table of all runs."""
-    print("\n" + "=" * 120)
+    print("\n" + "=" * 130)
     print("BENCHMARK RESULTS SUMMARY")
-    print("=" * 120)
-    print(f"{'Task':<35} {'Mode':<18} {'Model':<8} {'Duration':>10} {'Turns':>6} {'Lines':>6} {'Errors':>7} {'Cost':>10} {'Lang':<12}")
-    print("-" * 120)
+    print("=" * 130)
+    print(f"{'Task':<35} {'Mode':<18} {'Model':<8} {'Duration':>10} {'Turns':>6} {'Lines':>6} {'Errors':>7} {'Cost':>10} {'Lang':<12} {'Status':<8}")
+    print("-" * 130)
 
     total_cost = 0
     total_duration = 0
+    failed_count = 0
 
     for m in all_metrics:
         duration_s = m["timing"]["grand_total_duration_ms"] / 1000
         total_cost += m["cost"]["total_cost_usd"]
         total_duration += duration_s
+        is_ok = m.get("run_success", m["exit_code"] == 0 and m["timing"]["num_turns"] > 0)
+        status = "ok" if is_ok else m.get("failure_reason", "failed")
+        if not is_ok:
+            failed_count += 1
 
         print(
             f"{m['task_name'][:34]:<35} "
@@ -1008,11 +1127,100 @@ def print_summary_table(all_metrics: list[dict]) -> None:
             f"{m['quality']['error_count']:>7} "
             f"${m['cost']['total_cost_usd']:>9.4f} "
             f"{m['language_chosen'][:11]:<12}"
+            f"{status:<8}"
         )
 
-    print("-" * 120)
+    print("-" * 130)
     print(f"{'TOTALS':<63} {total_duration:>9.1f}s {'':>6} {'':>6} {'':>7} ${total_cost:>9.4f}")
-    print("=" * 120)
+    if failed_count:
+        print(f"  ({failed_count} run(s) failed/timed-out — excluded from averages)")
+    print("=" * 130)
+
+
+def probe_model_metadata(model_id: str) -> dict:
+    """Probe the Claude CLI to capture full model/environment metadata before the benchmark run.
+
+    Runs a minimal `claude -p "say ok"` call and extracts every available field
+    from the init and result events.  This lets us log the exact resolved model,
+    service tier, context window, CLI version, etc. once at the start.
+    """
+    try:
+        result = subprocess.run(
+            ["claude", "-p", "say ok", "--model", model_id,
+             "--output-format", "stream-json", "--dangerously-skip-permissions"],
+            capture_output=True, text=True, timeout=60,
+        )
+        init_event = {}
+        result_event = {}
+        for line in result.stdout.splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                obj = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if obj.get("type") == "system" and obj.get("subtype") == "init":
+                init_event = obj
+            elif obj.get("type") == "result":
+                result_event = obj
+        model_usage = result_event.get("modelUsage", {})
+        model_info = model_usage.get(model_id, {})
+        return {
+            "model_id_requested": model_id,
+            "model_id_init": init_event.get("model", ""),
+            "claude_code_version": init_event.get("claude_code_version", ""),
+            "service_tier": result_event.get("usage", {}).get("service_tier", ""),
+            "speed": result_event.get("usage", {}).get("speed", ""),
+            "inference_geo": result_event.get("usage", {}).get("inference_geo", ""),
+            "context_window": model_info.get("contextWindow"),
+            "max_output_tokens": model_info.get("maxOutputTokens"),
+            "fast_mode_state": result_event.get("fast_mode_state", ""),
+            "permission_mode": init_event.get("permissionMode", ""),
+            "tools_count": len(init_event.get("tools", [])),
+            "mcp_servers": init_event.get("mcp_servers", []),
+            "agents": init_event.get("agents", []),
+            "plugins": init_event.get("plugins", []),
+        }
+    except Exception as e:
+        log(f"  Warning: model probe for {model_id} failed: {e}")
+        return {"model_id_requested": model_id, "error": str(e)}
+
+
+def get_system_info() -> dict:
+    """Capture system environment info for reproducibility."""
+    info = {
+        "platform": sys.platform,
+        "python_version": sys.version,
+        "hostname": "",
+        "uname": "",
+    }
+    try:
+        import platform as plat
+        info["hostname"] = plat.node()
+        info["uname"] = str(plat.uname())
+    except Exception:
+        pass
+    # Tool versions
+    for tool, cmd in [
+        ("claude", ["claude", "--version"]),
+        ("python", ["python3", "--version"]),
+        ("node", ["node", "--version"]),
+        ("bun", ["bun", "--version"]),
+        ("pwsh", ["pwsh", "--version"]),
+        ("dotnet", ["dotnet", "--version"]),
+        ("actionlint", ["actionlint", "--version"]),
+        ("shellcheck", ["shellcheck", "--version"]),
+        ("bash", ["bash", "--version"]),
+        ("act", ["act", "--version"]),
+        ("docker", ["docker", "--version"]),
+    ]:
+        try:
+            r = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
+            info[f"{tool}_version"] = r.stdout.strip().split("\n")[0]
+        except Exception:
+            info[f"{tool}_version"] = "not found"
+    return info
 
 
 def main():
@@ -1026,12 +1234,20 @@ def main():
         help="Comma-separated model short names: opus,sonnet (default: opus,sonnet)"
     )
     parser.add_argument(
-        "--modes", default="default,powershell,powershell-strict,csharp-script",
-        help="Comma-separated language modes (default: default,powershell,powershell-strict,csharp-script)"
+        "--modes", default="default,powershell,bash,typescript-bun",
+        help="Comma-separated language modes (default: default,powershell,bash,typescript-bun)"
     )
     parser.add_argument(
         "--resume", default=None,
         help="Resume a previous run by providing its timestamp directory name (e.g., 2026-04-02_181500). Skips runs that already have metrics.json."
+    )
+    parser.add_argument(
+        "--effort", default=None, choices=["low", "medium", "high", "max"],
+        help="Reasoning effort level passed to claude CLI (default: not set, uses CLI default)"
+    )
+    parser.add_argument(
+        "--timeout", default=30, type=int,
+        help="Per-run timeout in minutes (default: 30). Use 0 for unlimited."
     )
     args = parser.parse_args()
 
@@ -1075,6 +1291,22 @@ def main():
     log(f"Results: {run_dir}")
     log("")
 
+    # Pre-flight: capture system info and probe each model
+    log("Pre-flight: capturing system info...")
+    system_info = get_system_info()
+    log(f"  Claude CLI: {system_info.get('claude_version', 'unknown')}")
+    log(f"  Python: {system_info.get('python_version', 'unknown')}")
+
+    model_probes = {}
+    for model_short, model_id in selected_models:
+        log(f"Pre-flight: probing model {model_short} ({model_id})...")
+        probe = probe_model_metadata(model_id)
+        model_probes[model_short] = probe
+        log(f"  Service tier: {probe.get('service_tier', '?')}, "
+            f"Speed: {probe.get('speed', '?')}, "
+            f"Context window: {probe.get('context_window', '?')}, "
+            f"Max output: {probe.get('max_output_tokens', '?')}")
+
     # Run manifest
     manifest = {
         "run_id": run_timestamp,
@@ -1087,6 +1319,9 @@ def main():
         "completed_at": None,
         "cost_assumptions": COST_PER_MTOK,
         "total_cost_usd": 0,
+        "system_info": system_info,
+        "model_probes": model_probes,
+        "effort_level": args.effort,
     }
 
     all_metrics = []
@@ -1094,7 +1329,6 @@ def main():
 
     # When resuming, load ALL existing metrics (not just ones matching current filters)
     # so that results.md reflects the full picture
-    # Also use the full task count for total_runs in results.md reporting
     total_runs_for_report = total_runs
     if args.resume:
         for mf in sorted((run_dir / "tasks").rglob("metrics.json")):
@@ -1104,8 +1338,18 @@ def main():
                 pass
         if all_metrics:
             log(f"Loaded {len(all_metrics)} previously completed run(s) from {run_dir}")
-        # Use full benchmark size for reporting, not the filtered subset
-        total_runs_for_report = len(TASKS) * len(MODELS) * len(PROMPT_TEMPLATES)
+        # Derive total from the run manifest if available, otherwise from loaded metrics
+        manifest_path = run_dir / "run-manifest.json"
+        if manifest_path.exists():
+            try:
+                manifest = json.loads(manifest_path.read_text())
+                total_runs_for_report = manifest.get("total_runs", total_runs)
+            except Exception:
+                pass
+        if total_runs_for_report == total_runs:
+            # Fallback: count distinct (task, mode, model) combos in loaded metrics
+            combos = set((m["task_id"], m["language_mode"], m["model_short"]) for m in all_metrics)
+            total_runs_for_report = max(len(combos), total_runs)
 
     # Detect git branch for periodic pushing
     try:
@@ -1142,6 +1386,8 @@ def main():
                         model_short=model_short,
                         run_dir=run_dir,
                         repo_root=repo_root,
+                        effort=args.effort,
+                        timeout_minutes=args.timeout,
                     )
                     all_metrics.append(metrics)
                 except Exception as e:
@@ -1204,10 +1450,10 @@ def main():
     # Print summary
     print_summary_table(all_metrics)
 
-    # Final results.md and push
+    # Final results.md and push — squashes any remaining incremental commits
     pusher.stop()
-    generate_results_md(run_dir, all_metrics, total_runs, run_count)
-    git_push_results(repo_root, git_branch, run_count, total_runs)
+    generate_results_md(run_dir, all_metrics, total_runs_for_report, run_count)
+    git_push_results(repo_root, git_branch, run_count, total_runs_for_report, final=True)
     log(f"Final results pushed to {git_branch}")
 
     log(f"\nResults saved to: {run_dir}")

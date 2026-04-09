@@ -1,0 +1,100 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: "true"
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install PowerShell
+        shell: bash
+        run: |
+          if ! command -v pwsh &>/dev/null; then
+            apt-get update && apt-get install -y wget apt-transport-https software-properties-common
+            . /etc/os-release
+            wget -q "https://packages.microsoft.com/config/ubuntu/${VERSION_ID}/packages-microsoft-prod.deb"
+            dpkg -i packages-microsoft-prod.deb
+            rm packages-microsoft-prod.deb
+            apt-get update && apt-get install -y powershell
+          fi
+          pwsh --version
+
+      - name: Install Pester
+        shell: pwsh
+        run: |
+          Install-Module -Name Pester -Force -Scope CurrentUser -MinimumVersion 5.0
+          Import-Module Pester
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = '.'
+          $config.Output.Verbosity = 'Detailed'
+          $config.Run.Exit = $true
+          Invoke-Pester -Configuration $config
+
+  bump:
+    name: Bump Version
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push'
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install PowerShell
+        shell: bash
+        run: |
+          if ! command -v pwsh &>/dev/null; then
+            apt-get update && apt-get install -y wget apt-transport-https software-properties-common
+            . /etc/os-release
+            wget -q "https://packages.microsoft.com/config/ubuntu/${VERSION_ID}/packages-microsoft-prod.deb"
+            dpkg -i packages-microsoft-prod.deb
+            rm packages-microsoft-prod.deb
+            apt-get update && apt-get install -y powershell
+          fi
+          pwsh --version
+
+      - name: Create VERSION file if missing
+        shell: pwsh
+        run: |
+          if (-not (Test-Path './VERSION')) {
+            Set-Content -Path './VERSION' -Value '0.0.0' -NoNewline
+          }
+
+      - name: Run version bump
+        id: bump
+        shell: pwsh
+        run: |
+          ./bump-version.ps1 -VersionFile './VERSION' -ChangelogFile './CHANGELOG.md'
+
+      - name: Show results
+        shell: pwsh
+        run: |
+          Write-Host "VERSION file contents:"
+          Get-Content ./VERSION
+          Write-Host ""
+          Write-Host "CHANGELOG.md:"
+          if (Test-Path ./CHANGELOG.md) { Get-Content ./CHANGELOG.md }

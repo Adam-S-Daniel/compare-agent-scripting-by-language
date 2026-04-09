@@ -1,0 +1,96 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      version_file:
+        description: "Path to version file (VERSION or package.json)"
+        required: false
+        default: "VERSION"
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    name: Run Pester Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = "./SemanticVersionBumper.Tests.ps1"
+          $config.Output.Verbosity = "Detailed"
+          $config.Run.Exit = $true
+          Invoke-Pester -Configuration $config
+
+  bump-version:
+    name: Bump Version
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    outputs:
+      new_version: ${{ steps.bump.outputs.new_version }}
+      old_version: ${{ steps.bump.outputs.old_version }}
+      bump_type: ${{ steps.bump.outputs.bump_type }}
+      changelog: ${{ steps.bump.outputs.changelog }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate commit log since last tag
+        id: commits
+        shell: bash
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$LAST_TAG" ]; then
+            git log --format='%s' > commits.txt
+          else
+            git log "${LAST_TAG}..HEAD" --format='%s' > commits.txt
+          fi
+          echo "Generated commit log:"
+          cat commits.txt
+
+      - name: Determine version file path
+        id: version-file
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "path=${{ github.event.inputs.version_file }}" >> "$GITHUB_OUTPUT"
+          elif [ -f "package.json" ]; then
+            echo "path=package.json" >> "$GITHUB_OUTPUT"
+          elif [ -f "VERSION" ]; then
+            echo "path=VERSION" >> "$GITHUB_OUTPUT"
+          else
+            echo "1.0.0" > VERSION
+            echo "path=VERSION" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Bump version
+        id: bump
+        shell: pwsh
+        run: |
+          ./Invoke-VersionBump.ps1 `
+            -VersionFile "${{ steps.version-file.outputs.path }}" `
+            -CommitLogFile "commits.txt"
+
+      - name: Commit version bump
+        if: steps.bump.outputs.bump_type != 'none'
+        shell: bash
+        env:
+          NEW_VERSION: ${{ steps.bump.outputs.new_version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore: bump version to ${NEW_VERSION}"
+          git tag "v${NEW_VERSION}"
+          git push origin main --tags

@@ -1,0 +1,343 @@
+{
+  "task_id": "18-secret-rotation-validator",
+  "task_name": "Secret Rotation Validator",
+  "task_category": "GitHub Actions / Security",
+  "language_mode": "default",
+  "language_chosen": "python",
+  "language_breakdown": {
+    "python": 100.0
+  },
+  "interpreter_versions": {},
+  "powershell_version": "",
+  "dotnet_version": "",
+  "model": "claude-opus-4-6",
+  "model_short": "opus",
+  "claude_code_version": "2.1.97",
+  "instructions_version": "v3",
+  "timestamp_start": "2026-04-09T10:11:04.005788+00:00",
+  "timestamp_end": "2026-04-09T10:16:36.325515+00:00",
+  "prompt_text": "You are completing a scripting task. Choose whatever programming language you think is best for this task.\n\nTASK: Given a configuration of secrets with metadata (name, last-rotated date, rotation policy in days, required-by services \u2014 all mock data), identify secrets that are expired or expiring within a configurable warning window, generate a rotation report, and output notifications grouped by urgency (expired, warning, ok). Support multiple output formats (markdown table, JSON).\n\nREQUIREMENTS:\n1. Use red/green TDD methodology: write a failing test FIRST, then write the minimum code to make it pass, then refactor. Repeat for each piece of functionality.\n2. Create mocks and test fixtures as necessary for testability.\n3. All tests must be runnable and must pass at the end.\n4. Include clear comments explaining your approach.\n5. Handle errors gracefully with meaningful error messages.\n\nCreate your solution in the current working directory. Start by writing your first failing test.\n\nGITHUB ACTIONS REQUIREMENT:\nCreate a GitHub Actions workflow file at .github/workflows/secret-rotation-validator.yml that uses\nyour script in a real CI/CD pipeline. The workflow must:\n- Use appropriate trigger events (push, pull_request, schedule, workflow_dispatch, etc.)\n- Reference your script correctly\n- Pass actionlint validation (valid YAML, valid action references, correct syntax)\n- Include appropriate permissions, environment variables, and job dependencies\n- Actually run successfully when executed locally with `act` (nektos/act)\n\nDesign your workflow so its steps work in an isolated Docker container \u2014 use\n`actions/checkout@v4`, install dependencies your script needs, and run it.\nAvoid steps requiring external services or secrets without sensible defaults.\n\nWORKFLOW VALIDATION:\nRun `actionlint .github/workflows/secret-rotation-validator.yml` and fix any errors. actionlint is\npre-installed. Iterate until it passes cleanly.\n\nALL TESTS MUST RUN THROUGH ACT:\nEvery single test case must execute through the GitHub Actions workflow via `act`.\nDo NOT test your script directly \u2014 all testing goes through the pipeline.\n\nStructure your workflow to accept test fixture data and produce verifiable output.\nYour test harness must:\n1. For each test case: set up a temp git repo with your project files + that case's\n   fixture data, run `act push --rm`, capture the output\n2. Save all act output to `act-result.txt` in the current working directory (append\n   each test case's output, clearly delimited)\n3. Assert that act exited with code 0 for each case\n4. Parse the act output and assert on EXACT EXPECTED VALUES \u2014 not just that output\n   appeared, but that it matches the known-good result for that test case's input.\n   For example: if your workflow bumps version 1.1.0 with a feat commit, assert\n   the output contains exactly \"1.2.0\", not just \"a version number\"\n5. Assert every job shows \"Job succeeded\"\n\nThe `act-result.txt` file MUST exist when done. It is a required artifact.\n`act` and Docker are pre-installed.\n\nWORKFLOW STRUCTURE TESTS (also required):\n- Parse the YAML and check expected structure (triggers, jobs, steps)\n- Verify the workflow references your script files correctly (paths exist)\n- Verify actionlint passes (assert exit code 0)\n",
+  "exit_code": 0,
+  "session": {
+    "session_id": "225d18d0-c3b0-4b9d-b80e-1d34cae06f6f",
+    "stop_reason": "end_turn",
+    "terminal_reason": "completed",
+    "fast_mode_state": "off",
+    "service_tier": "standard",
+    "speed": "standard",
+    "inference_geo": "",
+    "context_window": 200000,
+    "max_output_tokens": 64000,
+    "permission_mode": "bypassPermissions",
+    "output_style": "default",
+    "tools_available_count": 24,
+    "mcp_servers": [],
+    "permission_denials": []
+  },
+  "model_usage_detail": {
+    "claude-opus-4-6": {
+      "inputTokens": 34,
+      "outputTokens": 19617,
+      "cacheReadInputTokens": 937467,
+      "cacheCreationInputTokens": 36262,
+      "webSearchRequests": 0,
+      "costUSD": 1.1859659999999999,
+      "contextWindow": 200000,
+      "maxOutputTokens": 64000
+    }
+  },
+  "effort_level": null,
+  "timing": {
+    "grand_total_duration_ms": 332319,
+    "total_api_duration_ms": 289115,
+    "total_execution_duration_ms": 41960,
+    "num_turns": 32
+  },
+  "tokens": {
+    "input_tokens": 34,
+    "output_tokens": 19617,
+    "cache_read_tokens": 937467,
+    "cache_creation_tokens": 36262,
+    "total_context_consumed": 973763,
+    "compaction_count": 0
+  },
+  "cost": {
+    "total_cost_usd": 1.1859659999999999,
+    "assumed_input_cost_per_mtok": 15.0,
+    "assumed_output_cost_per_mtok": 75.0,
+    "assumed_cache_read_cost_per_mtok": 1.5,
+    "assumed_cache_write_cost_per_mtok": 18.75
+  },
+  "code_metrics": {
+    "total_lines": 1589,
+    "total_tokens_estimate": 21028,
+    "file_count": 9,
+    "files": [
+      "act-result.txt",
+      "run_tests.py",
+      "secret_rotation_validator.py",
+      "fixtures/all_expired.json",
+      "fixtures/all_ok.json",
+      "fixtures/custom_warning_window.json",
+      "fixtures/mixed_status.json",
+      "fixtures/warning_only.json",
+      ".github/workflows/secret-rotation-validator.yml"
+    ]
+  },
+  "quality": {
+    "tests_pass": null,
+    "error_count": 1,
+    "error_details": [
+      "Exit code 1\n\n=== Workflow Structure Tests ===\n  PASS: trigger: push present\n  PASS: trigger: pull_request present\n  PASS: trigger: schedule present\n  PASS: trigger: workflow_dispatch present\n  PASS: j"
+    ],
+    "actionlint_pass": true,
+    "actionlint_errors": 0,
+    "actionlint_results": [
+      {
+        "file": ".github/workflows/secret-rotation-validator.yml",
+        "passed": true,
+        "errors": ""
+      }
+    ],
+    "act_result_txt_exists": true,
+    "act_result_txt_size": 52829,
+    "areas_of_difficulty": [],
+    "observations": ""
+  },
+  "tool_install": {
+    "tool_install_duration_ms": 0,
+    "tools_installed": [],
+    "install_commands_count": 0
+  },
+  "tool_use_timing": {
+    "total_tool_uses": 31,
+    "total_tool_duration_ms": 43303,
+    "bash_tool_uses": 11,
+    "bash_total_ms": 41834,
+    "slowest_tool_uses": [
+      {
+        "tool_name": "Bash",
+        "command": "python3 run_tests.py 2>&1",
+        "duration_ms": 39282,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "python3 run_tests.py 2>&1",
+        "duration_ms": 1274,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "ls /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/18-secret-rotation-validator/default-opus/",
+        "duration_ms": 457,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "actionlint .github/workflows/secret-rotation-validator.yml && echo \"actionlint: PASS\"",
+        "duration_ms": 180,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 165,
+        "is_error": false,
+        "is_install": false
+      }
+    ],
+    "install_duration_ms": 0,
+    "test_duration_ms": 40556,
+    "act_duration_ms": 0
+  },
+  "hooks": {
+    "hook_fires": 11,
+    "hook_errors_caught": 0,
+    "hook_failures": 0,
+    "hook_events": [
+      {
+        "subtype": "hook_started",
+        "hook_id": "bc393bee-0f9b-4f34-ae68-41ab9372ec0f",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "bc393bee-0f9b-4f34-ae68-41ab9372ec0f",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "30122ef4-49be-4873-aed5-5b7cba0a7bd6",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "30122ef4-49be-4873-aed5-5b7cba0a7bd6",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "e0efb612-781e-435c-a123-7105f3123a72",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "e0efb612-781e-435c-a123-7105f3123a72",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "eb65f016-99a5-4fed-b6e7-8e928d3d9f05",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "eb65f016-99a5-4fed-b6e7-8e928d3d9f05",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "63a8a5fe-212a-4253-949f-d67d993005be",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "63a8a5fe-212a-4253-949f-d67d993005be",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "4d3fcef6-4384-4c47-b629-27db16bec066",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "4d3fcef6-4384-4c47-b629-27db16bec066",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "8b453428-f75e-4172-92a3-efac09ec2216",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "8b453428-f75e-4172-92a3-efac09ec2216",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "60c7d219-4f5b-473d-9c31-78c5380d0b1c",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "60c7d219-4f5b-473d-9c31-78c5380d0b1c",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "9f526b4b-e9c3-4ee3-b4f6-ee717902a5a7",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "9f526b4b-e9c3-4ee3-b4f6-ee717902a5a7",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "5c2eb78e-1c57-4bb4-bc01-bd0c87200af8",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "5c2eb78e-1c57-4bb4-bc01-bd0c87200af8",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "651e4e12-f88a-4d98-951e-eafe8214efcd",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "651e4e12-f88a-4d98-951e-eafe8214efcd",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  },
+  "run_success": true,
+  "failure_reason": null
+}
