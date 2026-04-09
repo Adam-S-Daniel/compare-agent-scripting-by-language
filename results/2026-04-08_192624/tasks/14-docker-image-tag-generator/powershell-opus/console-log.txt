@@ -1,0 +1,198 @@
+[Tool: Bash] ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/14-docker-image-tag-generator/powershell-opus/
+[Tool: Bash] which pwsh && pwsh --version && which actionlint && which act
+[Result] total 36
+drwxr-xr-x 4 passp passp  4096 Apr  9 00:10 .
+drwxr-xr-x 4 passp passp  4096 Apr  9 00:10 ..
+drwxr-xr-x 2 passp passp  4096 Apr  9 00:10 .claude
+drwxr-xr-x 7 passp passp  4096 Apr  9 00:10 .git
+-rw-r--r-- 1 passp passp 18474 Apr  8 17:43 benchmark-instructions-v3.md
+[Result] /snap/bin/pwsh
+PowerShell 7.6.0
+/home/passp/.local/bin/actionlint
+/home/passp/.local/bin/act
+[Tool: Bash] pwsh -c 'Get-Module -ListAvailable Pester | Select-Object Version'
+[Tool: Bash] act --version
+[Result] [32;1mVersion[0m
+[32;1m-------[0m
+5.7.1
+[Result] act version 0.2.87
+[Assistant] Good. Let me start building this step by step with TDD. First, I'll create the main script, then tests, then the workflow.
+
+**Step 1: Create the Docker image tag generator script.**
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/14-docker-image-tag-generator/powershell-opus/docker-image-tag-generator.ps1", "content": "#!/usr/bin/
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/14-docker-image-tag-generator/powershell-opus/docker-image-tag-generator.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] **Step 2: Write the first failing Pester test (TDD red phase).**
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/14-docker-image-tag-generator/powershell-opus/docker-image-tag-generator.Tests.ps1", "content": "#!/us
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/14-docker-image-tag-generator/powershell-opus/docker-image-tag-generator.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] **Step 3: Run Pester tests locally to verify they pass (green phase).**
+[Tool: Bash] pwsh -c 'Invoke-Pester -Path ./docker-image-tag-generator.Tests.ps1 -Output Detailed' 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 21 tests in 352ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/14-docker-image-tag-generator/powershell-opus/docker-image-tag-generator.Tests.ps1'[0m
+Generated Docker image tags:
+  - latest
+TAG_LIST=latest
+[92mDescribing Sanitize-DockerTag[0m
+[32m  [+] converts to lowercase[0m[90m 237ms (150ms|88ms)[0m
+[32m  [+] replaces slashes with hyphens[0m[90m 8ms (5ms|2ms)[0m
+[32m  [+] replaces underscores with hyphens[0m[90m 7ms (4ms|3ms)[0m
+[32m  [+] removes special characters[0m[90m 7ms (4ms|2ms)[0m
+[32m  [+] collapses consecutive hyphens[0m[90m 8ms (6ms|2ms)[0m
+[32m  [+] trims leading and trailing hyphens[0m[90m 36ms (34ms|2ms)[0m
+[32m  [+] preserves dots[0m[90m 9ms (6ms|3ms)[0m
+[0m
+[92mDescribing Get-ShortSha[0m
+[32m  [+] returns first 7 characters of a full SHA[0m[90m 1
+[Assistant] All 21 tests pass. Now let me create the GitHub Actions workflow and the test harness.
+
+**Step 4: Create the GitHub Actions workflow.**
+[Tool: Bash] mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/14-docker-image-tag-generator/powershell-opus/.github/workflows
+[Result] (Bash completed with no output)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/14-docker-image-tag-generator/powershell-opus/.github/workflows/docker-image-tag-generator.yml", "cont
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/14-docker-image-tag-generator/powershell-opus/.github/workflows/docker-image-tag-generator.yml (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/docker-image-tag-generator.yml
+[Result ERROR] Exit code 1
+.github/workflows/docker-image-tag-generator.yml:57:9: shellcheck reported issue in this script: SC2129:style:28:1: Consider using { cmd1; cmd2; } >> file instead of individual redirects [shellcheck]
+   |
+57 |         run: |
+   |         ^~~~
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/14-docker-image-tag-generator/powershell-opus/.github/workflows/docker-image-tag-generator.yml", "offs
+[Result] 54	
+55	      - name: Detect git context
+56	        id: git-context
+57	        run: |
+58	          # Use workflow_dispatch inputs if provided, otherwise detect from git
+59	          if [ -n "$INPUT_BRANCH_NAME" ]; then
+60	            BRANCH="$INPUT_BRANCH_NAME"
+61	          else
+62	            BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
+63	          fi
+64	
+65	          if [ -n "$INPUT_COMMIT_SHA" ]; then
+66	            SHA="$INPUT_COMMIT_SHA"
+67	          else
+68	            SHA="${GITHUB_SHA:-$(git rev-parse HEAD)}"
+69	          fi
+70	
+71	          if [ -n "$INPUT_TAG" ]; then
+72	            TAG="$INPUT_TAG"
+73	          elif [[ "$GITHUB_REF" == refs/tags/* ]]; then
+74	            TAG="${GITHUB_REF#refs/tags/}"
+75	          else
+76	            TAG=""
+77	          fi
+78	
+79	          if [ -n "$INPUT_PR_NUMBER" ]; then
+80	            PR="$INPUT_PR_NUMBER"
+81	          else
+82	            PR="${{ github.event.pull_request.number }}"
+83	          fi
+[Assistant] The shellcheck warning is about using individual `>> "$GITHUB_OUTPUT"` redirects. Let me fix that by grouping the outputs.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/14-docker-image-tag-generator/powershell-opus/.github/workflows/docker-image-tag
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/14-docker-image-tag-generator/powershell-opus/.github/workflows/docker-image-tag-generator.yml has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/docker-image-tag-generator.yml
+[Result] (Bash completed with no output)
+[Assistant] actionlint passes cleanly. Now let me create the test harness that runs everything through `act`.
+
+**Step 5: Create the test harness script.**
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/14-docker-image-tag-generator/powershell-opus/run-tests.ps1", "content": "#!/usr/bin/env pwsh\n<#\n.SY
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/14-docker-image-tag-generator/powershell-opus/run-tests.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] **Step 6: Run the test harness with act.** Let me first do a quick test run with one case to see if the act setup works.
+[Tool: Bash] docker images | grep -i "catthehacker\|nektos\|ubuntu" | head -10
+[Result] WARNING: This output is designed for human readability. For machine-readable output, please use --format.
+catthehacker/ubuntu:act-latest   68a2a9700126       2.26GB          559MB
+[Assistant] Good, the act image is available. Let me run the full test harness.
+[Tool: Bash] pwsh -File run-tests.ps1 2>&1
+[Result] <persisted-output>
+Output too large (100.4KB). Full output saved to: /home/passp/.claude/projects/-home-passp-repos-compare-agent-scripting-by-language-workspaces-2026-04-08-192624-14-docker-image-tag-generator-powershell-opus/5c34a785-f61d-45fc-bdc7-7682ac9dd85c/tool-results/b2crxns98.txt
+
+Preview (first 2KB):
+=
+WORKFLOW STRUCTURE TESTS
+=
+  PASS: Workflow YAML file exists at .github/workflows/docker-image-tag-generator.yml
+  PASS: Workflow has 'on' trigger section
+  PASS: Workflow has 'push' trigger
+  PASS: Workflow has 'pull_request' trigger
+  PASS: Workflow has 'workflow_dispatch' trigger
+  PASS: Workflow has 'jobs' section
+  PASS: Workflow has 'generate-tags' job
+  PASS: Workflow uses actions/checkout@v4
+  PASS: Workflow references docker-image-tag-generator.ps1
+  PASS: Script file docker-image-tag-generator.ps1 exists
+  PASS: Workflow references test file
+  PASS: Test file docker-image-tag-generator.Tests.ps1 exists
+  PASS: Workflow has permissions section
+
+Running actionlint...
+ 
+[Assistant] Let me check the summary at the end.
+[Tool: Bash] tail -30 /home/passp/.claude/projects/-home-passp-repos-compare-agent-scripting-by-language-workspaces-2026-04-08-192624-14-docker-image-tag-generator-powershell-opus/5c34a785-f61d-45fc-bdc7-7682ac9dd85c/tool-results/b2crxns98.txt
+[Result] [Docker Image Tag Generator/generate-tags]   | [32m  [+] generates 'pr-{number}' for pull requests[0m[90m 11ms (7ms|3ms)[0m
+[Docker Image Tag Generator/generate-tags]   | [32m  [+] generates version tags for semver tags[0m[90m 28ms (16ms|12ms)[0m
+[Docker Image Tag Generator/generate-tags]   | [32m  [+] generates '{branch}-{short-sha}' for feature branches[0m[90m 7ms (5ms|2ms)[0m
+[Docker Image Tag Generator/generate-tags]   | [32m  [+] sanitizes branch names in tags[0m[90m 11ms (8ms|4ms)[0m
+[Docker Image Tag Generator/generate-tags]   | [32m  [+] does not generate branch-sha tag for main branch[0m[90m 16ms (12ms|4ms)[0m
+[Docker Image Tag Generator/generate-tags]   | [32m  [+] generates both PR and branch tags when both are provided[0m[90m 21ms (18ms|3ms)[0m
+[Docker Image Tag Generator/generate-tags]   | [32m  [+] returns empty array when no inputs are given[0m[90m 23ms (20ms|4ms)[0m
+[Docker Image Tag Generator/generate-tags]   | [32m  [+] handles tags withou
+[Assistant] All 41 tests pass. Let me verify the `act-result.txt` file exists and has content.
+[Tool: Bash] wc -l act-result.txt && head -20 act-result.txt && echo "..." && tail -10 act-result.txt
+[Result] 1160 act-result.txt
+
+=
+WORKFLOW STRUCTURE TESTS
+=
+  PASS: Workflow YAML file exists at .github/workflows/docker-image-tag-generator.yml
+  PASS: Workflow has 'on' trigger section
+  PASS: Workflow has 'push' trigger
+  PASS: Workflow has 'pull_request' trigger
+  PASS: Workflow has 'workflow_dispatch' trigger
+  PASS: Workflow has 'jobs' section
+  PASS: Workflow has 'generate-tags' job
+  PASS: Workflow uses actions/checkout@v4
+  PASS: Workflow references docker-image-tag-generator.ps1
+  PASS: Script file docker-image-tag-generator.ps1 exists
+  PASS: Workflow references test file
+  PASS: Test file docker-image-tag-generator.Tests.ps1 exists
+  PASS: Workflow has permissions section
+
+Running actionlint...
+  PASS: actionlint passes with exit code 0
+...
+  PASS: [Branch name sanitization (uppercase and special chars)] Job succeeded message present
+  PASS: [Branch name sanitization (uppercase and special chars)] Output contains expected tag 'feature-my-branch-ffee123'
+  PASS: [Branch name sanitiza
+[Assistant] Everything is working. Let me verify the final file structure.
+[Tool: Bash] find . -not -path './.git/*' -not -path './.claude/*' -not -name 'benchmark-instructions-v3.md' -type f | sort
+[Result] ./.github/workflows/docker-image-tag-generator.yml
+./act-result.txt
+./docker-image-tag-generator.Tests.ps1
+./docker-image-tag-generator.ps1
+./run-tests.ps1
+[Assistant] All done. Here's a summary of what was created:
+
+**Files:**
+
+| File | Purpose |
+|---|---|
+| `docker-image-tag-generator.ps1` | Main script — generates Docker image tags from git context |
+| `docker-image-tag-generator.Tests.ps1` | 21 Pester unit tests covering sanitization, SHA shortening, and all tag generation rules |
+| `.github/workflows/docker-image-tag-generator.yml` | GitHub Actions workflow — detects git context, runs the generator, runs Pester tests |
+| `run-tests.ps1` | Test harness — runs 6 `act` integration test cases + 14 workflow structure assertions |
+| `act-result.txt` | Captured output from all test runs |
+
+**Test results: 41/41 passed**
+
+- **14 workflow structure tests**: YAML triggers, jobs, steps, script references, actionlint
+- **6 act integration test cases** (27 assertions): Each creates a temp git repo, runs `act push --rm` with fixture data, asserts exit code 0, "Job succeeded", and exact expected tag values:
+  - Main branch → `latest`
+  - Feature branch → `feature-cool-thing-deadbee`
+  - PR → `pr-42` + branch-sha tag
+  - Semver tag → `v2.5.1`, `v2.5`, `v2`, `latest`
+  - Master branch → `latest`
+  - Sanitization → `feature-my-branch-ffee123`
