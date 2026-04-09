@@ -16,7 +16,7 @@ Same 18 tasks and 4 modes as v1, with improved prompt wording. Partially complet
 
 Narrowed to 8 tasks (11-18, all GHA-category). Changed modes to `default`, `powershell`, `bash`, `typescript-bun`. Each task now requires a working `.github/workflows/*.yml` file that passes `actionlint` and executes in Docker via `act`. All agent tests must run through the workflow pipeline. PostToolUse syntax/lint hooks enabled on all runs. 64 total runs.
 
-See also: [v3 design plan](PLAN-v3-gha.md) (planning document, not used at runtime).
+See also: [v3 design plan](design-and-planning-artifacts/PLAN-v3-gha.md) and other [design artifacts](design-and-planning-artifacts/).
 
 ## What it Tests
 
@@ -32,13 +32,16 @@ Each benchmark version defines a set of scripting tasks, language modes, and mod
 | File | Purpose |
 |------|---------|
 | `benchmark-instructions-v*.md` | Per-version methodology, task definitions, prompt templates |
-| `models.py` | Model IDs and token pricing (single source of truth) |
+| `models.py` | Model IDs and token pricing ([single source of truth](models.py)) |
 | `runner.py` | Benchmark harness — invokes `claude -p`, collects metrics |
 | `generate_results.py` | Generates `results.md` reports from metrics; updates this README |
 | `hooks/syntax-check.py` | PostToolUse hook for syntax/lint checking (v3) |
 | `run-benchmark.sh` | One-command launcher with prerequisite checks |
 | `results/` | Structured output — metrics.json, generated code, console logs per run |
 | `workspaces/` | Temporary agent working directories (git-ignored) |
+| `AGENTS.md` | Agent instructions ([agents.md spec](https://agents.md)) |
+| `skills/` | Agent skills ([agentskills.io spec](https://agentskills.io/specification)) |
+| `design-and-planning-artifacts/` | Historical planning docs, v1 analysis, superseded files |
 
 ## Benchmark Runs
 
