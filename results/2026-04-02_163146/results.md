@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-09 01:12:11 PM ET
+**Last updated:** 2026-04-09 02:08:13 PM ET
 
 **Status:** 144/144 runs completed, 0 remaining
 **Total cost so far:** $436.67
@@ -161,10 +161,11 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | repeated-test-reruns | powershell-strict | sonnet | 6 | 7.0min | 0.1% | $0.64 | 0.15% |
 | dotnet-install-loop | csharp-script | opus | 16 | 178.6min | 3.5% | $40.93 | 9.37% |
 | dotnet-install-loop | csharp-script | sonnet | 13 | 44.2min | 0.9% | $7.17 | 1.64% |
+| pwsh-invoked-from-bash | powershell | sonnet | 1 | 7.7min | 0.2% | $1.46 | 0.33% |
 | fixture-rework | default | opus | 1 | 0.5min | 0.0% | $0.03 | 0.01% |
 | fixture-rework | default | sonnet | 1 | 0.8min | 0.0% | $0.15 | 0.03% |
 | fixture-rework | powershell | sonnet | 1 | 0.5min | 0.0% | $0.08 | 0.02% |
-| **Total** | | | **139 runs** | **3211.6min** | **63.0%** | **$723.36** | **165.65%** |
+| **Total** | | | **139 runs** | **3219.2min** | **63.1%** | **$724.82** | **165.99%** |
 
 
 <details>
@@ -176,6 +177,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | fixture-rework | powershell | sonnet | 1 | 0.5min | 0.0% | $0.08 | 0.02% |
 | fixture-rework | default | sonnet | 1 | 0.8min | 0.0% | $0.15 | 0.03% |
 | repeated-test-reruns | powershell-strict | sonnet | 6 | 7.0min | 0.1% | $0.64 | 0.15% |
+| pwsh-invoked-from-bash | powershell | sonnet | 1 | 7.7min | 0.2% | $1.46 | 0.33% |
 | repeated-test-reruns | csharp-script | sonnet | 15 | 18.0min | 0.4% | $2.60 | 0.59% |
 | repeated-test-reruns | powershell | sonnet | 12 | 21.3min | 0.4% | $3.68 | 0.84% |
 | repeated-test-reruns | default | sonnet | 23 | 27.7min | 0.5% | $3.54 | 0.81% |
@@ -205,6 +207,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | fixture-rework | powershell | sonnet | 1 | 0.5min | 0.0% | $0.08 | 0.02% |
 | fixture-rework | default | sonnet | 1 | 0.8min | 0.0% | $0.15 | 0.03% |
 | repeated-test-reruns | powershell-strict | sonnet | 6 | 7.0min | 0.1% | $0.64 | 0.15% |
+| pwsh-invoked-from-bash | powershell | sonnet | 1 | 7.7min | 0.2% | $1.46 | 0.33% |
 | repeated-test-reruns | csharp-script | sonnet | 15 | 18.0min | 0.4% | $2.60 | 0.59% |
 | repeated-test-reruns | default | sonnet | 23 | 27.7min | 0.5% | $3.54 | 0.81% |
 | repeated-test-reruns | powershell | sonnet | 12 | 21.3min | 0.4% | $3.68 | 0.84% |
@@ -230,6 +233,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Trap | Mode | Model | Fell In | Time Lost | % of Time | $ Lost | % of $ |
 |------|------|-------|---------|-----------|-----------|--------|--------|
+| pwsh-invoked-from-bash | powershell | sonnet | 1 | 7.7min | 0.2% | $1.46 | 0.33% |
 | fixture-rework | default | opus | 1 | 0.5min | 0.0% | $0.03 | 0.01% |
 | fixture-rework | default | sonnet | 1 | 0.8min | 0.0% | $0.15 | 0.03% |
 | fixture-rework | powershell | sonnet | 1 | 0.5min | 0.0% | $0.08 | 0.02% |
@@ -259,6 +263,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 - **dotnet-install-loop**: Agent stuck in loop trying to install/verify .NET SDK, blocked by CLI sandbox.
 - **fixture-rework**: Agent wrote, broke, and rewrote test fixture data (4+ fixture-related commands).
 - **permission-denial-loops**: CLI sandbox blocked commands and agent retried instead of adapting (v1 harness issue).
+- **pwsh-invoked-from-bash**: Agent used `pwsh -Command`/`-File` from bash `run:` steps instead of `shell: pwsh`, causing cross-shell debugging (parse errors, quoting issues, scope problems, late pwsh discovery in act).
 - **repeated-test-reruns**: Same test command executed 4+ times without the underlying code changing.
 
 #### Column Definitions
@@ -279,10 +284,10 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | default | opus | 18 | 18 | 100% | 69 | 879.3min | 17.2% | $207.20 | 47.45% |
 | default | sonnet | 18 | 18 | 100% | 42 | 122.1min | 2.4% | $15.86 | 3.63% |
 | powershell | opus | 18 | 17 | 94% | 65 | 495.3min | 9.7% | $116.68 | 26.72% |
-| powershell | sonnet | 18 | 18 | 100% | 31 | 147.8min | 2.9% | $22.94 | 5.25% |
+| powershell | sonnet | 18 | 18 | 100% | 32 | 155.5min | 3.1% | $24.40 | 5.59% |
 | powershell-strict | opus | 18 | 18 | 100% | 67 | 694.2min | 13.6% | $174.81 | 40.03% |
 | powershell-strict | sonnet | 18 | 17 | 94% | 23 | 88.3min | 1.7% | $10.09 | 2.31% |
-| **Total** | | **144** | **139** | **97%** | **398** | **3211.6min** | **63.0%** | **$723.36** | **165.65%** |
+| **Total** | | **144** | **139** | **97%** | **399** | **3219.2min** | **63.1%** | **$724.82** | **165.99%** |
 
 
 <details>
@@ -292,7 +297,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 |------|-------|------|---------|-----------|-------|-----------|-----------|--------|--------|
 | powershell-strict | sonnet | 18 | 17 | 94% | 23 | 88.3min | 1.7% | $10.09 | 2.31% |
 | default | sonnet | 18 | 18 | 100% | 42 | 122.1min | 2.4% | $15.86 | 3.63% |
-| powershell | sonnet | 18 | 18 | 100% | 31 | 147.8min | 2.9% | $22.94 | 5.25% |
+| powershell | sonnet | 18 | 18 | 100% | 32 | 155.5min | 3.1% | $24.40 | 5.59% |
 | csharp-script | sonnet | 18 | 17 | 94% | 45 | 201.0min | 3.9% | $30.87 | 7.07% |
 | powershell | opus | 18 | 17 | 94% | 65 | 495.3min | 9.7% | $116.68 | 26.72% |
 | csharp-script | opus | 18 | 16 | 89% | 56 | 583.4min | 11.4% | $144.91 | 33.19% |
@@ -308,7 +313,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 |------|-------|------|---------|-----------|-------|-----------|-----------|--------|--------|
 | powershell-strict | sonnet | 18 | 17 | 94% | 23 | 88.3min | 1.7% | $10.09 | 2.31% |
 | default | sonnet | 18 | 18 | 100% | 42 | 122.1min | 2.4% | $15.86 | 3.63% |
-| powershell | sonnet | 18 | 18 | 100% | 31 | 147.8min | 2.9% | $22.94 | 5.25% |
+| powershell | sonnet | 18 | 18 | 100% | 32 | 155.5min | 3.1% | $24.40 | 5.59% |
 | csharp-script | sonnet | 18 | 17 | 94% | 45 | 201.0min | 3.9% | $30.87 | 7.07% |
 | powershell | opus | 18 | 17 | 94% | 65 | 495.3min | 9.7% | $116.68 | 26.72% |
 | csharp-script | opus | 18 | 16 | 89% | 56 | 583.4min | 11.4% | $144.91 | 33.19% |
@@ -328,7 +333,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | powershell-strict | sonnet | 18 | 17 | 94% | 23 | 88.3min | 1.7% | $10.09 | 2.31% |
 | default | opus | 18 | 18 | 100% | 69 | 879.3min | 17.2% | $207.20 | 47.45% |
 | default | sonnet | 18 | 18 | 100% | 42 | 122.1min | 2.4% | $15.86 | 3.63% |
-| powershell | sonnet | 18 | 18 | 100% | 31 | 147.8min | 2.9% | $22.94 | 5.25% |
+| powershell | sonnet | 18 | 18 | 100% | 32 | 155.5min | 3.1% | $24.40 | 5.59% |
 | powershell-strict | opus | 18 | 18 | 100% | 67 | 694.2min | 13.6% | $174.81 | 40.03% |
 
 </details>

@@ -185,6 +185,59 @@ def _detect_traps(events: list[dict], console: str, metrics: dict) -> list[dict]
             _add("dotnet-install-loop", total * 12,
                  f"{total} attempts to install/verify .NET SDK")
 
+    # 16. PowerShell invoked from bash instead of shell: pwsh
+    # When agents use `pwsh -Command "..."` or `pwsh -File` inside bash run: steps,
+    # they can hit: (a) bash parser errors from PS syntax (e.g. @'...'@ heredocs),
+    # (b) variable/quoting issues passing structured data through bash to pwsh,
+    # (c) scope/invocation issues requiring diagnostic scripts.
+    # shell: pwsh works fine in act containers (act translates to docker exec pwsh),
+    # but agents that invoke pwsh from bash waste time on cross-shell debugging.
+    if mode == "powershell":
+        # Signal 1: /tmp/scope_test*.ps1 diagnostic scripts (bisecting pwsh invocation)
+        scope_scripts = [c for c in bash_cmds if re.search(
+            r"/tmp/scope_test\d*\.ps1|/tmp/pwsh_debug\d*\.ps1", c)]
+        # Signal 2: bash parser errors from PS syntax inside bash
+        ps_in_bash_errors = len(re.findall(
+            r"Unrecognized token in source text", console))
+        # Signal 3: pwsh command not found inside act container (late discovery)
+        pwsh_not_found_act = len(re.findall(
+            r"line \d+: pwsh: command not found|"
+            r"exec:.*pwsh.*executable file not found",
+            console, re.I))
+        # Signal 4: agent reasoning about quoting/escaping between bash and pwsh
+        quoting_issues = len(re.findall(
+            r"(?:quot|escap).*(?:bash.*pwsh|pwsh.*bash|variable.*pass)|"
+            r"output isn.t visible.*(?:pwsh|PowerShell|JSON)|"
+            r"(?:pwsh|PowerShell).*(?:quoting|embedded quotes)",
+            all_text, re.I))
+        # Signal 5: pwsh -Command invocations used as diagnostic probes (not normal script runs)
+        pwsh_diag = [c for c in bash_cmds if re.search(
+            r"pwsh\s+-Command.*(?:MyInvocation|ScriptName|InvocationName|Write-Host.*test|scope|param\b)",
+            c, re.I)]
+        total_signals = (len(scope_scripts) + ps_in_bash_errors + pwsh_not_found_act
+                         + (1 if quoting_issues >= 1 else 0) + len(pwsh_diag))
+        if total_signals >= 2:
+            parts = []
+            if scope_scripts:
+                parts.append(f"{len(scope_scripts)} scope-test scripts")
+            if ps_in_bash_errors:
+                parts.append(f"{ps_in_bash_errors} bash parser errors from PS syntax")
+            if pwsh_not_found_act:
+                parts.append(f"{pwsh_not_found_act} pwsh-not-found in act")
+            if quoting_issues:
+                parts.append(f"{quoting_issues} quoting issue mentions")
+            if pwsh_diag:
+                parts.append(f"{len(pwsh_diag)} diagnostic pwsh probes")
+            # Time estimate: scope scripts ~25s each (write + run + analyze),
+            # parse errors ~30s each (error + investigate + fix),
+            # not-found ~45s (act run + error + workflow rewrite),
+            # quoting ~60s (investigate + rewrite workflow),
+            # diagnostic probes ~20s each
+            t = (len(scope_scripts) * 25 + ps_in_bash_errors * 30
+                 + pwsh_not_found_act * 45 + quoting_issues * 60
+                 + len(pwsh_diag) * 20)
+            _add("pwsh-invoked-from-bash", t, "; ".join(parts))
+
     return traps
 
 
@@ -556,6 +609,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
             "ts-type-error-fix-cycles": "typescript-bun",
             "bats-setup-issues": "bash",
             "dotnet-install-loop": "csharp-script",
+            "pwsh-invoked-from-bash": "powershell",
         }
         trap_descriptions = {
             "act-push-debug-loops": "Agent ran `act push` more than twice, indicating repeated workflow debugging.",
@@ -573,6 +627,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
             "act-fixture-paths": "Test fixtures not found inside the act Docker container due to path issues.",
             "permission-denial-loops": "CLI sandbox blocked commands and agent retried instead of adapting (v1 harness issue).",
             "dotnet-install-loop": "Agent stuck in loop trying to install/verify .NET SDK, blocked by CLI sandbox.",
+            "pwsh-invoked-from-bash": "Agent used `pwsh -Command`/`-File` from bash `run:` steps instead of `shell: pwsh`, causing cross-shell debugging (parse errors, quoting issues, scope problems, late pwsh discovery in act).",
         }
 
         trap_agg = defaultdict(list)
