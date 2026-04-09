@@ -1,109 +1,132 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-09 06:08:19 PM ET
+**Last updated:** 2026-04-09 06:09:17 PM ET
 
-**Status:** 19/19 runs completed, 0 remaining
+**Status:** 19/64 runs completed, 45 remaining
 **Total cost so far:** $24.70
 **Total agent time so far:** 161.6 min
 
 ## Observations
 
 - **Fastest (avg):** default/opus — 6.9min, then typescript-bun/opus — 7.7min
+- **Fastest net of traps:** typescript-bun/sonnet — 6.7min, then typescript-bun/opus — 6.8min
 - **Slowest (avg):** bash/sonnet — 11.1min, then powershell/sonnet — 10.1min
+- **Slowest net of traps:** bash/sonnet — 10.7min, then powershell/sonnet — 8.5min
 - **Cheapest (avg):** typescript-bun/sonnet — $0.93, then powershell/sonnet — $1.01
+- **Cheapest net of traps:** typescript-bun/sonnet — $0.77, then powershell/sonnet — $0.83
 - **Most expensive (avg):** bash/sonnet — $1.55, then bash/opus — $1.44
+- **Most expensive net of traps:** bash/sonnet — $1.50, then powershell/opus — $1.40
+
+- **Estimated time remaining:** 382.8min
+- **Estimated total cost:** $83.20
 
 ## Comparison by Language/Model
 
-| Mode | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|--------------------------|------------|-----------|----------|------------|
-| bash | opus | 3 | 8.3min | 7.5min | 2.0 | 49 | $1.44 | $4.31 |
-| bash | sonnet | 2 | 11.1min | 10.7min | 6.0 | 48 | $1.55 | $3.11 |
-| default | opus | 3 | 6.9min | 6.9min | 1.0 | 32 | $1.38 | $4.14 |
-| default | sonnet | 2 | 8.8min | 8.1min | 2.5 | 44 | $1.26 | $2.51 |
-| powershell | opus | 3 | 8.1min | 8.1min | 1.7 | 33 | $1.40 | $4.21 |
-| powershell | sonnet | 2 | 10.1min | 8.5min | 2.0 | 36 | $1.01 | $2.01 |
-| typescript-bun | opus | 2 | 7.7min | 6.8min | 1.5 | 32 | $1.28 | $2.55 |
-| typescript-bun | sonnet | 2 | 8.1min | 6.7min | 1.0 | 36 | $0.93 | $1.86 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| bash | opus | 3 | 8.3min | 7.5min | 1012 | 2.0 | 49 | $1.44 | $1.30 | $4.31 |
+| bash | sonnet | 2 | 11.1min | 10.7min | 906 | 6.0 | 48 | $1.55 | $1.50 | $3.11 |
+| default | opus | 3 | 6.9min | 6.9min | 952 | 1.0 | 32 | $1.38 | $1.38 | $4.14 |
+| default | sonnet | 2 | 8.8min | 8.1min | 1074 | 2.5 | 44 | $1.26 | $1.15 | $2.51 |
+| powershell | opus | 3 | 8.1min | 8.1min | 852 | 1.7 | 33 | $1.40 | $1.40 | $4.21 |
+| powershell | sonnet | 2 | 10.1min | 8.5min | 1027 | 2.0 | 36 | $1.01 | $0.83 | $2.01 |
+| typescript-bun | opus | 2 | 7.7min | 6.8min | 1072 | 1.5 | 32 | $1.28 | $1.11 | $2.55 |
+| typescript-bun | sonnet | 2 | 8.1min | 6.7min | 1366 | 1.0 | 36 | $0.93 | $0.77 | $1.86 |
 
 
 <details>
-<summary>Sorted by avg cost (cheapest first)</summary>
+<summary>Sorted by avg cost (most expensive first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|--------------------------|------------|-----------|----------|------------|
-| typescript-bun | sonnet | 2 | 8.1min | 6.7min | 1.0 | 36 | $0.93 | $1.86 |
-| powershell | sonnet | 2 | 10.1min | 8.5min | 2.0 | 36 | $1.01 | $2.01 |
-| default | sonnet | 2 | 8.8min | 8.1min | 2.5 | 44 | $1.26 | $2.51 |
-| typescript-bun | opus | 2 | 7.7min | 6.8min | 1.5 | 32 | $1.28 | $2.55 |
-| default | opus | 3 | 6.9min | 6.9min | 1.0 | 32 | $1.38 | $4.14 |
-| powershell | opus | 3 | 8.1min | 8.1min | 1.7 | 33 | $1.40 | $4.21 |
-| bash | opus | 3 | 8.3min | 7.5min | 2.0 | 49 | $1.44 | $4.31 |
-| bash | sonnet | 2 | 11.1min | 10.7min | 6.0 | 48 | $1.55 | $3.11 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| bash | sonnet | 2 | 11.1min | 10.7min | 906 | 6.0 | 48 | $1.55 | $1.50 | $3.11 |
+| bash | opus | 3 | 8.3min | 7.5min | 1012 | 2.0 | 49 | $1.44 | $1.30 | $4.31 |
+| powershell | opus | 3 | 8.1min | 8.1min | 852 | 1.7 | 33 | $1.40 | $1.40 | $4.21 |
+| default | opus | 3 | 6.9min | 6.9min | 952 | 1.0 | 32 | $1.38 | $1.38 | $4.14 |
+| typescript-bun | opus | 2 | 7.7min | 6.8min | 1072 | 1.5 | 32 | $1.28 | $1.11 | $2.55 |
+| default | sonnet | 2 | 8.8min | 8.1min | 1074 | 2.5 | 44 | $1.26 | $1.15 | $2.51 |
+| powershell | sonnet | 2 | 10.1min | 8.5min | 1027 | 2.0 | 36 | $1.01 | $0.83 | $2.01 |
+| typescript-bun | sonnet | 2 | 8.1min | 6.7min | 1366 | 1.0 | 36 | $0.93 | $0.77 | $1.86 |
 
 </details>
 
 <details>
-<summary>Sorted by avg duration (fastest first)</summary>
+<summary>Sorted by avg cost net of traps (most expensive first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|--------------------------|------------|-----------|----------|------------|
-| default | opus | 3 | 6.9min | 6.9min | 1.0 | 32 | $1.38 | $4.14 |
-| typescript-bun | opus | 2 | 7.7min | 6.8min | 1.5 | 32 | $1.28 | $2.55 |
-| typescript-bun | sonnet | 2 | 8.1min | 6.7min | 1.0 | 36 | $0.93 | $1.86 |
-| powershell | opus | 3 | 8.1min | 8.1min | 1.7 | 33 | $1.40 | $4.21 |
-| bash | opus | 3 | 8.3min | 7.5min | 2.0 | 49 | $1.44 | $4.31 |
-| default | sonnet | 2 | 8.8min | 8.1min | 2.5 | 44 | $1.26 | $2.51 |
-| powershell | sonnet | 2 | 10.1min | 8.5min | 2.0 | 36 | $1.01 | $2.01 |
-| bash | sonnet | 2 | 11.1min | 10.7min | 6.0 | 48 | $1.55 | $3.11 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| bash | sonnet | 2 | 11.1min | 10.7min | 906 | 6.0 | 48 | $1.55 | $1.50 | $3.11 |
+| powershell | opus | 3 | 8.1min | 8.1min | 852 | 1.7 | 33 | $1.40 | $1.40 | $4.21 |
+| default | opus | 3 | 6.9min | 6.9min | 952 | 1.0 | 32 | $1.38 | $1.38 | $4.14 |
+| bash | opus | 3 | 8.3min | 7.5min | 1012 | 2.0 | 49 | $1.44 | $1.30 | $4.31 |
+| default | sonnet | 2 | 8.8min | 8.1min | 1074 | 2.5 | 44 | $1.26 | $1.15 | $2.51 |
+| typescript-bun | opus | 2 | 7.7min | 6.8min | 1072 | 1.5 | 32 | $1.28 | $1.11 | $2.55 |
+| powershell | sonnet | 2 | 10.1min | 8.5min | 1027 | 2.0 | 36 | $1.01 | $0.83 | $2.01 |
+| typescript-bun | sonnet | 2 | 8.1min | 6.7min | 1366 | 1.0 | 36 | $0.93 | $0.77 | $1.86 |
 
 </details>
 
 <details>
 <summary>Sorted by avg duration net of traps (fastest first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|--------------------------|------------|-----------|----------|------------|
-| typescript-bun | sonnet | 2 | 8.1min | 6.7min | 1.0 | 36 | $0.93 | $1.86 |
-| typescript-bun | opus | 2 | 7.7min | 6.8min | 1.5 | 32 | $1.28 | $2.55 |
-| default | opus | 3 | 6.9min | 6.9min | 1.0 | 32 | $1.38 | $4.14 |
-| bash | opus | 3 | 8.3min | 7.5min | 2.0 | 49 | $1.44 | $4.31 |
-| default | sonnet | 2 | 8.8min | 8.1min | 2.5 | 44 | $1.26 | $2.51 |
-| powershell | opus | 3 | 8.1min | 8.1min | 1.7 | 33 | $1.40 | $4.21 |
-| powershell | sonnet | 2 | 10.1min | 8.5min | 2.0 | 36 | $1.01 | $2.01 |
-| bash | sonnet | 2 | 11.1min | 10.7min | 6.0 | 48 | $1.55 | $3.11 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| typescript-bun | sonnet | 2 | 8.1min | 6.7min | 1366 | 1.0 | 36 | $0.93 | $0.77 | $1.86 |
+| typescript-bun | opus | 2 | 7.7min | 6.8min | 1072 | 1.5 | 32 | $1.28 | $1.11 | $2.55 |
+| default | opus | 3 | 6.9min | 6.9min | 952 | 1.0 | 32 | $1.38 | $1.38 | $4.14 |
+| bash | opus | 3 | 8.3min | 7.5min | 1012 | 2.0 | 49 | $1.44 | $1.30 | $4.31 |
+| default | sonnet | 2 | 8.8min | 8.1min | 1074 | 2.5 | 44 | $1.26 | $1.15 | $2.51 |
+| powershell | opus | 3 | 8.1min | 8.1min | 852 | 1.7 | 33 | $1.40 | $1.40 | $4.21 |
+| powershell | sonnet | 2 | 10.1min | 8.5min | 1027 | 2.0 | 36 | $1.01 | $0.83 | $2.01 |
+| bash | sonnet | 2 | 11.1min | 10.7min | 906 | 6.0 | 48 | $1.55 | $1.50 | $3.11 |
 
 </details>
 
 <details>
 <summary>Sorted by avg errors (fewest first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|--------------------------|------------|-----------|----------|------------|
-| default | opus | 3 | 6.9min | 6.9min | 1.0 | 32 | $1.38 | $4.14 |
-| typescript-bun | sonnet | 2 | 8.1min | 6.7min | 1.0 | 36 | $0.93 | $1.86 |
-| typescript-bun | opus | 2 | 7.7min | 6.8min | 1.5 | 32 | $1.28 | $2.55 |
-| powershell | opus | 3 | 8.1min | 8.1min | 1.7 | 33 | $1.40 | $4.21 |
-| bash | opus | 3 | 8.3min | 7.5min | 2.0 | 49 | $1.44 | $4.31 |
-| powershell | sonnet | 2 | 10.1min | 8.5min | 2.0 | 36 | $1.01 | $2.01 |
-| default | sonnet | 2 | 8.8min | 8.1min | 2.5 | 44 | $1.26 | $2.51 |
-| bash | sonnet | 2 | 11.1min | 10.7min | 6.0 | 48 | $1.55 | $3.11 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| default | opus | 3 | 6.9min | 6.9min | 952 | 1.0 | 32 | $1.38 | $1.38 | $4.14 |
+| typescript-bun | sonnet | 2 | 8.1min | 6.7min | 1366 | 1.0 | 36 | $0.93 | $0.77 | $1.86 |
+| typescript-bun | opus | 2 | 7.7min | 6.8min | 1072 | 1.5 | 32 | $1.28 | $1.11 | $2.55 |
+| powershell | opus | 3 | 8.1min | 8.1min | 852 | 1.7 | 33 | $1.40 | $1.40 | $4.21 |
+| bash | opus | 3 | 8.3min | 7.5min | 1012 | 2.0 | 49 | $1.44 | $1.30 | $4.31 |
+| powershell | sonnet | 2 | 10.1min | 8.5min | 1027 | 2.0 | 36 | $1.01 | $0.83 | $2.01 |
+| default | sonnet | 2 | 8.8min | 8.1min | 1074 | 2.5 | 44 | $1.26 | $1.15 | $2.51 |
+| bash | sonnet | 2 | 11.1min | 10.7min | 906 | 6.0 | 48 | $1.55 | $1.50 | $3.11 |
+
+</details>
+
+<details>
+<summary>Sorted by avg lines (fewest first)</summary>
+
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| powershell | opus | 3 | 8.1min | 8.1min | 852 | 1.7 | 33 | $1.40 | $1.40 | $4.21 |
+| bash | sonnet | 2 | 11.1min | 10.7min | 906 | 6.0 | 48 | $1.55 | $1.50 | $3.11 |
+| default | opus | 3 | 6.9min | 6.9min | 952 | 1.0 | 32 | $1.38 | $1.38 | $4.14 |
+| bash | opus | 3 | 8.3min | 7.5min | 1012 | 2.0 | 49 | $1.44 | $1.30 | $4.31 |
+| powershell | sonnet | 2 | 10.1min | 8.5min | 1027 | 2.0 | 36 | $1.01 | $0.83 | $2.01 |
+| typescript-bun | opus | 2 | 7.7min | 6.8min | 1072 | 1.5 | 32 | $1.28 | $1.11 | $2.55 |
+| default | sonnet | 2 | 8.8min | 8.1min | 1074 | 2.5 | 44 | $1.26 | $1.15 | $2.51 |
+| typescript-bun | sonnet | 2 | 8.1min | 6.7min | 1366 | 1.0 | 36 | $0.93 | $0.77 | $1.86 |
 
 </details>
 
 <details>
 <summary>Sorted by avg turns (fewest first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|--------------------------|------------|-----------|----------|------------|
-| default | opus | 3 | 6.9min | 6.9min | 1.0 | 32 | $1.38 | $4.14 |
-| typescript-bun | opus | 2 | 7.7min | 6.8min | 1.5 | 32 | $1.28 | $2.55 |
-| powershell | opus | 3 | 8.1min | 8.1min | 1.7 | 33 | $1.40 | $4.21 |
-| powershell | sonnet | 2 | 10.1min | 8.5min | 2.0 | 36 | $1.01 | $2.01 |
-| typescript-bun | sonnet | 2 | 8.1min | 6.7min | 1.0 | 36 | $0.93 | $1.86 |
-| default | sonnet | 2 | 8.8min | 8.1min | 2.5 | 44 | $1.26 | $2.51 |
-| bash | sonnet | 2 | 11.1min | 10.7min | 6.0 | 48 | $1.55 | $3.11 |
-| bash | opus | 3 | 8.3min | 7.5min | 2.0 | 49 | $1.44 | $4.31 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
+|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
+| default | opus | 3 | 6.9min | 6.9min | 952 | 1.0 | 32 | $1.38 | $1.38 | $4.14 |
+| typescript-bun | opus | 2 | 7.7min | 6.8min | 1072 | 1.5 | 32 | $1.28 | $1.11 | $2.55 |
+| powershell | opus | 3 | 8.1min | 8.1min | 852 | 1.7 | 33 | $1.40 | $1.40 | $4.21 |
+| powershell | sonnet | 2 | 10.1min | 8.5min | 1027 | 2.0 | 36 | $1.01 | $0.83 | $2.01 |
+| typescript-bun | sonnet | 2 | 8.1min | 6.7min | 1366 | 1.0 | 36 | $0.93 | $0.77 | $1.86 |
+| default | sonnet | 2 | 8.8min | 8.1min | 1074 | 2.5 | 44 | $1.26 | $1.15 | $2.51 |
+| bash | sonnet | 2 | 11.1min | 10.7min | 906 | 6.0 | 48 | $1.55 | $1.50 | $3.11 |
+| bash | opus | 3 | 8.3min | 7.5min | 1012 | 2.0 | 49 | $1.44 | $1.30 | $4.31 |
 
 </details>
 
@@ -114,27 +137,27 @@
 Each hook-caught error avoids one test run that would otherwise have been needed to discover it.
 Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
-| Mode | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time | Test Run Time | % of Test Time Saved |
-|------|-------|-------|--------|------|------------|-----------|----------|-----------|-----------|-----------|---------------|----------------------|
+| Mode | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time | Test Run Time | % of Test Time |
+|------|-------|-------|--------|------|------------|-----------|----------|-----------|-----------|-----------|---------------|----------------|
 | bash | opus | 39 | 2 | 5.1% | 0.4min | 0.2% | 0.7min | 0.5% | -0.3min | -0.2% | 5.6min | -6.1% |
 | bash | sonnet | 28 | 5 | 17.9% | 1.0min | 0.6% | 0.5min | 0.3% | 0.5min | 0.3% | 1.5min | 30.9% |
-| default | opus | 25 | 2 | 8.0% | 0.3min | 0.2% | 0.3min | 0.2% | -0.0min | -0.0% | 1.3min | -1.2% |
+| default | opus | 25 | 2 | 8.0% | 0.3min | 0.2% | 0.3min | 0.2% | -0.0min | -0.0% | 0.8min | -1.7% |
 | default | sonnet | 21 | 1 | 4.8% | 0.1min | 0.1% | 0.2min | 0.1% | -0.1min | -0.1% | 0.6min | -17.8% |
 | powershell | opus | 33 | 2 | 6.1% | 1.2min | 0.7% | 0.6min | 0.4% | 0.6min | 0.4% | 3.5min | 16.4% |
 | powershell | sonnet | 20 | 0 | 0.0% | 0.0min | 0.0% | 0.4min | 0.2% | -0.4min | -0.2% | 5.5min | -6.5% |
 | typescript-bun | opus | 19 | 9 | 47.4% | 1.2min | 0.7% | 3.0min | 1.9% | -1.8min | -1.1% | 2.5min | -71.7% |
 | typescript-bun | sonnet | 20 | 8 | 40.0% | 1.1min | 0.7% | 3.2min | 2.0% | -2.1min | -1.3% | 0.0min | -7355.4% |
-| **Total** | | **205** | **29** | **14.1%** | **5.2min** | **3.2%** | **8.9min** | **5.5%** | **-3.7min** | **-2.3%** | **20.5min** | **-17.9%** |
+| **Total** | | **205** | **29** | **14.1%** | **5.2min** | **3.2%** | **8.9min** | **5.5%** | **-3.7min** | **-2.3%** | **20.1min** | **-18.2%** |
 
 
 <details>
 <summary>Sorted by net saved (most first)</summary>
 
-| Mode | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time | Test Run Time | % of Test Time Saved |
-|------|-------|-------|--------|------|------------|-----------|----------|-----------|-----------|-----------|---------------|----------------------|
+| Mode | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time | Test Run Time | % of Test Time |
+|------|-------|-------|--------|------|------------|-----------|----------|-----------|-----------|-----------|---------------|----------------|
 | powershell | opus | 33 | 2 | 6.1% | 1.2min | 0.7% | 0.6min | 0.4% | 0.6min | 0.4% | 3.5min | 16.4% |
 | bash | sonnet | 28 | 5 | 17.9% | 1.0min | 0.6% | 0.5min | 0.3% | 0.5min | 0.3% | 1.5min | 30.9% |
-| default | opus | 25 | 2 | 8.0% | 0.3min | 0.2% | 0.3min | 0.2% | -0.0min | -0.0% | 1.3min | -1.2% |
+| default | opus | 25 | 2 | 8.0% | 0.3min | 0.2% | 0.3min | 0.2% | -0.0min | -0.0% | 0.8min | -1.7% |
 | default | sonnet | 21 | 1 | 4.8% | 0.1min | 0.1% | 0.2min | 0.1% | -0.1min | -0.1% | 0.6min | -17.8% |
 | bash | opus | 39 | 2 | 5.1% | 0.4min | 0.2% | 0.7min | 0.5% | -0.3min | -0.2% | 5.6min | -6.1% |
 | powershell | sonnet | 20 | 0 | 0.0% | 0.0min | 0.0% | 0.4min | 0.2% | -0.4min | -0.2% | 5.5min | -6.5% |
@@ -144,13 +167,13 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 </details>
 
 <details>
-<summary>Sorted by net % of test time saved (most first)</summary>
+<summary>Sorted by net % of test time (most first)</summary>
 
-| Mode | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time | Test Run Time | % of Test Time Saved |
-|------|-------|-------|--------|------|------------|-----------|----------|-----------|-----------|-----------|---------------|----------------------|
+| Mode | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time | Test Run Time | % of Test Time |
+|------|-------|-------|--------|------|------------|-----------|----------|-----------|-----------|-----------|---------------|----------------|
 | bash | sonnet | 28 | 5 | 17.9% | 1.0min | 0.6% | 0.5min | 0.3% | 0.5min | 0.3% | 1.5min | 30.9% |
 | powershell | opus | 33 | 2 | 6.1% | 1.2min | 0.7% | 0.6min | 0.4% | 0.6min | 0.4% | 3.5min | 16.4% |
-| default | opus | 25 | 2 | 8.0% | 0.3min | 0.2% | 0.3min | 0.2% | -0.0min | -0.0% | 1.3min | -1.2% |
+| default | opus | 25 | 2 | 8.0% | 0.3min | 0.2% | 0.3min | 0.2% | -0.0min | -0.0% | 0.8min | -1.7% |
 | bash | opus | 39 | 2 | 5.1% | 0.4min | 0.2% | 0.7min | 0.5% | -0.3min | -0.2% | 5.6min | -6.1% |
 | powershell | sonnet | 20 | 0 | 0.0% | 0.0min | 0.0% | 0.4min | 0.2% | -0.4min | -0.2% | 5.5min | -6.5% |
 | default | sonnet | 21 | 1 | 4.8% | 0.1min | 0.1% | 0.2min | 0.1% | -0.1min | -0.1% | 0.6min | -17.8% |
@@ -162,12 +185,12 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 <details>
 <summary>Sorted by catch rate (highest first)</summary>
 
-| Mode | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time | Test Run Time | % of Test Time Saved |
-|------|-------|-------|--------|------|------------|-----------|----------|-----------|-----------|-----------|---------------|----------------------|
+| Mode | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time | Test Run Time | % of Test Time |
+|------|-------|-------|--------|------|------------|-----------|----------|-----------|-----------|-----------|---------------|----------------|
 | typescript-bun | opus | 19 | 9 | 47.4% | 1.2min | 0.7% | 3.0min | 1.9% | -1.8min | -1.1% | 2.5min | -71.7% |
 | typescript-bun | sonnet | 20 | 8 | 40.0% | 1.1min | 0.7% | 3.2min | 2.0% | -2.1min | -1.3% | 0.0min | -7355.4% |
 | bash | sonnet | 28 | 5 | 17.9% | 1.0min | 0.6% | 0.5min | 0.3% | 0.5min | 0.3% | 1.5min | 30.9% |
-| default | opus | 25 | 2 | 8.0% | 0.3min | 0.2% | 0.3min | 0.2% | -0.0min | -0.0% | 1.3min | -1.2% |
+| default | opus | 25 | 2 | 8.0% | 0.3min | 0.2% | 0.3min | 0.2% | -0.0min | -0.0% | 0.8min | -1.7% |
 | powershell | opus | 33 | 2 | 6.1% | 1.2min | 0.7% | 0.6min | 0.4% | 0.6min | 0.4% | 3.5min | 16.4% |
 | bash | opus | 39 | 2 | 5.1% | 0.4min | 0.2% | 0.7min | 0.5% | -0.3min | -0.2% | 5.6min | -6.1% |
 | default | sonnet | 21 | 1 | 4.8% | 0.1min | 0.1% | 0.2min | 0.1% | -0.1min | -0.1% | 0.6min | -17.8% |
@@ -339,134 +362,161 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 ## Per-Run Results
 
-| Task | Mode | Model | Duration | Turns | Errors | Cost | Language | Status |
-|------|------|-------|----------|-------|--------|------|----------|--------|
-| Semantic Version Bumper | bash | opus | 12.4min | 50 | 1 | $1.65 | bash | ok |
-| Semantic Version Bumper | bash | sonnet | 9.0min | 57 | 6 | $1.38 | bash | ok |
-| Semantic Version Bumper | default | opus | 7.1min | 28 | 1 | $1.33 | python | ok |
-| Semantic Version Bumper | default | sonnet | 7.3min | 46 | 1 | $0.99 | python | ok |
-| Semantic Version Bumper | powershell | opus | 6.9min | 27 | 0 | $1.04 | powershell | ok |
-| Semantic Version Bumper | powershell | sonnet | 11.4min | 43 | 3 | $0.92 | powershell | ok |
-| Semantic Version Bumper | typescript-bun | opus | 10.3min | 32 | 1 | $1.54 | typescript | ok |
-| Semantic Version Bumper | typescript-bun | sonnet | 8.1min | 30 | 1 | $0.97 | typescript | ok |
-| PR Label Assigner | bash | opus | 5.6min | 42 | 2 | $1.16 | bash | ok |
-| PR Label Assigner | bash | sonnet | 13.2min | 39 | 6 | $1.73 | bash | ok |
-| PR Label Assigner | default | opus | 7.7min | 29 | 2 | $1.57 | python | ok |
-| PR Label Assigner | default | sonnet | 10.3min | 43 | 4 | $1.52 | python | ok |
-| PR Label Assigner | powershell | opus | 11.4min | 35 | 2 | $1.93 | powershell | ok |
-| PR Label Assigner | powershell | sonnet | 8.7min | 29 | 1 | $1.09 | powershell | ok |
-| PR Label Assigner | typescript-bun | opus | 5.1min | 33 | 2 | $1.01 | typescript | ok |
-| PR Label Assigner | typescript-bun | sonnet | 8.1min | 43 | 1 | $0.89 | typescript | ok |
-| Dependency License Checker | bash | opus | 6.9min | 55 | 3 | $1.50 | bash | ok |
-| Dependency License Checker | default | opus | 5.9min | 39 | 0 | $1.24 | python | ok |
-| Dependency License Checker | powershell | opus | 6.0min | 38 | 3 | $1.24 | powershell | ok |
+| Task | Mode | Model | Duration | Turns | Lines | Errors | Cost | Language | Status |
+|------|------|-------|----------|-------|-------|--------|------|----------|--------|
+| Semantic Version Bumper | default | opus | 7.1min | 28 | 878 | 1 | $1.33 | python | ok |
+| Semantic Version Bumper | powershell | opus | 6.9min | 27 | 618 | 0 | $1.04 | powershell | ok |
+| Semantic Version Bumper | bash | opus | 12.4min | 50 | 1710 | 1 | $1.65 | bash | ok |
+| Semantic Version Bumper | typescript-bun | opus | 10.3min | 32 | 1071 | 1 | $1.54 | typescript | ok |
+| Semantic Version Bumper | default | sonnet | 7.3min | 46 | 1311 | 1 | $0.99 | python | ok |
+| Semantic Version Bumper | powershell | sonnet | 11.4min | 43 | 1255 | 3 | $0.92 | powershell | ok |
+| Semantic Version Bumper | bash | sonnet | 9.0min | 57 | 889 | 6 | $1.38 | bash | ok |
+| Semantic Version Bumper | typescript-bun | sonnet | 8.1min | 30 | 1034 | 1 | $0.97 | typescript | ok |
+| PR Label Assigner | default | opus | 7.7min | 29 | 923 | 2 | $1.57 | python | ok |
+| PR Label Assigner | powershell | opus | 11.4min | 35 | 839 | 2 | $1.93 | powershell | ok |
+| PR Label Assigner | bash | opus | 5.6min | 42 | 486 | 2 | $1.16 | bash | ok |
+| PR Label Assigner | typescript-bun | opus | 5.1min | 33 | 1073 | 2 | $1.01 | typescript | ok |
+| PR Label Assigner | default | sonnet | 10.3min | 43 | 836 | 4 | $1.52 | python | ok |
+| PR Label Assigner | powershell | sonnet | 8.7min | 29 | 799 | 1 | $1.09 | powershell | ok |
+| PR Label Assigner | bash | sonnet | 13.2min | 39 | 923 | 6 | $1.73 | bash | ok |
+| PR Label Assigner | typescript-bun | sonnet | 8.1min | 43 | 1699 | 1 | $0.89 | typescript | ok |
+| Dependency License Checker | default | opus | 5.9min | 39 | 1054 | 0 | $1.24 | python | ok |
+| Dependency License Checker | powershell | opus | 6.0min | 38 | 1100 | 3 | $1.24 | powershell | ok |
+| Dependency License Checker | bash | opus | 6.9min | 55 | 839 | 3 | $1.50 | bash | ok |
 
 
 <details>
-<summary>Sorted by cost (cheapest first)</summary>
+<summary>Sorted by cost (most expensive first)</summary>
 
-| Task | Mode | Model | Duration | Turns | Errors | Cost | Language | Status |
-|------|------|-------|----------|-------|--------|------|----------|--------|
-| PR Label Assigner | typescript-bun | sonnet | 8.1min | 43 | 1 | $0.89 | typescript | ok |
-| Semantic Version Bumper | powershell | sonnet | 11.4min | 43 | 3 | $0.92 | powershell | ok |
-| Semantic Version Bumper | typescript-bun | sonnet | 8.1min | 30 | 1 | $0.97 | typescript | ok |
-| Semantic Version Bumper | default | sonnet | 7.3min | 46 | 1 | $0.99 | python | ok |
-| PR Label Assigner | typescript-bun | opus | 5.1min | 33 | 2 | $1.01 | typescript | ok |
-| Semantic Version Bumper | powershell | opus | 6.9min | 27 | 0 | $1.04 | powershell | ok |
-| PR Label Assigner | powershell | sonnet | 8.7min | 29 | 1 | $1.09 | powershell | ok |
-| PR Label Assigner | bash | opus | 5.6min | 42 | 2 | $1.16 | bash | ok |
-| Dependency License Checker | powershell | opus | 6.0min | 38 | 3 | $1.24 | powershell | ok |
-| Dependency License Checker | default | opus | 5.9min | 39 | 0 | $1.24 | python | ok |
-| Semantic Version Bumper | default | opus | 7.1min | 28 | 1 | $1.33 | python | ok |
-| Semantic Version Bumper | bash | sonnet | 9.0min | 57 | 6 | $1.38 | bash | ok |
-| Dependency License Checker | bash | opus | 6.9min | 55 | 3 | $1.50 | bash | ok |
-| PR Label Assigner | default | sonnet | 10.3min | 43 | 4 | $1.52 | python | ok |
-| Semantic Version Bumper | typescript-bun | opus | 10.3min | 32 | 1 | $1.54 | typescript | ok |
-| PR Label Assigner | default | opus | 7.7min | 29 | 2 | $1.57 | python | ok |
-| Semantic Version Bumper | bash | opus | 12.4min | 50 | 1 | $1.65 | bash | ok |
-| PR Label Assigner | bash | sonnet | 13.2min | 39 | 6 | $1.73 | bash | ok |
-| PR Label Assigner | powershell | opus | 11.4min | 35 | 2 | $1.93 | powershell | ok |
+| Task | Mode | Model | Duration | Turns | Lines | Errors | Cost | Language | Status |
+|------|------|-------|----------|-------|-------|--------|------|----------|--------|
+| PR Label Assigner | powershell | opus | 11.4min | 35 | 839 | 2 | $1.93 | powershell | ok |
+| PR Label Assigner | bash | sonnet | 13.2min | 39 | 923 | 6 | $1.73 | bash | ok |
+| Semantic Version Bumper | bash | opus | 12.4min | 50 | 1710 | 1 | $1.65 | bash | ok |
+| PR Label Assigner | default | opus | 7.7min | 29 | 923 | 2 | $1.57 | python | ok |
+| Semantic Version Bumper | typescript-bun | opus | 10.3min | 32 | 1071 | 1 | $1.54 | typescript | ok |
+| PR Label Assigner | default | sonnet | 10.3min | 43 | 836 | 4 | $1.52 | python | ok |
+| Dependency License Checker | bash | opus | 6.9min | 55 | 839 | 3 | $1.50 | bash | ok |
+| Semantic Version Bumper | bash | sonnet | 9.0min | 57 | 889 | 6 | $1.38 | bash | ok |
+| Semantic Version Bumper | default | opus | 7.1min | 28 | 878 | 1 | $1.33 | python | ok |
+| Dependency License Checker | default | opus | 5.9min | 39 | 1054 | 0 | $1.24 | python | ok |
+| Dependency License Checker | powershell | opus | 6.0min | 38 | 1100 | 3 | $1.24 | powershell | ok |
+| PR Label Assigner | bash | opus | 5.6min | 42 | 486 | 2 | $1.16 | bash | ok |
+| PR Label Assigner | powershell | sonnet | 8.7min | 29 | 799 | 1 | $1.09 | powershell | ok |
+| Semantic Version Bumper | powershell | opus | 6.9min | 27 | 618 | 0 | $1.04 | powershell | ok |
+| PR Label Assigner | typescript-bun | opus | 5.1min | 33 | 1073 | 2 | $1.01 | typescript | ok |
+| Semantic Version Bumper | default | sonnet | 7.3min | 46 | 1311 | 1 | $0.99 | python | ok |
+| Semantic Version Bumper | typescript-bun | sonnet | 8.1min | 30 | 1034 | 1 | $0.97 | typescript | ok |
+| Semantic Version Bumper | powershell | sonnet | 11.4min | 43 | 1255 | 3 | $0.92 | powershell | ok |
+| PR Label Assigner | typescript-bun | sonnet | 8.1min | 43 | 1699 | 1 | $0.89 | typescript | ok |
 
 </details>
 
 <details>
-<summary>Sorted by duration (fastest first)</summary>
+<summary>Sorted by duration (longest first)</summary>
 
-| Task | Mode | Model | Duration | Turns | Errors | Cost | Language | Status |
-|------|------|-------|----------|-------|--------|------|----------|--------|
-| PR Label Assigner | typescript-bun | opus | 5.1min | 33 | 2 | $1.01 | typescript | ok |
-| PR Label Assigner | bash | opus | 5.6min | 42 | 2 | $1.16 | bash | ok |
-| Dependency License Checker | default | opus | 5.9min | 39 | 0 | $1.24 | python | ok |
-| Dependency License Checker | powershell | opus | 6.0min | 38 | 3 | $1.24 | powershell | ok |
-| Dependency License Checker | bash | opus | 6.9min | 55 | 3 | $1.50 | bash | ok |
-| Semantic Version Bumper | powershell | opus | 6.9min | 27 | 0 | $1.04 | powershell | ok |
-| Semantic Version Bumper | default | opus | 7.1min | 28 | 1 | $1.33 | python | ok |
-| Semantic Version Bumper | default | sonnet | 7.3min | 46 | 1 | $0.99 | python | ok |
-| PR Label Assigner | default | opus | 7.7min | 29 | 2 | $1.57 | python | ok |
-| Semantic Version Bumper | typescript-bun | sonnet | 8.1min | 30 | 1 | $0.97 | typescript | ok |
-| PR Label Assigner | typescript-bun | sonnet | 8.1min | 43 | 1 | $0.89 | typescript | ok |
-| PR Label Assigner | powershell | sonnet | 8.7min | 29 | 1 | $1.09 | powershell | ok |
-| Semantic Version Bumper | bash | sonnet | 9.0min | 57 | 6 | $1.38 | bash | ok |
-| Semantic Version Bumper | typescript-bun | opus | 10.3min | 32 | 1 | $1.54 | typescript | ok |
-| PR Label Assigner | default | sonnet | 10.3min | 43 | 4 | $1.52 | python | ok |
-| PR Label Assigner | powershell | opus | 11.4min | 35 | 2 | $1.93 | powershell | ok |
-| Semantic Version Bumper | powershell | sonnet | 11.4min | 43 | 3 | $0.92 | powershell | ok |
-| Semantic Version Bumper | bash | opus | 12.4min | 50 | 1 | $1.65 | bash | ok |
-| PR Label Assigner | bash | sonnet | 13.2min | 39 | 6 | $1.73 | bash | ok |
+| Task | Mode | Model | Duration | Turns | Lines | Errors | Cost | Language | Status |
+|------|------|-------|----------|-------|-------|--------|------|----------|--------|
+| PR Label Assigner | bash | sonnet | 13.2min | 39 | 923 | 6 | $1.73 | bash | ok |
+| Semantic Version Bumper | bash | opus | 12.4min | 50 | 1710 | 1 | $1.65 | bash | ok |
+| Semantic Version Bumper | powershell | sonnet | 11.4min | 43 | 1255 | 3 | $0.92 | powershell | ok |
+| PR Label Assigner | powershell | opus | 11.4min | 35 | 839 | 2 | $1.93 | powershell | ok |
+| PR Label Assigner | default | sonnet | 10.3min | 43 | 836 | 4 | $1.52 | python | ok |
+| Semantic Version Bumper | typescript-bun | opus | 10.3min | 32 | 1071 | 1 | $1.54 | typescript | ok |
+| Semantic Version Bumper | bash | sonnet | 9.0min | 57 | 889 | 6 | $1.38 | bash | ok |
+| PR Label Assigner | powershell | sonnet | 8.7min | 29 | 799 | 1 | $1.09 | powershell | ok |
+| PR Label Assigner | typescript-bun | sonnet | 8.1min | 43 | 1699 | 1 | $0.89 | typescript | ok |
+| Semantic Version Bumper | typescript-bun | sonnet | 8.1min | 30 | 1034 | 1 | $0.97 | typescript | ok |
+| PR Label Assigner | default | opus | 7.7min | 29 | 923 | 2 | $1.57 | python | ok |
+| Semantic Version Bumper | default | sonnet | 7.3min | 46 | 1311 | 1 | $0.99 | python | ok |
+| Semantic Version Bumper | default | opus | 7.1min | 28 | 878 | 1 | $1.33 | python | ok |
+| Semantic Version Bumper | powershell | opus | 6.9min | 27 | 618 | 0 | $1.04 | powershell | ok |
+| Dependency License Checker | bash | opus | 6.9min | 55 | 839 | 3 | $1.50 | bash | ok |
+| Dependency License Checker | powershell | opus | 6.0min | 38 | 1100 | 3 | $1.24 | powershell | ok |
+| Dependency License Checker | default | opus | 5.9min | 39 | 1054 | 0 | $1.24 | python | ok |
+| PR Label Assigner | bash | opus | 5.6min | 42 | 486 | 2 | $1.16 | bash | ok |
+| PR Label Assigner | typescript-bun | opus | 5.1min | 33 | 1073 | 2 | $1.01 | typescript | ok |
 
 </details>
 
 <details>
 <summary>Sorted by errors (fewest first)</summary>
 
-| Task | Mode | Model | Duration | Turns | Errors | Cost | Language | Status |
-|------|------|-------|----------|-------|--------|------|----------|--------|
-| Semantic Version Bumper | powershell | opus | 6.9min | 27 | 0 | $1.04 | powershell | ok |
-| Dependency License Checker | default | opus | 5.9min | 39 | 0 | $1.24 | python | ok |
-| Semantic Version Bumper | bash | opus | 12.4min | 50 | 1 | $1.65 | bash | ok |
-| Semantic Version Bumper | default | opus | 7.1min | 28 | 1 | $1.33 | python | ok |
-| Semantic Version Bumper | default | sonnet | 7.3min | 46 | 1 | $0.99 | python | ok |
-| Semantic Version Bumper | typescript-bun | opus | 10.3min | 32 | 1 | $1.54 | typescript | ok |
-| Semantic Version Bumper | typescript-bun | sonnet | 8.1min | 30 | 1 | $0.97 | typescript | ok |
-| PR Label Assigner | powershell | sonnet | 8.7min | 29 | 1 | $1.09 | powershell | ok |
-| PR Label Assigner | typescript-bun | sonnet | 8.1min | 43 | 1 | $0.89 | typescript | ok |
-| PR Label Assigner | bash | opus | 5.6min | 42 | 2 | $1.16 | bash | ok |
-| PR Label Assigner | default | opus | 7.7min | 29 | 2 | $1.57 | python | ok |
-| PR Label Assigner | powershell | opus | 11.4min | 35 | 2 | $1.93 | powershell | ok |
-| PR Label Assigner | typescript-bun | opus | 5.1min | 33 | 2 | $1.01 | typescript | ok |
-| Semantic Version Bumper | powershell | sonnet | 11.4min | 43 | 3 | $0.92 | powershell | ok |
-| Dependency License Checker | bash | opus | 6.9min | 55 | 3 | $1.50 | bash | ok |
-| Dependency License Checker | powershell | opus | 6.0min | 38 | 3 | $1.24 | powershell | ok |
-| PR Label Assigner | default | sonnet | 10.3min | 43 | 4 | $1.52 | python | ok |
-| Semantic Version Bumper | bash | sonnet | 9.0min | 57 | 6 | $1.38 | bash | ok |
-| PR Label Assigner | bash | sonnet | 13.2min | 39 | 6 | $1.73 | bash | ok |
+| Task | Mode | Model | Duration | Turns | Lines | Errors | Cost | Language | Status |
+|------|------|-------|----------|-------|-------|--------|------|----------|--------|
+| Semantic Version Bumper | powershell | opus | 6.9min | 27 | 618 | 0 | $1.04 | powershell | ok |
+| Dependency License Checker | default | opus | 5.9min | 39 | 1054 | 0 | $1.24 | python | ok |
+| Semantic Version Bumper | default | opus | 7.1min | 28 | 878 | 1 | $1.33 | python | ok |
+| Semantic Version Bumper | bash | opus | 12.4min | 50 | 1710 | 1 | $1.65 | bash | ok |
+| Semantic Version Bumper | typescript-bun | opus | 10.3min | 32 | 1071 | 1 | $1.54 | typescript | ok |
+| Semantic Version Bumper | default | sonnet | 7.3min | 46 | 1311 | 1 | $0.99 | python | ok |
+| Semantic Version Bumper | typescript-bun | sonnet | 8.1min | 30 | 1034 | 1 | $0.97 | typescript | ok |
+| PR Label Assigner | powershell | sonnet | 8.7min | 29 | 799 | 1 | $1.09 | powershell | ok |
+| PR Label Assigner | typescript-bun | sonnet | 8.1min | 43 | 1699 | 1 | $0.89 | typescript | ok |
+| PR Label Assigner | default | opus | 7.7min | 29 | 923 | 2 | $1.57 | python | ok |
+| PR Label Assigner | powershell | opus | 11.4min | 35 | 839 | 2 | $1.93 | powershell | ok |
+| PR Label Assigner | bash | opus | 5.6min | 42 | 486 | 2 | $1.16 | bash | ok |
+| PR Label Assigner | typescript-bun | opus | 5.1min | 33 | 1073 | 2 | $1.01 | typescript | ok |
+| Semantic Version Bumper | powershell | sonnet | 11.4min | 43 | 1255 | 3 | $0.92 | powershell | ok |
+| Dependency License Checker | powershell | opus | 6.0min | 38 | 1100 | 3 | $1.24 | powershell | ok |
+| Dependency License Checker | bash | opus | 6.9min | 55 | 839 | 3 | $1.50 | bash | ok |
+| PR Label Assigner | default | sonnet | 10.3min | 43 | 836 | 4 | $1.52 | python | ok |
+| Semantic Version Bumper | bash | sonnet | 9.0min | 57 | 889 | 6 | $1.38 | bash | ok |
+| PR Label Assigner | bash | sonnet | 13.2min | 39 | 923 | 6 | $1.73 | bash | ok |
+
+</details>
+
+<details>
+<summary>Sorted by lines (fewest first)</summary>
+
+| Task | Mode | Model | Duration | Turns | Lines | Errors | Cost | Language | Status |
+|------|------|-------|----------|-------|-------|--------|------|----------|--------|
+| PR Label Assigner | bash | opus | 5.6min | 42 | 486 | 2 | $1.16 | bash | ok |
+| Semantic Version Bumper | powershell | opus | 6.9min | 27 | 618 | 0 | $1.04 | powershell | ok |
+| PR Label Assigner | powershell | sonnet | 8.7min | 29 | 799 | 1 | $1.09 | powershell | ok |
+| PR Label Assigner | default | sonnet | 10.3min | 43 | 836 | 4 | $1.52 | python | ok |
+| PR Label Assigner | powershell | opus | 11.4min | 35 | 839 | 2 | $1.93 | powershell | ok |
+| Dependency License Checker | bash | opus | 6.9min | 55 | 839 | 3 | $1.50 | bash | ok |
+| Semantic Version Bumper | default | opus | 7.1min | 28 | 878 | 1 | $1.33 | python | ok |
+| Semantic Version Bumper | bash | sonnet | 9.0min | 57 | 889 | 6 | $1.38 | bash | ok |
+| PR Label Assigner | default | opus | 7.7min | 29 | 923 | 2 | $1.57 | python | ok |
+| PR Label Assigner | bash | sonnet | 13.2min | 39 | 923 | 6 | $1.73 | bash | ok |
+| Semantic Version Bumper | typescript-bun | sonnet | 8.1min | 30 | 1034 | 1 | $0.97 | typescript | ok |
+| Dependency License Checker | default | opus | 5.9min | 39 | 1054 | 0 | $1.24 | python | ok |
+| Semantic Version Bumper | typescript-bun | opus | 10.3min | 32 | 1071 | 1 | $1.54 | typescript | ok |
+| PR Label Assigner | typescript-bun | opus | 5.1min | 33 | 1073 | 2 | $1.01 | typescript | ok |
+| Dependency License Checker | powershell | opus | 6.0min | 38 | 1100 | 3 | $1.24 | powershell | ok |
+| Semantic Version Bumper | powershell | sonnet | 11.4min | 43 | 1255 | 3 | $0.92 | powershell | ok |
+| Semantic Version Bumper | default | sonnet | 7.3min | 46 | 1311 | 1 | $0.99 | python | ok |
+| PR Label Assigner | typescript-bun | sonnet | 8.1min | 43 | 1699 | 1 | $0.89 | typescript | ok |
+| Semantic Version Bumper | bash | opus | 12.4min | 50 | 1710 | 1 | $1.65 | bash | ok |
 
 </details>
 
 <details>
 <summary>Sorted by turns (fewest first)</summary>
 
-| Task | Mode | Model | Duration | Turns | Errors | Cost | Language | Status |
-|------|------|-------|----------|-------|--------|------|----------|--------|
-| Semantic Version Bumper | powershell | opus | 6.9min | 27 | 0 | $1.04 | powershell | ok |
-| Semantic Version Bumper | default | opus | 7.1min | 28 | 1 | $1.33 | python | ok |
-| PR Label Assigner | default | opus | 7.7min | 29 | 2 | $1.57 | python | ok |
-| PR Label Assigner | powershell | sonnet | 8.7min | 29 | 1 | $1.09 | powershell | ok |
-| Semantic Version Bumper | typescript-bun | sonnet | 8.1min | 30 | 1 | $0.97 | typescript | ok |
-| Semantic Version Bumper | typescript-bun | opus | 10.3min | 32 | 1 | $1.54 | typescript | ok |
-| PR Label Assigner | typescript-bun | opus | 5.1min | 33 | 2 | $1.01 | typescript | ok |
-| PR Label Assigner | powershell | opus | 11.4min | 35 | 2 | $1.93 | powershell | ok |
-| Dependency License Checker | powershell | opus | 6.0min | 38 | 3 | $1.24 | powershell | ok |
-| PR Label Assigner | bash | sonnet | 13.2min | 39 | 6 | $1.73 | bash | ok |
-| Dependency License Checker | default | opus | 5.9min | 39 | 0 | $1.24 | python | ok |
-| PR Label Assigner | bash | opus | 5.6min | 42 | 2 | $1.16 | bash | ok |
-| Semantic Version Bumper | powershell | sonnet | 11.4min | 43 | 3 | $0.92 | powershell | ok |
-| PR Label Assigner | default | sonnet | 10.3min | 43 | 4 | $1.52 | python | ok |
-| PR Label Assigner | typescript-bun | sonnet | 8.1min | 43 | 1 | $0.89 | typescript | ok |
-| Semantic Version Bumper | default | sonnet | 7.3min | 46 | 1 | $0.99 | python | ok |
-| Semantic Version Bumper | bash | opus | 12.4min | 50 | 1 | $1.65 | bash | ok |
-| Dependency License Checker | bash | opus | 6.9min | 55 | 3 | $1.50 | bash | ok |
-| Semantic Version Bumper | bash | sonnet | 9.0min | 57 | 6 | $1.38 | bash | ok |
+| Task | Mode | Model | Duration | Turns | Lines | Errors | Cost | Language | Status |
+|------|------|-------|----------|-------|-------|--------|------|----------|--------|
+| Semantic Version Bumper | powershell | opus | 6.9min | 27 | 618 | 0 | $1.04 | powershell | ok |
+| Semantic Version Bumper | default | opus | 7.1min | 28 | 878 | 1 | $1.33 | python | ok |
+| PR Label Assigner | default | opus | 7.7min | 29 | 923 | 2 | $1.57 | python | ok |
+| PR Label Assigner | powershell | sonnet | 8.7min | 29 | 799 | 1 | $1.09 | powershell | ok |
+| Semantic Version Bumper | typescript-bun | sonnet | 8.1min | 30 | 1034 | 1 | $0.97 | typescript | ok |
+| Semantic Version Bumper | typescript-bun | opus | 10.3min | 32 | 1071 | 1 | $1.54 | typescript | ok |
+| PR Label Assigner | typescript-bun | opus | 5.1min | 33 | 1073 | 2 | $1.01 | typescript | ok |
+| PR Label Assigner | powershell | opus | 11.4min | 35 | 839 | 2 | $1.93 | powershell | ok |
+| Dependency License Checker | powershell | opus | 6.0min | 38 | 1100 | 3 | $1.24 | powershell | ok |
+| PR Label Assigner | bash | sonnet | 13.2min | 39 | 923 | 6 | $1.73 | bash | ok |
+| Dependency License Checker | default | opus | 5.9min | 39 | 1054 | 0 | $1.24 | python | ok |
+| PR Label Assigner | bash | opus | 5.6min | 42 | 486 | 2 | $1.16 | bash | ok |
+| Semantic Version Bumper | powershell | sonnet | 11.4min | 43 | 1255 | 3 | $0.92 | powershell | ok |
+| PR Label Assigner | default | sonnet | 10.3min | 43 | 836 | 4 | $1.52 | python | ok |
+| PR Label Assigner | typescript-bun | sonnet | 8.1min | 43 | 1699 | 1 | $0.89 | typescript | ok |
+| Semantic Version Bumper | default | sonnet | 7.3min | 46 | 1311 | 1 | $0.99 | python | ok |
+| Semantic Version Bumper | bash | opus | 12.4min | 50 | 1710 | 1 | $1.65 | bash | ok |
+| Dependency License Checker | bash | opus | 6.9min | 55 | 839 | 3 | $1.50 | bash | ok |
+| Semantic Version Bumper | bash | sonnet | 9.0min | 57 | 889 | 6 | $1.38 | bash | ok |
 
 </details>
 
