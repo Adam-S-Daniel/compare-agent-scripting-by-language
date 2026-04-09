@@ -1,0 +1,140 @@
+=== WORKFLOW STRUCTURE TESTS ===
+PASS: Workflow file exists
+PASS: actionlint passes with no errors
+PASS: Workflow has push, pull_request, and workflow_dispatch triggers
+PASS: Workflow has jobs section
+PASS: Workflow references label-assigner.ts and file exists
+PASS: Workflow references label-config.json and file exists
+PASS: Workflow uses actions/checkout@v4
+PASS: Workflow uses oven-sh/setup-bun
+PASS: Workflow runs bun test
+
+=== ACT INTEGRATION TESTS ===
+
+=== Running act push... ===
+time="2026-04-09T17:06:36-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[PR Label Assigner/assign-labels] ⭐ Run Set up job
+[PR Label Assigner/assign-labels] 🚀  Start image=act-ubuntu-pwsh:latest
+[PR Label Assigner/assign-labels]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[PR Label Assigner/assign-labels]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[PR Label Assigner/assign-labels]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[PR Label Assigner/assign-labels]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[PR Label Assigner/assign-labels]   ✅  Success - Set up job
+[PR Label Assigner/assign-labels]   ☁  git clone 'https://github.com/oven-sh/setup-bun' # ref=v2
+[PR Label Assigner/assign-labels] ⭐ Run Main Checkout repository
+[PR Label Assigner/assign-labels]   🐳  docker cp src=/tmp/tmp.xK8i7uwWrP/. dst=/tmp/tmp.xK8i7uwWrP
+[PR Label Assigner/assign-labels]   ✅  Success - Main Checkout repository [127.293654ms]
+[PR Label Assigner/assign-labels] ⭐ Run Main Install Bun
+[PR Label Assigner/assign-labels]   🐳  docker cp src=/home/passp/.cache/act/oven-sh-setup-bun@v2/ dst=/var/run/act/actions/oven-sh-setup-bun@v2/
+[PR Label Assigner/assign-labels]   🐳  docker exec cmd=[/opt/acttoolcache/node/24.14.1/x64/bin/node /var/run/act/actions/oven-sh-setup-bun@v2/dist/setup/index.js] user= workdir=
+[PR Label Assigner/assign-labels]   | Downloading a new version of Bun: https://github.com/oven-sh/bun/releases/download/bun-v1.3.11/bun-linux-x64.zip
+[PR Label Assigner/assign-labels]   | [command]/usr/bin/unzip -o -q /tmp/b10f3e82-8d00-4e18-9c02-1d47335ab904.zip
+[PR Label Assigner/assign-labels]   | [command]/root/.bun/bin/bun --revision
+[PR Label Assigner/assign-labels]   | 1.3.11+af24e281e
+[PR Label Assigner/assign-labels]   ✅  Success - Main Install Bun [10.860394759s]
+[PR Label Assigner/assign-labels]   ⚙  ::set-output:: bun-revision=1.3.11+af24e281e
+[PR Label Assigner/assign-labels]   ⚙  ::set-output:: bun-path=/root/.bun/bin/bun
+[PR Label Assigner/assign-labels]   ⚙  ::set-output:: bun-download-url=https://github.com/oven-sh/bun/releases/download/bun-v1.3.11/bun-linux-x64.zip
+[PR Label Assigner/assign-labels]   ⚙  ::set-output:: cache-hit=false
+[PR Label Assigner/assign-labels]   ⚙  ::set-output:: bun-version=1.3.11
+[PR Label Assigner/assign-labels]   ⚙  ::add-path:: /root/.bun/bin
+[PR Label Assigner/assign-labels] ⭐ Run Main Install dependencies
+[PR Label Assigner/assign-labels]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[PR Label Assigner/assign-labels]   | bun install v1.3.11 (af24e281)
+[PR Label Assigner/assign-labels]   | 
+[PR Label Assigner/assign-labels]   | + @types/bun@1.3.11
+[PR Label Assigner/assign-labels]   | + typescript@5.9.3
+[PR Label Assigner/assign-labels]   | 
+[PR Label Assigner/assign-labels]   | 5 packages installed [1.60s]
+[PR Label Assigner/assign-labels]   ✅  Success - Main Install dependencies [2.151097509s]
+[PR Label Assigner/assign-labels] ⭐ Run Main Run unit tests
+[PR Label Assigner/assign-labels]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/3] user= workdir=
+[PR Label Assigner/assign-labels]   | bun test v1.3.11 (af24e281)
+[PR Label Assigner/assign-labels]   | 
+[PR Label Assigner/assign-labels]   ❓  ::group::label-assigner.test.ts:
+[PR Label Assigner/assign-labels]   | (pass) globToRegex > converts simple wildcard * to match non-slash chars [0.92ms]
+[PR Label Assigner/assign-labels]   | (pass) globToRegex > converts ** to match across directories [1.16ms]
+[PR Label Assigner/assign-labels]   | (pass) globToRegex > converts **/ prefix to match zero or more directories [0.63ms]
+[PR Label Assigner/assign-labels]   | (pass) globToRegex > handles *.test.* pattern [0.19ms]
+[PR Label Assigner/assign-labels]   | (pass) globToRegex > handles ? single character wildcard [0.18ms]
+[PR Label Assigner/assign-labels]   | (pass) matchesGlob > returns true for matching paths [0.22ms]
+[PR Label Assigner/assign-labels]   | (pass) matchesGlob > returns false for non-matching paths [0.13ms]
+[PR Label Assigner/assign-labels]   | (pass) assignLabels - basic > assigns correct label for a single docs file [1.50ms]
+[PR Label Assigner/assign-labels]   | (pass) assignLabels - basic > assigns correct label for an api file [0.24ms]
+[PR Label Assigner/assign-labels]   | (pass) assignLabels - basic > returns empty results for empty file list [0.11ms]
+[PR Label Assigner/assign-labels]   | (pass) assignLabels - multiple labels per file > a test file in api dir gets both tests and api labels [0.27ms]
+[PR Label Assigner/assign-labels]   | (pass) assignLabels - multiple labels per file > multiple files accumulate distinct labels [1.03ms]
+[PR Label Assigner/assign-labels]   | (pass) assignLabels - priority ordering > final labels are sorted by priority (lowest number first) [0.23ms]
+[PR Label Assigner/assign-labels]   | (pass) assignLabels - priority ordering > maxLabels limits output to highest priority labels [0.35ms]
+[PR Label Assigner/assign-labels]   | (pass) assignLabels - error handling > throws on missing rules [0.60ms]
+[PR Label Assigner/assign-labels]   | (pass) assignLabels - error handling > throws on empty pattern [0.49ms]
+[PR Label Assigner/assign-labels]   | (pass) assignLabels - error handling > throws on empty label [0.14ms]
+[PR Label Assigner/assign-labels]   | (pass) assignLabels - error handling > throws on negative priority [0.46ms]
+[PR Label Assigner/assign-labels]   | (pass) assignLabels - realistic PR scenario > assigns all expected labels for a realistic PR [1.58ms]
+[PR Label Assigner/assign-labels]   | (pass) assignLabels - realistic PR scenario > per-file results are correct [1.42ms]
+[PR Label Assigner/assign-labels]   | (pass) assignLabels - realistic PR scenario > labels are ordered by priority [2.58ms]
+[PR Label Assigner/assign-labels]   | 
+[PR Label Assigner/assign-labels]   ❓  ::endgroup::
+[PR Label Assigner/assign-labels]   | 
+[PR Label Assigner/assign-labels]   |  21 pass
+[PR Label Assigner/assign-labels]   |  0 fail
+[PR Label Assigner/assign-labels]   |  51 expect() calls
+[PR Label Assigner/assign-labels]   | Ran 21 tests across 1 file. [62.00ms]
+[PR Label Assigner/assign-labels]   ✅  Success - Main Run unit tests [759.770896ms]
+[PR Label Assigner/assign-labels] ⭐ Run Main Run label assigner - test case 1 basic
+[PR Label Assigner/assign-labels]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/4] user= workdir=
+[PR Label Assigner/assign-labels]   | === PR Label Assignment Results ===
+[PR Label Assigner/assign-labels]   | 
+[PR Label Assigner/assign-labels]   |   docs/readme.md -> [documentation]
+[PR Label Assigner/assign-labels]   |   src/api/users.ts -> [api, core]
+[PR Label Assigner/assign-labels]   |   src/utils/format.ts -> [core]
+[PR Label Assigner/assign-labels]   | 
+[PR Label Assigner/assign-labels]   | FINAL_LABELS: documentation,api,core
+[PR Label Assigner/assign-labels]   ✅  Success - Main Run label assigner - test case 1 basic [632.603167ms]
+[PR Label Assigner/assign-labels] ⭐ Run Main Run label assigner - test case 2 tests and deps
+[PR Label Assigner/assign-labels]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/5] user= workdir=
+[PR Label Assigner/assign-labels]   | === PR Label Assignment Results ===
+[PR Label Assigner/assign-labels]   | 
+[PR Label Assigner/assign-labels]   |   src/api/users.test.ts -> [api, tests, core]
+[PR Label Assigner/assign-labels]   |   package.json -> [dependencies]
+[PR Label Assigner/assign-labels]   |   README.md -> [documentation]
+[PR Label Assigner/assign-labels]   | 
+[PR Label Assigner/assign-labels]   | FINAL_LABELS: api,tests,core,documentation,dependencies
+[PR Label Assigner/assign-labels]   ✅  Success - Main Run label assigner - test case 2 tests and deps [648.420177ms]
+[PR Label Assigner/assign-labels] ⭐ Run Main Run label assigner - test case 3 ci files
+[PR Label Assigner/assign-labels]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/6] user= workdir=
+[PR Label Assigner/assign-labels]   | === PR Label Assignment Results ===
+[PR Label Assigner/assign-labels]   | 
+[PR Label Assigner/assign-labels]   |   .github/workflows/ci.yml -> [ci]
+[PR Label Assigner/assign-labels]   |   src/index.ts -> [core]
+[PR Label Assigner/assign-labels]   | 
+[PR Label Assigner/assign-labels]   | FINAL_LABELS: core,ci
+[PR Label Assigner/assign-labels]   ✅  Success - Main Run label assigner - test case 3 ci files [643.670017ms]
+[PR Label Assigner/assign-labels] ⭐ Run Post Install Bun
+[PR Label Assigner/assign-labels]   🐳  docker exec cmd=[/opt/acttoolcache/node/24.14.1/x64/bin/node /var/run/act/actions/oven-sh-setup-bun@v2/dist/cache-save/index.js] user= workdir=
+[PR Label Assigner/assign-labels]   ✅  Success - Post Install Bun [1.203010623s]
+[PR Label Assigner/assign-labels] ⭐ Run Complete job
+[PR Label Assigner/assign-labels] Cleaning up container for job assign-labels
+[PR Label Assigner/assign-labels]   ✅  Success - Complete job
+[PR Label Assigner/assign-labels] 🏁  Job succeeded
+
+=== ACT OUTPUT ASSERTIONS ===
+PASS: act exited with code 0
+PASS: Job succeeded message found
+PASS: All 21 unit tests passed in act
+PASS: Test case 1: docs/readme.md correctly labeled documentation
+PASS: Test case 1: src/api/users.ts correctly labeled api, core
+PASS: Test case 1: src/utils/format.ts correctly labeled core
+PASS: Test case 1: FINAL_LABELS exactly documentation,api,core
+PASS: Test case 2: src/api/users.test.ts correctly labeled api, tests, core
+PASS: Test case 2: package.json correctly labeled dependencies
+PASS: Test case 2: README.md correctly labeled documentation
+PASS: Test case 2: FINAL_LABELS exactly api,tests,core,documentation,dependencies
+PASS: Test case 3: .github/workflows/ci.yml correctly labeled ci
+PASS: Test case 3: src/index.ts correctly labeled core
+PASS: Test case 3: FINAL_LABELS exactly core,ci
+
+=== TEST SUMMARY ===
+Passed: 23
+Failed: 0
+ALL TESTS PASSED
