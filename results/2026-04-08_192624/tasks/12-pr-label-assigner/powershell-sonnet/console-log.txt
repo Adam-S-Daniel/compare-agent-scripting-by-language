@@ -1,0 +1,675 @@
+[Tool: Bash] ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/benchmark-instructions-v3.md"}
+[Result] total 36
+drwxr-xr-x 4 passp passp  4096 Apr  8 21:47 .
+drwxr-xr-x 8 passp passp  4096 Apr  8 21:47 ..
+drwxr-xr-x 2 passp passp  4096 Apr  8 21:47 .claude
+drwxr-xr-x 7 passp passp  4096 Apr  8 21:47 .git
+-rw-r--r-- 1 passp passp 18474 Apr  8 17:43 benchmark-instructions-v3.md
+[Result] 1	# Benchmark Instructions v3 — GitHub Actions
+2	
+3	**Version**: v3
+4	**Date**: 2026-04-08
+5	**Purpose**: Measure how well Claude Code agents perform GitHub Actions workflow authoring tasks across different language constraints.
+6	
+7	**Changes from v2**:
+8	- Focus narrowed to tasks 11-18 (GitHub Actions / CI/CD category only)
+9	- Each task now requires a valid `.github/workflows/*.yml` workflow file alongside the script and tests
+10	- Modes changed: removed `csharp-script` and `powershell-strict`, added `bash` and `typescript-bun`
+11	- Syntax/lint hooks enabled on all runs via PostToolUse hooks (Python, Bash, TypeScript, PowerShell, actionlint for YAML)
+12	- Post-run `actionlint` validation on all workflow files
+13	- Pre-installed tools: actionlint, shellcheck, bats-core, Bun
+14	
+15	## Methodology
+16	
+17	### Overview
+18	
+19	Each task is executed by a Claude Code agent under 4 different language constraints ("modes") and with 2 different models, yielding **8 runs per task**. Agents rece
+[Tool: Bash] which pwsh && pwsh -Command "Get-Module Pester -ListAvailable | Select-Object Name,Version | Format-Table" 2>&1
+[Tool: Bash] which act && act --version 2>&1; which docker && docker --version 2>&1; which actionlint && actionlint --version 2>&1
+[Result] /snap/bin/pwsh
+
+[32;1mName  [0m[32;1m Version[0m
+[32;1m----  [0m [32;1m-------[0m
+Pester 5.7.1
+[Result] /home/passp/.local/bin/act
+act version 0.2.87
+/usr/bin/docker
+Docker version 29.3.1, build c2be9cc
+/home/passp/.local/bin/actionlint
+1.7.12
+installed by downloading from release page
+built with go1.26.1 compiler for linux/amd64
+[Tool: Bash] cat ~/.actrc 2>/dev/null || echo "No .actrc found"; ls ~/.act 2>/dev/null || echo "No ~/.act directory"
+[Result] No .actrc found
+No ~/.act directory
+[Tool: Bash] docker images 2>/dev/null | head -20
+[Result] IMAGE                            ID             DISK USAGE   CONTENT SIZE   EXTRA
+catthehacker/ubuntu:act-latest   68a2a9700126       2.26GB          559MB        
+hello-world:latest               452a468a4bf9       25.9kB         9.49kB
+[Assistant] Now let me set up the project structure using TDD. First, I'll write a failing test, then implement the solution.
+[Tool: Bash] mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/.github/workflows
+mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/fixtures
+[Result] (Bash completed with no output)
+[Assistant] **Step 1: Write the first failing test (TDD - Red)**
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/Invoke-PrLabelAssigner.Tests.ps1", "content": "# PR Label Assig
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/Invoke-PrLabelAssigner.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Now verify tests fail (RED phase):
+[Tool: Bash] pwsh -Command "Invoke-Pester ./Invoke-PrLabelAssigner.Tests.ps1 -Output Normal 2>&1 | Select-Object -First 30"
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 70 tests in 413ms.[0m
+[95mRunning tests.[0m
+[91m[-] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/Invoke-PrLabelAssigner.Tests.ps1 failed with:[0m
+[91mCommandNotFoundException: The term '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/Invoke-PrLabelAssigner.ps1' is not recognized as a name of a cmdlet, function, script file, or executable program.
+[91mCheck the spelling of the name, or if a path was included, verify that the path is correct and try again.
+[91mat <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/Invoke-PrLabelAssigner.Tests.ps1:17[0m
+[97mTests completed in 851ms[0m
+[97mTests Passed: 0, [0m[91mFailed: 70, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[3
+[Assistant] Tests fail as expected. Now implement the solution (GREEN phase):
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/Invoke-PrLabelAssigner.ps1", "content": "# PR Label Assigner\n#
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/Invoke-PrLabelAssigner.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Now run unit tests to see where we stand:
+[Tool: Bash] pwsh -Command "Invoke-Pester ./Invoke-PrLabelAssigner.Tests.ps1 -Output Normal 2>&1 | tail -80"
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 70 tests in 381ms.[0m
+[95mRunning tests.[0m
+[91m[-] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/Invoke-PrLabelAssigner.Tests.ps1 failed with:[0m
+[91mParseException: At /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/Invoke-PrLabelAssigner.ps1:159 char:31
+[91m+ …    [string]$RulesFile = (Join-Path $PSScriptRoot "label-rules.json"),
+[91m+                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[91mThe assignment expression is not valid. The input to an assignment operator must be an object that is able to accept assignments, such as a variable or a property.
+[91mat <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/Invoke-PrLabelAssigner.Tests.ps1:17[0m
+[97mTests
+[Assistant] Fix the `param` block placement (can't be inside `if`):
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/Invoke-PrLabelAssigner.ps1", "old_string"
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/Invoke-PrLabelAssigner.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester ./Invoke-PrLabelAssigner.Tests.ps1 -Output Normal -ExcludeTagFilter act 2>&1 | tail -60"
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 70 tests in 466ms.[0m
+[95mRunning tests.[0m
+[91m[-] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/Invoke-PrLabelAssigner.Tests.ps1 failed with:[0m
+[91mParseException: At /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/Invoke-PrLabelAssigner.ps1:154 char:31
+[91m+ … string]$RulesFile     = (Join-Path $PSScriptRoot "label-rules.json"),
+[91m+                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[91mThe assignment expression is not valid. The input to an assignment operator must be an object that is able to accept assignments, such as a variable or a property.
+[91mat <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/Invoke-PrLabelAssigner.Tests.ps1:17[0m
+[97mTests
+[Assistant] The `param` block must be the first statement in a script. Let me rewrite the file:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/Invoke-PrLabelAssigner.ps1", "content": "# PR Label Assigner\n#
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/Invoke-PrLabelAssigner.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester ./Invoke-PrLabelAssigner.Tests.ps1 -Output Normal 2>&1 | grep -E '(\[[-+]\]|Tests |FAILED|passed|failed|skipped)' | head -80"
+[Result ERROR] Exit code 1
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 70 tests in 412ms.[0m
+[95mRunning tests.[0m
+[91m[-] Get-PrLabels.returns results as an array (not null)[0m[90m 53ms (50ms|2ms)[0m
+[91m Expected $true, but got $false.
+[91m at $result.GetType().IsArray -or $result -is [System.Collections.Generic.List[object]] | Should -BeTrue, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/Invoke-PrLabelAssigner.Tests.ps1:192
+[91m at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/Invoke-PrLabelAssigner.Tests.ps1:192[0m
+[91m[-] GitHub Actions Workflow Structure.workflow file exists[0m[90m 8ms (7ms|1ms)[0m
+[91m Expected $true, but got $false.
+[91m at Test-Path $script:WorkflowPath | Should -BeTrue, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigne
+[Assistant] Good progress - 31 tests pass. I need to: (1) fix array return type, (2) create workflow file, (3) fix `Invoke-ActTestCase` scope in Pester. Let me address all of these.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/Invoke-PrLabelAssigner.ps1", "old_string"
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/Invoke-PrLabelAssigner.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Now create the supporting JSON files and workflow:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/label-rules.json", "content": "[\n  {\n    \"pattern\": \"docs/
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/label-rules.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/changed-files.json", "content": "[\n  \"docs/README.md\",\n  \"
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/changed-files.json (file state is current in your context — no need to Read it back)
+[Assistant] Now create the GitHub Actions workflow:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/.github/workflows/pr-label-assigner.yml", "content": "name: PR 
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/.github/workflows/pr-label-assigner.yml (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/.github/workflows/pr-label-assigner.yml 2>&1
+[Result] (Bash completed with no output)
+[Assistant] Now fix the tests file - move `Invoke-ActTestCase` into `BeforeAll`, use script-level test case data (available during Discovery), and cache act results to avoid running act multiple times:
+[Assistant] Actionlint passes. Now fix the test file - restructure act tests so `Invoke-ActTestCase` is in `BeforeAll` and results are cached:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/Invoke-PrLabelAssigner.Tests.ps1", "content": "# PR Label Assig
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/Invoke-PrLabelAssigner.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester ./Invoke-PrLabelAssigner.Tests.ps1 -Output Normal 2>&1 | grep -E '(\[[-+]\]|Tests |FAILED|Container failed)'" 2>&1 | head -60
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 70 tests in 459ms.[0m
+[95mRunning tests.[0m
+[91m[-] Act Execution Tests.act: docs-only - exits with code 0[0m[90m 95ms (87ms|7ms)[0m
+[91m Expected a value, because cached result for 'docs-only' should exist, but got $null or empty.
+[91m at $r | Should -Not -BeNullOrEmpty -Because "cached result for '$tcName' should exist", /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/Invoke-PrLabelAssigner.Tests.ps1:472
+[91m at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/Invoke-PrLabelAssigner.Tests.ps1:472[0m
+[91m[-] Act Execution Tests.act: docs-only - job succeeded[0m[90m 16ms (13ms|3ms)[0m
+[91m Expected regular expression 'Job succeeded' to match $null, because workflow job should succeed for 'docs-only', but it did not match.
+[91m at $r.Output | Sh
+[Assistant] The `script:` prefix is incorrect for function calls. Let me debug the scope issue and rewrite:
+[Tool: Bash] pwsh -Command @'
+# Test scope behavior
+$fileVar = @("a", "b")
+
+Describe "scope test" {
+    BeforeAll {
+        $script:cache = @{}
+        Write-Host "fileVar in BeforeAll: $fileVar"
+        foreach ($x in $fileVar) {
+            $script:cache[$x] = "value_$x"
+        }
+        Write-Host "cache keys: $($script:cache.Keys)"
+    }
+    
+    foreach ($x in $fileVar) {
+        It "cache has $x" -TestCases @{k=$x} {
+            param($k)
+            $script:cache[$k] | Should -Be "value_$k"
+        }
+    }
+}
+'@ | Invoke-Pester -Script {ScriptBlock = {}} 2>&1; echo "---"
+pwsh -Command 'Invoke-Pester -ScriptBlock { $fileVar = @("a","b"); Describe "scope test" { BeforeAll { $script:cache=@{}; foreach ($x in $fileVar) { $script:cache[$x]="val_$x" } }; foreach ($x in $fileVar) { It "x=$x" -TestCases @{k=$x} { param($k); $script:cache[$k] | Should -Be "val_$k" } } } } 2>&1 | tail -5'
+[Result ERROR] Exit code 1
+/bin/bash: line 44: Invoke-Pester: command not found
+[31;1mParserError: [0m
+[31;1m[36;1mLine |[0m
+[31;1m[36;1m[36;1m   1 | [0m [36;1m@[0m
+[31;1m[36;1m[36;1m[0m[36;1m[0m[36;1m     | [31;1m ~[0m
+[31;1m[36;1m[36;1m[0m[36;1m[0m[36;1m[31;1m[31;1m[36;1m     | [31;1mUnrecognized token in source text.[0m
+---
+[31;1mInvoke-Pester: [31;1mA parameter cannot be found that matches parameter name 'ScriptBlock'.[0m
+[Tool: Bash] cat > /tmp/scope_test.ps1 << 'EOF'
+$fileVar = @("a", "b")
+
+Describe "scope test" {
+    BeforeAll {
+        $script:cache = @{}
+        Write-Host "fileVar in BeforeAll: $fileVar"
+        foreach ($x in $fileVar) {
+            $script:cache[$x] = "value_$x"
+        }
+        Write-Host "cache keys: $($script:cache.Keys -join ',')"
+    }
+    
+    foreach ($x in $fileVar) {
+        It "cache has $x" -TestCases @{k=$x} {
+            param($k)
+            Write-Host "cache[$k] = $($script:cache[$k])"
+            $script:cache[$k] | Should -Be "value_$k"
+        }
+    }
+}
+EOF
+pwsh -Command "Invoke-Pester /tmp/scope_test.ps1 -Output Normal 2>&1 | tail -20"
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 2 tests in 292ms.[0m
+[95mRunning tests.[0m
+fileVar in BeforeAll: 
+cache keys: 
+cache[a] = 
+[91m[-] scope test.cache has a[0m[90m 213ms (179ms|34ms)[0m
+[91m Expected 'value_a', but got $null.
+[91m at $script:cache[$k] | Should -Be "value_$k", /tmp/scope_test.ps1:17
+[91m at <ScriptBlock>, /tmp/scope_test.ps1:17[0m
+cache[b] = 
+[91m[-] scope test.cache has b[0m[90m 12ms (10ms|3ms)[0m
+[91m Expected 'value_b', but got $null.
+[91m at $script:cache[$k] | Should -Be "value_$k", /tmp/scope_test.ps1:17
+[91m at <ScriptBlock>, /tmp/scope_test.ps1:17[0m
+[97mTests completed in 973ms[0m
+[97mTests Passed: 0, [0m[91mFailed: 2, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Tool: Bash] cat > /tmp/scope_test2.ps1 << 'EOF'
+# Try with BeforeDiscovery or script: prefix
+$script:fileVar = @("a", "b")
+
+Describe "scope test" {
+    BeforeAll {
+        $script:cache = @{}
+        Write-Host "fileVar in BeforeAll: $($script:fileVar)"
+        foreach ($x in $script:fileVar) {
+            $script:cache[$x] = "value_$x"
+        }
+        Write-Host "cache keys: $($script:cache.Keys -join ',')"
+    }
+    
+    foreach ($x in $script:fileVar) {
+        It "cache has $x" -TestCases @{k=$x} {
+            param($k)
+            $script:cache[$k] | Should -Be "value_$k"
+        }
+    }
+}
+EOF
+pwsh -Command "Invoke-Pester /tmp/scope_test2.ps1 -Output Normal 2>&1 | tail -15"
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 2 tests in 294ms.[0m
+[95mRunning tests.[0m
+fileVar in BeforeAll: 
+cache keys: 
+[91m[-] scope test.cache has a[0m[90m 190ms (151ms|39ms)[0m
+[91m Expected 'value_a', but got $null.
+[91m at $script:cache[$k] | Should -Be "value_$k", /tmp/scope_test2.ps1:17
+[91m at <ScriptBlock>, /tmp/scope_test2.ps1:17[0m
+[91m[-] scope test.cache has b[0m[90m 11ms (8ms|2ms)[0m
+[91m Expected 'value_b', but got $null.
+[91m at $script:cache[$k] | Should -Be "value_$k", /tmp/scope_test2.ps1:17
+[91m at <ScriptBlock>, /tmp/scope_test2.ps1:17[0m
+[97mTests completed in 919ms[0m
+[97mTests Passed: 0, [0m[91mFailed: 2, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Tool: Bash] cat > /tmp/scope_test3.ps1 << 'EOF'
+# Try with BeforeDiscovery
+BeforeDiscovery {
+    $script:fileVar = @("a", "b")
+}
+
+Describe "scope test" {
+    BeforeAll {
+        $script:cache = @{}
+        foreach ($x in $script:fileVar) {
+            $script:cache[$x] = "value_$x"
+        }
+        Write-Host "cache after BeforeAll: $($script:cache.Keys -join ',')"
+    }
+    
+    foreach ($x in $script:fileVar) {
+        It "cache has $x" -TestCases @{k=$x} {
+            param($k)
+            $script:cache[$k] | Should -Be "value_$k"
+        }
+    }
+}
+EOF
+pwsh -Command "Invoke-Pester /tmp/scope_test3.ps1 -Output Normal 2>&1 | tail -15"
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 2 tests in 323ms.[0m
+[95mRunning tests.[0m
+cache after BeforeAll: 
+[91m[-] scope test.cache has a[0m[90m 189ms (156ms|34ms)[0m
+[91m Expected 'value_a', but got $null.
+[91m at $script:cache[$k] | Should -Be "value_$k", /tmp/scope_test3.ps1:18
+[91m at <ScriptBlock>, /tmp/scope_test3.ps1:18[0m
+[91m[-] scope test.cache has b[0m[90m 11ms (9ms|2ms)[0m
+[91m Expected 'value_b', but got $null.
+[91m at $script:cache[$k] | Should -Be "value_$k", /tmp/scope_test3.ps1:18
+[91m at <ScriptBlock>, /tmp/scope_test3.ps1:18[0m
+[97mTests completed in 943ms[0m
+[97mTests Passed: 0, [0m[91mFailed: 2, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Tool: Bash] cat > /tmp/scope_test4.ps1 << 'EOF'
+# Test Pester 5 recommended scope pattern
+Describe "scope test" {
+    BeforeAll {
+        # The Pester 5 recommended way to share vars: use $script: in BeforeAll
+        # and the SAME $script: in It blocks
+        $script:MyCache = @{ "a" = "value_a"; "b" = "value_b" }
+        Write-Host "Set cache in BeforeAll: $($script:MyCache.Keys -join ',')"
+    }
+    
+    It "can read a from cache" {
+        Write-Host "Reading cache in It: $($script:MyCache.Keys -join ',')"
+        $script:MyCache["a"] | Should -Be "value_a"
+    }
+    
+    It "can read b from cache" {
+        $script:MyCache["b"] | Should -Be "value_b"
+    }
+}
+EOF
+pwsh -Command "Invoke-Pester /tmp/scope_test4.ps1 -Output Normal 2>&1 | tail -10"
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 2 tests in 297ms.[0m
+[95mRunning tests.[0m
+Set cache in BeforeAll: b,a
+Reading cache in It: b,a
+[32m[+] /tmp/scope_test4.ps1[0m[90m 710ms (116ms|350ms)[0m
+[97mTests completed in 732ms[0m
+[32mTests Passed: 2, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Tool: Bash] cat > /tmp/scope_test5.ps1 << 'EOF'
+# Test BeforeDiscovery + BeforeAll combo
+BeforeDiscovery {
+    $script:cases = @("a", "b", "c")
+}
+
+Describe "scope test" {
+    BeforeAll {
+        $script:cache = @{}
+        # Hardcode the cases here since they're not accessible from BeforeDiscovery
+        $localCases = @("a", "b", "c")
+        foreach ($x in $localCases) {
+            $script:cache[$x] = "value_$x"
+        }
+        Write-Host "cache in BeforeAll: $($script:cache.Keys -join ',')"
+    }
+    
+    foreach ($x in $script:cases) {
+        It "cache has '$x'" -TestCases @{k=$x} {
+            param($k)
+            $script:cache[$k] | Should -Be "value_$k"
+        }
+    }
+}
+EOF
+pwsh -Command "Invoke-Pester /tmp/scope_test5.ps1 -Output Normal 2>&1 | tail -10"
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 3 tests in 296ms.[0m
+[95mRunning tests.[0m
+cache in BeforeAll: a,b,c
+[32m[+] /tmp/scope_test5.ps1[0m[90m 725ms (124ms|351ms)[0m
+[97mTests completed in 745ms[0m
+[32mTests Passed: 3, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Assistant] The `BeforeDiscovery` + `BeforeAll` pattern works. Now I can fix the test file properly:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/Invoke-PrLabelAssigner.Tests.ps1", "content": "# PR Label Assig
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/Invoke-PrLabelAssigner.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Now run all tests excluding act to verify unit tests pass, then run the full suite:
+[Tool: Bash] pwsh -Command "Invoke-Pester ./Invoke-PrLabelAssigner.Tests.ps1 -Output Normal 2>&1 | grep -E '(\[[-+]\]|Tests completed|Passed|Failed)'" 2>&1
+[Result ERROR] Exit code 1
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 70 tests in 410ms.[0m
+[95mRunning tests.[0m
+  [act] Running: docs-only ...
+  [act] Done: docs-only (exit=1)
+  [act] Running: api-files ...
+  [act] Done: api-files (exit=1)
+  [act] Running: test-files ...
+  [act] Done: test-files (exit=1)
+  [act] Running: mixed-changes ...
+  [act] Done: mixed-changes (exit=1)
+  [act] Running: no-matches ...
+  [act] Done: no-matches (exit=1)
+[91m[-] Act Execution Tests.act: docs-only - exits with code 0[0m[90m 65ms (60ms|5ms)[0m
+[91m Expected 0, because act exit code for 'docs-only'. Output:
+[91m time="2026-04-08T22:03:39-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[91m Error: stat /tmp/pla-docs-only-163366730/.github/workflows/pr-label-assigner.yml: no such file or directory, but got 1.
+[91m at $r.ExitCode | Should -Be 0 -Because "act exit code for '$tcName'. Output:`n$($r.Output)", /home/
+[Assistant] The `.github` directory isn't being copied. Let me debug and fix:
+[Tool: Bash] pwsh -Command '
+$projectRoot = "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet"
+$tempDir = "/tmp/pla-test-debug-$(Get-Random)"
+New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
+
+foreach ($item in @("Invoke-PrLabelAssigner.ps1", "label-rules.json", ".github")) {
+    $src = Join-Path $projectRoot $item
+    Write-Host "Checking: $src -> exists: $(Test-Path $src)"
+    if (Test-Path $src) {
+        if ((Get-Item $src).PSIsContainer) {
+            Copy-Item -Recurse -Path $src -Destination $tempDir
+        } else {
+            Copy-Item -Path $src -Destination $tempDir
+        }
+    }
+}
+
+Write-Host "Temp dir contents:"
+Get-ChildItem -Force $tempDir | ForEach-Object { Write-Host "  $($_.Name)" }
+Write-Host "Workflows:"
+Get-ChildItem -Force "$tempDir/.github/workflows" -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "  $($_.Name)" }
+
+Remove-Item -Recurse -Force $tempDir
+'
+[Result] Checking: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/Invoke-PrLabelAssigner.ps1 -> exists: True
+Checking: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/label-rules.json -> exists: True
+Checking: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/.github -> exists: True
+[31;1mGet-Item: [0m
+[31;1m[36;1mLine |[0m
+[31;1m[36;1m[36;1m  10 | [0m         if (([36;1mGet-Item $src[0m).PSIsContainer) {[0m
+[31;1m[36;1m[36;1m[0m[36;1m[0m[36;1m     | [31;1m              ~~~~~~~~~~~~~[0m
+[31;1m[36;1m[36;1m[0m[36;1m[0m[36;1m[31;1m[31;1m[36;1m     | [31;1mCould not find item /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/.github.[0m
+Temp dir contents:
+  .github
+  Invoke-PrLa
+[Assistant] The bug: `Get-Item` fails for `.github` on Linux (it's copied without `-Recurse`). Fix: use `Test-Path -PathType Container`:
+[Tool: Bash] pwsh -Command '
+$projectRoot = "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet"
+$tempDir = "/tmp/pla-test-debug-$(Get-Random)"
+New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
+
+foreach ($item in @("Invoke-PrLabelAssigner.ps1", "label-rules.json", ".github")) {
+    $src = Join-Path $projectRoot $item
+    if (Test-Path $src -PathType Container) {
+        Copy-Item -Recurse -Path $src -Destination $tempDir
+    } elseif (Test-Path $src) {
+        Copy-Item -Path $src -Destination $tempDir
+    }
+}
+
+Write-Host "Workflows:"
+Get-ChildItem -Force "$tempDir/.github/workflows" | ForEach-Object { Write-Host "  $($_.Name)" }
+Remove-Item -Recurse -Force $tempDir
+'
+[Result] Workflows:
+  pr-label-assigner.yml
+[Assistant] Now update the test file to use `Test-Path -PathType Container`:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/Invoke-PrLabelAssigner.Tests.ps1", "old_s
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/Invoke-PrLabelAssigner.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Now test a single act run to verify the workflow works before running all tests:
+[Tool: Bash] cd /tmp && TMPDIR=/tmp/pla-act-test-manual && mkdir -p $TMPDIR
+cp -r /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/* $TMPDIR/ 2>/dev/null
+cp -r /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/.github $TMPDIR/ 2>/dev/null
+echo '["docs/README.md", "docs/guide.md"]' > $TMPDIR/changed-files.json
+cd $TMPDIR && git init -b main && git config user.email "t@t.com" && git config user.name "T" && git add -A && git commit -m "test"
+echo "--- Running act ---"
+act push --rm --directory $TMPDIR -W "$TMPDIR/.github/workflows/pr-label-assigner.yml" --no-cache-server 2>&1 | tail -30
+echo "--- Exit code: $? ---"
+[Result] Initialized empty Git repository in /tmp/pla-act-test-manual/.git/
+[main (root-commit) 1c3aa3e] test
+ 7 files changed, 1201 insertions(+)
+ create mode 100644 .github/workflows/pr-label-assigner.yml
+ create mode 100644 Invoke-PrLabelAssigner.Tests.ps1
+ create mode 100644 Invoke-PrLabelAssigner.ps1
+ create mode 100644 act-result.txt
+ create mode 100644 benchmark-instructions-v3.md
+ create mode 100644 changed-files.json
+ create mode 100644 label-rules.json
+--- Running act ---
+[PR Label Assigner/Assign PR Labels]   | Preparing to unpack packages-microsoft-prod.deb ...
+[PR Label Assigner/Assign PR Labels]   | Unpacking packages-microsoft-prod (1.2-ubuntu24.04) ...
+[PR Label Assigner/Assign PR Labels]   | Setting up packages-microsoft-prod (1.2-ubuntu24.04) ...
+[PR Label Assigner/Assign PR Labels]   | debconf: delaying package configuration, since apt-utils is not installed
+[PR Label Assigner/Assign PR Labels]   | Selecting previously unselected package powershell.
+[PR Label Assigner/Assign
+[Assistant] The workflow runs successfully but PowerShell output isn't visible. The issue is `changed-files.json` JSON has embedded quotes causing problems when passed via bash variables. Simplify the workflow to have pwsh read the file directly:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/.github/workflows/pr-label-assigner.yml", "content": "name: PR 
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/.github/workflows/pr-label-assigner.yml has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/.github/workflows/pr-label-assigner.yml 2>&1
+[Result] (Bash completed with no output)
+[Tool: Bash] cd /tmp/pla-act-test-manual && cp /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/.github/workflows/pr-label-assigner.yml .github/workflows/pr-label-assigner.yml
+echo '["docs/README.md", "docs/guide.md"]' > changed-files.json
+git add -A && git commit -m "update workflow"
+act push --rm --no-cache-server 2>&1 | grep -E "(LABEL|success|Job|Error|failed|PR Label)"
+[Result] [main 1e5fcae] update workflow
+ 1 file changed, 13 insertions(+), 27 deletions(-)
+[PR Label Assigner/Assign PR Labels] ⭐ Run Set up job
+[PR Label Assigner/Assign PR Labels] 🚀  Start image=catthehacker/ubuntu:act-latest
+[PR Label Assigner/Assign PR Labels]   🐳  docker pull image=catthehacker/ubuntu:act-latest platform= username= forcePull=true
+[PR Label Assigner/Assign PR Labels] using DockerAuthConfig authentication for docker pull
+[PR Label Assigner/Assign PR Labels]   🐳  docker create image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[PR Label Assigner/Assign PR Labels]   🐳  docker run image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[PR Label Assigner/Assign PR Labels]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[PR Label Assigner/Assign PR Labels]   ✅  Success - Set up job
+[PR Label Assigner/Assign PR Labels] ⭐ Run Main Check
+[Assistant] The PowerShell script main block isn't executing. The guard condition is likely wrong. Let me fix it:
+[Tool: Bash] pwsh -Command '
+$tempScript = @"
+param([string]`$TestParam = "default")
+Write-Host "InvocationName: `$(`$MyInvocation.InvocationName)"
+Write-Host "ScriptName: `$(`$MyInvocation.ScriptName)"
+Write-Host "PSCommandPath: `$PSCommandPath"
+Write-Host "Equal: `$(`$MyInvocation.ScriptName -eq `$PSCommandPath)"
+"@
+$tempScript | Set-Content /tmp/test_invocation.ps1
+pwsh -File /tmp/test_invocation.ps1
+'
+[Result] InvocationName: /tmp/test_invocation.ps1
+ScriptName: 
+PSCommandPath: /tmp/test_invocation.ps1
+Equal: False
+[Assistant] `$MyInvocation.ScriptName` is empty with `pwsh -File`. Fix: use `InvocationName -ne '.'`:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/Invoke-PrLabelAssigner.ps1", "old_string"
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/Invoke-PrLabelAssigner.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Now test the script runs correctly:
+[Tool: Bash] pwsh -File ./Invoke-PrLabelAssigner.ps1 2>&1
+[Result] PR Label Assigner
+==================
+Changed files (4):
+  - docs/README.md
+  - src/api/server.js
+  - src/api/server.test.js
+  - src/utils/helper.js
+
+LABELS_RESULT: api,tests,documentation,backend
+
+Labels to apply (4):
+  LABEL: api
+  LABEL: tests
+  LABEL: documentation
+  LABEL: backend
+[Assistant] Script works. Verify unit tests still pass:
+[Tool: Bash] pwsh -Command "Invoke-Pester ./Invoke-PrLabelAssigner.Tests.ps1 -Output Normal 2>&1 | grep -E '(\[[-+]\].*label|Tests completed|Passed|Failed)'" 2>&1 | head -10
+[Result] Command running in background with ID: bg4ozzngc. Output is being written to: /tmp/claude-1000/-home-passp-repos-compare-agent-scripting-by-language-workspaces-2026-04-08-192624-12-pr-label-assigner-powershell-sonnet/9d5f86b2-686a-42f7-8da1-f7308e3b5634/tasks/bg4ozzngc.output
+[Tool: Bash] # Test act run with updated script
+cd /tmp/pla-act-test-manual
+cp /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/Invoke-PrLabelAssigner.ps1 .
+echo '["docs/README.md", "docs/guide.md"]' > changed-files.json
+git add -A && git commit -m "fix invocation guard"
+act push --rm --no-cache-server 2>&1 | grep -E "(LABEL|Job|=== PR)"
+[Result] [main 210cb10] fix invocation guard
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+[PR Label Assigner/Assign PR Labels] 🏁  Job failed
+Shell cwd was reset to /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet
+[Tool: Bash] cd /tmp/pla-act-test-manual && act push --rm --no-cache-server 2>&1 | grep -E "(Error|failed|error|exit|LABEL|PR Label|pwsh|=)" | head -30
+[Result] time="2026-04-08T22:09:38-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[PR Label Assigner/Assign PR Labels] ⭐ Run Set up job
+[PR Label Assigner/Assign PR Labels] 🚀  Start image=catthehacker/ubuntu:act-latest
+[PR Label Assigner/Assign PR Labels]   🐳  docker pull image=catthehacker/ubuntu:act-latest platform= username= forcePull=true
+[PR Label Assigner/Assign PR Labels] using DockerAuthConfig authentication for docker pull
+[PR Label Assigner/Assign PR Labels]   🐳  docker create image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[PR Label Assigner/Assign PR Labels]   🐳  docker run image=catthehacker/ubuntu:act-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[PR Label Assigner/Assign PR Labels]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[PR Label Assigner/Assign PR Labels]   ✅  Success -
+[Tool: Bash] cd /tmp/pla-act-test-manual && act push --rm --no-cache-server 2>&1 | tail -20
+[Result] [PR Label Assigner/Assign PR Labels]   | ==================
+[PR Label Assigner/Assign PR Labels]   | Changed files (2):
+[PR Label Assigner/Assign PR Labels]   |   - docs/README.md
+[PR Label Assigner/Assign PR Labels]   |   - docs/guide.md
+[PR Label Assigner/Assign PR Labels]   | 
+[PR Label Assigner/Assign PR Labels]   | LABELS_RESULT: documentation
+[PR Label Assigner/Assign PR Labels]   | 
+[PR Label Assigner/Assign PR Labels]   | Labels to apply (1):
+[PR Label Assigner/Assign PR Labels]   |   LABEL: documentation
+[PR Label Assigner/Assign PR Labels]   | === PR Label Assigner Complete ===
+[PR Label Assigner/Assign PR Labels]   ✅  Success - Main Run PR Label Assigner [1.344831457s]
+[PR Label Assigner/Assign PR Labels] ⭐ Run Main Summary
+[PR Label Assigner/Assign PR Labels]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/4] user= workdir=
+[PR Label Assigner/Assign PR Labels]   ✅  Success - Main Summary [347.589519ms]
+[PR Label Assigner/Assign PR Labels]   ⚙  Summary - ## PR Label Assi
+[Assistant] The workflow now outputs `LABEL: documentation` correctly. Now run the full test suite:
+[Tool: Bash] pwsh -Command "Invoke-Pester ./Invoke-PrLabelAssigner.Tests.ps1 -Output Normal 2>&1 | tail -30" 2>&1
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 70 tests in 548ms.[0m
+[95mRunning tests.[0m
+  [act] Running: docs-only ...
+  [act] Done: docs-only (exit=0)
+  [act] Running: api-files ...
+  [act] Done: api-files (exit=0)
+  [act] Running: test-files ...
+  [act] Done: test-files (exit=0)
+  [act] Running: mixed-changes ...
+  [act] Done: mixed-changes (exit=0)
+  [act] Running: no-matches ...
+  [act] Done: no-matches (exit=0)
+[32m[+] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/Invoke-PrLabelAssigner.Tests.ps1[0m[90m 159.05s (157.4s|1.16s)[0m
+[97mTests completed in 159.09s[0m
+[32mTests Passed: 70, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Assistant] All 70 tests pass. Let me verify the required artifacts exist:
+[Tool: Bash] ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/act-result.txt && echo "---" && head -50 /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/act-result.txt
+[Result] -rw-r--r-- 1 passp passp 26304 Apr  8 22:13 /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/act-result.txt
+---
+
+============================================================
+TEST CASE: docs-only
+DESCRIPTION: Documentation files
+CHANGED FILES: docs/README.md, docs/guide.md
+============================================================
+time="2026-04-08T22:11:00-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[PR Label Assigner/Assign PR Labels] ⭐ Run Set up job
+[PR Label Assigner/Assign PR Labels] 🚀  Start image=catthehacker/ubuntu:act-latest
+[PR Label Assigner/Assign PR Labels]   🐳  docker pull image=catthehacker/ubuntu:act-latest platform= username= forcePull=true
+[PR Label Assigner/Assign PR Labels] using DockerAuthConfig authentication for docker pull
+[PR Label Assigner/Assign PR Labels]   🐳  docker create image=catthehacker/ubuntu:act-latest
+[Tool: Bash] grep -E "(TEST CASE:|EXIT CODE:|LABEL:|Job succeeded|LABELS_RESULT)" /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/act-result.txt
+[Result] TEST CASE: docs-only
+[PR Label Assigner/Assign PR Labels]   | LABELS_RESULT: documentation
+[PR Label Assigner/Assign PR Labels]   |   LABEL: documentation
+[PR Label Assigner/Assign PR Labels] 🏁  Job succeeded
+EXIT CODE: 0
+TEST CASE: api-files
+[PR Label Assigner/Assign PR Labels]   | LABELS_RESULT: api,backend
+[PR Label Assigner/Assign PR Labels]   |   LABEL: api
+[PR Label Assigner/Assign PR Labels]   |   LABEL: backend
+[PR Label Assigner/Assign PR Labels] 🏁  Job succeeded
+EXIT CODE: 0
+TEST CASE: test-files
+[PR Label Assigner/Assign PR Labels]   | LABELS_RESULT: tests,backend
+[PR Label Assigner/Assign PR Labels]   |   LABEL: tests
+[PR Label Assigner/Assign PR Labels]   |   LABEL: backend
+[PR Label Assigner/Assign PR Labels] 🏁  Job succeeded
+EXIT CODE: 0
+TEST CASE: mixed-changes
+[PR Label Assigner/Assign PR Labels]   | LABELS_RESULT: api,tests,documentation,backend
+[PR Label Assigner/Assign PR Labels]   |   LABEL: api
+[PR Label Assigner/Assign PR Labels]   |   LABEL: tests
+[PR Label Assi
+[Assistant] All 5 test cases pass through act with the correct labels. Let me do a final validation:
+[Tool: Bash] actionlint /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/.github/workflows/pr-label-assigner.yml && echo "actionlint: PASSED"
+[Result] actionlint: PASSED
+[Tool: Bash] ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-08_192624/12-pr-label-assigner/powershell-sonnet/
+[Result] total 112
+drwxr-xr-x 6 passp passp  4096 Apr  8 22:10 .
+drwxr-xr-x 8 passp passp  4096 Apr  8 21:47 ..
+drwxr-xr-x 2 passp passp  4096 Apr  8 21:47 .claude
+drwxr-xr-x 7 passp passp  4096 Apr  8 21:47 .git
+drwxr-xr-x 3 passp passp  4096 Apr  8 21:51 .github
+-rw-r--r-- 1 passp passp 20205 Apr  8 22:04 Invoke-PrLabelAssigner.Tests.ps1
+-rw-r--r-- 1 passp passp  7814 Apr  8 22:07 Invoke-PrLabelAssigner.ps1
+-rw-r--r-- 1 passp passp 26304 Apr  8 22:13 act-result.txt
+-rw-r--r-- 1 passp passp 18474 Apr  8 17:43 benchmark-instructions-v3.md
+-rw-r--r-- 1 passp passp    99 Apr  8 21:56 changed-files.json
+drwxr-xr-x 2 passp passp  4096 Apr  8 21:51 fixtures
+-rw-r--r-- 1 passp passp   881 Apr  8 21:56 label-rules.json
+[Assistant] Everything is in order. Here's a summary of what was built:
+
+---
+
+## Summary
+
+**Files created:**
+
+| File | Purpose |
+|------|---------|
+| `Invoke-PrLabelAssigner.ps1` | Main script: glob matching, `Get-PrLabels`, main block |
+| `Invoke-PrLabelAssigner.Tests.ps1` | Pester test suite (70 tests) |
+| `label-rules.json` | Configurable label rules (docs/**, src/api/**, etc.) |
+| `changed-files.json` | Default test fixture |
+| `.github/workflows/pr-label-assigner.yml` | GitHub Actions workflow |
+| `act-result.txt` | Required artifact with all act test outputs |
+
+**Test results: 70/70 passed**
+- Unit tests for `ConvertTo-GlobRegex`, `Test-GlobMatch`, `Get-PrLabels`
+- Priority ordering, deduplication, edge cases
+- Workflow structure validation (actionlint ✅)
+- 5 act end-to-end test cases (all exit 0, "Job succeeded")
+
+**TDD progression followed:**
+1. RED: wrote failing tests first (function didn't exist)
+2. GREEN: implemented glob regex conversion and label assignment
+3. Debugged PowerShell scoping (`BeforeDiscovery` vs `BeforeAll` for test generation), `Get-Item` failure on dotfile directories, and `$MyInvocation.ScriptName` being empty with `pwsh -File`
+
+**Key features:**
+- `**` matches any path depth; `*` matches within a single directory level
+- Multiple labels per file (all matching rules contribute)
+- Priority ordering (highest priority first, alphabetical tiebreak)
+- Windows path separator normalization
+[Assistant] The background unit test check completed successfully (exit code 0). All tests are passing.
