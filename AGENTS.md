@@ -44,6 +44,7 @@ docker build -t act-ubuntu-pwsh:latest -f Dockerfile.act .
 - `models.py` — single source of truth for model IDs and token pricing. Update here when Anthropic changes prices.
 - `runner.py` — benchmark harness. Runs agents via `claude -p`, collects metrics, pushes results. Imports from `models.py` and `generate_results.py`.
 - `generate_results.py` — generates `results.md` reports and updates `README.md`. Can run standalone: `python3 generate_results.py --all`.
+- `test_quality.py` — test quality evaluation. Structural metrics (always) + LLM-as-judge (with `--llm-judge` + `ANTHROPIC_API_KEY`). Imported by `generate_results.py` for the "Test Quality Evaluation" section.
 - `benchmark-instructions-v*.md` — per-version specs given to agents during runs.
 - `hooks/syntax-check.py` — PostToolUse hook for syntax/lint checking.
 - `Dockerfile.act` — custom act container image with pwsh + Pester pre-installed. Build with `docker build -t act-ubuntu-pwsh:latest -f Dockerfile.act .`. Runner.py auto-detects it and injects `.actrc` into workspaces.

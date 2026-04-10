@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-09 02:52:54 PM ET
+**Last updated:** 2026-04-10 12:23:18 AM ET
 
 **Status:** 3/3 runs completed, 0 remaining
 **Total cost so far:** $2.91
@@ -243,6 +243,64 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | Partial | 3 | $0.59 | 20.30% |
 | Miss | 0 | $0.00 | 0.00% |
 | **Total** | **3** | **$0.59** | **20.30%** |
+
+## Test Quality Evaluation
+
+### Structural Metrics by Language/Model
+
+Automated analysis of test files: test count, assertion count, and test-to-code line ratio.
+
+| Mode | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
+|------|-------|-----------|----------------|-----------------|---------------------|
+| bash | opus | 18.0 | 29.0 | 1.6 | 0.62 |
+| default | opus | 32.0 | 54.0 | 1.7 | 1.15 |
+| powershell | opus | 48.0 | 73.0 | 1.5 | 1.24 |
+
+
+<details>
+<summary>Sorted by avg tests (most first)</summary>
+
+| Mode | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
+|------|-------|-----------|----------------|-----------------|---------------------|
+| powershell | opus | 48.0 | 73.0 | 1.5 | 1.24 |
+| default | opus | 32.0 | 54.0 | 1.7 | 1.15 |
+| bash | opus | 18.0 | 29.0 | 1.6 | 0.62 |
+
+</details>
+
+<details>
+<summary>Sorted by avg assertions (most first)</summary>
+
+| Mode | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
+|------|-------|-----------|----------------|-----------------|---------------------|
+| powershell | opus | 48.0 | 73.0 | 1.5 | 1.24 |
+| default | opus | 32.0 | 54.0 | 1.7 | 1.15 |
+| bash | opus | 18.0 | 29.0 | 1.6 | 0.62 |
+
+</details>
+
+<details>
+<summary>Sorted by avg test:code ratio (highest first)</summary>
+
+| Mode | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
+|------|-------|-----------|----------------|-----------------|---------------------|
+| powershell | opus | 48.0 | 73.0 | 1.5 | 1.24 |
+| default | opus | 32.0 | 54.0 | 1.7 | 1.15 |
+| bash | opus | 18.0 | 29.0 | 1.6 | 0.62 |
+
+</details>
+
+
+<details>
+<summary>Per-run structural metrics</summary>
+
+| Task | Mode | Model | Tests | Assertions | Assert/Test | Test Lines | Impl Lines | Test:Code |
+|------|------|-------|-------|------------|-------------|------------|------------|-----------|
+| Semantic Version Bumper | bash | opus | 18 | 29 | 1.6 | 153 | 248 | 0.62 |
+| Semantic Version Bumper | default | opus | 32 | 54 | 1.7 | 324 | 282 | 1.15 |
+| Semantic Version Bumper | powershell | opus | 48 | 73 | 1.5 | 367 | 297 | 1.24 |
+
+</details>
 
 ## Per-Run Results
 

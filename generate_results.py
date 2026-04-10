@@ -857,6 +857,168 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         lines.append("")
 
     # ==================================================================
+    # TEST QUALITY EVALUATION
+    # ==================================================================
+    from test_quality import compute_structural_metrics, LLM_JUDGE_CACHE_FILE
+
+    tq_rows = []
+    llm_rows = []
+    has_llm = False
+    for m in all_metrics:
+        variant_dir = run_dir / "tasks" / m["task_id"] / f"{m['language_mode']}-{m['model_short']}"
+        gen_dir = variant_dir / "generated-code"
+        sq = compute_structural_metrics(gen_dir)
+
+        tq_rows.append({
+            "task": m["task_name"][:30], "mode": m["language_mode"], "model": m["model_short"],
+            "tests": sq["test_count"], "asserts": sq["assertion_count"],
+            "apt": sq["assertions_per_test"],
+            "t_lines": sq["test_lines"], "i_lines": sq["impl_lines"],
+            "ratio": sq["test_to_code_ratio"],
+            "lang": sq["language"],
+        })
+
+        # LLM-as-judge scores (from cache if available)
+        llm_cache = variant_dir / LLM_JUDGE_CACHE_FILE
+        if llm_cache.exists():
+            try:
+                lj = json.loads(llm_cache.read_text())
+                has_llm = True
+                llm_rows.append({
+                    "task": m["task_name"][:30], "mode": m["language_mode"], "model": m["model_short"],
+                    "coverage": lj.get("coverage", 0), "rigor": lj.get("rigor", 0),
+                    "design": lj.get("design", 0), "overall": lj.get("overall", 0),
+                    "summary": lj.get("summary", ""),
+                    "judge_cost": lj.get("judge_cost_usd", 0),
+                })
+            except Exception:
+                pass
+
+    lines.append("## Test Quality Evaluation")
+    lines.append("")
+
+    # ── Structural Metrics by Language/Model ──
+    lines.append("### Structural Metrics by Language/Model")
+    lines.append("")
+    lines.append("Automated analysis of test files: test count, assertion count, and test-to-code line ratio.")
+    lines.append("")
+
+    sq_agg = {}
+    for r in tq_rows:
+        key = (r["mode"], r["model"])
+        if key not in sq_agg:
+            sq_agg[key] = {"mode": r["mode"], "model": r["model"],
+                           "tests": [], "asserts": [], "ratios": []}
+        sq_agg[key]["tests"].append(r["tests"])
+        sq_agg[key]["asserts"].append(r["asserts"])
+        sq_agg[key]["ratios"].append(r["ratio"])
+
+    sq_hdr = "| Mode | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |"
+    sq_sep = "|------|-------|-----------|----------------|-----------------|---------------------|"
+    sq_summary_rows = []
+    for key in sorted(sq_agg):
+        a = sq_agg[key]
+        n = len(a["tests"])
+        avg_tests = sum(a["tests"]) / n
+        avg_asserts = sum(a["asserts"]) / n
+        avg_apt = avg_asserts / avg_tests if avg_tests > 0 else 0
+        avg_ratio = sum(a["ratios"]) / n
+        sq_summary_rows.append({
+            "mode": a["mode"], "model": a["model"],
+            "avg_tests": avg_tests, "avg_asserts": avg_asserts,
+            "avg_apt": avg_apt, "avg_ratio": avg_ratio,
+        })
+
+    def _fmt_sq(r):
+        return (f"| {r['mode']} | {r['model']} | {r['avg_tests']:.1f} "
+                f"| {r['avg_asserts']:.1f} | {r['avg_apt']:.1f} | {r['avg_ratio']:.2f} |")
+
+    lines.append(sq_hdr)
+    lines.append(sq_sep)
+    for r in sq_summary_rows:
+        lines.append(_fmt_sq(r))
+    lines.append("")
+    lines.extend(_emit_sorted_variants(sq_hdr, sq_sep, sq_summary_rows, [
+        ("Sorted by avg tests (most first)", "avg_tests", True),
+        ("Sorted by avg assertions (most first)", "avg_asserts", True),
+        ("Sorted by avg test:code ratio (highest first)", "avg_ratio", True),
+    ], _fmt_sq))
+    lines.append("")
+
+    # ── Per-Run Structural Metrics ──
+    tq_hdr = "| Task | Mode | Model | Tests | Assertions | Assert/Test | Test Lines | Impl Lines | Test:Code |"
+    tq_sep = "|------|------|-------|-------|------------|-------------|------------|------------|-----------|"
+    def _fmt_tq(r):
+        return (f"| {r['task']} | {r['mode']} | {r['model']} "
+                f"| {r['tests']} | {r['asserts']} | {r['apt']:.1f} "
+                f"| {r['t_lines']} | {r['i_lines']} | {r['ratio']:.2f} |")
+    lines.extend(_collapsible_table("Per-run structural metrics", tq_hdr, tq_sep,
+                                    [_fmt_tq(r) for r in tq_rows]))
+    lines.append("")
+
+    # ── LLM-as-Judge Scores ──
+    if has_llm and llm_rows:
+        lines.append("### LLM-as-Judge Scores")
+        lines.append("")
+        lines.append(f"Claude evaluates each test suite on coverage, rigor, design, and overall quality (1-5 scale).")
+        lines.append("")
+
+        # Aggregate by mode/model
+        lj_agg = {}
+        for r in llm_rows:
+            key = (r["mode"], r["model"])
+            if key not in lj_agg:
+                lj_agg[key] = {"mode": r["mode"], "model": r["model"],
+                               "cov": [], "rig": [], "des": [], "ovr": [], "cost": []}
+            lj_agg[key]["cov"].append(r["coverage"])
+            lj_agg[key]["rig"].append(r["rigor"])
+            lj_agg[key]["des"].append(r["design"])
+            lj_agg[key]["ovr"].append(r["overall"])
+            lj_agg[key]["cost"].append(r["judge_cost"])
+
+        lj_hdr = "| Mode | Model | Avg Coverage | Avg Rigor | Avg Design | Avg Overall | Judge Cost |"
+        lj_sep = "|------|-------|-------------|-----------|------------|-------------|------------|"
+        lj_summary_rows = []
+        for key in sorted(lj_agg):
+            a = lj_agg[key]
+            n = len(a["cov"])
+            lj_summary_rows.append({
+                "mode": a["mode"], "model": a["model"],
+                "avg_cov": sum(a["cov"]) / n, "avg_rig": sum(a["rig"]) / n,
+                "avg_des": sum(a["des"]) / n, "avg_ovr": sum(a["ovr"]) / n,
+                "cost": sum(a["cost"]),
+            })
+        def _fmt_lj(r):
+            return (f"| {r['mode']} | {r['model']} | {r['avg_cov']:.1f} "
+                    f"| {r['avg_rig']:.1f} | {r['avg_des']:.1f} | {r['avg_ovr']:.1f} "
+                    f"| ${r['cost']:.4f} |")
+
+        lines.append(lj_hdr)
+        lines.append(lj_sep)
+        for r in lj_summary_rows:
+            lines.append(_fmt_lj(r))
+        total_judge_cost = sum(r["cost"] for r in lj_summary_rows)
+        lines.append(f"| **Total** | | | | | | **${total_judge_cost:.4f}** |")
+        lines.append("")
+        lines.extend(_emit_sorted_variants(lj_hdr, lj_sep, lj_summary_rows, [
+            ("Sorted by avg overall (highest first)", "avg_ovr", True),
+            ("Sorted by avg coverage (highest first)", "avg_cov", True),
+            ("Sorted by avg rigor (highest first)", "avg_rig", True),
+        ], _fmt_lj))
+        lines.append("")
+
+        # Per-run LLM scores
+        lj_pr_hdr = "| Task | Mode | Model | Coverage | Rigor | Design | Overall | Summary |"
+        lj_pr_sep = "|------|------|-------|----------|-------|--------|---------|---------|"
+        def _fmt_lj_pr(r):
+            return (f"| {r['task']} | {r['mode']} | {r['model']} "
+                    f"| {r['coverage']} | {r['rigor']} | {r['design']} | {r['overall']} "
+                    f"| {r['summary'][:60]} |")
+        lines.extend(_collapsible_table("Per-run LLM judge scores", lj_pr_hdr, lj_pr_sep,
+                                        [_fmt_lj_pr(r) for r in llm_rows]))
+        lines.append("")
+
+    # ==================================================================
     # PER-RUN RESULTS
     # ==================================================================
     lines.append("## Per-Run Results")

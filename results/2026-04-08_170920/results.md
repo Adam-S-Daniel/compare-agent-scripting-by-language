@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-09 02:52:54 PM ET
+**Last updated:** 2026-04-10 12:23:18 AM ET
 
 **Status:** 4/4 runs completed, 0 remaining
 **Total cost so far:** $6.95
@@ -273,6 +273,69 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | Partial | 4 | $0.79 | 11.33% |
 | Miss | 0 | $0.00 | 0.00% |
 | **Total** | **4** | **$0.79** | **11.33%** |
+
+## Test Quality Evaluation
+
+### Structural Metrics by Language/Model
+
+Automated analysis of test files: test count, assertion count, and test-to-code line ratio.
+
+| Mode | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
+|------|-------|-----------|----------------|-----------------|---------------------|
+| bash | opus | 51.0 | 71.0 | 1.4 | 1.25 |
+| default | opus | 37.0 | 63.0 | 1.7 | 1.43 |
+| powershell | opus | 41.0 | 59.0 | 1.4 | 3.40 |
+| typescript-bun | opus | 39.0 | 54.0 | 1.4 | 1.07 |
+
+
+<details>
+<summary>Sorted by avg tests (most first)</summary>
+
+| Mode | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
+|------|-------|-----------|----------------|-----------------|---------------------|
+| bash | opus | 51.0 | 71.0 | 1.4 | 1.25 |
+| powershell | opus | 41.0 | 59.0 | 1.4 | 3.40 |
+| typescript-bun | opus | 39.0 | 54.0 | 1.4 | 1.07 |
+| default | opus | 37.0 | 63.0 | 1.7 | 1.43 |
+
+</details>
+
+<details>
+<summary>Sorted by avg assertions (most first)</summary>
+
+| Mode | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
+|------|-------|-----------|----------------|-----------------|---------------------|
+| bash | opus | 51.0 | 71.0 | 1.4 | 1.25 |
+| default | opus | 37.0 | 63.0 | 1.7 | 1.43 |
+| powershell | opus | 41.0 | 59.0 | 1.4 | 3.40 |
+| typescript-bun | opus | 39.0 | 54.0 | 1.4 | 1.07 |
+
+</details>
+
+<details>
+<summary>Sorted by avg test:code ratio (highest first)</summary>
+
+| Mode | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
+|------|-------|-----------|----------------|-----------------|---------------------|
+| powershell | opus | 41.0 | 59.0 | 1.4 | 3.40 |
+| default | opus | 37.0 | 63.0 | 1.7 | 1.43 |
+| bash | opus | 51.0 | 71.0 | 1.4 | 1.25 |
+| typescript-bun | opus | 39.0 | 54.0 | 1.4 | 1.07 |
+
+</details>
+
+
+<details>
+<summary>Per-run structural metrics</summary>
+
+| Task | Mode | Model | Tests | Assertions | Assert/Test | Test Lines | Impl Lines | Test:Code |
+|------|------|-------|-------|------------|-------------|------------|------------|-----------|
+| Semantic Version Bumper | bash | opus | 51 | 71 | 1.4 | 436 | 349 | 1.25 |
+| Semantic Version Bumper | default | opus | 37 | 63 | 1.7 | 415 | 290 | 1.43 |
+| Semantic Version Bumper | powershell | opus | 41 | 59 | 1.4 | 343 | 101 | 3.40 |
+| Semantic Version Bumper | typescript-bun | opus | 39 | 54 | 1.4 | 400 | 373 | 1.07 |
+
+</details>
 
 ## Per-Run Results
 

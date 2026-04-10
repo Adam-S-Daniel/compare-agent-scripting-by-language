@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-09 02:52:52 PM ET
+**Last updated:** 2026-04-10 12:23:18 AM ET
 
 **Status:** 4/1 runs completed, 0 remaining
 **Total cost so far:** $14.13
@@ -267,6 +267,69 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | Partial | 1 | $0.19 | 1.38% |
 | Miss | 1 | $0.00 | 0.00% |
 | **Total** | **4** | **$0.65** | **4.60%** |
+
+## Test Quality Evaluation
+
+### Structural Metrics by Language/Model
+
+Automated analysis of test files: test count, assertion count, and test-to-code line ratio.
+
+| Mode | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
+|------|-------|-----------|----------------|-----------------|---------------------|
+| csharp-script | opus | 0.0 | 0.0 | 0.0 | 0.00 |
+| default | opus | 42.0 | 44.0 | 1.0 | 1.71 |
+| powershell | opus | 7.0 | 11.0 | 1.6 | 25.33 |
+| powershell-strict | opus | 29.0 | 45.0 | 1.6 | 0.00 |
+
+
+<details>
+<summary>Sorted by avg tests (most first)</summary>
+
+| Mode | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
+|------|-------|-----------|----------------|-----------------|---------------------|
+| default | opus | 42.0 | 44.0 | 1.0 | 1.71 |
+| powershell-strict | opus | 29.0 | 45.0 | 1.6 | 0.00 |
+| powershell | opus | 7.0 | 11.0 | 1.6 | 25.33 |
+| csharp-script | opus | 0.0 | 0.0 | 0.0 | 0.00 |
+
+</details>
+
+<details>
+<summary>Sorted by avg assertions (most first)</summary>
+
+| Mode | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
+|------|-------|-----------|----------------|-----------------|---------------------|
+| powershell-strict | opus | 29.0 | 45.0 | 1.6 | 0.00 |
+| default | opus | 42.0 | 44.0 | 1.0 | 1.71 |
+| powershell | opus | 7.0 | 11.0 | 1.6 | 25.33 |
+| csharp-script | opus | 0.0 | 0.0 | 0.0 | 0.00 |
+
+</details>
+
+<details>
+<summary>Sorted by avg test:code ratio (highest first)</summary>
+
+| Mode | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
+|------|-------|-----------|----------------|-----------------|---------------------|
+| powershell | opus | 7.0 | 11.0 | 1.6 | 25.33 |
+| default | opus | 42.0 | 44.0 | 1.0 | 1.71 |
+| csharp-script | opus | 0.0 | 0.0 | 0.0 | 0.00 |
+| powershell-strict | opus | 29.0 | 45.0 | 1.6 | 0.00 |
+
+</details>
+
+
+<details>
+<summary>Per-run structural metrics</summary>
+
+| Task | Mode | Model | Tests | Assertions | Assert/Test | Test Lines | Impl Lines | Test:Code |
+|------|------|-------|-------|------------|-------------|------------|------------|-----------|
+| CSV Report Generator | csharp-script | opus | 0 | 0 | 0.0 | 0 | 5 | 0.00 |
+| CSV Report Generator | default | opus | 42 | 44 | 1.0 | 289 | 169 | 1.71 |
+| CSV Report Generator | powershell | opus | 7 | 11 | 1.6 | 76 | 3 | 25.33 |
+| CSV Report Generator | powershell-strict | opus | 29 | 45 | 1.6 | 323 | 0 | 0.00 |
+
+</details>
 
 ## Per-Run Results
 

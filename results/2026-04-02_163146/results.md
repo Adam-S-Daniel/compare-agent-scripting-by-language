@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-09 02:52:48 PM ET
+**Last updated:** 2026-04-10 12:23:16 AM ET
 
 **Status:** 144/144 runs completed, 0 remaining
 **Total cost so far:** $436.67
@@ -382,6 +382,225 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | Partial | 125 | $11.01 | 2.52% |
 | Miss | 14 | $0.00 | 0.00% |
 | **Total** | **139** | **$11.01** | **2.52%** |
+
+## Test Quality Evaluation
+
+### Structural Metrics by Language/Model
+
+Automated analysis of test files: test count, assertion count, and test-to-code line ratio.
+
+| Mode | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
+|------|-------|-----------|----------------|-----------------|---------------------|
+| csharp-script | opus | 0.0 | 0.0 | 0.0 | 0.00 |
+| csharp-script | sonnet | 0.0 | 0.0 | 0.0 | 0.32 |
+| default | opus | 63.5 | 54.9 | 0.9 | 1.27 |
+| default | sonnet | 60.7 | 55.8 | 0.9 | 1.30 |
+| powershell | opus | 39.1 | 66.8 | 1.7 | 38.36 |
+| powershell | sonnet | 25.7 | 45.3 | 1.8 | 2.47 |
+| powershell-strict | opus | 37.5 | 71.0 | 1.9 | 76.19 |
+| powershell-strict | sonnet | 27.0 | 48.9 | 1.8 | 13.65 |
+
+
+<details>
+<summary>Sorted by avg tests (most first)</summary>
+
+| Mode | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
+|------|-------|-----------|----------------|-----------------|---------------------|
+| default | opus | 63.5 | 54.9 | 0.9 | 1.27 |
+| default | sonnet | 60.7 | 55.8 | 0.9 | 1.30 |
+| powershell | opus | 39.1 | 66.8 | 1.7 | 38.36 |
+| powershell-strict | opus | 37.5 | 71.0 | 1.9 | 76.19 |
+| powershell-strict | sonnet | 27.0 | 48.9 | 1.8 | 13.65 |
+| powershell | sonnet | 25.7 | 45.3 | 1.8 | 2.47 |
+| csharp-script | opus | 0.0 | 0.0 | 0.0 | 0.00 |
+| csharp-script | sonnet | 0.0 | 0.0 | 0.0 | 0.32 |
+
+</details>
+
+<details>
+<summary>Sorted by avg assertions (most first)</summary>
+
+| Mode | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
+|------|-------|-----------|----------------|-----------------|---------------------|
+| powershell-strict | opus | 37.5 | 71.0 | 1.9 | 76.19 |
+| powershell | opus | 39.1 | 66.8 | 1.7 | 38.36 |
+| default | sonnet | 60.7 | 55.8 | 0.9 | 1.30 |
+| default | opus | 63.5 | 54.9 | 0.9 | 1.27 |
+| powershell-strict | sonnet | 27.0 | 48.9 | 1.8 | 13.65 |
+| powershell | sonnet | 25.7 | 45.3 | 1.8 | 2.47 |
+| csharp-script | opus | 0.0 | 0.0 | 0.0 | 0.00 |
+| csharp-script | sonnet | 0.0 | 0.0 | 0.0 | 0.32 |
+
+</details>
+
+<details>
+<summary>Sorted by avg test:code ratio (highest first)</summary>
+
+| Mode | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
+|------|-------|-----------|----------------|-----------------|---------------------|
+| powershell-strict | opus | 37.5 | 71.0 | 1.9 | 76.19 |
+| powershell | opus | 39.1 | 66.8 | 1.7 | 38.36 |
+| powershell-strict | sonnet | 27.0 | 48.9 | 1.8 | 13.65 |
+| powershell | sonnet | 25.7 | 45.3 | 1.8 | 2.47 |
+| default | sonnet | 60.7 | 55.8 | 0.9 | 1.30 |
+| default | opus | 63.5 | 54.9 | 0.9 | 1.27 |
+| csharp-script | sonnet | 0.0 | 0.0 | 0.0 | 0.32 |
+| csharp-script | opus | 0.0 | 0.0 | 0.0 | 0.00 |
+
+</details>
+
+
+<details>
+<summary>Per-run structural metrics</summary>
+
+| Task | Mode | Model | Tests | Assertions | Assert/Test | Test Lines | Impl Lines | Test:Code |
+|------|------|-------|-------|------------|-------------|------------|------------|-----------|
+| CSV Report Generator | csharp-script | opus | 0 | 0 | 0.0 | 0 | 0 | 0.00 |
+| CSV Report Generator | csharp-script | sonnet | 0 | 0 | 0.0 | 0 | 0 | 0.00 |
+| CSV Report Generator | default | opus | 58 | 40 | 0.7 | 203 | 154 | 1.32 |
+| CSV Report Generator | default | sonnet | 36 | 34 | 0.9 | 279 | 207 | 1.35 |
+| CSV Report Generator | powershell | opus | 36 | 47 | 1.3 | 289 | 177 | 1.63 |
+| CSV Report Generator | powershell | sonnet | 17 | 27 | 1.6 | 180 | 215 | 0.84 |
+| CSV Report Generator | powershell-strict | opus | 25 | 50 | 2.0 | 270 | 38 | 7.11 |
+| CSV Report Generator | powershell-strict | sonnet | 24 | 39 | 1.6 | 226 | 66 | 3.42 |
+| Log File Analyzer | csharp-script | opus | 0 | 0 | 0.0 | 0 | 30 | 0.00 |
+| Log File Analyzer | csharp-script | sonnet | 0 | 0 | 0.0 | 0 | 64 | 0.00 |
+| Log File Analyzer | default | opus | 0 | 0 | 0.0 | 0 | 0 | 0.00 |
+| Log File Analyzer | default | sonnet | 128 | 122 | 1.0 | 778 | 372 | 2.09 |
+| Log File Analyzer | powershell | opus | 33 | 55 | 1.7 | 294 | 291 | 1.01 |
+| Log File Analyzer | powershell | sonnet | 34 | 57 | 1.7 | 365 | 373 | 0.98 |
+| Log File Analyzer | powershell-strict | opus | 28 | 73 | 2.6 | 344 | 54 | 6.37 |
+| Log File Analyzer | powershell-strict | sonnet | 44 | 66 | 1.5 | 357 | 52 | 6.87 |
+| Directory Tree Sync | csharp-script | opus | 0 | 0 | 0.0 | 0 | 24 | 0.00 |
+| Directory Tree Sync | csharp-script | sonnet | 0 | 0 | 0.0 | 0 | 24 | 0.00 |
+| Directory Tree Sync | default | opus | 56 | 52 | 0.9 | 414 | 245 | 1.69 |
+| Directory Tree Sync | default | sonnet | 68 | 51 | 0.8 | 427 | 252 | 1.69 |
+| Directory Tree Sync | powershell | opus | 26 | 51 | 2.0 | 481 | 275 | 1.75 |
+| Directory Tree Sync | powershell | sonnet | 26 | 45 | 1.7 | 371 | 277 | 1.34 |
+| Directory Tree Sync | powershell-strict | opus | 29 | 97 | 3.3 | 522 | 4 | 130.50 |
+| Directory Tree Sync | powershell-strict | sonnet | 28 | 47 | 1.7 | 457 | 329 | 1.39 |
+| REST API Client | csharp-script | opus | 0 | 0 | 0.0 | 0 | 40 | 0.00 |
+| REST API Client | csharp-script | sonnet | 0 | 0 | 0.0 | 0 | 0 | 0.00 |
+| REST API Client | default | opus | 50 | 51 | 1.0 | 366 | 210 | 1.74 |
+| REST API Client | default | sonnet | 52 | 40 | 0.8 | 418 | 276 | 1.51 |
+| REST API Client | powershell | opus | 21 | 23 | 1.1 | 373 | 3 | 124.33 |
+| REST API Client | powershell | sonnet | 26 | 28 | 1.1 | 373 | 322 | 1.16 |
+| REST API Client | powershell-strict | opus | 40 | 50 | 1.2 | 638 | 53 | 12.04 |
+| REST API Client | powershell-strict | sonnet | 21 | 47 | 2.2 | 381 | 24 | 15.88 |
+| Process Monitor | csharp-script | opus | 0 | 0 | 0.0 | 0 | 23 | 0.00 |
+| Process Monitor | csharp-script | sonnet | 0 | 0 | 0.0 | 86 | 0 | 0.00 |
+| Process Monitor | default | opus | 31 | 43 | 1.4 | 320 | 260 | 1.23 |
+| Process Monitor | default | sonnet | 46 | 51 | 1.1 | 285 | 263 | 1.08 |
+| Process Monitor | powershell | opus | 37 | 66 | 1.8 | 379 | 1 | 379.00 |
+| Process Monitor | powershell | sonnet | 17 | 44 | 2.6 | 214 | 239 | 0.90 |
+| Process Monitor | powershell-strict | opus | 40 | 75 | 1.9 | 417 | 0 | 0.00 |
+| Process Monitor | powershell-strict | sonnet | 28 | 50 | 1.8 | 310 | 33 | 9.39 |
+| Config File Migrator | csharp-script | opus | 0 | 0 | 0.0 | 0 | 58 | 0.00 |
+| Config File Migrator | csharp-script | sonnet | 0 | 0 | 0.0 | 81 | 0 | 0.00 |
+| Config File Migrator | default | opus | 86 | 90 | 1.0 | 510 | 435 | 1.17 |
+| Config File Migrator | default | sonnet | 84 | 68 | 0.8 | 487 | 383 | 1.27 |
+| Config File Migrator | powershell | opus | 67 | 102 | 1.5 | 647 | 329 | 1.97 |
+| Config File Migrator | powershell | sonnet | 33 | 72 | 2.2 | 548 | 470 | 1.17 |
+| Config File Migrator | powershell-strict | opus | 78 | 133 | 1.7 | 624 | 3 | 208.00 |
+| Config File Migrator | powershell-strict | sonnet | 28 | 51 | 1.8 | 326 | 25 | 13.04 |
+| Batch File Renamer | csharp-script | opus | 0 | 0 | 0.0 | 0 | 42 | 0.00 |
+| Batch File Renamer | csharp-script | sonnet | 0 | 0 | 0.0 | 0 | 0 | 0.00 |
+| Batch File Renamer | default | opus | 62 | 45 | 0.7 | 369 | 344 | 1.07 |
+| Batch File Renamer | default | sonnet | 44 | 44 | 1.0 | 328 | 221 | 1.48 |
+| Batch File Renamer | powershell | opus | 34 | 94 | 2.8 | 571 | 329 | 1.74 |
+| Batch File Renamer | powershell | sonnet | 18 | 34 | 1.9 | 243 | 208 | 1.17 |
+| Batch File Renamer | powershell-strict | opus | 23 | 50 | 2.2 | 375 | 0 | 0.00 |
+| Batch File Renamer | powershell-strict | sonnet | 18 | 50 | 2.8 | 323 | 17 | 19.00 |
+| Database Seed Script | csharp-script | opus | 0 | 0 | 0.0 | 0 | 19 | 0.00 |
+| Database Seed Script | csharp-script | sonnet | 0 | 0 | 0.0 | 0 | 60 | 0.00 |
+| Database Seed Script | default | opus | 100 | 75 | 0.8 | 477 | 366 | 1.30 |
+| Database Seed Script | default | sonnet | 60 | 51 | 0.8 | 341 | 388 | 0.88 |
+| Database Seed Script | powershell | opus | 70 | 120 | 1.7 | 544 | 569 | 0.96 |
+| Database Seed Script | powershell | sonnet | 27 | 65 | 2.4 | 315 | 493 | 0.64 |
+| Database Seed Script | powershell-strict | opus | 47 | 95 | 2.0 | 449 | 30 | 14.97 |
+| Database Seed Script | powershell-strict | sonnet | 46 | 80 | 1.7 | 454 | 137 | 3.31 |
+| Error Retry Pipeline | csharp-script | opus | 0 | 0 | 0.0 | 0 | 111 | 0.00 |
+| Error Retry Pipeline | csharp-script | sonnet | 0 | 0 | 0.0 | 0 | 0 | 0.00 |
+| Error Retry Pipeline | default | opus | 0 | 0 | 0.0 | 0 | 0 | 0.00 |
+| Error Retry Pipeline | default | sonnet | 46 | 45 | 1.0 | 305 | 328 | 0.93 |
+| Error Retry Pipeline | powershell | opus | 25 | 89 | 3.6 | 420 | 245 | 1.71 |
+| Error Retry Pipeline | powershell | sonnet | 21 | 42 | 2.0 | 232 | 9 | 25.78 |
+| Error Retry Pipeline | powershell-strict | opus | 35 | 93 | 2.7 | 546 | 2 | 273.00 |
+| Error Retry Pipeline | powershell-strict | sonnet | 17 | 45 | 2.6 | 208 | 0 | 0.00 |
+| Multi-file Search and Replace | csharp-script | opus | 0 | 0 | 0.0 | 0 | 39 | 0.00 |
+| Multi-file Search and Replace | csharp-script | sonnet | 0 | 0 | 0.0 | 0 | 34 | 0.00 |
+| Multi-file Search and Replace | default | opus | 76 | 65 | 0.9 | 429 | 227 | 1.89 |
+| Multi-file Search and Replace | default | sonnet | 78 | 75 | 1.0 | 411 | 375 | 1.10 |
+| Multi-file Search and Replace | powershell | opus | 38 | 56 | 1.5 | 381 | 6 | 63.50 |
+| Multi-file Search and Replace | powershell | sonnet | 19 | 29 | 1.5 | 261 | 198 | 1.32 |
+| Multi-file Search and Replace | powershell-strict | opus | 14 | 38 | 2.7 | 251 | 242 | 1.04 |
+| Multi-file Search and Replace | powershell-strict | sonnet | 36 | 70 | 1.9 | 565 | 355 | 1.59 |
+| Semantic Version Bumper | csharp-script | opus | 0 | 0 | 0.0 | 0 | 18 | 0.00 |
+| Semantic Version Bumper | csharp-script | sonnet | 0 | 0 | 0.0 | 0 | 0 | 0.00 |
+| Semantic Version Bumper | default | opus | 106 | 72 | 0.7 | 429 | 395 | 1.09 |
+| Semantic Version Bumper | default | sonnet | 70 | 35 | 0.5 | 267 | 354 | 0.75 |
+| Semantic Version Bumper | powershell | opus | 54 | 69 | 1.3 | 431 | 0 | 0.00 |
+| Semantic Version Bumper | powershell | sonnet | 33 | 46 | 1.4 | 329 | 263 | 1.25 |
+| Semantic Version Bumper | powershell-strict | opus | 34 | 62 | 1.8 | 393 | 5 | 78.60 |
+| Semantic Version Bumper | powershell-strict | sonnet | 42 | 57 | 1.4 | 389 | 349 | 1.11 |
+| PR Label Assigner | csharp-script | opus | 0 | 0 | 0.0 | 0 | 32 | 0.00 |
+| PR Label Assigner | csharp-script | sonnet | 0 | 0 | 0.0 | 0 | 35 | 0.00 |
+| PR Label Assigner | default | opus | 56 | 39 | 0.7 | 306 | 211 | 1.45 |
+| PR Label Assigner | default | sonnet | 44 | 28 | 0.6 | 337 | 193 | 1.75 |
+| PR Label Assigner | powershell | opus | 31 | 56 | 1.8 | 342 | 263 | 1.30 |
+| PR Label Assigner | powershell | sonnet | 39 | 61 | 1.6 | 286 | 168 | 1.70 |
+| PR Label Assigner | powershell-strict | opus | 35 | 59 | 1.7 | 395 | 275 | 1.44 |
+| PR Label Assigner | powershell-strict | sonnet | 28 | 42 | 1.5 | 239 | 141 | 1.70 |
+| Dependency License Checker | csharp-script | opus | 0 | 0 | 0.0 | 0 | 23 | 0.00 |
+| Dependency License Checker | csharp-script | sonnet | 0 | 0 | 0.0 | 0 | 92 | 0.00 |
+| Dependency License Checker | default | opus | 74 | 71 | 1.0 | 531 | 358 | 1.48 |
+| Dependency License Checker | default | sonnet | 62 | 55 | 0.9 | 384 | 291 | 1.32 |
+| Dependency License Checker | powershell | opus | 36 | 62 | 1.7 | 482 | 361 | 1.34 |
+| Dependency License Checker | powershell | sonnet | 22 | 43 | 2.0 | 258 | 270 | 0.96 |
+| Dependency License Checker | powershell-strict | opus | 37 | 71 | 1.9 | 497 | 6 | 82.83 |
+| Dependency License Checker | powershell-strict | sonnet | 0 | 0 | 0.0 | 16 | 0 | 0.00 |
+| Docker Image Tag Generator | csharp-script | opus | 0 | 0 | 0.0 | 0 | 6 | 0.00 |
+| Docker Image Tag Generator | csharp-script | sonnet | 0 | 0 | 0.0 | 0 | 42 | 0.00 |
+| Docker Image Tag Generator | default | opus | 66 | 39 | 0.6 | 259 | 141 | 1.84 |
+| Docker Image Tag Generator | default | sonnet | 34 | 20 | 0.6 | 142 | 155 | 0.92 |
+| Docker Image Tag Generator | powershell | opus | 39 | 50 | 1.3 | 270 | 151 | 1.79 |
+| Docker Image Tag Generator | powershell | sonnet | 20 | 23 | 1.1 | 155 | 129 | 1.20 |
+| Docker Image Tag Generator | powershell-strict | opus | 26 | 36 | 1.4 | 305 | 173 | 1.76 |
+| Docker Image Tag Generator | powershell-strict | sonnet | 23 | 28 | 1.2 | 357 | 71 | 5.03 |
+| Test Results Aggregator | csharp-script | opus | 0 | 0 | 0.0 | 0 | 0 | 0.00 |
+| Test Results Aggregator | csharp-script | sonnet | 0 | 0 | 0.0 | 0 | 0 | 0.00 |
+| Test Results Aggregator | default | opus | 82 | 62 | 0.8 | 375 | 351 | 1.07 |
+| Test Results Aggregator | default | sonnet | 78 | 120 | 1.5 | 710 | 471 | 1.51 |
+| Test Results Aggregator | powershell | opus | 48 | 68 | 1.4 | 414 | 4 | 103.50 |
+| Test Results Aggregator | powershell | sonnet | 40 | 68 | 1.7 | 372 | 406 | 0.92 |
+| Test Results Aggregator | powershell-strict | opus | 56 | 70 | 1.2 | 454 | 5 | 90.80 |
+| Test Results Aggregator | powershell-strict | sonnet | 14 | 45 | 3.2 | 247 | 3 | 82.33 |
+| Environment Matrix Generator | csharp-script | opus | 0 | 0 | 0.0 | 0 | 23 | 0.00 |
+| Environment Matrix Generator | csharp-script | sonnet | 0 | 0 | 0.0 | 30 | 0 | 0.00 |
+| Environment Matrix Generator | default | opus | 60 | 56 | 0.9 | 427 | 270 | 1.58 |
+| Environment Matrix Generator | default | sonnet | 69 | 66 | 1.0 | 576 | 349 | 1.65 |
+| Environment Matrix Generator | powershell | opus | 44 | 74 | 1.7 | 672 | 259 | 2.59 |
+| Environment Matrix Generator | powershell | sonnet | 19 | 36 | 1.9 | 294 | 222 | 1.32 |
+| Environment Matrix Generator | powershell-strict | opus | 27 | 47 | 1.7 | 493 | 372 | 1.33 |
+| Environment Matrix Generator | powershell-strict | sonnet | 24 | 36 | 1.5 | 323 | 17 | 19.00 |
+| Artifact Cleanup Script | csharp-script | opus | 0 | 0 | 0.0 | 0 | 3 | 0.00 |
+| Artifact Cleanup Script | csharp-script | sonnet | 0 | 0 | 0.0 | 0 | 0 | 0.00 |
+| Artifact Cleanup Script | default | opus | 64 | 71 | 1.1 | 430 | 396 | 1.09 |
+| Artifact Cleanup Script | default | sonnet | 42 | 50 | 1.2 | 306 | 248 | 1.23 |
+| Artifact Cleanup Script | powershell | opus | 34 | 81 | 2.4 | 440 | 344 | 1.28 |
+| Artifact Cleanup Script | powershell | sonnet | 25 | 43 | 1.7 | 318 | 409 | 0.78 |
+| Artifact Cleanup Script | powershell-strict | opus | 34 | 73 | 2.1 | 653 | 3 | 217.67 |
+| Artifact Cleanup Script | powershell-strict | sonnet | 35 | 74 | 2.1 | 524 | 9 | 58.22 |
+| Secret Rotation Validator | csharp-script | opus | 0 | 0 | 0.0 | 0 | 8 | 0.00 |
+| Secret Rotation Validator | csharp-script | sonnet | 0 | 0 | 0.0 | 34 | 6 | 5.67 |
+| Secret Rotation Validator | default | opus | 116 | 118 | 1.0 | 766 | 418 | 1.83 |
+| Secret Rotation Validator | default | sonnet | 52 | 50 | 1.0 | 282 | 304 | 0.93 |
+| Secret Rotation Validator | powershell | opus | 30 | 40 | 1.3 | 328 | 328 | 1.00 |
+| Secret Rotation Validator | powershell | sonnet | 27 | 53 | 2.0 | 435 | 408 | 1.07 |
+| Secret Rotation Validator | powershell-strict | opus | 67 | 106 | 1.6 | 732 | 3 | 244.00 |
+| Secret Rotation Validator | powershell-strict | sonnet | 30 | 53 | 1.8 | 441 | 101 | 4.37 |
+
+</details>
 
 ## Per-Run Results
 

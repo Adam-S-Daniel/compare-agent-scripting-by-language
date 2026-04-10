@@ -122,19 +122,47 @@ For "checked" mode variants (e.g., `csharp-script-checked`), the runner would cr
 - PSScriptAnalyzer installation for PowerShell checking
 - Adding new modes (typescript-bun, fsharp-script, bash) to runner.py
 
-## Test Suite Quality Evaluation (Discussed, Not Started)
+## Test Suite Quality Evaluation
 
 Four approaches discussed for evaluating test quality across runs:
-1. **Structural metrics** (count tests, assertions, test-to-code ratio) — easy, automated
-2. **Mutation testing** (mutmut for Python, Stryker for C#) — gold standard, expensive
-3. **LLM-as-judge** (send code + tests + task spec to Claude for scoring) — good insight/effort ratio
-4. **Cross-validation** (run tests from run A against implementation from run B) — clever but complex
+1. **Structural metrics** (count tests, assertions, test-to-code ratio) — **Implemented** in `test_quality.py`
+2. **Mutation testing** (mutmut for Python, Stryker for C#) — gold standard, expensive. Not started.
+3. **LLM-as-judge** (send code + tests + task spec to Claude for scoring) — **Implemented** in `test_quality.py`
+4. **Cross-validation** (run tests from run A against implementation from run B) — clever but complex. Not started.
+
+### Implementation details (approaches 1 & 3)
+
+- **`test_quality.py`** — standalone module, also imported by `generate_results.py`.
+  - `compute_structural_metrics(generated_code_dir)` — language-aware counting of tests,
+    assertions, test-to-code ratio. Supports Python, TypeScript/Bun, PowerShell/Pester,
+    and Bash/bats (including custom test harness patterns used by Opus).
+  - `evaluate_with_llm(task_desc, impl_code, test_code)` — sends code to Claude Sonnet
+    for scoring on coverage, rigor, design, and overall quality (1-5 scale). Requires
+    `ANTHROPIC_API_KEY`. Results cached per run in `test-quality-llm.json`.
+- **`generate_results.py`** — new "Test Quality Evaluation" section in results.md:
+  - Structural Metrics by Language/Model (aggregate table + sorted variants)
+  - Per-run structural metrics (collapsible)
+  - LLM-as-Judge Scores (aggregate + per-run, shown only when cached scores exist)
+
+### Usage
+
+```bash
+# Structural metrics only (runs during report generation)
+python3 test_quality.py results/2026-04-08_192624
+
+# LLM-as-judge evaluation (requires ANTHROPIC_API_KEY)
+python3 test_quality.py --llm-judge results/2026-04-08_192624
+
+# Regenerate reports (structural metrics auto-included, LLM scores from cache)
+python3 generate_results.py --all
+```
 
 ## File Layout
 
 ```
 runner.py                          — Main benchmark runner (1219 lines)
 run-benchmark.sh                   — Setup script (installs runtimes, launches runner)
+test_quality.py                    — Test quality evaluation (structural metrics + LLM-as-judge)
 benchmark-instructions-v1.md       — Original instructions (v1)
 benchmark-instructions-v2.md       — Updated instructions (v2)
 hooks/syntax-check.py              — PostToolUse hook for syntax checking (tested, working)

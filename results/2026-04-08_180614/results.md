@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-09 02:52:54 PM ET
+**Last updated:** 2026-04-10 12:23:18 AM ET
 
 **Status:** 2/2 runs completed, 0 remaining
 **Total cost so far:** $2.28
@@ -229,6 +229,59 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | Partial | 2 | $0.08 | 3.41% |
 | Miss | 0 | $0.00 | 0.00% |
 | **Total** | **2** | **$0.08** | **3.41%** |
+
+## Test Quality Evaluation
+
+### Structural Metrics by Language/Model
+
+Automated analysis of test files: test count, assertion count, and test-to-code line ratio.
+
+| Mode | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
+|------|-------|-----------|----------------|-----------------|---------------------|
+| default | sonnet | 94.0 | 47.0 | 0.5 | 0.59 |
+| powershell | sonnet | 27.0 | 35.0 | 1.3 | 0.49 |
+
+
+<details>
+<summary>Sorted by avg tests (most first)</summary>
+
+| Mode | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
+|------|-------|-----------|----------------|-----------------|---------------------|
+| default | sonnet | 94.0 | 47.0 | 0.5 | 0.59 |
+| powershell | sonnet | 27.0 | 35.0 | 1.3 | 0.49 |
+
+</details>
+
+<details>
+<summary>Sorted by avg assertions (most first)</summary>
+
+| Mode | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
+|------|-------|-----------|----------------|-----------------|---------------------|
+| default | sonnet | 94.0 | 47.0 | 0.5 | 0.59 |
+| powershell | sonnet | 27.0 | 35.0 | 1.3 | 0.49 |
+
+</details>
+
+<details>
+<summary>Sorted by avg test:code ratio (highest first)</summary>
+
+| Mode | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
+|------|-------|-----------|----------------|-----------------|---------------------|
+| default | sonnet | 94.0 | 47.0 | 0.5 | 0.59 |
+| powershell | sonnet | 27.0 | 35.0 | 1.3 | 0.49 |
+
+</details>
+
+
+<details>
+<summary>Per-run structural metrics</summary>
+
+| Task | Mode | Model | Tests | Assertions | Assert/Test | Test Lines | Impl Lines | Test:Code |
+|------|------|-------|-------|------------|-------------|------------|------------|-----------|
+| Semantic Version Bumper | default | sonnet | 94 | 47 | 0.5 | 325 | 548 | 0.59 |
+| Semantic Version Bumper | powershell | sonnet | 27 | 35 | 1.3 | 241 | 495 | 0.49 |
+
+</details>
 
 ## Per-Run Results
 
