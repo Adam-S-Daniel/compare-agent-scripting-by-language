@@ -69,6 +69,26 @@ See the docstring on `_detect_traps()` in `generate_results.py`. Each trap needs
 a kebab-case name, detection logic over bash_cmds/console/metrics, a time estimate,
 and an entry in `trap_applicable_mode` if mode-specific.
 
+### LLM vs structural discrepancy checks
+
+After every report generation (`python3 generate_results.py --all`), check the
+"LLM vs Structural Discrepancies" section in each `results.md`. Discrepancies
+are auto-classified by `_find_discrepancies()` in `generate_results.py`:
+
+- **counter-gap**: structural metrics are implausibly low (e.g. 0 tests or 0
+  assertions while LLM scores high). This means `test_quality.py` is missing a
+  test pattern. **Fix the counter** — read the generated test files to identify
+  the pattern the counter doesn't recognize, add it to the appropriate
+  `_count_*()` function and the detection/classification patterns, add unit
+  tests, and regenerate. Counter-gap discrepancies should not persist across PRs.
+- **qualitative**: structural metrics look reasonable but the LLM disagrees on
+  quality. The report includes the LLM's justification (from the `summary`
+  field in `test-quality-llm.json`). These are expected and acceptable — review
+  the justification to confirm it's coherent, then leave them.
+
+If a **new counter-gap** appears after changing `test_quality.py`, it's a
+regression. Fix it before merging.
+
 ### Updating model pricing
 
 Edit `models.py`. Check https://docs.anthropic.com/en/docs/about-claude/models and
@@ -110,10 +130,14 @@ See the docstring in `llm_providers.py` for a complete example skeleton.
 2. **If you added or changed code, add or update unit tests** in `tests/`.
    New functions need test coverage. Changed behavior needs updated assertions.
 3. Run `python3 generate_results.py --all` and verify no errors.
-4. Verify all import paths work: `python3 -c "from runner import main"`.
-5. Spot-check a few numbers in results.md against raw metrics.json.
-6. If you changed architecture or findings, update this file (`AGENTS.md`).
-7. If you added files or moved things, update the Files table in `README.md`.
+4. **Check for counter-gap discrepancies** in the generated `results.md` files.
+   If any "Probable counter gaps" appear, fix them in `test_quality.py` before
+   merging (see "LLM vs structural discrepancy checks" above). Qualitative
+   disagreements are expected — verify the LLM justification is coherent.
+5. Verify all import paths work: `python3 -c "from runner import main"`.
+6. Spot-check a few numbers in results.md against raw metrics.json.
+7. If you changed architecture or findings, update this file (`AGENTS.md`).
+8. If you added files or moved things, update the Files table in `README.md`.
 
 ## Current state (2026-04-10)
 

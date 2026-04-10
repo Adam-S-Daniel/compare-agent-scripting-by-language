@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-10 04:10:25 PM ET
+**Last updated:** 2026-04-10 04:32:52 PM ET
 
 **Status:** 64/64 runs completed, 0 remaining
 **Total cost so far:** $86.90
@@ -679,16 +679,14 @@ Values near +1.0 indicate the LLM agrees with the structural signal; near 0 mean
 
 ### LLM vs Structural Discrepancies
 
-Cases where the LLM judge's scores diverge significantly from structural metrics.
-These may indicate the LLM is weighing qualitative factors the counters miss,
-or that the structural counters are undercounting for an unusual test pattern.
+**Qualitative disagreements** — structural metrics look reasonable; the LLM judge is weighing factors the counters can't measure.
 
-| Task | Mode | Model | Tests | Asserts | Cov | Rig | Des | Ovr | Flag |
-|------|------|-------|-------|---------|-----|-----|-----|-----|------|
-| Docker Image Tag Generator | powershell | opus | 13 | 40 | 4 | 2 | 3 | 3 | LLM says low rigor (2/5) but 40 assertions detected |
-| Test Results Aggregator | bash | opus | 14 | 43 | 3 | 2 | 3 | 3 | LLM says low rigor (2/5) but 43 assertions detected |
-| Secret Rotation Validator | bash | sonnet | 23 | 43 | 3 | 2 | 3 | 3 | LLM says low rigor (2/5) but 43 assertions detected |
-| Secret Rotation Validator | powershell | opus | 47 | 48 | 3 | 2 | 3 | 3 | LLM says low rigor (2/5) but 48 assertions detected |
+| Task | Mode | Model | Tests | Asserts | Cov | Rig | Des | Ovr | Flag | Justification |
+|------|------|-------|-------|---------|-----|-----|-----|-----|------|---------------|
+| Docker Image Tag Generator | powershell | opus | 13 | 40 | 4 | 2 | 3 | 3 | LLM says low rigor (2/5) but 40 assertions detected | The suite covers six well-chosen scenarios (main, master, feature branch, PR, semver tag, sanitization) and adds useful workflow-structure checks (actionlint, file existence, YAML shape). Exact tag... |
+| Test Results Aggregator | bash | opus | 14 | 43 | 3 | 2 | 3 | 3 | LLM says low rigor (2/5) but 43 assertions detected | The suite covers the main happy-path requirements well: it checks JUnit-only, JSON-only, and mixed scenarios through act with exact value assertions, verifies flaky-test detection by name, validate... |
+| Secret Rotation Validator | bash | sonnet | 23 | 43 | 3 | 2 | 3 | 3 | LLM says low rigor (2/5) but 43 assertions detected | The suite covers the core happy-path requirements well: expired/warning/ok classification for both output formats, summary counts, report_date, required_by inclusion, the all-ok fixture, and workfl... |
+| Secret Rotation Validator | powershell | opus | 47 | 48 | 3 | 2 | 3 | 3 | LLM says low rigor (2/5) but 48 assertions detected | The test suite covers the main happy-path requirements well: expired/warning/ok classification, both markdown and JSON output formats, workflow structure, and actionlint validation. Exact-value ass... |
 
 ## Per-Run Results
 

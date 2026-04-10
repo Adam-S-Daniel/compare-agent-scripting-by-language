@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-10 04:10:24 PM ET
+**Last updated:** 2026-04-10 04:32:52 PM ET
 
 **Status:** 64/64 runs completed, 0 remaining
 **Total cost so far:** $84.25
@@ -685,19 +685,17 @@ Values near +1.0 indicate the LLM agrees with the structural signal; near 0 mean
 
 ### LLM vs Structural Discrepancies
 
-Cases where the LLM judge's scores diverge significantly from structural metrics.
-These may indicate the LLM is weighing qualitative factors the counters miss,
-or that the structural counters are undercounting for an unusual test pattern.
+**Qualitative disagreements** — structural metrics look reasonable; the LLM judge is weighing factors the counters can't measure.
 
-| Task | Mode | Model | Tests | Asserts | Cov | Rig | Des | Ovr | Flag |
-|------|------|-------|-------|---------|-----|-----|-----|-----|------|
-| Semantic Version Bumper | powershell | opus | 34 | 44 | 3 | 2 | 3 | 2 | LLM says low rigor (2/5) but 44 assertions detected |
-| Dependency License Checker | powershell | sonnet | 38 | 84 | 4 | 2 | 3 | 3 | LLM says low rigor (2/5) but 84 assertions detected |
-| Test Results Aggregator | typescript-bun | opus | 8 | 59 | 4 | 2 | 3 | 3 | LLM says low rigor (2/5) but 59 assertions detected |
-| Environment Matrix Generator | powershell | opus | 43 | 62 | 3 | 2 | 2 | 2 | LLM says low rigor (2/5) but 62 assertions detected |
-| Secret Rotation Validator | default | opus | 8 | 59 | 4 | 2 | 3 | 3 | LLM says low rigor (2/5) but 59 assertions detected |
-| Secret Rotation Validator | powershell | opus | 49 | 74 | 3 | 2 | 3 | 3 | LLM says low rigor (2/5) but 74 assertions detected |
-| Secret Rotation Validator | typescript-bun | opus | 7 | 77 | 2 | 2 | 2 | 2 | LLM says low rigor (2/5) but 77 assertions detected |
+| Task | Mode | Model | Tests | Asserts | Cov | Rig | Des | Ovr | Flag | Justification |
+|------|------|-------|-------|---------|-----|-----|-----|-----|------|---------------|
+| Semantic Version Bumper | powershell | opus | 34 | 44 | 3 | 2 | 3 | 2 | LLM says low rigor (2/5) but 44 assertions detected | The suite covers the five primary bump scenarios (patch, minor, major-bang, major-BREAKING, no-bump) plus workflow-structure validation and actionlint, which addresses most of the stated requiremen... |
+| Dependency License Checker | powershell | sonnet | 38 | 84 | 4 | 2 | 3 | 3 | LLM says low rigor (2/5) but 84 assertions detected | The unit test layer (LicenseChecker.Tests.ps1) is comprehensive and covers all eight public functions with both happy-path and basic file-not-found error cases. WorkflowStructure.Tests.ps1 is clean... |
+| Test Results Aggregator | typescript-bun | opus | 8 | 59 | 4 | 2 | 3 | 3 | LLM says low rigor (2/5) but 59 assertions detected | The suite covers all major happy-path requirements: JUnit XML parsing, JSON parsing, multi-file aggregation, flaky test detection, markdown output, workflow structure validation, and actionlint. Ex... |
+| Environment Matrix Generator | powershell | opus | 43 | 62 | 3 | 2 | 2 | 2 | LLM says low rigor (2/5) but 62 assertions detected | The suite addresses the main task requirements (basic matrix, include/exclude rules, fail-fast, max-parallel, size validation, missing-file error) and validates workflow structure. However, several... |
+| Secret Rotation Validator | default | opus | 8 | 59 | 4 | 2 | 3 | 3 | LLM says low rigor (2/5) but 59 assertions detected | The test suite covers the core functional requirements well — all urgency categories (expired, warning, ok), both output formats (JSON and markdown), configurable warning windows, and workflow stru... |
+| Secret Rotation Validator | powershell | opus | 49 | 74 | 3 | 2 | 3 | 3 | LLM says low rigor (2/5) but 74 assertions detected | The suite covers the main happy-path scenarios well — mixed, all-ok, all-expired, and the warning-window boundary flip — and checks both markdown and JSON output formats with exact expected values ... |
+| Secret Rotation Validator | typescript-bun | opus | 7 | 77 | 2 | 2 | 2 | 2 | LLM says low rigor (2/5) but 77 assertions detected | The test suite is almost entirely composed of end-to-end act/Docker integration tests, leaving the core library functions (daysBetween, evaluateSecret, buildReport, formatReport, parseArgs) complet... |
 
 ## Per-Run Results
 
