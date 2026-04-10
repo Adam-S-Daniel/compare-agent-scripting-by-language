@@ -10,12 +10,20 @@ via `CLAUDE.md`. Other agents: read this file directly.
 # Validate imports
 python3 -c "from runner import main"
 python3 -c "from generate_results import generate_results_md"
+python3 -c "from test_quality import compute_structural_metrics"
+python3 -c "from llm_providers import get_provider"
 
 # Regenerate all reports
 python3 generate_results.py --all
 
 # Run a benchmark (v4, all tasks/modes/models)
 python3 runner.py --tasks 11,12,13,14,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
+
+# Evaluate test quality (structural metrics only)
+python3 test_quality.py results/2026-04-08_192624
+
+# Evaluate test quality with LLM-as-judge (requires a provider)
+python3 test_quality.py --llm-judge --provider claude-cli results/2026-04-08_192624
 
 # Build custom act container (optional, eliminates pwsh install overhead)
 docker build -t act-ubuntu-pwsh:latest -f Dockerfile.act .
@@ -44,7 +52,8 @@ docker build -t act-ubuntu-pwsh:latest -f Dockerfile.act .
 - `models.py` — single source of truth for model IDs and token pricing. Update here when Anthropic changes prices.
 - `runner.py` — benchmark harness. Runs agents via `claude -p`, collects metrics, pushes results. Imports from `models.py` and `generate_results.py`.
 - `generate_results.py` — generates `results.md` reports and updates `README.md`. Can run standalone: `python3 generate_results.py --all`.
-- `test_quality.py` — test quality evaluation. Structural metrics (always) + LLM-as-judge (with `--llm-judge` + `ANTHROPIC_API_KEY`). Imported by `generate_results.py` for the "Test Quality Evaluation" section.
+- `test_quality.py` — test quality evaluation. Structural metrics (always) + LLM-as-judge (with `--llm-judge --provider <name>`). Imported by `generate_results.py` for the "Test Quality Evaluation" section.
+- `llm_providers.py` — pluggable LLM provider abstraction for evaluation tasks (see "Adding LLM providers" below).
 - `benchmark-instructions-v*.md` — per-version specs given to agents during runs.
 - `hooks/syntax-check.py` — PostToolUse hook for syntax/lint checking.
 - `Dockerfile.act` — custom act container image with pwsh + Pester pre-installed. Build with `docker build -t act-ubuntu-pwsh:latest -f Dockerfile.act .`. Runner.py auto-detects it and injects `.actrc` into workspaces.
@@ -68,6 +77,24 @@ After changing `generate_results.py`, run:
 python3 generate_results.py --all
 ```
 This regenerates `results.md` for every run directory and updates `README.md`.
+
+### Adding LLM providers
+
+The LLM-as-judge evaluation in `test_quality.py` uses a pluggable provider
+system defined in `llm_providers.py`. The benchmark runner (`runner.py`) is
+inherently tied to the Claude Code CLI (it tests CLI-specific features), but
+the evaluation layer is provider-agnostic.
+
+To add a new provider (e.g., Anthropic API, OpenAI, Codex CLI):
+
+1. Open `llm_providers.py` and create a class inheriting from `LLMProvider`.
+2. Implement `is_available()` — return True when the provider can be used.
+3. Implement `judge(system_prompt, user_message, model)` — return
+   `{"text": str, "cost_usd": float, "input_tokens": int, "output_tokens": int}`.
+4. Register it in the `PROVIDERS` dict at the bottom of the file.
+5. Use it: `python3 test_quality.py --llm-judge --provider your-provider`.
+
+See the docstring in `llm_providers.py` for a complete example skeleton.
 
 ## Before every PR
 

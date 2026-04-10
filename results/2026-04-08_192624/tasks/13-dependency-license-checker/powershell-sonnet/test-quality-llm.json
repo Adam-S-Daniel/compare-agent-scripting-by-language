@@ -1,0 +1,12 @@
+{
+  "coverage": 4,
+  "rigor": 2,
+  "design": 3,
+  "overall": 3,
+  "summary": "The unit test layer (LicenseChecker.Tests.ps1) is comprehensive and covers all eight public functions with both happy-path and basic file-not-found error cases. WorkflowStructure.Tests.ps1 is clean and methodically checks triggers, jobs, steps, and actionlint compliance. However, rigor is the main weakness: edge cases are largely absent \u2014 malformed/empty JSON, requirements.txt with only comments or unpinned packages, empty allow/deny lists, the unsupported-manifest-type throw path, the -FailOnDenied switch in run.ps1, the devDependencies parsing branch, and version-range-stripping correctness are all untested. The ActRunner integration tests have structural problems: all three test cases call Invoke-ActRun with no ExtraFiles overrides so they all exercise the same default workflow state rather than distinct fixture scenarios, making them nearly redundant; the function-sharing workaround ($script:InvokeActRun = ${function:Invoke-ActRun}) is an awkward Pester scope hack; and some assertions (e.g., 'MIT-only check: all 2 dependencies approved', 'All \\d+ tests passed') are tied to step output strings that may not reflect real workflow output. Brittle hard-coded Count assertions (Should -Be 5) are fragile against fixture changes. There is no AfterAll cleanup and no assertion on the act-result.txt file's final content. The suite would catch obvious regressions in core logic but would miss many realistic failure modes.",
+  "tqs": 3.0,
+  "judge_cost_usd": 0.0709,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 2017,
+  "judge_provider": "claude-cli"
+}

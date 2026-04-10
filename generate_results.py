@@ -960,7 +960,12 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     if has_llm and llm_rows:
         lines.append("### LLM-as-Judge Scores")
         lines.append("")
-        lines.append(f"Claude evaluates each test suite on coverage, rigor, design, and overall quality (1-5 scale).")
+        lines.append("An LLM evaluates each test suite on four dimensions (1-5 scale):")
+        lines.append("")
+        lines.append("- **Coverage** (1-5): Do tests exercise the key requirements? 1 = most untested, 5 = all covered.")
+        lines.append("- **Rigor** (1-5): Edge cases, error handling, boundary conditions? 1 = happy path only, 5 = thorough.")
+        lines.append("- **Design** (1-5): Test organization, fixtures, readability? 1 = messy/brittle, 5 = well-structured.")
+        lines.append("- **Overall** (1-5): Holistic quality — would you trust this suite to catch regressions? 1 = no, 5 = absolutely. Use this as the primary ranking metric.")
         lines.append("")
 
         # Aggregate by mode/model
@@ -976,8 +981,8 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
             lj_agg[key]["ovr"].append(r["overall"])
             lj_agg[key]["cost"].append(r["judge_cost"])
 
-        lj_hdr = "| Mode | Model | Avg Coverage | Avg Rigor | Avg Design | Avg Overall | Judge Cost |"
-        lj_sep = "|------|-------|-------------|-----------|------------|-------------|------------|"
+        lj_hdr = "| Mode | Model | Avg Overall | Avg Coverage | Avg Rigor | Avg Design | Judge Cost |"
+        lj_sep = "|------|-------|-------------|-------------|-----------|------------|------------|"
         lj_summary_rows = []
         for key in sorted(lj_agg):
             a = lj_agg[key]
@@ -989,8 +994,9 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
                 "cost": sum(a["cost"]),
             })
         def _fmt_lj(r):
-            return (f"| {r['mode']} | {r['model']} | {r['avg_cov']:.1f} "
-                    f"| {r['avg_rig']:.1f} | {r['avg_des']:.1f} | {r['avg_ovr']:.1f} "
+            return (f"| {r['mode']} | {r['model']} | **{r['avg_ovr']:.1f}** "
+                    f"| {r['avg_cov']:.1f} | {r['avg_rig']:.1f} "
+                    f"| {r['avg_des']:.1f} "
                     f"| ${r['cost']:.4f} |")
 
         lines.append(lj_hdr)
@@ -1004,19 +1010,164 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
             ("Sorted by avg overall (highest first)", "avg_ovr", True),
             ("Sorted by avg coverage (highest first)", "avg_cov", True),
             ("Sorted by avg rigor (highest first)", "avg_rig", True),
+            ("Sorted by avg design (highest first)", "avg_des", True),
         ], _fmt_lj))
         lines.append("")
 
         # Per-run LLM scores
-        lj_pr_hdr = "| Task | Mode | Model | Coverage | Rigor | Design | Overall | Summary |"
-        lj_pr_sep = "|------|------|-------|----------|-------|--------|---------|---------|"
+        lj_pr_hdr = "| Task | Mode | Model | Cov | Rig | Des | Ovr | Summary |"
+        lj_pr_sep = "|------|------|-------|-----|-----|-----|-----|---------|"
         def _fmt_lj_pr(r):
             return (f"| {r['task']} | {r['mode']} | {r['model']} "
-                    f"| {r['coverage']} | {r['rigor']} | {r['design']} | {r['overall']} "
+                    f"| {r['coverage']} | {r['rigor']} "
+                    f"| {r['design']} | {r['overall']} "
                     f"| {r['summary'][:60]} |")
         lines.extend(_collapsible_table("Per-run LLM judge scores", lj_pr_hdr, lj_pr_sep,
                                         [_fmt_lj_pr(r) for r in llm_rows]))
         lines.append("")
+
+    # ── Cross-comparison: LLM scores vs structural metrics ──
+    if has_llm and llm_rows and tq_rows:
+        # Build lookup from (task, mode, model) -> structural data
+        tq_lookup = {}
+        for r in tq_rows:
+            tq_lookup[(r["task"], r["mode"], r["model"])] = r
+
+        # Compute rank correlation between structural metrics and LLM scores
+        def _rank(values):
+            """Assign ranks to values (average rank for ties)."""
+            indexed = sorted(enumerate(values), key=lambda x: x[1])
+            ranks = [0.0] * len(values)
+            i = 0
+            while i < len(indexed):
+                j = i
+                while j < len(indexed) and indexed[j][1] == indexed[i][1]:
+                    j += 1
+                avg_rank = (i + j + 1) / 2  # 1-based average rank
+                for k in range(i, j):
+                    ranks[indexed[k][0]] = avg_rank
+                i = j
+            return ranks
+
+        def _spearman(xs, ys):
+            """Compute Spearman rank correlation coefficient."""
+            if len(xs) < 3:
+                return None
+            rx, ry = _rank(xs), _rank(ys)
+            n = len(xs)
+            mean_rx = sum(rx) / n
+            mean_ry = sum(ry) / n
+            num = sum((a - mean_rx) * (b - mean_ry) for a, b in zip(rx, ry))
+            den_x = sum((a - mean_rx) ** 2 for a in rx) ** 0.5
+            den_y = sum((b - mean_ry) ** 2 for b in ry) ** 0.5
+            if den_x == 0 or den_y == 0:
+                return None
+            return round(num / (den_x * den_y), 2)
+
+        # Collect paired data
+        paired_tests, paired_asserts, paired_ratio = [], [], []
+        paired_cov, paired_rig, paired_des, paired_ovr = [], [], [], []
+        for lr in llm_rows:
+            key = (lr["task"], lr["mode"], lr["model"])
+            sq = tq_lookup.get(key)
+            if not sq:
+                continue
+            paired_tests.append(sq["tests"])
+            paired_asserts.append(sq["asserts"])
+            paired_ratio.append(sq["ratio"])
+            paired_cov.append(lr["coverage"])
+            paired_rig.append(lr["rigor"])
+            paired_des.append(lr["design"])
+            paired_ovr.append(lr["overall"])
+
+        if len(paired_tests) >= 5:
+            lines.append("### Correlation: Structural Metrics vs LLM Scores")
+            lines.append("")
+            lines.append("Spearman rank correlation between automated counts and LLM judge scores.")
+            lines.append("Values near +1.0 indicate the LLM agrees with the structural signal; near 0 means no relationship.")
+            lines.append("")
+            lines.append("| Structural Metric | vs Coverage | vs Rigor | vs Design | vs Overall |")
+            lines.append("|-------------------|------------|---------|----------|-----------|")
+            for label, vals in [("Test count", paired_tests),
+                                ("Assertion count", paired_asserts),
+                                ("Test:code ratio", paired_ratio)]:
+                rc = _spearman(vals, paired_cov)
+                rr = _spearman(vals, paired_rig)
+                rd = _spearman(vals, paired_des)
+                ro = _spearman(vals, paired_ovr)
+                lines.append(
+                    f"| {label} | {rc if rc is not None else 'n/a'} "
+                    f"| {rr if rr is not None else 'n/a'} "
+                    f"| {rd if rd is not None else 'n/a'} "
+                    f"| {ro if ro is not None else 'n/a'} |")
+            lines.append("")
+            lines.append(f"*Based on {len(paired_tests)} runs with both structural and LLM scores.*")
+            lines.append("")
+
+        discrepancies = []
+        for lr in llm_rows:
+            key = (lr["task"], lr["mode"], lr["model"])
+            sq = tq_lookup.get(key)
+            if not sq:
+                continue
+
+            tests = sq["tests"]
+            asserts = sq["asserts"]
+            ratio = sq["ratio"]
+            flags = []
+
+            # High LLM coverage but very few tests
+            if lr["coverage"] >= 4 and tests <= 3:
+                flags.append(f"LLM says high coverage ({lr['coverage']}/5) but only {tests} tests detected")
+            # Low LLM coverage but many tests
+            if lr["coverage"] <= 2 and tests >= 20:
+                flags.append(f"LLM says low coverage ({lr['coverage']}/5) but {tests} tests detected")
+
+            # High LLM rigor but few assertions
+            if lr["rigor"] >= 4 and asserts <= 5:
+                flags.append(f"LLM says high rigor ({lr['rigor']}/5) but only {asserts} assertions detected")
+            # Low LLM rigor but many assertions
+            if lr["rigor"] <= 2 and asserts >= 40:
+                flags.append(f"LLM says low rigor ({lr['rigor']}/5) but {asserts} assertions detected")
+
+            # High LLM overall but no tests or assertions
+            if lr["overall"] >= 4 and tests == 0:
+                flags.append(f"LLM says high overall ({lr['overall']}/5) but 0 tests detected")
+
+            # Low LLM design but high test-to-code ratio
+            if lr["design"] <= 2 and ratio >= 2.0:
+                flags.append(f"LLM says poor design ({lr['design']}/5) but test:code ratio is {ratio:.1f}")
+
+            # High LLM overall but very low assertion density
+            if lr["overall"] >= 4 and tests > 0 and asserts / tests < 0.5:
+                flags.append(f"LLM says high overall ({lr['overall']}/5) but only {asserts/tests:.1f} assertions/test")
+
+            if flags:
+                discrepancies.append({
+                    "task": lr["task"], "mode": lr["mode"], "model": lr["model"],
+                    "tests": tests, "asserts": asserts, "ratio": ratio,
+                    "cov": lr["coverage"], "rig": lr["rigor"],
+                    "des": lr["design"], "ovr": lr["overall"],
+                    "flags": flags,
+                })
+
+        if discrepancies:
+            lines.append("### LLM vs Structural Discrepancies")
+            lines.append("")
+            lines.append("Cases where the LLM judge's scores diverge significantly from structural metrics.")
+            lines.append("These may indicate the LLM is weighing qualitative factors the counters miss,")
+            lines.append("or that the structural counters are undercounting for an unusual test pattern.")
+            lines.append("")
+            lines.append("| Task | Mode | Model | Tests | Asserts | Cov | Rig | Des | Ovr | Flag |")
+            lines.append("|------|------|-------|-------|---------|-----|-----|-----|-----|------|")
+            for d in discrepancies:
+                for flag in d["flags"]:
+                    lines.append(
+                        f"| {d['task']} | {d['mode']} | {d['model']} "
+                        f"| {d['tests']} | {d['asserts']} "
+                        f"| {d['cov']} | {d['rig']} | {d['des']} | {d['ovr']} "
+                        f"| {flag} |")
+            lines.append("")
 
     # ==================================================================
     # PER-RUN RESULTS

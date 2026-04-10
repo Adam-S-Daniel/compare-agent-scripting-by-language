@@ -1,0 +1,10 @@
+{
+  "coverage": 2,
+  "rigor": 2,
+  "design": 2,
+  "overall": 2,
+  "summary": "The test harness is infrastructure-heavy but functionally shallow. All testing is routed through `act` (GitHub Actions in Docker), which satisfies the task's CI requirement but means zero unit tests exist for the core Python functions \u2014 parse_version, bump_version, classify_commit, determine_bump_type, generate_changelog, write_version, etc. These functions have non-trivial logic (e.g., BREAKING CHANGE detection, v-prefixed versions, scope parsing, priority resolution) that goes entirely untested at the unit level. Rigor is poor: only happy-path act runs are asserted; there are no negative cases for malformed versions, empty files, missing version sources, no conventional commits, or conflicting bump types. The 'changelog shown' assertion checks only that the string 'CHANGELOG' appears anywhere in act output \u2014 not that it's correct. Design has notable problems: global mutable state (passed/failed/errors) breaks test isolation; the `_parse_workflow_minimal()` fallback is a brittle, half-implemented YAML parser that could produce wrong results; PyYAML is imported inside a function with a silent fallback path; fixture files are external and not shown, making the test code incomplete on its own. The infrastructure-layer assertions (act exit 0, 'Job succeeded') are good, and the exact-string checks for 'New version: X.Y.Z' and 'BUMPED_VERSION=X.Y.Z' are appropriate \u2014 but those are only as strong as the fixtures driving them, which are hidden from review.",
+  "judge_cost_usd": 0.0629,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 1682
+}

@@ -1,0 +1,10 @@
+{
+  "coverage": 3,
+  "rigor": 2,
+  "design": 3,
+  "overall": 2,
+  "summary": "The suite covers the five primary bump scenarios (patch, minor, major-bang, major-BREAKING, no-bump) plus workflow-structure validation and actionlint, which addresses most of the stated requirements. However, the package.json version-file case is explicitly called out in the .DESCRIPTION comment as test case 7 but never implemented \u2014 a concrete gap against a stated requirement. Error-handling paths (invalid version string, missing file, empty commit log, git-log failure) are entirely absent, as is any test for the --DryRun switch or scoped commit messages (e.g., feat(auth):). All tests are end-to-end integration tests that spawn Docker via act; there are no unit tests for the helper functions (Get-SemanticVersion, Get-BumpType, Get-NextVersion, etc.), so a regression in those helpers can only be detected indirectly and slowly. The Invoke-ActTest helper is defined inside a root-level BeforeAll block, which can cause Pester v5 scoping issues when the function is referenced inside nested Describe/BeforeAll blocks \u2014 making tests potentially unreliable depending on the Pester version. The approach of asserting exact version strings (e.g., 'NEW_VERSION=1\\.0\\.1') and 'Job succeeded' is solid where it appears, but the overall suite would not catch regressions in error paths, package.json handling, or the DryRun mode.",
+  "judge_cost_usd": 0.0716,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 2503
+}

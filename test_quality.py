@@ -4,18 +4,22 @@
 Two evaluation approaches:
 1. **Structural metrics** — fast, no external deps, always available.
    Counts tests, assertions, test-to-code ratio per generated code directory.
-2. **LLM-as-judge** — sends code + tests + task spec to Claude for scoring.
-   Requires ANTHROPIC_API_KEY. Results cached in test-quality-llm.json.
+2. **LLM-as-judge** — sends code + tests + task spec to an LLM for scoring.
+   Uses a pluggable provider (see llm_providers.py). Default: claude-cli.
+   Results cached in test-quality-llm.json per run variant.
 
 Usage:
     # Structural metrics only (always works, used by generate_results.py)
     python3 test_quality.py results/2026-04-08_192624
 
-    # LLM-as-judge evaluation (requires ANTHROPIC_API_KEY)
-    python3 test_quality.py --llm-judge results/2026-04-08_192624
+    # LLM-as-judge evaluation (requires --provider; default: claude-cli)
+    python3 test_quality.py --llm-judge --provider claude-cli results/2026-04-08_192624
 
     # Both, for all runs
-    python3 test_quality.py --llm-judge --all
+    python3 test_quality.py --llm-judge --provider claude-cli --all
+
+    # Force re-evaluation (ignores cached scores)
+    python3 test_quality.py --llm-judge --provider claude-cli --force --all
 """
 
 import json
@@ -23,8 +27,6 @@ import os
 import re
 import sys
 from pathlib import Path
-
-from models import COST_PER_MTOK
 
 # ---------------------------------------------------------------------------
 # Language-aware file classification
@@ -274,7 +276,7 @@ def _empty_structural() -> dict:
 # LLM-as-Judge
 # ---------------------------------------------------------------------------
 
-LLM_JUDGE_MODEL = "claude-sonnet-4-6"
+LLM_JUDGE_MODEL = "sonnet"
 LLM_JUDGE_CACHE_FILE = "test-quality-llm.json"
 
 JUDGE_SYSTEM_PROMPT = """\
@@ -290,98 +292,77 @@ Evaluate the quality of the TEST SUITE (not the implementation) across these dim
 - **design** (1-5): Test organization, fixture quality, independence, readability. 5 = well-structured with clear fixtures, 1 = messy/brittle.
 - **overall** (1-5): Holistic test suite quality. Would you trust this test suite to catch regressions?
 
-Respond with ONLY a JSON object (no markdown fences) in this exact format:
-{"coverage": N, "rigor": N, "design": N, "overall": N, "summary": "1-2 sentence explanation"}"""
+Return ONLY a JSON object with keys: coverage, rigor, design, overall (integers 1-5), summary (string). No markdown fences, no explanation outside the JSON."""
+
+
+def _build_judge_message(task_description: str, impl_code: str, test_code: str) -> str:
+    """Build the user message for the LLM judge."""
+    # Truncate implementation if too long (tests are more important for judging)
+    if len(impl_code) > 200_000:
+        impl_code = impl_code[:200_000] + "\n... (truncated)"
+
+    return f"""## Task Description
+{task_description}
+
+## Implementation Code
+```
+{impl_code}
+```
+
+## Test Code
+```
+{test_code}
+```
+
+Evaluate the test suite quality."""
 
 
 def evaluate_with_llm(task_description: str, impl_code: str, test_code: str,
-                      api_key: str | None = None) -> dict | None:
-    """Send code + tests to Claude for quality scoring.
+                      provider_name: str = "claude-cli") -> dict | None:
+    """Send code + tests to an LLM for quality scoring.
 
-    Returns dict with coverage, rigor, design, overall (1-5), summary.
-    Returns None if API is unavailable.
+    Uses the provider specified by provider_name (see llm_providers.py).
+    The default 'claude-cli' provider uses the pre-authenticated Claude
+    Code CLI — no API key needed.
+
+    Returns dict with coverage, rigor, design, overall (1-5), summary,
+    judge_cost_usd, judge_input_tokens, judge_output_tokens.
+    Returns None if the provider is unavailable or the call fails.
     """
-    try:
-        import anthropic
-    except ImportError:
-        print("  anthropic SDK not installed; skipping LLM judge", file=sys.stderr)
-        return None
-
-    key = api_key or os.environ.get("ANTHROPIC_API_KEY")
-    if not key:
-        print("  ANTHROPIC_API_KEY not set; skipping LLM judge", file=sys.stderr)
-        return None
-
-    client = anthropic.Anthropic(api_key=key)
-
-    user_msg = f"""## Task Description
-{task_description}
-
-## Implementation Code
-```
-{impl_code}
-```
-
-## Test Code
-```
-{test_code}
-```
-
-Evaluate the test suite quality."""
-
-    # Truncate if too long (keep under ~100K tokens ≈ 400K chars)
-    if len(user_msg) > 400_000:
-        # Trim implementation code first (tests are more important for judging)
-        max_impl = 200_000
-        if len(impl_code) > max_impl:
-            impl_code = impl_code[:max_impl] + "\n... (truncated)"
-            user_msg = f"""## Task Description
-{task_description}
-
-## Implementation Code
-```
-{impl_code}
-```
-
-## Test Code
-```
-{test_code}
-```
-
-Evaluate the test suite quality."""
+    from llm_providers import get_provider
 
     try:
-        response = client.messages.create(
-            model=LLM_JUDGE_MODEL,
-            max_tokens=300,
-            system=JUDGE_SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": user_msg}],
-        )
-        text = response.content[0].text.strip()
-        # Parse JSON response
+        provider = get_provider(provider_name)
+    except (ValueError, RuntimeError) as e:
+        print(f"  LLM judge: {e}", file=sys.stderr)
+        return None
+
+    user_msg = _build_judge_message(task_description, impl_code, test_code)
+
+    response = provider.judge(JUDGE_SYSTEM_PROMPT, user_msg, model=LLM_JUDGE_MODEL)
+    if response is None:
+        return None
+
+    text = response["text"]
+    try:
         scores = json.loads(text)
-        # Validate expected keys
-        for k in ("coverage", "rigor", "design", "overall"):
-            if k not in scores or not isinstance(scores[k], (int, float)):
-                return None
-            scores[k] = max(1, min(5, int(scores[k])))
-        # Track cost
-        usage = response.usage
-        cost_rates = COST_PER_MTOK.get(LLM_JUDGE_MODEL, {})
-        input_cost = (usage.input_tokens / 1_000_000) * cost_rates.get("input", 0)
-        output_cost = (usage.output_tokens / 1_000_000) * cost_rates.get("output", 0)
-        cache_read_cost = (getattr(usage, "cache_read_input_tokens", 0) / 1_000_000) * cost_rates.get("cache_read", 0)
-        cache_write_cost = (getattr(usage, "cache_creation_input_tokens", 0) / 1_000_000) * cost_rates.get("cache_write", 0)
-        scores["judge_cost_usd"] = round(input_cost + output_cost + cache_read_cost + cache_write_cost, 4)
-        scores["judge_input_tokens"] = usage.input_tokens
-        scores["judge_output_tokens"] = usage.output_tokens
-        return scores
     except json.JSONDecodeError:
         print(f"  LLM judge returned non-JSON: {text[:200]}", file=sys.stderr)
         return None
-    except Exception as e:
-        print(f"  LLM judge error: {e}", file=sys.stderr)
-        return None
+
+    # Validate and clamp expected keys
+    for k in ("coverage", "rigor", "design", "overall"):
+        if k not in scores or not isinstance(scores[k], (int, float)):
+            print(f"  LLM judge missing/invalid key: {k}", file=sys.stderr)
+            return None
+        scores[k] = max(1, min(5, int(scores[k])))
+
+    scores["judge_cost_usd"] = round(response.get("cost_usd", 0), 4)
+    scores["judge_input_tokens"] = response.get("input_tokens", 0)
+    scores["judge_output_tokens"] = response.get("output_tokens", 0)
+    scores["judge_provider"] = provider_name
+
+    return scores
 
 
 def _read_files_concat(directory: Path, file_list: list[str]) -> str:
@@ -399,7 +380,8 @@ def _read_files_concat(directory: Path, file_list: list[str]) -> str:
 
 
 def evaluate_run_llm(run_variant_dir: Path, metrics: dict, structural: dict,
-                     api_key: str | None = None, force: bool = False) -> dict | None:
+                     provider_name: str = "claude-cli",
+                     force: bool = False) -> dict | None:
     """Evaluate a single run with LLM-as-judge, with caching.
 
     Checks for cached results in test-quality-llm.json. Skips if cached
@@ -423,7 +405,8 @@ def evaluate_run_llm(run_variant_dir: Path, metrics: dict, structural: dict,
     if not test_code.strip():
         return None
 
-    scores = evaluate_with_llm(task_desc, impl_code, test_code, api_key=api_key)
+    scores = evaluate_with_llm(task_desc, impl_code, test_code,
+                               provider_name=provider_name)
     if scores:
         cache_path.write_text(json.dumps(scores, indent=2))
     return scores
@@ -434,6 +417,7 @@ def evaluate_run_llm(run_variant_dir: Path, metrics: dict, structural: dict,
 # ---------------------------------------------------------------------------
 
 def evaluate_run_directory(run_dir: Path, llm_judge: bool = False,
+                           provider_name: str = "claude-cli",
                            force: bool = False) -> list[dict]:
     """Evaluate all runs in a results directory.
 
@@ -456,7 +440,8 @@ def evaluate_run_directory(run_dir: Path, llm_judge: bool = False,
 
         llm_scores = None
         if llm_judge:
-            llm_scores = evaluate_run_llm(variant_dir, metrics, structural, force=force)
+            llm_scores = evaluate_run_llm(variant_dir, metrics, structural,
+                                          provider_name=provider_name, force=force)
 
         parts = variant_dir.name.rsplit("-", 1)
         model = parts[-1] if len(parts) == 2 else "unknown"
@@ -479,19 +464,45 @@ def evaluate_run_directory(run_dir: Path, llm_judge: bool = False,
 # ---------------------------------------------------------------------------
 
 def main():
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Evaluate test suite quality for benchmark runs")
+    parser.add_argument(
+        "results_dir", nargs="?", default=None,
+        help="Results directory to evaluate (default: most recent)")
+    parser.add_argument(
+        "--all", action="store_true",
+        help="Evaluate all results directories")
+    parser.add_argument(
+        "--llm-judge", action="store_true",
+        help="Run LLM-as-judge evaluation (requires --provider)")
+    parser.add_argument(
+        "--provider", default="claude-cli",
+        help="LLM provider for --llm-judge (default: claude-cli). "
+             "See llm_providers.py for available providers.")
+    parser.add_argument(
+        "--force", action="store_true",
+        help="Force re-evaluation even if cached scores exist")
+    args = parser.parse_args()
+
+    if args.llm_judge:
+        from llm_providers import PROVIDERS
+        if args.provider not in PROVIDERS:
+            available = ", ".join(PROVIDERS.keys())
+            print(f"Error: unknown provider '{args.provider}'. Available: {available}",
+                  file=sys.stderr)
+            sys.exit(1)
+
     repo_root = Path(__file__).parent.resolve()
     results_dir = repo_root / "results"
 
-    llm_judge = "--llm-judge" in sys.argv
-    force = "--force" in sys.argv
-    do_all = "--all" in sys.argv
-
     # Determine target directories
-    if do_all:
+    if args.all:
         targets = sorted(d for d in results_dir.iterdir()
                          if d.is_dir() and not d.name.startswith("."))
-    elif len(sys.argv) > 1 and not sys.argv[-1].startswith("-"):
-        t = Path(sys.argv[-1])
+    elif args.results_dir:
+        t = Path(args.results_dir)
         targets = [t if t.is_absolute() else repo_root / t]
     else:
         dirs = sorted(d for d in results_dir.iterdir()
@@ -503,7 +514,9 @@ def main():
         print(f"Evaluating: {run_dir.name}", file=sys.stderr)
         print(f"{'='*60}", file=sys.stderr)
 
-        results = evaluate_run_directory(run_dir, llm_judge=llm_judge, force=force)
+        results = evaluate_run_directory(
+            run_dir, llm_judge=args.llm_judge,
+            provider_name=args.provider, force=args.force)
 
         total_cost = 0.0
         for r in results:
@@ -522,8 +535,9 @@ def main():
                 file=sys.stderr,
             )
 
-        if llm_judge and total_cost > 0:
-            print(f"\n  LLM judge cost: ${total_cost:.4f}", file=sys.stderr)
+        if args.llm_judge and total_cost > 0:
+            print(f"\n  LLM judge cost: ${total_cost:.4f} (provider: {args.provider})",
+                  file=sys.stderr)
 
         # Save summary
         summary_path = run_dir / "test-quality-summary.json"
