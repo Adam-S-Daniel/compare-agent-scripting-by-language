@@ -60,15 +60,7 @@ Each benchmark version defines a set of scripting tasks, language modes, and mod
 |-----|---------|------|------|---------|
 | **2026-04-09_152435** (latest) | [v4](benchmark-instructions-v4.md) | 64/64 | $86.90 | [results.md](results/2026-04-09_152435/results.md) |
 | 2026-04-08_192624 | [v3](benchmark-instructions-v3.md) | 64/64 | $85.10 | [results.md](results/2026-04-08_192624/results.md) |
-| 2026-04-08_180614 | ? | 2/? | — | [results.md](results/2026-04-08_180614/results.md) |
-| 2026-04-08_180255 | ? | 0/? | — | [results.md](results/2026-04-08_180255/results.md) |
-| 2026-04-08_174516 | ? | 1/? | — | [results.md](results/2026-04-08_174516/results.md) |
-| 2026-04-08_170920 | ? | 4/? | — | [results.md](results/2026-04-08_170920/results.md) |
-| 2026-04-08_161536 | ? | 7/? | — | [results.md](results/2026-04-08_161536/results.md) |
-| 2026-04-08_114024 | ? | 3/? | — | [results.md](results/2026-04-08_114024/results.md) |
-| 2026-04-08_113116 | ? | 1/? | — | [results.md](results/2026-04-08_113116/results.md) |
 | 2026-04-07_225702 | [v2](benchmark-instructions-v2.md) | 111/144 | $75.38 | [results.md](results/2026-04-07_225702/results.md) |
-| 2026-04-02_181500 | [v1](benchmark-instructions-v1.md) | 4/1 | $8.90 | [results.md](results/2026-04-02_181500/results.md) |
 | 2026-04-02_163146 | [v1](benchmark-instructions-v1.md) | 144/144 | $436.67 | [results.md](results/2026-04-02_163146/results.md) |
 <!-- END BENCHMARK RUNS -->
 
