@@ -1,0 +1,788 @@
+{
+  "task_id": "15-test-results-aggregator",
+  "task_name": "Test Results Aggregator",
+  "task_category": "GitHub Actions / CI Reporting",
+  "language_mode": "powershell",
+  "language_chosen": "powershell",
+  "language_breakdown": {
+    "powershell": 100.0
+  },
+  "interpreter_versions": {},
+  "powershell_version": "",
+  "dotnet_version": "",
+  "model": "claude-opus-4-6",
+  "model_short": "opus",
+  "claude_code_version": "2.1.98",
+  "instructions_version": "v4",
+  "timestamp_start": "2026-04-10T00:07:29.912973+00:00",
+  "timestamp_end": "2026-04-10T00:17:28.338846+00:00",
+  "prompt_text": "You are completing a scripting task. You MUST use PowerShell as your implementation language.\n\nTASK: Parse test result files in multiple formats (JUnit XML, and JSON), aggregate results across multiple files (simulating a matrix build), compute totals (passed, failed, skipped, duration), identify flaky tests (passed in some runs, failed in others), and generate a markdown summary suitable for a GitHub Actions job summary. Create sample test result files as fixtures.\n\nREQUIREMENTS:\n1. Use red/green TDD methodology: write a failing test FIRST, then write the minimum code to make it pass, then refactor. Repeat for each piece of functionality.\n2. Create mocks and test fixtures as necessary for testability. Use Pester as the testing framework.\n3. All tests must be runnable with `Invoke-Pester` and must pass at the end.\n4. Include clear comments explaining your approach.\n5. Handle errors gracefully with meaningful error messages.\n\nCreate your solution in the current working directory. Start by writing your first failing test.\n\nGITHUB ACTIONS REQUIREMENT:\nCreate a GitHub Actions workflow file at .github/workflows/test-results-aggregator.yml that uses\nyour script in a real CI/CD pipeline. The workflow must:\n- Use appropriate trigger events (push, pull_request, schedule, workflow_dispatch, etc.)\n- Reference your script correctly\n- Pass actionlint validation (valid YAML, valid action references, correct syntax)\n- Include appropriate permissions, environment variables, and job dependencies\n- Actually run successfully when executed locally with `act` (nektos/act)\n\nDesign your workflow so its steps work in an isolated Docker container \u2014 use\n`actions/checkout@v4`, install dependencies your script needs, and run it.\nAvoid steps requiring external services or secrets without sensible defaults.\n\nIMPORTANT for PowerShell mode: Use `shell: pwsh` on your workflow run: steps instead\nof invoking `pwsh -Command` or `pwsh -File` from bash. This avoids escaping issues\nand works correctly in act containers. pwsh and Pester are pre-installed in the\ncontainer.\n\nWORKFLOW VALIDATION:\nRun `actionlint .github/workflows/test-results-aggregator.yml` and fix any errors. actionlint is\npre-installed. Iterate until it passes cleanly. Validate with actionlint BEFORE\nrunning act \u2014 actionlint is instant, act takes 30-90 seconds per run.\n\nALL TESTS MUST RUN THROUGH ACT:\nEvery single test case must execute through the GitHub Actions workflow via `act`.\nDo NOT test your script directly \u2014 all testing goes through the pipeline.\n\nStructure your workflow to accept test fixture data and produce verifiable output.\nYour test harness must:\n1. For each test case: set up a temp git repo with your project files + that case's\n   fixture data, run `act push --rm`, capture the output\n2. Save all act output to `act-result.txt` in the current working directory (append\n   each test case's output, clearly delimited)\n3. Assert that act exited with code 0 for each case\n4. Parse the act output and assert on EXACT EXPECTED VALUES \u2014 not just that output\n   appeared, but that it matches the known-good result for that test case's input.\n   For example: if your workflow bumps version 1.1.0 with a feat commit, assert\n   the output contains exactly \"1.2.0\", not just \"a version number\"\n5. Assert every job shows \"Job succeeded\"\n\nThe `act-result.txt` file MUST exist when done. It is a required artifact.\n`act` and Docker are pre-installed. Limit yourself to at most 3 `act push` runs \u2014\ndiagnose errors from the output rather than re-running blindly.\n\nWORKFLOW STRUCTURE TESTS (also required):\n- Parse the YAML and check expected structure (triggers, jobs, steps)\n- Verify the workflow references your script files correctly (paths exist)\n- Verify actionlint passes (assert exit code 0)\n",
+  "exit_code": 0,
+  "run_success": true,
+  "failure_reason": null,
+  "session": {
+    "session_id": "788fe03b-e7a6-4995-8c48-4fad108670cc",
+    "stop_reason": "end_turn",
+    "terminal_reason": "completed",
+    "fast_mode_state": "off",
+    "service_tier": "standard",
+    "speed": "standard",
+    "inference_geo": "",
+    "context_window": 200000,
+    "max_output_tokens": 64000,
+    "permission_mode": "bypassPermissions",
+    "output_style": "default",
+    "tools_available_count": 25,
+    "mcp_servers": [],
+    "permission_denials": []
+  },
+  "model_usage_detail": {
+    "claude-opus-4-6": {
+      "inputTokens": 47,
+      "outputTokens": 31547,
+      "cacheReadInputTokens": 2449027,
+      "cacheCreationInputTokens": 70197,
+      "webSearchRequests": 0,
+      "costUSD": 2.45215475,
+      "contextWindow": 200000,
+      "maxOutputTokens": 64000
+    }
+  },
+  "effort_level": null,
+  "timing": {
+    "grand_total_duration_ms": 598425,
+    "total_api_duration_ms": 542056,
+    "total_execution_duration_ms": 55143,
+    "num_turns": 48
+  },
+  "tokens": {
+    "input_tokens": 47,
+    "output_tokens": 31547,
+    "cache_read_tokens": 2449027,
+    "cache_creation_tokens": 70197,
+    "total_context_consumed": 2519271,
+    "compaction_count": 0
+  },
+  "cost": {
+    "total_cost_usd": 2.45215475,
+    "assumed_input_cost_per_mtok": 15.0,
+    "assumed_output_cost_per_mtok": 75.0,
+    "assumed_cache_read_cost_per_mtok": 1.5,
+    "assumed_cache_write_cost_per_mtok": 18.75
+  },
+  "code_metrics": {
+    "total_lines": 656,
+    "total_tokens_estimate": 6623,
+    "file_count": 7,
+    "files": [
+      "TestResultsAggregator.Tests.ps1",
+      "TestResultsAggregator.ps1",
+      "act-result.txt",
+      "fixtures/run1-ubuntu.xml",
+      "fixtures/run2-macos.xml",
+      "fixtures/run3-windows.json",
+      ".github/workflows/test-results-aggregator.yml"
+    ]
+  },
+  "quality": {
+    "tests_pass": null,
+    "error_count": 2,
+    "error_details": [
+      "Exit code 1\n==========================================\n  Test Results Aggregator\n==========================================\nFixtures path: ./fixtures\n\nParsing: run1-ubuntu.xml\n\u001b[31;1mWrite-Error: \u001b[0m",
+      "Exit code 1\n==========================================\n  Test Results Aggregator\n==========================================\nFixtures path: /tmp/tmp.wzSHMqJLNO\n\nParsing: all-pass.json\n\nParsed 3 test ca"
+    ],
+    "actionlint_pass": true,
+    "actionlint_errors": 0,
+    "actionlint_results": [
+      {
+        "file": ".github/workflows/test-results-aggregator.yml",
+        "passed": true,
+        "errors": ""
+      }
+    ],
+    "act_result_txt_exists": true,
+    "act_result_txt_size": 6683,
+    "areas_of_difficulty": [],
+    "observations": ""
+  },
+  "tool_install": {
+    "tool_install_duration_ms": 0,
+    "tools_installed": [],
+    "install_commands_count": 0
+  },
+  "tool_use_timing": {
+    "total_tool_uses": 47,
+    "total_tool_duration_ms": 57973,
+    "bash_tool_uses": 19,
+    "bash_total_ms": 48066,
+    "slowest_tool_uses": [
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path './TestResultsAggregator.Tests.ps1' -Output Detailed\" 2>&1",
+        "duration_ms": 15033,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path './TestResultsAggregator.Tests.ps1' -Output Detailed\" 2>&1",
+        "duration_ms": 12945,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path './TestResultsAggregator.Tests.ps1' -Output Detailed\" 2>&1",
+        "duration_ms": 6127,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /tmp && rm -rf act-quick-test && mkdir act-quick-test && cd act-quick-test && mkdir -p .github/workflows fixtures && cp /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_1",
+        "duration_ms": 3666,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command './TestResultsAggregator.ps1 -FixturesPath ./fixtures' 2>&1",
+        "duration_ms": 2208,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "tmpdir=$(mktemp -d) && pwsh -Command '\n$data = @{\n    testsuites = @(\n        @{\n            name = \"AllPassSuite\"\n            testcases = @(\n                @{ name = \"TestX\"; status = \"passed\"; dura",
+        "duration_ms": 1442,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command './TestResultsAggregator.ps1 -FixturesPath ./fixtures' 2>&1",
+        "duration_ms": 1374,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command './TestResultsAggregator.ps1 -FixturesPath ./fixtures' 2>&1",
+        "duration_ms": 1299,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "tmpdir=$(mktemp -d) && pwsh -Command '\n@{\n    testsuites = @(\n        @{\n            name = \"AllPassSuite\"\n            testcases = @(\n                @{ name = \"TestX\"; status = \"passed\"; duration = 0",
+        "duration_ms": 1249,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "tmpdir=$(mktemp -d) && pwsh -Command '\n@{\n    testsuites = @(\n        @{\n            name = \"AllPassSuite\"\n            testcases = @(\n                @{ name = \"TestX\"; status = \"passed\"; duration = 0",
+        "duration_ms": 1206,
+        "is_error": false,
+        "is_install": false
+      }
+    ],
+    "all_tool_uses": [
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 509,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/15-test-results-aggregator/powershell-opus/",
+        "duration_ms": 122,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/15-test-results-aggregator/powershell-opus/.actrc",
+        "duration_ms": 407,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "which actionlint && actionlint --version; which act && act --version; pwsh --version",
+        "duration_ms": -516,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "ToolSearch",
+        "command": "",
+        "duration_ms": 55,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "TodoWrite",
+        "command": "",
+        "duration_ms": 15,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/15-test-results-aggregator/powershell-opus/fixtures",
+        "duration_ms": 65,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 748,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 519,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 54,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "TodoWrite",
+        "command": "",
+        "duration_ms": 3,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 706,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "TodoWrite",
+        "command": "",
+        "duration_ms": 12,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 633,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "TodoWrite",
+        "command": "",
+        "duration_ms": 8,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/15-test-results-aggregator/powershell-opus/.github/workflows",
+        "duration_ms": 57,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 89,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "TodoWrite",
+        "command": "",
+        "duration_ms": 13,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "actionlint .github/workflows/test-results-aggregator.yml 2>&1",
+        "duration_ms": 86,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command './TestResultsAggregator.ps1 -FixturesPath ./fixtures' 2>&1",
+        "duration_ms": 2208,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 581,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command './TestResultsAggregator.ps1 -FixturesPath ./fixtures' 2>&1",
+        "duration_ms": 1299,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "TodoWrite",
+        "command": "",
+        "duration_ms": 5,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path './TestResultsAggregator.Tests.ps1' -Output Detailed\" 2>&1",
+        "duration_ms": 6127,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "docker images | grep -E 'act|ubuntu|pwsh' 2>&1",
+        "duration_ms": 218,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 679,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /tmp && rm -rf act-quick-test && mkdir act-quick-test && cd act-quick-test && mkdir -p .github/workflows fixtures && cp /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_1",
+        "duration_ms": 3666,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path './TestResultsAggregator.Tests.ps1' -Output Detailed\" 2>&1",
+        "duration_ms": 15033,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 852,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command '\n$allPassData = @{\n    testsuites = @(\n        @{\n            name = \"AllPassSuite\"\n            testcases = @(\n                @{ name = \"TestX\"; status = \"passed\"; duration = 0.5 }\n   ",
+        "duration_ms": 998,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 17,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 41,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 618,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 624,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 587,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 26,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 534,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command './TestResultsAggregator.ps1 -FixturesPath ./fixtures' 2>&1",
+        "duration_ms": 1374,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "tmpdir=$(mktemp -d) && pwsh -Command '\n$data = @{\n    testsuites = @(\n        @{\n            name = \"AllPassSuite\"\n            testcases = @(\n                @{ name = \"TestX\"; status = \"passed\"; dura",
+        "duration_ms": 1442,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 600,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "tmpdir=$(mktemp -d) && pwsh -Command '\n@{\n    testsuites = @(\n        @{\n            name = \"AllPassSuite\"\n            testcases = @(\n                @{ name = \"TestX\"; status = \"passed\"; duration = 0",
+        "duration_ms": 1249,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 747,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 593,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "tmpdir=$(mktemp -d) && pwsh -Command '\n@{\n    testsuites = @(\n        @{\n            name = \"AllPassSuite\"\n            testcases = @(\n                @{ name = \"TestX\"; status = \"passed\"; duration = 0",
+        "duration_ms": 1206,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path './TestResultsAggregator.Tests.ps1' -Output Detailed\" 2>&1",
+        "duration_ms": 12945,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "wc -l act-result.txt && head -5 act-result.txt",
+        "duration_ms": 80,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "TodoWrite",
+        "command": "",
+        "duration_ms": 39,
+        "is_error": false,
+        "is_install": false
+      }
+    ],
+    "install_duration_ms": 0,
+    "test_duration_ms": 34105,
+    "act_duration_ms": 0
+  },
+  "hooks": {
+    "hook_fires": 16,
+    "hook_errors_caught": 0,
+    "hook_failures": 0,
+    "hook_events": [
+      {
+        "subtype": "hook_started",
+        "hook_id": "4cd053cf-97e6-40c7-9efd-279dac159bd0",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "4cd053cf-97e6-40c7-9efd-279dac159bd0",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "3c795534-bb8a-4b05-8973-c064fff4642b",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "3c795534-bb8a-4b05-8973-c064fff4642b",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "4ef3a7ca-b983-4412-82dd-247d6fbea988",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "4ef3a7ca-b983-4412-82dd-247d6fbea988",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "84999339-62bb-48f1-a1bc-cc89378a7a95",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "84999339-62bb-48f1-a1bc-cc89378a7a95",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "3060b23b-08e4-4b09-b4c8-e9bdb26d615c",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "3060b23b-08e4-4b09-b4c8-e9bdb26d615c",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "368dc86e-deaa-4ab5-806f-3d29c17c2d56",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "368dc86e-deaa-4ab5-806f-3d29c17c2d56",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "3c62df06-2a29-4450-8f9d-74e6886f2746",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "3c62df06-2a29-4450-8f9d-74e6886f2746",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "03217605-8e4b-451f-9b1b-93818794e373",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "03217605-8e4b-451f-9b1b-93818794e373",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "fee29bb6-fb79-4701-9395-111444580224",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "fee29bb6-fb79-4701-9395-111444580224",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "7c905438-e89b-4591-970a-c98aa4b32393",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "7c905438-e89b-4591-970a-c98aa4b32393",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "7137fb31-fa25-46cd-bf7e-dfcc1761b18e",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "7137fb31-fa25-46cd-bf7e-dfcc1761b18e",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "87faf993-ef98-4433-87ca-0ee9327898a5",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "87faf993-ef98-4433-87ca-0ee9327898a5",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "e52869ed-d5d6-46a4-88e6-223b98f0c379",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "e52869ed-d5d6-46a4-88e6-223b98f0c379",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "9dd6dcd3-3328-4548-a342-534ccf29ea15",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "9dd6dcd3-3328-4548-a342-534ccf29ea15",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "cb33e7c8-b040-4f00-9767-2d40474881af",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "cb33e7c8-b040-4f00-9767-2d40474881af",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "1043852d-506c-4eef-b8a4-8f7775214500",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "1043852d-506c-4eef-b8a4-8f7775214500",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  }
+}

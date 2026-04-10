@@ -1,0 +1,45 @@
+name: Test Results Aggregator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-aggregate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Install bats-core via npm (pre-installed node available in container)
+      - name: Install bats-core
+        run: npm install -g bats
+
+      # Install actionlint so the bats workflow-structure test can run it
+      - name: Install actionlint
+        run: |
+          curl -fsSL https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz \
+            | tar xz -C /usr/local/bin actionlint
+
+      - name: Make script executable
+        run: chmod +x aggregate.sh
+
+      # Run the full bats test suite (TDD tests for the aggregator)
+      - name: Run bats tests
+        run: bats tests/aggregate.bats
+
+      # Run the aggregator on the bundled fixtures and emit exact known output.
+      # The run-act-tests.sh harness greps this output for exact expected values.
+      - name: Generate aggregated summary
+        run: |
+          echo "=== Aggregated Test Summary ==="
+          bash aggregate.sh fixtures/
+
+      # Write the summary to the GitHub Actions job summary (if available)
+      - name: Write to job summary
+        run: bash aggregate.sh fixtures/ | tee -a "${GITHUB_STEP_SUMMARY:-/dev/null}"

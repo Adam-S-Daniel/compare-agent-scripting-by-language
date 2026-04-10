@@ -1,0 +1,73 @@
+name: PR Label Assigner
+
+# Trigger on push (CI), pull_request (label assignment), and manual dispatch.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  label-assigner:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Install Python test/YAML-parsing dependencies.
+      # pytest is usually pre-installed in CI images; pyyaml is needed for the
+      # workflow-structure tests.
+      - name: Install Python dependencies
+        run: python3 -m pip install --quiet --break-system-packages pytest pyyaml
+
+      # -----------------------------------------------------------------------
+      # Run the full pytest suite (unit tests + workflow structure tests).
+      # These tests were written first using TDD; this step is the green gate.
+      # -----------------------------------------------------------------------
+      - name: Run unit tests
+        run: python3 -m pytest test_label_assigner.py -v
+
+      # -----------------------------------------------------------------------
+      # Run the label assigner against each fixture set and emit verifiable
+      # output markers so the external test harness can assert exact values.
+      #
+      # Expected outputs (verified locally before writing this workflow):
+      #   CASE1_LABELS: documentation
+      #   CASE2_LABELS: api,tests
+      #   CASE3_LABELS: backend,api
+      #   CASE4_LABELS: NONE          (no rule matches → empty → substituted)
+      # -----------------------------------------------------------------------
+      - name: "Case 1: documentation label"
+        run: |
+          OUTPUT=$(python3 label_assigner.py \
+            --config test_fixtures/case1/config.json \
+            --files  test_fixtures/case1/changed_files.txt \
+            --output csv)
+          echo "CASE1_LABELS: ${OUTPUT:-NONE}"
+
+      - name: "Case 2: api + tests labels"
+        run: |
+          OUTPUT=$(python3 label_assigner.py \
+            --config test_fixtures/case2/config.json \
+            --files  test_fixtures/case2/changed_files.txt \
+            --output csv)
+          echo "CASE2_LABELS: ${OUTPUT:-NONE}"
+
+      - name: "Case 3: priority ordering (backend before api)"
+        run: |
+          OUTPUT=$(python3 label_assigner.py \
+            --config test_fixtures/case3/config.json \
+            --files  test_fixtures/case3/changed_files.txt \
+            --output csv)
+          echo "CASE3_LABELS: ${OUTPUT:-NONE}"
+
+      - name: "Case 4: no matches → NONE"
+        run: |
+          OUTPUT=$(python3 label_assigner.py \
+            --config test_fixtures/case4/config.json \
+            --files  test_fixtures/case4/changed_files.txt \
+            --output csv)
+          echo "CASE4_LABELS: ${OUTPUT:-NONE}"

@@ -115,31 +115,34 @@ See the docstring in `llm_providers.py` for a complete example skeleton.
 6. If you changed architecture or findings, update this file (`AGENTS.md`).
 7. If you added files or moved things, update the Files table in `README.md`.
 
-## Current state (2026-04-09)
+## Current state (2026-04-10)
 
-### v3 benchmark — complete
+### v4 benchmark — complete
 
 64/64 runs finished (8 tasks x 4 modes x 2 models). Results in
-`results/2026-04-08_192624/`. All runs passed actionlint and produced
-act-result.txt. One run (task 18/powershell/sonnet) originally timed out
-at 30min and was re-run with unlimited timeout (completed in 12.7min).
-Three powershell-sonnet runs had metrics reparsed due to a double-result
-bug (background task notifications created spurious second CLI result events).
+`results/2026-04-09_152435/`. Zero failures, zero timeouts, zero
+double-result bugs. Total cost $86.90, avg 8.6min/run.
 
-### Key findings
+v4 added trap-awareness guidance from v3 findings, `shell: pwsh` for
+PowerShell mode, "limit to 3 act push" instruction, and a custom act
+Docker image with pwsh/Pester pre-installed. This cut average run time
+by 24% vs v3 (8.6min vs 11.4min).
 
-- Opus is 1.84x faster than Sonnet on average (won 25 of 31 paired comparisons).
-- Default mode always chose Python (except once: Opus chose Bash for task 16).
-- PowerShell is the slowest mode (avg 15min vs 9min for default/opus).
-- Net of traps, powershell/opus is the cheapest ($0.93) and nearly tied for fastest (6.9min vs 6.8min for default/opus).
-- TypeScript hooks are the most productive (50% catch rate, net positive time savings).
-- PowerShell hooks are net negative (low catch rate, high overhead from Invoke-ScriptAnalyzer).
-- Traps consumed 15.8% of total benchmark time ($12.71, 115min); hooks saved 0.4% net.
-- pwsh-runtime-install-overhead is the largest trap by total time (26.2min across 15 runs) — wouldn't exist on real GitHub runners.
-- No context compactions occurred — 200K window was always sufficient.
+### Key findings (v4)
+
+- Opus is faster than Sonnet across all modes.
+- Default mode always chooses Python.
+- PowerShell/sonnet is the slowest and most expensive combo.
+- TypeScript hooks have ~50% catch rate but are net negative for Opus
+  (tsc --noEmit takes 12-21s per Write on large files) and net positive
+  for Sonnet (smaller writes, 2-3s per check).
+- PowerShell hooks catch almost nothing (0-4% rate) — net negative.
+- v4 trap-awareness guidance eliminated the timeout and double-result
+  bugs that occurred in v3.
 
 ### Earlier versions
 
-- v1: `results/2026-04-02_163146/` — 144 runs, all 18 tasks, 4 modes (default/powershell/powershell-strict/csharp-script). Had permission-denial artifacts (88% of errors).
-- v2: `results/2026-04-07_225702/` — 111/144 runs. Fixed permissions. Superseded by v3 before completion.
+- v3: `results/2026-04-08_192624/` — 64 runs, same tasks/modes/models as v4. Had 1 timeout, 3 double-result bugs. Avg 11.4min/run.
+- v2: `results/2026-04-07_225702/` — 111/144 runs. 18 tasks, modes: default/powershell/powershell-strict/csharp-script. Superseded by v3.
+- v1: `results/2026-04-02_163146/` — 144 runs, same as v2. Had permission-denial artifacts (88% of errors).
 - See `design-and-planning-artifacts/` for historical analysis and planning docs.

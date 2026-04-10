@@ -1,0 +1,76 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = "./New-BuildMatrix.Tests.ps1"
+          $config.Output.Verbosity = "Detailed"
+          $config.Run.Exit = $true
+          Invoke-Pester -Configuration $config
+
+      - name: Generate basic matrix
+        shell: pwsh
+        run: |
+          . ./New-BuildMatrix.ps1
+          $result = New-BuildMatrix -ConfigPath ./fixtures/basic.json
+          $json = $result | ConvertTo-Json -Depth 10
+          Write-Output "::group::Basic Matrix Output"
+          Write-Output $json
+          Write-Output "::endgroup::"
+          Write-Output "BASIC_MATRIX_RESULT<<GHEOF" >> $env:GITHUB_ENV
+          Write-Output $json >> $env:GITHUB_ENV
+          Write-Output "GHEOF" >> $env:GITHUB_ENV
+
+      - name: Generate full-featured matrix
+        shell: pwsh
+        run: |
+          . ./New-BuildMatrix.ps1
+          $result = New-BuildMatrix -ConfigPath ./fixtures/full-featured.json
+          $json = $result | ConvertTo-Json -Depth 10
+          Write-Output "::group::Full-Featured Matrix Output"
+          Write-Output $json
+          Write-Output "::endgroup::"
+
+      - name: Validate oversized matrix rejected
+        shell: pwsh
+        run: |
+          . ./New-BuildMatrix.ps1
+          $caught = $false
+          try {
+              New-BuildMatrix -ConfigPath ./fixtures/oversized.json
+          } catch {
+              $caught = $true
+              Write-Output "EXPECTED_ERROR: $($_.Exception.Message)"
+          }
+          if (-not $caught) {
+              Write-Error "Should have thrown for oversized matrix"
+              exit 1
+          }
+          Write-Output "Oversized matrix correctly rejected"
+
+      - name: Output summary
+        shell: pwsh
+        run: |
+          Write-Output "=== ALL CHECKS PASSED ==="
+          Write-Output "Pester tests: PASSED"
+          Write-Output "Basic matrix generation: PASSED"
+          Write-Output "Full-featured matrix generation: PASSED"
+          Write-Output "Oversized matrix rejection: PASSED"

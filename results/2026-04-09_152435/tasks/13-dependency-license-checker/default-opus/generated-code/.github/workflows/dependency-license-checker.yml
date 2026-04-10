@@ -1,0 +1,70 @@
+name: Dependency License Checker
+
+on:
+  push:
+    branches: ["*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Run unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pytest
+        run: pip install pytest
+
+      - name: Run tests
+        run: python -m pytest test_license_checker.py -v
+
+  check-all-approved:
+    name: Check all-approved fixture
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run license check on all-approved package.json
+        run: |
+          # Copy fixture as package.json for the checker
+          cp fixtures/package_all_approved.json package.json
+          python license_checker.py package.json license_config.json
+
+  check-with-denied:
+    name: Check denied fixture
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run license check on package with denied deps
+        run: |
+          cp fixtures/package_with_denied.json package.json
+          # This should fail (exit 1) because gpl-lib is denied
+          python license_checker.py package.json license_config.json && exit 1 || echo "EXPECTED_FAILURE: checker correctly exited non-zero for denied licenses"
+
+  check-requirements-mixed:
+    name: Check mixed requirements.txt
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run license check on mixed requirements.txt
+        run: |
+          python license_checker.py fixtures/requirements_mixed.txt license_config.json && exit 1 || echo "EXPECTED_FAILURE: checker correctly exited non-zero for denied licenses"

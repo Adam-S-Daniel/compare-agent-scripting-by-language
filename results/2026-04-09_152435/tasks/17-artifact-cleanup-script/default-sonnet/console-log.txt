@@ -1,0 +1,283 @@
+[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/AGENTS.md
+[Result] # Agent Instructions
+
+All agent-facing instructions live in this file. `CLAUDE.md` contains only a
+reference here. If you are a Claude Code agent, you have already loaded this
+via `CLAUDE.md`. Other agents: read this file directly.
+
+## Build and test
+
+```bash
+# Validate imports
+python3 -c "from runner import main"
+python3 -c "from generate_results import generate_results_md"
+
+# Regenerate all reports
+python3 generate_results.py --all
+
+# Run a benchmark (v4, all tasks/modes/models)
+python3 runner.py --tasks 11,12,13,14,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
+
+# Build custom act container (optional, eliminates pwsh install overhead)
+docker build -t act-ubuntu-pwsh:latest -f Dockerfile.act .
+```
+
+## Code style
+
+- Python 3.12+. No type stubs or mypy. Use type hints where they aid readability.
+- Dollar amounts in results.md: round to nearest penny (`.2f`).
+- Durations in results.md: always in minutes with 1 decimal (`{seconds/60:.1f}min`).
+- No emojis
+[Tool: Bash] ls /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/17-artifact-cleanup-script/default-sonnet/
+[Result] benchmark-instructions-v4.md
+[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/17-artifact-cleanup-script/default-sonnet/benchmark-instructions-v4.md | head -50
+[Result] # Benchmark Instructions v4 — GitHub Actions
+
+**Version**: v4
+**Date**: 2026-04-09
+**Purpose**: Measure how well Claude Code agents perform GitHub Actions workflow authoring tasks across different language constraints, with trap-awareness guidance from v3 findings.
+
+**Changes from v3**:
+- Added "Common Pitfalls" section with guidance derived from v3 trap analysis (115min, 15.8% of v3 time lost to traps)
+- Act container now has pwsh and Pester pre-installed (matching real GitHub runners). Agents still need an install step for workflows that will run on vanilla act, but the benchmarking container already has them.
+- GHA workflow addendum expanded with `shell: pwsh` guidance for PowerShell mode
+- All other methodology, tasks, modes, and models are unchanged from v3
+
+## Methodology
+
+### Overview
+
+Each task is executed by a Claude Code agent under 4 different language constraints ("modes") and with 2 different models, yielding **8 runs per task**. Agents receive only the prompt -- no conver
+[Tool: Bash] which python3 && python3 --version && which pytest && which actionlint && which act
+[Result] /usr/bin/python3
+Python 3.12.3
+/home/passp/.local/bin/pytest
+/home/passp/.local/bin/actionlint
+/home/passp/.local/bin/act
+[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/17-artifact-cleanup-script/default-sonnet/.actrc 2>/dev/null || echo "No .actrc"
+[Result] -P ubuntu-latest=act-ubuntu-pwsh:latest
+[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/.actrc 2>/dev/null || echo "No .actrc at repo root"
+docker images | grep -E "act|ubuntu" | head -20
+[Result] No .actrc at repo root
+WARNING: This output is designed for human readability. For machine-readable output, please use --format.
+act-ubuntu-pwsh:latest                   8f4a33bf1683       2.55GB          639MB   U    
+catthehacker/ubuntu:act-22.04            754f20d9a184       2.15GB          531MB        
+catthehacker/ubuntu:act-latest           68a2a9700126       2.26GB          559MB        
+ghcr.io/catthehacker/ubuntu:act-latest   ab464a96ff6c       1.99GB          284MB
+[Tool: Bash] docker run --rm act-ubuntu-pwsh:latest python3 --version 2>/dev/null && echo "python3 available" || echo "no python3"
+docker run --rm act-ubuntu-pwsh:latest which pytest 2>/dev/null && echo "pytest available" || echo "no pytest"
+docker run --rm act-ubuntu-pwsh:latest pip3 --version 2>/dev/null || echo "no pip3"
+[Result] Python 3.12.3
+python3 available
+no pytest
+pip 24.0 from /usr/lib/python3/dist-packages/pip (python 3.12)
+[Assistant] Good. Python 3.12 with pip is available in the act container. Now I'll build everything using TDD. Let me start by writing the failing tests first.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/17-artifact-cleanup-script/default-sonnet/test_artifact_cleanup.py", "content": "# test_artifact_clean
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/17-artifact-cleanup-script/default-sonnet/test_artifact_cleanup.py (file state is current in your context — no need to Read it back)
+[Tool: Bash] pytest test_artifact_cleanup.py -v 2>&1 | head -30
+[Result] ============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/17-artifact-cleanup-script/default-sonnet
+plugins: anyio-4.13.0
+collecting ... collected 0 items / 1 error
+
+==================================== ERRORS ====================================
+__________________ ERROR collecting test_artifact_cleanup.py ___________________
+ImportError while importing test module '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/17-artifact-cleanup-script/default-sonnet/test_artifact_cleanup.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[Assistant] Tests fail as expected (RED). Now writing the implementation to make them pass (GREEN):
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/17-artifact-cleanup-script/default-sonnet/artifact_cleanup.py", "content": "#!/usr/bin/env python3\n# 
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/17-artifact-cleanup-script/default-sonnet/artifact_cleanup.py (file state is current in your context — no need to Read it back)
+[Tool: Bash] pytest test_artifact_cleanup.py -v 2>&1
+[Result] ============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/17-artifact-cleanup-script/default-sonnet
+plugins: anyio-4.13.0
+collecting ... collected 30 items
+
+test_artifact_cleanup.py::TestArtifact::test_artifact_construction PASSED [  3%]
+test_artifact_cleanup.py::TestArtifact::test_artifact_from_dict PASSED   [  6%]
+test_artifact_cleanup.py::TestMaxAgePolicy::test_artifacts_within_max_age_are_retained PASSED [ 10%]
+test_artifact_cleanup.py::TestMaxAgePolicy::test_artifacts_older_than_max_age_are_deleted PASSED [ 13%]
+test_artifact_cleanup.py::TestMaxAgePolicy::test_artifact_exactly_at_max_age_boundary_is_retained PASSED [ 16%]
+test_artifact_cleanup.py::TestMaxAgePolicy::test_mixed_ages_correctly_partitioned PASSED [ 20%]
+test_artifact_cleanup.py::TestKeepLatestNPolicy::t
+[Assistant] All 30 tests pass. Now creating the fixture file and GitHub Actions workflow:
+[Tool: Bash] mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/17-artifact-cleanup-script/default-sonnet/fixtures
+mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/17-artifact-cleanup-script/default-sonnet/.github/workflows
+[Result] (Bash completed with no output)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/17-artifact-cleanup-script/default-sonnet/fixtures/ci_fixture.json", "content": "{\n  \"artifacts\": [
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/17-artifact-cleanup-script/default-sonnet/fixtures/ci_fixture.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/17-artifact-cleanup-script/default-sonnet/.github/workflows/artifact-cleanup-script.yml", "content": "
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/17-artifact-cleanup-script/default-sonnet/.github/workflows/artifact-cleanup-script.yml (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/artifact-cleanup-script.yml
+[Result] (Bash completed with no output)
+[Assistant] Actionlint passes. Now writing the test harness:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/17-artifact-cleanup-script/default-sonnet/run_act_tests.py", "content": "#!/usr/bin/env python3\n# run
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/17-artifact-cleanup-script/default-sonnet/run_act_tests.py (file state is current in your context — no need to Read it back)
+[Tool: Bash] pip install pyyaml -q && python3 -c "import yaml; print('yaml ok')"
+[Result ERROR] Exit code 1
+error: externally-managed-environment
+
+× This environment is externally managed
+╰─> To install Python packages system-wide, try apt install
+    python3-xyz, where xyz is the package you are trying to
+    install.
+    
+    If you wish to install a non-Debian-packaged Python package,
+    create a virtual environment using python3 -m venv path/to/venv.
+    Then use path/to/venv/bin/python and path/to/venv/bin/pip. Make
+    sure you have python3-full installed.
+    
+    If you wish to install a non-Debian packaged Python application,
+    it may be easiest to use pipx install xyz, which will manage a
+    virtual environment for you. Make sure you have pipx installed.
+    
+    See /usr/share/doc/python3.12/README.venv for more information.
+
+note: If you believe this is a mistake, please contact your Python installation or OS distribution provider. You can override this, at the risk of breaking your Python installation or OS, by passing --break-system-packages.
+hint: See PEP 668 f
+[Tool: Bash] python3 -c "import yaml; print('yaml ok')" 2>/dev/null || pip install pyyaml --break-system-packages -q && python3 -c "import yaml; print('yaml ok')"
+[Result] yaml ok
+yaml ok
+[Tool: Bash] python3 run_act_tests.py 2>&1 | head -40
+[Result] FAIL: Workflow missing trigger: push
+-- Workflow structure tests --
+[Tool: Bash] python3 -c "
+import yaml
+with open('.github/workflows/artifact-cleanup-script.yml') as f:
+    wf = yaml.safe_load(f)
+print(type(wf.get('on')), repr(list(wf.keys())[:5]))
+print('on keys:', list(wf.keys()))
+"
+[Result] <class 'NoneType'> ['name', True, 'permissions', 'jobs']
+on keys: ['name', True, 'permissions', 'jobs']
+[Assistant] The `on:` key parses as Python `True` in YAML. Fixing the structure test:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/17-artifact-cleanup-script/default-sonnet/run_act_tests.py", "old_string": "    
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/17-artifact-cleanup-script/default-sonnet/run_act_tests.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 run_act_tests.py 2>&1 | head -30
+[Result] FAIL: Step in test references artifact_cleanup.py but not the fixture
+-- Workflow structure tests --
+  triggers present: ['pull_request', 'push', 'schedule', 'workflow_dispatch']
+  jobs present: ['cleanup-dry-run', 'test']
+  job dependency: cleanup-dry-run needs test
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/17-artifact-cleanup-script/default-sonnet/run_act_tests.py", "old_string": "    
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/17-artifact-cleanup-script/default-sonnet/run_act_tests.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 run_act_tests.py 2>&1 | head -20
+[Result] FAIL: act exited with code 1. Output:
+[Artifact Cleanup Script/Run Unit Tests] ⭐ Run Set up job
+[Artifact Cleanup Script/Run Unit Tests] 🚀  Start image=act-ubuntu-pwsh:latest
+[Artifact Cleanup Script/Run Unit Tests]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=true
+[Artifact Cleanup Script/Run Unit Tests] using DockerAuthConfig authentication for docker pull
+[Artifact Cleanup Script/Run Unit Tests] Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+[Artifact Cleanup Script/Run Unit Tests]   ❌  Failure - Set up job
+[Artifact Cleanup Script/Run Unit Tests] 🏁  Job failed
+time="2026-04-10T00:47:01-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+Error: Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+
+-- Workflow structure tests --
+  triggers 
+[Assistant] Need to pass `--pull=false` since the image is local-only:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/17-artifact-cleanup-script/default-sonnet/run_act_tests.py", "old_string": "    
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/17-artifact-cleanup-script/default-sonnet/run_act_tests.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 run_act_tests.py 2>&1
+[Result ERROR] Exit code 1
+
+FAIL: act exited with code 1. Output:
+[Artifact Cleanup Script/Run Unit Tests] ⭐ Run Set up job
+[Artifact Cleanup Script/Run Unit Tests] 🚀  Start image=act-ubuntu-pwsh:latest
+[Artifact Cleanup Script/Run Unit Tests]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Artifact Cleanup Script/Run Unit Tests]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Run Unit Tests]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Run Unit Tests]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Artifact Cleanup Script/Run Unit Tests]   ✅  Success - Set up job
+[Artifact Cleanup Script/Run Unit Tests] ⭐ Run Main Checkout repository
+[Artifact Cleanup Script/Run Unit Tests]   🐳  docker cp src=/tmp/artifact-cleanup-act-fulb7my5/. dst=/tmp/
+[Assistant] Need to use `--break-system-packages` for pip in the container. Updating the workflow:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/17-artifact-cleanup-script/default-sonnet/.github/workflows/artifact-cleanup-scr
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/17-artifact-cleanup-script/default-sonnet/.github/workflows/artifact-cleanup-script.yml has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/artifact-cleanup-script.yml && echo "actionlint OK"
+[Result] actionlint OK
+[Tool: Bash] python3 run_act_tests.py 2>&1
+[Result] -- Workflow structure tests --
+  triggers present: ['pull_request', 'push', 'schedule', 'workflow_dispatch']
+  jobs present: ['cleanup-dry-run', 'test']
+  job dependency: cleanup-dry-run needs test
+  script references look correct
+  permissions: contents=read
+  PASS: all structure checks
+-- File path existence tests --
+  exists: artifact_cleanup.py
+  exists: test_artifact_cleanup.py
+  exists: fixtures/ci_fixture.json
+  exists: .github/workflows/artifact-cleanup-script.yml
+  PASS: all referenced files exist
+-- actionlint validation --
+  PASS: actionlint exit 0, no errors
+
+-- act test: max_age dry-run --
+  Running act push --rm in /tmp/artifact-cleanup-act-jmh24qdl ...
+  act exit code: 0
+  ASSERT OK: found 'Job succeeded'
+  ASSERT OK: found 'pytest 30 passed'
+  ASSERT OK: found 'DRY RUN mode'
+  ASSERT OK: found 'policy: max_age=20d'
+  ASSERT OK: found 'Deleted: 2'
+  ASSERT OK: found 'Retained: 2'
+  ASSERT OK: found 'Space reclaimed: 30.0 MB'
+  ASSERT OK: found 'Total artifacts: 4'
+  PASS
+[Assistant] All assertions pass. Let me verify `act-result.txt` exists and check its content:
+[Tool: Bash] wc -l act-result.txt && head -5 act-result.txt && echo "..." && grep -E "(Job succeeded|30 passed|Deleted:|Retained:|Space reclaimed)" act-result.txt
+[Result] 117 act-result.txt
+Artifact Cleanup Script — act Test Results
+
+========================================================================
+TEST CASE: max_age_dry_run
+========================================================================
+...
+[Artifact Cleanup Script/Run Unit Tests]   | ============================== 30 passed in 0.13s ==============================
+[Artifact Cleanup Script/Run Unit Tests] 🏁  Job succeeded
+[Artifact Cleanup Script/Artifact Cleanup (Dry Run)]   |   Deleted: 2
+[Artifact Cleanup Script/Artifact Cleanup (Dry Run)]   |   Retained: 2
+[Artifact Cleanup Script/Artifact Cleanup (Dry Run)]   |   Space reclaimed: 30.0 MB
+[Artifact Cleanup Script/Artifact Cleanup (Dry Run)] 🏁  Job succeeded
+[Assistant] Everything passes. Here's a summary of what was built:
+
+---
+
+## Solution Summary
+
+**Language chosen**: Python (default mode)
+
+### Files created
+
+| File | Purpose |
+|------|---------|
+| `test_artifact_cleanup.py` | 30 pytest tests written **first** (RED) covering all policies |
+| `artifact_cleanup.py` | Implementation written to make tests pass (GREEN) |
+| `fixtures/ci_fixture.json` | 4-artifact fixture with max_age=20d policy |
+| `.github/workflows/artifact-cleanup-script.yml` | Two-job CI pipeline |
+| `run_act_tests.py` | Test harness: structure tests + act integration |
+| `act-result.txt` | act output (required artifact) |
+
+### TDD cycle followed
+1. **RED**: `test_artifact_cleanup.py` written with 30 failing tests (import error — no module)
+2. **GREEN**: `artifact_cleanup.py` implemented; all 30 tests pass
+3. Tests cover: `Artifact` construction, `max_age_days`, `keep_latest_n`, `max_total_size_bytes`, combined policies, `DeletionPlan.space_reclaimed_bytes`, `format_size`, and `generate_report`
+
+### GitHub Actions workflow
+- Two jobs: `test` (pytest) → `cleanup-dry-run` (dependent)
+- Triggers: `push`, `pull_request`, `schedule`, `workflow_dispatch`
+- Passes `actionlint` with zero errors
+
+### act results (exact assertions verified)
+- `30 passed` — all unit tests green
+- `Job succeeded` — both jobs
+- `Deleted: 2`, `Retained: 2`, `Space reclaimed: 30.0 MB`, `Total artifacts: 4` — exact fixture output

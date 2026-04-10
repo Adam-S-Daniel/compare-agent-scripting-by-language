@@ -1,0 +1,81 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  version-bump:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+
+      - name: Install actionlint
+        run: |
+          ACTIONLINT_VERSION=1.7.7
+          curl -fsSL "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz" -o /tmp/actionlint.tar.gz
+          tar xzf /tmp/actionlint.tar.gz -C /tmp actionlint
+          mkdir -p "$HOME/.local/bin"
+          mv /tmp/actionlint "$HOME/.local/bin/"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Run unit tests
+        run: bun test src/version-bumper.test.ts
+
+      - name: Test case 1 - patch bump (fix commit, 1.0.0 -> 1.0.1)
+        run: |
+          OUTPUT=$(bun run src/version-bumper.ts fixtures/test-case-1.json)
+          echo "$OUTPUT"
+          if echo "$OUTPUT" | grep -qF "NEW_VERSION: 1.0.1"; then
+            echo "PASS: test-case-1 patch bump"
+          else
+            echo "FAIL: test-case-1 expected NEW_VERSION: 1.0.1"
+            exit 1
+          fi
+
+      - name: Test case 2 - minor bump (feat commit, 1.0.0 -> 1.1.0)
+        run: |
+          OUTPUT=$(bun run src/version-bumper.ts fixtures/test-case-2.json)
+          echo "$OUTPUT"
+          if echo "$OUTPUT" | grep -qF "NEW_VERSION: 1.1.0"; then
+            echo "PASS: test-case-2 minor bump"
+          else
+            echo "FAIL: test-case-2 expected NEW_VERSION: 1.1.0"
+            exit 1
+          fi
+
+      - name: Test case 3 - major bump (breaking change, 1.0.0 -> 2.0.0)
+        run: |
+          OUTPUT=$(bun run src/version-bumper.ts fixtures/test-case-3.json)
+          echo "$OUTPUT"
+          if echo "$OUTPUT" | grep -qF "NEW_VERSION: 2.0.0"; then
+            echo "PASS: test-case-3 major bump"
+          else
+            echo "FAIL: test-case-3 expected NEW_VERSION: 2.0.0"
+            exit 1
+          fi
+
+      - name: Test case 4 - mixed commits (feat beats fix, 1.2.3 -> 1.3.0)
+        run: |
+          OUTPUT=$(bun run src/version-bumper.ts fixtures/test-case-4.json)
+          echo "$OUTPUT"
+          if echo "$OUTPUT" | grep -qF "NEW_VERSION: 1.3.0"; then
+            echo "PASS: test-case-4 mixed commits"
+          else
+            echo "FAIL: test-case-4 expected NEW_VERSION: 1.3.0"
+            exit 1
+          fi
+
+      - name: Validate workflow with actionlint
+        run: actionlint .github/workflows/semantic-version-bumper.yml

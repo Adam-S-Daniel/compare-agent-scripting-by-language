@@ -5,7 +5,7 @@ description: Deep-dive analysis of a benchmark run. Use when the user wants to u
 
 # Analyze Run
 
-The user specifies a run directory (e.g., `results/2026-04-08_192624`) or "latest".
+The user specifies a run directory (e.g., `results/2026-04-09_152435`) or "latest".
 
 ## Steps
 
@@ -22,9 +22,11 @@ The user specifies a run directory (e.g., `results/2026-04-08_192624`) or "lates
 
 4. **Trap detection**: Import and run `_detect_traps` from `generate_results.py` on each run's events + console log.
 
-5. **Hook savings**: Compute gross saved, overhead, and net by language/model.
+5. **Hook savings**: Compute gross saved, overhead (per language/model combo), and net. Use `all_tool_uses` for real test time when available. Note that typescript-bun/opus has very high hook overhead (tsc takes 12-21s per Write on large files).
 
-6. **Identify outliers**: Find the most interesting/unusual runs (longest, most errors, cheapest, most expensive) and explain why by reading their `console-log.txt`.
+6. **Identify outliers**: Find the most interesting/unusual runs and explain why by reading their `console-log.txt`.
+
+7. **Compare across versions**: If prior runs exist, compare avg duration, cost, and trap rates.
 
 ## Analysis style
 

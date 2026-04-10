@@ -1,0 +1,346 @@
+[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/AGENTS.md
+[Result] # Agent Instructions
+
+All agent-facing instructions live in this file. `CLAUDE.md` contains only a
+reference here. If you are a Claude Code agent, you have already loaded this
+via `CLAUDE.md`. Other agents: read this file directly.
+
+## Build and test
+
+```bash
+# Validate imports
+python3 -c "from runner import main"
+python3 -c "from generate_results import generate_results_md"
+
+# Regenerate all reports
+python3 generate_results.py --all
+
+# Run a benchmark (v4, all tasks/modes/models)
+python3 runner.py --tasks 11,12,13,14,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
+
+# Build custom act container (optional, eliminates pwsh install overhead)
+docker build -t act-ubuntu-pwsh:latest -f Dockerfile.act .
+```
+
+## Code style
+
+- Python 3.12+. No type stubs or mypy. Use type hints where they aid readability.
+- Dollar amounts in results.md: round to nearest penny (`.2f`).
+- Durations in results.md: always in minutes with 1 decimal (`{seconds/60:.1f}min`).
+- No emojis
+[Tool: Bash] ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/typescript-bun-sonnet/
+[Result] total 44
+drwxr-xr-x  4 passp passp  4096 Apr 10 02:25 .
+drwxr-xr-x 10 passp passp  4096 Apr 10 02:25 ..
+-rw-r--r--  1 passp passp    40 Apr 10 02:25 .actrc
+drwxr-xr-x  2 passp passp  4096 Apr 10 02:25 .claude
+drwxr-xr-x  7 passp passp  4096 Apr 10 02:25 .git
+-rw-r--r--  1 passp passp 21666 Apr  9 15:03 benchmark-instructions-v4.md
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/typescript-bun-sonnet/benchmark-instructions-v4.md"}
+[Result] 1	# Benchmark Instructions v4 — GitHub Actions
+2	
+3	**Version**: v4
+4	**Date**: 2026-04-09
+5	**Purpose**: Measure how well Claude Code agents perform GitHub Actions workflow authoring tasks across different language constraints, with trap-awareness guidance from v3 findings.
+6	
+7	**Changes from v3**:
+8	- Added "Common Pitfalls" section with guidance derived from v3 trap analysis (115min, 15.8% of v3 time lost to traps)
+9	- Act container now has pwsh and Pester pre-installed (matching real GitHub runners). Agents still need an install step for workflows that will run on vanilla act, but the benchmarking container already has them.
+10	- GHA workflow addendum expanded with `shell: pwsh` guidance for PowerShell mode
+11	- All other methodology, tasks, modes, and models are unchanged from v3
+12	
+13	## Methodology
+14	
+15	### Overview
+16	
+17	Each task is executed by a Claude Code agent under 4 different language constraints ("modes") and with 2 different models, yielding **8 runs per task**. A
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/typescript-bun-sonnet/.actrc"}
+[Result] 1	-P ubuntu-latest=act-ubuntu-pwsh:latest
+2	
+[Assistant] Let me start by planning the implementation and writing the first failing test following TDD methodology.
+[Tool: Bash] mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/typescript-bun-sonnet/src && mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/typescript-bun-sonnet/tests && mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/typescript-bun-sonnet/fixtures && mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/typescript-bun-sonnet/.github/workflows
+[Result] (Bash completed with no output)
+[Assistant] Now I'll write the first failing test (TDD step 1 - RED):
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/typescript-bun-sonnet/tests/validator.test.ts", "content": "/**\n * Tests
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/typescript-bun-sonnet/tests/validator.test.ts (file state is current in your context — no need to Read it back)
+[Tool: Bash] bun test tests/validator.test.ts 2>&1 | head -30
+[Result] bun test v1.3.11 (af24e281)
+
+tests/validator.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '../src/validator' from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/typescript-bun-sonnet/tests/validator.test.ts'
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [19.00ms]
+[Assistant] Tests fail as expected. Now implementing the types and validator (TDD GREEN phase):
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/typescript-bun-sonnet/src/types.ts", "content": "/**\n * TypeScript type 
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/typescript-bun-sonnet/src/types.ts (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/typescript-bun-sonnet/src/validator.ts", "content": "/**\n * Core validat
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/typescript-bun-sonnet/src/validator.ts (file state is current in your context — no need to Read it back)
+[Tool: Bash] bun test tests/validator.test.ts 2>&1
+[Result] bun test v1.3.11 (af24e281)
+
+ 12 pass
+ 0 fail
+ 40 expect() calls
+Ran 12 tests across 1 file. [14.00ms]
+[Assistant] All 12 validator tests pass. Now writing formatter tests (TDD RED):
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/typescript-bun-sonnet/tests/formatter.test.ts", "content": "/**\n * Tests
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/typescript-bun-sonnet/tests/formatter.test.ts (file state is current in your context — no need to Read it back)
+[Tool: Bash] bun test tests/formatter.test.ts 2>&1 | head -20
+[Result] bun test v1.3.11 (af24e281)
+
+tests/formatter.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '../src/formatter' from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/typescript-bun-sonnet/tests/formatter.test.ts'
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [12.00ms]
+[Assistant] Good - tests fail as expected. Now implementing the formatter (TDD GREEN):
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/typescript-bun-sonnet/src/formatter.ts", "content": "/**\n * Output forma
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/typescript-bun-sonnet/src/formatter.ts (file state is current in your context — no need to Read it back)
+[Tool: Bash] bun test tests/formatter.test.ts 2>&1
+[Result] bun test v1.3.11 (af24e281)
+
+ 19 pass
+ 0 fail
+ 50 expect() calls
+Ran 19 tests across 1 file. [25.00ms]
+[Assistant] All 19 formatter tests pass. Now writing the CLI and fixtures:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/typescript-bun-sonnet/app.ts", "content": "/**\n * Secret Rotation Valida
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/typescript-bun-sonnet/app.ts (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/typescript-bun-sonnet/fixtures/test-secrets.json", "content": "[\n  {\n  
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/typescript-bun-sonnet/fixtures/test-secrets.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/typescript-bun-sonnet/fixtures/secrets.json", "content": "[\n  {\n    \"n
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/typescript-bun-sonnet/fixtures/secrets.json (file state is current in your context — no need to Read it back)
+[Tool: Bash] bun run app.ts --config fixtures/test-secrets.json --format json --today 2026-04-10 2>&1
+[Result] {
+  "generatedAt": "2026-04-10",
+  "warningWindowDays": 14,
+  "summary": {
+    "expired": 1,
+    "warning": 1,
+    "ok": 1
+  },
+  "expired": [
+    {
+      "name": "PROD_DB_PASSWORD",
+      "lastRotated": "2026-01-01",
+      "rotationPolicyDays": 30,
+      "requiredBy": [
+        "auth-service",
+        "api-gateway"
+      ],
+      "expiryDate": "2026-01-31",
+      "daysUntilExpiry": -69,
+      "urgency": "expired"
+    }
+  ],
+  "warning": [
+    {
+      "name": "API_KEY",
+      "lastRotated": "2026-03-28",
+      "rotationPolicyDays": 14,
+      "requiredBy": [
+        "payment-service"
+      ],
+      "expiryDate": "2026-04-11",
+      "daysUntilExpiry": 1,
+      "urgency": "warning"
+    }
+  ],
+  "ok": [
+    {
+      "name": "JWT_SECRET",
+      "lastRotated": "2026-04-05",
+      "rotationPolicyDays": 90,
+      "requiredBy": [
+        "auth-service"
+      ],
+      "expiryDate": "2026-07-04",
+      "daysUntilExpiry": 85,
+      "urgency": "ok"
+    }
+  ]
+}
+[Assistant] CLI works perfectly with the exact expected values. Now creating the tsconfig and workflow:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/typescript-bun-sonnet/tsconfig.json", "content": "{\n  \"compilerOptions\
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/typescript-bun-sonnet/tsconfig.json (file state is current in your context — no need to Read it back)
+[Assistant] Now writing the GitHub Actions workflow file:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/typescript-bun-sonnet/.github/workflows/secret-rotation-validator.yml", "
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/typescript-bun-sonnet/.github/workflows/secret-rotation-validator.yml (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/secret-rotation-validator.yml 2>&1
+[Result] (Bash completed with no output)
+[Assistant] actionlint passes cleanly. Now writing the workflow structure tests and act integration test:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/typescript-bun-sonnet/tests/workflow.test.ts", "content": "/**\n * Workfl
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/typescript-bun-sonnet/tests/workflow.test.ts (file state is current in your context — no need to Read it back)
+[Assistant] Now let's run the structure and path tests (without act) to verify they pass:
+[Tool: Bash] bun test tests/workflow.test.ts --timeout 10000 2>&1 | head -60
+[Result] bun test v1.3.11 (af24e281)
+
+tests/workflow.test.ts:
+Act temp dir: /tmp/secret-rotation-PjR4R0
+Output saved to act-result.txt (exit code: 1)
+232 |       console.log(`Output saved to act-result.txt (exit code: ${exitCode})`);
+233 | 
+234 |       // ── Assertions on exact expected values ──────────────────────────────
+235 | 
+236 |       // Exit code must be 0
+237 |       expect(exitCode).toBe(0);
+                             ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/typescript-bun-sonnet/tests/workflow.test.ts:237:24)
+(fail) Act integration > act push succeeds and produces exact expected output [588.79ms]
+
+ 17 pass
+ 1 fail
+ 22 expect() calls
+Ran 18 tests across 1 file. [709.00ms]
+[Assistant] Structure tests all pass. The act test failed - let me check what went wrong:
+[Tool: Bash] tail -100 act-result.txt 2>&1
+[Result] ======================================================================
+TEST CASE: Secret Rotation Validator (act push)
+DATE: 2026-04-10T06:34:12.814Z
+EXIT CODE: 1
+======================================================================
+time="2026-04-10T02:34:12-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Secret Rotation Validator/Validate Secret Rotation] ⭐ Run Set up job
+[Secret Rotation Validator/Validate Secret Rotation] 🚀  Start image=act-ubuntu-pwsh:latest
+[Secret Rotation Validator/Validate Secret Rotation]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=true
+[Secret Rotation Validator/Validate Secret Rotation] using DockerAuthConfig authentication for docker pull
+[Secret Rotation Validator/Validate Secret Rotation] Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+[Secret Rotation Validator/Validate Secr
+[Tool: Bash] docker images 2>&1 | head -20
+[Result] WARNING: This output is designed for human readability. For machine-readable output, please use --format.
+IMAGE                                    ID             DISK USAGE   CONTENT SIZE   EXTRA
+act-ubuntu-pwsh:latest                   ad2ec47fa2be       2.55GB          639MB   U    
+catthehacker/ubuntu:act-22.04            754f20d9a184       2.15GB          531MB        
+catthehacker/ubuntu:act-latest           68a2a9700126       2.26GB          559MB        
+ghcr.io/catthehacker/ubuntu:act-latest   ab464a96ff6c       1.99GB          284MB        
+hello-world:latest                       452a468a4bf9       25.9kB         9.49kB
+[Tool: Bash] cat .actrc
+[Result] -P ubuntu-latest=act-ubuntu-pwsh:latest
+[Assistant] Act is trying to pull the image from Docker Hub instead of using the local one. I need to add `--pull=false` to `.actrc`:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/typescript-bun-sonnet/.actrc", "content": "-P ubuntu-latest=act-ubuntu-pw
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/typescript-bun-sonnet/.actrc has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] bun test tests/workflow.test.ts --timeout 200000 2>&1 | tail -50
+[Result] bun test v1.3.11 (af24e281)
+
+tests/workflow.test.ts:
+Act temp dir: /tmp/secret-rotation-QaUunS
+Output saved to act-result.txt (exit code: 0)
+
+ 18 pass
+ 0 fail
+ 39 expect() calls
+Ran 18 tests across 1 file. [12.00s]
+[Assistant] All 18 tests pass including the act integration test. Let me run the complete test suite:
+[Tool: Bash] bun test --timeout 200000 2>&1
+[Result] bun test v1.3.11 (af24e281)
+
+tests/workflow.test.ts:
+Act temp dir: /tmp/secret-rotation-b8wCIX
+Output saved to act-result.txt (exit code: 0)
+
+ 49 pass
+ 0 fail
+ 129 expect() calls
+Ran 49 tests across 3 files. [10.82s]
+[Assistant] All 49 tests pass. Let me verify all artifacts are in place:
+[Tool: Bash] ls -la && echo "---" && ls -la src/ && echo "---" && ls -la tests/ && echo "---" && ls -la fixtures/ && echo "---" && ls -la .github/workflows/ && echo "---" && wc -l act-result.txt && echo "---" && actionlint .github/workflows/secret-rotation-validator.yml && echo "actionlint: PASS"
+[Result] total 112
+drwxr-xr-x  8 passp passp  4096 Apr 10 02:34 .
+drwxr-xr-x 10 passp passp  4096 Apr 10 02:25 ..
+-rw-r--r--  1 passp passp    53 Apr 10 02:34 .actrc
+drwxr-xr-x  2 passp passp  4096 Apr 10 02:25 .claude
+drwxr-xr-x  7 passp passp  4096 Apr 10 02:25 .git
+drwxr-xr-x  3 passp passp  4096 Apr 10 02:30 .github
+-rw-r--r--  1 passp passp 45048 Apr 10 02:35 act-result.txt
+-rw-r--r--  1 passp passp  2782 Apr 10 02:32 app.ts
+-rw-r--r--  1 passp passp 21666 Apr  9 15:03 benchmark-instructions-v4.md
+drwxr-xr-x  2 passp passp  4096 Apr 10 02:33 fixtures
+drwxr-xr-x  2 passp passp  4096 Apr 10 02:32 src
+drwxr-xr-x  2 passp passp  4096 Apr 10 02:34 tests
+-rw-r--r--  1 passp passp   238 Apr 10 02:33 tsconfig.json
+---
+total 20
+drwxr-xr-x 2 passp passp 4096 Apr 10 02:32 .
+drwxr-xr-x 8 passp passp 4096 Apr 10 02:34 ..
+-rw-r--r-- 1 passp passp 1956 Apr 10 02:32 formatter.ts
+-rw-r--r-- 1 passp passp 1290 Apr 10 02:31 types.ts
+-rw-r--r-- 1 passp passp 3217 Apr 10 02:31 validator.ts
+---
+total 36
+drwxr-x
+[Assistant] All artifacts are in place. Let me do a final check on the act-result.txt to confirm it has the expected content:
+[Tool: Bash] grep -A5 "TEST CASE:" act-result.txt | head -20 && echo "---" && grep -c "Job succeeded" act-result.txt && echo "occurrences of 'Job succeeded'" && grep -c "daysUntilExpiry.*-69" act-result.txt && echo "occurrences of daysUntilExpiry=-69" && grep -c "All structural validations passed" act-result.txt && echo "occurrences of validation pass"
+[Result] TEST CASE: Secret Rotation Validator (act push)
+DATE: 2026-04-10T06:34:12.814Z
+EXIT CODE: 1
+======================================================================
+time="2026-04-10T02:34:12-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Secret Rotation Validator/Validate Secret Rotation] ⭐ Run Set up job
+--
+TEST CASE: Secret Rotation Validator (act push)
+DATE: 2026-04-10T06:34:49.459Z
+EXIT CODE: 0
+======================================================================
+time="2026-04-10T02:34:37-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Secret Rotation Validator/Validate Secret Rotation] ⭐ Run Set up job
+--
+TEST CASE: Secret Rotation Validator (act push)
+DATE: 2026-04-10T06:35:03.789Z
+EXIT CODE: 0
+======================================================================
+time="2026-04-10T02:34:53-04:00" level=info msg="Using docker host 'uni
+[Assistant] Everything is working correctly. Here's a summary of what was built:
+
+---
+
+## Implementation Summary
+
+**Secret Rotation Validator** - TypeScript/Bun, TDD throughout
+
+### Files Created
+
+| File | Purpose |
+|------|---------|
+| `src/types.ts` | TypeScript interfaces: `SecretConfig`, `SecretStatus`, `RotationReport`, `Urgency` |
+| `src/validator.ts` | Core logic: `processSecret()`, `generateReport()` with injectable date |
+| `src/formatter.ts` | Output: `formatMarkdown()` (table) and `formatJSON()` |
+| `app.ts` | CLI entry point with `--config`, `--format`, `--warning-days`, `--today` flags |
+| `fixtures/test-secrets.json` | 3 secrets with known outcomes for deterministic testing |
+| `fixtures/secrets.json` | 5 secrets for general use |
+| `tests/validator.test.ts` | 12 unit tests for core logic |
+| `tests/formatter.test.ts` | 19 unit tests for both formatters |
+| `tests/workflow.test.ts` | 18 tests: workflow structure, path existence, actionlint, and act integration |
+| `.github/workflows/secret-rotation-validator.yml` | CI/CD pipeline - passes actionlint |
+| `act-result.txt` | Required artifact with act run output |
+
+### TDD Process
+- Wrote failing tests first (RED) → implemented minimum code (GREEN) → tests pass
+- Fixed date `--today 2026-04-10` makes output deterministic regardless of when run
+
+### Key Design Decisions
+- **Injectable date**: `--today YYYY-MM-DD` flag enables exact value assertions in CI
+- **UTC arithmetic** in `addDays`/`daysBetween` prevents DST/timezone drift
+- **Urgency boundaries**: `< 0` = expired, `[0, warningDays)` = warning, `>= warningDays` = ok
+- **Workflow validates exact values**: grep checks for `"daysUntilExpiry": -69`, `"expiryDate": "2026-01-31"` etc.
+
+### Test Results: **49 pass, 0 fail** | act exit code: **0** | actionlint: **PASS**

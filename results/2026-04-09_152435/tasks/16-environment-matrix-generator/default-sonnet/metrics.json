@@ -1,0 +1,649 @@
+{
+  "task_id": "16-environment-matrix-generator",
+  "task_name": "Environment Matrix Generator",
+  "task_category": "GitHub Actions / CI Configuration",
+  "language_mode": "default",
+  "language_chosen": "python",
+  "language_breakdown": {
+    "python": 100.0
+  },
+  "interpreter_versions": {},
+  "powershell_version": "",
+  "dotnet_version": "",
+  "model": "claude-sonnet-4-6",
+  "model_short": "sonnet",
+  "claude_code_version": "2.1.98",
+  "instructions_version": "v4",
+  "timestamp_start": "2026-04-10T03:35:17.674484+00:00",
+  "timestamp_end": "2026-04-10T03:43:05.075756+00:00",
+  "prompt_text": "You are completing a scripting task. Choose whatever programming language you think is best for this task.\n\nTASK: Given a configuration describing OS options, language versions, and feature flags, generate a build matrix (as JSON) suitable for GitHub Actions strategy.matrix. Support include/exclude rules, max-parallel limits, and fail-fast configuration. Validate that the matrix doesn't exceed a maximum size. Output the complete matrix JSON.\n\nREQUIREMENTS:\n1. Use red/green TDD methodology: write a failing test FIRST, then write the minimum code to make it pass, then refactor. Repeat for each piece of functionality.\n2. Create mocks and test fixtures as necessary for testability.\n3. All tests must be runnable and must pass at the end.\n4. Include clear comments explaining your approach.\n5. Handle errors gracefully with meaningful error messages.\n\nCreate your solution in the current working directory. Start by writing your first failing test.\n\nGITHUB ACTIONS REQUIREMENT:\nCreate a GitHub Actions workflow file at .github/workflows/environment-matrix-generator.yml that uses\nyour script in a real CI/CD pipeline. The workflow must:\n- Use appropriate trigger events (push, pull_request, schedule, workflow_dispatch, etc.)\n- Reference your script correctly\n- Pass actionlint validation (valid YAML, valid action references, correct syntax)\n- Include appropriate permissions, environment variables, and job dependencies\n- Actually run successfully when executed locally with `act` (nektos/act)\n\nDesign your workflow so its steps work in an isolated Docker container \u2014 use\n`actions/checkout@v4`, install dependencies your script needs, and run it.\nAvoid steps requiring external services or secrets without sensible defaults.\n\nIMPORTANT for PowerShell mode: Use `shell: pwsh` on your workflow run: steps instead\nof invoking `pwsh -Command` or `pwsh -File` from bash. This avoids escaping issues\nand works correctly in act containers. pwsh and Pester are pre-installed in the\ncontainer.\n\nWORKFLOW VALIDATION:\nRun `actionlint .github/workflows/environment-matrix-generator.yml` and fix any errors. actionlint is\npre-installed. Iterate until it passes cleanly. Validate with actionlint BEFORE\nrunning act \u2014 actionlint is instant, act takes 30-90 seconds per run.\n\nALL TESTS MUST RUN THROUGH ACT:\nEvery single test case must execute through the GitHub Actions workflow via `act`.\nDo NOT test your script directly \u2014 all testing goes through the pipeline.\n\nStructure your workflow to accept test fixture data and produce verifiable output.\nYour test harness must:\n1. For each test case: set up a temp git repo with your project files + that case's\n   fixture data, run `act push --rm`, capture the output\n2. Save all act output to `act-result.txt` in the current working directory (append\n   each test case's output, clearly delimited)\n3. Assert that act exited with code 0 for each case\n4. Parse the act output and assert on EXACT EXPECTED VALUES \u2014 not just that output\n   appeared, but that it matches the known-good result for that test case's input.\n   For example: if your workflow bumps version 1.1.0 with a feat commit, assert\n   the output contains exactly \"1.2.0\", not just \"a version number\"\n5. Assert every job shows \"Job succeeded\"\n\nThe `act-result.txt` file MUST exist when done. It is a required artifact.\n`act` and Docker are pre-installed. Limit yourself to at most 3 `act push` runs \u2014\ndiagnose errors from the output rather than re-running blindly.\n\nWORKFLOW STRUCTURE TESTS (also required):\n- Parse the YAML and check expected structure (triggers, jobs, steps)\n- Verify the workflow references your script files correctly (paths exist)\n- Verify actionlint passes (assert exit code 0)\n",
+  "exit_code": 0,
+  "run_success": true,
+  "failure_reason": null,
+  "session": {
+    "session_id": "1a96e571-50f8-47eb-9769-daddcca4e750",
+    "stop_reason": "end_turn",
+    "terminal_reason": "completed",
+    "fast_mode_state": "off",
+    "service_tier": "standard",
+    "speed": "standard",
+    "inference_geo": "",
+    "context_window": 200000,
+    "max_output_tokens": 32000,
+    "permission_mode": "bypassPermissions",
+    "output_style": "default",
+    "tools_available_count": 25,
+    "mcp_servers": [],
+    "permission_denials": []
+  },
+  "model_usage_detail": {
+    "claude-sonnet-4-6": {
+      "inputTokens": 31,
+      "outputTokens": 28709,
+      "cacheReadInputTokens": 1382498,
+      "cacheCreationInputTokens": 54998,
+      "webSearchRequests": 0,
+      "costUSD": 1.0517199,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "effort_level": null,
+  "timing": {
+    "grand_total_duration_ms": 467401,
+    "total_api_duration_ms": 443413,
+    "total_execution_duration_ms": 22587,
+    "num_turns": 36
+  },
+  "tokens": {
+    "input_tokens": 31,
+    "output_tokens": 28709,
+    "cache_read_tokens": 1382498,
+    "cache_creation_tokens": 54998,
+    "total_context_consumed": 1437527,
+    "compaction_count": 0
+  },
+  "cost": {
+    "total_cost_usd": 1.0517199,
+    "assumed_input_cost_per_mtok": 3.0,
+    "assumed_output_cost_per_mtok": 15.0,
+    "assumed_cache_read_cost_per_mtok": 0.3,
+    "assumed_cache_write_cost_per_mtok": 3.75
+  },
+  "code_metrics": {
+    "total_lines": 1080,
+    "total_tokens_estimate": 14029,
+    "file_count": 10,
+    "files": [
+      "act-result.txt",
+      "matrix_generator.py",
+      "run_tests.py",
+      "test_matrix_generator.py",
+      "fixtures/basic.json",
+      "fixtures/too_large.json",
+      "fixtures/with_excludes.json",
+      "fixtures/with_flags.json",
+      "fixtures/with_includes.json",
+      ".github/workflows/environment-matrix-generator.yml"
+    ]
+  },
+  "quality": {
+    "tests_pass": null,
+    "error_count": 5,
+    "error_details": [
+      "Exit code 1\nerror: externally-managed-environment\n\n\u00d7 This environment is externally managed\n\u2570\u2500> To install Python packages system-wide, try apt install\n    python3-xyz, where xyz is the package you ar",
+      "Exit code 1\n.............................F\n=================================== FAILURES ===================================\n_______________ TestWorkflowStructure.test_workflow_file_exists ____________",
+      "Exit code 1\n============================= test session starts ==============================\nplatform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3\ncachedir: .pytest_cache\nroo",
+      "Exit code 1\n============================================================\nEnvironment Matrix Generator \u2014 Act Integration Tests\n============================================================\n\n[1/3] Settin",
+      "<tool_use_error>String to replace not found in file.\nString:         result = subprocess.run(\n            [\"act\", \"push\", \"--rm\"],\n            cwd=work_dir,\n            capture_output=True,\n          "
+    ],
+    "actionlint_pass": true,
+    "actionlint_errors": 0,
+    "actionlint_results": [
+      {
+        "file": ".github/workflows/environment-matrix-generator.yml",
+        "passed": true,
+        "errors": ""
+      }
+    ],
+    "act_result_txt_exists": true,
+    "act_result_txt_size": 26553,
+    "areas_of_difficulty": [],
+    "observations": ""
+  },
+  "tool_install": {
+    "tool_install_duration_ms": 1595,
+    "tools_installed": [
+      "pip install pyyaml -q && python3 -m pytest test_matrix_generator.py -x --tb=short -q 2>&1 | tail -30",
+      "pip install pyyaml -q --break-system-packages 2>&1; python3 -c \"import yaml; print('yaml ok')\""
+    ],
+    "install_commands_count": 2
+  },
+  "tool_use_timing": {
+    "total_tool_uses": 35,
+    "total_tool_duration_ms": 27629,
+    "bash_tool_uses": 19,
+    "bash_total_ms": 23170,
+    "slowest_tool_uses": [
+      {
+        "tool_name": "Bash",
+        "command": "python3 run_tests.py 2>&1",
+        "duration_ms": 16043,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 946,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 924,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 905,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pip install pyyaml -q --break-system-packages 2>&1; python3 -c \"import yaml; print('yaml ok')\"",
+        "duration_ms": 839,
+        "is_error": false,
+        "is_install": true
+      },
+      {
+        "tool_name": "Bash",
+        "command": "python3 run_tests.py 2>&1",
+        "duration_ms": 797,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cat /home/passp/repos/compare-agent-scripting-by-language/AGENTS.md",
+        "duration_ms": 794,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pip install pyyaml -q && python3 -m pytest test_matrix_generator.py -x --tb=short -q 2>&1 | tail -30",
+        "duration_ms": 756,
+        "is_error": true,
+        "is_install": true
+      },
+      {
+        "tool_name": "Bash",
+        "command": "python3 -m pytest test_matrix_generator.py -x --tb=short 2>&1 | head -40",
+        "duration_ms": 659,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/16-environment-matrix-generator/default-sonnet/act-result.txt && echo \"---\" && python3 -m pytest test_matrix_g",
+        "duration_ms": 628,
+        "is_error": false,
+        "is_install": false
+      }
+    ],
+    "all_tool_uses": [
+      {
+        "tool_name": "Bash",
+        "command": "cat /home/passp/repos/compare-agent-scripting-by-language/AGENTS.md",
+        "duration_ms": 794,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "ls /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/16-environment-matrix-generator/default-sonnet/",
+        "duration_ms": 69,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 475,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/16-environment-matrix-generator/default-sonnet/.actrc 2>/dev/null || echo \"No .actrc found\"",
+        "duration_ms": 67,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "which python3 pytest actionlint act && python3 --version && pytest --version 2>&1 | head -2",
+        "duration_ms": 302,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 177,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "python3 -m pytest test_matrix_generator.py -x --tb=short 2>&1 | head -40",
+        "duration_ms": 659,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 124,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pip install pyyaml -q && python3 -m pytest test_matrix_generator.py -x --tb=short -q 2>&1 | tail -30",
+        "duration_ms": 756,
+        "is_error": true,
+        "is_install": true
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pip install pyyaml -q --break-system-packages 2>&1; python3 -c \"import yaml; print('yaml ok')\"",
+        "duration_ms": 839,
+        "is_error": false,
+        "is_install": true
+      },
+      {
+        "tool_name": "Bash",
+        "command": "python3 -m pytest test_matrix_generator.py -x --tb=short -q 2>&1",
+        "duration_ms": 457,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cat /home/passp/repos/compare-agent-scripting-by-language/Dockerfile.act 2>/dev/null | head -60",
+        "duration_ms": 71,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/16-environment-matrix-generator/default-sonnet/fixtures\nmkdir -p /home/passp/repos/compare-agent-scripting-b",
+        "duration_ms": 60,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 905,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 924,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 946,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 255,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 51,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 118,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "actionlint /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/16-environment-matrix-generator/default-sonnet/.github/workflows/environment-matrix-generator.yml 2>&1",
+        "duration_ms": 136,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "python3 -m pytest test_matrix_generator.py -v 2>&1",
+        "duration_ms": 551,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 95,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "python3 -m pytest test_matrix_generator.py -v --tb=short 2>&1 | tail -20",
+        "duration_ms": 538,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 111,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "actionlint /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/16-environment-matrix-generator/default-sonnet/.github/workflows/environment-matrix-generator.yml && echo ",
+        "duration_ms": 127,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "python3 run_tests.py 2>&1",
+        "duration_ms": 797,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "docker images | grep -E \"act-ubuntu|catthehacker\" 2>&1",
+        "duration_ms": 205,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "act --help 2>&1 | grep -i pull",
+        "duration_ms": 71,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 13,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 66,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 131,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 12,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 56,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "python3 run_tests.py 2>&1",
+        "duration_ms": 16043,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/16-environment-matrix-generator/default-sonnet/act-result.txt && echo \"---\" && python3 -m pytest test_matrix_g",
+        "duration_ms": 628,
+        "is_error": false,
+        "is_install": false
+      }
+    ],
+    "install_duration_ms": 839,
+    "test_duration_ms": 20731,
+    "act_duration_ms": 0
+  },
+  "hooks": {
+    "hook_fires": 12,
+    "hook_errors_caught": 0,
+    "hook_failures": 0,
+    "hook_events": [
+      {
+        "subtype": "hook_started",
+        "hook_id": "64ff473d-c4ae-479f-9b12-1f9474f9355c",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "64ff473d-c4ae-479f-9b12-1f9474f9355c",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "e577c07f-ab1c-4097-8c2f-632467682875",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "e577c07f-ab1c-4097-8c2f-632467682875",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "1450304e-8438-4ff9-b448-87c1a59e4ff8",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "1450304e-8438-4ff9-b448-87c1a59e4ff8",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "95588ef6-d958-4438-ae4f-4eb5ed1094ae",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "95588ef6-d958-4438-ae4f-4eb5ed1094ae",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "ed4f8bcd-e38c-438d-937f-3a077c92d830",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "ed4f8bcd-e38c-438d-937f-3a077c92d830",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "96f2517b-362d-499e-8547-3c2daf9a4868",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "96f2517b-362d-499e-8547-3c2daf9a4868",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "0530c946-641a-4761-9b74-5ab873957d6d",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "0530c946-641a-4761-9b74-5ab873957d6d",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "2f28b50e-1368-46f3-a550-9bf07c6c9d59",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "2f28b50e-1368-46f3-a550-9bf07c6c9d59",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "524da941-4e40-460c-ae61-3e64ef66b1e7",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "524da941-4e40-460c-ae61-3e64ef66b1e7",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "b284886a-102f-4aee-a3ad-5431fcf045cd",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "b284886a-102f-4aee-a3ad-5431fcf045cd",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "8d369bef-cb13-4cd3-88ab-1c2e63ab9295",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "8d369bef-cb13-4cd3-88ab-1c2e63ab9295",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "46f66b4c-ec4b-44b6-b63f-18026136d257",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "46f66b4c-ec4b-44b6-b63f-18026136d257",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  }
+}

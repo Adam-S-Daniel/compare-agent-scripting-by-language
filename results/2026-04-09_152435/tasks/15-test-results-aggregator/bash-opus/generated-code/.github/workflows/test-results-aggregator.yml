@@ -1,0 +1,39 @@
+name: Test Results Aggregator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  aggregate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          if ! command -v jq &>/dev/null; then
+            apt-get update -qq && apt-get install -y -qq jq
+          fi
+
+      - name: Run JUnit XML scenario
+        run: |
+          echo "=== SCENARIO: junit-only ==="
+          bash aggregate-test-results.sh fixtures/junit-only
+          echo "=== END SCENARIO: junit-only ==="
+
+      - name: Run JSON scenario
+        run: |
+          echo "=== SCENARIO: json-only ==="
+          bash aggregate-test-results.sh fixtures/json-only
+          echo "=== END SCENARIO: json-only ==="
+
+      - name: Run mixed format scenario
+        run: |
+          echo "=== SCENARIO: mixed ==="
+          bash aggregate-test-results.sh fixtures/mixed
+          echo "=== END SCENARIO: mixed ==="

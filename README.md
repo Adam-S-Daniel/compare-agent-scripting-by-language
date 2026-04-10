@@ -1,6 +1,6 @@
 # compare-agent-scripting-by-language
 
-Benchmarks how well agents perform scripting tasks when asked to use various languages (and when not asked to use a particular language). **[Latest results](results/2026-04-08_192624/results.md)** | [All results](#benchmark-runs)
+Benchmarks how well agents perform scripting tasks when asked to use various languages (and when not asked to use a particular language). **[Latest results](results/2026-04-09_152435/results.md)** | [All results](#benchmark-runs)
 
 ## Benchmark Versions
 
@@ -16,16 +16,21 @@ Same 18 tasks and 4 modes as v1, with improved prompt wording. Partially complet
 
 Narrowed to 8 tasks (11-18, all GHA-category). Changed modes to `default`, `powershell`, `bash`, `typescript-bun`. Each task now requires a working `.github/workflows/*.yml` file that passes `actionlint` and executes in Docker via `act`. All agent tests must run through the workflow pipeline. PostToolUse syntax/lint hooks enabled on all runs. 64 total runs.
 
+### [v4](benchmark-instructions-v4.md) — Trap-Aware Guidance
+
+Same tasks, modes, and models as v3. Added "Common Pitfalls" section derived from v3 trap analysis. `shell: pwsh` guidance for PowerShell mode. "Limit to 3 act push runs" instruction. Custom act container with pwsh/Pester pre-installed (`Dockerfile.act`). Cut average run time by 24% vs v3. 64 total runs, zero failures.
+
 See also: [v3 design plan](design-and-planning-artifacts/PLAN-v3-gha.md) and other [design artifacts](design-and-planning-artifacts/).
 
 ## What it Tests
 
-Each benchmark version defines a set of scripting tasks, language modes, and models. Agents receive only a prompt — no conversation context or prior results. Each run produces scripts, tests, and (in v3) GitHub Actions workflows. Results are evaluated on:
+Each benchmark version defines a set of scripting tasks, language modes, and models. Agents receive only a prompt — no conversation context or prior results. Each run produces scripts, tests, and (in v3+) GitHub Actions workflows. Results are evaluated on:
 
 - Whether the agent's own tests pass
-- Code quality metrics (lines, errors, turns, cost)
-- Actionlint validation and act execution (v3 only)
-- PostToolUse hook effectiveness (v3 only)
+- Code quality metrics (errors, turns, cost)
+- Actionlint validation and act execution (v3+)
+- PostToolUse hook effectiveness (v3+)
+- Trap detection and analysis (v3+)
 
 ## Files
 
@@ -37,7 +42,8 @@ Each benchmark version defines a set of scripting tasks, language modes, and mod
 | `generate_results.py` | Generates `results.md` reports from metrics; updates this README |
 | `test_quality.py` | Test quality evaluation — structural metrics + LLM-as-judge |
 | `llm_providers.py` | Pluggable LLM provider abstraction for evaluation tasks |
-| `hooks/syntax-check.py` | PostToolUse hook for syntax/lint checking (v3) |
+| `hooks/syntax-check.py` | PostToolUse hook for syntax/lint checking (v3+) |
+| `Dockerfile.act` | Custom act container with pwsh/Pester pre-installed (v4+) |
 | `tests/` | Unit tests for repo code — run with `python3 -m pytest tests/ -v` |
 | `.github/workflows/ci.yml` | CI workflow — runs tests and import validation on push/PR |
 | `run-benchmark.sh` | One-command launcher with prerequisite checks |
@@ -52,7 +58,8 @@ Each benchmark version defines a set of scripting tasks, language modes, and mod
 <!-- BEGIN BENCHMARK RUNS -->
 | Run | Version | Runs | Cost | Results |
 |-----|---------|------|------|---------|
-| **2026-04-08_192624** (latest) | [v3](benchmark-instructions-v3.md) | 64/64 | $85.10 | [results.md](results/2026-04-08_192624/results.md) |
+| **2026-04-09_152435** (latest) | [v4](benchmark-instructions-v4.md) | 64/64 | $86.90 | [results.md](results/2026-04-09_152435/results.md) |
+| 2026-04-08_192624 | [v3](benchmark-instructions-v3.md) | 64/64 | $85.10 | [results.md](results/2026-04-08_192624/results.md) |
 | 2026-04-08_180614 | ? | 2/? | — | [results.md](results/2026-04-08_180614/results.md) |
 | 2026-04-08_180255 | ? | 0/? | — | [results.md](results/2026-04-08_180255/results.md) |
 | 2026-04-08_174516 | ? | 1/? | — | [results.md](results/2026-04-08_174516/results.md) |

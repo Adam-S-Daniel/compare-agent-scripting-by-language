@@ -1,0 +1,41 @@
+name: Artifact Cleanup Script Tests
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          if ! command -v shellcheck &>/dev/null; then
+            apt-get update
+            apt-get install -y shellcheck
+          fi
+          git clone --depth 1 https://github.com/bats-core/bats-core.git /tmp/bats-core
+          /tmp/bats-core/install.sh /usr/local
+          bats --version
+          shellcheck --version
+
+      - name: Validate scripts with shellcheck and bash -n
+        run: |
+          echo "=== shellcheck ==="
+          shellcheck artifact-cleanup.sh
+          echo "shellcheck passed"
+          echo "=== bash -n ==="
+          bash -n artifact-cleanup.sh
+          echo "bash -n passed"
+
+      - name: Run bats tests
+        run: bats --tap tests/

@@ -524,6 +524,44 @@ def estimate_tokens(text: str) -> int:
     return len(text) // 4
 
 
+def compute_language_breakdown(directory: Path) -> dict:
+    """Compute language breakdown by lines of code from file extensions."""
+    lang_lines: dict[str, int] = {}
+    total = 0
+    for root, dirs, files in os.walk(directory):
+        dirs[:] = [d for d in dirs if not d.startswith(".") and d not in SKIP_DIRS]
+        for f in files:
+            if f.startswith("."):
+                continue
+            ext = Path(f).suffix.lower()
+            lang = LANGUAGE_EXTENSIONS.get(ext)
+            if lang:
+                try:
+                    lines = len((Path(root) / f).read_text(errors="replace").splitlines())
+                    lang_lines[lang] = lang_lines.get(lang, 0) + lines
+                    total += lines
+                except Exception:
+                    pass
+    if total == 0:
+        return {}
+    return {lang: round(100 * count / total, 1) for lang, count in sorted(lang_lines.items(), key=lambda x: -x[1])}
+
+
+def get_all_code_text(directory: Path) -> str:
+    """Get all code text from files in directory for token counting."""
+    texts = []
+    for root, dirs, files in os.walk(directory):
+        dirs[:] = [d for d in dirs if not d.startswith(".") and d not in SKIP_DIRS]
+        for f in files:
+            if f.startswith(".") or f == INSTRUCTIONS_FILE:
+                continue
+            try:
+                texts.append((Path(root) / f).read_text(errors="replace"))
+            except Exception:
+                pass
+    return "\n".join(texts)
+
+
 # Import results generation from the standalone module.
 # These were previously defined here; they now live in generate_results.py
 # so they can be run independently.

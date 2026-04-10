@@ -1,0 +1,579 @@
+{
+  "task_id": "15-test-results-aggregator",
+  "task_name": "Test Results Aggregator",
+  "task_category": "GitHub Actions / CI Reporting",
+  "language_mode": "bash",
+  "language_chosen": "bash",
+  "language_breakdown": {
+    "bash": 100.0
+  },
+  "interpreter_versions": {},
+  "powershell_version": "",
+  "dotnet_version": "",
+  "model": "claude-sonnet-4-6",
+  "model_short": "sonnet",
+  "claude_code_version": "2.1.98",
+  "instructions_version": "v4",
+  "timestamp_start": "2026-04-10T02:53:31.631689+00:00",
+  "timestamp_end": "2026-04-10T03:02:33.776869+00:00",
+  "prompt_text": "You are completing a scripting task. You MUST use Bash as your implementation language.\n\nTASK: Parse test result files in multiple formats (JUnit XML, and JSON), aggregate results across multiple files (simulating a matrix build), compute totals (passed, failed, skipped, duration), identify flaky tests (passed in some runs, failed in others), and generate a markdown summary suitable for a GitHub Actions job summary. Create sample test result files as fixtures.\n\nREQUIREMENTS:\n1. Use red/green TDD methodology: write a failing test FIRST, then write the minimum code to make it pass, then refactor. Repeat for each piece of functionality.\n2. Create mocks and test fixtures as necessary for testability. Use bats-core (bats) as the testing framework.\n3. All tests must be runnable with `bats` and must pass at the end.\n4. Include clear comments explaining your approach.\n5. Handle errors gracefully with meaningful error messages.\n6. Use `#!/usr/bin/env bash` shebang. Scripts must pass `shellcheck` and `bash -n` syntax validation.\n\nCreate your solution in the current working directory. Start by writing your first failing test.\n\nGITHUB ACTIONS REQUIREMENT:\nCreate a GitHub Actions workflow file at .github/workflows/test-results-aggregator.yml that uses\nyour script in a real CI/CD pipeline. The workflow must:\n- Use appropriate trigger events (push, pull_request, schedule, workflow_dispatch, etc.)\n- Reference your script correctly\n- Pass actionlint validation (valid YAML, valid action references, correct syntax)\n- Include appropriate permissions, environment variables, and job dependencies\n- Actually run successfully when executed locally with `act` (nektos/act)\n\nDesign your workflow so its steps work in an isolated Docker container \u2014 use\n`actions/checkout@v4`, install dependencies your script needs, and run it.\nAvoid steps requiring external services or secrets without sensible defaults.\n\nIMPORTANT for PowerShell mode: Use `shell: pwsh` on your workflow run: steps instead\nof invoking `pwsh -Command` or `pwsh -File` from bash. This avoids escaping issues\nand works correctly in act containers. pwsh and Pester are pre-installed in the\ncontainer.\n\nWORKFLOW VALIDATION:\nRun `actionlint .github/workflows/test-results-aggregator.yml` and fix any errors. actionlint is\npre-installed. Iterate until it passes cleanly. Validate with actionlint BEFORE\nrunning act \u2014 actionlint is instant, act takes 30-90 seconds per run.\n\nALL TESTS MUST RUN THROUGH ACT:\nEvery single test case must execute through the GitHub Actions workflow via `act`.\nDo NOT test your script directly \u2014 all testing goes through the pipeline.\n\nStructure your workflow to accept test fixture data and produce verifiable output.\nYour test harness must:\n1. For each test case: set up a temp git repo with your project files + that case's\n   fixture data, run `act push --rm`, capture the output\n2. Save all act output to `act-result.txt` in the current working directory (append\n   each test case's output, clearly delimited)\n3. Assert that act exited with code 0 for each case\n4. Parse the act output and assert on EXACT EXPECTED VALUES \u2014 not just that output\n   appeared, but that it matches the known-good result for that test case's input.\n   For example: if your workflow bumps version 1.1.0 with a feat commit, assert\n   the output contains exactly \"1.2.0\", not just \"a version number\"\n5. Assert every job shows \"Job succeeded\"\n\nThe `act-result.txt` file MUST exist when done. It is a required artifact.\n`act` and Docker are pre-installed. Limit yourself to at most 3 `act push` runs \u2014\ndiagnose errors from the output rather than re-running blindly.\n\nWORKFLOW STRUCTURE TESTS (also required):\n- Parse the YAML and check expected structure (triggers, jobs, steps)\n- Verify the workflow references your script files correctly (paths exist)\n- Verify actionlint passes (assert exit code 0)\n",
+  "exit_code": 0,
+  "run_success": true,
+  "failure_reason": null,
+  "session": {
+    "session_id": "6c263778-df01-4718-a136-eb59ce2b3244",
+    "stop_reason": "end_turn",
+    "terminal_reason": "completed",
+    "fast_mode_state": "off",
+    "service_tier": "standard",
+    "speed": "standard",
+    "inference_geo": "",
+    "context_window": 200000,
+    "max_output_tokens": 32000,
+    "permission_mode": "bypassPermissions",
+    "output_style": "default",
+    "tools_available_count": 25,
+    "mcp_servers": [],
+    "permission_denials": []
+  },
+  "model_usage_detail": {
+    "claude-sonnet-4-6": {
+      "inputTokens": 30,
+      "outputTokens": 36543,
+      "cacheReadInputTokens": 1476880,
+      "cacheCreationInputTokens": 61782,
+      "webSearchRequests": 0,
+      "costUSD": 1.2229815,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "effort_level": null,
+  "timing": {
+    "grand_total_duration_ms": 542145,
+    "total_api_duration_ms": 508008,
+    "total_execution_duration_ms": 32597,
+    "num_turns": 31
+  },
+  "tokens": {
+    "input_tokens": 30,
+    "output_tokens": 36543,
+    "cache_read_tokens": 1476880,
+    "cache_creation_tokens": 61782,
+    "total_context_consumed": 1538692,
+    "compaction_count": 0
+  },
+  "cost": {
+    "total_cost_usd": 1.2229815,
+    "assumed_input_cost_per_mtok": 3.0,
+    "assumed_output_cost_per_mtok": 15.0,
+    "assumed_cache_read_cost_per_mtok": 0.3,
+    "assumed_cache_write_cost_per_mtok": 3.75
+  },
+  "code_metrics": {
+    "total_lines": 690,
+    "total_tokens_estimate": 7264,
+    "file_count": 9,
+    "files": [
+      "act-result.txt",
+      "aggregate.sh",
+      "run-act-tests.sh",
+      "fixtures/json-run3.json",
+      "fixtures/json-run4.json",
+      "fixtures/junit-run1.xml",
+      "fixtures/junit-run2.xml",
+      ".github/workflows/test-results-aggregator.yml",
+      "tests/aggregate.bats"
+    ]
+  },
+  "quality": {
+    "tests_pass": null,
+    "error_count": 3,
+    "error_details": [
+      "Exit code 1\n1..25\nok 1 aggregate.sh exists and is executable\nok 2 script runs successfully on fixtures directory\nok 3 output contains Test Results Summary header\nok 4 output contains Overview section\n",
+      "Exit code 1\n=== Test Case 1: Full aggregation with all fixtures ===\nSetting up temp git repo in /tmp/tmp.H3i0mQJHAs\n\nRunning: act push --rm\n--- act output start ---\ntime=\"2026-04-09T23:01:04-04:00\" le",
+      "Exit code 1\n=== Test Case 1: Full aggregation with all fixtures ===\nSetting up temp git repo in /tmp/tmp.uOsHlHFc7p\n\nRunning: act push --rm --pull=false\n--- act output start ---\ntime=\"2026-04-09T23:01"
+    ],
+    "actionlint_pass": true,
+    "actionlint_errors": 0,
+    "actionlint_results": [
+      {
+        "file": ".github/workflows/test-results-aggregator.yml",
+        "passed": true,
+        "errors": ""
+      }
+    ],
+    "act_result_txt_exists": true,
+    "act_result_txt_size": 11382,
+    "areas_of_difficulty": [],
+    "observations": ""
+  },
+  "tool_install": {
+    "tool_install_duration_ms": 3008,
+    "tools_installed": [
+      "docker run --rm act-ubuntu-pwsh:latest bash -c \"which apt-get && echo 'apt available'; apt-get install -y bats 2>&1 | tail -3; which bats 2>/dev/null && bats --version || echo 'bats not found after apt'\" 2>/dev/null",
+      "docker run --rm act-ubuntu-pwsh:latest bash -c \"npm install -g bats 2>&1 | tail -3; which bats && bats --version\" 2>/dev/null"
+    ],
+    "install_commands_count": 2
+  },
+  "tool_use_timing": {
+    "total_tool_uses": 30,
+    "total_tool_duration_ms": 35335,
+    "bash_tool_uses": 19,
+    "bash_total_ms": 34258,
+    "slowest_tool_uses": [
+      {
+        "tool_name": "Bash",
+        "command": "cd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/15-test-results-aggregator/bash-sonnet\nbash run-act-tests.sh 2>&1",
+        "duration_ms": 10982,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/15-test-results-aggregator/bash-sonnet\nbash run-act-tests.sh 2>&1",
+        "duration_ms": 7688,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/15-test-results-aggregator/bash-sonnet\nbats tests/aggregate.bats 2>&1",
+        "duration_ms": 2626,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/15-test-results-aggregator/bash-sonnet\necho \"=== Files ===\" && ls -la\necho \"\"\necho \"=== bats local ===\" && bats te",
+        "duration_ms": 2594,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "docker run --rm act-ubuntu-pwsh:latest bash -c \"npm install -g bats 2>&1 | tail -3; which bats && bats --version\" 2>/dev/null",
+        "duration_ms": 2289,
+        "is_error": false,
+        "is_install": true
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bats tests/aggregate.bats 2>&1 | head -20",
+        "duration_ms": 1597,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/15-test-results-aggregator/bash-sonnet\nbats tests/aggregate.bats 2>&1",
+        "duration_ms": 1256,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cat /home/passp/repos/compare-agent-scripting-by-language/AGENTS.md",
+        "duration_ms": 1169,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "docker run --rm act-ubuntu-pwsh:latest bash -c \"which python3 && python3 --version; which bats && bats --version 2>/dev/null; which node && node --version 2>/dev/null; which npm && npm --version 2>/de",
+        "duration_ms": 1060,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/15-test-results-aggregator/bash-sonnet/.actrc 2>/dev/null || echo \"No .actrc\"",
+        "duration_ms": 835,
+        "is_error": false,
+        "is_install": false
+      }
+    ],
+    "all_tool_uses": [
+      {
+        "tool_name": "Bash",
+        "command": "cat /home/passp/repos/compare-agent-scripting-by-language/AGENTS.md",
+        "duration_ms": 1169,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "ls /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/15-test-results-aggregator/bash-sonnet/",
+        "duration_ms": 61,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 147,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/15-test-results-aggregator/bash-sonnet/.actrc 2>/dev/null || echo \"No .actrc\"",
+        "duration_ms": 835,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "which bats && bats --version 2>/dev/null; which actionlint && actionlint --version 2>/dev/null; which act && act --version 2>/dev/null; which shellcheck && shellcheck --version | head -2",
+        "duration_ms": 137,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "docker run --rm act-ubuntu-pwsh:latest bash -c \"which python3 && python3 --version; which bats && bats --version 2>/dev/null; which node && node --version 2>/dev/null; which npm && npm --version 2>/de",
+        "duration_ms": 1060,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "docker run --rm act-ubuntu-pwsh:latest bash -c \"which apt-get && echo 'apt available'; apt-get install -y bats 2>&1 | tail -3; which bats 2>/dev/null && bats --version || echo 'bats not found after ap",
+        "duration_ms": 719,
+        "is_error": false,
+        "is_install": true
+      },
+      {
+        "tool_name": "Bash",
+        "command": "docker run --rm act-ubuntu-pwsh:latest bash -c \"npm install -g bats 2>&1 | tail -3; which bats && bats --version\" 2>/dev/null",
+        "duration_ms": 2289,
+        "is_error": false,
+        "is_install": true
+      },
+      {
+        "tool_name": "Bash",
+        "command": "mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/15-test-results-aggregator/bash-sonnet/tests\nmkdir -p /home/passp/repos/compare-agent-scripting-by-language/",
+        "duration_ms": 68,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 109,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bats tests/aggregate.bats 2>&1 | head -20",
+        "duration_ms": 1597,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 52,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 60,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 53,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 64,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 95,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "chmod +x /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/15-test-results-aggregator/bash-sonnet/aggregate.sh\ncd /home/passp/repos/compare-agent-scripting-by-language",
+        "duration_ms": 149,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/15-test-results-aggregator/bash-sonnet\nbats tests/aggregate.bats 2>&1",
+        "duration_ms": 2626,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 155,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/15-test-results-aggregator/bash-sonnet\nactionlint .github/workflows/test-results-aggregator.yml && echo \"actionlin",
+        "duration_ms": 118,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/15-test-results-aggregator/bash-sonnet\nbats tests/aggregate.bats 2>&1",
+        "duration_ms": 1256,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 114,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/15-test-results-aggregator/bash-sonnet\nchmod +x run-act-tests.sh\nshellcheck run-act-tests.sh && echo \"shellcheck O",
+        "duration_ms": 137,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/15-test-results-aggregator/bash-sonnet\nbash run-act-tests.sh 2>&1",
+        "duration_ms": 658,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 107,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/15-test-results-aggregator/bash-sonnet\nbash run-act-tests.sh 2>&1",
+        "duration_ms": 7688,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 121,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/15-test-results-aggregator/bash-sonnet\nactionlint .github/workflows/test-results-aggregator.yml && echo \"actionlin",
+        "duration_ms": 115,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/15-test-results-aggregator/bash-sonnet\nbash run-act-tests.sh 2>&1",
+        "duration_ms": 10982,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/15-test-results-aggregator/bash-sonnet\necho \"=== Files ===\" && ls -la\necho \"\"\necho \"=== bats local ===\" && bats te",
+        "duration_ms": 2594,
+        "is_error": false,
+        "is_install": false
+      }
+    ],
+    "install_duration_ms": 0,
+    "test_duration_ms": 31743,
+    "act_duration_ms": 0
+  },
+  "hooks": {
+    "hook_fires": 10,
+    "hook_errors_caught": 0,
+    "hook_failures": 0,
+    "hook_events": [
+      {
+        "subtype": "hook_started",
+        "hook_id": "7cfb8ed8-aada-4686-9bc2-a0601aa2ee8c",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "7cfb8ed8-aada-4686-9bc2-a0601aa2ee8c",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "7c940ae0-9e80-48ee-88a5-22087129d4c4",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "7c940ae0-9e80-48ee-88a5-22087129d4c4",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "b7565eba-22f2-4262-992c-a3522d690200",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "b7565eba-22f2-4262-992c-a3522d690200",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "48c50ab4-9b92-46c6-a78e-8e768226b3a8",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "48c50ab4-9b92-46c6-a78e-8e768226b3a8",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "39c54134-76c4-450d-8013-c547666608c3",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "39c54134-76c4-450d-8013-c547666608c3",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "da7be653-bf7d-4384-b40e-7d20667b6919",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "da7be653-bf7d-4384-b40e-7d20667b6919",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "e243cb12-cd84-4dd5-926c-f005d3fb9dc4",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "e243cb12-cd84-4dd5-926c-f005d3fb9dc4",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "289d9d4c-6f25-4aab-b0ad-d465c177e2db",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "289d9d4c-6f25-4aab-b0ad-d465c177e2db",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "d80f8e57-2e26-4ac8-83d0-01e418f689c0",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "d80f8e57-2e26-4ac8-83d0-01e418f689c0",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "73b86321-b349-4349-ab1e-f24e3319da65",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "73b86321-b349-4349-ab1e-f24e3319da65",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  }
+}

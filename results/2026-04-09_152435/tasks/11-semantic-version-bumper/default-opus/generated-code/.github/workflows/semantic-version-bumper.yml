@@ -1,0 +1,40 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify Python available
+        run: python3 --version
+
+      - name: Show current version
+        run: cat VERSION
+
+      - name: Run semantic version bumper
+        run: python3 version_bumper.py
+
+      - name: Show updated version
+        run: |
+          echo "=== Updated VERSION ==="
+          cat VERSION
+
+      - name: Show changelog
+        run: |
+          echo "=== CHANGELOG ==="
+          cat CHANGELOG.md

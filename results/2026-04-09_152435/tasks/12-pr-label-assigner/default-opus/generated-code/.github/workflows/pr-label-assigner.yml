@@ -1,0 +1,24 @@
+name: PR Label Assigner
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-assign:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run test suite
+        run: python3 test_pr_label_assigner.py
+
+      - name: Run label assigner with demo file list
+        run: |
+          python3 pr_label_assigner.py --config label_config.json \
+            --files docs/readme.md src/api/handler.py src/main.py README.md .github/workflows/ci.yml

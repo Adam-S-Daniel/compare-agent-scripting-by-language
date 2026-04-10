@@ -1,0 +1,810 @@
+================================================================
+SECTION 1: Workflow Structure Tests
+================================================================
+  PASS: Workflow file exists
+  PASS: actionlint passes with no errors
+  PASS: Workflow has push trigger (contains 'push:')
+  PASS: Workflow has pull_request trigger (contains 'pull_request:')
+  PASS: Workflow has workflow_dispatch trigger (contains 'workflow_dispatch:')
+  PASS: Workflow has test job (contains 'test:')
+  PASS: Workflow has bump job (contains 'bump:')
+  PASS: Workflow references semver-bump.sh (contains 'semver-bump.sh')
+  PASS: Workflow references tests.bats (contains 'tests.bats')
+  PASS: semver-bump.sh exists
+  PASS: tests.bats exists
+  PASS: Workflow uses actions/checkout@v4 (contains 'actions/checkout@v4')
+
+================================================================
+SECTION 2: Act Integration Tests
+================================================================
+
+--- Test Case 1: feat commit (1.0.0 -> 1.1.0) ---
+time="2026-04-09T15:47:10-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Semantic Version Bumper/Run Tests] ⭐ Run Set up job
+[Semantic Version Bumper/Run Tests] 🚀  Start image=act-ubuntu-pwsh:latest
+[Semantic Version Bumper/Run Tests]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Semantic Version Bumper/Run Tests]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Semantic Version Bumper/Run Tests]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Semantic Version Bumper/Run Tests]   ✅  Success - Set up job
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Checkout code
+[Semantic Version Bumper/Run Tests]   🐳  docker cp src=/tmp/tmp.5ql1V2xVPf/. dst=/tmp/tmp.5ql1V2xVPf
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Checkout code [397.650297ms]
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Install dependencies
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Semantic Version Bumper/Run Tests]   | debconf: delaying package configuration, since apt-utils is not installed
+[Semantic Version Bumper/Run Tests]   | Selecting previously unselected package libsensors-config.
+[Semantic Version Bumper/Run Tests]   | (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 27282 files and directories currently installed.)
+[Semantic Version Bumper/Run Tests]   | Preparing to unpack .../0-libsensors-config_1%3a3.6.0-9build1_all.deb ...
+[Semantic Version Bumper/Run Tests]   | Unpacking libsensors-config (1:3.6.0-9build1) ...
+[Semantic Version Bumper/Run Tests]   | Selecting previously unselected package libsensors5:amd64.
+[Semantic Version Bumper/Run Tests]   | Preparing to unpack .../1-libsensors5_1%3a3.6.0-9build1_amd64.deb ...
+[Semantic Version Bumper/Run Tests]   | Unpacking libsensors5:amd64 (1:3.6.0-9build1) ...
+[Semantic Version Bumper/Run Tests]   | Selecting previously unselected package sysstat.
+[Semantic Version Bumper/Run Tests]   | Preparing to unpack .../2-sysstat_12.6.1-2_amd64.deb ...
+[Semantic Version Bumper/Run Tests]   | Unpacking sysstat (12.6.1-2) ...
+[Semantic Version Bumper/Run Tests]   | Selecting previously unselected package bats.
+[Semantic Version Bumper/Run Tests]   | Preparing to unpack .../3-bats_1.10.0-1_all.deb ...
+[Semantic Version Bumper/Run Tests]   | Unpacking bats (1.10.0-1) ...
+[Semantic Version Bumper/Run Tests]   | Selecting previously unselected package parallel.
+[Semantic Version Bumper/Run Tests]   | Preparing to unpack .../4-parallel_20231122+ds-1_all.deb ...
+[Semantic Version Bumper/Run Tests]   | Adding 'diversion of /usr/bin/parallel to /usr/bin/parallel.moreutils by parallel'
+[Semantic Version Bumper/Run Tests]   | Adding 'diversion of /usr/share/man/man1/parallel.1.gz to /usr/share/man/man1/parallel.moreutils.1.gz by parallel'
+[Semantic Version Bumper/Run Tests]   | Unpacking parallel (20231122+ds-1) ...
+[Semantic Version Bumper/Run Tests]   | Selecting previously unselected package shellcheck.
+[Semantic Version Bumper/Run Tests]   | Preparing to unpack .../5-shellcheck_0.9.0-1_amd64.deb ...
+[Semantic Version Bumper/Run Tests]   | Unpacking shellcheck (0.9.0-1) ...
+[Semantic Version Bumper/Run Tests]   | Setting up libsensors-config (1:3.6.0-9build1) ...
+[Semantic Version Bumper/Run Tests]   | Setting up shellcheck (0.9.0-1) ...
+[Semantic Version Bumper/Run Tests]   | Setting up libsensors5:amd64 (1:3.6.0-9build1) ...
+[Semantic Version Bumper/Run Tests]   | Setting up bats (1.10.0-1) ...
+[Semantic Version Bumper/Run Tests]   | Setting up sysstat (12.6.1-2) ...
+[Semantic Version Bumper/Run Tests]   | debconf: unable to initialize frontend: Dialog
+[Semantic Version Bumper/Run Tests]   | debconf: (No usable dialog-like program is installed, so the dialog based frontend cannot be used. at /usr/share/perl5/Debconf/FrontEnd/Dialog.pm line 79.)
+[Semantic Version Bumper/Run Tests]   | debconf: falling back to frontend: Readline
+[Semantic Version Bumper/Run Tests]   | debconf: unable to initialize frontend: Readline
+[Semantic Version Bumper/Run Tests]   | debconf: (This frontend requires a controlling tty.)
+[Semantic Version Bumper/Run Tests]   | debconf: falling back to frontend: Teletype
+[Semantic Version Bumper/Run Tests]   | 
+[Semantic Version Bumper/Run Tests]   | Creating config file /etc/default/sysstat with new version
+[Semantic Version Bumper/Run Tests]   | update-alternatives: using /usr/bin/sar.sysstat to provide /usr/bin/sar (sar) in auto mode
+[Semantic Version Bumper/Run Tests]   | update-alternatives: warning: skip creation of /usr/share/man/man1/sar.1.gz because associated file /usr/share/man/man1/sar.sysstat.1.gz (of link group sar) doesn't exist
+[Semantic Version Bumper/Run Tests]   | Created symlink /etc/systemd/system/sysstat.service.wants/sysstat-collect.timer → /usr/lib/systemd/system/sysstat-collect.timer.
+[Semantic Version Bumper/Run Tests]   | Created symlink /etc/systemd/system/sysstat.service.wants/sysstat-summary.timer → /usr/lib/systemd/system/sysstat-summary.timer.
+[Semantic Version Bumper/Run Tests]   | Created symlink /etc/systemd/system/multi-user.target.wants/sysstat.service → /usr/lib/systemd/system/sysstat.service.
+[Semantic Version Bumper/Run Tests]   | Setting up parallel (20231122+ds-1) ...
+[Semantic Version Bumper/Run Tests]   | Processing triggers for libc-bin (2.39-0ubuntu8.7) ...
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Install dependencies [1m3.043094269s]
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Run shellcheck
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Run shellcheck [1.422571108s]
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Run syntax check
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/3] user= workdir=
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Run syntax check [836.702882ms]
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Run bats unit tests
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/4] user= workdir=
+[Semantic Version Bumper/Run Tests]   | 1..20
+[Semantic Version Bumper/Run Tests]   | ok 1 parse version from VERSION file
+[Semantic Version Bumper/Run Tests]   | ok 2 parse version from package.json
+[Semantic Version Bumper/Run Tests]   | ok 3 error on missing version file
+[Semantic Version Bumper/Run Tests]   | ok 4 error on invalid version in VERSION file
+[Semantic Version Bumper/Run Tests]   | ok 5 feat commits trigger minor bump
+[Semantic Version Bumper/Run Tests]   | ok 6 fix-only commits trigger patch bump
+[Semantic Version Bumper/Run Tests]   | ok 7 breaking change with bang triggers major bump
+[Semantic Version Bumper/Run Tests]   | ok 8 BREAKING CHANGE footer triggers major bump
+[Semantic Version Bumper/Run Tests]   | ok 9 mixed commits use highest priority bump (feat > fix)
+[Semantic Version Bumper/Run Tests]   | ok 10 no bumpable commits exits with message
+[Semantic Version Bumper/Run Tests]   | ok 11 patch bump increments patch
+[Semantic Version Bumper/Run Tests]   | ok 12 minor bump resets patch to 0
+[Semantic Version Bumper/Run Tests]   | ok 13 major bump resets minor and patch to 0
+[Semantic time="2026-04-09T15:47:10-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Semantic Version Bumper/Run Tests] ⭐ Run Set up job
+[Semantic Version Bumper/Run Tests] 🚀  Start image=act-ubuntu-pwsh:latest
+[Semantic Version Bumper/Run Tests]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Semantic Version Bumper/Run Tests]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Semantic Version Bumper/Run Tests]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Semantic Version Bumper/Run Tests]   ✅  Success - Set up job
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Checkout code
+[Semantic Version Bumper/Run Tests]   🐳  docker cp src=/tmp/tmp.5ql1V2xVPf/. dst=/tmp/tmp.5ql1V2xVPf
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Checkout code [397.650297ms]
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Install dependencies
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Semantic Version Bumper/Run Tests]   | debconf: delaying package configuration, since apt-utils is not installed
+[Semantic Version Bumper/Run Tests]   | Selecting previously unselected package libsensors-config.
+[Semantic Version Bumper/Run Tests]   | (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 27282 files and directories currently installed.)
+[Semantic Version Bumper/Run Tests]   | Preparing to unpack .../0-libsensors-config_1%3a3.6.0-9build1_all.deb ...
+[Semantic Version Bumper/Run Tests]   | Unpacking libsensors-config (1:3.6.0-9build1) ...
+[Semantic Version Bumper/Run Tests]   | Selecting previously unselected package libsensors5:amd64.
+[Semantic Version Bumper/Run Tests]   | Preparing to unpack .../1-libsensors5_1%3a3.6.0-9build1_amd64.deb ...
+[Semantic Version Bumper/Run Tests]   | Unpacking libsensors5:amd64 (1:3.6.0-9build1) ...
+[Semantic Version Bumper/Run Tests]   | Selecting previously unselected package sysstat.
+[Semantic Version Bumper/Run Tests]   | Preparing to unpack .../2-sysstat_12.6.1-2_amd64.deb ...
+[Semantic Version Bumper/Run Tests]   | Unpacking sysstat (12.6.1-2) ...
+[Semantic Version Bumper/Run Tests]   | Selecting previously unselected package bats.
+[Semantic Version Bumper/Run Tests]   | Preparing to unpack .../3-bats_1.10.0-1_all.deb ...
+[Semantic Version Bumper/Run Tests]   | Unpacking bats (1.10.0-1) ...
+[Semantic Version Bumper/Run Tests]   | Selecting previously unselected package parallel.
+[Semantic Version Bumper/Run Tests]   | Preparing to unpack .../4-parallel_20231122+ds-1_all.deb ...
+[Semantic Version Bumper/Run Tests]   | Adding 'diversion of /usr/bin/parallel to /usr/bin/parallel.moreutils by parallel'
+[Semantic Version Bumper/Run Tests]   | Adding 'diversion of /usr/share/man/man1/parallel.1.gz to /usr/share/man/man1/parallel.moreutils.1.gz by parallel'
+[Semantic Version Bumper/Run Tests]   | Unpacking parallel (20231122+ds-1) ...
+[Semantic Version Bumper/Run Tests]   | Selecting previously unselected package shellcheck.
+[Semantic Version Bumper/Run Tests]   | Preparing to unpack .../5-shellcheck_0.9.0-1_amd64.deb ...
+[Semantic Version Bumper/Run Tests]   | Unpacking shellcheck (0.9.0-1) ...
+[Semantic Version Bumper/Run Tests]   | Setting up libsensors-config (1:3.6.0-9build1) ...
+[Semantic Version Bumper/Run Tests]   | Setting up shellcheck (0.9.0-1) ...
+[Semantic Version Bumper/Run Tests]   | Setting up libsensors5:amd64 (1:3.6.0-9build1) ...
+[Semantic Version Bumper/Run Tests]   | Setting up bats (1.10.0-1) ...
+[Semantic Version Bumper/Run Tests]   | Setting up sysstat (12.6.1-2) ...
+[Semantic Version Bumper/Run Tests]   | debconf: unable to initialize frontend: Dialog
+[Semantic Version Bumper/Run Tests]   | debconf: (No usable dialog-like program is installed, so the dialog based frontend cannot be used. at /usr/share/perl5/Debconf/FrontEnd/Dialog.pm line 79.)
+[Semantic Version Bumper/Run Tests]   | debconf: falling back to frontend: Readline
+[Semantic Version Bumper/Run Tests]   | debconf: unable to initialize frontend: Readline
+[Semantic Version Bumper/Run Tests]   | debconf: (This frontend requires a controlling tty.)
+[Semantic Version Bumper/Run Tests]   | debconf: falling back to frontend: Teletype
+[Semantic Version Bumper/Run Tests]   | 
+[Semantic Version Bumper/Run Tests]   | Creating config file /etc/default/sysstat with new version
+[Semantic Version Bumper/Run Tests]   | update-alternatives: using /usr/bin/sar.sysstat to provide /usr/bin/sar (sar) in auto mode
+[Semantic Version Bumper/Run Tests]   | update-alternatives: warning: skip creation of /usr/share/man/man1/sar.1.gz because associated file /usr/share/man/man1/sar.sysstat.1.gz (of link group sar) doesn't exist
+[Semantic Version Bumper/Run Tests]   | Created symlink /etc/systemd/system/sysstat.service.wants/sysstat-collect.timer → /usr/lib/systemd/system/sysstat-collect.timer.
+[Semantic Version Bumper/Run Tests]   | Created symlink /etc/systemd/system/sysstat.service.wants/sysstat-summary.timer → /usr/lib/systemd/system/sysstat-summary.timer.
+[Semantic Version Bumper/Run Tests]   | Created symlink /etc/systemd/system/multi-user.target.wants/sysstat.service → /usr/lib/systemd/system/sysstat.service.
+[Semantic Version Bumper/Run Tests]   | Setting up parallel (20231122+ds-1) ...
+[Semantic Version Bumper/Run Tests]   | Processing triggers for libc-bin (2.39-0ubuntu8.7) ...
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Install dependencies [1m3.043094269s]
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Run shellcheck
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Run shellcheck [1.422571108s]
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Run syntax check
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/3] user= workdir=
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Run syntax check [836.702882ms]
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Run bats unit tests
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/4] user= workdir=
+[Semantic Version Bumper/Run Tests]   | 1..20
+[Semantic Version Bumper/Run Tests]   | ok 1 parse version from VERSION file
+[Semantic Version Bumper/Run Tests]   | ok 2 parse version from package.json
+[Semantic Version Bumper/Run Tests]   | ok 3 error on missing version file
+[Semantic Version Bumper/Run Tests]   | ok 4 error on invalid version in VERSION file
+[Semantic Version Bumper/Run Tests]   | ok 5 feat commits trigger minor bump
+[Semantic Version Bumper/Run Tests]   | ok 6 fix-only commits trigger patch bump
+[Semantic Version Bumper/Run Tests]   | ok 7 breaking change with bang triggers major bump
+[Semantic Version Bumper/Run Tests]   | ok 8 BREAKING CHANGE footer triggers major bump
+[Semantic Version Bumper/Run Tests]   | ok 9 mixed commits use highest priority bump (feat > fix)
+[Semantic Version Bumper/Run Tests]   | ok 10 no bumpable commits exits with message
+[Semantic Version Bumper/Run Tests]   | ok 11 patch bump increments patch
+[Semantic Version Bumper/Run Tests]   | ok 12 minor bump resets patch to 0
+[Semantic Version Bumper/Run Tests]   | ok 13 major bump resets minor and patch to 0
+[Semantic Version Bumper/Run Tests]   | ok 14 VERSION file is updated with new version
+[Semantic Version Bumper/Run Tests]   | ok 15 package.json is updated with new version
+[Semantic Version Bumper/Run Tests]   | ok 16 changelog entry is generated
+[Semantic Version Bumper/Run Tests]   | ok 17 changelog contains commit descriptions
+[Semantic Version Bumper/Run Tests]   | ok 18 changelog groups entries by type
+[Semantic Version Bumper/Run Tests]   | ok 19 reads commits from git log when no commit-log file given
+[Semantic Version Bumper/Run Tests]   | ok 20 error on missing commit log file
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Run bats unit tests [5.409507406s]
+[Semantic Version Bumper/Run Tests] ⭐ Run Complete job
+[Semantic Version Bumper/Run Tests] Cleaning up container for job Run Tests
+[Semantic Version Bumper/Run Tests]   ✅  Success - Complete job
+[Semantic Version Bumper/Run Tests] 🏁  Job succeeded
+[Semantic Version Bumper/Version Bump] ⭐ Run Set up job
+[Semantic Version Bumper/Version Bump] 🚀  Start image=act-ubuntu-pwsh:latest
+[Semantic Version Bumper/Version Bump]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Semantic Version Bumper/Version Bump]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Semantic Version Bumper/Version Bump]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Semantic Version Bumper/Version Bump]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Semantic Version Bumper/Version Bump]   ✅  Success - Set up job
+[Semantic Version Bumper/Version Bump] ⭐ Run Main Checkout code
+[Semantic Version Bumper/Version Bump]   🐳  docker cp src=/tmp/tmp.5ql1V2xVPf/. dst=/tmp/tmp.5ql1V2xVPf
+[Semantic Version Bumper/Version Bump]   ✅  Success - Main Checkout code [220.967093ms]
+[Semantic Version Bumper/Version Bump] ⭐ Run Main Configure git
+[Semantic Version Bumper/Version Bump]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Semantic Version Bumper/Version Bump]   ✅  Success - Main Configure git [571.492498ms]
+[Semantic Version Bumper/Version Bump] ⭐ Run Main Run version bump
+[Semantic Version Bumper/Version Bump]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Semantic Version Bumper/Version Bump]   | Bumped version: 1.0.0 -> 1.1.0 (minor)
+[Semantic Version Bumper/Version Bump]   ✅  Success - Main Run version bump [731.394566ms]
+[Semantic Version Bumper/Version Bump] ⭐ Run Main Show results
+[Semantic Version Bumper/Version Bump]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/3] user= workdir=
+[Semantic Version Bumper/Version Bump]   | === VERSION ===
+[Semantic Version Bumper/Version Bump]   | 1.1.0
+[Semantic Version Bumper/Version Bump]   | 
+[Semantic Version Bumper/Version Bump]   | === CHANGELOG ===
+[Semantic Version Bumper/Version Bump]   | ## [1.1.0] - 2026-04-09
+[Semantic Version Bumper/Version Bump]   | 
+[Semantic Version Bumper/Version Bump]   | ### Features
+[Semantic Version Bumper/Version Bump]   | 
+[Semantic Version Bumper/Version Bump]   | - implement search
+[Semantic Version Bumper/Version Bump]   | - add user authentication
+[Semantic Version Bumper/Version Bump]   | 
+[Semantic Version Bumper/Version Bump]   | ### Bug Fixes
+[Semantic Version Bumper/Version Bump]   | 
+[Semantic Version Bumper/Version Bump]   | - typo in welcome message
+[Semantic Version Bumper/Version Bump]   | 
+[Semantic Version Bumper/Version Bump]   ✅  Success - Main Show results [1.193141775s]
+[Semantic Version Bumper/Version Bump] ⭐ Run Complete job
+[Semantic Version Bumper/Version Bump] Cleaning up container for job Version Bump
+[Semantic Version Bumper/Version Bump]   ✅  Success - Complete job
+[Semantic Version Bumper/Version Bump] 🏁  Job succeeded
+Version Bumper/Run Tests]   | ok 14 VERSION file is updated with new version
+[Semantic Version Bumper/Run Tests]   | ok 15 package.json is updated with new version
+[Semantic Version Bumper/Run Tests]   | ok 16 changelog entry is generated
+[Semantic Version Bumper/Run Tests]   | ok 17 changelog contains commit descriptions
+[Semantic Version Bumper/Run Tests]   | ok 18 changelog groups entries by type
+[Semantic Version Bumper/Run Tests]   | ok 19 reads commits from git log when no commit-log file given
+[Semantic Version Bumper/Run Tests]   | ok 20 error on missing commit log file
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Run bats unit tests [5.409507406s]
+[Semantic Version Bumper/Run Tests] ⭐ Run Complete job
+[Semantic Version Bumper/Run Tests] Cleaning up container for job Run Tests
+[Semantic Version Bumper/Run Tests]   ✅  Success - Complete job
+[Semantic Version Bumper/Run Tests] 🏁  Job succeeded
+[Semantic Version Bumper/Version Bump] ⭐ Run Set up job
+[Semantic Version Bumper/Version Bump] 🚀  Start image=act-ubuntu-pwsh:latest
+[Semantic Version Bumper/Version Bump]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Semantic Version Bumper/Version Bump]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Semantic Version Bumper/Version Bump]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Semantic Version Bumper/Version Bump]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Semantic Version Bumper/Version Bump]   ✅  Success - Set up job
+[Semantic Version Bumper/Version Bump] ⭐ Run Main Checkout code
+[Semantic Version Bumper/Version Bump]   🐳  docker cp src=/tmp/tmp.5ql1V2xVPf/. dst=/tmp/tmp.5ql1V2xVPf
+[Semantic Version Bumper/Version Bump]   ✅  Success - Main Checkout code [220.967093ms]
+[Semantic Version Bumper/Version Bump] ⭐ Run Main Configure git
+[Semantic Version Bumper/Version Bump]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Semantic Version Bumper/Version Bump]   ✅  Success - Main Configure git [571.492498ms]
+[Semantic Version Bumper/Version Bump] ⭐ Run Main Run version bump
+[Semantic Version Bumper/Version Bump]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Semantic Version Bumper/Version Bump]   | Bumped version: 1.0.0 -> 1.1.0 (minor)
+[Semantic Version Bumper/Version Bump]   ✅  Success - Main Run version bump [731.394566ms]
+[Semantic Version Bumper/Version Bump] ⭐ Run Main Show results
+[Semantic Version Bumper/Version Bump]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/3] user= workdir=
+[Semantic Version Bumper/Version Bump]   | === VERSION ===
+[Semantic Version Bumper/Version Bump]   | 1.1.0
+[Semantic Version Bumper/Version Bump]   | 
+[Semantic Version Bumper/Version Bump]   | === CHANGELOG ===
+[Semantic Version Bumper/Version Bump]   | ## [1.1.0] - 2026-04-09
+[Semantic Version Bumper/Version Bump]   | 
+[Semantic Version Bumper/Version Bump]   | ### Features
+[Semantic Version Bumper/Version Bump]   | 
+[Semantic Version Bumper/Version Bump]   | - implement search
+[Semantic Version Bumper/Version Bump]   | - add user authentication
+[Semantic Version Bumper/Version Bump]   | 
+[Semantic Version Bumper/Version Bump]   | ### Bug Fixes
+[Semantic Version Bumper/Version Bump]   | 
+[Semantic Version Bumper/Version Bump]   | - typo in welcome message
+[Semantic Version Bumper/Version Bump]   | 
+[Semantic Version Bumper/Version Bump]   ✅  Success - Main Show results [1.193141775s]
+[Semantic Version Bumper/Version Bump] ⭐ Run Complete job
+[Semantic Version Bumper/Version Bump] Cleaning up container for job Version Bump
+[Semantic Version Bumper/Version Bump]   ✅  Success - Complete job
+[Semantic Version Bumper/Version Bump] 🏁  Job succeeded
+  PASS: Act run 1 succeeds (exit code 0)
+  PASS: Test case 1: test job succeeded (contains 'Job succeeded')
+  PASS: Test case 1: version bumped to 1.1.0 (contains '1.1.0')
+  PASS: Test case 1: bump type is minor (contains 'minor')
+  PASS: Test case 1: bats tests ran (contains 'ok 20')
+
+--- Test Case 2: fix commit (2.3.1 -> 2.3.2) ---
+time="2026-04-09T15:48:36-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Semantic Version Bumper/Run Tests] ⭐ Run Set up job
+[Semantic Version Bumper/Run Tests] 🚀  Start image=act-ubuntu-pwsh:latest
+[Semantic Version Bumper/Run Tests]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Semantic Version Bumper/Run Tests]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Semantic Version Bumper/Run Tests]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Semantic Version Bumper/Run Tests]   ✅  Success - Set up job
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Checkout code
+[Semantic Version Bumper/Run Tests]   🐳  docker cp src=/tmp/tmp.fEU3M6HACi/. dst=/tmp/tmp.fEU3M6HACi
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Checkout code [199.487484ms]
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Install dependencies
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Semantic Version Bumper/Run Tests]   | debconf: delaying package configuration, since apt-utils is not installed
+[Semantic Version Bumper/Run Tests]   | Selecting previously unselected package libsensors-config.
+[Semantic Version Bumper/Run Tests]   | (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 27282 files and directories currently installed.)
+[Semantic Version Bumper/Run Tests]   | Preparing to unpack .../0-libsensors-config_1%3a3.6.0-9build1_all.deb ...
+[Semantic Version Bumper/Run Tests]   | Unpacking libsensors-config (1:3.6.0-9build1) ...
+[Semantic Version Bumper/Run Tests]   | Selecting previously unselected package libsensors5:amd64.
+[Semantic Version Bumper/Run Tests]   | Preparing to unpack .../1-libsensors5_1%3a3.6.0-9build1_amd64.deb ...
+[Semantic Version Bumper/Run Tests]   | Unpacking libsensors5:amd64 (1:3.6.0-9build1) ...
+[Semantic Version Bumper/Run Tests]   | Selecting previously unselected package sysstat.
+[Semantic Version Bumper/Run Tests]   | Preparing to unpack .../2-sysstat_12.6.1-2_amd64.deb ...
+[Semantic Version Bumper/Run Tests]   | Unpacking sysstat (12.6.1-2) ...
+[Semantic Version Bumper/Run Tests]   | Selecting previously unselected package bats.
+[Semantic Version Bumper/Run Tests]   | Preparing to unpack .../3-bats_1.10.0-1_all.deb ...
+[Semantic Version Bumper/Run Tests]   | Unpacking bats (1.10.0-1) ...
+[Semantic Version Bumper/Run Tests]   | Selecting previously unselected package parallel.
+[Semantic Version Bumper/Run Tests]   | Preparing to unpack .../4-parallel_20231122+ds-1_all.deb ...
+[Semantic Version Bumper/Run Tests]   | Adding 'diversion of /usr/bin/parallel to /usr/bin/parallel.moreutils by parallel'
+[Semantic Version Bumper/Run Tests]   | Adding 'diversion of /usr/share/man/man1/parallel.1.gz to /usr/share/man/man1/parallel.moreutils.1.gz by parallel'
+[Semantic Version Bumper/Run Tests]   | Unpacking parallel (20231122+ds-1) ...
+[Semantic Version Bumper/Run Tests]   | Selecting previously unselected package shellcheck.
+[Semantic Version Bumper/Run Tests]   | Preparing to unpack .../5-shellcheck_0.9.0-1_amd64.deb ...
+[Semantic Version Bumper/Run Tests]   | Unpacking shellcheck (0.9.0-1) ...
+[Semantic Version Bumper/Run Tests]   | Setting up libsensors-config (1:3.6.0-9build1) ...
+[Semantic Version Bumper/Run Tests]   | Setting up shellcheck (0.9.0-1) ...
+[Semantic Version Bumper/Run Tests]   | Setting up libsensors5:amd64 (1:3.6.0-9build1) ...
+[Semantic Version Bumper/Run Tests]   | Setting up bats (1.10.0-1) ...
+[Semantic Version Bumper/Run Tests]   | Setting up sysstat (12.6.1-2) ...
+[Semantic Version Bumper/Run Tests]   | debconf: unable to initialize frontend: Dialog
+[Semantic Version Bumper/Run Tests]   | debconf: (No usable dialog-like program is installed, so the dialog based frontend cannot be used. at /usr/share/perl5/Debconf/FrontEnd/Dialog.pm line 79.)
+[Semantic Version Bumper/Run Tests]   | debconf: falling back to frontend: Readline
+[Semantic Version Bumper/Run Tests]   | debconf: unable to initialize frontend: Readline
+[Semantic Version Bumper/Run Tests]   | debconf: (This frontend requires a controlling tty.)
+[Semantic Version Bumper/Run Tests]   | debconf: falling back to frontend: Teletype
+[Semantic Version Bumper/Run Tests]   | 
+[Semantic Version Bumper/Run Tests]   | Creating config file /etc/default/sysstat with new version
+[Semantic Version Bumper/Run Tests]   | update-alternatives: using /usr/bin/sar.sysstat to provide /usr/bin/sar (sar) in auto mode
+[Semantic Version Bumper/Run Tests]   | update-alternatives: warning: skip creation of /usr/share/man/man1/sar.1.gz because associated file /usr/share/man/man1/sar.sysstat.1.gz (of link group sar) doesn't exist
+[Semantic Version Bumper/Run Tests]   | Created symlink /etc/systemd/system/sysstat.service.wants/sysstat-collect.timer → /usr/lib/systemd/system/sysstat-collect.timer.
+[Semantic Version Bumper/Run Tests]   | Created symlink /etc/systemd/system/sysstat.service.wants/sysstat-summary.timer → /usr/lib/systemd/system/sysstat-summary.timer.
+[Semantic Version Bumper/Run Tests]   | Created symlink /etc/systemd/system/multi-user.target.wants/sysstat.service → /usr/lib/systemd/system/sysstat.service.
+[Semantic Version Bumper/Run Tests]   | Setting up parallel (20231122+ds-1) ...
+[Semantic Version Bumper/Run Tests]   | Processing triggers for libc-bin (2.39-0ubuntu8.7) ...
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Install dependencies [55.386763826s]
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Run shellcheck
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Run shellcheck [5.698330422s]
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Run syntax check
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/3] user= workdir=
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Run syntax check [1.12482919s]
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Run bats unit tests
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/4] user= workdir=
+[Semantic Version Bumper/Run Tests]   | 1..20
+[Semantic Version Bumper/Run Tests]   | ok 1 parse version from VERSION file
+[Semantic Version Bumper/Run Tests]   | ok 2 parse version from package.json
+[Semantic Version Bumper/Run Tests]   | ok 3 error on missing version file
+[Semantic Version Bumper/Run Tests]   | ok 4 error on invalid version in VERSION file
+[Semantic Version Bumper/Run Tests]   | ok 5 feat commits trigger minor bump
+[Semantic Version Bumper/Run Tests]   | ok 6 fix-only commits trigger patch bump
+[Semantic Version Bumper/Run Tests]   | ok 7 breaking change with bang triggers major bump
+[Semantic Version Bumper/Run Tests]   | ok 8 BREAKING CHANGE footer triggers major bump
+[Semantic Version Bumper/Run Tests]   | ok 9 mixed commits use highest priority bump (feat > fix)
+[Semantic Version Bumper/Run Tests]   | ok 10 no bumpable commits exits with message
+[Semantic Version Bumper/Run Tests]   | ok 11 patch bump increments patch
+[Semantic Version Bumper/Run Tests]   | ok 12 minor bump resets patch to 0
+[Semantic Version Bumper/Run Tests]   | ok 13 major bump resets minor and patch to 0
+[Semantic Vetime="2026-04-09T15:48:36-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Semantic Version Bumper/Run Tests] ⭐ Run Set up job
+[Semantic Version Bumper/Run Tests] 🚀  Start image=act-ubuntu-pwsh:latest
+[Semantic Version Bumper/Run Tests]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Semantic Version Bumper/Run Tests]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Semantic Version Bumper/Run Tests]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Semantic Version Bumper/Run Tests]   ✅  Success - Set up job
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Checkout code
+[Semantic Version Bumper/Run Tests]   🐳  docker cp src=/tmp/tmp.fEU3M6HACi/. dst=/tmp/tmp.fEU3M6HACi
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Checkout code [199.487484ms]
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Install dependencies
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Semantic Version Bumper/Run Tests]   | debconf: delaying package configuration, since apt-utils is not installed
+[Semantic Version Bumper/Run Tests]   | Selecting previously unselected package libsensors-config.
+[Semantic Version Bumper/Run Tests]   | (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 27282 files and directories currently installed.)
+[Semantic Version Bumper/Run Tests]   | Preparing to unpack .../0-libsensors-config_1%3a3.6.0-9build1_all.deb ...
+[Semantic Version Bumper/Run Tests]   | Unpacking libsensors-config (1:3.6.0-9build1) ...
+[Semantic Version Bumper/Run Tests]   | Selecting previously unselected package libsensors5:amd64.
+[Semantic Version Bumper/Run Tests]   | Preparing to unpack .../1-libsensors5_1%3a3.6.0-9build1_amd64.deb ...
+[Semantic Version Bumper/Run Tests]   | Unpacking libsensors5:amd64 (1:3.6.0-9build1) ...
+[Semantic Version Bumper/Run Tests]   | Selecting previously unselected package sysstat.
+[Semantic Version Bumper/Run Tests]   | Preparing to unpack .../2-sysstat_12.6.1-2_amd64.deb ...
+[Semantic Version Bumper/Run Tests]   | Unpacking sysstat (12.6.1-2) ...
+[Semantic Version Bumper/Run Tests]   | Selecting previously unselected package bats.
+[Semantic Version Bumper/Run Tests]   | Preparing to unpack .../3-bats_1.10.0-1_all.deb ...
+[Semantic Version Bumper/Run Tests]   | Unpacking bats (1.10.0-1) ...
+[Semantic Version Bumper/Run Tests]   | Selecting previously unselected package parallel.
+[Semantic Version Bumper/Run Tests]   | Preparing to unpack .../4-parallel_20231122+ds-1_all.deb ...
+[Semantic Version Bumper/Run Tests]   | Adding 'diversion of /usr/bin/parallel to /usr/bin/parallel.moreutils by parallel'
+[Semantic Version Bumper/Run Tests]   | Adding 'diversion of /usr/share/man/man1/parallel.1.gz to /usr/share/man/man1/parallel.moreutils.1.gz by parallel'
+[Semantic Version Bumper/Run Tests]   | Unpacking parallel (20231122+ds-1) ...
+[Semantic Version Bumper/Run Tests]   | Selecting previously unselected package shellcheck.
+[Semantic Version Bumper/Run Tests]   | Preparing to unpack .../5-shellcheck_0.9.0-1_amd64.deb ...
+[Semantic Version Bumper/Run Tests]   | Unpacking shellcheck (0.9.0-1) ...
+[Semantic Version Bumper/Run Tests]   | Setting up libsensors-config (1:3.6.0-9build1) ...
+[Semantic Version Bumper/Run Tests]   | Setting up shellcheck (0.9.0-1) ...
+[Semantic Version Bumper/Run Tests]   | Setting up libsensors5:amd64 (1:3.6.0-9build1) ...
+[Semantic Version Bumper/Run Tests]   | Setting up bats (1.10.0-1) ...
+[Semantic Version Bumper/Run Tests]   | Setting up sysstat (12.6.1-2) ...
+[Semantic Version Bumper/Run Tests]   | debconf: unable to initialize frontend: Dialog
+[Semantic Version Bumper/Run Tests]   | debconf: (No usable dialog-like program is installed, so the dialog based frontend cannot be used. at /usr/share/perl5/Debconf/FrontEnd/Dialog.pm line 79.)
+[Semantic Version Bumper/Run Tests]   | debconf: falling back to frontend: Readline
+[Semantic Version Bumper/Run Tests]   | debconf: unable to initialize frontend: Readline
+[Semantic Version Bumper/Run Tests]   | debconf: (This frontend requires a controlling tty.)
+[Semantic Version Bumper/Run Tests]   | debconf: falling back to frontend: Teletype
+[Semantic Version Bumper/Run Tests]   | 
+[Semantic Version Bumper/Run Tests]   | Creating config file /etc/default/sysstat with new version
+[Semantic Version Bumper/Run Tests]   | update-alternatives: using /usr/bin/sar.sysstat to provide /usr/bin/sar (sar) in auto mode
+[Semantic Version Bumper/Run Tests]   | update-alternatives: warning: skip creation of /usr/share/man/man1/sar.1.gz because associated file /usr/share/man/man1/sar.sysstat.1.gz (of link group sar) doesn't exist
+[Semantic Version Bumper/Run Tests]   | Created symlink /etc/systemd/system/sysstat.service.wants/sysstat-collect.timer → /usr/lib/systemd/system/sysstat-collect.timer.
+[Semantic Version Bumper/Run Tests]   | Created symlink /etc/systemd/system/sysstat.service.wants/sysstat-summary.timer → /usr/lib/systemd/system/sysstat-summary.timer.
+[Semantic Version Bumper/Run Tests]   | Created symlink /etc/systemd/system/multi-user.target.wants/sysstat.service → /usr/lib/systemd/system/sysstat.service.
+[Semantic Version Bumper/Run Tests]   | Setting up parallel (20231122+ds-1) ...
+[Semantic Version Bumper/Run Tests]   | Processing triggers for libc-bin (2.39-0ubuntu8.7) ...
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Install dependencies [55.386763826s]
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Run shellcheck
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Run shellcheck [5.698330422s]
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Run syntax check
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/3] user= workdir=
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Run syntax check [1.12482919s]
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Run bats unit tests
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/4] user= workdir=
+[Semantic Version Bumper/Run Tests]   | 1..20
+[Semantic Version Bumper/Run Tests]   | ok 1 parse version from VERSION file
+[Semantic Version Bumper/Run Tests]   | ok 2 parse version from package.json
+[Semantic Version Bumper/Run Tests]   | ok 3 error on missing version file
+[Semantic Version Bumper/Run Tests]   | ok 4 error on invalid version in VERSION file
+[Semantic Version Bumper/Run Tests]   | ok 5 feat commits trigger minor bump
+[Semantic Version Bumper/Run Tests]   | ok 6 fix-only commits trigger patch bump
+[Semantic Version Bumper/Run Tests]   | ok 7 breaking change with bang triggers major bump
+[Semantic Version Bumper/Run Tests]   | ok 8 BREAKING CHANGE footer triggers major bump
+[Semantic Version Bumper/Run Tests]   | ok 9 mixed commits use highest priority bump (feat > fix)
+[Semantic Version Bumper/Run Tests]   | ok 10 no bumpable commits exits with message
+[Semantic Version Bumper/Run Tests]   | ok 11 patch bump increments patch
+[Semantic Version Bumper/Run Tests]   | ok 12 minor bump resets patch to 0
+[Semantic Version Bumper/Run Tests]   | ok 13 major bump resets minor and patch to 0
+[Semantic Version Bumper/Run Tests]   | ok 14 VERSION file is updated with new version
+[Semantic Version Bumper/Run Tests]   | ok 15 package.json is updated with new version
+[Semantic Version Bumper/Run Tests]   | ok 16 changelog entry is generated
+[Semantic Version Bumper/Run Tests]   | ok 17 changelog contains commit descriptions
+[Semantic Version Bumper/Run Tests]   | ok 18 changelog groups entries by type
+[Semantic Version Bumper/Run Tests]   | ok 19 reads commits from git log when no commit-log file given
+[Semantic Version Bumper/Run Tests]   | ok 20 error on missing commit log file
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Run bats unit tests [8.312277099s]
+[Semantic Version Bumper/Run Tests] ⭐ Run Complete job
+[Semantic Version Bumper/Run Tests] Cleaning up container for job Run Tests
+[Semantic Version Bumper/Run Tests]   ✅  Success - Complete job
+[Semantic Version Bumper/Run Tests] 🏁  Job succeeded
+[Semantic Version Bumper/Version Bump] ⭐ Run Set up job
+[Semantic Version Bumper/Version Bump] 🚀  Start image=act-ubuntu-pwsh:latest
+[Semantic Version Bumper/Version Bump]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Semantic Version Bumper/Version Bump]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Semantic Version Bumper/Version Bump]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Semantic Version Bumper/Version Bump]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Semantic Version Bumper/Version Bump]   ✅  Success - Set up job
+[Semantic Version Bumper/Version Bump] ⭐ Run Main Checkout code
+[Semantic Version Bumper/Version Bump]   🐳  docker cp src=/tmp/tmp.fEU3M6HACi/. dst=/tmp/tmp.fEU3M6HACi
+[Semantic Version Bumper/Version Bump]   ✅  Success - Main Checkout code [230.553223ms]
+[Semantic Version Bumper/Version Bump] ⭐ Run Main Configure git
+[Semantic Version Bumper/Version Bump]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Semantic Version Bumper/Version Bump]   ✅  Success - Main Configure git [735.976961ms]
+[Semantic Version Bumper/Version Bump] ⭐ Run Main Run version bump
+[Semantic Version Bumper/Version Bump]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Semantic Version Bumper/Version Bump]   | Bumped version: 2.3.1 -> 2.3.2 (patch)
+[Semantic Version Bumper/Version Bump]   ✅  Success - Main Run version bump [727.601714ms]
+[Semantic Version Bumper/Version Bump] ⭐ Run Main Show results
+[Semantic Version Bumper/Version Bump]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/3] user= workdir=
+[Semantic Version Bumper/Version Bump]   | === VERSION ===
+[Semantic Version Bumper/Version Bump]   | 2.3.2
+[Semantic Version Bumper/Version Bump]   | 
+[Semantic Version Bumper/Version Bump]   | === CHANGELOG ===
+[Semantic Version Bumper/Version Bump]   | ## [2.3.2] - 2026-04-09
+[Semantic Version Bumper/Version Bump]   | 
+[Semantic Version Bumper/Version Bump]   | ### Bug Fixes
+[Semantic Version Bumper/Version Bump]   | 
+[Semantic Version Bumper/Version Bump]   | - handle empty input
+[Semantic Version Bumper/Version Bump]   | - resolve null pointer
+[Semantic Version Bumper/Version Bump]   | 
+[Semantic Version Bumper/Version Bump]   ✅  Success - Main Show results [686.857899ms]
+[Semantic Version Bumper/Version Bump] ⭐ Run Complete job
+[Semantic Version Bumper/Version Bump] Cleaning up container for job Version Bump
+[Semantic Version Bumper/Version Bump]   ✅  Success - Complete job
+[Semantic Version Bumper/Version Bump] 🏁  Job succeeded
+rsion Bumper/Run Tests]   | ok 14 VERSION file is updated with new version
+[Semantic Version Bumper/Run Tests]   | ok 15 package.json is updated with new version
+[Semantic Version Bumper/Run Tests]   | ok 16 changelog entry is generated
+[Semantic Version Bumper/Run Tests]   | ok 17 changelog contains commit descriptions
+[Semantic Version Bumper/Run Tests]   | ok 18 changelog groups entries by type
+[Semantic Version Bumper/Run Tests]   | ok 19 reads commits from git log when no commit-log file given
+[Semantic Version Bumper/Run Tests]   | ok 20 error on missing commit log file
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Run bats unit tests [8.312277099s]
+[Semantic Version Bumper/Run Tests] ⭐ Run Complete job
+[Semantic Version Bumper/Run Tests] Cleaning up container for job Run Tests
+[Semantic Version Bumper/Run Tests]   ✅  Success - Complete job
+[Semantic Version Bumper/Run Tests] 🏁  Job succeeded
+[Semantic Version Bumper/Version Bump] ⭐ Run Set up job
+[Semantic Version Bumper/Version Bump] 🚀  Start image=act-ubuntu-pwsh:latest
+[Semantic Version Bumper/Version Bump]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Semantic Version Bumper/Version Bump]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Semantic Version Bumper/Version Bump]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Semantic Version Bumper/Version Bump]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Semantic Version Bumper/Version Bump]   ✅  Success - Set up job
+[Semantic Version Bumper/Version Bump] ⭐ Run Main Checkout code
+[Semantic Version Bumper/Version Bump]   🐳  docker cp src=/tmp/tmp.fEU3M6HACi/. dst=/tmp/tmp.fEU3M6HACi
+[Semantic Version Bumper/Version Bump]   ✅  Success - Main Checkout code [230.553223ms]
+[Semantic Version Bumper/Version Bump] ⭐ Run Main Configure git
+[Semantic Version Bumper/Version Bump]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Semantic Version Bumper/Version Bump]   ✅  Success - Main Configure git [735.976961ms]
+[Semantic Version Bumper/Version Bump] ⭐ Run Main Run version bump
+[Semantic Version Bumper/Version Bump]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Semantic Version Bumper/Version Bump]   | Bumped version: 2.3.1 -> 2.3.2 (patch)
+[Semantic Version Bumper/Version Bump]   ✅  Success - Main Run version bump [727.601714ms]
+[Semantic Version Bumper/Version Bump] ⭐ Run Main Show results
+[Semantic Version Bumper/Version Bump]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/3] user= workdir=
+[Semantic Version Bumper/Version Bump]   | === VERSION ===
+[Semantic Version Bumper/Version Bump]   | 2.3.2
+[Semantic Version Bumper/Version Bump]   | 
+[Semantic Version Bumper/Version Bump]   | === CHANGELOG ===
+[Semantic Version Bumper/Version Bump]   | ## [2.3.2] - 2026-04-09
+[Semantic Version Bumper/Version Bump]   | 
+[Semantic Version Bumper/Version Bump]   | ### Bug Fixes
+[Semantic Version Bumper/Version Bump]   | 
+[Semantic Version Bumper/Version Bump]   | - handle empty input
+[Semantic Version Bumper/Version Bump]   | - resolve null pointer
+[Semantic Version Bumper/Version Bump]   | 
+[Semantic Version Bumper/Version Bump]   ✅  Success - Main Show results [686.857899ms]
+[Semantic Version Bumper/Version Bump] ⭐ Run Complete job
+[Semantic Version Bumper/Version Bump] Cleaning up container for job Version Bump
+[Semantic Version Bumper/Version Bump]   ✅  Success - Complete job
+[Semantic Version Bumper/Version Bump] 🏁  Job succeeded
+  PASS: Act run 2 succeeds (exit code 0)
+  PASS: Test case 2: test job succeeded (contains 'Job succeeded')
+  PASS: Test case 2: version bumped to 2.3.2 (contains '2.3.2')
+  PASS: Test case 2: bump type is patch (contains 'patch')
+
+--- Test Case 3: breaking change (0.5.3 -> 1.0.0) ---
+time="2026-04-09T15:50:05-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Semantic Version Bumper/Run Tests] ⭐ Run Set up job
+[Semantic Version Bumper/Run Tests] 🚀  Start image=act-ubuntu-pwsh:latest
+[Semantic Version Bumper/Run Tests]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Semantic Version Bumper/Run Tests]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Semantic Version Bumper/Run Tests]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Semantic Version Bumper/Run Tests]   ✅  Success - Set up job
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Checkout code
+[Semantic Version Bumper/Run Tests]   🐳  docker cp src=/tmp/tmp.B7bmsmLhHu/. dst=/tmp/tmp.B7bmsmLhHu
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Checkout code [189.18108ms]
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Install dependencies
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Semantic Version Bumper/Run Tests]   | debconf: delaying package configuration, since apt-utils is not installed
+[Semantic Version Bumper/Run Tests]   | Selecting previously unselected package libsensors-config.
+time="2026-04-09T15:50:05-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Semantic Version Bumper/Run Tests] ⭐ Run Set up job
+[Semantic Version Bumper/Run Tests] 🚀  Start image=act-ubuntu-pwsh:latest
+[Semantic Version Bumper/Run Tests]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Semantic Version Bumper/Run Tests]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Semantic Version Bumper/Run Tests]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Semantic Version Bumper/Run Tests]   ✅  Success - Set up job
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Checkout code
+[Semantic Version Bumper/Run Tests]   🐳  docker cp src=/tmp/tmp.B7bmsmLhHu/. dst=/tmp/tmp.B7bmsmLhHu
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Checkout code [189.18108ms]
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Install dependencies
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Semantic Version Bumper/Run Tests]   | debconf: delaying package configuration, since apt-utils is not installed
+[Semantic Version Bumper/Run Tests]   | Selecting previously unselected package libsensors-config.
+[Semantic Version Bumper/Run Tests]   | (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 27282 files and directories currently installed.)
+[Semantic Version Bumper/Run Tests]   | Preparing to unpack .../0-libsensors-config_1%3a3.6.0-9build1_all.deb ...
+[Semantic Version Bumper/Run Tests]   | Unpacking libsensors-config (1:3.6.0-9build1) ...
+[Semantic Version Bumper/Run Tests]   | Selecting previously unselected package libsensors5:amd64.
+[Semantic Version Bumper/Run Tests]   | Preparing to unpack .../1-libsensors5_1%3a3.6.0-9build1_amd64.deb ...
+[Semantic Version Bumper/Run Tests]   | Unpacking libsensors5:amd64 (1:3.6.0-9build1) ...
+[Semantic Version Bumper/Run Tests]   | Selecting previously unselected package sysstat.
+[Semantic Version Bumper/Run Tests]   | Preparing to unpack .../2-sysstat_12.6.1-2_amd64.deb ...
+[Semantic Version Bumper/Run Tests]   | Unpacking sysstat (12.6.1-2) ...
+[Semantic Version Bumper/Run Tests]   | Selecting previously unselected package bats.
+[Semantic Version Bumper/Run Tests]   | Preparing to unpack .../3-bats_1.10.0-1_all.deb ...
+[Semantic Version Bumper/Run Tests]   | Unpacking bats (1.10.0-1) ...
+[Semantic Version Bumper/Run Tests]   | Selecting previously unselected package parallel.
+[Semantic Version Bumper/Run Tests]   | Preparing to unpack .../4-parallel_20231122+ds-1_all.deb ...
+[Semantic Version Bumper/Run Tests]   | Adding 'diversion of /usr/bin/parallel to /usr/bin/parallel.moreutils by parallel'
+[Semantic Version Bumper/Run Tests]   | Adding 'diversion of /usr/share/man/man1/parallel.1.gz to /usr/share/man/man1/parallel.moreutils.1.gz by parallel'
+[Semantic Version Bumper/Run Tests]   | Unpacking parallel (20231122+ds-1) ...
+[Semantic Version Bumper/Run Tests]   | Selecting previously unselected package shellcheck.
+[Semantic Version Bumper/Run Tests]   | Preparing to unpack .../5-shellcheck_0.9.0-1_amd64.deb ...
+[Semantic Version Bumper/Run Tests]   | Unpacking shellcheck (0.9.0-1) ...
+[Semantic Version Bumper/Run Tests]   | Setting up libsensors-config (1:3.6.0-9build1) ...
+[Semantic Version Bumper/Run Tests]   | Setting up shellcheck (0.9.0-1) ...
+[Semantic Version Bumper/Run Tests]   | Setting up libsensors5:amd64 (1:3.6.0-9build1) ...
+[Semantic Version Bumper/Run Tests]   | Setting up bats (1.10.0-1) ...
+[Semantic Version Bumper/Run Tests]   | Setting up sysstat (12.6.1-2) ...
+[Semantic Version Bumper/Run Tests]   | debconf: unable to initialize frontend: Dialog
+[Semantic Version Bumper/Run Tests]   | debconf: (No usable dialog-like program is installed, so the dialog based frontend cannot be used. at /usr/share/perl5/Debconf/FrontEnd/Dialog.pm line 79.)
+[Semantic Version Bumper/Run Tests]   | debconf: falling back to frontend: Readline
+[Semantic Version Bumper/Run Tests]   | debconf: unable to initialize frontend: Readline
+[Semantic Version Bumper/Run Tests]   | debconf: (This frontend requires a controlling tty.)
+[Semantic Version Bumper/Run Tests]   | debconf: falling back to frontend: Teletype
+[Semantic Version Bumper/Run Tests]   | 
+[Semantic Version Bumper/Run Tests]   | Creating config file /etc/default/sysstat with new version
+[Semantic Version Bumper/Run Tests]   | update-alternatives: using /usr/bin/sar.sysstat to provide /usr/bin/sar (sar) in auto mode
+[Semantic Version Bumper/Run Tests]   | update-alternatives: warning: skip creation of /usr/share/man/man1/sar.1.gz because associated file /usr/share/man/man1/sar.sysstat.1.gz (of link group sar) doesn't exist
+[Semantic Version Bumper/Run Tests]   | Created symlink /etc/systemd/system/sysstat.service.wants/sysstat-collect.timer → /usr/lib/systemd/system/sysstat-collect.timer.
+[Semantic Version Bumper/Run Tests]   | Created symlink /etc/systemd/system/sysstat.service.wants/sysstat-summary.timer → /usr/lib/systemd/system/sysstat-summary.timer.
+[Semantic Version Bumper/Run Tests]   | (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 27282 files and directories currently installed.)
+[Semantic Version Bumper/Run Tests]   | Preparing to unpack .../0-libsensors-config_1%3a3.6.0-9build1_all.deb ...
+[Semantic Version Bumper/Run Tests]   | Unpacking libsensors-config (1:3.6.0-9build1) ...
+[Semantic Version Bumper/Run Tests]   | Selecting previously unselected package libsensors5:amd64.
+[Semantic Version Bumper/Run Tests]   | Preparing to unpack .../1-libsensors5_1%3a3.6.0-9build1_amd64.deb ...
+[Semantic Version Bumper/Run Tests]   | Unpacking libsensors5:amd64 (1:3.6.0-9build1) ...
+[Semantic Version Bumper/Run Tests]   | Selecting previously unselected package sysstat.
+[Semantic Version Bumper/Run Tests]   | Preparing to unpack .../2-sysstat_12.6.1-2_amd64.deb ...
+[Semantic Version Bumper/Run Tests]   | Unpacking sysstat (12.6.1-2) ...
+[Semantic Version Bumper/Run Tests]   | Selecting previously unselected package bats.
+[Semantic Version Bumper/Run Tests]   | Preparing to unpack .../3-bats_1.10.0-1_all.deb ...
+[Semantic Version Bumper/Run Tests]   | Unpacking bats (1.10.0-1) ...
+[Semantic Version Bumper/Run Tests]   | Selecting previously unselected package parallel.
+[Semantic Version Bumper/Run Tests]   | Preparing to unpack .../4-parallel_20231122+ds-1_all.deb ...
+[Semantic Version Bumper/Run Tests]   | Adding 'diversion of /usr/bin/parallel to /usr/bin/parallel.moreutils by parallel'
+[Semantic Version Bumper/Run Tests]   | Adding 'diversion of /usr/share/man/man1/parallel.1.gz to /usr/share/man/man1/parallel.moreutils.1.gz by parallel'
+[Semantic Version Bumper/Run Tests]   | Unpacking parallel (20231122+ds-1) ...
+[Semantic Version Bumper/Run Tests]   | Selecting previously unselected package shellcheck.
+[Semantic Version Bumper/Run Tests]   | Preparing to unpack .../5-shellcheck_0.9.0-1_amd64.deb ...
+[Semantic Version Bumper/Run Tests]   | Unpacking shellcheck (0.9.0-1) ...
+[Semantic Version Bumper/Run Tests]   | Setting up libsensors-config (1:3.6.0-9build1) ...
+[Semantic Version Bumper/Run Tests]   | Setting up shellcheck (0.9.0-1) ...
+[Semantic Version Bumper/Run Tests]   | Setting up libsensors5:amd64 (1:3.6.0-9build1) ...
+[Semantic Version Bumper/Run Tests]   | Setting up bats (1.10.0-1) ...
+[Semantic Version Bumper/Run Tests]   | Setting up sysstat (12.6.1-2) ...
+[Semantic Version Bumper/Run Tests]   | debconf: unable to initialize frontend: Dialog
+[Semantic Version Bumper/Run Tests]   | debconf: (No usable dialog-like program is installed, so the dialog based frontend cannot be used. at /usr/share/perl5/Debconf/FrontEnd/Dialog.pm line 79.)
+[Semantic Version Bumper/Run Tests]   | debconf: falling back to frontend: Readline
+[Semantic Version Bumper/Run Tests]   | debconf: unable to initialize frontend: Readline
+[Semantic Version Bumper/Run Tests]   | debconf: (This frontend requires a controlling tty.)
+[Semantic Version Bumper/Run Tests]   | debconf: falling back to frontend: Teletype
+[Semantic Version Bumper/Run Tests]   | 
+[Semantic Version Bumper/Run Tests]   | Creating config file /etc/default/sysstat with new version
+[Semantic Version Bumper/Run Tests]   | update-alternatives: using /usr/bin/sar.sysstat to provide /usr/bin/sar (sar) in auto mode
+[Semantic Version Bumper/Run Tests]   | update-alternatives: warning: skip creation of /usr/share/man/man1/sar.1.gz because associated file /usr/share/man/man1/sar.sysstat.1.gz (of link group sar) doesn't exist
+[Semantic Version Bumper/Run Tests]   | Created symlink /etc/systemd/system/sysstat.service.wants/sysstat-collect.timer → /usr/lib/systemd/system/sysstat-collect.timer.
+[Semantic Version Bumper/Run Tests]   | Created symlink /etc/systemd/system/sysstat.service.wants/sysstat-summary.timer → /usr/lib/systemd/system/sysstat-summary.timer.
+[Semantic Version Bumper/Run Tests]   | Created symlink /etc/systemd/system/multi-user.target.wants/sysstat.service → /usr/lib/systemd/system/sysstat.service.
+[Semantic Version Bumper/Run Tests]   | Setting up parallel (20231122+ds-1) ...
+[Semantic Version Bumper/Run Tests]   | Processing triggers for libc-bin (2.39-0ubuntu8.7) ...
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Install dependencies [26.788831224s]
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Run shellcheck
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Run shellcheck [1.029892621s]
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Run syntax check
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/3] user= workdir=
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Run syntax check [971.199728ms]
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Run bats unit tests
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/4] user= workdir=
+[Semantic Version Bumper/Run Tests]   | 1..20
+[Semantic Version Bumper/Run Tests]   | ok 1 parse version from VERSION file
+[Semantic Version Bumper/Run Tests]   | ok 2 parse version from package.json
+[Semantic Version Bumper/Run Tests]   | ok 3 error on missing version file
+[Semantic Version Bumper/Run Tests]   | ok 4 error on invalid version in VERSION file
+[Semantic Version Bumper/Run Tests]   | ok 5 feat commits trigger minor bump
+[Semantic Version Bumper/Run Tests]   | ok 6 fix-only commits trigger patch bump
+[Semantic Version Bumper/Run Tests]   | ok 7 breaking change with bang triggers major bump
+[Semantic Version Bumper/Run Tests]   | ok 8 BREAKING CHANGE footer triggers major bump
+[Semantic Version Bumper/Run Tests]   | ok 9 mixed commits use highest priority bump (feat > fix)
+[Semantic Version Bumper/Run Tests]   | ok 10 no bumpable commits exits with message
+[Semantic Version Bumper/Run Tests]   | ok 11 patch bump increments patch
+[Semantic Version Bumper/Run Tests]   | ok 12 minor bump resets patch to 0
+[Semantic Version Bumper/Run Tests]   | ok 13 major bump resets minor and patch to 0
+[Semantic Version Bumper/Run Tests]   | ok 14 VERSION file is updated with new version
+[Semantic Version Bumper/Run Tests]   | ok 15 package.json is updated with new version
+[Semantic Version Bumper/Run Tests]   | ok 16 changelog entry is generated
+[Semantic Version Bumper/Run Tests]   | ok 17 changelog contains commit descriptions
+[Semantic Version Bumper/Run Tests]   | Created symlink /etc/systemd/system/multi-user.target.wants/sysstat.service → /usr/lib/systemd/system/sysstat.service.
+[Semantic Version Bumper/Run Tests]   | Setting up parallel (20231122+ds-1) ...
+[Semantic Version Bumper/Run Tests]   | Processing triggers for libc-bin (2.39-0ubuntu8.7) ...
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Install dependencies [26.788831224s]
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Run shellcheck
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Run shellcheck [1.029892621s]
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Run syntax check
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/3] user= workdir=
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Run syntax check [971.199728ms]
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Run bats unit tests
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/4] user= workdir=
+[Semantic Version Bumper/Run Tests]   | 1..20
+[Semantic Version Bumper/Run Tests]   | ok 1 parse version from VERSION file
+[Semantic Version Bumper/Run Tests]   | ok 2 parse version from package.json
+[Semantic Version Bumper/Run Tests]   | ok 3 error on missing version file
+[Semantic Version Bumper/Run Tests]   | ok 4 error on invalid version in VERSION file
+[Semantic Version Bumper/Run Tests]   | ok 5 feat commits trigger minor bump
+[Semantic Version Bumper/Run Tests]   | ok 6 fix-only commits trigger patch bump
+[Semantic Version Bumper/Run Tests]   | ok 7 breaking change with bang triggers major bump
+[Semantic Version Bumper/Run Tests]   | ok 8 BREAKING CHANGE footer triggers major bump
+[Semantic Version Bumper/Run Tests]   | ok 9 mixed commits use highest priority bump (feat > fix)
+[Semantic Version Bumper/Run Tests]   | ok 10 no bumpable commits exits with message
+[Semantic Version Bumper/Run Tests]   | ok 11 patch bump increments patch
+[Semantic Version Bumper/Run Tests]   | ok 12 minor bump resets patch to 0
+[Semantic Version Bumper/Run Tests]   | ok 13 major bump resets minor and patch to 0
+[Semantic Version Bumper/Run Tests]   | ok 14 VERSION file is updated with new version
+[Semantic Version Bumper/Run Tests]   | ok 15 package.json is updated with new version
+[Semantic Version Bumper/Run Tests]   | ok 16 changelog entry is generated
+[Semantic Version Bumper/Run Tests]   | ok 17 changelog contains commit descriptions
+[Semantic Version Bumper/Run Tests]   | ok 18 changelog groups entries by type
+[Semantic Version Bumper/Run Tests]   | ok 19 reads commits from git log when no commit-log file given
+[Semantic Version Bumper/Run Tests]   | ok 20 error on missing commit log file
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Run bats unit tests [4.798284993s]
+[Semantic Version Bumper/Run Tests] ⭐ Run Complete job
+[Semantic Version Bumper/Run Tests] Cleaning up container for job Run Tests
+[Semantic Version Bumper/Run Tests]   ✅  Success - Complete job
+[Semantic Version Bumper/Run Tests] 🏁  Job succeeded
+[Semantic Version Bumper/Version Bump] ⭐ Run Set up job
+[Semantic Version Bumper/Version Bump] 🚀  Start image=act-ubuntu-pwsh:latest
+[Semantic Version Bumper/Run Tests]   | ok 18 changelog groups entries by type
+[Semantic Version Bumper/Run Tests]   | ok 19 reads commits from git log when no commit-log file given
+[Semantic Version Bumper/Run Tests]   | ok 20 error on missing commit log file
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Run bats unit tests [4.798284993s]
+[Semantic Version Bumper/Run Tests] ⭐ Run Complete job
+[Semantic Version Bumper/Run Tests] Cleaning up container for job Run Tests
+[Semantic Version Bumper/Run Tests]   ✅  Success - Complete job
+[Semantic Version Bumper/Run Tests] 🏁  Job succeeded
+[Semantic Version Bumper/Version Bump] ⭐ Run Set up job
+[Semantic Version Bumper/Version Bump] 🚀  Start image=act-ubuntu-pwsh:latest
+[Semantic Version Bumper/Version Bump]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Semantic Version Bumper/Version Bump]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Semantic Version Bumper/Version Bump]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Semantic Version Bumper/Version Bump]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Semantic Version Bumper/Version Bump]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Semantic Version Bumper/Version Bump]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Semantic Version Bumper/Version Bump]   ✅  Success - Set up job
+[Semantic Version Bumper/Version Bump] ⭐ Run Main Checkout code
+[Semantic Version Bumper/Version Bump]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Semantic Version Bumper/Version Bump]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Semantic Version Bumper/Version Bump]   ✅  Success - Set up job
+[Semantic Version Bumper/Version Bump] ⭐ Run Main Checkout code
+[Semantic Version Bumper/Version Bump]   🐳  docker cp src=/tmp/tmp.B7bmsmLhHu/. dst=/tmp/tmp.B7bmsmLhHu
+[Semantic Version Bumper/Version Bump]   ✅  Success - Main Checkout code [171.730888ms]
+[Semantic Version Bumper/Version Bump] ⭐ Run Main Configure git
+[Semantic Version Bumper/Version Bump]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Semantic Version Bumper/Version Bump]   ✅  Success - Main Configure git [708.683327ms]
+[Semantic Version Bumper/Version Bump] ⭐ Run Main Run version bump
+[Semantic Version Bumper/Version Bump]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Semantic Version Bumper/Version Bump]   | Bumped version: 0.5.3 -> 1.0.0 (major)
+[Semantic Version Bumper/Version Bump]   🐳  docker cp src=/tmp/tmp.B7bmsmLhHu/. dst=/tmp/tmp.B7bmsmLhHu
+[Semantic Version Bumper/Version Bump]   ✅  Success - Main Checkout code [171.730888ms]
+[Semantic Version Bumper/Version Bump] ⭐ Run Main Configure git
+[Semantic Version Bumper/Version Bump]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Semantic Version Bumper/Version Bump]   ✅  Success - Main Configure git [708.683327ms]
+[Semantic Version Bumper/Version Bump] ⭐ Run Main Run version bump
+[Semantic Version Bumper/Version Bump]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Semantic Version Bumper/Version Bump]   | Bumped version: 0.5.3 -> 1.0.0 (major)
+[Semantic Version Bumper/Version Bump]   ✅  Success - Main Run version bump [654.469325ms]
+[Semantic Version Bumper/Version Bump] ⭐ Run Main Show results
+[Semantic Version Bumper/Version Bump]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/3] user= workdir=
+[Semantic Version Bumper/Version Bump]   | === VERSION ===
+[Semantic Version Bumper/Version Bump]   | 1.0.0
+[Semantic Version Bumper/Version Bump]   | 
+[Semantic Version Bumper/Version Bump]   ✅  Success - Main Run version bump [654.469325ms]
+[Semantic Version Bumper/Version Bump] ⭐ Run Main Show results
+[Semantic Version Bumper/Version Bump]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/3] user= workdir=
+[Semantic Version Bumper/Version Bump]   | === VERSION ===
+[Semantic Version Bumper/Version Bump]   | 1.0.0
+[Semantic Version Bumper/Version Bump]   | 
+[Semantic Version Bumper/Version Bump]   | === CHANGELOG ===
+[Semantic Version Bumper/Version Bump]   | ## [1.0.0] - 2026-04-09
+[Semantic Version Bumper/Version Bump]   | 
+[Semantic Version Bumper/Version Bump]   | ### Features
+[Semantic Version Bumper/Version Bump]   | 
+[Semantic Version Bumper/Version Bump]   | - redesign API response format
+[Semantic Version Bumper/Version Bump]   | 
+[Semantic Version Bumper/Version Bump]   | === CHANGELOG ===
+[Semantic Version Bumper/Version Bump]   | ## [1.0.0] - 2026-04-09
+[Semantic Version Bumper/Version Bump]   | 
+[Semantic Version Bumper/Version Bump]   | ### Features
+[Semantic Version Bumper/Version Bump]   | 
+[Semantic Version Bumper/Version Bump]   | - redesign API response format
+[Semantic Version Bumper/Version Bump]   | 
+[Semantic Version Bumper/Version Bump]   | ### Bug Fixes
+[Semantic Version Bumper/Version Bump]   | 
+[Semantic Version Bumper/Version Bump]   | - update error codes
+[Semantic Version Bumper/Version Bump]   | 
+[Semantic Version Bumper/Version Bump]   | ### Bug Fixes
+[Semantic Version Bumper/Version Bump]   | 
+[Semantic Version Bumper/Version Bump]   | - update error codes
+[Semantic Version Bumper/Version Bump]   | 
+[Semantic Version Bumper/Version Bump]   ✅  Success - Main Show results [644.630687ms]
+[Semantic Version Bumper/Version Bump] ⭐ Run Complete job
+[Semantic Version Bumper/Version Bump] Cleaning up container for job Version Bump
+[Semantic Version Bumper/Version Bump]   ✅  Success - Complete job
+[Semantic Version Bumper/Version Bump]   ✅  Success - Main Show results [644.630687ms]
+[Semantic Version Bumper/Version Bump] ⭐ Run Complete job
+[Semantic Version Bumper/Version Bump] Cleaning up container for job Version Bump
+[Semantic Version Bumper/Version Bump]   ✅  Success - Complete job
+[Semantic Version Bumper/Version Bump] 🏁  Job succeeded
+[Semantic Version Bumper/Version Bump] 🏁  Job succeeded
+  PASS: Act run 3 succeeds (exit code 0)
+  PASS: Test case 3: test job succeeded (contains 'Job succeeded')
+  PASS: Test case 3: version bumped to 1.0.0 (contains '1.0.0')
+  PASS: Test case 3: bump type is major (contains 'major')
+
+================================================================
+SUMMARY
+================================================================
+Passed: 25
+Failed: 0
+Total:  25
+RESULT: ALL TESTS PASSED

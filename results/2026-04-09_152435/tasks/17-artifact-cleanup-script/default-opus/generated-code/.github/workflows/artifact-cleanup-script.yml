@@ -1,0 +1,146 @@
+name: Artifact Cleanup Script
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  schedule:
+    - cron: '0 6 * * 1'  # Weekly Monday 6am UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  unit-tests:
+    name: Run unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run all unit tests
+        run: python3 test_artifact_cleanup.py
+
+  test-max-age-policy:
+    name: Test max age retention policy
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run max age policy test
+        run: |
+          echo "=== Max Age Policy Test ==="
+          python3 artifact_cleanup.py -c fixtures/test_max_age.json
+          echo "=== Verifying results ==="
+          OUTPUT=$(python3 artifact_cleanup.py -c fixtures/test_max_age.json)
+          echo "$OUTPUT"
+          # Verify exactly 1 artifact deleted (test-results-ancient, 40 days old)
+          echo "$OUTPUT" | grep -q "1 artifact(s) to delete"
+          echo "ASSERT: 1 artifact to delete - PASSED"
+          echo "$OUTPUT" | grep -q "6 artifact(s) to retain"
+          echo "ASSERT: 6 artifacts retained - PASSED"
+          echo "$OUTPUT" | grep -q "test-results-ancient"
+          echo "ASSERT: test-results-ancient in deletion list - PASSED"
+          echo "$OUTPUT" | grep -q "Space reclaimed: 8.0 MB"
+          echo "ASSERT: Space reclaimed 8.0 MB - PASSED"
+          echo "$OUTPUT" | grep -q "DRY RUN"
+          echo "ASSERT: Dry run mode - PASSED"
+          echo "=== Max Age Policy Test COMPLETE ==="
+
+  test-keep-latest-policy:
+    name: Test keep-latest-N retention policy
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run keep latest policy test
+        run: |
+          echo "=== Keep Latest Policy Test ==="
+          OUTPUT=$(python3 artifact_cleanup.py -c fixtures/test_keep_latest.json)
+          echo "$OUTPUT"
+          # Keep latest 1 per workflow: 4 deleted, 3 retained
+          echo "$OUTPUT" | grep -q "4 artifact(s) to delete"
+          echo "ASSERT: 4 artifacts to delete - PASSED"
+          echo "$OUTPUT" | grep -q "3 artifact(s) to retain"
+          echo "ASSERT: 3 artifacts retained - PASSED"
+          echo "$OUTPUT" | grep -q "build-linux-old"
+          echo "ASSERT: build-linux-old deleted - PASSED"
+          echo "$OUTPUT" | grep -q "build-windows-old"
+          echo "ASSERT: build-windows-old deleted - PASSED"
+          echo "$OUTPUT" | grep -q "test-results-medium"
+          echo "ASSERT: test-results-medium deleted - PASSED"
+          echo "$OUTPUT" | grep -q "test-results-ancient"
+          echo "ASSERT: test-results-ancient deleted - PASSED"
+          echo "$OUTPUT" | grep -q "Space reclaimed: 140.0 MB"
+          echo "ASSERT: Space reclaimed 140.0 MB - PASSED"
+          echo "=== Keep Latest Policy Test COMPLETE ==="
+
+  test-combined-policies:
+    name: Test combined retention policies
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run combined policies test
+        run: |
+          echo "=== Combined Policies Test ==="
+          OUTPUT=$(python3 artifact_cleanup.py -c fixtures/test_combined.json)
+          echo "$OUTPUT"
+          # Combined: age(14d)+keep(2)+size(200MB) -> 3 deleted, 4 retained
+          echo "$OUTPUT" | grep -q "3 artifact(s) to delete"
+          echo "ASSERT: 3 artifacts to delete - PASSED"
+          echo "$OUTPUT" | grep -q "4 artifact(s) to retain"
+          echo "ASSERT: 4 artifacts retained - PASSED"
+          echo "$OUTPUT" | grep -q "build-linux-old"
+          echo "ASSERT: build-linux-old deleted - PASSED"
+          echo "$OUTPUT" | grep -q "build-windows-old"
+          echo "ASSERT: build-windows-old deleted - PASSED"
+          echo "$OUTPUT" | grep -q "test-results-ancient"
+          echo "ASSERT: test-results-ancient deleted - PASSED"
+          # Reclaimed: 45 + 75 + 8 = 128 MB
+          echo "$OUTPUT" | grep -q "Space reclaimed: 128.0 MB"
+          echo "ASSERT: Space reclaimed 128.0 MB - PASSED"
+          echo "$OUTPUT" | grep -q "Space retained: 152.0 MB"
+          echo "ASSERT: Space retained 152.0 MB - PASSED"
+          echo "=== Combined Policies Test COMPLETE ==="
+
+      - name: Test live mode flag
+        run: |
+          echo "=== Live Mode Test ==="
+          OUTPUT=$(python3 artifact_cleanup.py -c fixtures/test_combined.json --live)
+          echo "$OUTPUT"
+          echo "$OUTPUT" | grep -q "LIVE"
+          echo "ASSERT: LIVE mode indicated - PASSED"
+          echo "=== Live Mode Test COMPLETE ==="
+
+      - name: Test empty input
+        run: |
+          echo "=== Empty Input Test ==="
+          echo '{"artifacts":[],"policy":{"max_age_days":30}}' | python3 artifact_cleanup.py -c -
+          OUTPUT=$(echo '{"artifacts":[],"policy":{"max_age_days":30}}' | python3 artifact_cleanup.py -c -)
+          echo "$OUTPUT"
+          echo "$OUTPUT" | grep -q "No artifacts to process"
+          echo "ASSERT: Empty input handled - PASSED"
+          echo "=== Empty Input Test COMPLETE ==="
+
+      - name: Test error handling for invalid input
+        run: |
+          echo "=== Error Handling Test ==="
+          set +e
+          echo '{"artifacts":[{"name":"broken"}],"policy":{}}' | python3 artifact_cleanup.py -c - 2>err.txt
+          EXIT_CODE=$?
+          set -e
+          echo "Exit code: $EXIT_CODE"
+          cat err.txt
+          test "$EXIT_CODE" -ne 0
+          echo "ASSERT: Non-zero exit code for invalid input - PASSED"
+          grep -q "ERROR" err.txt
+          echo "ASSERT: Error message present - PASSED"
+          echo "=== Error Handling Test COMPLETE ==="
