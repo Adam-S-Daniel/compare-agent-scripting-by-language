@@ -1,0 +1,651 @@
+{
+  "task_id": "16-environment-matrix-generator",
+  "task_name": "Environment Matrix Generator",
+  "task_category": "GitHub Actions / CI Configuration",
+  "language_mode": "bash",
+  "language_chosen": "bash",
+  "language_breakdown": {
+    "bash": 100.0
+  },
+  "interpreter_versions": {},
+  "powershell_version": "",
+  "dotnet_version": "",
+  "model": "claude-opus-4-6",
+  "model_short": "opus",
+  "claude_code_version": "2.1.98",
+  "instructions_version": "v4",
+  "timestamp_start": "2026-04-10T03:25:13.948041+00:00",
+  "timestamp_end": "2026-04-10T03:29:19.269662+00:00",
+  "prompt_text": "You are completing a scripting task. You MUST use Bash as your implementation language.\n\nTASK: Given a configuration describing OS options, language versions, and feature flags, generate a build matrix (as JSON) suitable for GitHub Actions strategy.matrix. Support include/exclude rules, max-parallel limits, and fail-fast configuration. Validate that the matrix doesn't exceed a maximum size. Output the complete matrix JSON.\n\nREQUIREMENTS:\n1. Use red/green TDD methodology: write a failing test FIRST, then write the minimum code to make it pass, then refactor. Repeat for each piece of functionality.\n2. Create mocks and test fixtures as necessary for testability. Use bats-core (bats) as the testing framework.\n3. All tests must be runnable with `bats` and must pass at the end.\n4. Include clear comments explaining your approach.\n5. Handle errors gracefully with meaningful error messages.\n6. Use `#!/usr/bin/env bash` shebang. Scripts must pass `shellcheck` and `bash -n` syntax validation.\n\nCreate your solution in the current working directory. Start by writing your first failing test.\n\nGITHUB ACTIONS REQUIREMENT:\nCreate a GitHub Actions workflow file at .github/workflows/environment-matrix-generator.yml that uses\nyour script in a real CI/CD pipeline. The workflow must:\n- Use appropriate trigger events (push, pull_request, schedule, workflow_dispatch, etc.)\n- Reference your script correctly\n- Pass actionlint validation (valid YAML, valid action references, correct syntax)\n- Include appropriate permissions, environment variables, and job dependencies\n- Actually run successfully when executed locally with `act` (nektos/act)\n\nDesign your workflow so its steps work in an isolated Docker container \u2014 use\n`actions/checkout@v4`, install dependencies your script needs, and run it.\nAvoid steps requiring external services or secrets without sensible defaults.\n\nIMPORTANT for PowerShell mode: Use `shell: pwsh` on your workflow run: steps instead\nof invoking `pwsh -Command` or `pwsh -File` from bash. This avoids escaping issues\nand works correctly in act containers. pwsh and Pester are pre-installed in the\ncontainer.\n\nWORKFLOW VALIDATION:\nRun `actionlint .github/workflows/environment-matrix-generator.yml` and fix any errors. actionlint is\npre-installed. Iterate until it passes cleanly. Validate with actionlint BEFORE\nrunning act \u2014 actionlint is instant, act takes 30-90 seconds per run.\n\nALL TESTS MUST RUN THROUGH ACT:\nEvery single test case must execute through the GitHub Actions workflow via `act`.\nDo NOT test your script directly \u2014 all testing goes through the pipeline.\n\nStructure your workflow to accept test fixture data and produce verifiable output.\nYour test harness must:\n1. For each test case: set up a temp git repo with your project files + that case's\n   fixture data, run `act push --rm`, capture the output\n2. Save all act output to `act-result.txt` in the current working directory (append\n   each test case's output, clearly delimited)\n3. Assert that act exited with code 0 for each case\n4. Parse the act output and assert on EXACT EXPECTED VALUES \u2014 not just that output\n   appeared, but that it matches the known-good result for that test case's input.\n   For example: if your workflow bumps version 1.1.0 with a feat commit, assert\n   the output contains exactly \"1.2.0\", not just \"a version number\"\n5. Assert every job shows \"Job succeeded\"\n\nThe `act-result.txt` file MUST exist when done. It is a required artifact.\n`act` and Docker are pre-installed. Limit yourself to at most 3 `act push` runs \u2014\ndiagnose errors from the output rather than re-running blindly.\n\nWORKFLOW STRUCTURE TESTS (also required):\n- Parse the YAML and check expected structure (triggers, jobs, steps)\n- Verify the workflow references your script files correctly (paths exist)\n- Verify actionlint passes (assert exit code 0)\n",
+  "exit_code": 0,
+  "run_success": true,
+  "failure_reason": null,
+  "session": {
+    "session_id": "907d7931-a1bf-4f6e-bb2e-411d4633559e",
+    "stop_reason": "end_turn",
+    "terminal_reason": "completed",
+    "fast_mode_state": "off",
+    "service_tier": "standard",
+    "speed": "standard",
+    "inference_geo": "",
+    "context_window": 200000,
+    "max_output_tokens": 64000,
+    "permission_mode": "bypassPermissions",
+    "output_style": "default",
+    "tools_available_count": 25,
+    "mcp_servers": [],
+    "permission_denials": []
+  },
+  "model_usage_detail": {
+    "claude-opus-4-6": {
+      "inputTokens": 38,
+      "outputTokens": 12457,
+      "cacheReadInputTokens": 985952,
+      "cacheCreationInputTokens": 28231,
+      "webSearchRequests": 0,
+      "costUSD": 0.98103475,
+      "contextWindow": 200000,
+      "maxOutputTokens": 64000
+    }
+  },
+  "effort_level": null,
+  "timing": {
+    "grand_total_duration_ms": 245321,
+    "total_api_duration_ms": 222072,
+    "total_execution_duration_ms": 21741,
+    "num_turns": 42
+  },
+  "tokens": {
+    "input_tokens": 38,
+    "output_tokens": 12457,
+    "cache_read_tokens": 985952,
+    "cache_creation_tokens": 28231,
+    "total_context_consumed": 1014221,
+    "compaction_count": 0
+  },
+  "cost": {
+    "total_cost_usd": 0.98103475,
+    "assumed_input_cost_per_mtok": 15.0,
+    "assumed_output_cost_per_mtok": 75.0,
+    "assumed_cache_read_cost_per_mtok": 1.5,
+    "assumed_cache_write_cost_per_mtok": 18.75
+  },
+  "code_metrics": {
+    "total_lines": 594,
+    "total_tokens_estimate": 7191,
+    "file_count": 9,
+    "files": [
+      "act-result.txt",
+      "matrix-generator.sh",
+      "test_matrix_generator.bats",
+      "fixtures/basic.json",
+      "fixtures/full_config.json",
+      "fixtures/too_large.json",
+      "fixtures/with_exclude.json",
+      "fixtures/with_include.json",
+      ".github/workflows/environment-matrix-generator.yml"
+    ]
+  },
+  "quality": {
+    "tests_pass": null,
+    "error_count": 1,
+    "error_details": [
+      "Exit code 1\n1..24\nok 1 workflow YAML file exists\nok 2 workflow has correct trigger events\nok 3 workflow has generate-matrix job\nok 4 workflow references matrix-generator.sh\nok 5 workflow references ch"
+    ],
+    "actionlint_pass": true,
+    "actionlint_errors": 0,
+    "actionlint_results": [
+      {
+        "file": ".github/workflows/environment-matrix-generator.yml",
+        "passed": true,
+        "errors": ""
+      }
+    ],
+    "act_result_txt_exists": true,
+    "act_result_txt_size": 14939,
+    "areas_of_difficulty": [],
+    "observations": ""
+  },
+  "tool_install": {
+    "tool_install_duration_ms": 0,
+    "tools_installed": [],
+    "install_commands_count": 0
+  },
+  "tool_use_timing": {
+    "total_tool_uses": 41,
+    "total_tool_duration_ms": 27966,
+    "bash_tool_uses": 19,
+    "bash_total_ms": 22401,
+    "slowest_tool_uses": [
+      {
+        "tool_name": "Bash",
+        "command": "bats test_matrix_generator.bats 2>&1",
+        "duration_ms": 16918,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bats test_matrix_generator.bats 2>&1",
+        "duration_ms": 2523,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 1006,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 987,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 932,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 904,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "./matrix-generator.sh fixtures/too_large.json 2>&1; echo \"exit: $?\"",
+        "duration_ms": 556,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "which bats jq actionlint act && bats --version && jq --version && actionlint --version 2>&1 | head -5",
+        "duration_ms": 502,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 477,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "./matrix-generator.sh fixtures/with_exclude.json && echo \"---\" && ./matrix-generator.sh fixtures/with_include.json && echo \"---\" && ./matrix-generator.sh fixtures/full_config.json",
+        "duration_ms": 272,
+        "is_error": false,
+        "is_install": false
+      }
+    ],
+    "all_tool_uses": [
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 1006,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "which bats jq actionlint act && bats --version && jq --version && actionlint --version 2>&1 | head -5",
+        "duration_ms": 502,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/16-environment-matrix-generator/bash-opus/",
+        "duration_ms": 70,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/16-environment-matrix-generator/bash-opus/.actrc",
+        "duration_ms": 74,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "docker images act-ubuntu-pwsh:latest --format \"{{.Repository}}:{{.Tag}} {{.Size}}\"",
+        "duration_ms": 176,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "ToolSearch",
+        "command": "",
+        "duration_ms": 36,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "TodoWrite",
+        "command": "",
+        "duration_ms": 47,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "TodoWrite",
+        "command": "",
+        "duration_ms": 18,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 199,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "chmod +x /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/16-environment-matrix-generator/bash-opus/matrix-generator.sh",
+        "duration_ms": 79,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "shellcheck matrix-generator.sh && echo \"shellcheck OK\" && bash -n matrix-generator.sh && echo \"syntax OK\"",
+        "duration_ms": 252,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "TodoWrite",
+        "command": "",
+        "duration_ms": 21,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/16-environment-matrix-generator/bash-opus/fixtures",
+        "duration_ms": 68,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 477,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 987,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 904,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 932,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 68,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "TodoWrite",
+        "command": "",
+        "duration_ms": 270,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/16-environment-matrix-generator/bash-opus/.github/workflows",
+        "duration_ms": 71,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 168,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "TodoWrite",
+        "command": "",
+        "duration_ms": 7,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "actionlint .github/workflows/environment-matrix-generator.yml",
+        "duration_ms": 158,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "./matrix-generator.sh fixtures/basic.json",
+        "duration_ms": 127,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "./matrix-generator.sh fixtures/with_exclude.json && echo \"---\" && ./matrix-generator.sh fixtures/with_include.json && echo \"---\" && ./matrix-generator.sh fixtures/full_config.json",
+        "duration_ms": 272,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "./matrix-generator.sh fixtures/full_config.json | jq '.\"fail-fast\"'",
+        "duration_ms": 118,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 35,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 151,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "./matrix-generator.sh fixtures/full_config.json | jq '.\"fail-fast\"'",
+        "duration_ms": 130,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "./matrix-generator.sh fixtures/too_large.json 2>&1; echo \"exit: $?\"",
+        "duration_ms": 556,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "shellcheck matrix-generator.sh && echo \"shellcheck OK\"",
+        "duration_ms": 142,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "TodoWrite",
+        "command": "",
+        "duration_ms": 28,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 61,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "TodoWrite",
+        "command": "",
+        "duration_ms": 37,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bats test_matrix_generator.bats 2>&1",
+        "duration_ms": 2523,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "head -100 act-result.txt",
+        "duration_ms": 69,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 27,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 70,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bats test_matrix_generator.bats 2>&1",
+        "duration_ms": 16918,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "wc -l act-result.txt && head -5 act-result.txt && echo \"...\" && tail -5 act-result.txt",
+        "duration_ms": 96,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "TodoWrite",
+        "command": "",
+        "duration_ms": 16,
+        "is_error": false,
+        "is_install": false
+      }
+    ],
+    "install_duration_ms": 0,
+    "test_duration_ms": 19943,
+    "act_duration_ms": 0
+  },
+  "hooks": {
+    "hook_fires": 10,
+    "hook_errors_caught": 0,
+    "hook_failures": 0,
+    "hook_events": [
+      {
+        "subtype": "hook_started",
+        "hook_id": "335370cf-bf3e-4a54-9444-670e55ff5ba4",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "335370cf-bf3e-4a54-9444-670e55ff5ba4",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "8ec58ee0-c0b9-48c3-a4ba-86d6c3dbcd2e",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "8ec58ee0-c0b9-48c3-a4ba-86d6c3dbcd2e",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "842ea1d0-3174-47fd-91fc-415bf6c0c42a",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "842ea1d0-3174-47fd-91fc-415bf6c0c42a",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "b66f4bce-7dfe-45d5-b048-eeb144f3a891",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "b66f4bce-7dfe-45d5-b048-eeb144f3a891",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "eef21e99-9613-4667-bbdb-7709c9d004ae",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "eef21e99-9613-4667-bbdb-7709c9d004ae",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "fee37453-3a60-4faa-b5b2-abaa3a7fbbeb",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "fee37453-3a60-4faa-b5b2-abaa3a7fbbeb",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "ae5ed848-e7f0-449e-93af-f546d0006c07",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "ae5ed848-e7f0-449e-93af-f546d0006c07",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "421c6b4f-2985-4c44-98d6-47c911f5a395",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "421c6b4f-2985-4c44-98d6-47c911f5a395",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "a54f02bf-f61b-4087-90e1-b83e7fcca5c3",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "a54f02bf-f61b-4087-90e1-b83e7fcca5c3",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "5b91bec9-f4cb-442a-88bf-1e1329a3b483",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "5b91bec9-f4cb-442a-88bf-1e1329a3b483",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  }
+}
