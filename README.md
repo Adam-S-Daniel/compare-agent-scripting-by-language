@@ -48,7 +48,7 @@ Each benchmark version defines a set of scripting tasks, language modes, and mod
 <!-- BEGIN BENCHMARK RUNS -->
 | Run | Version | Runs | Cost | Results |
 |-----|---------|------|------|---------|
-| **2026-04-09_152435** (latest) | ? | 18/? | — | [results.md](results/2026-04-09_152435/results.md) |
+| **2026-04-09_152435** (latest) | [v4](benchmark-instructions-v4.md) | 64/64 | $86.90 | [results.md](results/2026-04-09_152435/results.md) |
 | 2026-04-08_192624 | [v3](benchmark-instructions-v3.md) | 64/64 | $85.10 | [results.md](results/2026-04-08_192624/results.md) |
 | 2026-04-08_180614 | ? | 2/? | — | [results.md](results/2026-04-08_180614/results.md) |
 | 2026-04-08_180255 | ? | 0/? | — | [results.md](results/2026-04-08_180255/results.md) |
