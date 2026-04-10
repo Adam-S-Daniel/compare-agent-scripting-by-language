@@ -787,8 +787,8 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     if trap_instances:
         lines.append("### Traps by Language/Model")
         lines.append("")
-        tlm_hdr = "| Mode | Model | Runs | Trapped | Trap Rate | Traps | Time Lost | % of Time | $ Lost | % of $ |"
-        tlm_sep = "|------|-------|------|---------|-----------|-------|-----------|-----------|--------|--------|"
+        tlm_hdr = "| Mode | Model | Runs | Traps | Time Lost | % of Time | $ Lost | % of $ |"
+        tlm_sep = "|------|-------|------|-------|-----------|-----------|--------|--------|"
         trapped_runs_by_combo = {}
         trap_count_by_combo = {}
         trap_time_by_combo = {}
@@ -820,7 +820,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
                     "cost_lost": tcc, "cost_pct": tcc / total_cost * 100 if total_cost else 0,
                 })
         def _fmt_tlm(r):
-            return (f"| {r['mode']} | {r['model']} | {r['n']} | {r['trapped']} | {r['rate']:.0f}% "
+            return (f"| {r['mode']} | {r['model']} | {r['n']} "
                     f"| {r['traps']} | {_dur(r['time_lost'])} | {r['time_pct']:.1f}% "
                     f"| ${r['cost_lost']:.2f} | {r['cost_pct']:.2f}% |")
         lines.append(tlm_hdr)
@@ -831,7 +831,6 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         lines.extend(_emit_sorted_variants(tlm_hdr, tlm_sep, tlm_rows, [
             ("Sorted by time lost (least first)", "time_lost", False),
             ("Sorted by $ lost (least first)", "cost_lost", False),
-            ("Sorted by trap rate (lowest first)", "rate", False),
         ], _fmt_tlm))
         lines.append("")
 
