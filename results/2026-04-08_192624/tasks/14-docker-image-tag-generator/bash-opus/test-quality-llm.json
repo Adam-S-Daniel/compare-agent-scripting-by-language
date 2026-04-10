@@ -1,0 +1,12 @@
+{
+  "coverage": 4,
+  "rigor": 3,
+  "design": 3,
+  "overall": 3,
+  "summary": "The test suite covers the core happy-path requirements well: main/master \u2192 latest, feature branch \u2192 branch-sha, semver tag \u2192 tag+latest, PR \u2192 pr-{N}, and branch name sanitization are all exercised. Workflow structure checks (triggers, job steps, actionlint, shellcheck) are a nice addition. However, several gaps reduce the score: error conditions (empty COMMIT_SHA, missing both BRANCH_NAME and GIT_TAG) are never tested; the 128-character truncation boundary is untested; non-semver tag behavior (should it suppress 'latest'?) is not explicitly verified; and duplicate-tag elimination is not covered. The pre-release tag test is incomplete \u2014 it asserts the sanitized tag exists but makes no assertion about whether 'latest' should or should not appear. Design-wise, the helper functions (create_test_repo, run_act, extract_tags, assert_tag_present/absent) are well-abstracted and test names are descriptive. However, pushd is used inside create_test_repo which runs in a subshell, making teardown's popd potentially wrong. The extract_tags parser is tightly coupled to a specific workflow output format, making the tests brittle if the delimiter strings change. The entire suite depends on Docker + act being available, which adds significant environmental fragility unrelated to the logic under test and makes failures harder to diagnose. Overall the suite would catch obvious regressions in the main flows but would miss error-handling bugs and certain edge cases.",
+  "tqs": 3.3,
+  "judge_cost_usd": 0.05,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 1688,
+  "judge_provider": "claude-cli"
+}
