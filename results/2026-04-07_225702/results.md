@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-10 09:52:03 AM ET
+**Last updated:** 2026-04-10 10:41:03 AM ET
 
 **Status:** 111/144 runs completed, 0 remaining
 **Total cost so far:** $76.34
@@ -300,7 +300,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | default | sonnet | 19.6 | 30.6 | 1.6 | 0.97 |
 | powershell | opus | 23.8 | 44.2 | 1.9 | 1.39 |
 | powershell | sonnet | 21.2 | 36.6 | 1.7 | 1.11 |
-| powershell-strict | opus | 22.3 | 48.1 | 2.2 | 1.39 |
+| powershell-strict | opus | 22.3 | 48.1 | 2.2 | 1.40 |
 | powershell-strict | sonnet | 27.0 | 45.6 | 1.7 | 0.51 |
 
 
@@ -312,7 +312,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | powershell-strict | sonnet | 27.0 | 45.6 | 1.7 | 0.51 |
 | default | opus | 25.1 | 43.6 | 1.7 | 1.49 |
 | powershell | opus | 23.8 | 44.2 | 1.9 | 1.39 |
-| powershell-strict | opus | 22.3 | 48.1 | 2.2 | 1.39 |
+| powershell-strict | opus | 22.3 | 48.1 | 2.2 | 1.40 |
 | powershell | sonnet | 21.2 | 36.6 | 1.7 | 1.11 |
 | default | sonnet | 19.6 | 30.6 | 1.6 | 0.97 |
 | csharp-script | opus | 0.0 | 0.0 | 0.0 | 0.00 |
@@ -325,7 +325,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 
 | Mode | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
 |------|-------|-----------|----------------|-----------------|---------------------|
-| powershell-strict | opus | 22.3 | 48.1 | 2.2 | 1.39 |
+| powershell-strict | opus | 22.3 | 48.1 | 2.2 | 1.40 |
 | powershell-strict | sonnet | 27.0 | 45.6 | 1.7 | 0.51 |
 | powershell | opus | 23.8 | 44.2 | 1.9 | 1.39 |
 | default | opus | 25.1 | 43.6 | 1.7 | 1.49 |
@@ -342,7 +342,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Mode | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
 |------|-------|-----------|----------------|-----------------|---------------------|
 | default | opus | 25.1 | 43.6 | 1.7 | 1.49 |
-| powershell-strict | opus | 22.3 | 48.1 | 2.2 | 1.39 |
+| powershell-strict | opus | 22.3 | 48.1 | 2.2 | 1.40 |
 | powershell | opus | 23.8 | 44.2 | 1.9 | 1.39 |
 | powershell | sonnet | 21.2 | 36.6 | 1.7 | 1.11 |
 | default | sonnet | 19.6 | 30.6 | 1.6 | 0.97 |

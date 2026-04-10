@@ -1,0 +1,11 @@
+{
+  "coverage": 4,
+  "rigor": 3,
+  "design": 3,
+  "overall": 3,
+  "summary": "The test suite covers all major requirements well: main/master\u2192latest, PR\u2192pr-N, semver tags, feature branch with short SHA, sanitization, refs/heads stripping, error on missing inputs, tag-only mode, and combined scenarios. Workflow structure checks (triggers, job names, actionlint, shellcheck, bash -n) are a nice bonus. However, several weaknesses reduce confidence. Rigor gaps: tests for cases 2, 7, and 8 only grep for a 'TEST N PASSED' marker without asserting exact output values, making them soft assertions; boundary conditions like all-special-char branch names, SHA shorter than 7 chars, or PR_NUMBER=0 are absent. Design issues are more serious: setup_file uses `|| true` when invoking act, so a completely broken act run still allows the file-existence check to pass and every downstream grep silently fails; `cd \"$tmpdir\"` in setup_file mutates global working directory state across tests; Test 3 hardcodes 'feature-login-deadbee' which requires the fixture SHA to start with exactly those hex digits \u2014 any SHA mismatch produces a false negative; all 13 act-based tests share a single cached artifact with no mechanism to invalidate it, so stale results can hide regressions; the test file asserts on workflow-produced markers like 'ALL TESTS PASSED' without including the workflow YAML, creating unverifiable coupling. The dual-layer (structural + act-integration) approach is architecturally sound but the implementation is brittle enough that the suite could pass while real failures exist.",
+  "judge_cost_usd": 0.0448,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 1573,
+  "judge_provider": "claude-cli"
+}

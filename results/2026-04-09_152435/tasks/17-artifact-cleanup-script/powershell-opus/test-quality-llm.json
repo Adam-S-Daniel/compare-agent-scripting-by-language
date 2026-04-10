@@ -1,0 +1,11 @@
+{
+  "coverage": 4,
+  "rigor": 3,
+  "design": 4,
+  "overall": 4,
+  "summary": "The test suite covers the primary requirements well: all three retention policies (MaxAgeDays, MaxTotalSizeBytes, KeepLatestPerWorkflow) are exercised individually and in combination, dry-run mode is checked, input validation handles negative values, and the empty-list edge case is present. The Format-DeletionPlan and Invoke-ArtifactCleanup public surfaces both have basic tests. Structure is clean: a clear Describe/Context/It hierarchy, a reusable New-MockArtifact fixture helper, a deterministic $refDate, and proper $TestDrive usage for file-based tests. Key weaknesses in rigor: no boundary-condition test for an artifact whose age equals exactly MaxAgeDays (off-by-one risk), no test for KeepLatestPerWorkflow=0, no test for MaxTotalSizeBytes exactly equal to total size, no test verifying that KeepLatest also protects from size-based eviction (only age-based is checked), and the Reason field is only verified in one case leaving other policy paths untested. The combined-policy test is a good integration check but tests a single specific scenario; more combinations would improve confidence. New-MockArtifact defined in the outer BeforeAll is accessible throughout in Pester v5 and the approach is sound, though the $refDate in the nested BeforeAll is inconsistently bypassed by the Invoke-ArtifactCleanup test which uses an inline literal date instead.",
+  "judge_cost_usd": 0.045,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 1476,
+  "judge_provider": "claude-cli"
+}

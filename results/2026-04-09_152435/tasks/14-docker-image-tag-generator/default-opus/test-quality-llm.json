@@ -1,0 +1,11 @@
+{
+  "coverage": 4,
+  "rigor": 3,
+  "design": 3,
+  "overall": 3,
+  "summary": "The test suite covers all five core requirements (main\u2192latest, PR\u2192pr-N, semver tag\u2192v{semver}, feature branch\u2192branch-sha, sha-always) plus sanitization, pre-release semver, error handling on missing inputs, workflow structure, actionlint validation, and correct act exit-code and job-success markers \u2014 that's good breadth. However, rigor suffers: invalid PR numbers (negative, zero, non-numeric), non-semver git tag warnings, SHA truncation edge cases, branch names that sanitize to empty string, and simultaneous multi-input combinations are untested. The design has organisational clarity (three named test classes, setUpClass for shared setup, clear comments), but the module-level mutable globals for act_output/act_exit_code create implicit coupling and fragility \u2014 the setUpClass guard `if act_exit_code is None` is a code smell that breaks if tests are run in unexpected orders. More critically, there are zero unit tests for `generate_tags()` or `sanitize_tag()` directly; all functional assertions flow through the full act pipeline, making test failures hard to diagnose and the suite dependent on Docker/act availability. The PASS-marker pattern duplicated with exact-value assertions adds some redundancy but doesn't substitute for isolated unit tests.",
+  "judge_cost_usd": 0.0526,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 1732,
+  "judge_provider": "claude-cli"
+}

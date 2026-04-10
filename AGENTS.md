@@ -24,10 +24,10 @@ python3 generate_results.py --all
 python3 runner.py --tasks 11,12,13,14,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
 
 # Evaluate test quality (structural metrics only)
-python3 test_quality.py results/2026-04-08_192624
+python3 test_quality.py results/2026-04-09_152435
 
 # Evaluate test quality with LLM-as-judge (requires a provider)
-python3 test_quality.py --llm-judge --provider claude-cli results/2026-04-08_192624
+python3 test_quality.py --llm-judge --provider claude-cli results/2026-04-09_152435
 
 # Build custom act container (optional, eliminates pwsh install overhead)
 docker build -t act-ubuntu-pwsh:latest -f Dockerfile.act .

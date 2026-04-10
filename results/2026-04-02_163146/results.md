@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-10 09:52:02 AM ET
+**Last updated:** 2026-04-10 10:41:02 AM ET
 
 **Status:** 144/144 runs completed, 0 remaining
 **Total cost so far:** $436.67
@@ -473,7 +473,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Batch File Renamer | powershell-strict | opus | 23 | 50 | 2.2 | 375 | 0 | 0.00 |
 | Batch File Renamer | powershell-strict | sonnet | 18 | 50 | 2.8 | 323 | 17 | 19.00 |
 | Database Seed Script | csharp-script | opus | 0 | 0 | 0.0 | 0 | 19 | 0.00 |
-| Database Seed Script | csharp-script | sonnet | 0 | 0 | 0.0 | 0 | 60 | 0.00 |
+| Database Seed Script | csharp-script | sonnet | 0 | 0 | 0.0 | 0 | 39 | 0.00 |
 | Database Seed Script | default | opus | 50 | 75 | 1.5 | 477 | 366 | 1.30 |
 | Database Seed Script | default | sonnet | 30 | 51 | 1.7 | 341 | 388 | 0.88 |
 | Database Seed Script | powershell | opus | 70 | 120 | 1.7 | 544 | 569 | 0.96 |

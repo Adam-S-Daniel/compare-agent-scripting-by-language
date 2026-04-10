@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-10 09:52:04 AM ET
+**Last updated:** 2026-04-10 10:41:03 AM ET
 
 **Status:** 64/64 runs completed, 0 remaining
 **Total cost so far:** $84.25
@@ -382,7 +382,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 |------|-------|-----------|----------------|-----------------|---------------------|
 | bash | opus | 18.5 | 28.2 | 1.5 | 1.45 |
 | bash | sonnet | 16.8 | 33.9 | 2.0 | 0.67 |
-| default | opus | 10.5 | 29.0 | 2.8 | 1.64 |
+| default | opus | 9.0 | 27.4 | 3.0 | 1.64 |
 | default | sonnet | 33.1 | 49.8 | 1.5 | 1.10 |
 | powershell | opus | 32.6 | 48.0 | 1.5 | 0.96 |
 | powershell | sonnet | 40.0 | 57.9 | 1.4 | 1.34 |
@@ -401,8 +401,8 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | powershell | opus | 32.6 | 48.0 | 1.5 | 0.96 |
 | bash | opus | 18.5 | 28.2 | 1.5 | 1.45 |
 | bash | sonnet | 16.8 | 33.9 | 2.0 | 0.67 |
-| default | opus | 10.5 | 29.0 | 2.8 | 1.64 |
 | typescript-bun | opus | 10.1 | 40.2 | 4.0 | 1.02 |
+| default | opus | 9.0 | 27.4 | 3.0 | 1.64 |
 
 </details>
 
@@ -417,8 +417,8 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | powershell | opus | 32.6 | 48.0 | 1.5 | 0.96 |
 | typescript-bun | opus | 10.1 | 40.2 | 4.0 | 1.02 |
 | bash | sonnet | 16.8 | 33.9 | 2.0 | 0.67 |
-| default | opus | 10.5 | 29.0 | 2.8 | 1.64 |
 | bash | opus | 18.5 | 28.2 | 1.5 | 1.45 |
+| default | opus | 9.0 | 27.4 | 3.0 | 1.64 |
 
 </details>
 
@@ -427,7 +427,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 
 | Mode | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
 |------|-------|-----------|----------------|-----------------|---------------------|
-| default | opus | 10.5 | 29.0 | 2.8 | 1.64 |
+| default | opus | 9.0 | 27.4 | 3.0 | 1.64 |
 | typescript-bun | sonnet | 34.6 | 60.1 | 1.7 | 1.55 |
 | bash | opus | 18.5 | 28.2 | 1.5 | 1.45 |
 | powershell | sonnet | 40.0 | 57.9 | 1.4 | 1.34 |
@@ -486,7 +486,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Test Results Aggregator | typescript-bun | sonnet | 45 | 94 | 2.1 | 685 | 585 | 1.17 |
 | Environment Matrix Generator | bash | opus | 17 | 24 | 1.4 | 327 | 166 | 1.97 |
 | Environment Matrix Generator | bash | sonnet | 18 | 29 | 1.6 | 291 | 323 | 0.90 |
-| Environment Matrix Generator | default | opus | 12 | 13 | 1.1 | 241 | 0 | 0.00 |
+| Environment Matrix Generator | default | opus | 0 | 0 | 0.0 | 0 | 235 | 0.00 |
 | Environment Matrix Generator | default | sonnet | 38 | 46 | 1.2 | 352 | 165 | 2.13 |
 | Environment Matrix Generator | powershell | opus | 43 | 62 | 1.4 | 324 | 286 | 1.13 |
 | Environment Matrix Generator | powershell | sonnet | 36 | 37 | 1.0 | 403 | 170 | 2.37 |
@@ -677,8 +677,8 @@ Values near +1.0 indicate the LLM agrees with the structural signal; near 0 mean
 
 | Structural Metric | vs Coverage | vs Rigor | vs Design | vs Overall |
 |-------------------|------------|---------|----------|-----------|
-| Test count | 0.23 | 0.31 | 0.26 | 0.31 |
-| Assertion count | 0.17 | 0.18 | 0.25 | 0.26 |
+| Test count | 0.24 | 0.31 | 0.27 | 0.32 |
+| Assertion count | 0.18 | 0.18 | 0.25 | 0.27 |
 | Test:code ratio | -0.09 | -0.2 | -0.16 | -0.04 |
 
 *Based on 64 runs with both structural and LLM scores.*

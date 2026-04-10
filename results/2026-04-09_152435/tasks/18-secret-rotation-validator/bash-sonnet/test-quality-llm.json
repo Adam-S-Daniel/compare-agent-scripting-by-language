@@ -1,0 +1,11 @@
+{
+  "coverage": 3,
+  "rigor": 2,
+  "design": 3,
+  "overall": 3,
+  "summary": "The suite covers the core happy-path requirements well: expired/warning/ok classification for both output formats, summary counts, report_date, required_by inclusion, the all-ok fixture, and workflow structure checks. However, several stated requirements go untested \u2014 shellcheck/bash-n validation is mentioned in requirements but never asserted in bats; the TODAY env-var alternative to --date is never exercised; markdown output for required_by is not verified; and the --warning flag is always called with the same value so boundary sensitivity is never probed. Rigor is the weakest dimension: the only error cases tested are missing argument, missing file, and invalid format \u2014 invalid JSON config, malformed dates in the config, an empty secrets array, boundary-exact expiry (days_since == policy_days and days_until == warning_window), and a zero-day warning window are all absent. Design is reasonable: setup/teardown fixtures are used correctly, TZ=UTC is set for determinism, test names are descriptive, and the separation of bats unit tests from act integration tests is architecturally sound. The main design weaknesses are that tests 5\u201311 each re-invoke the script independently (a shared per-suite run would be faster and less brittle), and the run_tests.sh assertions rely on exact act log formatting that is fragile across act versions. Overall the suite would catch obvious regressions in the happy path but would likely miss subtle classification-boundary bugs and most error-handling regressions.",
+  "judge_cost_usd": 0.0647,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 1674,
+  "judge_provider": "claude-cli"
+}

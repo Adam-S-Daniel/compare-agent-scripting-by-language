@@ -142,11 +142,18 @@ class ClaudeCLIProvider(LLMProvider):
             return None
 
         try:
-            envelope = json.loads(result.stdout)
+            parsed = json.loads(result.stdout)
         except json.JSONDecodeError:
             print(f"  [{self.name}] non-JSON output: {result.stdout[:200]}",
                   file=sys.stderr)
             return None
+
+        # CLI may return an array of events (stream) or a single object.
+        # Extract the result event.
+        if isinstance(parsed, list):
+            envelope = next((e for e in parsed if e.get("type") == "result"), parsed[-1] if parsed else {})
+        else:
+            envelope = parsed
 
         if envelope.get("is_error"):
             print(f"  [{self.name}] error: {envelope.get('result', '')[:200]}",

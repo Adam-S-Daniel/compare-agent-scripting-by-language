@@ -60,6 +60,7 @@ Each benchmark version defines a set of scripting tasks, language modes, and mod
 |-----|---------|------|------|---------|
 | **2026-04-09_152435** (latest) | [v4](benchmark-instructions-v4.md) | 64/64 | $86.90 | [results.md](results/2026-04-09_152435/results.md) |
 | 2026-04-08_192624 | [v3](benchmark-instructions-v3.md) | 64/64 | $85.10 | [results.md](results/2026-04-08_192624/results.md) |
+| 2026-04-08_170824 | ? | 0/? | — | — |
 | 2026-04-07_225702 | [v2](benchmark-instructions-v2.md) | 111/144 | $75.38 | [results.md](results/2026-04-07_225702/results.md) |
 | 2026-04-02_163146 | [v1](benchmark-instructions-v1.md) | 144/144 | $436.67 | [results.md](results/2026-04-02_163146/results.md) |
 <!-- END BENCHMARK RUNS -->
@@ -91,10 +92,10 @@ After a benchmark run, evaluate the quality of agent-generated test suites:
 
 ```bash
 # Structural metrics only (fast, no LLM calls)
-python3 test_quality.py results/2026-04-08_192624
+python3 test_quality.py results/2026-04-09_152435
 
 # LLM-as-judge (requires a provider — default: claude-cli)
-python3 test_quality.py --llm-judge --provider claude-cli results/2026-04-08_192624
+python3 test_quality.py --llm-judge --provider claude-cli results/2026-04-09_152435
 ```
 
 Structural metrics count tests, assertions, and test-to-code ratios across Python, TypeScript, PowerShell, and Bash. The LLM-as-judge sends each run's code and tests to an LLM for scoring on four dimensions (1-5 scale):

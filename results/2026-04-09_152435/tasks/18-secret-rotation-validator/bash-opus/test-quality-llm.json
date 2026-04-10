@@ -1,0 +1,11 @@
+{
+  "coverage": 4,
+  "rigor": 3,
+  "design": 3,
+  "overall": 3,
+  "summary": "The test suite covers the main requirements well: both markdown and JSON output formats, all three urgency classifications (expired/warning/ok), configurable warning window, error handling for missing files and invalid JSON, and comprehensive workflow-structure checks (triggers, file references, actionlint). The structural/functional split is logical and the setup_file caching pattern is smart \u2014 running act once and sharing output avoids redundant 30\u201390s CI invocations. However, rigor gaps are notable: no boundary-condition tests (a secret expiring exactly today, a secret exactly at the warning threshold), no test for an empty secrets array, no test for an invalid -f format flag or an invalid -d date, and the invalid-JSON test only checks exit code 2 but not the actual error message. Design has meaningful weaknesses: all ~20 functional tests depend on a single shared act run, so one upstream failure cascades into mass false negatives with no isolation between scenarios; the 'PASS: \u2026' grep assertions tightly couple tests to specific echo strings in the workflow rather than to actual script output, making failures hard to diagnose; and exact day counts like 'expires in 85 days' and '154 days' are silently tied to fixture dates chosen relative to a fixed reference date, so any drift breaks those assertions without a clear explanation. The suite would catch gross regressions but would struggle to pinpoint subtle boundary or formatting bugs.",
+  "judge_cost_usd": 0.0525,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 1661,
+  "judge_provider": "claude-cli"
+}
