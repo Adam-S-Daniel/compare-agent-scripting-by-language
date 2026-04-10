@@ -8,6 +8,7 @@ import pytest
 
 from test_quality import (
     _count_bash,
+    _count_csharp,
     _count_powershell,
     _count_python,
     _count_typescript,
@@ -62,6 +63,20 @@ class TestDetectLanguage:
         # But python test file listed first means python is detected first
         assert _detect_language(["test_helper.py", "suite.bats"]) == "python"
 
+    def test_csharp_from_test_file(self):
+        assert _detect_language(["CsvParserTests.cs", "CsvParser.cs"]) == "csharp"
+
+    def test_csharp_from_tests_cs(self):
+        assert _detect_language(["tests.cs", "app.cs"]) == "csharp"
+
+    def test_csharp_fallback_to_impl_extension(self):
+        assert _detect_language(["Program.cs"]) == "csharp"
+
+    def test_csharp_not_confused_by_helper_py(self):
+        # csharp-script runs often have helper .py/.sh scripts;
+        # C# test files should win over fallback .py detection
+        assert _detect_language(["IntegrationTests.cs", "setup_dotnet.py", "run.sh"]) == "csharp"
+
 
 # =========================================================================
 # File classification
@@ -95,6 +110,21 @@ class TestFileClassification:
         assert _is_test_file("test.bats", "bash")
         assert _is_test_file("run_tests.sh", "bash")
         assert not _is_test_file("deploy.sh", "bash")
+
+    def test_csharp_test_files(self):
+        assert _is_test_file("CsvParserTests.cs", "csharp")
+        assert _is_test_file("IntegrationTests.cs", "csharp")
+        assert _is_test_file("tests.cs", "csharp")
+        assert not _is_test_file("CsvParser.cs", "csharp")
+        assert not _is_test_file("Program.cs", "csharp")
+        assert not _is_test_file("TestCase.cs", "csharp")  # model class, not test file
+
+    def test_csharp_impl_files(self):
+        assert _is_impl_file("CsvParser.cs", "csharp")
+        assert _is_impl_file("Program.cs", "csharp")
+        assert _is_impl_file("Models.cs", "csharp")
+        # .csproj is not a code file (no .cs extension), so _is_code_file
+        # guards against it at the call site
 
 
 # =========================================================================
@@ -262,6 +292,100 @@ Describe "Calculator" {
 
 
 # =========================================================================
+# C# counter
+# =========================================================================
+
+class TestCountCsharp:
+    def test_xunit_facts(self):
+        code = """
+using Xunit;
+
+public class CsvParserTests
+{
+    [Fact]
+    public void ParseRow_ValidLine_ReturnsEmployee()
+    {
+        Assert.Equal("Alice", employee.Name);
+        Assert.Equal(95000.00m, employee.Salary);
+    }
+
+    [Fact]
+    public void ParseRow_InvalidSalary_Throws()
+    {
+        Assert.Throws<CsvParseException>(() => CsvParser.ParseRow(line));
+    }
+}
+"""
+        r = _count_csharp(code)
+        assert r["tests"] == 2
+        assert r["assertions"] == 3
+
+    def test_xunit_theory(self):
+        code = """
+    [Theory]
+    [InlineData(1, 2, 3)]
+    [InlineData(0, 0, 0)]
+    public void Add_ReturnsSum(int a, int b, int expected)
+    {
+        Assert.Equal(expected, Calculator.Add(a, b));
+    }
+"""
+        r = _count_csharp(code)
+        assert r["tests"] == 1
+        assert r["assertions"] == 1
+
+    def test_nunit_style(self):
+        code = """
+    [Test]
+    public void TestAdd()
+    {
+        Assert.That(result, Is.EqualTo(3));
+    }
+
+    [TestCase(1, 2)]
+    [TestCase(3, 4)]
+    public void TestMultiply(int a, int b)
+    {
+        Assert.AreEqual(a * b, Calculator.Multiply(a, b));
+    }
+"""
+        r = _count_csharp(code)
+        # [Test] = 1, [TestCase] x 2 = 2 parameterized runs → 3 total
+        assert r["tests"] == 3
+        assert r["assertions"] == 2
+
+    def test_custom_harness(self):
+        code = """
+AssertTrue(result > 0, "should be positive");
+AssertEqual(3, actual, "should be 3");
+AssertEqual<string>("hello", s, "greeting");
+AssertThrows<Exception>(() => Foo(), "should throw");
+AssertApprox(3.14m, pi, "pi value");
+"""
+        r = _count_csharp(code)
+        assert r["tests"] == 5  # custom harness: each assert is a test
+        assert r["assertions"] == 5
+
+    def test_custom_harness_suppressed_by_attributes(self):
+        code = """
+    [Fact]
+    public void RealTest()
+    {
+        Assert.True(true);
+    }
+
+AssertTrue(true, "extra");
+"""
+        r = _count_csharp(code)
+        assert r["tests"] == 1  # [Fact] found, so custom harness suppressed
+
+    def test_empty(self):
+        r = _count_csharp("")
+        assert r["tests"] == 0
+        assert r["assertions"] == 0
+
+
+# =========================================================================
 # Bash counter
 # =========================================================================
 
@@ -372,6 +496,35 @@ class TestComputeStructuralMetrics:
         assert r["impl_file_count"] == 1
         assert r["test_file_count"] == 1
         assert r["test_count"] == 1
+
+    def test_csharp_project(self, tmp_path):
+        (tmp_path / "Calculator.cs").write_text(
+            "public class Calculator\n{\n    public int Add(int a, int b) => a + b;\n}\n"
+        )
+        (tmp_path / "CalculatorTests.cs").write_text(
+            "using Xunit;\n\npublic class CalculatorTests\n{\n"
+            "    [Fact]\n    public void Add_Works()\n    {\n"
+            "        Assert.Equal(3, new Calculator().Add(1, 2));\n    }\n}\n"
+        )
+        r = compute_structural_metrics(tmp_path)
+        assert r["language"] == "csharp"
+        assert r["test_file_count"] == 1
+        assert r["impl_file_count"] == 1
+        assert r["test_count"] == 1
+        assert r["assertion_count"] == 1
+
+    def test_csharp_with_helper_scripts(self, tmp_path):
+        # Simulates a csharp-script run that has helper .py and .sh files
+        (tmp_path / "App.cs").write_text("public class App { }\n")
+        (tmp_path / "AppTests.cs").write_text(
+            "[Fact]\npublic void TestApp()\n{\n    Assert.True(true);\n}\n"
+        )
+        (tmp_path / "setup_dotnet.py").write_text("import os\nprint('setup')\n")
+        (tmp_path / "run.sh").write_text("#!/bin/bash\ndotnet run\n")
+        r = compute_structural_metrics(tmp_path)
+        assert r["language"] == "csharp"
+        assert r["impl_file_count"] == 1  # only App.cs
+        assert r["test_file_count"] == 1  # only AppTests.cs
 
     def test_skips_hidden_directories(self, tmp_path):
         hidden = tmp_path / ".cache"

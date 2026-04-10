@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-10 10:41:03 AM ET
+**Last updated:** 2026-04-10 03:52:15 PM ET
 
 **Status:** 111/144 runs completed, 0 remaining
 **Total cost so far:** $76.34
@@ -294,8 +294,8 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 
 | Mode | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
 |------|-------|-----------|----------------|-----------------|---------------------|
-| csharp-script | opus | 0.0 | 0.0 | 0.0 | 0.00 |
-| csharp-script | sonnet | 0.0 | 0.0 | 0.0 | 0.00 |
+| csharp-script | opus | 56.0 | 56.0 | 1.0 | 2.08 |
+| csharp-script | sonnet | 0.0 | 0.0 | 0.0 | 1.76 |
 | default | opus | 25.1 | 43.6 | 1.7 | 1.49 |
 | default | sonnet | 19.6 | 30.6 | 1.6 | 0.97 |
 | powershell | opus | 23.8 | 44.2 | 1.9 | 1.39 |
@@ -309,14 +309,14 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 
 | Mode | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
 |------|-------|-----------|----------------|-----------------|---------------------|
+| csharp-script | opus | 56.0 | 56.0 | 1.0 | 2.08 |
 | powershell-strict | sonnet | 27.0 | 45.6 | 1.7 | 0.51 |
 | default | opus | 25.1 | 43.6 | 1.7 | 1.49 |
 | powershell | opus | 23.8 | 44.2 | 1.9 | 1.39 |
 | powershell-strict | opus | 22.3 | 48.1 | 2.2 | 1.40 |
 | powershell | sonnet | 21.2 | 36.6 | 1.7 | 1.11 |
 | default | sonnet | 19.6 | 30.6 | 1.6 | 0.97 |
-| csharp-script | opus | 0.0 | 0.0 | 0.0 | 0.00 |
-| csharp-script | sonnet | 0.0 | 0.0 | 0.0 | 0.00 |
+| csharp-script | sonnet | 0.0 | 0.0 | 0.0 | 1.76 |
 
 </details>
 
@@ -325,14 +325,14 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 
 | Mode | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
 |------|-------|-----------|----------------|-----------------|---------------------|
+| csharp-script | opus | 56.0 | 56.0 | 1.0 | 2.08 |
 | powershell-strict | opus | 22.3 | 48.1 | 2.2 | 1.40 |
 | powershell-strict | sonnet | 27.0 | 45.6 | 1.7 | 0.51 |
 | powershell | opus | 23.8 | 44.2 | 1.9 | 1.39 |
 | default | opus | 25.1 | 43.6 | 1.7 | 1.49 |
 | powershell | sonnet | 21.2 | 36.6 | 1.7 | 1.11 |
 | default | sonnet | 19.6 | 30.6 | 1.6 | 0.97 |
-| csharp-script | opus | 0.0 | 0.0 | 0.0 | 0.00 |
-| csharp-script | sonnet | 0.0 | 0.0 | 0.0 | 0.00 |
+| csharp-script | sonnet | 0.0 | 0.0 | 0.0 | 1.76 |
 
 </details>
 
@@ -341,14 +341,14 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 
 | Mode | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
 |------|-------|-----------|----------------|-----------------|---------------------|
+| csharp-script | opus | 56.0 | 56.0 | 1.0 | 2.08 |
+| csharp-script | sonnet | 0.0 | 0.0 | 0.0 | 1.76 |
 | default | opus | 25.1 | 43.6 | 1.7 | 1.49 |
 | powershell-strict | opus | 22.3 | 48.1 | 2.2 | 1.40 |
 | powershell | opus | 23.8 | 44.2 | 1.9 | 1.39 |
 | powershell | sonnet | 21.2 | 36.6 | 1.7 | 1.11 |
 | default | sonnet | 19.6 | 30.6 | 1.6 | 0.97 |
 | powershell-strict | sonnet | 27.0 | 45.6 | 1.7 | 0.51 |
-| csharp-script | opus | 0.0 | 0.0 | 0.0 | 0.00 |
-| csharp-script | sonnet | 0.0 | 0.0 | 0.0 | 0.00 |
 
 </details>
 
@@ -358,15 +358,15 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 
 | Task | Mode | Model | Tests | Assertions | Assert/Test | Test Lines | Impl Lines | Test:Code |
 |------|------|-------|-------|------------|-------------|------------|------------|-----------|
-| CSV Report Generator | csharp-script | opus | 0 | 0 | 0.0 | 0 | 0 | 0.00 |
-| CSV Report Generator | csharp-script | sonnet | 0 | 0 | 0.0 | 0 | 0 | 0.00 |
+| CSV Report Generator | csharp-script | opus | 59 | 59 | 1.0 | 471 | 227 | 2.07 |
+| CSV Report Generator | csharp-script | sonnet | 0 | 0 | 0.0 | 450 | 256 | 1.76 |
 | CSV Report Generator | default | opus | 24 | 39 | 1.6 | 309 | 158 | 1.96 |
 | CSV Report Generator | default | sonnet | 38 | 43 | 1.1 | 314 | 220 | 1.43 |
 | CSV Report Generator | powershell | opus | 21 | 35 | 1.7 | 185 | 145 | 1.28 |
 | CSV Report Generator | powershell | sonnet | 25 | 34 | 1.4 | 243 | 178 | 1.37 |
 | CSV Report Generator | powershell-strict | opus | 24 | 37 | 1.5 | 223 | 218 | 1.02 |
 | CSV Report Generator | powershell-strict | sonnet | 30 | 44 | 1.5 | 272 | 0 | 0.00 |
-| Log File Analyzer | csharp-script | opus | 0 | 0 | 0.0 | 0 | 0 | 0.00 |
+| Log File Analyzer | csharp-script | opus | 53 | 53 | 1.0 | 548 | 263 | 2.08 |
 | Log File Analyzer | default | opus | 21 | 52 | 2.5 | 262 | 194 | 1.35 |
 | Log File Analyzer | default | sonnet | 51 | 67 | 1.3 | 405 | 306 | 1.32 |
 | Log File Analyzer | powershell | opus | 18 | 55 | 3.1 | 216 | 227 | 0.95 |
