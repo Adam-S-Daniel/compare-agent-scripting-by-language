@@ -1,0 +1,74 @@
+name: Test Results Aggregator
+
+# Trigger on pushes, PRs, a weekly schedule, and manual dispatch.
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 0 * * 1'   # every Monday at 00:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  aggregate:
+    name: Run Unit Tests and Aggregate Fixtures
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # The act-ubuntu-pwsh image is based on Ubuntu 22.04 which ships Python 3.
+      # We install pytest directly rather than using setup-python to avoid
+      # toolcache download overhead in local act runs.
+      - name: Install dependencies
+        run: python3 -m pip install pytest --break-system-packages --quiet
+
+      # ----- Unit tests (TDD) -----
+      # These tests live in tests/ and import from src/. They must all pass
+      # before we trust the aggregator to process the fixture files.
+      - name: Run unit tests
+        run: python3 -m pytest tests/ -v
+
+      # ----- Run aggregator on fixture files -----
+      # Processes fixtures/junit_run1.xml, junit_run2.xml, json_run3.json.
+      # Prints machine-readable lines used by the verification step below.
+      # Also writes the markdown summary to GITHUB_STEP_SUMMARY when set.
+      - name: Run aggregator on fixtures
+        run: |
+          set -o pipefail
+          python3 src/aggregator.py fixtures/ 2>&1 | tee /tmp/aggregator_output.txt
+
+      # ----- Verify exact expected values -----
+      # Known-good values for the three fixture files:
+      #   junit_run1.xml : 3 tests  (pass=2, fail=1, skip=0, dur=1.00s)
+      #   junit_run2.xml : 4 tests  (pass=2, fail=1, skip=1, dur=0.90s)
+      #   json_run3.json : 3 tests  (pass=1, fail=1, skip=1, dur=1.00s)
+      #   Aggregated     : total=10, passed=5, failed=3, skipped=2, dur=2.90s
+      #   Flaky tests    : test_b (pass→fail), test_c (fail→pass)
+      - name: Verify aggregation results
+        run: |
+          EXPECTED_AGG="AGGREGATE_RESULTS: total=10 passed=5 failed=3 skipped=2 duration=2.90"
+          EXPECTED_FLAKY="FLAKY_TESTS: test_b,test_c"
+
+          if grep -qF "$EXPECTED_AGG" /tmp/aggregator_output.txt; then
+            echo "PASS: aggregate totals match expected values"
+          else
+            echo "FAIL: expected '$EXPECTED_AGG'"
+            echo "Actual output:"
+            cat /tmp/aggregator_output.txt
+            exit 1
+          fi
+
+          if grep -qF "$EXPECTED_FLAKY" /tmp/aggregator_output.txt; then
+            echo "PASS: flaky tests match expected value"
+          else
+            echo "FAIL: expected '$EXPECTED_FLAKY'"
+            echo "Actual output:"
+            cat /tmp/aggregator_output.txt
+            exit 1
+          fi
+
+          echo "All CI assertions passed!"
