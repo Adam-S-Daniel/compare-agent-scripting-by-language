@@ -1,0 +1,258 @@
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/AGENTS.md"}
+[Result] 1	# Agent Instructions
+2	
+3	All agent-facing instructions live in this file. `CLAUDE.md` contains only a
+4	reference here. If you are a Claude Code agent, you have already loaded this
+5	via `CLAUDE.md`. Other agents: read this file directly.
+6	
+7	## Build and test
+8	
+9	```bash
+10	# Validate imports
+11	python3 -c "from runner import main"
+12	python3 -c "from generate_results import generate_results_md"
+13	
+14	# Regenerate all reports
+15	python3 generate_results.py --all
+16	
+17	# Run a benchmark (v4, all tasks/modes/models)
+18	python3 runner.py --tasks 11,12,13,14,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
+19	
+20	# Build custom act container (optional, eliminates pwsh install overhead)
+21	docker build -t act-ubuntu-pwsh:latest -f Dockerfile.act .
+22	```
+23	
+24	## Code style
+25	
+26	- Python 3.12+. No type stubs or mypy. Use type hints where they aid readability.
+27	- Dollar amounts in results.md: round to nearest penny (`.2f`).
+28	- Durations in result
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/14-docker-image-tag-generator/typescript-bun-sonnet"}
+[Result ERROR] EISDIR: illegal operation on a directory, read '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/14-docker-image-tag-generator/typescript-bun-sonnet'
+[Tool: Bash] ls /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/14-docker-image-tag-generator/typescript-bun-sonnet/
+[Result] benchmark-instructions-v4.md
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/14-docker-image-tag-generator/typescript-bun-sonnet/.actrc"}
+[Result] 1	-P ubuntu-latest=act-ubuntu-pwsh:latest
+2	
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/14-docker-image-tag-generator/typescript-bun-sonnet/docker-tags.test.ts", "content": "// TDD: Failing 
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/14-docker-image-tag-generator/typescript-bun-sonnet/docker-tags.test.ts (file state is current in your context — no need to Read it back)
+[Tool: Bash] bun test 2>&1 | head -30
+[Result] bun test v1.3.11 (af24e281)
+
+docker-tags.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module './docker-tags' from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/14-docker-image-tag-generator/typescript-bun-sonnet/docker-tags.test.ts'
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [26.00ms]
+[Assistant] Tests fail as expected. Now write the implementation:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/14-docker-image-tag-generator/typescript-bun-sonnet/docker-tags.ts", "content": "// Docker image tag g
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/14-docker-image-tag-generator/typescript-bun-sonnet/docker-tags.ts (file state is current in your context — no need to Read it back)
+[Tool: Bash] bun test 2>&1
+[Result] bun test v1.3.11 (af24e281)
+
+ 13 pass
+ 0 fail
+ 14 expect() calls
+Ran 13 tests across 1 file. [17.00ms]
+[Assistant] All 13 tests pass. Now create the GitHub Actions workflow:
+[Tool: Bash] mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/14-docker-image-tag-generator/typescript-bun-sonnet/.github/workflows
+[Result] (Bash completed with no output)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/14-docker-image-tag-generator/typescript-bun-sonnet/.github/workflows/docker-image-tag-generator.yml",
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/14-docker-image-tag-generator/typescript-bun-sonnet/.github/workflows/docker-image-tag-generator.yml (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/docker-image-tag-generator.yml 2>&1
+[Result ERROR] Exit code 1
+.github/workflows/docker-image-tag-generator.yml:44:9: shellcheck reported issue in this script: SC2129:style:21:1: Consider using { cmd1; cmd2; } >> file instead of individual redirects [shellcheck]
+   |
+44 |         run: |
+   |         ^~~~
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/14-docker-image-tag-generator/typescript-bun-sonnet/.github/workflows/docker-ima
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/14-docker-image-tag-generator/typescript-bun-sonnet/.github/workflows/docker-image-tag-generator.yml has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/docker-image-tag-generator.yml 2>&1
+[Result] (Bash completed with no output)
+[Assistant] actionlint passes. Now create the test harness that runs everything through `act`:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/14-docker-image-tag-generator/typescript-bun-sonnet/run-act-tests.ts", "content": "/**\n * Test harnes
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/14-docker-image-tag-generator/typescript-bun-sonnet/run-act-tests.ts (file state is current in your context — no need to Read it back)
+[Assistant] Let me rethink the test harness — the expected SHA must come from the actual git repo, not fixtures. Also batch 3 act runs max:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/14-docker-image-tag-generator/typescript-bun-sonnet/run-act-tests.ts", "content": "/**\n * Test harnes
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/14-docker-image-tag-generator/typescript-bun-sonnet/run-act-tests.ts has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Let me update the workflow to pass JSON as a CLI arg (more reliable than stdin in containers) and ensure the generate step properly exposes tags:
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/14-docker-image-tag-generator/typescript-bun-sonnet/.github/workflows/docker-image-tag-generator.yml"}
+[Result] 1	name: Docker Image Tag Generator
+2	
+3	on:
+4	  push:
+5	    branches:
+6	      - main
+7	      - master
+8	      - "feature/**"
+9	      - "fix/**"
+10	  pull_request:
+11	    branches:
+12	      - main
+13	      - master
+14	  workflow_dispatch:
+15	
+16	permissions:
+17	  contents: read
+18	
+19	jobs:
+20	  generate-tags:
+21	    runs-on: ubuntu-latest
+22	    steps:
+23	      - name: Checkout
+24	        uses: actions/checkout@v4
+25	
+26	      - name: Setup Bun
+27	        uses: oven-sh/setup-bun@v2
+28	        with:
+29	          bun-version: latest
+30	
+31	      - name: Install dependencies
+32	        run: bun install --frozen-lockfile 2>/dev/null || true
+33	
+34	      - name: Run unit tests
+35	        run: bun test
+36	
+37	      - name: Generate tags for current context
+38	        id: generate
+39	        env:
+40	          BRANCH: ${{ github.head_ref || github.ref_name }}
+41	          SHA: ${{ github.sha }}
+42	          PR_NUMBER: ${{ github.event.number }}
+43	          GIT_TAGS: ${{ toJson(github.event.re
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/14-docker-image-tag-generator/typescript-bun-sonnet/.github/workflows/docker-ima
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/14-docker-image-tag-generator/typescript-bun-sonnet/.github/workflows/docker-image-tag-generator.yml has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/docker-image-tag-generator.yml 2>&1
+[Result] (Bash completed with no output)
+[Assistant] Now run `act` via the test harness:
+[Tool: Bash] bun run run-act-tests.ts 2>&1
+[Result ERROR] Exit code 1
+
+--- Workflow structure tests ---
+  PASS: trigger: push
+  PASS: trigger: pull_request
+  PASS: trigger: workflow_dispatch
+  PASS: references docker-tags.ts
+  PASS: sets up Bun
+  PASS: script file exists
+  PASS: test file exists
+  PASS: actionlint
+
+--- PR test case (unit, no act) ---
+  PASS: tag "pr-99" present
+  PASS: tag "feature-pr-stuff-fff1111" present
+
+--- Act integration tests ---
+
+Running act for: main-branch
+  Expected tags: latest, main-3d47381
+  FAIL: act exit code 1
+
+Running act for: feature-branch
+  Expected tags: feature-my-login-5c11b78
+  FAIL: act exit code 1
+
+Running act for: semver-tag
+  Expected tags: v3.1.4, 3.1.4, latest, main-5c11b78
+  FAIL: act exit code 1
+
+SOME TESTS FAILED
+Results: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/14-docker-image-tag-generator/typescript-bun-sonnet/act-result.txt
+[Tool: Bash] grep -A 40 "TEST CASE: main-branch" /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/14-docker-image-tag-generator/typescript-bun-sonnet/act-result.txt | head -60
+[Result] TEST CASE: main-branch
+============================================================
+[Docker Image Tag Generator/generate-tags] ⭐ Run Set up job
+[Docker Image Tag Generator/generate-tags] 🚀  Start image=act-ubuntu-pwsh:latest
+[Docker Image Tag Generator/generate-tags]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=true
+[Docker Image Tag Generator/generate-tags] using DockerAuthConfig authentication for docker pull
+[Docker Image Tag Generator/generate-tags] Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+[Docker Image Tag Generator/generate-tags]   ❌  Failure - Set up job
+[Docker Image Tag Generator/generate-tags] 🏁  Job failed
+time="2026-04-09T20:00:25-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+Error: Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may requir
+[Tool: Bash] docker images act-ubuntu-pwsh 2>&1
+[Result] WARNING: This output is designed for human readability. For machine-readable output, please use --format.
+IMAGE                    ID             DISK USAGE   CONTENT SIZE   EXTRA
+act-ubuntu-pwsh:latest   8f4a33bf1683       2.55GB          639MB
+[Assistant] Image exists locally — act is trying to pull it from registry. Add `--pull=never` flag:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/14-docker-image-tag-generator/typescript-bun-sonnet/run-act-tests.ts", "old_stri
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/14-docker-image-tag-generator/typescript-bun-sonnet/run-act-tests.ts has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] bun run run-act-tests.ts 2>&1
+[Result] --- Workflow structure tests ---
+  PASS: trigger: push
+  PASS: trigger: pull_request
+  PASS: trigger: workflow_dispatch
+  PASS: references docker-tags.ts
+  PASS: sets up Bun
+  PASS: script file exists
+  PASS: test file exists
+  PASS: actionlint
+
+--- PR test case (unit, no act) ---
+  PASS: tag "pr-99" present
+  PASS: tag "feature-pr-stuff-fff1111" present
+
+--- Act integration tests ---
+
+Running act for: main-branch
+  Expected tags: latest, main-eafea42
+  PASS: exit code 0
+  PASS: "Job succeeded"
+  PASS: tag "latest"
+  PASS: tag "main-eafea42"
+
+Running act for: feature-branch
+  Expected tags: feature-my-login-a314ac5
+  PASS: exit code 0
+  PASS: "Job succeeded"
+  PASS: tag "feature-my-login-a314ac5"
+
+Running act for: semver-tag
+  Expected tags: v3.1.4, 3.1.4, latest, main-aea9e1c
+  PASS: exit code 0
+  PASS: "Job succeeded"
+  PASS: tag "v3.1.4"
+  PASS: tag "3.1.4"
+  PASS: tag "latest"
+  PASS: tag "main-aea9e1c"
+
+ALL TESTS PASSED
+Results: /home/passp/repos/compare-agent-scripting-by-languag
+[Assistant] All tests pass. Let me verify the final file structure:
+[Tool: Bash] ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/14-docker-image-tag-generator/typescript-bun-sonnet/ && echo "---" && ls .github/workflows/
+[Result] total 88
+drwxr-xr-x  5 passp passp  4096 Apr  9 20:00 .
+drwxr-xr-x 10 passp passp  4096 Apr  9 19:49 ..
+-rw-r--r--  1 passp passp    40 Apr  9 19:49 .actrc
+drwxr-xr-x  2 passp passp  4096 Apr  9 19:49 .claude
+drwxr-xr-x  7 passp passp  4096 Apr  9 19:49 .git
+drwxr-xr-x  3 passp passp  4096 Apr  9 19:57 .github
+-rw-r--r--  1 passp passp 23983 Apr  9 20:01 act-result.txt
+-rw-r--r--  1 passp passp 21666 Apr  9 15:03 benchmark-instructions-v4.md
+-rw-r--r--  1 passp passp  2912 Apr  9 19:57 docker-tags.test.ts
+-rw-r--r--  1 passp passp  2635 Apr  9 19:57 docker-tags.ts
+-rw-r--r--  1 passp passp  6825 Apr  9 20:00 run-act-tests.ts
+---
+docker-image-tag-generator.yml
+[Assistant] All done. Here's a summary of what was built:
+
+**Files created:**
+- `docker-tags.ts` — core library with `GitContext` interface, `sanitizeTag()`, and `generateDockerTags()` functions, plus a CLI entrypoint accepting JSON arg
+- `docker-tags.test.ts` — 13 unit tests covering all tag conventions and error cases
+- `.github/workflows/docker-image-tag-generator.yml` — CI workflow with push/pull_request/workflow_dispatch triggers
+- `run-act-tests.ts` — act test harness that runs 3 act push runs + structural/unit tests
+- `act-result.txt` — captured output from all act runs
+
+**TDD cycle followed:** wrote failing tests first (import error), then implementation, then all 13 tests green.
+
+**All assertions passed:**
+- Workflow structure checks (triggers, script references, actionlint clean)
+- PR scenario via unit test (no act run consumed)
+- 3 act runs: main branch → `latest` + `main-<sha7>`, feature branch → `feature-my-login-<sha7>`, semver tag → `v3.1.4` + `3.1.4` + `latest` + `main-<sha7>`

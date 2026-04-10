@@ -1,0 +1,145 @@
+name: Artifact Cleanup Script CI
+
+on:
+  push:
+  pull_request:
+  schedule:
+    # Run daily at 02:00 UTC to demonstrate scheduled retention enforcement
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # ── Job 1: Lint and syntax validation ──────────────────────────────────────
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install shellcheck
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y shellcheck
+
+      - name: shellcheck
+        run: shellcheck artifact_cleanup.sh
+
+      - name: bash -n syntax check
+        run: bash -n artifact_cleanup.sh
+
+  # ── Job 2: Run bats tests ──────────────────────────────────────────────────
+  test:
+    name: Bats Tests
+    runs-on: ubuntu-latest
+    needs: lint
+    env:
+      # Pin "now" to a fixed epoch so tests are deterministic in CI.
+      # 2026-04-10 00:00:00 UTC = 1744243200
+      NOW: "1744243200"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install bats-core
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y bats
+
+      - name: Run bats test suite
+        run: bats tests/artifact_cleanup.bats
+
+  # ── Job 3: Smoke-test the script with realistic fixture data ───────────────
+  smoke-test:
+    name: Smoke Test
+    runs-on: ubuntu-latest
+    needs: test
+    env:
+      NOW: "1744243200"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create fixture — mixed retention scenario
+        run: |
+          mkdir -p fixtures
+          cat > fixtures/smoke.csv <<'EOF'
+          build-cache-v1,52428800,1741564800,run-0001
+          build-cache-v2,52428800,1742256000,run-0001
+          build-cache-v3,52428800,1742947200,run-0001
+          test-report-old,1048576,1738972800,run-0002
+          test-report-new,1048576,1744070400,run-0002
+          dist-archive-jan,104857600,1738972800,run-0003
+          dist-archive-feb,104857600,1740614400,run-0003
+          dist-archive-mar,104857600,1741651200,run-0003
+          EOF
+          # Remove leading whitespace added by heredoc indentation
+          sed -i 's/^[[:space:]]*//' fixtures/smoke.csv
+
+      - name: Run with all policies enabled (dry-run)
+        run: |
+          echo "=== Dry-run with all three policies ==="
+          MAX_AGE_DAYS=45 \
+          KEEP_LATEST_N=2 \
+          MAX_TOTAL_SIZE_B=209715200 \
+          DRY_RUN=true \
+          NOW="${NOW}" \
+          bash artifact_cleanup.sh fixtures/smoke.csv
+        id: dry_run
+
+      - name: Assert dry-run output contains DRY RUN marker
+        run: |
+          output=$(MAX_AGE_DAYS=45 KEEP_LATEST_N=2 MAX_TOTAL_SIZE_B=209715200 DRY_RUN=true NOW="${NOW}" bash artifact_cleanup.sh fixtures/smoke.csv)
+          echo "$output"
+          echo "$output" | grep -q "DRY RUN" || { echo "FAIL: missing DRY RUN marker"; exit 1; }
+          echo "PASS: DRY RUN marker present"
+
+      - name: Assert old artifacts are marked DELETE
+        run: |
+          # test-report-old epoch 1738972800 = 2025-02-08, which is >45 days before NOW
+          output=$(MAX_AGE_DAYS=45 NOW="${NOW}" bash artifact_cleanup.sh fixtures/smoke.csv)
+          echo "$output"
+          echo "$output" | grep "test-report-old" | grep -q "DELETE" || { echo "FAIL: test-report-old should be DELETE"; exit 1; }
+          echo "PASS: old artifact correctly marked DELETE"
+
+      - name: Assert recent artifact is retained
+        run: |
+          output=$(MAX_AGE_DAYS=45 NOW="${NOW}" bash artifact_cleanup.sh fixtures/smoke.csv)
+          echo "$output"
+          echo "$output" | grep "test-report-new" | grep -q "KEEP" || { echo "FAIL: test-report-new should be KEEP"; exit 1; }
+          echo "PASS: recent artifact correctly retained"
+
+      - name: Assert keep-latest-N=2 removes 3rd artifact per workflow
+        run: |
+          output=$(KEEP_LATEST_N=2 NOW="${NOW}" bash artifact_cleanup.sh fixtures/smoke.csv)
+          echo "$output"
+          # build-cache-v1 is oldest of run-0001's 3 artifacts — should be deleted
+          echo "$output" | grep "build-cache-v1" | grep -q "DELETE" || { echo "FAIL: build-cache-v1 should be DELETE"; exit 1; }
+          # build-cache-v3 is newest of run-0001 — should be kept
+          echo "$output" | grep "build-cache-v3" | grep -q "KEEP" || { echo "FAIL: build-cache-v3 should be KEEP"; exit 1; }
+          echo "PASS: keep-latest-N policy works correctly"
+
+      - name: Assert summary line contains exact reclaimed bytes
+        run: |
+          # With MAX_AGE_DAYS=45:
+          #   test-report-old  (1048576 bytes, epoch 1738972800 = 61 days ago) → DELETE
+          #   dist-archive-jan (104857600 bytes, same epoch) → DELETE
+          #   Total reclaimed = 105906176 bytes
+          output=$(MAX_AGE_DAYS=45 NOW="${NOW}" bash artifact_cleanup.sh fixtures/smoke.csv)
+          echo "$output"
+          echo "$output" | grep -q "105906176" || { echo "FAIL: expected 105906176 bytes reclaimed in summary"; exit 1; }
+          echo "PASS: exact reclaimed bytes present in output"
+
+      - name: Assert retained vs deleted counts
+        run: |
+          # With MAX_AGE_DAYS=45: test-report-old (1738972800) is >45 days → DELETE
+          # dist-archive-jan (1738972800) same epoch → DELETE
+          # All others → KEEP  (6 artifacts)
+          output=$(MAX_AGE_DAYS=45 NOW="${NOW}" bash artifact_cleanup.sh fixtures/smoke.csv)
+          echo "$output"
+          echo "$output" | grep -qi "retained: 6" || { echo "FAIL: expected retained: 6"; exit 1; }
+          echo "$output" | grep -qi "deleted: 2" || { echo "FAIL: expected deleted: 2"; exit 1; }
+          echo "PASS: artifact counts correct"

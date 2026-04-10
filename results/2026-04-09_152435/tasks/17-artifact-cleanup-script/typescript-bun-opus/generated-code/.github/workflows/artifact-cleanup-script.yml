@@ -1,0 +1,55 @@
+name: Artifact Cleanup Script
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * 0" # Weekly on Sundays
+
+permissions:
+  contents: read
+
+env:
+  REFERENCE_DATE: "2026-04-10"
+
+jobs:
+  test-and-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+
+      - name: Run unit tests
+        run: |
+          echo "=== BUN TEST OUTPUT ==="
+          bun test
+          echo "=== END BUN TEST OUTPUT ==="
+
+      - name: Run cleanup with max-age policy (dry-run)
+        run: |
+          echo "=== MAX AGE POLICY TEST ==="
+          bun run main.ts --artifacts test-artifacts.json --max-age-days 30 --dry-run --reference-date "$REFERENCE_DATE"
+          echo "=== END MAX AGE POLICY TEST ==="
+
+      - name: Run cleanup with keep-latest-N policy (dry-run)
+        run: |
+          echo "=== KEEP LATEST N POLICY TEST ==="
+          bun run main.ts --artifacts test-artifacts.json --keep-latest-n 1 --dry-run --reference-date "$REFERENCE_DATE"
+          echo "=== END KEEP LATEST N POLICY TEST ==="
+
+      - name: Run cleanup with max-total-size policy (dry-run)
+        run: |
+          echo "=== MAX TOTAL SIZE POLICY TEST ==="
+          bun run main.ts --artifacts test-artifacts.json --max-total-size 10000000 --dry-run --reference-date "$REFERENCE_DATE"
+          echo "=== END MAX TOTAL SIZE POLICY TEST ==="
+
+      - name: Run cleanup with combined policies (dry-run)
+        run: |
+          echo "=== COMBINED POLICY TEST ==="
+          bun run main.ts --artifacts test-artifacts.json --max-age-days 30 --keep-latest-n 1 --max-total-size 8000000 --dry-run --reference-date "$REFERENCE_DATE"
+          echo "=== END COMBINED POLICY TEST ==="

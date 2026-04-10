@@ -1,0 +1,74 @@
+name: Docker Image Tag Generator
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - "feature/**"
+      - "fix/**"
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  generate-tags:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile 2>/dev/null || true
+
+      - name: Run unit tests
+        run: bun test
+
+      - name: Generate tags for current context
+        id: generate
+        env:
+          BRANCH: ${{ github.head_ref || github.ref_name }}
+          SHA: ${{ github.sha }}
+          PR_NUMBER: ${{ github.event.number }}
+          GIT_TAGS: ${{ toJson(github.event.repository.topics) }}
+        run: |
+          # Build GitContext JSON from GitHub Actions environment
+          PR_NUM="null"
+          if [ -n "$PR_NUMBER" ] && [ "$PR_NUMBER" != "0" ]; then
+            PR_NUM="$PR_NUMBER"
+          fi
+
+          # Collect git tags pointing at current SHA
+          GIT_TAG_LIST=$(git tag --points-at HEAD 2>/dev/null | jq -R . | jq -s . || echo "[]")
+
+          CONTEXT=$(jq -n \
+            --arg branch "$BRANCH" \
+            --arg sha "$SHA" \
+            --argjson prNumber "$PR_NUM" \
+            --argjson tags "$GIT_TAG_LIST" \
+            '{branch: $branch, sha: $sha, tags: $tags, prNumber: $prNumber}')
+
+          echo "Context: $CONTEXT"
+          TAGS=$(bun run docker-tags.ts "$CONTEXT")
+          echo "Generated tags:"
+          echo "$TAGS"
+          {
+            echo "tags<<EOF"
+            echo "$TAGS"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Show generated tags
+        run: |
+          echo "Docker image tags for this build:"
+          echo "${{ steps.generate.outputs.tags }}"

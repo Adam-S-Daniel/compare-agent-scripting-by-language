@@ -1,0 +1,112 @@
+name: PR Label Assigner
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  assign-labels:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Make script executable
+        run: chmod +x pr-label-assigner.sh
+
+      - name: Validate script syntax
+        run: bash -n pr-label-assigner.sh
+
+      - name: Run label assigner tests
+        run: |
+          echo "=== Test 1: Basic glob matching ==="
+          cat > /tmp/config.txt <<'CONF'
+          docs/**:documentation
+          src/api/**:api
+          *.test.*:tests
+          src/**:core
+          *.md:documentation
+          CONF
+          cat > /tmp/files.txt <<'FILES'
+          docs/README.md
+          src/api/handler.go
+          src/main.go
+          utils.test.js
+          FILES
+          echo "--- Labels ---"
+          ./pr-label-assigner.sh --config /tmp/config.txt --files /tmp/files.txt
+          echo ""
+
+          echo "=== Test 2: Priority and max-labels ==="
+          cat > /tmp/config2.txt <<'CONF'
+          *.ts:typescript
+          src/api/**:api
+          src/**:core
+          CONF
+          cat > /tmp/files2.txt <<'FILES'
+          src/api/routes.ts
+          src/utils.ts
+          FILES
+          echo "--- Labels (max 2) ---"
+          ./pr-label-assigner.sh --config /tmp/config2.txt --files /tmp/files2.txt --max-labels 2
+          echo ""
+
+          echo "=== Test 3: Single file multiple rules ==="
+          cat > /tmp/config3.txt <<'CONF'
+          *.test.js:tests
+          src/**:core
+          CONF
+          cat > /tmp/files3.txt <<'FILES'
+          src/app.test.js
+          FILES
+          echo "--- Labels ---"
+          ./pr-label-assigner.sh --config /tmp/config3.txt --files /tmp/files3.txt
+          echo ""
+
+          echo "=== Test 4: No matches ==="
+          cat > /tmp/config4.txt <<'CONF'
+          docs/**:documentation
+          CONF
+          cat > /tmp/files4.txt <<'FILES'
+          src/main.go
+          FILES
+          echo "--- Labels ---"
+          result=$(./pr-label-assigner.sh --config /tmp/config4.txt --files /tmp/files4.txt || true)
+          if [ -z "$result" ]; then
+            echo "(no labels matched)"
+          else
+            echo "$result"
+          fi
+          echo ""
+
+          echo "=== Test 5: Deep nested paths ==="
+          cat > /tmp/config5.txt <<'CONF'
+          src/components/**:frontend
+          tests/**:testing
+          *.css:styles
+          CONF
+          cat > /tmp/files5.txt <<'FILES'
+          src/components/ui/Button/index.tsx
+          tests/unit/auth.test.ts
+          src/components/theme.css
+          FILES
+          echo "--- Labels ---"
+          ./pr-label-assigner.sh --config /tmp/config5.txt --files /tmp/files5.txt
+          echo ""
+
+          echo "=== Test 6: Error handling - missing config ==="
+          if ./pr-label-assigner.sh --config /tmp/nonexistent.txt --files /tmp/files.txt 2>/tmp/err6.txt; then
+            echo "FAIL: should have exited with error"
+          else
+            echo "OK: exited with error"
+            echo "Error message: $(cat /tmp/err6.txt)"
+          fi
+          echo ""
+
+          echo "=== All tests completed ==="

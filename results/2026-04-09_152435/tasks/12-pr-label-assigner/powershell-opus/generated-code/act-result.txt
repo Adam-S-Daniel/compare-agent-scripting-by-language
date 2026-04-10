@@ -1,0 +1,136 @@
+========================================
+=== Workflow Structure Tests ===
+========================================
+--- actionlint validation ---
+PASS: actionlint validation passed (exit code 0)
+PASS: Workflow YAML file exists
+PASS: Workflow has push trigger
+PASS: Workflow has pull_request trigger
+PASS: Workflow has jobs section
+PASS: Workflow uses actions/checkout@v4
+PASS: Workflow uses shell: pwsh
+PASS: Workflow references PrLabelAssigner.ps1 (exists)
+PASS: Workflow references Invoke-PrLabelAssigner.ps1 (exists)
+PASS: Workflow references Invoke-PrLabelAssigner.Tests.ps1 (exists)
+
+========================================
+=== Act Execution Test ===
+========================================
+Setting up temp repo in /tmp/tmp.68I8CqAxXW
+Running act push --rm --pull=false...
+--- act output start ---
+time="2026-04-09T16:55:40-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[PR Label Assigner/test-and-label] ⭐ Run Set up job
+[PR Label Assigner/test-and-label] 🚀  Start image=act-ubuntu-pwsh:latest
+[PR Label Assigner/test-and-label]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[PR Label Assigner/test-and-label]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[PR Label Assigner/test-and-label]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[PR Label Assigner/test-and-label]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[PR Label Assigner/test-and-label]   ✅  Success - Set up job
+[PR Label Assigner/test-and-label] ⭐ Run Main actions/checkout@v4
+[PR Label Assigner/test-and-label]   🐳  docker cp src=/tmp/tmp.68I8CqAxXW/. dst=/tmp/tmp.68I8CqAxXW
+[PR Label Assigner/test-and-label]   ✅  Success - Main actions/checkout@v4 [179.007005ms]
+[PR Label Assigner/test-and-label] ⭐ Run Main Run Pester Tests
+[PR Label Assigner/test-and-label]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/1.ps1] user= workdir=
+[PR Label Assigner/test-and-label]   | [95mPester v5.7.1[0m
+[PR Label Assigner/test-and-label]   | [95m
+[PR Label Assigner/test-and-label]   | [95mStarting discovery in 1 files.[0m
+[PR Label Assigner/test-and-label]   | [95mDiscovery found 34 tests in 1.1s.[0m
+[PR Label Assigner/test-and-label]   | [95mRunning tests.[0m
+[PR Label Assigner/test-and-label]   | [95m
+[PR Label Assigner/test-and-label]   | [95mRunning tests from '/tmp/tmp.68I8CqAxXW/Invoke-PrLabelAssigner.Tests.ps1'[0m
+[PR Label Assigner/test-and-label]   | [92mDescribing ConvertTo-GlobRegex[0m
+[PR Label Assigner/test-and-label]   | [32m  [+] converts docs/** to match files under docs/[0m[90m 356ms (246ms|111ms)[0m
+[PR Label Assigner/test-and-label]   | [32m  [+] converts src/api/** to match files under src/api/[0m[90m 18ms (13ms|5ms)[0m
+[PR Label Assigner/test-and-label]   | [32m  [+] converts **/*.test.* to match test files at any depth[0m[90m 27ms (22ms|5ms)[0m
+[PR Label Assigner/test-and-label]   | [32m  [+] converts *.js to match JS files at root only[0m[90m 32ms (29ms|4ms)[0m
+[PR Label Assigner/test-and-label]   | [32m  [+] converts **/*.spec.* to match spec files at any depth[0m[90m 24ms (18ms|6ms)[0m
+[PR Label Assigner/test-and-label]   | [32m  [+] handles ? wildcard for single character[0m[90m 27ms (15ms|12ms)[0m
+[PR Label Assigner/test-and-label]   | [32m  [+] handles pattern with dots correctly[0m[90m 18ms (13ms|5ms)[0m
+[PR Label Assigner/test-and-label]   | [0m
+[PR Label Assigner/test-and-label]   | [92mDescribing Get-PrLabels[0m
+[PR Label Assigner/test-and-label]   | [96m Context Basic matching[0m
+[PR Label Assigner/test-and-label]   | [32m   [+] returns labels for files matching a single rule[0m[90m 203ms (169ms|34ms)[0m
+[PR Label Assigner/test-and-label]   | [32m   [+] returns empty array when no files match any rule[0m[90m 43ms (37ms|6ms)[0m
+[PR Label Assigner/test-and-label]   | [96m Context Multiple labels[0m
+[PR Label Assigner/test-and-label]   | [32m   [+] returns multiple labels when files match different rules[0m[90m 38ms (29ms|10ms)[0m
+[PR Label Assigner/test-and-label]   | [32m   [+] deduplicates labels when multiple files match the same rule[0m[90m 26ms (17ms|9ms)[0m
+[PR Label Assigner/test-and-label]   | [96m Context Priority and exclusive rules[0m
+[PR Label Assigner/test-and-label]   | [32m   [+] applies exclusive flag to stop further rule evaluation for a file[0m[90m 57ms (47ms|11ms)[0m
+[PR Label Assigner/test-and-label]   | [32m   [+] without exclusive flag, file gets multiple labels[0m[90m 50ms (44ms|6ms)[0m
+[PR Label Assigner/test-and-label]   | [32m   [+] processes rules in priority order[0m[90m 40ms (33ms|7ms)[0m
+[PR Label Assigner/test-and-label]   | [96m Context Wildcard patterns[0m
+[PR Label Assigner/test-and-label]   | [32m   [+] matches test and spec files with ** glob[0m[90m 61ms (50ms|10ms)[0m
+[PR Label Assigner/test-and-label]   | [96m Context Error handling[0m
+[PR Label Assigner/test-and-label]   | [32m   [+] throws on missing rules key[0m[90m 163ms (156ms|7ms)[0m
+[PR Label Assigner/test-and-label]   | [32m   [+] throws on empty rules array[0m[90m 26ms (21ms|4ms)[0m
+[PR Label Assigner/test-and-label]   | [32m   [+] throws when a rule is missing pattern[0m[90m 29ms (22ms|8ms)[0m
+[PR Label Assigner/test-and-label]   | [32m   [+] throws when a rule is missing priority[0m[90m 24ms (18ms|5ms)[0m
+[PR Label Assigner/test-and-label]   | [0m
+[PR Label Assigner/test-and-label]   | [92mDescribing CLI Integration[0m
+[PR Label Assigner/test-and-label]   | [32m  [+] produces correct output with basic config fixture[0m[90m 184ms (174ms|10ms)[0m
+[PR Label Assigner/test-and-label]   | [32m  [+] produces correct output with multi-label config fixture[0m[90m 39ms (33ms|6ms)[0m
+[PR Label Assigner/test-and-label]   | [32m  [+] produces correct output with priority config fixture[0m[90m 37ms (30ms|7ms)[0m
+[PR Label Assigner/test-and-label]   | [32m  [+] produces no-match output when nothing matches[0m[90m 29ms (23ms|7ms)[0m
+[PR Label Assigner/test-and-label]   | [32m  [+] produces correct output with wildcard config fixture[0m[90m 32ms (25ms|7ms)[0m
+[PR Label Assigner/test-and-label]   | [0m
+[PR Label Assigner/test-and-label]   | [92mDescribing Workflow Structure[0m
+[PR Label Assigner/test-and-label]   | [32m  [+] workflow YAML file exists[0m[90m 33ms (26ms|8ms)[0m
+[PR Label Assigner/test-and-label]   | [32m  [+] has push trigger[0m[90m 16ms (11ms|5ms)[0m
+[PR Label Assigner/test-and-label]   | [32m  [+] has pull_request trigger[0m[90m 14ms (8ms|6ms)[0m
+[PR Label Assigner/test-and-label]   | [32m  [+] has a job defined[0m[90m 18ms (10ms|8ms)[0m
+[PR Label Assigner/test-and-label]   | [32m  [+] uses actions/checkout@v4[0m[90m 19ms (8ms|12ms)[0m
+[PR Label Assigner/test-and-label]   | [32m  [+] uses shell: pwsh for run steps[0m[90m 16ms (10ms|6ms)[0m
+[PR Label Assigner/test-and-label]   | [32m  [+] references PrLabelAssigner.ps1 which exists[0m[90m 18ms (13ms|6ms)[0m
+[PR Label Assigner/test-and-label]   | [32m  [+] references Invoke-PrLabelAssigner.ps1 which exists[0m[90m 12ms (9ms|3ms)[0m
+[PR Label Assigner/test-and-label]   | [32m  [+] references Pester test file which exists[0m[90m 47ms (40ms|6ms)[0m
+[PR Label Assigner/test-and-label]   | [37m  [?] passes actionlint validation is inconclusive, because actionlint not installed in this environment[0m[37m[0m[90m 1.26s (1.24s|20ms)[0m
+[PR Label Assigner/test-and-label]   | [97mTests completed in 6.09s[0m
+[PR Label Assigner/test-and-label]   | [32mTests Passed: 33, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[37mInconclusive: 1, [0m[37m[0m[90mNotRun: 0[0m
+[PR Label Assigner/test-and-label]   | PESTER_PASSED=33
+[PR Label Assigner/test-and-label]   | PESTER_FAILED=0
+[PR Label Assigner/test-and-label]   | PESTER_TOTAL=34
+[PR Label Assigner/test-and-label]   ✅  Success - Main Run Pester Tests [12.235677879s]
+[PR Label Assigner/test-and-label] ⭐ Run Main Test Basic Matching
+[PR Label Assigner/test-and-label]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/2.ps1] user= workdir=
+[PR Label Assigner/test-and-label]   | LABEL_RESULT[basic]: Labels: documentation
+[PR Label Assigner/test-and-label]   ✅  Success - Main Test Basic Matching [2.528395949s]
+[PR Label Assigner/test-and-label] ⭐ Run Main Test Multiple Labels
+[PR Label Assigner/test-and-label]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/3.ps1] user= workdir=
+[PR Label Assigner/test-and-label]   | LABEL_RESULT[multi]: Labels: core, documentation, tests
+[PR Label Assigner/test-and-label]   ✅  Success - Main Test Multiple Labels [2.085552907s]
+[PR Label Assigner/test-and-label] ⭐ Run Main Test Priority with Exclusive
+[PR Label Assigner/test-and-label]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/4.ps1] user= workdir=
+[PR Label Assigner/test-and-label]   | LABEL_RESULT[priority]: Labels: api, core
+[PR Label Assigner/test-and-label]   ✅  Success - Main Test Priority with Exclusive [2.214761986s]
+[PR Label Assigner/test-and-label] ⭐ Run Main Test No Matches
+[PR Label Assigner/test-and-label]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/5.ps1] user= workdir=
+[PR Label Assigner/test-and-label]   | LABEL_RESULT[nomatch]: No labels matched
+[PR Label Assigner/test-and-label]   ✅  Success - Main Test No Matches [3.004564953s]
+[PR Label Assigner/test-and-label] ⭐ Run Main Test Wildcard Patterns
+[PR Label Assigner/test-and-label]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/6.ps1] user= workdir=
+[PR Label Assigner/test-and-label]   | LABEL_RESULT[wildcard]: Labels: javascript, tests
+[PR Label Assigner/test-and-label]   ✅  Success - Main Test Wildcard Patterns [2.079070467s]
+[PR Label Assigner/test-and-label] ⭐ Run Complete job
+[PR Label Assigner/test-and-label] Cleaning up container for job test-and-label
+[PR Label Assigner/test-and-label]   ✅  Success - Complete job
+[PR Label Assigner/test-and-label] 🏁  Job succeeded
+--- act output end ---
+act exit code: 0
+PASS: act push exited with code 0
+PASS: Job succeeded message found
+
+========================================
+=== Output Value Assertions ===
+========================================
+PASS: Basic matching: Labels: documentation
+PASS: Multiple labels: Labels: core, documentation, tests
+PASS: Priority: Labels: api, core
+PASS: No matches: No labels matched
+PASS: Wildcard: Labels: javascript, tests
+PASS: Pester tests: all passed (PESTER_FAILED=0)
+
+========================================
+=== Summary ===
+========================================
+All tests passed!

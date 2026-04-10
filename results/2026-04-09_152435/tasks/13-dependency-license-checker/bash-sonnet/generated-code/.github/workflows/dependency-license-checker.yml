@@ -1,0 +1,46 @@
+name: Dependency License Checker
+
+on:
+  push:
+  pull_request:
+  schedule:
+    # Run weekly on Monday at 06:00 UTC to catch newly-denied licenses
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  license-check:
+    name: License Compliance Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies (jq, shellcheck, bats)
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q jq shellcheck
+          # Install bats-core from npm for a recent version
+          npm install -g bats
+
+      - name: Validate script syntax
+        run: |
+          bash -n license_checker.sh
+          shellcheck license_checker.sh
+
+      - name: Make scripts executable
+        run: chmod +x license_checker.sh
+
+      - name: Run unit tests
+        run: bats tests/license_checker.bats
+
+      - name: Run license compliance check (package.json sample)
+        run: |
+          ./license_checker.sh \
+            --manifest tests/fixtures/package.json \
+            --config   tests/fixtures/license_config.json \
+            --mock-db  tests/fixtures/mock_licenses.json

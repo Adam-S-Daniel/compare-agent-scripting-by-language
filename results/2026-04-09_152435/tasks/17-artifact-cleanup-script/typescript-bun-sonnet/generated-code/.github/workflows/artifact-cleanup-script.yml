@@ -1,0 +1,116 @@
+name: Artifact Cleanup Script
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 0 * * 0"  # Weekly on Sunday
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unit-tests:
+    name: Unit Tests (bun test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Bun via npm
+        run: npm install -g bun
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run unit tests
+        run: bun test tests/retention.test.ts tests/cleanup.test.ts
+
+  integration-tests:
+    name: Integration Tests (script runs with fixture data)
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Bun via npm
+        run: npm install -g bun
+
+      - name: Install dependencies
+        run: bun install
+
+      # Test Case 1: Max Age Policy
+      # Policy: delete artifacts older than 30 days from 2026-04-10
+      # Cutoff date: 2026-03-11
+      # Expected: delete a1(Jan1,99d), a2(Feb1,68d), a3(Mar1,40d), a4(Feb15,54d)
+      # Result: deleted=4, retained=2, reclaimed=4718592 bytes
+      - name: "Test 1: Max Age Policy (30 days)"
+        run: |
+          OUTPUT=$(bun run src/main.ts \
+            --fixture fixtures/artifacts.json \
+            --max-age-days 30 \
+            --reference-date 2026-04-10 \
+            --dry-run)
+          echo "$OUTPUT"
+          DELETED=$(echo "$OUTPUT" | grep '^DELETED_COUNT=' | cut -d= -f2 | tr -d '[:space:]')
+          RETAINED=$(echo "$OUTPUT" | grep '^RETAINED_COUNT=' | cut -d= -f2 | tr -d '[:space:]')
+          RECLAIMED=$(echo "$OUTPUT" | grep '^RECLAIMED_BYTES=' | cut -d= -f2 | tr -d '[:space:]')
+          echo "Parsed: deleted=$DELETED retained=$RETAINED reclaimed=$RECLAIMED"
+          if [ "$DELETED" = "4" ] && [ "$RETAINED" = "2" ] && [ "$RECLAIMED" = "4718592" ]; then
+            echo "TEST-1-PASS: deleted=$DELETED retained=$RETAINED reclaimed=$RECLAIMED"
+          else
+            echo "TEST-1-FAIL: expected deleted=4 retained=2 reclaimed=4718592"
+            echo "             got      deleted=$DELETED retained=$RETAINED reclaimed=$RECLAIMED"
+            exit 1
+          fi
+
+      # Test Case 2: Max Total Size Policy
+      # Policy: keep newest artifacts within 2MB total (2097152 bytes)
+      # Sort newest-first: a6(262144)+a5(524288)+a3(1048576)=1835008 fits; a4 pushes over
+      # Expected: delete a4(Feb15), a2(Feb1), a1(Jan1)
+      # Result: deleted=3, retained=3, reclaimed=3670016 bytes
+      - name: "Test 2: Max Total Size Policy (2MB)"
+        run: |
+          OUTPUT=$(bun run src/main.ts \
+            --fixture fixtures/artifacts.json \
+            --max-total-size-bytes 2097152 \
+            --reference-date 2026-04-10 \
+            --dry-run)
+          echo "$OUTPUT"
+          DELETED=$(echo "$OUTPUT" | grep '^DELETED_COUNT=' | cut -d= -f2 | tr -d '[:space:]')
+          RETAINED=$(echo "$OUTPUT" | grep '^RETAINED_COUNT=' | cut -d= -f2 | tr -d '[:space:]')
+          RECLAIMED=$(echo "$OUTPUT" | grep '^RECLAIMED_BYTES=' | cut -d= -f2 | tr -d '[:space:]')
+          echo "Parsed: deleted=$DELETED retained=$RETAINED reclaimed=$RECLAIMED"
+          if [ "$DELETED" = "3" ] && [ "$RETAINED" = "3" ] && [ "$RECLAIMED" = "3670016" ]; then
+            echo "TEST-2-PASS: deleted=$DELETED retained=$RETAINED reclaimed=$RECLAIMED"
+          else
+            echo "TEST-2-FAIL: expected deleted=3 retained=3 reclaimed=3670016"
+            echo "             got      deleted=$DELETED retained=$RETAINED reclaimed=$RECLAIMED"
+            exit 1
+          fi
+
+      # Test Case 3: Keep Latest N Per Workflow
+      # Policy: keep 2 most recent per artifact name
+      # build-artifact: keep a3(Mar1),a2(Feb1) → delete a1(Jan1)
+      # test-results: keep a5(Mar15),a4(Feb15) → keep both (only 2)
+      # coverage-report: keep a6(Mar20) → keep (only 1)
+      # Expected: delete=1(a1), retained=5, reclaimed=2097152 bytes
+      - name: "Test 3: Keep Latest N Per Workflow (N=2)"
+        run: |
+          OUTPUT=$(bun run src/main.ts \
+            --fixture fixtures/artifacts.json \
+            --keep-latest-n 2 \
+            --reference-date 2026-04-10 \
+            --dry-run)
+          echo "$OUTPUT"
+          DELETED=$(echo "$OUTPUT" | grep '^DELETED_COUNT=' | cut -d= -f2 | tr -d '[:space:]')
+          RETAINED=$(echo "$OUTPUT" | grep '^RETAINED_COUNT=' | cut -d= -f2 | tr -d '[:space:]')
+          RECLAIMED=$(echo "$OUTPUT" | grep '^RECLAIMED_BYTES=' | cut -d= -f2 | tr -d '[:space:]')
+          echo "Parsed: deleted=$DELETED retained=$RETAINED reclaimed=$RECLAIMED"
+          if [ "$DELETED" = "1" ] && [ "$RETAINED" = "5" ] && [ "$RECLAIMED" = "2097152" ]; then
+            echo "TEST-3-PASS: deleted=$DELETED retained=$RETAINED reclaimed=$RECLAIMED"
+          else
+            echo "TEST-3-FAIL: expected deleted=1 retained=5 reclaimed=2097152"
+            echo "             got      deleted=$DELETED retained=$RETAINED reclaimed=$RECLAIMED"
+            exit 1
+          fi

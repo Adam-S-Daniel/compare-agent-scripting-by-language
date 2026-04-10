@@ -1,0 +1,33 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches: ["*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run semantic version bumper
+        shell: pwsh
+        run: ./Bump-SemanticVersion.ps1 -VersionFile VERSION
+
+      - name: Show results
+        shell: pwsh
+        run: |
+          Write-Host "--- VERSION file ---"
+          Get-Content VERSION
+          Write-Host ""
+          Write-Host "--- CHANGELOG ---"
+          if (Test-Path CHANGELOG.md) { Get-Content CHANGELOG.md }

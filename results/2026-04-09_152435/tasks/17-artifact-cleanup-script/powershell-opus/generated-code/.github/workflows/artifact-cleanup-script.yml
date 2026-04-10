@@ -1,0 +1,79 @@
+name: Artifact Cleanup Script
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-run:
+    runs-on: ubuntu-latest
+    env:
+      REFERENCE_DATE: "2026-04-10"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Pester unit tests
+        shell: pwsh
+        run: |
+          $cfg = New-PesterConfiguration
+          $cfg.Run.Path = "./ArtifactCleanup.Tests.ps1"
+          $cfg.Output.Verbosity = "Detailed"
+          $cfg.Run.Exit = $true
+          Invoke-Pester -Configuration $cfg
+
+      - name: Run age-policy fixture (dry-run)
+        shell: pwsh
+        run: |
+          Import-Module ./ArtifactCleanup.psm1 -Force
+          $plan = Invoke-ArtifactCleanup `
+            -ArtifactsJsonPath ./fixtures/age-policy.json `
+            -MaxAgeDays 30 `
+            -ReferenceDate ([datetime]"2026-04-10") `
+            -DryRun
+          Write-Output "FIXTURE:age-policy"
+          Write-Output "DELETE_COUNT:$($plan.DeleteCount)"
+          Write-Output "RETAIN_COUNT:$($plan.RetainCount)"
+          Write-Output "SPACE_RECLAIMED:$($plan.SpaceReclaimed)"
+          $plan.ToDelete | ForEach-Object { Write-Output "DELETED:$($_.Name)" }
+          $plan.ToRetain | ForEach-Object { Write-Output "RETAINED:$($_.Name)" }
+
+      - name: Run keep-latest fixture (dry-run)
+        shell: pwsh
+        run: |
+          Import-Module ./ArtifactCleanup.psm1 -Force
+          $plan = Invoke-ArtifactCleanup `
+            -ArtifactsJsonPath ./fixtures/keep-latest.json `
+            -KeepLatestPerWorkflow 2 `
+            -ReferenceDate ([datetime]"2026-04-10") `
+            -DryRun
+          Write-Output "FIXTURE:keep-latest"
+          Write-Output "DELETE_COUNT:$($plan.DeleteCount)"
+          Write-Output "RETAIN_COUNT:$($plan.RetainCount)"
+          Write-Output "SPACE_RECLAIMED:$($plan.SpaceReclaimed)"
+          $plan.ToDelete | ForEach-Object { Write-Output "DELETED:$($_.Name)" }
+          $plan.ToRetain | ForEach-Object { Write-Output "RETAINED:$($_.Name)" }
+
+      - name: Run combined-policy fixture (dry-run)
+        shell: pwsh
+        run: |
+          Import-Module ./ArtifactCleanup.psm1 -Force
+          $plan = Invoke-ArtifactCleanup `
+            -ArtifactsJsonPath ./fixtures/combined-policy.json `
+            -MaxAgeDays 60 `
+            -KeepLatestPerWorkflow 1 `
+            -MaxTotalSizeBytes 500 `
+            -ReferenceDate ([datetime]"2026-04-10") `
+            -DryRun
+          Write-Output "FIXTURE:combined-policy"
+          Write-Output "DELETE_COUNT:$($plan.DeleteCount)"
+          Write-Output "RETAIN_COUNT:$($plan.RetainCount)"
+          Write-Output "SPACE_RECLAIMED:$($plan.SpaceReclaimed)"
+          $plan.ToDelete | ForEach-Object { Write-Output "DELETED:$($_.Name)" }
+          $plan.ToRetain | ForEach-Object { Write-Output "RETAINED:$($_.Name)" }

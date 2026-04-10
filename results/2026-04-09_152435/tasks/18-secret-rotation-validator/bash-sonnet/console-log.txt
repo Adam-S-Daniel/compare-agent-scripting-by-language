@@ -1,0 +1,627 @@
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/AGENTS.md"}
+[Result] 1	# Agent Instructions
+2	
+3	All agent-facing instructions live in this file. `CLAUDE.md` contains only a
+4	reference here. If you are a Claude Code agent, you have already loaded this
+5	via `CLAUDE.md`. Other agents: read this file directly.
+6	
+7	## Build and test
+8	
+9	```bash
+10	# Validate imports
+11	python3 -c "from runner import main"
+12	python3 -c "from generate_results import generate_results_md"
+13	
+14	# Regenerate all reports
+15	python3 generate_results.py --all
+16	
+17	# Run a benchmark (v4, all tasks/modes/models)
+18	python3 runner.py --tasks 11,12,13,14,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
+19	
+20	# Build custom act container (optional, eliminates pwsh install overhead)
+21	docker build -t act-ubuntu-pwsh:latest -f Dockerfile.act .
+22	```
+23	
+24	## Code style
+25	
+26	- Python 3.12+. No type stubs or mypy. Use type hints where they aid readability.
+27	- Dollar amounts in results.md: round to nearest penny (`.2f`).
+28	- Durations in result
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/benchmark-instructions-v4.md"}
+[Result] 1	# Benchmark Instructions v4 — GitHub Actions
+2	
+3	**Version**: v4
+4	**Date**: 2026-04-09
+5	**Purpose**: Measure how well Claude Code agents perform GitHub Actions workflow authoring tasks across different language constraints, with trap-awareness guidance from v3 findings.
+6	
+7	**Changes from v3**:
+8	- Added "Common Pitfalls" section with guidance derived from v3 trap analysis (115min, 15.8% of v3 time lost to traps)
+9	- Act container now has pwsh and Pester pre-installed (matching real GitHub runners). Agents still need an install step for workflows that will run on vanilla act, but the benchmarking container already has them.
+10	- GHA workflow addendum expanded with `shell: pwsh` guidance for PowerShell mode
+11	- All other methodology, tasks, modes, and models are unchanged from v3
+12	
+13	## Methodology
+14	
+15	### Overview
+16	
+17	Each task is executed by a Claude Code agent under 4 different language constraints ("modes") and with 2 different models, yielding **8 runs per task**. A
+[Assistant] Let me check the current directory and the `.actrc` file.
+[Tool: Bash] ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/ && cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/.actrc 2>/dev/null || echo "No .actrc"
+[Result] total 44
+drwxr-xr-x 4 passp passp  4096 Apr 10 02:09 .
+drwxr-xr-x 9 passp passp  4096 Apr 10 02:09 ..
+-rw-r--r-- 1 passp passp    40 Apr 10 02:09 .actrc
+drwxr-xr-x 2 passp passp  4096 Apr 10 02:09 .claude
+drwxr-xr-x 7 passp passp  4096 Apr 10 02:09 .git
+-rw-r--r-- 1 passp passp 21666 Apr  9 15:03 benchmark-instructions-v4.md
+-P ubuntu-latest=act-ubuntu-pwsh:latest
+[Tool: Bash] which bats && bats --version; which jq && jq --version; which actionlint && actionlint --version; which act && act --version
+[Result] /home/passp/.npm-global/bin/bats
+Bats 1.13.0
+/home/passp/.local/bin/jq
+jq-1.7.1
+/home/passp/.local/bin/actionlint
+1.7.12
+installed by downloading from release page
+built with go1.26.1 compiler for linux/amd64
+/home/passp/.local/bin/act
+act version 0.2.87
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/.actrc"}
+[Result] 1	-P ubuntu-latest=act-ubuntu-pwsh:latest
+2	
+[Assistant] Now let me check the act setup and available Docker images:
+[Tool: Bash] cat ~/.actrc 2>/dev/null || echo "No ~/.actrc"; docker images | grep act 2>/dev/null | head -5
+[Result] No ~/.actrc
+WARNING: This output is designed for human readability. For machine-readable output, please use --format.
+act-ubuntu-pwsh:latest                   ad2ec47fa2be       2.55GB          639MB   U    
+catthehacker/ubuntu:act-22.04            754f20d9a184       2.15GB          531MB        
+catthehacker/ubuntu:act-latest           68a2a9700126       2.26GB          559MB        
+ghcr.io/catthehacker/ubuntu:act-latest   ab464a96ff6c       1.99GB          284MB
+[Tool: Bash] docker run --rm act-ubuntu-pwsh:latest which bats 2>/dev/null || echo "bats not in image"; docker run --rm act-ubuntu-pwsh:latest which jq 2>/dev/null || echo "jq not in image"
+[Result] bats not in image
+/usr/bin/jq
+[Tool: Bash] docker run --rm act-ubuntu-pwsh:latest which npm 2>/dev/null || echo "npm not in image"; docker run --rm act-ubuntu-pwsh:latest bash -c "apt-cache show bats 2>/dev/null | grep Version" || echo "bats not in apt"
+[Result] /opt/acttoolcache/node/24.14.1/x64/bin/npm
+bats not in apt
+[Tool: ToolSearch] {"query": "select:TodoWrite", "max_results": 1}
+[Result] {'type': 'tool_reference', 'tool_name': 'TodoWrite'}
+[Tool: TodoWrite] {"todos": [{"content": "Write first failing bats test", "status": "in_progress", "activeForm": "Writing first failing bats test"}, {"content": "Write secret-rotation-validator.sh implementation", "sta
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Assistant] Now let me start with TDD — first failing test:
+[Tool: Bash] mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/tests /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/fixtures /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/.github/workflows
+[Result] (Bash completed with no output)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/tests/test_validator.bats", "content": "#!/usr/bin/env bats\n
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/tests/test_validator.bats (file state is current in your context — no need to Read it back)
+[Assistant] Now run the first failing test to confirm it fails:
+[Tool: Bash] bats tests/test_validator.bats 2>&1 | head -20
+[Result] 1..23
+not ok 1 script exists and has correct shebang
+# (in test file tests/test_validator.bats, line 38)
+#   `[ -f "$SCRIPT" ]' failed
+not ok 2 exits with error when no config file argument is provided
+# (in test file tests/test_validator.bats, line 48)
+#   `echo "$output" | grep -qi "error"' failed
+not ok 3 exits with error when config file does not exist
+# (in test file tests/test_validator.bats, line 57)
+#   `echo "$output" | grep -qi "error"' failed
+not ok 4 exits with error for invalid output format
+# (in test file tests/test_validator.bats, line 66)
+#   `echo "$output" | grep -qi "error"' failed
+not ok 5 identifies expired secrets correctly
+# (in test file tests/test_validator.bats, line 75)
+#   `[ "$status" -eq 0 ]' failed
+not ok 6 expired secret has correct days_overdue value
+# (in test file tests/test_validator.bats, line 88)
+#   `[ "$status" -eq 0 ]' failed
+not ok 7 identifies warning secrets correctly
+[Assistant] Tests are failing (red). Now let me create the fixtures and implementation:
+[Tool: TodoWrite] {"todos": [{"content": "Write first failing bats test", "status": "completed", "activeForm": "Writing first failing bats test"}, {"content": "Create test fixtures", "status": "in_progress", "activeFor
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/fixtures/secrets.json", "content": "{\n  \"secrets\": [\n    
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/fixtures/secrets.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/fixtures/secrets-all-ok.json", "content": "{\n  \"secrets\": 
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/fixtures/secrets-all-ok.json (file state is current in your context — no need to Read it back)
+[Assistant] Let me verify the fixture date calculations:
+[Tool: Bash] ref="2026-04-10"
+for date in "2025-12-11" "2026-01-18" "2026-03-11" "2026-03-01" "2026-02-15" "2026-03-20"; do
+    ref_ts=$(date -d "$ref" +%s)
+    last_ts=$(date -d "$date" +%s)
+    days=$(( (ref_ts - last_ts) / 86400 ))
+    echo "From $date to $ref = $days days (policy 90: overdue=$(( days - 90 )), until=$(( 90 - days )))"
+done
+[Result] From 2025-12-11 to 2026-04-10 = 119 days (policy 90: overdue=29, until=-29)
+From 2026-01-18 to 2026-04-10 = 81 days (policy 90: overdue=-9, until=9)
+From 2026-03-11 to 2026-04-10 = 30 days (policy 90: overdue=-60, until=60)
+From 2026-03-01 to 2026-04-10 = 39 days (policy 90: overdue=-51, until=51)
+From 2026-02-15 to 2026-04-10 = 53 days (policy 90: overdue=-37, until=37)
+From 2026-03-20 to 2026-04-10 = 21 days (policy 90: overdue=-69, until=69)
+[Assistant] The actual values differ from my manual calculation. Let me update the test expectations:
+- DB_MASTER_PASSWORD: 119 days old → 29 days overdue
+- API_KEY: 81 days old → 9 days until expiry
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/tests/test_validator.bats", "old_string
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/tests/test_validator.bats has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/tests/test_validator.bats", "old_string
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/tests/test_validator.bats has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/tests/test_validator.bats", "old_string
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/tests/test_validator.bats has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/tests/test_validator.bats", "old_string
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/tests/test_validator.bats has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: TodoWrite] {"todos": [{"content": "Write first failing bats test", "status": "completed", "activeForm": "Writing first failing bats test"}, {"content": "Create test fixtures", "status": "completed", "activeForm"
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Assistant] Now write the main script:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/secret-rotation-validator.sh", "content": "#!/usr/bin/env bas
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/secret-rotation-validator.sh (file state is current in your context — no need to Read it back)
+[Tool: Bash] chmod +x secret-rotation-validator.sh && bash -n secret-rotation-validator.sh && shellcheck secret-rotation-validator.sh && echo "Syntax/lint OK"
+[Result] Syntax/lint OK
+[Tool: Bash] bats tests/test_validator.bats 2>&1
+[Result ERROR] Exit code 1
+1..23
+ok 1 script exists and has correct shebang
+ok 2 exits with error when no config file argument is provided
+ok 3 exits with error when config file does not exist
+ok 4 exits with error for invalid output format
+ok 5 identifies expired secrets correctly
+ok 6 expired secret has correct days_overdue value
+ok 7 identifies warning secrets correctly
+ok 8 warning secret has correct days_until_expiry value
+ok 9 identifies ok secrets correctly
+ok 10 JSON output has correct summary counts
+ok 11 JSON output includes report_date
+ok 12 markdown output contains expired section with count
+ok 13 markdown output contains expired secret table row
+ok 14 markdown output contains warning section with count
+ok 15 markdown output contains ok section with count
+not ok 16 all-ok fixture produces no expired or warning secrets
+# (in test file tests/test_validator.bats, line 195)
+#   `[ "$status" -eq 0 ]' failed
+ok 17 JSON output includes required_by field
+not ok 18 workflow file exists
+# (in test 
+[Assistant] Good progress - 17/23 passing. Let me debug the all-ok fixture test:
+[Tool: Bash] ./secret-rotation-validator.sh --format json --warning 14 --date 2026-04-10 fixtures/secrets-all-ok.json 2>&1
+[Result ERROR] Exit code 2
+jq: invalid JSON text passed to --argjson
+Use jq --help for help with command-line options,
+or see the jq manpage, or online docs  at https://jqlang.github.io/jq
+[Tool: Bash] # Debug empty file handling
+tmpf=$(mktemp)
+echo "Empty file test:"
+jq -s '.' "$tmpf" 2>&1 || echo "jq failed"
+rm "$tmpf"
+
+# Also check what happens with touch
+tmpf=$(mktemp)
+touch "$tmpf"
+result=$(jq -s '.' "$tmpf" 2>&1)
+echo "Result of jq -s '.' on empty file: '$result'"
+rm "$tmpf"
+[Result] Empty file test:
+[]
+Result of jq -s '.' on empty file: '[]'
+[Tool: Bash] # Test what happens with a non-existent file
+result=$(jq -s '.' /nonexistent/file.json 2>/dev/null || echo '[]')
+echo "Non-existent file result: '$result'"
+
+# Also test the actual behavior on a new tmpdir
+WORK_DIR=$(mktemp -d)
+EXPIRED_FILE="$WORK_DIR/expired.ndjson"
+expired_array=$(jq -s '.' "$EXPIRED_FILE" 2>/dev/null || echo '[]')
+echo "Non-existent ndjson result: '$expired_array'"
+expired_count=$(echo "$expired_array" | jq 'length')
+echo "count: $expired_count"
+rm -rf "$WORK_DIR"
+[Result] Non-existent file result: '[]
+[]'
+Non-existent ndjson result: '[]
+[]'
+count: 0
+0
+[Tool: Bash] jq -s '.' /nonexistent/file.json; echo "exit: $?"
+echo "---"
+jq -s '.' /nonexistent/file.json 2>/dev/null; echo "exit: $?"
+[Result] jq: error: Could not open file /nonexistent/file.json: No such file or directory
+[]
+exit: 2
+---
+[]
+exit: 2
+[Assistant] Found the bug. `jq -s '.'` on non-existent files outputs `[]` **and** exits non-zero, so `|| echo '[]'` fires too, giving `[]\n[]`. Fix: `touch` the files first:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/secret-rotation-validator.sh", "old_str
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/secret-rotation-validator.sh has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Also simplify the slurp fallback:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/secret-rotation-validator.sh", "old_str
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/secret-rotation-validator.sh has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] shellcheck secret-rotation-validator.sh && ./secret-rotation-validator.sh --format json --warning 14 --date 2026-04-10 fixtures/secrets-all-ok.json
+[Result] {
+  "report_date": "2026-04-10",
+  "warning_window": 14,
+  "summary": {
+    "expired": 0,
+    "warning": 0,
+    "ok": 3
+  },
+  "expired": [],
+  "warning": [],
+  "ok": [
+    {
+      "name": "STRIPE_SECRET_KEY",
+      "last_rotated": "2026-03-01",
+      "policy_days": 90,
+      "days_until_expiry": 51,
+      "required_by": "payment-service"
+    },
+    {
+      "name": "SMTP_PASSWORD",
+      "last_rotated": "2026-02-15",
+      "policy_days": 90,
+      "days_until_expiry": 37,
+      "required_by": "email-service, notifications"
+    },
+    {
+      "name": "S3_ACCESS_KEY",
+      "last_rotated": "2026-03-20",
+      "policy_days": 90,
+      "days_until_expiry": 69,
+      "required_by": "storage-service"
+    }
+  ]
+}
+[Assistant] Now let me run all tests (except workflow ones):
+[Tool: Bash] bats tests/test_validator.bats 2>&1
+[Result ERROR] Exit code 1
+1..23
+ok 1 script exists and has correct shebang
+ok 2 exits with error when no config file argument is provided
+ok 3 exits with error when config file does not exist
+ok 4 exits with error for invalid output format
+ok 5 identifies expired secrets correctly
+ok 6 expired secret has correct days_overdue value
+ok 7 identifies warning secrets correctly
+ok 8 warning secret has correct days_until_expiry value
+ok 9 identifies ok secrets correctly
+ok 10 JSON output has correct summary counts
+ok 11 JSON output includes report_date
+ok 12 markdown output contains expired section with count
+ok 13 markdown output contains expired secret table row
+ok 14 markdown output contains warning section with count
+ok 15 markdown output contains ok section with count
+ok 16 all-ok fixture produces no expired or warning secrets
+ok 17 JSON output includes required_by field
+not ok 18 workflow file exists
+# (in test file tests/test_validator.bats, line 220)
+#   `[ -f "$SCRIPT_DIR/.github/workflows/secret-
+[Assistant] 17 tests pass now. Now create the GitHub Actions workflow:
+[Tool: TodoWrite] {"todos": [{"content": "Write first failing bats test", "status": "completed", "activeForm": "Writing first failing bats test"}, {"content": "Create test fixtures", "status": "completed", "activeForm"
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/.github/workflows/secret-rotation-validator.yml", "content": 
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/.github/workflows/secret-rotation-validator.yml (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/secret-rotation-validator.yml && echo "actionlint OK"
+[Result] actionlint OK
+[Tool: Bash] bats tests/test_validator.bats 2>&1
+[Result] 1..23
+ok 1 script exists and has correct shebang
+ok 2 exits with error when no config file argument is provided
+ok 3 exits with error when config file does not exist
+ok 4 exits with error for invalid output format
+ok 5 identifies expired secrets correctly
+ok 6 expired secret has correct days_overdue value
+ok 7 identifies warning secrets correctly
+ok 8 warning secret has correct days_until_expiry value
+ok 9 identifies ok secrets correctly
+ok 10 JSON output has correct summary counts
+ok 11 JSON output includes report_date
+ok 12 markdown output contains expired section with count
+ok 13 markdown output contains expired secret table row
+ok 14 markdown output contains warning section with count
+ok 15 markdown output contains ok section with count
+ok 16 all-ok fixture produces no expired or warning secrets
+ok 17 JSON output includes required_by field
+ok 18 workflow file exists
+ok 19 workflow references script file that exists
+ok 20 workflow has expected triggers
+ok 21 workflow has validate-se
+[Assistant] All 23 tests pass. Now write the `run_tests.sh` harness and run `act`:
+[Tool: TodoWrite] {"todos": [{"content": "Write first failing bats test", "status": "completed", "activeForm": "Writing first failing bats test"}, {"content": "Create test fixtures", "status": "completed", "activeForm"
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/run_tests.sh", "content": "#!/usr/bin/env bash\n# run_tests.s
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/run_tests.sh (file state is current in your context — no need to Read it back)
+[Tool: Bash] bash -n run_tests.sh && shellcheck run_tests.sh && echo "run_tests.sh lint OK"
+[Result ERROR] Exit code 1
+
+In run_tests.sh line 42:
+> "$ACT_RESULT_FILE"
+^------------------^ SC2188 (warning): This redirection doesn't have a command. Move to its command (or use 'true' as no-op).
+
+
+In run_tests.sh line 92:
+        ACT_EXIT=$?
+        ^------^ SC2030 (info): Modification of ACT_EXIT is local (to subshell caused by pipeline).
+
+
+In run_tests.sh line 102:
+    return "$ACT_EXIT"
+            ^-------^ SC2031 (info): ACT_EXIT was modified in a subshell. That change might be lost.
+
+For more information:
+  https://www.shellcheck.net/wiki/SC2188 -- This redirection doesn't have a c...
+  https://www.shellcheck.net/wiki/SC2030 -- Modification of ACT_EXIT is local...
+  https://www.shellcheck.net/wiki/SC2031 -- ACT_EXIT was modified in a subshe...
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/run_tests.sh", "old_string": "> \"$ACT_
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/run_tests.sh has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Fix the subshell pipeline issue for `ACT_EXIT`:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/run_tests.sh", "old_string": "    # ---
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/run_tests.sh has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] bash -n run_tests.sh && shellcheck run_tests.sh && echo "lint OK"
+[Result] lint OK
+[Tool: Bash] chmod +x run_tests.sh && chmod +x secret-rotation-validator.sh
+[Result] (Bash completed with no output)
+[Assistant] Now run act. This will take 30-90 seconds:
+[Tool: Bash] ./run_tests.sh 2>&1
+[Result ERROR] Exit code 1
+[run_tests] Initialised /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/act-result.txt
+[run_tests] 
+[run_tests] Running test case 1: main secrets fixture
+[run_tests] === TEST CASE: main-secrets-fixture ===
+[run_tests]   Temp repo: /tmp/tmp.YBz2t9fc5s
+====== ACT OUTPUT: main-secrets-fixture ======
+time="2026-04-10T02:18:17-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Secret Rotation Validator/validate-secrets] ⭐ Run Set up job
+[Secret Rotation Validator/validate-secrets] 🚀  Start image=act-ubuntu-pwsh:latest
+[Secret Rotation Validator/validate-secrets]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=true
+[Secret Rotation Validator/validate-secrets] using DockerAuthConfig authentication for docker pull
+[Secret Rotation Validator/validate-secrets] Error response from daemon: pull access denied for a
+[Assistant] The image pull fails because act defaults to force-pulling. Let me check act's options and fix the `cleanup_done` issue:
+[Tool: Bash] act --help 2>&1 | grep -E "pull|no-pull" | head -10
+[Result]       --action-offline-mode                               If action contents exists, it will not be fetch and pull again. If turn on this, will turn off force pull
+  -p, --pull                                              pull docker image(s) even if already present (default true)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/run_tests.sh", "old_string": "    set +
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/run_tests.sh has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Also fix the `cleanup_done` unbound variable error — it's a `local` inside the function but the trap fires outside it:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/run_tests.sh", "old_string": "    # Ens
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/run_tests.sh has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/run_tests.sh", "old_string": "    _clea
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/run_tests.sh has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] shellcheck run_tests.sh && echo "lint OK"
+[Result] lint OK
+[Tool: Bash] ./run_tests.sh 2>&1
+[Result ERROR] Exit code 1
+[run_tests] Initialised /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/act-result.txt
+[run_tests] 
+[run_tests] Running test case 1: main secrets fixture
+[run_tests] === TEST CASE: main-secrets-fixture ===
+[run_tests]   Temp repo: /tmp/tmp.2qVLFuJx8n
+====== ACT OUTPUT: main-secrets-fixture ======
+time="2026-04-10T02:18:45-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Secret Rotation Validator/validate-secrets] ⭐ Run Set up job
+[Secret Rotation Validator/validate-secrets] 🚀  Start image=act-ubuntu-pwsh:latest
+[Secret Rotation Validator/validate-secrets]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Secret Rotation Validator/validate-secrets]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/valida
+[Assistant] Two issues: shellcheck not in act container, and trap variable scope. Fix both:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/.github/workflows/secret-rotation-valid
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/.github/workflows/secret-rotation-validator.yml has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Now fix the `cleaned_flag` scope issue by using a global variable:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/run_tests.sh", "old_string": "# -------
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/run_tests.sh has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/run_tests.sh", "old_string": "    touch
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/run_tests.sh has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] shellcheck run_tests.sh && actionlint .github/workflows/secret-rotation-validator.yml && echo "All lint OK"
+[Result] All lint OK
+[Tool: Bash] ./run_tests.sh 2>&1
+[Result ERROR] Exit code 1
+[run_tests] Initialised /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/act-result.txt
+[run_tests] 
+[run_tests] Running test case 1: main secrets fixture
+[run_tests] === TEST CASE: main-secrets-fixture ===
+[run_tests]   Temp repo: /tmp/tmp.0yO1meDEo8
+====== ACT OUTPUT: main-secrets-fixture ======
+time="2026-04-10T02:19:21-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Secret Rotation Validator/validate-secrets] ⭐ Run Set up job
+[Secret Rotation Validator/validate-secrets] 🚀  Start image=act-ubuntu-pwsh:latest
+[Secret Rotation Validator/validate-secrets]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Secret Rotation Validator/validate-secrets]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/valida
+[Tool: Bash] # Check timezone in act container vs local
+docker run --rm act-ubuntu-pwsh:latest bash -c "date && echo TZ=\$TZ && cat /etc/timezone 2>/dev/null || true"
+echo "--- Local ---"
+date && echo "TZ=$TZ" && cat /etc/timezone 2>/dev/null || true
+[Result] Fri Apr 10 06:20:26 UTC 2026
+TZ=
+/UTC
+--- Local ---
+Fri Apr 10 02:20:27 EDT 2026
+TZ=
+America/New_York
+[Assistant] Timezone difference: local is EDT (UTC-4), container is UTC. DST causes 1-day differences in December vs April timestamps. Fix: force TZ=UTC everywhere for deterministic tests:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/tests/test_validator.bats", "old_string
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/tests/test_validator.bats has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Now update the expected values to the UTC values (120 days = 30 overdue, 82 days = 8 until expiry):
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/tests/test_validator.bats", "old_string
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/tests/test_validator.bats has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/tests/test_validator.bats", "old_string
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/tests/test_validator.bats has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/tests/test_validator.bats", "old_string
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/tests/test_validator.bats has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/tests/test_validator.bats", "old_string
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/tests/test_validator.bats has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Now update the run_tests.sh assertions to match UTC values, and also fix the actionlint issue (not installed in container):
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/run_tests.sh", "old_string": "# Assert 
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/run_tests.sh has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Now fix the actionlint test — install it in the workflow since it's not in the act container:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/.github/workflows/secret-rotation-valid
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/.github/workflows/secret-rotation-validator.yml has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/secret-rotation-validator.yml && echo "actionlint OK"
+[Result] actionlint OK
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/.github/workflows/secret-rotation-valid
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/.github/workflows/secret-rotation-validator.yml has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/secret-rotation-validator.yml && echo "actionlint OK"
+[Result] actionlint OK
+[Assistant] Now verify tests pass locally with TZ=UTC:
+[Tool: Bash] TZ=UTC bats tests/test_validator.bats 2>&1
+[Result] 1..23
+ok 1 script exists and has correct shebang
+ok 2 exits with error when no config file argument is provided
+ok 3 exits with error when config file does not exist
+ok 4 exits with error for invalid output format
+ok 5 identifies expired secrets correctly
+ok 6 expired secret has correct days_overdue value
+ok 7 identifies warning secrets correctly
+ok 8 warning secret has correct days_until_expiry value
+ok 9 identifies ok secrets correctly
+ok 10 JSON output has correct summary counts
+ok 11 JSON output includes report_date
+ok 12 markdown output contains expired section with count
+ok 13 markdown output contains expired secret table row
+ok 14 markdown output contains warning section with count
+ok 15 markdown output contains ok section with count
+ok 16 all-ok fixture produces no expired or warning secrets
+ok 17 JSON output includes required_by field
+ok 18 workflow file exists
+ok 19 workflow references script file that exists
+ok 20 workflow has expected triggers
+ok 21 workflow has validate-se
+[Assistant] All 23 pass with TZ=UTC. Now run act (final run):
+[Tool: Bash] ./run_tests.sh 2>&1
+[Result ERROR] Exit code 1
+[run_tests] Initialised /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/act-result.txt
+[run_tests] 
+[run_tests] Running test case 1: main secrets fixture
+[run_tests] === TEST CASE: main-secrets-fixture ===
+[run_tests]   Temp repo: /tmp/tmp.sf1zM9b2B1
+====== ACT OUTPUT: main-secrets-fixture ======
+time="2026-04-10T02:22:33-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Secret Rotation Validator/validate-secrets] ⭐ Run Set up job
+[Secret Rotation Validator/validate-secrets] 🚀  Start image=act-ubuntu-pwsh:latest
+[Secret Rotation Validator/validate-secrets]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Secret Rotation Validator/validate-secrets]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/valida
+[Assistant] Act succeeded! The assertion on bats output format is wrong. Let me check what bats actually outputs:
+[Tool: Bash] TZ=UTC bats tests/test_validator.bats 2>&1 | tail -5
+[Result] ok 19 workflow references script file that exists
+ok 20 workflow has expected triggers
+ok 21 workflow has validate-secrets job
+ok 22 workflow uses actions/checkout@v4
+ok 23 actionlint passes on workflow file
+[Assistant] Bats doesn't print a summary line — just individual test results. Fix the assertion:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/run_tests.sh", "old_string": "# Assert 
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/run_tests.sh has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] shellcheck run_tests.sh && echo "lint OK"
+[Result] lint OK
+[Assistant] The act job succeeded on run 2 — just the assertion string was wrong. This is run 3 (final). The act-result.txt already has content from run 2; let me verify the new assertions would pass against it first:
+[Tool: Bash] # Check if the existing act-result.txt contains what our new assertions need
+ACT_OUTPUT=$(cat act-result.txt)
+
+check() {
+    local needle="$1" desc="$2"
+    if echo "$ACT_OUTPUT" | grep -qF "$needle"; then
+        echo "OK: $desc"
+    else
+        echo "MISSING: $desc (looking for: '$needle')"
+    fi
+}
+check "Job succeeded" "job succeeded"
+check "1..23" "bats plan line"
+check "ok 23 actionlint passes on workflow file" "last test"
+check "not ok" "no failures (should be MISSING)" && echo "  ^ this is expected to be MISSING"
+check "## Expired (1)" "expired header"
+check "DB_MASTER_PASSWORD" "expired name"
+check "| DB_MASTER_PASSWORD | 2025-12-11 | 90 | 30 |" "expired row 30 days"
+check "## Warning (1)" "warning header"
+check "API_KEY" "warning name"
+check "| API_KEY | 2026-01-18 | 90 | 8 |" "warning row 8 days"
+check "## OK (1)" "ok header"
+check "JWT_SECRET" "ok name"
+check "| JWT_SECRET | 2026-03-11 | 90 | 60 |" "ok row"
+check '"expired": 1' "json expired count"
+check '"warning": 1' "json warning count"
+check '"ok": 1' "json ok count"
+check '"report_date": "2026-04-10"' "json report date"
+check "All-ok fixture validated." "all-ok step"
+[Result] OK: job succeeded
+OK: bats plan line
+OK: last test
+MISSING: no failures (should be MISSING) (looking for: 'not ok')
+  ^ this is expected to be MISSING
+OK: expired header
+OK: expired name
+OK: expired row 30 days
+OK: warning header
+OK: warning name
+OK: warning row 8 days
+OK: ok header
+OK: ok name
+OK: ok row
+OK: json expired count
+OK: json warning count
+OK: json ok count
+OK: json report date
+OK: all-ok step
+[Tool: Bash] grep -F "not ok" act-result.txt | head -5 || echo "No 'not ok' in output"
+[Result] (Bash completed with no output)
+[Assistant] All assertions match. Now run `run_tests.sh` to produce a fresh `act-result.txt` with the passing assertions:
+[Tool: Bash] ./run_tests.sh 2>&1
+[Result] [run_tests] Initialised /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/18-secret-rotation-validator/bash-sonnet/act-result.txt
+[run_tests] 
+[run_tests] Running test case 1: main secrets fixture
+[run_tests] === TEST CASE: main-secrets-fixture ===
+[run_tests]   Temp repo: /tmp/tmp.zFEVt8YQh4
+====== ACT OUTPUT: main-secrets-fixture ======
+time="2026-04-10T02:24:12-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Secret Rotation Validator/validate-secrets] ⭐ Run Set up job
+[Secret Rotation Validator/validate-secrets] 🚀  Start image=act-ubuntu-pwsh:latest
+[Secret Rotation Validator/validate-secrets]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Secret Rotation Validator/validate-secrets]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/validate-secrets] 
+[Assistant] All assertions pass. Let me do a final verification:
+[Tool: Bash] echo "=== bats tests (local, TZ=UTC) ===" && TZ=UTC bats tests/test_validator.bats 2>&1
+echo "=== actionlint ===" && actionlint .github/workflows/secret-rotation-validator.yml
+echo "=== shellcheck ===" && shellcheck secret-rotation-validator.sh run_tests.sh
+echo "=== bash -n ===" && bash -n secret-rotation-validator.sh && bash -n run_tests.sh
+echo "=== act-result.txt exists ===" && ls -la act-result.txt
+echo "=== all done ==="
+[Result] === bats tests (local, TZ=UTC) ===
+1..23
+ok 1 script exists and has correct shebang
+ok 2 exits with error when no config file argument is provided
+ok 3 exits with error when config file does not exist
+ok 4 exits with error for invalid output format
+ok 5 identifies expired secrets correctly
+ok 6 expired secret has correct days_overdue value
+ok 7 identifies warning secrets correctly
+ok 8 warning secret has correct days_until_expiry value
+ok 9 identifies ok secrets correctly
+ok 10 JSON output has correct summary counts
+ok 11 JSON output includes report_date
+ok 12 markdown output contains expired section with count
+ok 13 markdown output contains expired secret table row
+ok 14 markdown output contains warning section with count
+ok 15 markdown output contains ok section with count
+ok 16 all-ok fixture produces no expired or warning secrets
+ok 17 JSON output includes required_by field
+ok 18 workflow file exists
+ok 19 workflow references script file that exists
+ok 20 workflow has expected trig
+[Tool: TodoWrite] {"todos": [{"content": "Write first failing bats test", "status": "completed", "activeForm": "Writing first failing bats test"}, {"content": "Create test fixtures", "status": "completed", "activeForm"
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Assistant] Everything passes. Here's a summary of what was built:
+
+---
+
+## Summary
+
+### Files created
+
+| File | Purpose |
+|------|---------|
+| `secret-rotation-validator.sh` | Main Bash script — parses a JSON secrets config, classifies secrets as expired/warning/ok, outputs markdown or JSON |
+| `tests/test_validator.bats` | 23 bats tests (TDD, red→green) covering all functionality and workflow structure |
+| `fixtures/secrets.json` | 3-secret fixture: 1 expired (DB_MASTER_PASSWORD, 30 days overdue), 1 warning (API_KEY, 8 days), 1 ok (JWT_SECRET, 60 days) |
+| `fixtures/secrets-all-ok.json` | 3-secret fixture where all secrets are within policy |
+| `.github/workflows/secret-rotation-validator.yml` | GitHub Actions workflow — installs bats/shellcheck/actionlint, runs tests, generates reports |
+| `run_tests.sh` | Outer harness — sets up temp git repo, runs `act push --rm`, asserts 18 exact values in the output |
+| `act-result.txt` | Required artifact — full act output with all assertions passing |
+
+### Key decisions
+- **TZ=UTC** forced in bats `setup()` and the workflow `env:` to make day-difference arithmetic deterministic across timezones (DST in America/New_York caused 1-day off-by-one)
+- **NDJSON temp files** — each classified secret is appended as a JSON object, then `jq -s '.'` slurps them; files are `touch`ed before the loop so empty categories produce `[]` not a double-output bug
+- **`--date` parameter** — lets tests pin a reference date; `TODAY` env var also accepted for convenience

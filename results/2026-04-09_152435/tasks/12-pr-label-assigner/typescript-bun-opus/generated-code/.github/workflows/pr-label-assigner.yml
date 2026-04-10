@@ -1,0 +1,47 @@
+name: PR Label Assigner
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  assign-labels:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run unit tests
+        run: bun test
+
+      - name: Run label assigner - test case 1 basic
+        env:
+          CHANGED_FILES: "docs/readme.md,src/api/users.ts,src/utils/format.ts"
+          LABEL_CONFIG_PATH: label-config.json
+        run: bun run label-assigner.ts
+
+      - name: Run label assigner - test case 2 tests and deps
+        env:
+          CHANGED_FILES: "src/api/users.test.ts,package.json,README.md"
+          LABEL_CONFIG_PATH: label-config.json
+        run: bun run label-assigner.ts
+
+      - name: Run label assigner - test case 3 ci files
+        env:
+          CHANGED_FILES: ".github/workflows/ci.yml,src/index.ts"
+          LABEL_CONFIG_PATH: label-config.json
+        run: bun run label-assigner.ts

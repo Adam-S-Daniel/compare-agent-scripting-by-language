@@ -1,0 +1,59 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: "1"
+
+jobs:
+  generate-matrices:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Process valid configurations -- each outputs JSON to stdout
+      - name: Process valid configurations
+        shell: bash
+        run: |
+          for config in fixtures/basic_matrix.json fixtures/with_include.json fixtures/with_exclude.json fixtures/full_config.json; do
+            name=$(basename "$config" .json)
+            echo "=== START:$name ==="
+            python3 matrix_generator.py "$config"
+            echo "=== END:$name ==="
+          done
+
+      # Process error cases -- these MUST fail, verifying error handling
+      - name: Validate error handling
+        shell: bash
+        run: |
+          # Test: oversized matrix should be rejected
+          echo "=== START:oversized ==="
+          set +e
+          python3 matrix_generator.py fixtures/oversized.json 2>&1
+          rc=$?
+          set -e
+          if [ "$rc" -eq 0 ]; then
+            echo "FAIL: Expected non-zero exit for oversized matrix"
+            exit 1
+          fi
+          echo "EXIT_CODE:$rc"
+          echo "=== END:oversized ==="
+
+          # Test: invalid config (missing matrix key) should be rejected
+          echo "=== START:error_invalid ==="
+          set +e
+          python3 matrix_generator.py fixtures/error_invalid.json 2>&1
+          rc=$?
+          set -e
+          if [ "$rc" -eq 0 ]; then
+            echo "FAIL: Expected non-zero exit for invalid config"
+            exit 1
+          fi
+          echo "EXIT_CODE:$rc"
+          echo "=== END:error_invalid ==="

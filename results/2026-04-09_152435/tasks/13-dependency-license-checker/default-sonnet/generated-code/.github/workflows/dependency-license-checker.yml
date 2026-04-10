@@ -1,0 +1,57 @@
+name: Dependency License Checker
+
+on:
+  push:
+  pull_request:
+  schedule:
+    # Run every Monday at 09:00 UTC for ongoing compliance monitoring
+    - cron: "0 9 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-licenses:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      # Install Python test dependencies.
+      # Use --break-system-packages because catthehacker/ubuntu ships Python 3.12+
+      # which enforces PEP 668 and blocks bare pip installs.
+      - name: Install Python dependencies
+        run: pip3 install --break-system-packages pytest pyyaml --quiet
+
+      # Install actionlint so the test_actionlint_passes test can run inside the container.
+      - name: Install actionlint
+        run: |
+          wget -q "https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_amd64.tar.gz" \
+            -O /tmp/actionlint.tar.gz
+          tar -xzf /tmp/actionlint.tar.gz -C /usr/local/bin actionlint
+          actionlint --version
+
+      # TDD test suite — covers all parsing, compliance, and report logic.
+      # Also includes workflow structure and actionlint tests (rounds 14-16).
+      - name: Run test suite
+        run: python3 -m pytest test_license_checker.py -v
+
+      # Run the license checker against the Node.js fixture.
+      # '|| true' prevents CI failure on denied licenses so the full report
+      # is always printed; real projects would remove '|| true'.
+      - name: Check package.json licenses
+        run: |
+          python3 license_checker.py \
+            --manifest fixtures/package.json \
+            --config config.json \
+            --db fixtures/mock_licenses.json || true
+
+      # Run the license checker against the Python fixture.
+      - name: Check requirements.txt licenses
+        run: |
+          python3 license_checker.py \
+            --manifest fixtures/requirements.txt \
+            --config config.json \
+            --db fixtures/mock_licenses.json || true

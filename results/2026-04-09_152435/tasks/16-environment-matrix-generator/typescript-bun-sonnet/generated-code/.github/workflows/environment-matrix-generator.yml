@@ -1,0 +1,40 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        run: npm install -g bun
+
+      - name: Run unit tests
+        run: bun test
+
+      - name: Generate matrix - basic fixture
+        run: |
+          echo "=== FIXTURE_START: basic ==="
+          bun run index.ts fixtures/basic.json
+          echo "=== FIXTURE_END: basic ==="
+
+      - name: Generate matrix - include-exclude fixture
+        run: |
+          echo "=== FIXTURE_START: include-exclude ==="
+          bun run index.ts fixtures/include-exclude.json
+          echo "=== FIXTURE_END: include-exclude ==="
+
+      - name: Generate matrix - size-exceeded fixture (expected validation error)
+        run: |
+          echo "=== FIXTURE_START: size-exceeded ==="
+          bun run index.ts fixtures/size-exceeded.json
+          echo "=== FIXTURE_END: size-exceeded ==="

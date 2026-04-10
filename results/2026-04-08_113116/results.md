@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-09 02:52:54 PM ET
+**Last updated:** 2026-04-10 04:30:36 AM ET
 
 **Status:** 1/1 runs completed, 0 remaining
 **Total cost so far:** $1.16
@@ -8,62 +8,53 @@
 
 ## Comparison by Language/Model
 
-| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
-|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
-| default | opus | 1 | 5.3min | 3.0min | 504 | 1.0 | 42 | $1.16 | $0.65 | $1.16 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost |
+|------|-------|------|-------------|--------------------------|------------|-----------|----------|------------|
+| default | opus | 1 | 5.3min | 3.0min | 1.0 | 42 | $1.16 | $1.16 |
 
 
 <details>
-<summary>Sorted by avg cost (most expensive first)</summary>
+<summary>Sorted by avg cost (cheapest first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
-|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
-| default | opus | 1 | 5.3min | 3.0min | 504 | 1.0 | 42 | $1.16 | $0.65 | $1.16 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost |
+|------|-------|------|-------------|--------------------------|------------|-----------|----------|------------|
+| default | opus | 1 | 5.3min | 3.0min | 1.0 | 42 | $1.16 | $1.16 |
 
 </details>
 
 <details>
-<summary>Sorted by avg cost net of traps (most expensive first)</summary>
+<summary>Sorted by avg duration (fastest first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
-|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
-| default | opus | 1 | 5.3min | 3.0min | 504 | 1.0 | 42 | $1.16 | $0.65 | $1.16 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost |
+|------|-------|------|-------------|--------------------------|------------|-----------|----------|------------|
+| default | opus | 1 | 5.3min | 3.0min | 1.0 | 42 | $1.16 | $1.16 |
 
 </details>
 
 <details>
 <summary>Sorted by avg duration net of traps (fastest first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
-|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
-| default | opus | 1 | 5.3min | 3.0min | 504 | 1.0 | 42 | $1.16 | $0.65 | $1.16 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost |
+|------|-------|------|-------------|--------------------------|------------|-----------|----------|------------|
+| default | opus | 1 | 5.3min | 3.0min | 1.0 | 42 | $1.16 | $1.16 |
 
 </details>
 
 <details>
 <summary>Sorted by avg errors (fewest first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
-|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
-| default | opus | 1 | 5.3min | 3.0min | 504 | 1.0 | 42 | $1.16 | $0.65 | $1.16 |
-
-</details>
-
-<details>
-<summary>Sorted by avg lines (fewest first)</summary>
-
-| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
-|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
-| default | opus | 1 | 5.3min | 3.0min | 504 | 1.0 | 42 | $1.16 | $0.65 | $1.16 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost |
+|------|-------|------|-------------|--------------------------|------------|-----------|----------|------------|
+| default | opus | 1 | 5.3min | 3.0min | 1.0 | 42 | $1.16 | $1.16 |
 
 </details>
 
 <details>
 <summary>Sorted by avg turns (fewest first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Duration Net | Avg Lines | Avg Errors | Avg Turns | Avg Cost | Avg Cost Net | Total Cost |
-|------|-------|------|-------------|-----------------|-----------|------------|-----------|----------|-------------|------------|
-| default | opus | 1 | 5.3min | 3.0min | 504 | 1.0 | 42 | $1.16 | $0.65 | $1.16 |
+| Mode | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost |
+|------|-------|------|-------------|--------------------------|------------|-----------|----------|------------|
+| default | opus | 1 | 5.3min | 3.0min | 1.0 | 42 | $1.16 | $1.16 |
 
 </details>
 
@@ -74,36 +65,26 @@
 Each hook-caught error avoids one test run that would otherwise have been needed to discover it.
 Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
-| Mode | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time | Test Run Time | % of Test Time |
-|------|-------|-------|--------|------|------------|-----------|----------|-----------|-----------|-----------|---------------|----------------|
-| default | opus | 22 | 0 | 0.0% | 0.0min | 0.0% | 0.2min | 3.5% | -0.2min | -3.5% | 0.0min | 0.0% |
-| **—** | **—** |
+| Mode | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time |
+|------|-------|-------|--------|------|------------|-----------|----------|-----------|-----------|-----------|
+| default | opus | 22 | 0 | 0.0% | 0.0min | 0.0% | 0.2min | 3.5% | -0.2min | -3.5% |
 
 
 <details>
 <summary>Sorted by net saved (most first)</summary>
 
-| Mode | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time | Test Run Time | % of Test Time |
-|------|-------|-------|--------|------|------------|-----------|----------|-----------|-----------|-----------|---------------|----------------|
-| default | opus | 22 | 0 | 0.0% | 0.0min | 0.0% | 0.2min | 3.5% | -0.2min | -3.5% | 0.0min | 0.0% |
-
-</details>
-
-<details>
-<summary>Sorted by net % of test time (most first)</summary>
-
-| Mode | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time | Test Run Time | % of Test Time |
-|------|-------|-------|--------|------|------------|-----------|----------|-----------|-----------|-----------|---------------|----------------|
-| default | opus | 22 | 0 | 0.0% | 0.0min | 0.0% | 0.2min | 3.5% | -0.2min | -3.5% | 0.0min | 0.0% |
+| Mode | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time |
+|------|-------|-------|--------|------|------------|-----------|----------|-----------|-----------|-----------|
+| default | opus | 22 | 0 | 0.0% | 0.0min | 0.0% | 0.2min | 3.5% | -0.2min | -3.5% |
 
 </details>
 
 <details>
 <summary>Sorted by catch rate (highest first)</summary>
 
-| Mode | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time | Test Run Time | % of Test Time |
-|------|-------|-------|--------|------|------------|-----------|----------|-----------|-----------|-----------|---------------|----------------|
-| default | opus | 22 | 0 | 0.0% | 0.0min | 0.0% | 0.2min | 3.5% | -0.2min | -3.5% | 0.0min | 0.0% |
+| Mode | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time |
+|------|-------|-------|--------|------|------------|-----------|----------|-----------|-----------|-----------|
+| default | opus | 22 | 0 | 0.0% | 0.0min | 0.0% | 0.2min | 3.5% | -0.2min | -3.5% |
 
 </details>
 
@@ -112,7 +93,6 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | Trap | Mode | Model | Fell In | Time Lost | % of Time | $ Lost | % of $ |
 |------|------|-------|---------|-----------|-----------|--------|--------|
 | repeated-test-reruns | default | opus | 1 | 2.3min | 44.1% | $0.51 | 44.09% |
-| **Total** | | | **1 runs** | **2.3min** | **44.1%** | **$0.51** | **44.09%** |
 
 
 <details>
@@ -157,36 +137,26 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 ### Traps by Language/Model
 
-| Mode | Model | Runs | Trapped | Trap Rate | Traps | Time Lost | % of Time | $ Lost | % of $ |
-|------|-------|------|---------|-----------|-------|-----------|-----------|--------|--------|
-| default | opus | 1 | 1 | 100% | 1 | 2.3min | 44.1% | $0.51 | 44.09% |
-| **Total** | | **1** | **1** | **100%** | **1** | **2.3min** | **44.1%** | **$0.51** | **44.09%** |
+| Mode | Model | Runs | Traps | Time Lost | % of Time | $ Lost | % of $ |
+|------|-------|------|-------|-----------|-----------|--------|--------|
+| default | opus | 1 | 1 | 2.3min | 44.1% | $0.51 | 44.09% |
 
 
 <details>
 <summary>Sorted by time lost (least first)</summary>
 
-| Mode | Model | Runs | Trapped | Trap Rate | Traps | Time Lost | % of Time | $ Lost | % of $ |
-|------|-------|------|---------|-----------|-------|-----------|-----------|--------|--------|
-| default | opus | 1 | 1 | 100% | 1 | 2.3min | 44.1% | $0.51 | 44.09% |
+| Mode | Model | Runs | Traps | Time Lost | % of Time | $ Lost | % of $ |
+|------|-------|------|-------|-----------|-----------|--------|--------|
+| default | opus | 1 | 1 | 2.3min | 44.1% | $0.51 | 44.09% |
 
 </details>
 
 <details>
 <summary>Sorted by $ lost (least first)</summary>
 
-| Mode | Model | Runs | Trapped | Trap Rate | Traps | Time Lost | % of Time | $ Lost | % of $ |
-|------|-------|------|---------|-----------|-------|-----------|-----------|--------|--------|
-| default | opus | 1 | 1 | 100% | 1 | 2.3min | 44.1% | $0.51 | 44.09% |
-
-</details>
-
-<details>
-<summary>Sorted by trap rate (lowest first)</summary>
-
-| Mode | Model | Runs | Trapped | Trap Rate | Traps | Time Lost | % of Time | $ Lost | % of $ |
-|------|-------|------|---------|-----------|-------|-----------|-----------|--------|--------|
-| default | opus | 1 | 1 | 100% | 1 | 2.3min | 44.1% | $0.51 | 44.09% |
+| Mode | Model | Runs | Traps | Time Lost | % of Time | $ Lost | % of $ |
+|------|-------|------|-------|-----------|-----------|--------|--------|
+| default | opus | 1 | 1 | 2.3min | 44.1% | $0.51 | 44.09% |
 
 </details>
 
@@ -197,57 +167,47 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | Full hit (100%) | 0 | $0.00 | 0.00% |
 | Partial | 1 | $0.20 | 16.94% |
 | Miss | 0 | $0.00 | 0.00% |
-| **Total** | **1** | **$0.20** | **16.94%** |
 
 ## Per-Run Results
 
-| Task | Mode | Model | Duration | Turns | Lines | Errors | Cost | Language | Status |
-|------|------|-------|----------|-------|-------|--------|------|----------|--------|
-| Semantic Version Bumper | default | opus | 5.3min | 42 | 504 | 1 | $1.16 | python | ok |
+| Task | Mode | Model | Duration | Turns | Errors | Cost | Language | Status |
+|------|------|-------|----------|-------|--------|------|----------|--------|
+| Semantic Version Bumper | default | opus | 5.3min | 42 | 1 | $1.16 | python | ok |
 
 
 <details>
-<summary>Sorted by cost (most expensive first)</summary>
+<summary>Sorted by cost (cheapest first)</summary>
 
-| Task | Mode | Model | Duration | Turns | Lines | Errors | Cost | Language | Status |
-|------|------|-------|----------|-------|-------|--------|------|----------|--------|
-| Semantic Version Bumper | default | opus | 5.3min | 42 | 504 | 1 | $1.16 | python | ok |
+| Task | Mode | Model | Duration | Turns | Errors | Cost | Language | Status |
+|------|------|-------|----------|-------|--------|------|----------|--------|
+| Semantic Version Bumper | default | opus | 5.3min | 42 | 1 | $1.16 | python | ok |
 
 </details>
 
 <details>
-<summary>Sorted by duration (longest first)</summary>
+<summary>Sorted by duration (fastest first)</summary>
 
-| Task | Mode | Model | Duration | Turns | Lines | Errors | Cost | Language | Status |
-|------|------|-------|----------|-------|-------|--------|------|----------|--------|
-| Semantic Version Bumper | default | opus | 5.3min | 42 | 504 | 1 | $1.16 | python | ok |
+| Task | Mode | Model | Duration | Turns | Errors | Cost | Language | Status |
+|------|------|-------|----------|-------|--------|------|----------|--------|
+| Semantic Version Bumper | default | opus | 5.3min | 42 | 1 | $1.16 | python | ok |
 
 </details>
 
 <details>
 <summary>Sorted by errors (fewest first)</summary>
 
-| Task | Mode | Model | Duration | Turns | Lines | Errors | Cost | Language | Status |
-|------|------|-------|----------|-------|-------|--------|------|----------|--------|
-| Semantic Version Bumper | default | opus | 5.3min | 42 | 504 | 1 | $1.16 | python | ok |
-
-</details>
-
-<details>
-<summary>Sorted by lines (fewest first)</summary>
-
-| Task | Mode | Model | Duration | Turns | Lines | Errors | Cost | Language | Status |
-|------|------|-------|----------|-------|-------|--------|------|----------|--------|
-| Semantic Version Bumper | default | opus | 5.3min | 42 | 504 | 1 | $1.16 | python | ok |
+| Task | Mode | Model | Duration | Turns | Errors | Cost | Language | Status |
+|------|------|-------|----------|-------|--------|------|----------|--------|
+| Semantic Version Bumper | default | opus | 5.3min | 42 | 1 | $1.16 | python | ok |
 
 </details>
 
 <details>
 <summary>Sorted by turns (fewest first)</summary>
 
-| Task | Mode | Model | Duration | Turns | Lines | Errors | Cost | Language | Status |
-|------|------|-------|----------|-------|-------|--------|------|----------|--------|
-| Semantic Version Bumper | default | opus | 5.3min | 42 | 504 | 1 | $1.16 | python | ok |
+| Task | Mode | Model | Duration | Turns | Errors | Cost | Language | Status |
+|------|------|-------|----------|-------|--------|------|----------|--------|
+| Semantic Version Bumper | default | opus | 5.3min | 42 | 1 | $1.16 | python | ok |
 
 </details>
 

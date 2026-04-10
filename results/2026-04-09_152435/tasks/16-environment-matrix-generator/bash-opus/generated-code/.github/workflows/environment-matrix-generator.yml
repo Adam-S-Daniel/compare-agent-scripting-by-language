@@ -1,0 +1,90 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+    branches: ["*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  MATRIX_MAX_COMBINATIONS: "256"
+
+jobs:
+  generate-matrix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          # jq is pre-installed on ubuntu runners; verify it exists
+          jq --version
+          # Make script executable
+          chmod +x matrix-generator.sh
+
+      - name: Validate script syntax
+        run: |
+          bash -n matrix-generator.sh
+          echo "Script syntax is valid"
+
+      - name: Generate matrix - basic config
+        run: |
+          echo "=== TEST: basic ==="
+          ./matrix-generator.sh fixtures/basic.json
+          echo "=== END: basic ==="
+
+      - name: Generate matrix - with exclude rules
+        run: |
+          echo "=== TEST: with_exclude ==="
+          ./matrix-generator.sh fixtures/with_exclude.json
+          echo "=== END: with_exclude ==="
+
+      - name: Generate matrix - with include rules
+        run: |
+          echo "=== TEST: with_include ==="
+          ./matrix-generator.sh fixtures/with_include.json
+          echo "=== END: with_include ==="
+
+      - name: Generate matrix - full config
+        run: |
+          echo "=== TEST: full_config ==="
+          ./matrix-generator.sh fixtures/full_config.json
+          echo "=== END: full_config ==="
+
+      - name: Generate matrix - too large (expect failure)
+        run: |
+          echo "=== TEST: too_large ==="
+          if ./matrix-generator.sh fixtures/too_large.json 2>&1; then
+            echo "UNEXPECTED: should have failed"
+            exit 1
+          else
+            echo "EXPECTED_FAILURE: matrix exceeded max_combinations"
+          fi
+          echo "=== END: too_large ==="
+
+      - name: Generate matrix - missing file (expect failure)
+        run: |
+          echo "=== TEST: missing_file ==="
+          if ./matrix-generator.sh nonexistent.json 2>&1; then
+            echo "UNEXPECTED: should have failed"
+            exit 1
+          else
+            echo "EXPECTED_FAILURE: file not found"
+          fi
+          echo "=== END: missing_file ==="
+
+      - name: Generate matrix - no args (expect failure)
+        run: |
+          echo "=== TEST: no_args ==="
+          if ./matrix-generator.sh 2>&1; then
+            echo "UNEXPECTED: should have failed"
+            exit 1
+          else
+            echo "EXPECTED_FAILURE: no arguments"
+          fi
+          echo "=== END: no_args ==="

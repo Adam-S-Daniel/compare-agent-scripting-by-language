@@ -1,0 +1,58 @@
+name: Dependency License Checker
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-licenses:
+    runs-on: ubuntu-latest
+    env:
+      # Default manifest and config paths (can be overridden)
+      MANIFEST_FILE: fixtures/package.json
+      CONFIG_FILE: fixtures/license-config.json
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          # Install shellcheck for script validation
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq shellcheck
+          # Install bats for testing
+          npm install -g bats
+
+      - name: Validate script syntax
+        run: |
+          echo "=== Running shellcheck ==="
+          shellcheck check-licenses.sh
+          echo "=== Running bash -n ==="
+          bash -n check-licenses.sh
+          echo "=== Syntax validation passed ==="
+
+      - name: Run license check - package.json
+        run: |
+          echo "=== Checking package.json dependencies ==="
+          chmod +x check-licenses.sh
+          ./check-licenses.sh fixtures/package.json fixtures/license-config.json || true
+
+      - name: Run license check - requirements.txt
+        run: |
+          echo "=== Checking requirements.txt dependencies ==="
+          ./check-licenses.sh fixtures/requirements.txt fixtures/license-config.json || true
+
+      - name: Run license check - all approved
+        run: |
+          echo "=== Checking all-approved dependencies ==="
+          ./check-licenses.sh fixtures/all-approved-package.json fixtures/license-config.json
+
+      - name: Run bats tests
+        run: |
+          bats test_check_licenses.bats

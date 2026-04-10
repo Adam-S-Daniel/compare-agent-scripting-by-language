@@ -1,0 +1,49 @@
+name: Test Results Aggregator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  aggregate:
+    name: Run Pester Tests and Aggregate Results
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Pester is pre-installed in the act-ubuntu-pwsh container.
+      # This step is a no-op there but ensures portability on vanilla runners.
+      - name: Ensure Pester v5 is available
+        shell: pwsh
+        run: |
+          if (-not (Get-Module -ListAvailable -Name Pester | Where-Object { $_.Version -ge '5.0' })) {
+            Install-Module -Name Pester -Force -Scope CurrentUser -MinimumVersion 5.0
+          }
+          Import-Module Pester -MinimumVersion 5.0
+          Write-Host "Pester version: $((Get-Module Pester).Version)"
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = './Invoke-TestResultsAggregator.Tests.ps1'
+          $config.Output.Verbosity = 'Detailed'
+          $config.Run.Exit = $true
+          Invoke-Pester -Configuration $config
+
+      - name: Run aggregator against fixture files
+        shell: pwsh
+        run: |
+          $paths = @(
+            './fixtures/junit-results-1.xml',
+            './fixtures/junit-results-2.xml',
+            './fixtures/json-results-1.json'
+          )
+          Write-Host "=== AGGREGATOR MARKDOWN OUTPUT ==="
+          ./Invoke-TestResultsAggregator.ps1 -InputPaths $paths
+          Write-Host "=== END AGGREGATOR OUTPUT ==="

@@ -1,0 +1,91 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test Environment Matrix Generator
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Install bats (unit test runner) and jq (JSON processor used by the script).
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends bats jq
+
+      # Make sure the script is executable even if git didn't preserve the bit.
+      - name: Make script executable
+        run: chmod +x generate-matrix.sh
+
+      # -----------------------------------------------------------------------
+      # Run all bats unit tests (covers script logic + workflow structure).
+      # -----------------------------------------------------------------------
+      - name: Run unit tests
+        run: bats tests/test_generate_matrix.bats
+
+      # -----------------------------------------------------------------------
+      # Integration verification: run the script against each fixture and
+      # echo exact markers so the external test harness can assert values.
+      # -----------------------------------------------------------------------
+
+      - name: Verify fixture 1 - basic 2-OS x 2-node matrix
+        run: |
+          result=$(bash generate-matrix.sh tests/fixtures/config1.json)
+          count=$(echo "$result" | jq '.strategy.matrix.include | length')
+          fail_fast=$(echo "$result" | jq -r '.strategy["fail-fast"]')
+          max_parallel=$(echo "$result" | jq -r '.strategy["max-parallel"]')
+          echo "FIXTURE1_COUNT=${count}"
+          echo "FIXTURE1_FAILFAST=${fail_fast}"
+          echo "FIXTURE1_MAXPARALLEL=${max_parallel}"
+          [ "$count" -eq 4 ]       || { echo "ERROR fixture1: expected 4 combos, got ${count}"; exit 1; }
+          [ "$fail_fast" = "false" ] || { echo "ERROR fixture1: expected fail-fast=false, got ${fail_fast}"; exit 1; }
+          [ "$max_parallel" -eq 4 ] || { echo "ERROR fixture1: expected max-parallel=4, got ${max_parallel}"; exit 1; }
+          echo "FIXTURE1_VERIFIED=PASS"
+
+      - name: Verify fixture 2 - excludes and includes
+        run: |
+          result=$(bash generate-matrix.sh tests/fixtures/config2.json)
+          count=$(echo "$result" | jq '.strategy.matrix.include | length')
+          fail_fast=$(echo "$result" | jq -r '.strategy["fail-fast"]')
+          max_parallel=$(echo "$result" | jq -r '.strategy["max-parallel"]')
+          echo "FIXTURE2_COUNT=${count}"
+          echo "FIXTURE2_FAILFAST=${fail_fast}"
+          echo "FIXTURE2_MAXPARALLEL=${max_parallel}"
+          [ "$count" -eq 4 ]      || { echo "ERROR fixture2: expected 4 combos, got ${count}"; exit 1; }
+          [ "$fail_fast" = "true" ] || { echo "ERROR fixture2: expected fail-fast=true, got ${fail_fast}"; exit 1; }
+          [ "$max_parallel" -eq 2 ] || { echo "ERROR fixture2: expected max-parallel=2, got ${max_parallel}"; exit 1; }
+          echo "FIXTURE2_VERIFIED=PASS"
+
+      # Fixture 3 is expected to fail; capture the error and verify the message.
+      - name: Verify fixture 3 - max size exceeded
+        run: |
+          if output=$(bash generate-matrix.sh tests/fixtures/config3.json 2>&1); then
+            echo "ERROR fixture3: expected failure but script succeeded"
+            exit 1
+          else
+            if echo "$output" | grep -q "exceeds maximum"; then
+              echo "FIXTURE3_ERROR=exceeds maximum"
+              echo "FIXTURE3_VERIFIED=PASS"
+            else
+              echo "ERROR fixture3: wrong error message: ${output}"
+              exit 1
+            fi
+          fi
+
+      - name: Verify fixture 4 - feature flags
+        run: |
+          result=$(bash generate-matrix.sh tests/fixtures/config4.json)
+          count=$(echo "$result" | jq '.strategy.matrix.include | length')
+          echo "FIXTURE4_COUNT=${count}"
+          [ "$count" -eq 2 ] || { echo "ERROR fixture4: expected 2 combos, got ${count}"; exit 1; }
+          echo "FIXTURE4_VERIFIED=PASS"

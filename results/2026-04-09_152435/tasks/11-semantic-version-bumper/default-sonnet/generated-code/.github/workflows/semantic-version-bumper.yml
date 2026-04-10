@@ -1,0 +1,189 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # ------------------------------------------------------------------
+  # Job 1: Run the Python test suite (pytest)
+  # ------------------------------------------------------------------
+  test:
+    name: Run unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pytest
+        run: pip3 install pytest --quiet --break-system-packages
+
+      - name: Run pytest
+        run: python3 -m pytest test_version_bumper.py -v
+
+  # ------------------------------------------------------------------
+  # Job 2: Validate workflow structure
+  # ------------------------------------------------------------------
+  validate-workflow:
+    name: Validate workflow YAML
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check workflow file exists
+        run: |
+          test -f .github/workflows/semantic-version-bumper.yml
+          echo "Workflow file exists."
+
+      - name: Check script files exist
+        run: |
+          test -f version_bumper.py
+          test -f test_version_bumper.py
+          echo "Script files exist."
+
+  # ------------------------------------------------------------------
+  # Job 3: Functional end-to-end tests (each fixture case)
+  # ------------------------------------------------------------------
+  e2e-patch-bump:
+    name: "E2E: patch bump (fix commits)"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create test package.json with version 1.2.3
+        run: |
+          echo '{"name":"test-app","version":"1.2.3"}' > package.json
+
+      - name: Run version bumper with fix commits (expect 1.2.4)
+        run: |
+          OUTPUT=$(python3 version_bumper.py package.json \
+            "fix: correct null pointer in login handler" \
+            "fix: handle empty string in email validator" \
+            "chore: update dependencies")
+          echo "$OUTPUT"
+          echo "$OUTPUT" | grep -q "new_version=1.2.4"
+          echo "PASS: new_version=1.2.4 found in output"
+
+      - name: Verify package.json was updated to 1.2.4
+        run: |
+          VERSION=$(python3 -c "import json; print(json.load(open('package.json'))['version'])")
+          echo "Version in file: $VERSION"
+          test "$VERSION" = "1.2.4"
+          echo "PASS: package.json updated to 1.2.4"
+
+  e2e-minor-bump:
+    name: "E2E: minor bump (feat commits)"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create test package.json with version 1.2.3
+        run: |
+          echo '{"name":"test-app","version":"1.2.3"}' > package.json
+
+      - name: Run version bumper with feat commits (expect 1.3.0)
+        run: |
+          OUTPUT=$(python3 version_bumper.py package.json \
+            "feat: add user profile endpoint" \
+            "fix: typo in README" \
+            "docs: update API docs")
+          echo "$OUTPUT"
+          echo "$OUTPUT" | grep -q "new_version=1.3.0"
+          echo "PASS: new_version=1.3.0 found in output"
+
+      - name: Verify package.json was updated to 1.3.0
+        run: |
+          VERSION=$(python3 -c "import json; print(json.load(open('package.json'))['version'])")
+          echo "Version in file: $VERSION"
+          test "$VERSION" = "1.3.0"
+          echo "PASS: package.json updated to 1.3.0"
+
+  e2e-major-bump:
+    name: "E2E: major bump (breaking commits)"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create test package.json with version 1.2.3
+        run: |
+          echo '{"name":"test-app","version":"1.2.3"}' > package.json
+
+      - name: Run version bumper with breaking commits (expect 2.0.0)
+        run: |
+          OUTPUT=$(python3 version_bumper.py package.json \
+            "feat!: rewrite authentication system" \
+            "fix: minor styling issue")
+          echo "$OUTPUT"
+          echo "$OUTPUT" | grep -q "new_version=2.0.0"
+          echo "PASS: new_version=2.0.0 found in output"
+
+      - name: Verify package.json was updated to 2.0.0
+        run: |
+          VERSION=$(python3 -c "import json; print(json.load(open('package.json'))['version'])")
+          echo "Version in file: $VERSION"
+          test "$VERSION" = "2.0.0"
+          echo "PASS: package.json updated to 2.0.0"
+
+  e2e-no-bump:
+    name: "E2E: no bump (chore/docs only)"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create test package.json with version 3.7.2
+        run: |
+          echo '{"name":"test-app","version":"3.7.2"}' > package.json
+
+      - name: Run version bumper with chore/docs commits (expect 3.7.2 unchanged)
+        run: |
+          OUTPUT=$(python3 version_bumper.py package.json \
+            "chore: clean up temp files" \
+            "docs: improve README" \
+            "style: format code")
+          echo "$OUTPUT"
+          echo "$OUTPUT" | grep -q "new_version=3.7.2"
+          echo "PASS: new_version=3.7.2 found in output (no bump)"
+
+      - name: Verify package.json remains 3.7.2
+        run: |
+          VERSION=$(python3 -c "import json; print(json.load(open('package.json'))['version'])")
+          echo "Version in file: $VERSION"
+          test "$VERSION" = "3.7.2"
+          echo "PASS: package.json unchanged at 3.7.2"
+
+  e2e-plain-version-file:
+    name: "E2E: plain VERSION file support"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create plain VERSION file with version 0.9.0
+        run: |
+          echo "0.9.0" > VERSION_FILE.txt
+
+      - name: Run version bumper on plain text file (expect 1.0.0)
+        run: |
+          OUTPUT=$(python3 version_bumper.py VERSION_FILE.txt \
+            "feat!: initial stable release")
+          echo "$OUTPUT"
+          echo "$OUTPUT" | grep -q "new_version=1.0.0"
+          echo "PASS: new_version=1.0.0 found in output"
+
+      - name: Verify VERSION_FILE.txt was updated to 1.0.0
+        run: |
+          VERSION=$(tr -d '[:space:]' < VERSION_FILE.txt)
+          echo "Version in file: $VERSION"
+          test "$VERSION" = "1.0.0"
+          echo "PASS: VERSION_FILE.txt updated to 1.0.0"

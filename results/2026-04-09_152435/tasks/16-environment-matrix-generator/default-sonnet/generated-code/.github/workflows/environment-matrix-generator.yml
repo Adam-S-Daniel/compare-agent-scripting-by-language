@@ -1,0 +1,116 @@
+name: Environment Matrix Generator
+
+# Trigger on push (all branches), pull_request, and manual dispatch.
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-generate:
+    name: Test and Generate Build Matrix
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: pip install pytest pyyaml
+
+      # Install actionlint so the workflow-structure test can run it as a subprocess.
+      # Using a pinned version for reproducibility.
+      - name: Install actionlint
+        run: |
+          VERSION=1.7.4
+          curl -sSL "https://github.com/rhysd/actionlint/releases/download/v${VERSION}/actionlint_${VERSION}_linux_amd64.tar.gz" \
+            | tar -xz actionlint
+          sudo mv actionlint /usr/local/bin/actionlint
+          actionlint --version
+
+      # Run the full pytest suite (unit tests + workflow structure tests).
+      # The workflow structure tests verify this file, paths, and actionlint.
+      - name: Run unit tests and workflow structure tests
+        run: pytest test_matrix_generator.py -v
+
+      # -------------------------------------------------------------------
+      # Fixture tests: run the generator against each fixture and verify output.
+      # The test harness (run_tests.py) parses these "MATRIX_SIZE_*" markers
+      # to assert exact expected values from act output.
+      # -------------------------------------------------------------------
+
+      - name: "Fixture test: basic 2x2 matrix (expected size=4)"
+        run: |
+          echo "=== FIXTURE TEST: basic ==="
+          python matrix_generator.py fixtures/basic.json --pretty
+          ACTUAL=$(python matrix_generator.py fixtures/basic.json | python3 -c "import json,sys; print(json.load(sys.stdin)['matrix-size'])")
+          echo "MATRIX_SIZE_BASIC: ${ACTUAL}"
+          if [ "${ACTUAL}" != "4" ]; then
+            echo "FAIL: expected 4, got ${ACTUAL}"
+            exit 1
+          fi
+          echo "PASS: basic matrix size is 4"
+          echo "=== END FIXTURE: basic ==="
+
+      - name: "Fixture test: with exclude rule (expected size=3)"
+        run: |
+          echo "=== FIXTURE TEST: with_excludes ==="
+          python matrix_generator.py fixtures/with_excludes.json --pretty
+          ACTUAL=$(python matrix_generator.py fixtures/with_excludes.json | python3 -c "import json,sys; print(json.load(sys.stdin)['matrix-size'])")
+          echo "MATRIX_SIZE_EXCLUDES: ${ACTUAL}"
+          if [ "${ACTUAL}" != "3" ]; then
+            echo "FAIL: expected 3, got ${ACTUAL}"
+            exit 1
+          fi
+          echo "PASS: exclude matrix size is 3"
+          echo "=== END FIXTURE: with_excludes ==="
+
+      - name: "Fixture test: with include rule (expected size=5)"
+        run: |
+          echo "=== FIXTURE TEST: with_includes ==="
+          python matrix_generator.py fixtures/with_includes.json --pretty
+          ACTUAL=$(python matrix_generator.py fixtures/with_includes.json | python3 -c "import json,sys; print(json.load(sys.stdin)['matrix-size'])")
+          echo "MATRIX_SIZE_INCLUDES: ${ACTUAL}"
+          if [ "${ACTUAL}" != "5" ]; then
+            echo "FAIL: expected 5, got ${ACTUAL}"
+            exit 1
+          fi
+          echo "PASS: include matrix size is 5"
+          echo "=== END FIXTURE: with_includes ==="
+
+      - name: "Fixture test: with feature flags 2x2x2 (expected size=8)"
+        run: |
+          echo "=== FIXTURE TEST: with_flags ==="
+          python matrix_generator.py fixtures/with_flags.json --pretty
+          ACTUAL=$(python matrix_generator.py fixtures/with_flags.json | python3 -c "import json,sys; print(json.load(sys.stdin)['matrix-size'])")
+          echo "MATRIX_SIZE_FLAGS: ${ACTUAL}"
+          if [ "${ACTUAL}" != "8" ]; then
+            echo "FAIL: expected 8, got ${ACTUAL}"
+            exit 1
+          fi
+          echo "PASS: flags matrix size is 8"
+          echo "=== END FIXTURE: with_flags ==="
+
+      - name: "Fixture test: oversized matrix raises error (3x4=12 > max=5)"
+        run: |
+          echo "=== FIXTURE TEST: too_large ==="
+          ERROR_OUTPUT=$(python matrix_generator.py fixtures/too_large.json 2>&1 || true)
+          echo "${ERROR_OUTPUT}"
+          if echo "${ERROR_OUTPUT}" | grep -q "exceeds maximum"; then
+            echo "EXPECTED_ERROR: Matrix too large confirmed"
+            echo "PASS: oversized matrix correctly rejected"
+          else
+            echo "FAIL: expected 'exceeds maximum' in error output"
+            exit 1
+          fi
+          echo "=== END FIXTURE: too_large ==="

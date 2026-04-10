@@ -1,0 +1,157 @@
+name: Docker Image Tag Generator
+
+on:
+  push:
+    branches: ["*"]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  generate-tags:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # --- Test Case 1: main branch → "latest" ---
+      - name: "Test 1: main branch produces latest tag"
+        run: |
+          echo "=== TEST CASE 1: main branch ==="
+          export GIT_BRANCH="main"
+          export GIT_SHA="abc1234567890def1234567890abcdef12345678"
+          export GIT_TAG=""
+          export PR_NUMBER=""
+          OUTPUT=$(./docker-tag-generator.sh)
+          echo "$OUTPUT"
+          echo "$OUTPUT" | grep -qx "DOCKER_TAG=latest"
+          echo "TEST 1 PASSED"
+
+      # --- Test Case 2: master branch → "latest" ---
+      - name: "Test 2: master branch produces latest tag"
+        run: |
+          echo "=== TEST CASE 2: master branch ==="
+          export GIT_BRANCH="master"
+          export GIT_SHA="abc1234567890def1234567890abcdef12345678"
+          export GIT_TAG=""
+          export PR_NUMBER=""
+          OUTPUT=$(./docker-tag-generator.sh)
+          echo "$OUTPUT"
+          echo "$OUTPUT" | grep -qx "DOCKER_TAG=latest"
+          echo "TEST 2 PASSED"
+
+      # --- Test Case 3: PR build → "pr-{number}" ---
+      - name: "Test 3: PR build produces pr-N tag"
+        run: |
+          echo "=== TEST CASE 3: PR build ==="
+          export GIT_BRANCH="feature/login"
+          export GIT_SHA="deadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+          export GIT_TAG=""
+          export PR_NUMBER="42"
+          OUTPUT=$(./docker-tag-generator.sh)
+          echo "$OUTPUT"
+          echo "$OUTPUT" | grep -qx "DOCKER_TAG=pr-42"
+          echo "$OUTPUT" | grep -qx "DOCKER_TAG=feature-login-deadbee"
+          echo "TEST 3 PASSED"
+
+      # --- Test Case 4: semver tag → tag value ---
+      - name: "Test 4: semver tag produces version tag"
+        run: |
+          echo "=== TEST CASE 4: semver tag ==="
+          export GIT_BRANCH="main"
+          export GIT_SHA="1111111111111111111111111111111111111111"
+          export GIT_TAG="v1.2.3"
+          export PR_NUMBER=""
+          OUTPUT=$(./docker-tag-generator.sh)
+          echo "$OUTPUT"
+          echo "$OUTPUT" | grep -qx "DOCKER_TAG=v1.2.3"
+          echo "$OUTPUT" | grep -qx "DOCKER_TAG=latest"
+          echo "TEST 4 PASSED"
+
+      # --- Test Case 5: feature branch → {branch}-{short-sha} ---
+      - name: "Test 5: feature branch produces branch-sha tag"
+        run: |
+          echo "=== TEST CASE 5: feature branch ==="
+          export GIT_BRANCH="feature/awesome-thing"
+          export GIT_SHA="cafebabecafebabecafebabecafebabecafebabe"
+          export GIT_TAG=""
+          export PR_NUMBER=""
+          OUTPUT=$(./docker-tag-generator.sh)
+          echo "$OUTPUT"
+          echo "$OUTPUT" | grep -qx "DOCKER_TAG=feature-awesome-thing-cafebab"
+          echo "TEST 5 PASSED"
+
+      # --- Test Case 6: sanitization — uppercase + special chars ---
+      - name: "Test 6: tag sanitization handles uppercase and special chars"
+        run: |
+          echo "=== TEST CASE 6: sanitization ==="
+          export GIT_BRANCH="Feature/MY_Branch!!Name"
+          export GIT_SHA="aabbccddee112233445566778899aabbccddeeff"
+          export GIT_TAG=""
+          export PR_NUMBER=""
+          OUTPUT=$(./docker-tag-generator.sh)
+          echo "$OUTPUT"
+          echo "$OUTPUT" | grep -qx "DOCKER_TAG=feature-my-branch-name-aabbccd"
+          echo "TEST 6 PASSED"
+
+      # --- Test Case 7: refs/heads/ prefix is stripped ---
+      - name: "Test 7: refs/heads/ prefix is stripped"
+        run: |
+          echo "=== TEST CASE 7: refs/heads/ stripping ==="
+          export GIT_BRANCH="refs/heads/main"
+          export GIT_SHA="0000000000000000000000000000000000000000"
+          export GIT_TAG=""
+          export PR_NUMBER=""
+          OUTPUT=$(./docker-tag-generator.sh)
+          echo "$OUTPUT"
+          echo "$OUTPUT" | grep -qx "DOCKER_TAG=latest"
+          echo "TEST 7 PASSED"
+
+      # --- Test Case 8: error when no branch or tag ---
+      - name: "Test 8: error when no branch or tag"
+        run: |
+          echo "=== TEST CASE 8: missing inputs ==="
+          export GIT_BRANCH=""
+          export GIT_SHA=""
+          export GIT_TAG=""
+          export PR_NUMBER=""
+          if ./docker-tag-generator.sh 2>/dev/null; then
+            echo "TEST 8 FAILED: expected non-zero exit"
+            exit 1
+          fi
+          echo "TEST 8 PASSED"
+
+      # --- Test Case 9: tag-only (no branch) ---
+      - name: "Test 9: tag only without branch"
+        run: |
+          echo "=== TEST CASE 9: tag only ==="
+          export GIT_BRANCH=""
+          export GIT_SHA="fedcba9876543210fedcba9876543210fedcba98"
+          export GIT_TAG="v2.0.0-rc.1"
+          export PR_NUMBER=""
+          OUTPUT=$(./docker-tag-generator.sh)
+          echo "$OUTPUT"
+          echo "$OUTPUT" | grep -qx "DOCKER_TAG=v2.0.0-rc.1"
+          echo "TEST 9 PASSED"
+
+      # --- Test Case 10: combined tag + PR + feature branch ---
+      - name: "Test 10: combined tag + PR + feature branch"
+        run: |
+          echo "=== TEST CASE 10: combined inputs ==="
+          export GIT_BRANCH="release/1.0"
+          export GIT_SHA="abcdef1234567890abcdef1234567890abcdef12"
+          export GIT_TAG="v1.0.0"
+          export PR_NUMBER="99"
+          OUTPUT=$(./docker-tag-generator.sh)
+          echo "$OUTPUT"
+          echo "$OUTPUT" | grep -qx "DOCKER_TAG=v1.0.0"
+          echo "$OUTPUT" | grep -qx "DOCKER_TAG=pr-99"
+          echo "$OUTPUT" | grep -qx "DOCKER_TAG=release-1.0-abcdef1"
+          echo "TEST 10 PASSED"
+
+      - name: All tests passed
+        run: echo "ALL TESTS PASSED"

@@ -1,0 +1,28 @@
+name: Test Results Aggregator
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  aggregate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+
+      - name: Run aggregator and show summary
+        run: |
+          echo "## Test Results Aggregator Output" >> "$GITHUB_STEP_SUMMARY"
+          bun run aggregator.ts fixtures | tee -a "$GITHUB_STEP_SUMMARY"
