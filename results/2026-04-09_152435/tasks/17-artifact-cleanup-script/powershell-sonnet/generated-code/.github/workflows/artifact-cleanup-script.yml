@@ -1,0 +1,82 @@
+name: Artifact Cleanup Script
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Run Pester Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Pester
+        shell: pwsh
+        run: |
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
+          if (-not (Get-Module -ListAvailable -Name Pester | Where-Object { $_.Version -ge '5.0' })) {
+            Install-Module -Name Pester -MinimumVersion 5.0.0 -Force -Scope CurrentUser
+          }
+          Import-Module Pester
+          Write-Host "Pester version: $((Get-Module Pester).Version)"
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = "ArtifactCleanup.Tests.ps1"
+          $config.Output.Verbosity = "Detailed"
+          $config.TestResult.Enabled = $true
+          $config.TestResult.OutputPath = "test-results.xml"
+          $config.Run.Exit = $true
+          Invoke-Pester -Configuration $config
+
+      - name: Run cleanup demo (dry-run)
+        shell: pwsh
+        run: |
+          . ./ArtifactCleanup.ps1
+
+          $referenceDate = [datetime]"2026-04-10T00:00:00Z"
+
+          $artifacts = @(
+            [PSCustomObject]@{ Name="build-main-100"; SizeBytes=120MB; CreatedAt=$referenceDate.AddDays(-60); WorkflowRunId="ci-main" }
+            [PSCustomObject]@{ Name="build-main-99";  SizeBytes=115MB; CreatedAt=$referenceDate.AddDays(-45); WorkflowRunId="ci-main" }
+            [PSCustomObject]@{ Name="build-main-98";  SizeBytes=110MB; CreatedAt=$referenceDate.AddDays(-35); WorkflowRunId="ci-main" }
+            [PSCustomObject]@{ Name="build-main-97";  SizeBytes=108MB; CreatedAt=$referenceDate.AddDays(-5);  WorkflowRunId="ci-main" }
+            [PSCustomObject]@{ Name="build-pr-55";    SizeBytes=90MB;  CreatedAt=$referenceDate.AddDays(-31); WorkflowRunId="ci-pr"   }
+            [PSCustomObject]@{ Name="build-pr-56";    SizeBytes=85MB;  CreatedAt=$referenceDate.AddDays(-2);  WorkflowRunId="ci-pr"   }
+          )
+
+          $policy = [PSCustomObject]@{
+            MaxAgeDays        = 30
+            MaxTotalSizeBytes = 400MB
+            KeepLatestN       = 2
+          }
+
+          $result = Invoke-ArtifactCleanup -Artifacts $artifacts -Policy $policy -DryRun -ReferenceDate $referenceDate
+
+          $plan = [PSCustomObject]@{
+            ToDelete            = $result.Plan.ToDelete
+            ToRetain            = $result.Plan.ToRetain
+            SpaceReclaimedBytes = $result.SpaceReclaimedBytes
+            DeletedCount        = $result.DeletedCount
+            RetainedCount       = $result.RetainedCount
+            DryRun              = $result.DryRun
+          }
+
+          $summary = Format-CleanupSummary -Plan $plan
+          Write-Host $summary
+
+          # Emit machine-parseable key=value lines for act output assertions
+          Write-Host "DELETED_COUNT=$($result.DeletedCount)"
+          Write-Host "RETAINED_COUNT=$($result.RetainedCount)"
+          $mb = [math]::Round($result.SpaceReclaimedBytes / 1MB, 0)
+          Write-Host "SPACE_RECLAIMED_MB=$mb"

@@ -1,0 +1,97 @@
+[Tool: Bash] ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/17-artifact-cleanup-script/powershell-sonnet/ && cat /home/passp/repos/compare-agent-scripting-by-language/AGENTS.md 2>/dev/null | head -100
+[Result] total 44
+drwxr-xr-x 4 passp passp  4096 Apr 10 00:47 .
+drwxr-xr-x 8 passp passp  4096 Apr 10 00:47 ..
+-rw-r--r-- 1 passp passp    40 Apr 10 00:47 .actrc
+drwxr-xr-x 2 passp passp  4096 Apr 10 00:47 .claude
+drwxr-xr-x 7 passp passp  4096 Apr 10 00:47 .git
+-rw-r--r-- 1 passp passp 21666 Apr  9 15:03 benchmark-instructions-v4.md
+# Agent Instructions
+
+All agent-facing instructions live in this file. `CLAUDE.md` contains only a
+reference here. If you are a Claude Code agent, you have already loaded this
+via `CLAUDE.md`. Other agents: read this file directly.
+
+## Build and test
+
+```bash
+# Validate imports
+python3 -c "from runner import main"
+python3 -c "from generate_results import generate_results_md"
+
+# Regenerate all reports
+python3 generate_results.py --all
+
+# Run a benchmark (v4, all tasks/modes/models)
+python3 runner.py --tasks 11,12,13,14,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
+
+# Build custom act container (optional, eliminates pwsh install over
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/17-artifact-cleanup-script/powershell-sonnet/.actrc"}
+[Result] 1	-P ubuntu-latest=act-ubuntu-pwsh:latest
+2	
+[Tool: Bash] mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/17-artifact-cleanup-script/powershell-sonnet/.github/workflows
+[Result] (Bash completed with no output)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/17-artifact-cleanup-script/powershell-sonnet/ArtifactCleanup.Tests.ps1", "content": "# Pester tests fo
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/17-artifact-cleanup-script/powershell-sonnet/ArtifactCleanup.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Now write the implementation:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/17-artifact-cleanup-script/powershell-sonnet/ArtifactCleanup.ps1", "content": "# ArtifactCleanup.ps1\n
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/17-artifact-cleanup-script/powershell-sonnet/ArtifactCleanup.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Now write the GitHub Actions workflow:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/17-artifact-cleanup-script/powershell-sonnet/.github/workflows/artifact-cleanup-script.yml", "content"
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/17-artifact-cleanup-script/powershell-sonnet/.github/workflows/artifact-cleanup-script.yml (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/artifact-cleanup-script.yml
+[Result] (Bash completed with no output)
+[Assistant] actionlint passes. Now run `act`:
+[Tool: Bash] act push --rm 2>&1 | tee act-result.txt; echo "EXIT:$?"
+[Result] time="2026-04-10T00:57:11-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+time="2026-04-10T00:57:12-04:00" level=warning msg="unable to get git ref: reference not found"
+time="2026-04-10T00:57:12-04:00" level=warning msg="unable to get git revision: reference not found"
+[Artifact Cleanup Script/Run Pester Tests] ⭐ Run Set up job
+[Artifact Cleanup Script/Run Pester Tests] 🚀  Start image=act-ubuntu-pwsh:latest
+[Artifact Cleanup Script/Run Pester Tests]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=true
+[Artifact Cleanup Script/Run Pester Tests] using DockerAuthConfig authentication for docker pull
+[Artifact Cleanup Script/Run Pester Tests] Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+[Artifact Cleanup Script/Run Pester Tests]   ❌  Failure - Set up job
+[Artifact Cleanup Script/Run Pester Tests] 🏁  Job failed
+E
+[Assistant] The custom image isn't available. Let me check if it exists or needs to be built:
+[Tool: Bash] docker images | grep -E "act-ubuntu-pwsh|ubuntu" | head -20
+[Result] WARNING: This output is designed for human readability. For machine-readable output, please use --format.
+act-ubuntu-pwsh:latest                   8f4a33bf1683       2.55GB          639MB   U    
+catthehacker/ubuntu:act-22.04            754f20d9a184       2.15GB          531MB        
+catthehacker/ubuntu:act-latest           68a2a9700126       2.26GB          559MB        
+ghcr.io/catthehacker/ubuntu:act-latest   ab464a96ff6c       1.99GB          284MB
+[Assistant] The image exists locally but act tried to pull it. The `.actrc` uses `forcePull=true` by default. Let me check:
+[Tool: Bash] cat .actrc
+[Result] -P ubuntu-latest=act-ubuntu-pwsh:latest
+[Tool: Bash] act push --rm --pull=false 2>&1 | tee act-result.txt; echo "ACT_EXIT:$?"
+[Result] time="2026-04-10T00:57:20-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+time="2026-04-10T00:57:20-04:00" level=warning msg="unable to get git ref: reference not found"
+time="2026-04-10T00:57:20-04:00" level=warning msg="unable to get git revision: reference not found"
+[Artifact Cleanup Script/Run Pester Tests] ⭐ Run Set up job
+[Artifact Cleanup Script/Run Pester Tests] 🚀  Start image=act-ubuntu-pwsh:latest
+[Artifact Cleanup Script/Run Pester Tests]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Artifact Cleanup Script/Run Pester Tests]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Run Pester Tests]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Run Pester Tests]   🐳  docker exec cmd=[node --n
+[Assistant] Two issues: `$script:BaseDate` and `New-MockArtifact` need to be in `BeforeAll`, and the Format test fixture is missing `CreatedAt`. Let me fix the test file:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/17-artifact-cleanup-script/powershell-sonnet/ArtifactCleanup.Tests.ps1", "content": "# Pester tests fo
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-09_152435/17-artifact-cleanup-script/powershell-sonnet/ArtifactCleanup.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/artifact-cleanup-script.yml && echo "actionlint OK"
+[Result] actionlint OK
+[Tool: Bash] act push --rm --pull=false 2>&1 | tee act-result.txt; echo "ACT_EXIT:$?"
+[Result] time="2026-04-10T00:59:39-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+time="2026-04-10T00:59:39-04:00" level=warning msg="unable to get git ref: reference not found"
+time="2026-04-10T00:59:39-04:00" level=warning msg="unable to get git revision: reference not found"
+[Artifact Cleanup Script/Run Pester Tests] ⭐ Run Set up job
+[Artifact Cleanup Script/Run Pester Tests] 🚀  Start image=act-ubuntu-pwsh:latest
+[Artifact Cleanup Script/Run Pester Tests]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Artifact Cleanup Script/Run Pester Tests]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Run Pester Tests]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Run Pester Tests]   🐳  docker exec cmd=[node --n
+[Assistant] All 16 tests pass and the job succeeds. The output shows:
+- `Tests Passed: 16, Failed: 0`
+- Demo run: `DELETED_COUNT=4`, `RETAINED_COUNT=2`, `SPACE_RECLAIMED_MB=435`
+- `Job succeeded`
+
+`act-result.txt` is present with the full output. Done.
