@@ -1,27 +1,27 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-10 01:06:16 AM ET
+**Last updated:** 2026-04-10 01:07:16 AM ET
 
-**Status:** 54/64 runs completed, 10 remaining
-**Total cost so far:** $71.22
-**Total agent time so far:** 455.1 min
+**Status:** 55/64 runs completed, 9 remaining
+**Total cost so far:** $71.99
+**Total agent time so far:** 462.3 min
 
 ## Observations
 
 - **Fastest (avg):** typescript-bun/opus — 6.7min, then default/opus — 6.8min
-- **Slowest (avg):** powershell/sonnet — 11.0min, then bash/sonnet — 10.1min
+- **Slowest (avg):** powershell/sonnet — 11.0min, then bash/sonnet — 9.6min
 - **Cheapest (avg):** default/sonnet — $1.13, then typescript-bun/sonnet — $1.16
 - **Most expensive (avg):** bash/opus — $1.49, then powershell/opus — $1.48
 
-- **Estimated time remaining:** 84.3min
-- **Estimated total cost:** $84.41
+- **Estimated time remaining:** 75.6min
+- **Estimated total cost:** $83.77
 
 ## Comparison by Language/Model
 
 | Mode | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost |
 |------|-------|------|-------------|--------------------------|------------|-----------|----------|------------|
 | bash | opus | 7 | 7.7min | 7.1min | 1.7 | 44 | $1.49 | $10.41 |
-| bash | sonnet | 6 | 10.1min | 9.7min | 3.8 | 37 | $1.31 | $7.84 |
+| bash | sonnet | 7 | 9.6min | 9.3min | 3.4 | 36 | $1.23 | $8.61 |
 | default | opus | 7 | 6.8min | 6.8min | 1.6 | 34 | $1.44 | $10.06 |
 | default | sonnet | 7 | 8.5min | 7.9min | 2.6 | 36 | $1.13 | $7.90 |
 | powershell | opus | 7 | 7.6min | 7.4min | 1.7 | 34 | $1.48 | $10.38 |
@@ -37,9 +37,9 @@
 |------|-------|------|-------------|--------------------------|------------|-----------|----------|------------|
 | default | sonnet | 7 | 8.5min | 7.9min | 2.6 | 36 | $1.13 | $7.90 |
 | typescript-bun | sonnet | 6 | 9.5min | 8.0min | 1.8 | 37 | $1.16 | $6.94 |
+| bash | sonnet | 7 | 9.6min | 9.3min | 3.4 | 36 | $1.23 | $8.61 |
 | typescript-bun | opus | 7 | 6.7min | 5.7min | 1.7 | 37 | $1.26 | $8.81 |
 | powershell | sonnet | 7 | 11.0min | 9.4min | 1.4 | 38 | $1.27 | $8.88 |
-| bash | sonnet | 6 | 10.1min | 9.7min | 3.8 | 37 | $1.31 | $7.84 |
 | default | opus | 7 | 6.8min | 6.8min | 1.6 | 34 | $1.44 | $10.06 |
 | powershell | opus | 7 | 7.6min | 7.4min | 1.7 | 34 | $1.48 | $10.38 |
 | bash | opus | 7 | 7.7min | 7.1min | 1.7 | 44 | $1.49 | $10.41 |
@@ -57,7 +57,7 @@
 | bash | opus | 7 | 7.7min | 7.1min | 1.7 | 44 | $1.49 | $10.41 |
 | default | sonnet | 7 | 8.5min | 7.9min | 2.6 | 36 | $1.13 | $7.90 |
 | typescript-bun | sonnet | 6 | 9.5min | 8.0min | 1.8 | 37 | $1.16 | $6.94 |
-| bash | sonnet | 6 | 10.1min | 9.7min | 3.8 | 37 | $1.31 | $7.84 |
+| bash | sonnet | 7 | 9.6min | 9.3min | 3.4 | 36 | $1.23 | $8.61 |
 | powershell | sonnet | 7 | 11.0min | 9.4min | 1.4 | 38 | $1.27 | $8.88 |
 
 </details>
@@ -73,8 +73,8 @@
 | powershell | opus | 7 | 7.6min | 7.4min | 1.7 | 34 | $1.48 | $10.38 |
 | default | sonnet | 7 | 8.5min | 7.9min | 2.6 | 36 | $1.13 | $7.90 |
 | typescript-bun | sonnet | 6 | 9.5min | 8.0min | 1.8 | 37 | $1.16 | $6.94 |
+| bash | sonnet | 7 | 9.6min | 9.3min | 3.4 | 36 | $1.23 | $8.61 |
 | powershell | sonnet | 7 | 11.0min | 9.4min | 1.4 | 38 | $1.27 | $8.88 |
-| bash | sonnet | 6 | 10.1min | 9.7min | 3.8 | 37 | $1.31 | $7.84 |
 
 </details>
 
@@ -90,7 +90,7 @@
 | typescript-bun | opus | 7 | 6.7min | 5.7min | 1.7 | 37 | $1.26 | $8.81 |
 | typescript-bun | sonnet | 6 | 9.5min | 8.0min | 1.8 | 37 | $1.16 | $6.94 |
 | default | sonnet | 7 | 8.5min | 7.9min | 2.6 | 36 | $1.13 | $7.90 |
-| bash | sonnet | 6 | 10.1min | 9.7min | 3.8 | 37 | $1.31 | $7.84 |
+| bash | sonnet | 7 | 9.6min | 9.3min | 3.4 | 36 | $1.23 | $8.61 |
 
 </details>
 
@@ -102,8 +102,8 @@
 | default | opus | 7 | 6.8min | 6.8min | 1.6 | 34 | $1.44 | $10.06 |
 | powershell | opus | 7 | 7.6min | 7.4min | 1.7 | 34 | $1.48 | $10.38 |
 | default | sonnet | 7 | 8.5min | 7.9min | 2.6 | 36 | $1.13 | $7.90 |
+| bash | sonnet | 7 | 9.6min | 9.3min | 3.4 | 36 | $1.23 | $8.61 |
 | typescript-bun | opus | 7 | 6.7min | 5.7min | 1.7 | 37 | $1.26 | $8.81 |
-| bash | sonnet | 6 | 10.1min | 9.7min | 3.8 | 37 | $1.31 | $7.84 |
 | typescript-bun | sonnet | 6 | 9.5min | 8.0min | 1.8 | 37 | $1.16 | $6.94 |
 | powershell | sonnet | 7 | 11.0min | 9.4min | 1.4 | 38 | $1.27 | $8.88 |
 | bash | opus | 7 | 7.7min | 7.1min | 1.7 | 44 | $1.49 | $10.41 |
@@ -120,7 +120,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | Mode | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time | Test Run Time | % of Test Time Saved |
 |------|-------|-------|--------|------|------------|-----------|----------|-----------|-----------|-----------|---------------|----------------------|
 | bash | opus | 82 | 3 | 3.7% | 0.6min | 0.1% | 0.6min | 0.1% | 0.0min | 0.0% | 6.8min | 0.4% |
-| bash | sonnet | 69 | 7 | 10.1% | 1.4min | 0.3% | 0.2min | 0.0% | 1.2min | 0.3% | 6.2min | 19.9% |
+| bash | sonnet | 78 | 7 | 9.0% | 1.4min | 0.3% | 0.2min | 0.0% | 1.2min | 0.3% | 6.4min | 19.2% |
 | default | opus | 68 | 14 | 20.6% | 1.9min | 0.4% | 0.2min | 0.1% | 1.6min | 0.4% | 2.5min | 65.2% |
 | default | sonnet | 69 | 1 | 1.4% | 0.1min | 0.0% | 0.2min | 0.0% | -0.1min | -0.0% | 3.3min | -1.8% |
 | powershell | opus | 79 | 10 | 12.7% | 5.8min | 1.3% | 0.6min | 0.1% | 5.2min | 1.1% | 5.5min | 94.3% |
@@ -137,7 +137,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | powershell | opus | 79 | 10 | 12.7% | 5.8min | 1.3% | 0.6min | 0.1% | 5.2min | 1.1% | 5.5min | 94.3% |
 | typescript-bun | sonnet | 69 | 35 | 50.7% | 4.7min | 1.0% | 2.0min | 0.4% | 2.7min | 0.6% | 4.1min | 65.4% |
 | default | opus | 68 | 14 | 20.6% | 1.9min | 0.4% | 0.2min | 0.1% | 1.6min | 0.4% | 2.5min | 65.2% |
-| bash | sonnet | 69 | 7 | 10.1% | 1.4min | 0.3% | 0.2min | 0.0% | 1.2min | 0.3% | 6.2min | 19.9% |
+| bash | sonnet | 78 | 7 | 9.0% | 1.4min | 0.3% | 0.2min | 0.0% | 1.2min | 0.3% | 6.4min | 19.2% |
 | bash | opus | 82 | 3 | 3.7% | 0.6min | 0.1% | 0.6min | 0.1% | 0.0min | 0.0% | 6.8min | 0.4% |
 | typescript-bun | opus | 51 | 27 | 52.9% | 3.6min | 0.8% | 3.6min | 0.8% | -0.0min | -0.0% | 4.5min | -0.8% |
 | default | sonnet | 69 | 1 | 1.4% | 0.1min | 0.0% | 0.2min | 0.0% | -0.1min | -0.0% | 3.3min | -1.8% |
@@ -153,7 +153,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | powershell | opus | 79 | 10 | 12.7% | 5.8min | 1.3% | 0.6min | 0.1% | 5.2min | 1.1% | 5.5min | 94.3% |
 | typescript-bun | sonnet | 69 | 35 | 50.7% | 4.7min | 1.0% | 2.0min | 0.4% | 2.7min | 0.6% | 4.1min | 65.4% |
 | default | opus | 68 | 14 | 20.6% | 1.9min | 0.4% | 0.2min | 0.1% | 1.6min | 0.4% | 2.5min | 65.2% |
-| bash | sonnet | 69 | 7 | 10.1% | 1.4min | 0.3% | 0.2min | 0.0% | 1.2min | 0.3% | 6.2min | 19.9% |
+| bash | sonnet | 78 | 7 | 9.0% | 1.4min | 0.3% | 0.2min | 0.0% | 1.2min | 0.3% | 6.4min | 19.2% |
 | bash | opus | 82 | 3 | 3.7% | 0.6min | 0.1% | 0.6min | 0.1% | 0.0min | 0.0% | 6.8min | 0.4% |
 | typescript-bun | opus | 51 | 27 | 52.9% | 3.6min | 0.8% | 3.6min | 0.8% | -0.0min | -0.0% | 4.5min | -0.8% |
 | powershell | sonnet | 75 | 1 | 1.3% | 0.6min | 0.1% | 0.7min | 0.2% | -0.1min | -0.0% | 8.8min | -1.6% |
@@ -170,7 +170,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | typescript-bun | sonnet | 69 | 35 | 50.7% | 4.7min | 1.0% | 2.0min | 0.4% | 2.7min | 0.6% | 4.1min | 65.4% |
 | default | opus | 68 | 14 | 20.6% | 1.9min | 0.4% | 0.2min | 0.1% | 1.6min | 0.4% | 2.5min | 65.2% |
 | powershell | opus | 79 | 10 | 12.7% | 5.8min | 1.3% | 0.6min | 0.1% | 5.2min | 1.1% | 5.5min | 94.3% |
-| bash | sonnet | 69 | 7 | 10.1% | 1.4min | 0.3% | 0.2min | 0.0% | 1.2min | 0.3% | 6.2min | 19.9% |
+| bash | sonnet | 78 | 7 | 9.0% | 1.4min | 0.3% | 0.2min | 0.0% | 1.2min | 0.3% | 6.4min | 19.2% |
 | bash | opus | 82 | 3 | 3.7% | 0.6min | 0.1% | 0.6min | 0.1% | 0.0min | 0.0% | 6.8min | 0.4% |
 | default | sonnet | 69 | 1 | 1.4% | 0.1min | 0.0% | 0.2min | 0.0% | -0.1min | -0.0% | 3.3min | -1.8% |
 | powershell | sonnet | 75 | 1 | 1.3% | 0.6min | 0.1% | 0.7min | 0.2% | -0.1min | -0.0% | 8.8min | -1.6% |
@@ -181,25 +181,26 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Trap | Mode | Model | Fell In | Time Lost | % of Time | $ Lost | % of $ |
 |------|------|-------|---------|-----------|-----------|--------|--------|
-| ts-type-error-fix-cycles | typescript-bun | opus | 6 | 5.4min | 1.2% | $1.01 | 1.42% |
-| ts-type-error-fix-cycles | typescript-bun | sonnet | 6 | 7.0min | 1.5% | $0.87 | 1.22% |
-| fixture-rework | bash | opus | 3 | 2.8min | 0.6% | $0.59 | 0.83% |
+| ts-type-error-fix-cycles | typescript-bun | opus | 6 | 5.4min | 1.2% | $1.01 | 1.41% |
+| ts-type-error-fix-cycles | typescript-bun | sonnet | 6 | 7.0min | 1.5% | $0.87 | 1.21% |
+| fixture-rework | bash | opus | 3 | 2.8min | 0.6% | $0.59 | 0.82% |
 | fixture-rework | bash | sonnet | 1 | 0.5min | 0.1% | $0.06 | 0.08% |
-| fixture-rework | powershell | opus | 1 | 1.5min | 0.3% | $0.37 | 0.52% |
-| fixture-rework | powershell | sonnet | 2 | 2.5min | 0.5% | $0.36 | 0.51% |
+| fixture-rework | powershell | opus | 1 | 1.5min | 0.3% | $0.37 | 0.51% |
+| fixture-rework | powershell | sonnet | 2 | 2.5min | 0.5% | $0.36 | 0.50% |
 | fixture-rework | typescript-bun | opus | 1 | 0.8min | 0.2% | $0.14 | 0.19% |
 | repeated-test-reruns | default | sonnet | 1 | 0.7min | 0.1% | $0.08 | 0.11% |
-| repeated-test-reruns | powershell | sonnet | 4 | 4.3min | 1.0% | $0.55 | 0.77% |
+| repeated-test-reruns | powershell | sonnet | 4 | 4.3min | 0.9% | $0.55 | 0.77% |
 | repeated-test-reruns | typescript-bun | sonnet | 1 | 1.0min | 0.2% | $0.14 | 0.20% |
-| act-push-debug-loops | bash | opus | 1 | 0.8min | 0.2% | $0.11 | 0.16% |
+| act-push-debug-loops | bash | opus | 1 | 0.8min | 0.2% | $0.11 | 0.15% |
+| act-push-debug-loops | bash | sonnet | 1 | 0.4min | 0.1% | $0.05 | 0.07% |
 | act-push-debug-loops | default | sonnet | 2 | 2.2min | 0.5% | $0.28 | 0.39% |
 | act-push-debug-loops | typescript-bun | opus | 1 | 0.5min | 0.1% | $0.09 | 0.13% |
-| act-push-debug-loops | typescript-bun | sonnet | 1 | 1.2min | 0.3% | $0.13 | 0.19% |
+| act-push-debug-loops | typescript-bun | sonnet | 1 | 1.2min | 0.3% | $0.13 | 0.18% |
 | docker-pwsh-install | powershell | sonnet | 2 | 4.5min | 1.0% | $0.57 | 0.79% |
 | bats-setup-issues | bash | sonnet | 2 | 1.8min | 0.4% | $0.25 | 0.35% |
 | actionlint-fix-cycles | bash | opus | 1 | 0.7min | 0.1% | $0.09 | 0.12% |
 | actionlint-fix-cycles | default | sonnet | 1 | 0.7min | 0.1% | $0.09 | 0.12% |
-| act-permission-path-errors | default | sonnet | 1 | 0.8min | 0.2% | $0.09 | 0.13% |
+| act-permission-path-errors | default | sonnet | 1 | 0.8min | 0.2% | $0.09 | 0.12% |
 
 
 <details>
@@ -207,25 +208,26 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Trap | Mode | Model | Fell In | Time Lost | % of Time | $ Lost | % of $ |
 |------|------|-------|---------|-----------|-----------|--------|--------|
+| act-push-debug-loops | bash | sonnet | 1 | 0.4min | 0.1% | $0.05 | 0.07% |
 | fixture-rework | bash | sonnet | 1 | 0.5min | 0.1% | $0.06 | 0.08% |
 | act-push-debug-loops | typescript-bun | opus | 1 | 0.5min | 0.1% | $0.09 | 0.13% |
 | repeated-test-reruns | default | sonnet | 1 | 0.7min | 0.1% | $0.08 | 0.11% |
 | actionlint-fix-cycles | bash | opus | 1 | 0.7min | 0.1% | $0.09 | 0.12% |
 | actionlint-fix-cycles | default | sonnet | 1 | 0.7min | 0.1% | $0.09 | 0.12% |
 | fixture-rework | typescript-bun | opus | 1 | 0.8min | 0.2% | $0.14 | 0.19% |
-| act-permission-path-errors | default | sonnet | 1 | 0.8min | 0.2% | $0.09 | 0.13% |
-| act-push-debug-loops | bash | opus | 1 | 0.8min | 0.2% | $0.11 | 0.16% |
+| act-permission-path-errors | default | sonnet | 1 | 0.8min | 0.2% | $0.09 | 0.12% |
+| act-push-debug-loops | bash | opus | 1 | 0.8min | 0.2% | $0.11 | 0.15% |
 | repeated-test-reruns | typescript-bun | sonnet | 1 | 1.0min | 0.2% | $0.14 | 0.20% |
-| act-push-debug-loops | typescript-bun | sonnet | 1 | 1.2min | 0.3% | $0.13 | 0.19% |
-| fixture-rework | powershell | opus | 1 | 1.5min | 0.3% | $0.37 | 0.52% |
+| act-push-debug-loops | typescript-bun | sonnet | 1 | 1.2min | 0.3% | $0.13 | 0.18% |
+| fixture-rework | powershell | opus | 1 | 1.5min | 0.3% | $0.37 | 0.51% |
 | bats-setup-issues | bash | sonnet | 2 | 1.8min | 0.4% | $0.25 | 0.35% |
 | act-push-debug-loops | default | sonnet | 2 | 2.2min | 0.5% | $0.28 | 0.39% |
-| fixture-rework | powershell | sonnet | 2 | 2.5min | 0.5% | $0.36 | 0.51% |
-| fixture-rework | bash | opus | 3 | 2.8min | 0.6% | $0.59 | 0.83% |
-| repeated-test-reruns | powershell | sonnet | 4 | 4.3min | 1.0% | $0.55 | 0.77% |
+| fixture-rework | powershell | sonnet | 2 | 2.5min | 0.5% | $0.36 | 0.50% |
+| fixture-rework | bash | opus | 3 | 2.8min | 0.6% | $0.59 | 0.82% |
+| repeated-test-reruns | powershell | sonnet | 4 | 4.3min | 0.9% | $0.55 | 0.77% |
 | docker-pwsh-install | powershell | sonnet | 2 | 4.5min | 1.0% | $0.57 | 0.79% |
-| ts-type-error-fix-cycles | typescript-bun | opus | 6 | 5.4min | 1.2% | $1.01 | 1.42% |
-| ts-type-error-fix-cycles | typescript-bun | sonnet | 6 | 7.0min | 1.5% | $0.87 | 1.22% |
+| ts-type-error-fix-cycles | typescript-bun | opus | 6 | 5.4min | 1.2% | $1.01 | 1.41% |
+| ts-type-error-fix-cycles | typescript-bun | sonnet | 6 | 7.0min | 1.5% | $0.87 | 1.21% |
 
 </details>
 
@@ -234,25 +236,26 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Trap | Mode | Model | Fell In | Time Lost | % of Time | $ Lost | % of $ |
 |------|------|-------|---------|-----------|-----------|--------|--------|
+| act-push-debug-loops | bash | sonnet | 1 | 0.4min | 0.1% | $0.05 | 0.07% |
 | fixture-rework | bash | sonnet | 1 | 0.5min | 0.1% | $0.06 | 0.08% |
 | repeated-test-reruns | default | sonnet | 1 | 0.7min | 0.1% | $0.08 | 0.11% |
 | actionlint-fix-cycles | default | sonnet | 1 | 0.7min | 0.1% | $0.09 | 0.12% |
 | actionlint-fix-cycles | bash | opus | 1 | 0.7min | 0.1% | $0.09 | 0.12% |
-| act-permission-path-errors | default | sonnet | 1 | 0.8min | 0.2% | $0.09 | 0.13% |
+| act-permission-path-errors | default | sonnet | 1 | 0.8min | 0.2% | $0.09 | 0.12% |
 | act-push-debug-loops | typescript-bun | opus | 1 | 0.5min | 0.1% | $0.09 | 0.13% |
-| act-push-debug-loops | bash | opus | 1 | 0.8min | 0.2% | $0.11 | 0.16% |
-| act-push-debug-loops | typescript-bun | sonnet | 1 | 1.2min | 0.3% | $0.13 | 0.19% |
+| act-push-debug-loops | bash | opus | 1 | 0.8min | 0.2% | $0.11 | 0.15% |
+| act-push-debug-loops | typescript-bun | sonnet | 1 | 1.2min | 0.3% | $0.13 | 0.18% |
 | fixture-rework | typescript-bun | opus | 1 | 0.8min | 0.2% | $0.14 | 0.19% |
 | repeated-test-reruns | typescript-bun | sonnet | 1 | 1.0min | 0.2% | $0.14 | 0.20% |
 | bats-setup-issues | bash | sonnet | 2 | 1.8min | 0.4% | $0.25 | 0.35% |
 | act-push-debug-loops | default | sonnet | 2 | 2.2min | 0.5% | $0.28 | 0.39% |
-| fixture-rework | powershell | sonnet | 2 | 2.5min | 0.5% | $0.36 | 0.51% |
-| fixture-rework | powershell | opus | 1 | 1.5min | 0.3% | $0.37 | 0.52% |
-| repeated-test-reruns | powershell | sonnet | 4 | 4.3min | 1.0% | $0.55 | 0.77% |
+| fixture-rework | powershell | sonnet | 2 | 2.5min | 0.5% | $0.36 | 0.50% |
+| fixture-rework | powershell | opus | 1 | 1.5min | 0.3% | $0.37 | 0.51% |
+| repeated-test-reruns | powershell | sonnet | 4 | 4.3min | 0.9% | $0.55 | 0.77% |
 | docker-pwsh-install | powershell | sonnet | 2 | 4.5min | 1.0% | $0.57 | 0.79% |
-| fixture-rework | bash | opus | 3 | 2.8min | 0.6% | $0.59 | 0.83% |
-| ts-type-error-fix-cycles | typescript-bun | sonnet | 6 | 7.0min | 1.5% | $0.87 | 1.22% |
-| ts-type-error-fix-cycles | typescript-bun | opus | 6 | 5.4min | 1.2% | $1.01 | 1.42% |
+| fixture-rework | bash | opus | 3 | 2.8min | 0.6% | $0.59 | 0.82% |
+| ts-type-error-fix-cycles | typescript-bun | sonnet | 6 | 7.0min | 1.5% | $0.87 | 1.21% |
+| ts-type-error-fix-cycles | typescript-bun | opus | 6 | 5.4min | 1.2% | $1.01 | 1.41% |
 
 </details>
 
@@ -262,24 +265,25 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | Trap | Mode | Model | Fell In | Time Lost | % of Time | $ Lost | % of $ |
 |------|------|-------|---------|-----------|-----------|--------|--------|
 | fixture-rework | bash | sonnet | 1 | 0.5min | 0.1% | $0.06 | 0.08% |
-| fixture-rework | powershell | opus | 1 | 1.5min | 0.3% | $0.37 | 0.52% |
+| fixture-rework | powershell | opus | 1 | 1.5min | 0.3% | $0.37 | 0.51% |
 | fixture-rework | typescript-bun | opus | 1 | 0.8min | 0.2% | $0.14 | 0.19% |
 | repeated-test-reruns | default | sonnet | 1 | 0.7min | 0.1% | $0.08 | 0.11% |
 | repeated-test-reruns | typescript-bun | sonnet | 1 | 1.0min | 0.2% | $0.14 | 0.20% |
-| act-push-debug-loops | bash | opus | 1 | 0.8min | 0.2% | $0.11 | 0.16% |
+| act-push-debug-loops | bash | opus | 1 | 0.8min | 0.2% | $0.11 | 0.15% |
+| act-push-debug-loops | bash | sonnet | 1 | 0.4min | 0.1% | $0.05 | 0.07% |
 | act-push-debug-loops | typescript-bun | opus | 1 | 0.5min | 0.1% | $0.09 | 0.13% |
-| act-push-debug-loops | typescript-bun | sonnet | 1 | 1.2min | 0.3% | $0.13 | 0.19% |
+| act-push-debug-loops | typescript-bun | sonnet | 1 | 1.2min | 0.3% | $0.13 | 0.18% |
 | actionlint-fix-cycles | bash | opus | 1 | 0.7min | 0.1% | $0.09 | 0.12% |
 | actionlint-fix-cycles | default | sonnet | 1 | 0.7min | 0.1% | $0.09 | 0.12% |
-| act-permission-path-errors | default | sonnet | 1 | 0.8min | 0.2% | $0.09 | 0.13% |
-| fixture-rework | powershell | sonnet | 2 | 2.5min | 0.5% | $0.36 | 0.51% |
+| act-permission-path-errors | default | sonnet | 1 | 0.8min | 0.2% | $0.09 | 0.12% |
+| fixture-rework | powershell | sonnet | 2 | 2.5min | 0.5% | $0.36 | 0.50% |
 | act-push-debug-loops | default | sonnet | 2 | 2.2min | 0.5% | $0.28 | 0.39% |
 | docker-pwsh-install | powershell | sonnet | 2 | 4.5min | 1.0% | $0.57 | 0.79% |
 | bats-setup-issues | bash | sonnet | 2 | 1.8min | 0.4% | $0.25 | 0.35% |
-| fixture-rework | bash | opus | 3 | 2.8min | 0.6% | $0.59 | 0.83% |
-| repeated-test-reruns | powershell | sonnet | 4 | 4.3min | 1.0% | $0.55 | 0.77% |
-| ts-type-error-fix-cycles | typescript-bun | opus | 6 | 5.4min | 1.2% | $1.01 | 1.42% |
-| ts-type-error-fix-cycles | typescript-bun | sonnet | 6 | 7.0min | 1.5% | $0.87 | 1.22% |
+| fixture-rework | bash | opus | 3 | 2.8min | 0.6% | $0.59 | 0.82% |
+| repeated-test-reruns | powershell | sonnet | 4 | 4.3min | 0.9% | $0.55 | 0.77% |
+| ts-type-error-fix-cycles | typescript-bun | opus | 6 | 5.4min | 1.2% | $1.01 | 1.41% |
+| ts-type-error-fix-cycles | typescript-bun | sonnet | 6 | 7.0min | 1.5% | $0.87 | 1.21% |
 
 </details>
 
@@ -307,14 +311,14 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Mode | Model | Runs | Trapped | Trap Rate | Traps | Time Lost | % of Time | $ Lost | % of $ |
 |------|-------|------|---------|-----------|-------|-----------|-----------|--------|--------|
-| bash | opus | 7 | 4 | 57% | 5 | 4.2min | 0.9% | $0.79 | 1.11% |
-| bash | sonnet | 6 | 3 | 50% | 3 | 2.2min | 0.5% | $0.31 | 0.43% |
+| bash | opus | 7 | 4 | 57% | 5 | 4.2min | 0.9% | $0.79 | 1.10% |
+| bash | sonnet | 7 | 4 | 57% | 4 | 2.7min | 0.6% | $0.36 | 0.50% |
 | default | opus | 7 | 0 | 0% | 0 | 0.0min | 0.0% | $0.00 | 0.00% |
-| default | sonnet | 7 | 3 | 43% | 5 | 4.2min | 0.9% | $0.54 | 0.76% |
-| powershell | opus | 7 | 1 | 14% | 1 | 1.5min | 0.3% | $0.37 | 0.52% |
-| powershell | sonnet | 7 | 6 | 86% | 8 | 11.3min | 2.5% | $1.48 | 2.07% |
-| typescript-bun | opus | 7 | 6 | 86% | 8 | 6.7min | 1.5% | $1.24 | 1.75% |
-| typescript-bun | sonnet | 6 | 6 | 100% | 8 | 9.2min | 2.0% | $1.14 | 1.61% |
+| default | sonnet | 7 | 3 | 43% | 5 | 4.2min | 0.9% | $0.54 | 0.75% |
+| powershell | opus | 7 | 1 | 14% | 1 | 1.5min | 0.3% | $0.37 | 0.51% |
+| powershell | sonnet | 7 | 6 | 86% | 8 | 11.3min | 2.5% | $1.48 | 2.05% |
+| typescript-bun | opus | 7 | 6 | 86% | 8 | 6.7min | 1.4% | $1.24 | 1.73% |
+| typescript-bun | sonnet | 6 | 6 | 100% | 8 | 9.2min | 2.0% | $1.14 | 1.59% |
 
 
 <details>
@@ -323,13 +327,13 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | Mode | Model | Runs | Trapped | Trap Rate | Traps | Time Lost | % of Time | $ Lost | % of $ |
 |------|-------|------|---------|-----------|-------|-----------|-----------|--------|--------|
 | default | opus | 7 | 0 | 0% | 0 | 0.0min | 0.0% | $0.00 | 0.00% |
-| powershell | opus | 7 | 1 | 14% | 1 | 1.5min | 0.3% | $0.37 | 0.52% |
-| bash | sonnet | 6 | 3 | 50% | 3 | 2.2min | 0.5% | $0.31 | 0.43% |
-| default | sonnet | 7 | 3 | 43% | 5 | 4.2min | 0.9% | $0.54 | 0.76% |
-| bash | opus | 7 | 4 | 57% | 5 | 4.2min | 0.9% | $0.79 | 1.11% |
-| typescript-bun | opus | 7 | 6 | 86% | 8 | 6.7min | 1.5% | $1.24 | 1.75% |
-| typescript-bun | sonnet | 6 | 6 | 100% | 8 | 9.2min | 2.0% | $1.14 | 1.61% |
-| powershell | sonnet | 7 | 6 | 86% | 8 | 11.3min | 2.5% | $1.48 | 2.07% |
+| powershell | opus | 7 | 1 | 14% | 1 | 1.5min | 0.3% | $0.37 | 0.51% |
+| bash | sonnet | 7 | 4 | 57% | 4 | 2.7min | 0.6% | $0.36 | 0.50% |
+| default | sonnet | 7 | 3 | 43% | 5 | 4.2min | 0.9% | $0.54 | 0.75% |
+| bash | opus | 7 | 4 | 57% | 5 | 4.2min | 0.9% | $0.79 | 1.10% |
+| typescript-bun | opus | 7 | 6 | 86% | 8 | 6.7min | 1.4% | $1.24 | 1.73% |
+| typescript-bun | sonnet | 6 | 6 | 100% | 8 | 9.2min | 2.0% | $1.14 | 1.59% |
+| powershell | sonnet | 7 | 6 | 86% | 8 | 11.3min | 2.5% | $1.48 | 2.05% |
 
 </details>
 
@@ -339,13 +343,13 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | Mode | Model | Runs | Trapped | Trap Rate | Traps | Time Lost | % of Time | $ Lost | % of $ |
 |------|-------|------|---------|-----------|-------|-----------|-----------|--------|--------|
 | default | opus | 7 | 0 | 0% | 0 | 0.0min | 0.0% | $0.00 | 0.00% |
-| bash | sonnet | 6 | 3 | 50% | 3 | 2.2min | 0.5% | $0.31 | 0.43% |
-| powershell | opus | 7 | 1 | 14% | 1 | 1.5min | 0.3% | $0.37 | 0.52% |
-| default | sonnet | 7 | 3 | 43% | 5 | 4.2min | 0.9% | $0.54 | 0.76% |
-| bash | opus | 7 | 4 | 57% | 5 | 4.2min | 0.9% | $0.79 | 1.11% |
-| typescript-bun | sonnet | 6 | 6 | 100% | 8 | 9.2min | 2.0% | $1.14 | 1.61% |
-| typescript-bun | opus | 7 | 6 | 86% | 8 | 6.7min | 1.5% | $1.24 | 1.75% |
-| powershell | sonnet | 7 | 6 | 86% | 8 | 11.3min | 2.5% | $1.48 | 2.07% |
+| bash | sonnet | 7 | 4 | 57% | 4 | 2.7min | 0.6% | $0.36 | 0.50% |
+| powershell | opus | 7 | 1 | 14% | 1 | 1.5min | 0.3% | $0.37 | 0.51% |
+| default | sonnet | 7 | 3 | 43% | 5 | 4.2min | 0.9% | $0.54 | 0.75% |
+| bash | opus | 7 | 4 | 57% | 5 | 4.2min | 0.9% | $0.79 | 1.10% |
+| typescript-bun | sonnet | 6 | 6 | 100% | 8 | 9.2min | 2.0% | $1.14 | 1.59% |
+| typescript-bun | opus | 7 | 6 | 86% | 8 | 6.7min | 1.4% | $1.24 | 1.73% |
+| powershell | sonnet | 7 | 6 | 86% | 8 | 11.3min | 2.5% | $1.48 | 2.05% |
 
 </details>
 
@@ -355,13 +359,13 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | Mode | Model | Runs | Trapped | Trap Rate | Traps | Time Lost | % of Time | $ Lost | % of $ |
 |------|-------|------|---------|-----------|-------|-----------|-----------|--------|--------|
 | default | opus | 7 | 0 | 0% | 0 | 0.0min | 0.0% | $0.00 | 0.00% |
-| powershell | opus | 7 | 1 | 14% | 1 | 1.5min | 0.3% | $0.37 | 0.52% |
-| default | sonnet | 7 | 3 | 43% | 5 | 4.2min | 0.9% | $0.54 | 0.76% |
-| bash | sonnet | 6 | 3 | 50% | 3 | 2.2min | 0.5% | $0.31 | 0.43% |
-| bash | opus | 7 | 4 | 57% | 5 | 4.2min | 0.9% | $0.79 | 1.11% |
-| powershell | sonnet | 7 | 6 | 86% | 8 | 11.3min | 2.5% | $1.48 | 2.07% |
-| typescript-bun | opus | 7 | 6 | 86% | 8 | 6.7min | 1.5% | $1.24 | 1.75% |
-| typescript-bun | sonnet | 6 | 6 | 100% | 8 | 9.2min | 2.0% | $1.14 | 1.61% |
+| powershell | opus | 7 | 1 | 14% | 1 | 1.5min | 0.3% | $0.37 | 0.51% |
+| default | sonnet | 7 | 3 | 43% | 5 | 4.2min | 0.9% | $0.54 | 0.75% |
+| bash | opus | 7 | 4 | 57% | 5 | 4.2min | 0.9% | $0.79 | 1.10% |
+| bash | sonnet | 7 | 4 | 57% | 4 | 2.7min | 0.6% | $0.36 | 0.50% |
+| powershell | sonnet | 7 | 6 | 86% | 8 | 11.3min | 2.5% | $1.48 | 2.05% |
+| typescript-bun | opus | 7 | 6 | 86% | 8 | 6.7min | 1.4% | $1.24 | 1.73% |
+| typescript-bun | sonnet | 6 | 6 | 100% | 8 | 9.2min | 2.0% | $1.14 | 1.59% |
 
 </details>
 
@@ -370,7 +374,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | Status | Runs | $ Saved | % of $ |
 |--------|------|---------|--------|
 | Full hit (100%) | 1 | $0.06 | 0.08% |
-| Partial | 51 | $6.26 | 8.79% |
+| Partial | 52 | $6.30 | 8.75% |
 | Miss | 2 | $0.00 | 0.00% |
 
 ## Per-Run Results
@@ -431,6 +435,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | Artifact Cleanup Script | typescript-bun | opus | 7.7min | 34 | 1 | $1.68 | typescript | ok |
 | Artifact Cleanup Script | default | sonnet | 6.3min | 31 | 2 | $0.83 | python | ok |
 | Artifact Cleanup Script | powershell | sonnet | 12.0min | 15 | 0 | $0.99 | powershell | ok |
+| Artifact Cleanup Script | bash | sonnet | 7.2min | 35 | 1 | $0.77 | bash | ok |
 
 
 <details>
@@ -440,6 +445,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 |------|------|-------|----------|-------|--------|------|----------|--------|
 | Docker Image Tag Generator | bash | sonnet | 4.5min | 26 | 2 | $0.61 | bash | ok |
 | Test Results Aggregator | typescript-bun | opus | 2.3min | 29 | 1 | $0.61 | typescript | ok |
+| Artifact Cleanup Script | bash | sonnet | 7.2min | 35 | 1 | $0.77 | bash | ok |
 | Docker Image Tag Generator | bash | opus | 3.7min | 28 | 1 | $0.78 | bash | ok |
 | Artifact Cleanup Script | default | sonnet | 6.3min | 31 | 2 | $0.83 | python | ok |
 | PR Label Assigner | typescript-bun | sonnet | 8.1min | 43 | 1 | $0.89 | typescript | ok |
@@ -520,6 +526,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | Dependency License Checker | bash | opus | 6.9min | 55 | 3 | $1.50 | bash | ok |
 | Semantic Version Bumper | powershell | opus | 6.9min | 27 | 0 | $1.04 | powershell | ok |
 | Semantic Version Bumper | default | opus | 7.1min | 28 | 1 | $1.33 | python | ok |
+| Artifact Cleanup Script | bash | sonnet | 7.2min | 35 | 1 | $0.77 | bash | ok |
 | Semantic Version Bumper | default | sonnet | 7.3min | 46 | 1 | $0.99 | python | ok |
 | Artifact Cleanup Script | typescript-bun | opus | 7.7min | 34 | 1 | $1.68 | typescript | ok |
 | PR Label Assigner | default | opus | 7.7min | 29 | 2 | $1.57 | python | ok |
@@ -583,6 +590,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | Environment Matrix Generator | bash | opus | 4.1min | 42 | 1 | $0.98 | bash | ok |
 | Environment Matrix Generator | powershell | sonnet | 11.5min | 54 | 1 | $1.46 | powershell | ok |
 | Artifact Cleanup Script | typescript-bun | opus | 7.7min | 34 | 1 | $1.68 | typescript | ok |
+| Artifact Cleanup Script | bash | sonnet | 7.2min | 35 | 1 | $0.77 | bash | ok |
 | PR Label Assigner | bash | opus | 5.6min | 42 | 2 | $1.16 | bash | ok |
 | PR Label Assigner | default | opus | 7.7min | 29 | 2 | $1.57 | python | ok |
 | PR Label Assigner | powershell | opus | 11.4min | 35 | 2 | $1.93 | powershell | ok |
@@ -651,6 +659,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | Docker Image Tag Generator | powershell | sonnet | 9.2min | 35 | 2 | $1.13 | powershell | ok |
 | Test Results Aggregator | default | opus | 5.7min | 35 | 3 | $1.27 | python | ok |
 | Test Results Aggregator | typescript-bun | sonnet | 10.9min | 35 | 1 | $1.41 | typescript | ok |
+| Artifact Cleanup Script | bash | sonnet | 7.2min | 35 | 1 | $0.77 | bash | ok |
 | Environment Matrix Generator | default | sonnet | 7.8min | 36 | 5 | $1.05 | python | ok |
 | Dependency License Checker | powershell | opus | 6.0min | 38 | 3 | $1.24 | powershell | ok |
 | Docker Image Tag Generator | typescript-bun | opus | 8.6min | 38 | 1 | $1.53 | typescript | ok |
