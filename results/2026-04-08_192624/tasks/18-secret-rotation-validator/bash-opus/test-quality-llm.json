@@ -1,0 +1,12 @@
+{
+  "coverage": 4,
+  "rigor": 3,
+  "design": 3,
+  "overall": 3,
+  "summary": "The suite covers all major scenarios \u2014 mixed status, all-ok, all-expired, warning classification, error handling, custom warning window, and workflow structure \u2014 making coverage reasonably good. However, rigor suffers from missing critical boundary conditions: no test for days_until == 0 (expires today), no test for days_until == warning_days exactly (the threshold boundary), no test for invalid date formats in the config, and no test verifying the required_by field content in output. The single-vs-multiple required_by services case is also untested. Design has notable issues: ACT_OUTPUT and ACT_EXIT are globals mutated by run_act_job, creating hidden coupling between tests and making parallel runs unsafe; setup uses a non-atomic file-existence check that would race under concurrency; there are zero unit tests for classify_secret or process_secrets \u2014 every test spins up a full Docker container via act, making the suite very slow and brittle when the container runtime is unavailable. The hardcoded days_since/days_until assertions (e.g., '\"days_since\": 463') are only valid if the workflow pins the date to 2026-04-09, which is an undocumented coupling between the bats assertions and the workflow fixture setup. The markdown vs JSON format switch is only lightly tested (mixed-status implicitly tests markdown, all-ok/all-expired test JSON), and there is no dedicated test asserting that -f markdown and -f json each produce correctly structured output. The 'act-result.txt exists' test is also order-dependent \u2014 it only passes after all the prior act tests have run, making it a fragile integration artifact check rather than an isolated assertion.",
+  "tqs": 3.3,
+  "judge_cost_usd": 0.0609,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 1931,
+  "judge_provider": "claude-cli"
+}

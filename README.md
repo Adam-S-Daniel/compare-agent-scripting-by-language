@@ -40,8 +40,12 @@ Each benchmark version defines a set of scripting tasks, language modes, and mod
 | `models.py` | Model IDs and token pricing ([single source of truth](models.py)) |
 | `runner.py` | Benchmark harness — invokes `claude -p`, collects metrics |
 | `generate_results.py` | Generates `results.md` reports from metrics; updates this README |
+| `test_quality.py` | Test quality evaluation — structural metrics + LLM-as-judge |
+| `llm_providers.py` | Pluggable LLM provider abstraction for evaluation tasks |
 | `hooks/syntax-check.py` | PostToolUse hook for syntax/lint checking (v3+) |
 | `Dockerfile.act` | Custom act container with pwsh/Pester pre-installed (v4+) |
+| `tests/` | Unit tests for repo code — run with `python3 -m pytest tests/ -v` |
+| `.github/workflows/ci.yml` | CI workflow — runs tests and import validation on push/PR |
 | `run-benchmark.sh` | One-command launcher with prerequisite checks |
 | `results/` | Structured output — metrics.json, generated code, console logs per run |
 | `workspaces/` | Temporary agent working directories (git-ignored) |
@@ -56,7 +60,6 @@ Each benchmark version defines a set of scripting tasks, language modes, and mod
 |-----|---------|------|------|---------|
 | **2026-04-09_152435** (latest) | [v4](benchmark-instructions-v4.md) | 64/64 | $86.90 | [results.md](results/2026-04-09_152435/results.md) |
 | 2026-04-08_192624 | [v3](benchmark-instructions-v3.md) | 64/64 | $85.10 | [results.md](results/2026-04-08_192624/results.md) |
-| 2026-04-08_170824 | ? | 0/? | — | — |
 | 2026-04-07_225702 | [v2](benchmark-instructions-v2.md) | 111/144 | $75.38 | [results.md](results/2026-04-07_225702/results.md) |
 | 2026-04-02_163146 | [v1](benchmark-instructions-v1.md) | 144/144 | $436.67 | [results.md](results/2026-04-02_163146/results.md) |
 <!-- END BENCHMARK RUNS -->
@@ -81,3 +84,41 @@ To regenerate all results reports:
 ```bash
 python3 generate_results.py --all
 ```
+
+## Test Quality Evaluation
+
+After a benchmark run, evaluate the quality of agent-generated test suites:
+
+```bash
+# Structural metrics only (fast, no LLM calls)
+python3 test_quality.py results/2026-04-08_192624
+
+# LLM-as-judge (requires a provider — default: claude-cli)
+python3 test_quality.py --llm-judge --provider claude-cli results/2026-04-08_192624
+```
+
+Structural metrics count tests, assertions, and test-to-code ratios across Python, TypeScript, PowerShell, and Bash. The LLM-as-judge sends each run's code and tests to an LLM for scoring on four dimensions (1-5 scale):
+
+- **Coverage**: Do tests exercise the key requirements?
+- **Rigor**: Edge cases, error handling, boundary conditions?
+- **Design**: Test organization, fixtures, readability?
+- **Overall**: Holistic quality — primary ranking metric.
+
+LLM judge results are cached per run (in `test-quality-llm.json`), so subsequent evaluations skip already-scored runs.
+
+## Adding LLM Providers
+
+The LLM-as-judge uses a pluggable provider system (`llm_providers.py`). The benchmark runner (`runner.py`) is inherently Claude CLI-based (it tests CLI features), but the evaluation layer is provider-agnostic.
+
+**Current providers:**
+- `claude-cli` — pre-authenticated Claude Code CLI. No API key or secrets needed.
+
+**To add a new provider** (e.g., Anthropic API with key, OpenAI, Codex CLI):
+
+1. Open `llm_providers.py`.
+2. Create a class inheriting from `LLMProvider`.
+3. Implement `is_available()` and `judge(system_prompt, user_message, model)`.
+4. Register it in the `PROVIDERS` dict.
+5. Use it: `python3 test_quality.py --llm-judge --provider your-provider`.
+
+See the docstring in [`llm_providers.py`](llm_providers.py) for a complete skeleton example.

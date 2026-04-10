@@ -1,0 +1,12 @@
+{
+  "coverage": 4,
+  "rigor": 3,
+  "design": 3,
+  "overall": 3,
+  "summary": "The test suite covers the core requirements well: secret classification (expired/warning/ok), report generation, both output formats (markdown and JSON), the main entry point, workflow structure checks, and a CI integration test via act. Unit tests for Get-SecretStatus and Get-RotationReport are solid and use a fixed reference date for determinism. However, several gaps reduce the score: the configurable warning window is not tested with non-default values in Get-RotationReport; error handling for malformed/missing JSON config is only superficially tested (one missing-file case, no invalid-JSON or missing-field tests); the WarningWindowDays override in the main entry point is untested; the boundary condition 'exactly on the deadline day' is tested but the 'one day before deadline' boundary is missing. The act integration test is fragile \u2014 it asserts on regex patterns like 'expiredCount.*1' rather than exact structured values, and it only exercises one fixture rather than all three. The 'Act Integration Tests' Describe block partially duplicates Test-WorkflowWithAct.ps1, creating confusion about the canonical test harness. Design issues include: BeforeAll blocks that load fixtures are not isolated per-It (shared mutable state), the workflow structure tests are duplicated between the Pester file and the external PS1 harness, and the act test does heavy setup/teardown inside a single It block which is an anti-pattern. The JSON format tests are thorough with exact count assertions, which is a strength. Overall the suite would catch most obvious regressions but has meaningful blind spots around edge cases and error handling.",
+  "tqs": 3.3,
+  "judge_cost_usd": 0.0622,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 395,
+  "judge_provider": "claude-cli"
+}

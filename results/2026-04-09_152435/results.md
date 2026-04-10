@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-10 04:30:37 AM ET
+**Last updated:** 2026-04-10 09:52:04 AM ET
 
 **Status:** 64/64 runs completed, 0 remaining
 **Total cost so far:** $86.90
@@ -365,6 +365,145 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | Full hit (100%) | 1 | $0.06 | 0.07% |
 | Partial | 60 | $7.08 | 8.15% |
 | Miss | 3 | $0.00 | 0.00% |
+
+## Test Quality Evaluation
+
+### Structural Metrics by Language/Model
+
+Automated analysis of test files: test count, assertion count, and test-to-code line ratio.
+
+| Mode | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
+|------|-------|-----------|----------------|-----------------|---------------------|
+| bash | opus | 26.1 | 35.1 | 1.3 | 1.12 |
+| bash | sonnet | 27.2 | 43.5 | 1.6 | 0.91 |
+| default | opus | 15.8 | 28.9 | 1.8 | 2.21 |
+| default | sonnet | 34.5 | 48.1 | 1.4 | 1.76 |
+| powershell | opus | 24.0 | 41.1 | 1.7 | 1.30 |
+| powershell | sonnet | 37.9 | 51.8 | 1.4 | 0.78 |
+| typescript-bun | opus | 24.8 | 48.4 | 2.0 | 1.00 |
+| typescript-bun | sonnet | 33.2 | 62.5 | 1.9 | 1.01 |
+
+
+<details>
+<summary>Sorted by avg tests (most first)</summary>
+
+| Mode | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
+|------|-------|-----------|----------------|-----------------|---------------------|
+| powershell | sonnet | 37.9 | 51.8 | 1.4 | 0.78 |
+| default | sonnet | 34.5 | 48.1 | 1.4 | 1.76 |
+| typescript-bun | sonnet | 33.2 | 62.5 | 1.9 | 1.01 |
+| bash | sonnet | 27.2 | 43.5 | 1.6 | 0.91 |
+| bash | opus | 26.1 | 35.1 | 1.3 | 1.12 |
+| typescript-bun | opus | 24.8 | 48.4 | 2.0 | 1.00 |
+| powershell | opus | 24.0 | 41.1 | 1.7 | 1.30 |
+| default | opus | 15.8 | 28.9 | 1.8 | 2.21 |
+
+</details>
+
+<details>
+<summary>Sorted by avg assertions (most first)</summary>
+
+| Mode | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
+|------|-------|-----------|----------------|-----------------|---------------------|
+| typescript-bun | sonnet | 33.2 | 62.5 | 1.9 | 1.01 |
+| powershell | sonnet | 37.9 | 51.8 | 1.4 | 0.78 |
+| typescript-bun | opus | 24.8 | 48.4 | 2.0 | 1.00 |
+| default | sonnet | 34.5 | 48.1 | 1.4 | 1.76 |
+| bash | sonnet | 27.2 | 43.5 | 1.6 | 0.91 |
+| powershell | opus | 24.0 | 41.1 | 1.7 | 1.30 |
+| bash | opus | 26.1 | 35.1 | 1.3 | 1.12 |
+| default | opus | 15.8 | 28.9 | 1.8 | 2.21 |
+
+</details>
+
+<details>
+<summary>Sorted by avg test:code ratio (highest first)</summary>
+
+| Mode | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
+|------|-------|-----------|----------------|-----------------|---------------------|
+| default | opus | 15.8 | 28.9 | 1.8 | 2.21 |
+| default | sonnet | 34.5 | 48.1 | 1.4 | 1.76 |
+| powershell | opus | 24.0 | 41.1 | 1.7 | 1.30 |
+| bash | opus | 26.1 | 35.1 | 1.3 | 1.12 |
+| typescript-bun | sonnet | 33.2 | 62.5 | 1.9 | 1.01 |
+| typescript-bun | opus | 24.8 | 48.4 | 2.0 | 1.00 |
+| bash | sonnet | 27.2 | 43.5 | 1.6 | 0.91 |
+| powershell | sonnet | 37.9 | 51.8 | 1.4 | 0.78 |
+
+</details>
+
+
+<details>
+<summary>Per-run structural metrics</summary>
+
+| Task | Mode | Model | Tests | Assertions | Assert/Test | Test Lines | Impl Lines | Test:Code |
+|------|------|-------|-------|------------|-------------|------------|------------|-----------|
+| Semantic Version Bumper | bash | opus | 20 | 37 | 1.9 | 206 | 530 | 0.39 |
+| Semantic Version Bumper | bash | sonnet | 29 | 42 | 1.4 | 270 | 473 | 0.57 |
+| Semantic Version Bumper | default | opus | 1 | 2 | 2.0 | 352 | 288 | 1.22 |
+| Semantic Version Bumper | default | sonnet | 44 | 42 | 1.0 | 289 | 243 | 1.19 |
+| Semantic Version Bumper | powershell | opus | 13 | 31 | 2.4 | 203 | 203 | 1.00 |
+| Semantic Version Bumper | powershell | sonnet | 32 | 43 | 1.3 | 267 | 482 | 0.55 |
+| Semantic Version Bumper | typescript-bun | opus | 14 | 27 | 1.9 | 245 | 251 | 0.98 |
+| Semantic Version Bumper | typescript-bun | sonnet | 37 | 43 | 1.2 | 276 | 423 | 0.65 |
+| PR Label Assigner | bash | opus | 12 | 5 | 0.4 | 147 | 279 | 0.53 |
+| PR Label Assigner | bash | sonnet | 33 | 60 | 1.8 | 287 | 336 | 0.85 |
+| PR Label Assigner | default | opus | 17 | 0 | 0.0 | 622 | 169 | 3.68 |
+| PR Label Assigner | default | sonnet | 26 | 32 | 1.2 | 508 | 217 | 2.34 |
+| PR Label Assigner | powershell | opus | 34 | 49 | 1.4 | 294 | 159 | 1.85 |
+| PR Label Assigner | powershell | sonnet | 38 | 47 | 1.2 | 273 | 378 | 0.72 |
+| PR Label Assigner | typescript-bun | opus | 21 | 51 | 2.4 | 268 | 226 | 1.19 |
+| PR Label Assigner | typescript-bun | sonnet | 22 | 33 | 1.5 | 191 | 424 | 0.45 |
+| Dependency License Checker | bash | opus | 52 | 51 | 1.0 | 378 | 252 | 1.50 |
+| Dependency License Checker | bash | sonnet | 44 | 67 | 1.5 | 443 | 309 | 1.43 |
+| Dependency License Checker | default | opus | 28 | 45 | 1.6 | 369 | 219 | 1.68 |
+| Dependency License Checker | default | sonnet | 31 | 70 | 2.3 | 589 | 260 | 2.27 |
+| Dependency License Checker | powershell | opus | 23 | 49 | 2.1 | 205 | 316 | 0.65 |
+| Dependency License Checker | powershell | sonnet | 26 | 52 | 2.0 | 305 | 481 | 0.63 |
+| Dependency License Checker | typescript-bun | opus | 65 | 112 | 1.7 | 707 | 363 | 1.95 |
+| Dependency License Checker | typescript-bun | sonnet | 36 | 51 | 1.4 | 318 | 289 | 1.10 |
+| Docker Image Tag Generator | bash | opus | 25 | 6 | 0.2 | 167 | 108 | 1.55 |
+| Docker Image Tag Generator | bash | sonnet | 15 | 25 | 1.7 | 128 | 373 | 0.34 |
+| Docker Image Tag Generator | default | opus | 26 | 48 | 1.8 | 251 | 128 | 1.96 |
+| Docker Image Tag Generator | default | sonnet | 36 | 42 | 1.2 | 605 | 176 | 3.44 |
+| Docker Image Tag Generator | powershell | opus | 13 | 40 | 3.1 | 170 | 72 | 2.36 |
+| Docker Image Tag Generator | powershell | sonnet | 34 | 37 | 1.1 | 209 | 338 | 0.62 |
+| Docker Image Tag Generator | typescript-bun | opus | 23 | 27 | 1.2 | 217 | 136 | 1.60 |
+| Docker Image Tag Generator | typescript-bun | sonnet | 13 | 14 | 1.1 | 73 | 289 | 0.25 |
+| Test Results Aggregator | bash | opus | 14 | 43 | 3.1 | 168 | 241 | 0.70 |
+| Test Results Aggregator | bash | sonnet | 25 | 26 | 1.0 | 173 | 307 | 0.56 |
+| Test Results Aggregator | default | opus | 9 | 47 | 5.2 | 468 | 337 | 1.39 |
+| Test Results Aggregator | default | sonnet | 33 | 41 | 1.2 | 266 | 377 | 0.71 |
+| Test Results Aggregator | powershell | opus | 28 | 30 | 1.1 | 264 | 244 | 1.08 |
+| Test Results Aggregator | powershell | sonnet | 99 | 111 | 1.1 | 701 | 994 | 0.71 |
+| Test Results Aggregator | typescript-bun | opus | 22 | 45 | 2.0 | 265 | 552 | 0.48 |
+| Test Results Aggregator | typescript-bun | sonnet | 46 | 110 | 2.4 | 611 | 387 | 1.58 |
+| Environment Matrix Generator | bash | opus | 24 | 9 | 0.4 | 233 | 134 | 1.74 |
+| Environment Matrix Generator | bash | sonnet | 22 | 38 | 1.7 | 233 | 321 | 0.73 |
+| Environment Matrix Generator | default | opus | 0 | 1 | 0.0 | 515 | 185 | 2.78 |
+| Environment Matrix Generator | default | sonnet | 37 | 56 | 1.5 | 592 | 207 | 2.86 |
+| Environment Matrix Generator | powershell | opus | 19 | 43 | 2.3 | 279 | 139 | 2.01 |
+| Environment Matrix Generator | powershell | sonnet | 24 | 41 | 1.7 | 284 | 244 | 1.16 |
+| Environment Matrix Generator | typescript-bun | opus | 23 | 28 | 1.2 | 207 | 347 | 0.60 |
+| Environment Matrix Generator | typescript-bun | sonnet | 28 | 42 | 1.5 | 292 | 427 | 0.68 |
+| Artifact Cleanup Script | bash | opus | 24 | 103 | 4.3 | 339 | 347 | 0.98 |
+| Artifact Cleanup Script | bash | sonnet | 27 | 47 | 1.7 | 323 | 238 | 1.36 |
+| Artifact Cleanup Script | default | opus | 21 | 44 | 2.1 | 384 | 209 | 1.84 |
+| Artifact Cleanup Script | default | sonnet | 30 | 47 | 1.6 | 333 | 542 | 0.61 |
+| Artifact Cleanup Script | powershell | opus | 15 | 39 | 2.6 | 220 | 0 | 0.00 |
+| Artifact Cleanup Script | powershell | sonnet | 16 | 30 | 1.9 | 197 | 170 | 1.16 |
+| Artifact Cleanup Script | typescript-bun | opus | 17 | 48 | 2.8 | 261 | 341 | 0.77 |
+| Artifact Cleanup Script | typescript-bun | sonnet | 35 | 78 | 2.2 | 497 | 392 | 1.27 |
+| Secret Rotation Validator | bash | opus | 38 | 27 | 0.7 | 273 | 177 | 1.54 |
+| Secret Rotation Validator | bash | sonnet | 23 | 43 | 1.9 | 422 | 302 | 1.40 |
+| Secret Rotation Validator | default | opus | 24 | 44 | 1.8 | 659 | 212 | 3.11 |
+| Secret Rotation Validator | default | sonnet | 39 | 55 | 1.4 | 430 | 611 | 0.70 |
+| Secret Rotation Validator | powershell | opus | 47 | 48 | 1.0 | 325 | 220 | 1.48 |
+| Secret Rotation Validator | powershell | sonnet | 34 | 53 | 1.6 | 323 | 464 | 0.70 |
+| Secret Rotation Validator | typescript-bun | opus | 13 | 49 | 3.8 | 217 | 548 | 0.40 |
+| Secret Rotation Validator | typescript-bun | sonnet | 49 | 129 | 2.6 | 616 | 293 | 2.10 |
+
+</details>
 
 ## Per-Run Results
 

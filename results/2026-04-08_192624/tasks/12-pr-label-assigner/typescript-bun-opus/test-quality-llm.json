@@ -1,0 +1,11 @@
+{
+  "coverage": 3,
+  "rigor": 2,
+  "design": 3,
+  "overall": 3,
+  "summary": "The test suite covers the six main business-logic scenarios (basic docs labeling, multi-label files, exclusive/priority mode, wildcard extensions, no-match, and complex mixed files) plus workflow structure validation (triggers, steps, actionlint, file existence). However, there are notable gaps: zero unit tests exist for the core functions globToRegex and assignLabels \u2014 every assertion goes through act/Docker, meaning even a trivial regression in glob logic requires a 5-minute Docker round-trip to detect. Error paths (invalid LABEL_CONFIG JSON, missing env vars, empty changed-files list, malformed glob patterns) are entirely untested. The extractLabelResult parser is non-trivial and could silently return null, masking failures. On the design side, the fixture-driven parameterization is clean, helper functions are well-factored, temp-repo teardown is in a finally block, and act-result.txt is properly accumulated \u2014 but the all-integration-no-unit architecture makes the suite both slow and brittle; it cannot run without Docker, contradicting the stated 'bun test' requirement. The 'no_matching_rules' fixture is a good edge case, but boundary conditions like same-priority ties, files with special characters, or deeply nested paths are absent. Overall the suite gives some confidence for happy-path scenarios but would fail to catch many regressions quickly or reliably.",
+  "judge_cost_usd": 0.0296,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 1630,
+  "judge_provider": "claude-cli"
+}

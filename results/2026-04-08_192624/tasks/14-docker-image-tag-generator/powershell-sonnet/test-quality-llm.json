@@ -1,0 +1,12 @@
+{
+  "coverage": 5,
+  "rigor": 4,
+  "design": 3,
+  "overall": 4,
+  "summary": "The test suite comprehensively maps to every key requirement: main/master\u2192latest, PR\u2192pr-{number}, semver tags, feature branch sanitization, and workflow structure validation are all exercised. Rigor is strong \u2014 pre-release semver suffixes, nested slashes, underscore-to-hyphen conversion, SHA truncation edge cases, precedence rules (PR overrides branch-sha), and negative assertions (latest absent on PRs, etc.) are all present. Helper unit tests for Get-SanitizedTag and Get-ShortSha cover boundary inputs (SHA shorter than 7 chars). The main design concerns: (1) Pester v5 does not expose functions defined in BeforeAll to It blocks via normal lexical scope \u2014 Invoke-ActJob defined in BeforeAll will be invisible to the It blocks that call it, causing the entire Act Integration Tests describe to throw at runtime rather than fail gracefully; (2) $WorkflowContent and similar variables in Workflow Structure Tests share the same risk depending on Pester version; (3) the integration test layer is heavily environment-dependent (Docker daemon, act, network pull of runner images) with no skip/guard logic, making the suite non-deterministic in CI environments that lack those dependencies; (4) exact string matches against act output (e.g. 'PASS.*branch-sha', 'Job succeeded|success') are brittle against minor act version or output-format changes. Unit-level tests for the core logic are solid and would reliably catch regressions; the integration tier is structurally flawed enough to reduce confidence in its practical value.",
+  "tqs": 4.1,
+  "judge_cost_usd": 0.0793,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 2444,
+  "judge_provider": "claude-cli"
+}
