@@ -38,6 +38,8 @@ Each benchmark version defines a set of scripting tasks, language modes, and mod
 | `test_quality.py` | Test quality evaluation — structural metrics + LLM-as-judge |
 | `llm_providers.py` | Pluggable LLM provider abstraction for evaluation tasks |
 | `hooks/syntax-check.py` | PostToolUse hook for syntax/lint checking (v3) |
+| `tests/` | Unit tests for repo code — run with `python3 -m pytest tests/ -v` |
+| `.github/workflows/ci.yml` | CI workflow — runs tests and import validation on push/PR |
 | `run-benchmark.sh` | One-command launcher with prerequisite checks |
 | `results/` | Structured output — metrics.json, generated code, console logs per run |
 | `workspaces/` | Temporary agent working directories (git-ignored) |

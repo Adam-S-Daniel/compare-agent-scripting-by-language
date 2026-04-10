@@ -110,8 +110,9 @@ def _is_code_file(filepath: str) -> bool:
 def _count_python(content: str) -> dict:
     """Count tests and assertions in Python code."""
     tests = len(re.findall(r"^\s*def\s+test_\w+", content, re.MULTILINE))
-    # unittest-style class test methods
-    tests += len(re.findall(r"^\s*def\s+test\w+\s*\(self", content, re.MULTILINE))
+    # unittest-style class test methods not already matched by test_ pattern
+    # (e.g., def testAdd(self...) without underscore)
+    tests += len(re.findall(r"^\s*def\s+test[A-Z]\w*\s*\(self", content, re.MULTILINE))
     # Custom record() pattern used in some harnesses: record("name", True/False)
     tests += len(re.findall(r"\brecord\s*\(\s*[\"']", content))
 

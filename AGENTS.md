@@ -7,6 +7,10 @@ via `CLAUDE.md`. Other agents: read this file directly.
 ## Build and test
 
 ```bash
+# Run unit tests (REQUIRED before every PR)
+pip install pytest  # if not already installed
+python3 -m pytest tests/ -v
+
 # Validate imports
 python3 -c "from runner import main"
 python3 -c "from generate_results import generate_results_md"
@@ -38,7 +42,7 @@ docker build -t act-ubuntu-pwsh:latest -f Dockerfile.act .
 
 ## Repository rules
 
-- **No `.github/workflows/` at repo root.** Workflows only exist inside agent workspaces under `workspaces/`.
+- **No agent-generated `.github/workflows/` at repo root.** Agent workflows only exist inside workspaces under `workspaces/`. The repo's own CI workflow (`.github/workflows/ci.yml`) is the exception.
 - **Never fix agent-generated code.** The benchmark measures autonomous output. Do not manually fix, edit, or patch workflow files in `workspaces/` or `results/*/generated-code/`.
 - **`runner.py` observes and records, never intervenes** on agent code or errors.
 - **Workspaces are throwaway.** Don't commit `workspaces/` contents.
@@ -98,11 +102,18 @@ See the docstring in `llm_providers.py` for a complete example skeleton.
 
 ## Before every PR
 
-1. Run `python3 generate_results.py --all` and verify no errors.
-2. Spot-check a few numbers in results.md against raw metrics.json.
-3. Verify all import paths work: `python3 -c "from runner import main"`.
-4. If you changed architecture or findings, update this file (`AGENTS.md`).
-5. If you added files or moved things, update the Files table in `README.md`.
+1. **Run all unit tests and verify they pass:**
+   ```bash
+   python3 -m pytest tests/ -v
+   ```
+   All tests must pass. Do not create or update a PR with failing tests.
+2. **If you added or changed code, add or update unit tests** in `tests/`.
+   New functions need test coverage. Changed behavior needs updated assertions.
+3. Run `python3 generate_results.py --all` and verify no errors.
+4. Verify all import paths work: `python3 -c "from runner import main"`.
+5. Spot-check a few numbers in results.md against raw metrics.json.
+6. If you changed architecture or findings, update this file (`AGENTS.md`).
+7. If you added files or moved things, update the Files table in `README.md`.
 
 ## Current state (2026-04-09)
 

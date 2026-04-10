@@ -1,0 +1,12 @@
+{
+  "coverage": 4,
+  "rigor": 3,
+  "design": 3,
+  "overall": 3,
+  "summary": "The suite covers all core requirements well: main/master\u2192latest, PR\u2192pr-{n}, semver tags, feature branch+SHA, and sanitization (uppercase, special chars). Eight fixtures map neatly onto the spec. However, error-path scenarios are entirely absent \u2014 there are no tests for missing GIT_BRANCH or GIT_COMMIT (which should cause process.exit(1)), malformed commit SHAs, or non-semver tag strings like 'rc-1'. Sanitization edge cases (consecutive dots, leading dots, very long branch names) are also untested. On the design side, the fixture-array pattern and helpers (setupTempRepo, appendResult, run) are clean and reusable. Strengths end there: each act test spawns a full Docker container, making the suite extremely slow and environment-fragile (Docker + act + catthehacker image required), and zero unit tests exist for sanitiseTag or generateTags directly. The workflow structure tests are brittle \u2014 they hard-code job names ('generate-tags', 'test-tags') and an exact matrix count (8) that will break on any refactor. The setupTempRepo function also creates a bespoke per-fixture workflow rather than exercising the canonical docker-image-tag-generator.yml, meaning the real workflow is only structurally inspected, not executed. Overall the suite is functional and thorough on the happy path, but the absence of error-case coverage and the brittleness introduced by act-only testing lower its regression-catching confidence significantly.",
+  "tqs": 3.3,
+  "judge_cost_usd": 0.0534,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 1687,
+  "judge_provider": "claude-cli"
+}

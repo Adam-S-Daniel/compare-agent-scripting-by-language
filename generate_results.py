@@ -296,6 +296,38 @@ def _collapsible_table(summary: str, header: str, separator: str, rows: list[str
     return out
 
 
+def _rank(values):
+    """Assign ranks to values (average rank for ties)."""
+    indexed = sorted(enumerate(values), key=lambda x: x[1])
+    ranks = [0.0] * len(values)
+    i = 0
+    while i < len(indexed):
+        j = i
+        while j < len(indexed) and indexed[j][1] == indexed[i][1]:
+            j += 1
+        avg_rank = (i + j + 1) / 2  # 1-based average rank
+        for k in range(i, j):
+            ranks[indexed[k][0]] = avg_rank
+        i = j
+    return ranks
+
+
+def _spearman(xs, ys):
+    """Compute Spearman rank correlation coefficient."""
+    if len(xs) < 3:
+        return None
+    rx, ry = _rank(xs), _rank(ys)
+    n = len(xs)
+    mean_rx = sum(rx) / n
+    mean_ry = sum(ry) / n
+    num = sum((a - mean_rx) * (b - mean_ry) for a, b in zip(rx, ry))
+    den_x = sum((a - mean_rx) ** 2 for a in rx) ** 0.5
+    den_y = sum((b - mean_ry) ** 2 for b in ry) ** 0.5
+    if den_x == 0 or den_y == 0:
+        return None
+    return round(num / (den_x * den_y), 2)
+
+
 
 def _emit_sorted_variants(header: str, separator: str, data_rows: list[dict],
                            sort_specs: list[tuple[str, str, bool]],
@@ -1032,37 +1064,6 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         tq_lookup = {}
         for r in tq_rows:
             tq_lookup[(r["task"], r["mode"], r["model"])] = r
-
-        # Compute rank correlation between structural metrics and LLM scores
-        def _rank(values):
-            """Assign ranks to values (average rank for ties)."""
-            indexed = sorted(enumerate(values), key=lambda x: x[1])
-            ranks = [0.0] * len(values)
-            i = 0
-            while i < len(indexed):
-                j = i
-                while j < len(indexed) and indexed[j][1] == indexed[i][1]:
-                    j += 1
-                avg_rank = (i + j + 1) / 2  # 1-based average rank
-                for k in range(i, j):
-                    ranks[indexed[k][0]] = avg_rank
-                i = j
-            return ranks
-
-        def _spearman(xs, ys):
-            """Compute Spearman rank correlation coefficient."""
-            if len(xs) < 3:
-                return None
-            rx, ry = _rank(xs), _rank(ys)
-            n = len(xs)
-            mean_rx = sum(rx) / n
-            mean_ry = sum(ry) / n
-            num = sum((a - mean_rx) * (b - mean_ry) for a, b in zip(rx, ry))
-            den_x = sum((a - mean_rx) ** 2 for a in rx) ** 0.5
-            den_y = sum((b - mean_ry) ** 2 for b in ry) ** 0.5
-            if den_x == 0 or den_y == 0:
-                return None
-            return round(num / (den_x * den_y), 2)
 
         # Collect paired data
         paired_tests, paired_asserts, paired_ratio = [], [], []
