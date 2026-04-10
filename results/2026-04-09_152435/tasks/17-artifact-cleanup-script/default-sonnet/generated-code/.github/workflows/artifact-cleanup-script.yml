@@ -1,0 +1,47 @@
+name: Artifact Cleanup Script
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 2 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Python dependencies
+        run: pip install pytest --break-system-packages
+
+      - name: Run unit tests (pytest)
+        run: pytest test_artifact_cleanup.py -v
+
+  cleanup-dry-run:
+    name: Artifact Cleanup (Dry Run)
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run artifact cleanup in dry-run mode
+        # Uses a pinned today date so output is deterministic across CI runs.
+        # The fixture contains artifacts relative to 2026-04-10:
+        #   logs-v1  (10 MB, 40 days old) → DELETE  (exceeds max_age=20d)
+        #   logs-v2  (20 MB, 26 days old) → DELETE  (exceeds max_age=20d)
+        #   build-v1 (30 MB,  9 days old) → RETAIN
+        #   build-v2  (5 MB,  2 days old) → RETAIN
+        # Expected: Deleted=2, Retained=2, Space reclaimed=30.0 MB
+        run: |
+          python3 artifact_cleanup.py \
+            --input fixtures/ci_fixture.json \
+            --today 2026-04-10 \
+            --dry-run
