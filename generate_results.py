@@ -384,15 +384,19 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
 
     # ── Trap & Hook data ──
     TEST_RUN_COST_S = {"default": 8, "powershell": 35, "bash": 12, "typescript-bun": 8}
-    _write_durs_by_mode = {}
+    # Compute per-(mode, model) hook overhead from actual Write/Edit durations.
+    # Use all_tool_uses when available (full list), fall back to slowest_tool_uses.
+    # Subtract 0.05s baseline for the Write operation itself.
+    _write_durs_by_combo: dict[tuple, list] = {}
     for m in all_metrics:
-        md = m["language_mode"]
-        for t in m.get("tool_use_timing", {}).get("slowest_tool_uses", []):
+        combo = (m["language_mode"], m["model_short"])
+        source = m.get("tool_use_timing", {}).get("all_tool_uses") or m.get("tool_use_timing", {}).get("slowest_tool_uses", [])
+        for t in source:
             if t["tool_name"] in ("Write", "Edit"):
-                _write_durs_by_mode.setdefault(md, []).append(t["duration_ms"] / 1000)
-    HOOK_OVERHEAD_S = {
-        md: max(0, (sum(ds) / len(ds)) - 0.05) if ds else 0.5
-        for md, ds in _write_durs_by_mode.items()
+                _write_durs_by_combo.setdefault(combo, []).append(t["duration_ms"] / 1000)
+    HOOK_OVERHEAD_BY_COMBO = {
+        combo: max(0, (sum(ds) / len(ds)) - 0.05) if ds else 0.5
+        for combo, ds in _write_durs_by_combo.items()
     }
 
     trap_instances = []
@@ -467,7 +471,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         caught = m.get("hooks", {}).get("hook_errors_caught", 0)
         fires = m.get("hooks", {}).get("hook_fires", 0)
         gross_saved = caught * TEST_RUN_COST_S.get(mode, 10)
-        overhead = fires * HOOK_OVERHEAD_S.get(mode, 0.5)
+        overhead = fires * HOOK_OVERHEAD_BY_COMBO.get(combo, 0.5)
         # Only include test time if we have real durations from all_tool_uses.
         # Older runs that only have top-5/10 slowest_tool_uses produce a lower
         # bound that's misleading — omit rather than show bad data.
