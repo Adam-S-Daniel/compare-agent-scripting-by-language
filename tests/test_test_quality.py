@@ -151,6 +151,44 @@ else:
         r = _count_python(code)
         assert r["assertions"] >= 1
 
+    def test_camelcase_unittest_methods(self):
+        code = """
+class TestCalc(unittest.TestCase):
+    def testAdd(self):
+        self.assertEqual(1 + 1, 2)
+
+    def testSubtract(self):
+        self.assertTrue(3 - 1 == 2)
+"""
+        r = _count_python(code)
+        assert r["tests"] == 2
+        assert r["assertions"] == 2
+
+    def test_camelcase_and_underscore_not_double_counted(self):
+        code = """
+def test_add():
+    assert 1 + 1 == 2
+
+class TestCalc(unittest.TestCase):
+    def testSub(self):
+        self.assertEqual(3 - 1, 2)
+"""
+        r = _count_python(code)
+        assert r["tests"] == 2
+
+    def test_test_cases_suppressed_when_standard_tests_exist(self):
+        code = """
+def test_alpha():
+    assert True
+
+TEST_CASES = [
+    {"name": "TC1: should work", "expected": "foo"},
+]
+"""
+        r = _count_python(code)
+        # def test_alpha counts as 1; TEST_CASES should NOT add more
+        assert r["tests"] == 1
+
     def test_empty_file(self):
         r = _count_python("")
         assert r["tests"] == 0

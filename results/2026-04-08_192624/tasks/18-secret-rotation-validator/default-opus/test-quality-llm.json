@@ -1,0 +1,12 @@
+{
+  "coverage": 4,
+  "rigor": 2,
+  "design": 3,
+  "overall": 3,
+  "summary": "The test suite covers the core functional requirements well \u2014 all urgency categories (expired, warning, ok), both output formats (JSON and markdown), configurable warning windows, and workflow structure validation via actionlint. Exact value assertions (e.g., 'days_until_expiry': -16, specific expiration dates) show good intent. However, rigor is low: the task explicitly requires graceful error handling with meaningful messages, yet no tests exercise invalid config paths (missing file, malformed JSON, missing required fields, empty secrets list). Boundary conditions are mostly absent \u2014 there is no test for a secret expiring in exactly `warning_days` days (the inclusive boundary), zero days remaining, or a single-secret config. The `|| true` workaround in expired/mixed fixtures prevents actually asserting that the script returns exit code 2 for expired secrets, bypassing validation of a named behavior. Design is workable \u2014 fixture isolation via temp repos with `finally` cleanup is solid, and helper functions reduce repetition. But using global mutable state for pass/fail tracking, brittle substring matching against raw act output, and a homegrown assert framework instead of pytest introduce fragility and readability concerns. The structural/actionlint tests are a good inclusion. The act-based integration approach is appropriate for the task but leaves unit-level logic (classify_secret, load_config error paths) entirely unvalidated.",
+  "tqs": 3.0,
+  "judge_cost_usd": 0.0701,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 1786,
+  "judge_provider": "claude-cli"
+}

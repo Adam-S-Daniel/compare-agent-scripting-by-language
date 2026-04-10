@@ -65,3 +65,19 @@ class TestLLMProviderInterface:
 
         with pytest.raises(TypeError):
             IncompleteProvider()
+
+    def test_partial_subclass_missing_judge(self):
+        class NoJudge(LLMProvider):
+            name = "no-judge"
+            def is_available(self): return True
+
+        with pytest.raises(TypeError):
+            NoJudge()
+
+    def test_partial_subclass_missing_is_available(self):
+        class NoAvailability(LLMProvider):
+            name = "no-avail"
+            def judge(self, *a, **kw): pass
+
+        with pytest.raises(TypeError):
+            NoAvailability()

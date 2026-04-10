@@ -65,11 +65,16 @@ class TestSpearman:
         # All same values -> zero variance -> None
         assert _spearman([5, 5, 5], [1, 2, 3]) is None
 
-    def test_returns_rounded(self):
-        r = _spearman([1, 2, 3, 4, 5], [2, 1, 4, 3, 5])
-        assert r is not None
-        # Check it's rounded to 2 decimal places
-        assert r == round(r, 2)
+    def test_known_value(self):
+        # rank([1,2,3,4,5]) vs rank([2,1,4,3,5]): d^2=4, rs = 1 - 6*4/120 = 0.80
+        assert _spearman([1, 2, 3, 4, 5], [2, 1, 4, 3, 5]) == 0.8
+
+    def test_mismatched_lengths(self):
+        # Implementation uses zip, so shorter list determines length.
+        # With only 2 pairs, should return None (< 3 elements).
+        result = _spearman([1, 2, 3], [1, 2])
+        # Either None (too few after zip) or a valid correlation
+        assert result is None or -1.0 <= result <= 1.0
 
 
 # =========================================================================
@@ -90,6 +95,21 @@ class TestCollapsibleTable:
         assert "| A | B |" in text
         assert "| 1 | 2 |" in text
         assert "</details>" in text
+
+    def test_output_structural_order(self):
+        lines = _collapsible_table(
+            "My Summary", "| H1 | H2 |", "|----|-----|",
+            ["| r1 | r2 |", "| r3 | r4 |"],
+        )
+        text = "\n".join(lines)
+        for tag in ["<details>", "<summary>My Summary</summary>",
+                     "| H1 | H2 |", "|----|-----|",
+                     "| r1 | r2 |", "| r3 | r4 |", "</details>"]:
+            assert tag in text
+        # Verify ordering
+        assert text.index("<details>") < text.index("<summary>")
+        assert text.index("<summary>") < text.index("| H1 | H2 |")
+        assert text.index("| r1 | r2 |") < text.index("</details>")
 
     def test_empty_rows(self):
         lines = _collapsible_table("Empty", "| H |", "|---|", [])
@@ -144,6 +164,16 @@ class TestCategorizeToolTime:
         assert r["test_duration_ms"] == 0
         assert r["act_duration_ms"] == 0
 
+    def test_tool_use_without_command_key(self):
+        tool_uses = [
+            {"tool_name": "Read", "file_path": "foo.py", "duration_ms": 100},
+            {"tool_name": "Write", "duration_ms": 200},
+        ]
+        r = _categorize_tool_time(tool_uses)
+        assert r["install_duration_ms"] == 0
+        assert r["test_duration_ms"] == 0
+        assert r["act_duration_ms"] == 0
+
     def test_act_takes_precedence_over_test(self):
         # "act push" should be categorized as act, not test
         tool_uses = [
@@ -194,6 +224,31 @@ class TestDetectTraps:
         traps = _detect_traps(events, "", metrics)
         names = [t["name"] for t in traps]
         assert "pester-wrong-assertions" in names
+
+    def test_repeated_reruns_boundary_below_threshold(self):
+        # 3 reruns should NOT trigger (threshold is 4)
+        events = [
+            {"type": "assistant", "message": {"content": [
+                {"type": "tool_use", "name": "Bash", "input": {"command": "pytest test_app.py"}}
+            ]}}
+            for _ in range(3)
+        ]
+        metrics = {"language_mode": "default"}
+        traps = _detect_traps(events, "", metrics)
+        assert "repeated-test-reruns" not in [t["name"] for t in traps]
+
+    def test_trap_payload_has_required_keys(self):
+        events = [
+            {"type": "assistant", "message": {"content": [
+                {"type": "tool_use", "name": "Bash", "input": {"command": "pytest test_app.py"}}
+            ]}}
+            for _ in range(5)
+        ]
+        traps = _detect_traps(events, "", {"language_mode": "default"})
+        for trap in traps:
+            assert "name" in trap and isinstance(trap["name"], str)
+            assert "time_s" in trap and isinstance(trap["time_s"], (int, float))
+            assert "desc" in trap and isinstance(trap["desc"], str)
 
     def test_empty_events(self):
         assert _detect_traps([], "", {"language_mode": "default"}) == []
