@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-10 03:52:13 PM ET
+**Last updated:** 2026-04-10 04:10:22 PM ET
 
 **Status:** 144/144 runs completed, 0 remaining
 **Total cost so far:** $436.67
@@ -507,7 +507,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | PR Label Assigner | csharp-script | opus | 27 | 49 | 1.8 | 532 | 509 | 1.05 |
 | PR Label Assigner | csharp-script | sonnet | 25 | 35 | 1.4 | 344 | 380 | 0.91 |
 | PR Label Assigner | default | opus | 28 | 39 | 1.4 | 306 | 211 | 1.45 |
-| PR Label Assigner | default | sonnet | 22 | 28 | 1.3 | 337 | 193 | 1.75 |
+| PR Label Assigner | default | sonnet | 22 | 27 | 1.2 | 337 | 193 | 1.75 |
 | PR Label Assigner | powershell | opus | 31 | 56 | 1.8 | 342 | 263 | 1.30 |
 | PR Label Assigner | powershell | sonnet | 39 | 61 | 1.6 | 286 | 168 | 1.70 |
 | PR Label Assigner | powershell-strict | opus | 35 | 59 | 1.7 | 395 | 275 | 1.44 |

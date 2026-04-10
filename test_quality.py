@@ -137,10 +137,21 @@ def _count_python(content: str) -> dict:
 
     # Custom harness assertions: record_pass calls (record_pass/record_fail
     # are paired branches of the same check — count only the positive path).
-    # Also count "PASS:" string writes (not FAIL — same pairing logic).
     custom_asserts = len(re.findall(r'\brecord_pass\s*\(', content))
-    custom_asserts += len(re.findall(r'["\'].*?PASS\s*:', content))
     asserts += custom_asserts
+
+    # run_test(name, actual, expected) — custom comparison function.
+    # Count call sites (not the function definition) as assertions.
+    run_test_calls = len(re.findall(r'(?<!def )\brun_test\s*\(', content))
+    asserts += run_test_calls
+
+    # log_pass(msg) — each call represents a verified check.
+    # Count call sites as assertions; also count as tests when no standard
+    # test functions were found.
+    log_pass_calls = len(re.findall(r'(?<!def )\blog_pass\s*\(', content))
+    asserts += log_pass_calls
+    if tests == 0 and log_pass_calls > 0:
+        tests = log_pass_calls
 
     return {"tests": tests, "assertions": asserts}
 

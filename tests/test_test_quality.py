@@ -192,6 +192,59 @@ else:
         r = _count_python(code)
         assert r["assertions"] >= 1
 
+    def test_run_test_custom_harness(self):
+        code = """
+def run_test(name, actual, expected):
+    passed = actual == expected
+    return passed
+
+def test_add():
+    return run_test("add", add(1, 2), 3)
+
+def test_sub():
+    return run_test("sub", sub(3, 1), 2)
+"""
+        r = _count_python(code)
+        assert r["tests"] == 2
+        assert r["assertions"] == 2  # 2 run_test calls (def excluded)
+
+    def test_log_pass_as_tests_and_assertions(self):
+        code = """
+def log_pass(msg):
+    print(f"  PASS: {msg}")
+
+def log_fail(msg):
+    print(f"  FAIL: {msg}")
+
+# Structural tests
+if os.path.exists(wf):
+    log_pass("Workflow exists")
+else:
+    log_fail("Workflow missing")
+
+if "jobs:" in text:
+    log_pass("jobs section found")
+else:
+    log_fail("jobs section missing")
+"""
+        r = _count_python(code)
+        # No def test_* functions, so log_pass calls become tests
+        assert r["tests"] == 2
+        assert r["assertions"] == 2  # 2 log_pass calls (def excluded)
+
+    def test_log_pass_does_not_override_standard_tests(self):
+        code = """
+def log_pass(msg):
+    print(f"  PASS: {msg}")
+
+def test_structural():
+    log_pass("Workflow exists")
+    log_pass("actionlint passes")
+"""
+        r = _count_python(code)
+        assert r["tests"] == 1  # def test_structural, NOT log_pass count
+        assert r["assertions"] == 2  # 2 log_pass calls
+
     def test_camelcase_unittest_methods(self):
         code = """
 class TestCalc(unittest.TestCase):

@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-10 03:52:15 PM ET
+**Last updated:** 2026-04-10 04:10:24 PM ET
 
 **Status:** 64/64 runs completed, 0 remaining
 **Total cost so far:** $84.25
@@ -382,7 +382,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 |------|-------|-----------|----------------|-----------------|---------------------|
 | bash | opus | 18.5 | 28.2 | 1.5 | 1.45 |
 | bash | sonnet | 16.8 | 33.9 | 2.0 | 0.67 |
-| default | opus | 9.0 | 27.4 | 3.0 | 1.64 |
+| default | opus | 9.0 | 24.6 | 2.7 | 1.64 |
 | default | sonnet | 33.1 | 49.8 | 1.5 | 1.10 |
 | powershell | opus | 32.6 | 48.0 | 1.5 | 0.96 |
 | powershell | sonnet | 40.0 | 57.9 | 1.4 | 1.34 |
@@ -402,7 +402,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | bash | opus | 18.5 | 28.2 | 1.5 | 1.45 |
 | bash | sonnet | 16.8 | 33.9 | 2.0 | 0.67 |
 | typescript-bun | opus | 10.1 | 40.2 | 4.0 | 1.02 |
-| default | opus | 9.0 | 27.4 | 3.0 | 1.64 |
+| default | opus | 9.0 | 24.6 | 2.7 | 1.64 |
 
 </details>
 
@@ -418,7 +418,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | typescript-bun | opus | 10.1 | 40.2 | 4.0 | 1.02 |
 | bash | sonnet | 16.8 | 33.9 | 2.0 | 0.67 |
 | bash | opus | 18.5 | 28.2 | 1.5 | 1.45 |
-| default | opus | 9.0 | 27.4 | 3.0 | 1.64 |
+| default | opus | 9.0 | 24.6 | 2.7 | 1.64 |
 
 </details>
 
@@ -427,7 +427,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 
 | Mode | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
 |------|-------|-----------|----------------|-----------------|---------------------|
-| default | opus | 9.0 | 27.4 | 3.0 | 1.64 |
+| default | opus | 9.0 | 24.6 | 2.7 | 1.64 |
 | typescript-bun | sonnet | 34.6 | 60.1 | 1.7 | 1.55 |
 | bash | opus | 18.5 | 28.2 | 1.5 | 1.45 |
 | powershell | sonnet | 40.0 | 57.9 | 1.4 | 1.34 |
@@ -446,7 +446,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 |------|------|-------|-------|------------|-------------|------------|------------|-----------|
 | Semantic Version Bumper | bash | opus | 30 | 19 | 0.6 | 268 | 268 | 1.00 |
 | Semantic Version Bumper | bash | sonnet | 17 | 41 | 2.4 | 275 | 521 | 0.53 |
-| Semantic Version Bumper | default | opus | 9 | 5 | 0.6 | 421 | 284 | 1.48 |
+| Semantic Version Bumper | default | opus | 9 | 0 | 0.0 | 421 | 284 | 1.48 |
 | Semantic Version Bumper | default | sonnet | 52 | 57 | 1.1 | 599 | 291 | 2.06 |
 | Semantic Version Bumper | powershell | opus | 34 | 44 | 1.3 | 340 | 361 | 0.94 |
 | Semantic Version Bumper | powershell | sonnet | 36 | 45 | 1.2 | 273 | 279 | 0.98 |
@@ -454,7 +454,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Semantic Version Bumper | typescript-bun | sonnet | 28 | 39 | 1.4 | 253 | 434 | 0.58 |
 | PR Label Assigner | bash | opus | 11 | 17 | 1.5 | 272 | 208 | 1.31 |
 | PR Label Assigner | bash | sonnet | 15 | 34 | 2.3 | 258 | 500 | 0.52 |
-| PR Label Assigner | default | opus | 10 | 4 | 0.4 | 333 | 180 | 1.85 |
+| PR Label Assigner | default | opus | 10 | 0 | 0.0 | 333 | 180 | 1.85 |
 | PR Label Assigner | default | sonnet | 17 | 25 | 1.5 | 274 | 328 | 0.84 |
 | PR Label Assigner | powershell | opus | 17 | 41 | 2.4 | 182 | 332 | 0.55 |
 | PR Label Assigner | powershell | sonnet | 45 | 64 | 1.4 | 484 | 210 | 2.30 |
@@ -470,7 +470,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Dependency License Checker | typescript-bun | sonnet | 39 | 72 | 1.8 | 537 | 393 | 1.37 |
 | Docker Image Tag Generator | bash | opus | 17 | 31 | 1.8 | 299 | 87 | 3.44 |
 | Docker Image Tag Generator | bash | sonnet | 17 | 12 | 0.7 | 250 | 150 | 1.67 |
-| Docker Image Tag Generator | default | opus | 6 | 9 | 1.5 | 414 | 149 | 2.78 |
+| Docker Image Tag Generator | default | opus | 6 | 2 | 0.3 | 414 | 149 | 2.78 |
 | Docker Image Tag Generator | default | sonnet | 35 | 36 | 1.0 | 265 | 555 | 0.48 |
 | Docker Image Tag Generator | powershell | opus | 21 | 24 | 1.1 | 136 | 441 | 0.31 |
 | Docker Image Tag Generator | powershell | sonnet | 39 | 58 | 1.5 | 295 | 474 | 0.62 |
@@ -478,7 +478,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Docker Image Tag Generator | typescript-bun | sonnet | 46 | 59 | 1.3 | 653 | 170 | 3.84 |
 | Test Results Aggregator | bash | opus | 24 | 9 | 0.4 | 257 | 295 | 0.87 |
 | Test Results Aggregator | bash | sonnet | 23 | 36 | 1.6 | 137 | 335 | 0.41 |
-| Test Results Aggregator | default | opus | 6 | 51 | 8.5 | 462 | 371 | 1.25 |
+| Test Results Aggregator | default | opus | 6 | 49 | 8.2 | 462 | 371 | 1.25 |
 | Test Results Aggregator | default | sonnet | 29 | 77 | 2.7 | 393 | 950 | 0.41 |
 | Test Results Aggregator | powershell | opus | 41 | 43 | 1.0 | 335 | 205 | 1.63 |
 | Test Results Aggregator | powershell | sonnet | 69 | 83 | 1.2 | 588 | 442 | 1.33 |
@@ -494,7 +494,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Environment Matrix Generator | typescript-bun | sonnet | 35 | 62 | 1.8 | 611 | 231 | 2.65 |
 | Artifact Cleanup Script | bash | opus | 15 | 29 | 1.9 | 540 | 296 | 1.82 |
 | Artifact Cleanup Script | bash | sonnet | 12 | 48 | 4.0 | 247 | 556 | 0.44 |
-| Artifact Cleanup Script | default | opus | 8 | 58 | 7.2 | 396 | 264 | 1.50 |
+| Artifact Cleanup Script | default | opus | 8 | 55 | 6.9 | 396 | 264 | 1.50 |
 | Artifact Cleanup Script | default | sonnet | 23 | 50 | 2.2 | 705 | 372 | 1.90 |
 | Artifact Cleanup Script | powershell | opus | 19 | 53 | 2.8 | 242 | 306 | 0.79 |
 | Artifact Cleanup Script | powershell | sonnet | 22 | 41 | 1.9 | 226 | 224 | 1.01 |
@@ -502,7 +502,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Artifact Cleanup Script | typescript-bun | sonnet | 18 | 35 | 1.9 | 276 | 280 | 0.99 |
 | Secret Rotation Validator | bash | opus | 16 | 51 | 3.2 | 212 | 250 | 0.85 |
 | Secret Rotation Validator | bash | sonnet | 15 | 43 | 2.9 | 215 | 871 | 0.25 |
-| Secret Rotation Validator | default | opus | 8 | 60 | 7.5 | 663 | 225 | 2.95 |
+| Secret Rotation Validator | default | opus | 8 | 59 | 7.4 | 663 | 225 | 2.95 |
 | Secret Rotation Validator | default | sonnet | 45 | 52 | 1.2 | 359 | 735 | 0.49 |
 | Secret Rotation Validator | powershell | opus | 49 | 74 | 1.5 | 396 | 197 | 2.01 |
 | Secret Rotation Validator | powershell | sonnet | 35 | 51 | 1.5 | 382 | 717 | 0.53 |
@@ -695,7 +695,7 @@ or that the structural counters are undercounting for an unusual test pattern.
 | Dependency License Checker | powershell | sonnet | 38 | 84 | 4 | 2 | 3 | 3 | LLM says low rigor (2/5) but 84 assertions detected |
 | Test Results Aggregator | typescript-bun | opus | 8 | 59 | 4 | 2 | 3 | 3 | LLM says low rigor (2/5) but 59 assertions detected |
 | Environment Matrix Generator | powershell | opus | 43 | 62 | 3 | 2 | 2 | 2 | LLM says low rigor (2/5) but 62 assertions detected |
-| Secret Rotation Validator | default | opus | 8 | 60 | 4 | 2 | 3 | 3 | LLM says low rigor (2/5) but 60 assertions detected |
+| Secret Rotation Validator | default | opus | 8 | 59 | 4 | 2 | 3 | 3 | LLM says low rigor (2/5) but 59 assertions detected |
 | Secret Rotation Validator | powershell | opus | 49 | 74 | 3 | 2 | 3 | 3 | LLM says low rigor (2/5) but 74 assertions detected |
 | Secret Rotation Validator | typescript-bun | opus | 7 | 77 | 2 | 2 | 2 | 2 | LLM says low rigor (2/5) but 77 assertions detected |
 
