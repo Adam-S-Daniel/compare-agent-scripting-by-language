@@ -1,0 +1,12 @@
+{
+  "coverage": 3,
+  "rigor": 2,
+  "design": 3,
+  "overall": 3,
+  "summary": "The suite covers the main happy-path scenarios well \u2014 mixed, all-ok, all-expired, and the warning-window boundary flip \u2014 and checks both markdown and JSON output formats with exact expected values (DaysUntilExpiry of -8, -373, etc.). Workflow-structure tests (triggers, jobs, actionlint, file references) are a useful addition. However, significant gaps exist: no tests for error-handling paths (missing config file, malformed JSON, secrets with missing required fields, invalid lastRotated dates), no test for the exact expiry boundary (daysUntilExpiry == 0), no test for an empty secrets array, and the alternate bare-array config format goes untested. The rigor score suffers most from the complete absence of negative/error tests. Design is adequate \u2014 BeforeAll scoping, a shared Invoke-ActWithFixture helper, and clear labeling are good choices \u2014 but the approach of patching the workflow YAML via regex replacement is brittle, all tests are integration-only (everything flows through act + Docker), making failures slow and hard to diagnose, and shared $script: state means a BeforeAll failure cascades misleadingly through all Its in a Describe. The suite would reliably catch regressions in the core classification and output logic, but a developer could break error handling or boundary conditions entirely without a single test failing.",
+  "tqs": 2.8,
+  "judge_cost_usd": 0.0556,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 1469,
+  "judge_provider": "claude-cli"
+}
