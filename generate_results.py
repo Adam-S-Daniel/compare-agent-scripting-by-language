@@ -260,11 +260,13 @@ def _categorize_tool_time(tool_uses: list[dict]) -> dict:
         r"pytest|python3?\s+-m\s+pytest",
         r"\bbats\b",
         r"bun\s+test",
+        r"bun\s+run\s+\S*test",       # bun run run-act-tests.ts, etc.
         r"pwsh\s+.*Tests?\.ps1",
-        r"run[-_]tests",
+        r"run[-_](?:act[-_])?tests",   # run-tests, run_tests, run-act-tests
         r"test_harness",
-        r"python3?\s+test\w*\.py",   # python3 test_*.py
-        r"bash\s+test\w*\.sh",        # bash test_*.sh
+        r"python3?\s+\S*test\S*\.py",  # python3 test_foo.py, python3 run_tests.py
+        r"bash\s+\S*test\S*\.sh",      # bash run-act-tests.sh, bash test_foo.sh
+        r"pwsh\s+\S*[Tt]est\S*\.ps1",  # pwsh Run-Tests.ps1, pwsh Test-Workflow.ps1
     ]
     act_patterns = [
         r"\bact\s+(?:push|pull_request)",
@@ -661,22 +663,6 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     lines.append(hook_sep)
     for r in hook_rows:
         lines.append(_fmt_hook(r))
-    total_hook_fires = sum(r["fires"] for r in hook_rows)
-    total_hook_caught = sum(r["caught"] for r in hook_rows)
-    total_gross = sum(r["gross"] for r in hook_rows)
-    total_overhead = sum(r["overhead"] for r in hook_rows)
-    total_net = total_gross - total_overhead
-    total_test_time = sum(r["test_time"] for r in hook_rows)
-    if total_hook_fires:
-        base = (f"| **Total** | | **{total_hook_fires}** | **{total_hook_caught}** "
-                f"| **{total_hook_caught/total_hook_fires*100:.1f}%** "
-                f"| **{_dur(total_gross)}** | **{total_gross/total_duration*100:.1f}%** "
-                f"| **{_dur(total_overhead)}** | **{total_overhead/total_duration*100:.1f}%** "
-                f"| **{_dur(total_net)}** | **{total_net/total_duration*100:.1f}%**")
-        if has_test_time and total_test_time:
-            lines.append(base + f" | **{_dur(total_test_time)}** | **{total_net/total_test_time*100:.1f}%** |")
-        else:
-            lines.append(base + " |" if not has_test_time else base + " | **—** | **—** |")
     lines.append("")
 
     sort_specs = [
@@ -768,10 +754,6 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         total_trap_time = sum(t["time_s"] for t in trap_instances)
         total_trap_cost = sum(t["time_s"] / t["dur_s"] * t["cost"] for t in trap_instances if t["dur_s"] > 0 and t["cost"] > 0)
         total_trapped = len(set((t["task_id"], t["mode"], t["model"]) for t in trap_instances))
-        lines.append(
-            f"| **Total** | | | **{total_trapped} runs** "
-            f"| **{_dur(total_trap_time)}** | **{total_trap_time/total_duration*100:.1f}%** "
-            f"| **${total_trap_cost:.2f}** | **{total_trap_cost/total_cost*100:.2f}%** |")
         lines.append("")
         lines.extend(_emit_sorted_variants(tlmc_hdr, tlmc_sep, tlmc_rows, [
             ("Sorted by time lost (least first)", "time_lost", False),
@@ -841,11 +823,6 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         lines.append(tlm_sep)
         for r in tlm_rows:
             lines.append(_fmt_tlm(r))
-        lines.append(
-            f"| **Total** | | **{completed}** | **{total_trapped}** "
-            f"| **{total_trapped/completed*100:.0f}%** "
-            f"| **{len(trap_instances)}** | **{_dur(total_trap_time)}** | **{total_trap_time/total_duration*100:.1f}%** "
-            f"| **${total_trap_cost:.2f}** | **{total_trap_cost/total_cost*100:.2f}%** |")
         lines.append("")
         lines.extend(_emit_sorted_variants(tlm_hdr, tlm_sep, tlm_rows, [
             ("Sorted by time lost (least first)", "time_lost", False),
@@ -867,7 +844,6 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
             pct = sv / total_cost * 100 if total_cost else 0
             cnt = sum(1 for d in cache_data if d["status"] == st)
             lines.append(f"| {label} | {cnt} | ${sv:.2f} | {pct:.2f}% |")
-        lines.append(f"| **Total** | **{len(cache_data)}** | **${cache_total_saved:.2f}** | **{cache_pct:.2f}%** |")
         lines.append("")
 
     # ==================================================================
