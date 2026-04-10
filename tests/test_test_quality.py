@@ -51,6 +51,17 @@ class TestDetectLanguage:
     def test_unknown_for_non_code(self):
         assert _detect_language(["data.json", "readme.md"]) == "unknown"
 
+    def test_python_test_beats_typescript_impl(self):
+        assert _detect_language(["utils.ts", "test_app.py"]) == "python"
+
+    def test_bats_detected_first_in_loop(self):
+        # bats is checked first in the detection loop, but test_helper.py
+        # also matches as a python test file. With bats listed first in the
+        # file list AND checked first in the loop, bats wins.
+        assert _detect_language(["suite.bats", "test_helper.py"]) == "bash"
+        # But python test file listed first means python is detected first
+        assert _detect_language(["test_helper.py", "suite.bats"]) == "python"
+
 
 # =========================================================================
 # File classification
@@ -281,6 +292,18 @@ log_result "test3" "PASS" "ok"
         r = _count_bash(code)
         assert r["tests"] == 3
 
+    def test_bats_takes_priority_over_log_result(self):
+        code = """
+@test "real bats test" {
+    run foo
+    [ "$status" -eq 0 ]
+}
+log_result "test1" "PASS" "ok"
+log_result "test2" "PASS" "ok"
+"""
+        r = _count_bash(code)
+        assert r["tests"] == 1  # log_result must not add to @test count
+
     def test_empty(self):
         r = _count_bash("")
         assert r["tests"] == 0
@@ -323,6 +346,40 @@ class TestComputeStructuralMetrics:
         r = compute_structural_metrics(tmp_path)
         assert r["impl_file_count"] == 1
         assert r["test_file_count"] == 1
+
+    def test_only_test_file_no_impl(self, tmp_path):
+        (tmp_path / "test_only.py").write_text("def test_x():\n    assert True\n")
+        r = compute_structural_metrics(tmp_path)
+        assert r["impl_file_count"] == 0
+        assert r["impl_lines"] == 0
+        assert r["test_to_code_ratio"] == 0  # no ZeroDivisionError
+
+    def test_zero_tests_no_crash(self, tmp_path):
+        (tmp_path / "app.py").write_text("def add(a, b): return a + b\n")
+        (tmp_path / "test_app.py").write_text("# placeholder\n")
+        r = compute_structural_metrics(tmp_path)
+        assert r["test_count"] == 0
+        assert r["assertions_per_test"] == 0  # no ZeroDivisionError
+
+    def test_nested_subdirectory_traversal(self, tmp_path):
+        (tmp_path / "src").mkdir()
+        (tmp_path / "src" / "app.py").write_text("def add(a, b): return a + b\n")
+        (tmp_path / "tests").mkdir()
+        (tmp_path / "tests" / "test_app.py").write_text(
+            "def test_add():\n    assert add(1,2)==3\n"
+        )
+        r = compute_structural_metrics(tmp_path)
+        assert r["impl_file_count"] == 1
+        assert r["test_file_count"] == 1
+        assert r["test_count"] == 1
+
+    def test_skips_hidden_directories(self, tmp_path):
+        hidden = tmp_path / ".cache"
+        hidden.mkdir()
+        (hidden / "test_secret.py").write_text("def test_hidden():\n    assert True\n")
+        (tmp_path / "app.py").write_text("x = 1\n")
+        r = compute_structural_metrics(tmp_path)
+        assert r["test_file_count"] == 0  # .cache/ must be skipped
 
 
 # =========================================================================

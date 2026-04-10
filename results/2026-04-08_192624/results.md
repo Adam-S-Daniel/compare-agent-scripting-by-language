@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-10 08:35:36 AM ET
+**Last updated:** 2026-04-10 08:46:43 AM ET
 
 **Status:** 64/64 runs completed, 0 remaining
 **Total cost so far:** $84.25
@@ -578,15 +578,15 @@ An LLM evaluates each test suite on four dimensions (1-5 scale):
 
 | Mode | Model | Avg Overall | Avg Coverage | Avg Rigor | Avg Design | Judge Cost |
 |------|-------|-------------|-------------|-----------|------------|------------|
-| bash | opus | **3.0** | 3.8 | 3.0 | 2.8 | $0.2371 |
-| bash | sonnet | **3.3** | 3.8 | 2.8 | 3.5 | $0.2597 |
-| default | opus | **3.2** | 3.6 | 2.6 | 3.4 | $0.1954 |
-| default | sonnet | **4.0** | 4.6 | 3.8 | 4.4 | $0.2482 |
-| powershell | opus | **2.8** | 3.6 | 2.8 | 3.6 | $0.2711 |
-| powershell | sonnet | **3.6** | 4.6 | 3.2 | 3.4 | $0.3608 |
-| typescript-bun | opus | **3.2** | 3.8 | 2.6 | 3.6 | $0.2237 |
-| typescript-bun | sonnet | **3.4** | 3.8 | 3.4 | 3.8 | $0.3175 |
-| **Total** | | | | | | **$2.1135** |
+| bash | opus | **3.0** | 3.9 | 3.0 | 2.9 | $0.3609 |
+| bash | sonnet | **3.4** | 3.9 | 2.9 | 3.6 | $0.3842 |
+| default | opus | **3.1** | 3.8 | 2.6 | 3.2 | $0.3557 |
+| default | sonnet | **4.2** | 4.6 | 4.1 | 4.6 | $0.3986 |
+| powershell | opus | **2.9** | 3.5 | 2.6 | 3.4 | $0.4482 |
+| powershell | sonnet | **3.4** | 4.4 | 3.0 | 3.2 | $0.5469 |
+| typescript-bun | opus | **3.1** | 3.6 | 2.8 | 3.5 | $0.4148 |
+| typescript-bun | sonnet | **3.4** | 3.8 | 3.1 | 3.8 | $0.4911 |
+| **Total** | | | | | | **$3.4004** |
 
 
 <details>
@@ -594,14 +594,14 @@ An LLM evaluates each test suite on four dimensions (1-5 scale):
 
 | Mode | Model | Avg Overall | Avg Coverage | Avg Rigor | Avg Design | Judge Cost |
 |------|-------|-------------|-------------|-----------|------------|------------|
-| default | sonnet | **4.0** | 4.6 | 3.8 | 4.4 | $0.2482 |
-| powershell | sonnet | **3.6** | 4.6 | 3.2 | 3.4 | $0.3608 |
-| typescript-bun | sonnet | **3.4** | 3.8 | 3.4 | 3.8 | $0.3175 |
-| bash | sonnet | **3.3** | 3.8 | 2.8 | 3.5 | $0.2597 |
-| default | opus | **3.2** | 3.6 | 2.6 | 3.4 | $0.1954 |
-| typescript-bun | opus | **3.2** | 3.8 | 2.6 | 3.6 | $0.2237 |
-| bash | opus | **3.0** | 3.8 | 3.0 | 2.8 | $0.2371 |
-| powershell | opus | **2.8** | 3.6 | 2.8 | 3.6 | $0.2711 |
+| default | sonnet | **4.2** | 4.6 | 4.1 | 4.6 | $0.3986 |
+| bash | sonnet | **3.4** | 3.9 | 2.9 | 3.6 | $0.3842 |
+| powershell | sonnet | **3.4** | 4.4 | 3.0 | 3.2 | $0.5469 |
+| typescript-bun | sonnet | **3.4** | 3.8 | 3.1 | 3.8 | $0.4911 |
+| default | opus | **3.1** | 3.8 | 2.6 | 3.2 | $0.3557 |
+| typescript-bun | opus | **3.1** | 3.6 | 2.8 | 3.5 | $0.4148 |
+| bash | opus | **3.0** | 3.9 | 3.0 | 2.9 | $0.3609 |
+| powershell | opus | **2.9** | 3.5 | 2.6 | 3.4 | $0.4482 |
 
 </details>
 
@@ -610,14 +610,14 @@ An LLM evaluates each test suite on four dimensions (1-5 scale):
 
 | Mode | Model | Avg Overall | Avg Coverage | Avg Rigor | Avg Design | Judge Cost |
 |------|-------|-------------|-------------|-----------|------------|------------|
-| default | sonnet | **4.0** | 4.6 | 3.8 | 4.4 | $0.2482 |
-| powershell | sonnet | **3.6** | 4.6 | 3.2 | 3.4 | $0.3608 |
-| bash | opus | **3.0** | 3.8 | 3.0 | 2.8 | $0.2371 |
-| bash | sonnet | **3.3** | 3.8 | 2.8 | 3.5 | $0.2597 |
-| typescript-bun | opus | **3.2** | 3.8 | 2.6 | 3.6 | $0.2237 |
-| typescript-bun | sonnet | **3.4** | 3.8 | 3.4 | 3.8 | $0.3175 |
-| default | opus | **3.2** | 3.6 | 2.6 | 3.4 | $0.1954 |
-| powershell | opus | **2.8** | 3.6 | 2.8 | 3.6 | $0.2711 |
+| default | sonnet | **4.2** | 4.6 | 4.1 | 4.6 | $0.3986 |
+| powershell | sonnet | **3.4** | 4.4 | 3.0 | 3.2 | $0.5469 |
+| bash | opus | **3.0** | 3.9 | 3.0 | 2.9 | $0.3609 |
+| bash | sonnet | **3.4** | 3.9 | 2.9 | 3.6 | $0.3842 |
+| default | opus | **3.1** | 3.8 | 2.6 | 3.2 | $0.3557 |
+| typescript-bun | sonnet | **3.4** | 3.8 | 3.1 | 3.8 | $0.4911 |
+| typescript-bun | opus | **3.1** | 3.6 | 2.8 | 3.5 | $0.4148 |
+| powershell | opus | **2.9** | 3.5 | 2.6 | 3.4 | $0.4482 |
 
 </details>
 
@@ -626,14 +626,14 @@ An LLM evaluates each test suite on four dimensions (1-5 scale):
 
 | Mode | Model | Avg Overall | Avg Coverage | Avg Rigor | Avg Design | Judge Cost |
 |------|-------|-------------|-------------|-----------|------------|------------|
-| default | sonnet | **4.0** | 4.6 | 3.8 | 4.4 | $0.2482 |
-| typescript-bun | sonnet | **3.4** | 3.8 | 3.4 | 3.8 | $0.3175 |
-| powershell | sonnet | **3.6** | 4.6 | 3.2 | 3.4 | $0.3608 |
-| bash | opus | **3.0** | 3.8 | 3.0 | 2.8 | $0.2371 |
-| bash | sonnet | **3.3** | 3.8 | 2.8 | 3.5 | $0.2597 |
-| powershell | opus | **2.8** | 3.6 | 2.8 | 3.6 | $0.2711 |
-| default | opus | **3.2** | 3.6 | 2.6 | 3.4 | $0.1954 |
-| typescript-bun | opus | **3.2** | 3.8 | 2.6 | 3.6 | $0.2237 |
+| default | sonnet | **4.2** | 4.6 | 4.1 | 4.6 | $0.3986 |
+| typescript-bun | sonnet | **3.4** | 3.8 | 3.1 | 3.8 | $0.4911 |
+| bash | opus | **3.0** | 3.9 | 3.0 | 2.9 | $0.3609 |
+| powershell | sonnet | **3.4** | 4.4 | 3.0 | 3.2 | $0.5469 |
+| bash | sonnet | **3.4** | 3.9 | 2.9 | 3.6 | $0.3842 |
+| typescript-bun | opus | **3.1** | 3.6 | 2.8 | 3.5 | $0.4148 |
+| default | opus | **3.1** | 3.8 | 2.6 | 3.2 | $0.3557 |
+| powershell | opus | **2.9** | 3.5 | 2.6 | 3.4 | $0.4482 |
 
 </details>
 
@@ -642,14 +642,14 @@ An LLM evaluates each test suite on four dimensions (1-5 scale):
 
 | Mode | Model | Avg Overall | Avg Coverage | Avg Rigor | Avg Design | Judge Cost |
 |------|-------|-------------|-------------|-----------|------------|------------|
-| default | sonnet | **4.0** | 4.6 | 3.8 | 4.4 | $0.2482 |
-| typescript-bun | sonnet | **3.4** | 3.8 | 3.4 | 3.8 | $0.3175 |
-| powershell | opus | **2.8** | 3.6 | 2.8 | 3.6 | $0.2711 |
-| typescript-bun | opus | **3.2** | 3.8 | 2.6 | 3.6 | $0.2237 |
-| bash | sonnet | **3.3** | 3.8 | 2.8 | 3.5 | $0.2597 |
-| default | opus | **3.2** | 3.6 | 2.6 | 3.4 | $0.1954 |
-| powershell | sonnet | **3.6** | 4.6 | 3.2 | 3.4 | $0.3608 |
-| bash | opus | **3.0** | 3.8 | 3.0 | 2.8 | $0.2371 |
+| default | sonnet | **4.2** | 4.6 | 4.1 | 4.6 | $0.3986 |
+| typescript-bun | sonnet | **3.4** | 3.8 | 3.1 | 3.8 | $0.4911 |
+| bash | sonnet | **3.4** | 3.9 | 2.9 | 3.6 | $0.3842 |
+| typescript-bun | opus | **3.1** | 3.6 | 2.8 | 3.5 | $0.4148 |
+| powershell | opus | **2.9** | 3.5 | 2.6 | 3.4 | $0.4482 |
+| default | opus | **3.1** | 3.8 | 2.6 | 3.2 | $0.3557 |
+| powershell | sonnet | **3.4** | 4.4 | 3.0 | 3.2 | $0.5469 |
+| bash | opus | **3.0** | 3.9 | 3.0 | 2.9 | $0.3609 |
 
 </details>
 
@@ -701,6 +701,28 @@ An LLM evaluates each test suite on four dimensions (1-5 scale):
 | Test Results Aggregator | typescript-bun | sonnet | 3 | 3 | 4 | 3 | The test suite provides solid unit coverage for the four cor |
 | Environment Matrix Generator | bash | opus | 4 | 3 | 3 | 3 | The test suite covers the main requirements well: basic Cart |
 | Environment Matrix Generator | bash | sonnet | 4 | 3 | 3 | 3 | The bats suite covers all major task requirements well: basi |
+| Environment Matrix Generator | default | opus | 3 | 2 | 2 | 2 | The test harness has reasonable structural ambition — it cov |
+| Environment Matrix Generator | default | sonnet | 5 | 5 | 5 | 5 | This is an exemplary test suite. Coverage is comprehensive:  |
+| Environment Matrix Generator | powershell | opus | 3 | 2 | 2 | 2 | The suite addresses the main task requirements (basic matrix |
+| Environment Matrix Generator | powershell | sonnet | 4 | 2 | 3 | 3 | The suite covers all eight primary requirements (OS, languag |
+| Environment Matrix Generator | typescript-bun | opus | 4 | 3 | 3 | 3 | The suite covers all major requirements (basic cartesian pro |
+| Environment Matrix Generator | typescript-bun | sonnet | 4 | 3 | 4 | 4 | The unit test suite in matrix-generator.test.ts covers all m |
+| Artifact Cleanup Script | bash | opus | 4 | 3 | 3 | 3 | The test suite covers the main functional requirements well: |
+| Artifact Cleanup Script | bash | sonnet | 4 | 3 | 4 | 4 | The test suite covers all five key requirement areas — max-a |
+| Artifact Cleanup Script | default | opus | 5 | 4 | 4 | 4 | The test suite covers all six major functional requirements  |
+| Artifact Cleanup Script | default | sonnet | 4 | 4 | 5 | 4 | The test suite is well-structured and covers all five functi |
+| Artifact Cleanup Script | powershell | opus | 4 | 3 | 4 | 4 | The suite covers all five main requirement areas (max-age, k |
+| Artifact Cleanup Script | powershell | sonnet | 4 | 3 | 3 | 3 | The suite covers all six functions and all three policy type |
+| Artifact Cleanup Script | typescript-bun | opus | 4 | 4 | 5 | 4 | The test suite thoroughly covers the core retention engine ( |
+| Artifact Cleanup Script | typescript-bun | sonnet | 3 | 2 | 3 | 2 | The test suite covers the core business logic reasonably wel |
+| Secret Rotation Validator | bash | opus | 4 | 3 | 3 | 3 | The suite covers all major scenarios — mixed status, all-ok, |
+| Secret Rotation Validator | bash | sonnet | 4 | 3 | 4 | 3 | The test suite covers most key requirements well: expired/wa |
+| Secret Rotation Validator | default | opus | 4 | 2 | 3 | 3 | The test suite covers the core functional requirements well  |
+| Secret Rotation Validator | default | sonnet | 5 | 5 | 5 | 5 | Exceptional test suite. Coverage is comprehensive: every pub |
+| Secret Rotation Validator | powershell | opus | 3 | 2 | 3 | 3 | The suite covers the main happy-path scenarios well — mixed, |
+| Secret Rotation Validator | powershell | sonnet | 4 | 3 | 3 | 3 | The test suite covers the core requirements well: secret cla |
+| Secret Rotation Validator | typescript-bun | opus | 2 | 2 | 2 | 2 | The test suite is almost entirely composed of end-to-end act |
+| Secret Rotation Validator | typescript-bun | sonnet | 4 | 3 | 4 | 4 | The test suite demonstrates solid coverage of the core domai |
 
 </details>
 
@@ -711,11 +733,11 @@ Values near +1.0 indicate the LLM agrees with the structural signal; near 0 mean
 
 | Structural Metric | vs Coverage | vs Rigor | vs Design | vs Overall |
 |-------------------|------------|---------|----------|-----------|
-| Test count | 0.28 | 0.4 | 0.28 | 0.31 |
-| Assertion count | 0.27 | 0.33 | 0.42 | 0.33 |
-| Test:code ratio | -0.18 | -0.27 | -0.26 | -0.15 |
+| Test count | 0.23 | 0.31 | 0.26 | 0.31 |
+| Assertion count | 0.17 | 0.18 | 0.25 | 0.26 |
+| Test:code ratio | -0.09 | -0.2 | -0.16 | -0.04 |
 
-*Based on 42 runs with both structural and LLM scores.*
+*Based on 64 runs with both structural and LLM scores.*
 
 ### LLM vs Structural Discrepancies
 
@@ -728,6 +750,10 @@ or that the structural counters are undercounting for an unusual test pattern.
 | Semantic Version Bumper | powershell | opus | 34 | 44 | 3 | 2 | 3 | 2 | LLM says low rigor (2/5) but 44 assertions detected |
 | Dependency License Checker | powershell | sonnet | 38 | 84 | 4 | 2 | 3 | 3 | LLM says low rigor (2/5) but 84 assertions detected |
 | Test Results Aggregator | typescript-bun | opus | 8 | 59 | 4 | 2 | 3 | 3 | LLM says low rigor (2/5) but 59 assertions detected |
+| Environment Matrix Generator | powershell | opus | 43 | 62 | 3 | 2 | 2 | 2 | LLM says low rigor (2/5) but 62 assertions detected |
+| Secret Rotation Validator | default | opus | 8 | 60 | 4 | 2 | 3 | 3 | LLM says low rigor (2/5) but 60 assertions detected |
+| Secret Rotation Validator | powershell | opus | 49 | 74 | 3 | 2 | 3 | 3 | LLM says low rigor (2/5) but 74 assertions detected |
+| Secret Rotation Validator | typescript-bun | opus | 7 | 77 | 2 | 2 | 2 | 2 | LLM says low rigor (2/5) but 77 assertions detected |
 
 ## Per-Run Results
 

@@ -1,0 +1,12 @@
+{
+  "coverage": 2,
+  "rigor": 2,
+  "design": 2,
+  "overall": 2,
+  "summary": "The test suite is almost entirely composed of end-to-end act/Docker integration tests, leaving the core library functions (daysBetween, evaluateSecret, buildReport, formatReport, parseArgs) completely without unit tests. The three act test cases cover only happy-path scenarios (mixed, all-ok, all-expired) and never exercise error handling: empty secrets array, invalid dates, missing fields, zero/negative rotation policy, unsupported output format, or missing CLI arguments. The boundary between 'warning' and 'ok' (exactly at the warning threshold) is never tested, nor is a non-default warning window exercised. The workflow structure tests are reasonably thorough (YAML triggers, step names, actionlint). However, the act integration tests are architecturally fragile: the all-ok and all-expired cases patch the workflow YAML via brittle regex substitution, the runAct helper passes --env FIXTURE_FILE but the mixed-urgency test still relies on the workflow's hardcoded default rather than the override, and fixture files are assumed to exist without being defined in the test file itself. Spinning up Docker containers to assert on exact JSON field values is a legitimate strategy only when paired with lower-level unit tests, which are entirely absent here. The suite would fail to catch regressions in the validator or formatter logic without also running Docker, making it slow and unreliable as a regression guard.",
+  "tqs": 2.0,
+  "judge_cost_usd": 0.0576,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 1466,
+  "judge_provider": "claude-cli"
+}

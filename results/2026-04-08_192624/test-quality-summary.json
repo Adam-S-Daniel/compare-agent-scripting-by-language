@@ -12,7 +12,15 @@
     "sq_test_to_code_ratio": 1.0,
     "sq_test_count": 30,
     "sq_assertion_count": 19,
-    "sq_assertions_per_test": 0.6
+    "sq_assertions_per_test": 0.6,
+    "lj_coverage": 4,
+    "lj_rigor": 3,
+    "lj_design": 3,
+    "lj_overall": 3,
+    "lj_summary": "The suite covers all five core requirements (VERSION file, package.json, patch/minor/major/breaking bumps, changelog generation) with five distinct matrix test cases and exact expected-value assertions. Structural checks for workflow triggers, job names, actionlint, shellcheck, and bash -n are a nice complement. Gaps in rigor: no test for mixed commit types (feat+fix \u2192 minor wins), no error-path tests (missing file, unparseable version, empty commit log, unknown args), no verification of changelog section structure (### Features, ### Bug Fixes headers), and no validation that CHANGELOG.md is actually written to disk. Design has notable weaknesses: setup_file silently swallows act failures with `|| true`, so every downstream functional test fails with a cryptic message rather than a meaningful one; the `grep 'TEST=patch-bump' -A 10` idiom is brittle and can bleed across test-case boundaries in the combined output; hardcoding `count -eq 5` to detect matrix success is fragile if the matrix size changes; and there is no teardown, leaving temp dirs on disk. The overall approach of routing everything through act is architecturally sound but introduces environment sensitivity (Docker, image pull) that makes the suite unreliable in constrained CI environments.",
+    "lj_judge_cost_usd": 0.0493,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1316
   },
   {
     "task_id": "11-semantic-version-bumper",
@@ -27,7 +35,15 @@
     "sq_test_to_code_ratio": 0.53,
     "sq_test_count": 17,
     "sq_assertion_count": 41,
-    "sq_assertions_per_test": 2.4
+    "sq_assertions_per_test": 2.4,
+    "lj_coverage": 5,
+    "lj_rigor": 4,
+    "lj_design": 4,
+    "lj_overall": 4,
+    "lj_summary": "The test suite covers all key requirements thoroughly: version parsing from both VERSION files and package.json, all three bump types (patch/minor/major), the full pipeline for each bump type, changelog generation and prepending, and error handling for missing/empty inputs. The 17 tests map cleanly to the task requirements with no obvious gaps. Rigor is strong \u2014 breaking changes are tested via both the `feat!:` syntax and the `BREAKING CHANGE:` footer convention, error paths are validated, and file mutation is verified alongside stdout. One gap is the lack of tests for chore/docs/style commits mapping to patch, and no test for scoped commits like `feat(scope):` or `fix(scope):`. The design is clean: setup/teardown use mktemp properly, tests are independent, heredocs are used for fixtures, and assertions check both exit codes and file state. A minor weakness is that test 16's error message assertion uses a loose OR-chain of possible substrings rather than pinning to the actual error message, and test 17 similarly. The bats file is well-commented with TDD RED labels. Overall this is a high-quality suite that would catch regressions on all main code paths.",
+    "lj_judge_cost_usd": 0.0452,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 303
   },
   {
     "task_id": "11-semantic-version-bumper",
@@ -41,8 +57,16 @@
     "sq_impl_lines": 284,
     "sq_test_to_code_ratio": 1.48,
     "sq_test_count": 9,
-    "sq_assertion_count": 6,
-    "sq_assertions_per_test": 0.7
+    "sq_assertion_count": 5,
+    "sq_assertions_per_test": 0.6,
+    "lj_coverage": 2,
+    "lj_rigor": 2,
+    "lj_design": 2,
+    "lj_overall": 2,
+    "lj_summary": "The test harness is infrastructure-heavy but functionally shallow. All testing is routed through `act` (GitHub Actions in Docker), which satisfies the task's CI requirement but means zero unit tests exist for the core Python functions \u2014 parse_version, bump_version, classify_commit, determine_bump_type, generate_changelog, write_version, etc. These functions have non-trivial logic (e.g., BREAKING CHANGE detection, v-prefixed versions, scope parsing, priority resolution) that goes entirely untested at the unit level. Rigor is poor: only happy-path act runs are asserted; there are no negative cases for malformed versions, empty files, missing version sources, no conventional commits, or conflicting bump types. The 'changelog shown' assertion checks only that the string 'CHANGELOG' appears anywhere in act output \u2014 not that it's correct. Design has notable problems: global mutable state (passed/failed/errors) breaks test isolation; the `_parse_workflow_minimal()` fallback is a brittle, half-implemented YAML parser that could produce wrong results; PyYAML is imported inside a function with a silent fallback path; fixture files are external and not shown, making the test code incomplete on its own. The infrastructure-layer assertions (act exit 0, 'Job succeeded') are good, and the exact-string checks for 'New version: X.Y.Z' and 'BUMPED_VERSION=X.Y.Z' are appropriate \u2014 but those are only as strong as the fixtures driving them, which are hidden from review.",
+    "lj_judge_cost_usd": 0.0629,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1682
   },
   {
     "task_id": "11-semantic-version-bumper",
@@ -57,7 +81,15 @@
     "sq_test_to_code_ratio": 2.06,
     "sq_test_count": 104,
     "sq_assertion_count": 57,
-    "sq_assertions_per_test": 0.5
+    "sq_assertions_per_test": 0.5,
+    "lj_coverage": 4,
+    "lj_rigor": 3,
+    "lj_design": 4,
+    "lj_overall": 4,
+    "lj_summary": "The test suite covers all six core requirements well: version parsing, bump-type determination (all three tiers), file I/O for both package.json and version.txt, changelog generation, version-file updating, and the workflow structure. Fixtures are clearly named and reused across tests. The run_tests.py harness adds end-to-end act coverage with exact NEW_VERSION= assertions and 'Job succeeded' checks for five meaningful scenarios (patch, minor, major, no-bump, minor-overrides-patch). Weaknesses: get_commits_from_file() and get_commits_from_git() have no unit tests; the CLI main() and --dry-run flag are never exercised in isolation; error paths such as malformed JSON, empty version file, or a version file with a v-prefix written back are absent; the changelog 'Other' section and mixed four-category output are untested. The rigor dip comes from these gaps in error-path and boundary coverage rather than any structural flaw \u2014 the happy-path and priority-matrix tests are thorough and well-structured with proper tmp_path isolation and clear pytest class grouping.",
+    "lj_judge_cost_usd": 0.0694,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1599
   },
   {
     "task_id": "11-semantic-version-bumper",
@@ -72,7 +104,15 @@
     "sq_test_to_code_ratio": 0.94,
     "sq_test_count": 34,
     "sq_assertion_count": 44,
-    "sq_assertions_per_test": 1.3
+    "sq_assertions_per_test": 1.3,
+    "lj_coverage": 3,
+    "lj_rigor": 2,
+    "lj_design": 3,
+    "lj_overall": 2,
+    "lj_summary": "The suite covers the five primary bump scenarios (patch, minor, major-bang, major-BREAKING, no-bump) plus workflow-structure validation and actionlint, which addresses most of the stated requirements. However, the package.json version-file case is explicitly called out in the .DESCRIPTION comment as test case 7 but never implemented \u2014 a concrete gap against a stated requirement. Error-handling paths (invalid version string, missing file, empty commit log, git-log failure) are entirely absent, as is any test for the --DryRun switch or scoped commit messages (e.g., feat(auth):). All tests are end-to-end integration tests that spawn Docker via act; there are no unit tests for the helper functions (Get-SemanticVersion, Get-BumpType, Get-NextVersion, etc.), so a regression in those helpers can only be detected indirectly and slowly. The Invoke-ActTest helper is defined inside a root-level BeforeAll block, which can cause Pester v5 scoping issues when the function is referenced inside nested Describe/BeforeAll blocks \u2014 making tests potentially unreliable depending on the Pester version. The approach of asserting exact version strings (e.g., 'NEW_VERSION=1\\.0\\.1') and 'Job succeeded' is solid where it appears, but the overall suite would not catch regressions in error paths, package.json handling, or the DryRun mode.",
+    "lj_judge_cost_usd": 0.0716,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 2503
   },
   {
     "task_id": "11-semantic-version-bumper",
@@ -87,7 +127,15 @@
     "sq_test_to_code_ratio": 0.98,
     "sq_test_count": 36,
     "sq_assertion_count": 45,
-    "sq_assertions_per_test": 1.2
+    "sq_assertions_per_test": 1.2,
+    "lj_coverage": 4,
+    "lj_rigor": 3,
+    "lj_design": 3,
+    "lj_overall": 3,
+    "lj_summary": "The suite covers the primary requirements well: Get-BumpType (breaking/feat/fix/none), Get-NextVersion (all bump types plus error), Read/Write-VersionToFile (txt and JSON), New-ChangelogEntry, integration tests using fixture files, and workflow structure validation. A few gaps hurt the score: New-ChangelogEntry is never tested with a breaking-change commit (only the ### Features/Bug Fixes path is exercised); Read-VersionFromFile never tests a JSON file with a missing 'version' field; Get-BumpType lacks a test for scoped commits like 'feat(auth):' even though the regex supports them; and the direct script invocation path (command-line args, CommitFile loading, stdout output format) is entirely untested. Rigor is middling \u2014 boundary values are reasonable but several error paths and the 'other' changelog category go unexercised. Design is adequate but has a structural bug: $tmpDir is assigned inside each It block and is therefore not visible to the outer AfterEach, so temp directory cleanup silently fails. The BeforeAll in Workflow Structure Tests correctly uses $PSCommandPath (with an explanatory comment), which is good, but mixing $PSScriptRoot and $PSCommandPath without uniform rationale is mildly confusing. Fixtures and Describe/Context organization are positives.",
+    "lj_judge_cost_usd": 0.0588,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1820
   },
   {
     "task_id": "11-semantic-version-bumper",
@@ -102,7 +150,16 @@
     "sq_test_to_code_ratio": 1.1,
     "sq_test_count": 8,
     "sq_assertion_count": 28,
-    "sq_assertions_per_test": 3.5
+    "sq_assertions_per_test": 3.5,
+    "lj_coverage": 3,
+    "lj_rigor": 2,
+    "lj_design": 4,
+    "lj_overall": 3,
+    "lj_summary": "The test suite is well-organized and correctly routes all testing through `act` as required, with four meaningful bump scenarios (patch, minor, major, mixed). Workflow structure tests are thorough (triggers, permissions, actionlint, script file existence). However, coverage gaps are significant: there is no test for the 'none' bump case (chore/docs commits), no test reading from package.json (only VERSION file), no test for the BREAKING CHANGE footer syntax (only `!` bang operator), and no test for an empty or missing commit log triggering graceful error handling. Rigor is the weakest dimension \u2014 every single test is a happy-path success case; no error scenarios, invalid version strings, malformed commit messages, or boundary conditions (e.g., v-prefixed versions, 0.x semver behavior) are exercised. Design is the strongest area: the TestCase interface, `setupTestRepo`/`runAct` helpers, dynamic test generation loop, beforeAll/afterAll lifecycle hooks, temp dir cleanup, and 5-minute timeouts are all well-considered. Exact-value assertions (e.g., `NEW_VERSION=1.2.0`, `Bump type: minor`) rather than loose presence checks add meaningful signal. The suite would catch major regressions on the main code path but would miss a wide class of edge-case bugs.",
+    "lj_judge_cost_usd": 0.0251,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1343,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "11-semantic-version-bumper",
@@ -117,7 +174,15 @@
     "sq_test_to_code_ratio": 0.58,
     "sq_test_count": 28,
     "sq_assertion_count": 39,
-    "sq_assertions_per_test": 1.4
+    "sq_assertions_per_test": 1.4,
+    "lj_coverage": 3,
+    "lj_rigor": 3,
+    "lj_design": 4,
+    "lj_overall": 3,
+    "lj_summary": "The suite thoroughly covers the core algorithmic modules (parseVersion, bumpVersion, determineVersionBump, parseCommits, generateChangelog) with well-named tests and reusable typed fixtures. However, it completely omits testing for the file I/O layer (readCurrentVersion, writeNewVersion, prependChangelog, readCommitMessages), CLI argument parsing (parseArgs), any end-to-end/integration path through main(), the GitHub Actions workflow structure checks, and the act-based pipeline execution that the task explicitly requires. For rigor, the tested functions get reasonable edge case coverage (v-prefix, 0.0.x, empty list, both breaking syntaxes) but miss compound cases like scope+bang breaking commits, changelog output when no features or fixes are present, and the JSON parse-error path in readCurrentVersion. The 'skips malformed commits' test name is misleading since the implementation keeps them as 'unknown' rather than dropping them. Design is the strongest dimension: a single file for all tests is a minor organisation smell (it's named semver.test.ts but also covers changelog), but otherwise the describe/it hierarchy, fixture placement, and TypeScript typing are clean and readable. Overall, the suite would catch regressions in the pure-logic core but would be blind to the bulk of real-world failure modes in the I/O, CLI, and CI integration layers.",
+    "lj_judge_cost_usd": 0.0559,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1441
   },
   {
     "task_id": "12-pr-label-assigner",
@@ -132,7 +197,16 @@
     "sq_test_to_code_ratio": 1.31,
     "sq_test_count": 11,
     "sq_assertion_count": 17,
-    "sq_assertions_per_test": 1.5
+    "sq_assertions_per_test": 1.5,
+    "lj_coverage": 3,
+    "lj_rigor": 2,
+    "lj_design": 2,
+    "lj_overall": 2,
+    "lj_summary": "The suite covers the happy-path label-assignment scenarios (docs-only, mixed, tests-only, infra, single file, priority conflict) and does the right structural checks (actionlint, trigger events, job/step presence, file existence). However, it misses entire requirement categories: no tests for error paths (missing config, missing file input, empty file list, no files matching any rule), no stdin mode test, no shellcheck/bash -n validation test, and no test for the 'No labels matched' code path. Rigor is low: negative assertions in case1 use literal pipe characters in grep patterns (e.g. `grep -q \"^[[:space:]]*|[[:space:]]*api$\"`) which are logically broken and will almost never catch unwanted labels. Priority-ordering assertions only inspect the first line of a loosely-bounded grep block, which is fragile. Design has notable issues: `setup_act_repo` and `run_act_in_repo` call `cd` which mutates the bats process working directory across tests; there is no `teardown` function, so temp directories leak on test failure; `append_result` is called before all assertions complete in several tests (case1), meaning partial results get recorded; and the repetitive 20-line per-test structure cries out for a shared `assert_act_labels` helper. The heavy reliance on Docker+act for every functional test is required by the spec but makes the suite slow and environment-fragile with no mitigation strategies (retry, timeout, or clear skip conditions).",
+    "lj_judge_cost_usd": 0.0248,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1339,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "12-pr-label-assigner",
@@ -147,7 +221,16 @@
     "sq_test_to_code_ratio": 0.52,
     "sq_test_count": 15,
     "sq_assertion_count": 34,
-    "sq_assertions_per_test": 2.3
+    "sq_assertions_per_test": 2.3,
+    "lj_coverage": 4,
+    "lj_rigor": 3,
+    "lj_design": 4,
+    "lj_overall": 4,
+    "lj_summary": "The test suite covers the core requirements well: glob pattern matching (docs/**, src/api/**, *.test.*), multiple labels per file, deduplication, priority ordering, error handling for missing files, comments in config, empty file list, and output format. A leftover `echo \"Output: $output\"` debug statement appears in test 2, which is a minor cleanup issue. Missing coverage includes: malformed config rules (e.g., missing the priority field \u2014 the implementation warns and skips these, but no test exercises this path), running the script with no arguments at all, invalid (non-numeric) priority values, and the `--help` flag. The priority-ordering test (test 8) is well-designed \u2014 it captures line numbers and compares positions, which is a rigorous approach. The deep-wildcard test (test 12: `**/*.test.js` on `src/handler.test.js`) probes a real edge case that bash's pattern-matching behaviour may or may not handle correctly depending on globstar state, making it a valuable regression guard. Setup/teardown provide full test isolation, the two helper functions (create_config, create_filelist) make fixtures concise and readable, and test names are clear. The suite is solid but would benefit from negative/malformed-input tests to improve confidence in the error-handling paths.",
+    "lj_judge_cost_usd": 0.0333,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1868,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "12-pr-label-assigner",
@@ -161,8 +244,17 @@
     "sq_impl_lines": 180,
     "sq_test_to_code_ratio": 1.85,
     "sq_test_count": 10,
-    "sq_assertion_count": 9,
-    "sq_assertions_per_test": 0.9
+    "sq_assertion_count": 4,
+    "sq_assertions_per_test": 0.4,
+    "lj_coverage": 4,
+    "lj_rigor": 2,
+    "lj_design": 3,
+    "lj_overall": 3,
+    "lj_summary": "The test suite defines 10 functional end-to-end cases that collectively exercise all major stated requirements: glob matching (docs/**, src/api/**, *.test.*), multi-label output, priority conflict resolution, empty result, and several pattern variants (.github/**, *.md, src/ui/**). The workflow-structure checks (triggers, job names, actionlint) are a thoughtful addition. However, rigor is the weakest dimension: the entire suite runs at the integration layer through `act`/Docker with no unit tests for the core logic (`match_file`, `assign_labels`). This means tricky ** glob semantics (prefix-only, suffix-only, mid-path), boundary conditions on priority values, duplicate files, and error-handling paths (invalid JSON config, missing required fields, empty CHANGED_FILES) are never exercised \u2014 the implementation has these code paths but they are untested. Design is mixed: the data-driven TEST_CASES list is clean and readable, fixture management (temp git repo per case) is properly isolated, and results are written with clear delimiters. But the harness is entirely custom (no pytest/unittest), conflates assertions with file I/O, and carries a hard dependency on Docker + act being installed and functional, which makes the suite brittle in CI environments that differ from the local setup. Overall the suite would catch obvious regressions in happy-path behavior but would likely miss bugs in the matching algorithm, error handling, and edge-case pattern logic.",
+    "lj_judge_cost_usd": 0.0253,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1373,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "12-pr-label-assigner",
@@ -177,7 +269,16 @@
     "sq_test_to_code_ratio": 0.84,
     "sq_test_count": 17,
     "sq_assertion_count": 25,
-    "sq_assertions_per_test": 1.5
+    "sq_assertions_per_test": 1.5,
+    "lj_coverage": 5,
+    "lj_rigor": 4,
+    "lj_design": 4,
+    "lj_overall": 4,
+    "lj_summary": "The test suite demonstrates strong coverage of the stated requirements: glob patterns (single *, **, *.test.*), multiple labels per file, priority ordering, config loading/validation, and deduplication are all explicitly exercised. The TDD structure is clear and each test is well-named with a docstring explaining its intent. Edge cases are reasonably covered\u2014empty files, empty rules, no matches, duplicate labels, case sensitivity, invalid priority, and missing required fields. The mock PR fixture (test 17) provides a realistic end-to-end scenario. Gaps that prevent a perfect score: (1) no test for the CLI/main() entry point or its error paths (invalid config file, bad --files-json); (2) no test for zero-priority or non-integer priority edge cases beyond -1; (3) no test for files with Windows-style backslash paths despite the implementation normalizing them; (4) assign_labels_sorted is only partially tested\u2014only ordering relative to 'tests' is asserted, not a full ordering guarantee; (5) no test for patterns with multiple '**' segments or edge cases like a pattern that is just '**'. Design is clean with good use of pytest conventions, though a shared fixture for the common config_dict would reduce repetition across tests 8/9/17.",
+    "lj_judge_cost_usd": 0.0097,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 322,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "12-pr-label-assigner",
@@ -192,7 +293,17 @@
     "sq_test_to_code_ratio": 0.55,
     "sq_test_count": 17,
     "sq_assertion_count": 41,
-    "sq_assertions_per_test": 2.4
+    "sq_assertions_per_test": 2.4,
+    "lj_coverage": 4,
+    "lj_rigor": 3,
+    "lj_design": 4,
+    "lj_overall": 3,
+    "lj_summary": "The test suite covers all major requirements: glob-to-regex conversion, Test-GlobMatch, Get-PRLabels with deduplication, multi-label assignment, priority ordering, error handling for empty inputs, and a realistic complex scenario. Test count (17) matches the workflow assertion, which shows intentional coherence. Design is clean \u2014 BeforeAll dot-sourcing, logical Describe/Context/It hierarchy, independent tests, and the 3>$null warning suppression is functional. However, rigor has notable gaps: rules without a priority field are handled in the implementation (defaulting to 999) but never tested; null inputs vs. empty arrays are not distinguished; the priority test only confirms both labels are collected regardless of order, which doesn't actually validate that lower-priority numbers are evaluated first (since all matching rules always apply, priority is nearly untestable as written); special characters in file paths (spaces, brackets, dots in directory names) are absent; *.test.* is only tested at the root level, not in subdirectories; and the main script's output format (LABELS_START/LABELS_END/LABEL_CSV) is validated only via the act harness, not in the Pester suite. The act harness does check exact label CSV strings per test case, which is a strength, but it lives outside Pester and depends on Docker availability. Overall a solid foundation that would catch most regressions, but the priority semantics and glob edge cases represent real regression risk.",
+    "lj_tqs": 3.5,
+    "lj_judge_cost_usd": 0.0295,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1628,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "12-pr-label-assigner",
@@ -207,7 +318,17 @@
     "sq_test_to_code_ratio": 2.3,
     "sq_test_count": 45,
     "sq_assertion_count": 64,
-    "sq_assertions_per_test": 1.4
+    "sq_assertions_per_test": 1.4,
+    "lj_coverage": 5,
+    "lj_rigor": 4,
+    "lj_design": 5,
+    "lj_overall": 5,
+    "lj_summary": "This is an exceptionally well-structured test suite that covers virtually all requirements from the task description. Unit tests address glob conversion, path matching, label assignment, multi-label scenarios, priority ordering, deduplication, and edge cases. Workflow structure tests validate YAML content, trigger types, referenced file existence, and actionlint compliance. The act execution layer provides true end-to-end validation with 5 representative fixture cases, dynamic test generation via BeforeDiscovery, exact label assertions (LABEL: <value>), job success checks, and required artifact (act-result.txt) creation. Design is exemplary: clear TDD iteration comments, correct Pester 5 scoping with BeforeDiscovery/BeforeAll separation, $script: variable discipline, fixture isolation in temp directories, and graceful skipping when optional tooling (act, actionlint) is absent. Rigor is strong \u2014 null/empty inputs, Windows path separators, alphabetical tiebreaking, same-label multi-rule deduplication, and no-match scenarios are all explicitly covered. The one minor gap is the lack of tests for malformed rule objects (missing Pattern/Label fields) and invalid JSON input to the main execution block, which keeps rigor from a perfect 5.",
+    "lj_tqs": 4.8,
+    "lj_judge_cost_usd": 0.0104,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 312,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "12-pr-label-assigner",
@@ -222,7 +343,17 @@
     "sq_test_to_code_ratio": 1.6,
     "sq_test_count": 6,
     "sq_assertion_count": 20,
-    "sq_assertions_per_test": 3.3
+    "sq_assertions_per_test": 3.3,
+    "lj_coverage": 4,
+    "lj_rigor": 3,
+    "lj_design": 4,
+    "lj_overall": 3,
+    "lj_summary": "The test suite covers all six major happy-path scenarios (basic labeling, multiple labels per file, exclusive/priority mode, wildcard extension matching, no-match case, complex mixed files) plus a complete workflow-structure block (triggers, jobs, steps, file references, actionlint). That accounts for every positive requirement from the task description, earning solid coverage marks. However, rigor is limited: none of the error/validation paths are exercised through act \u2014 invalid LABEL_CONFIG JSON, empty CHANGED_FILES, rules with missing patterns or labels, and same-priority tie-breaking are all dead zones. The design is generally strong: a well-typed TestFixture interface, clear separation of workflow-structure vs. act-integration suites, extracted helper functions (setupTempRepo, runAct, appendActResult, extractLabelResult), and explicit per-test timeouts. The main fragility is in extractLabelResult, which strips act's line-prefix decoration with a naive indexOf('| ') heuristic \u2014 any change in act's output format breaks every assertion silently (returns null, then expect(result).not.toBeNull() catches it, but the JSON parse failure gives no diagnostic). Running every fixture as a separate act invocation also makes the suite extremely slow and environment-dependent (Docker, specific catthehacker image), reducing confidence that the suite will be run consistently. Overall it is a competent harness for catching happy-path regressions but too fragile and incomplete on error scenarios to be fully trusted.",
+    "lj_tqs": 3.5,
+    "lj_judge_cost_usd": 0.0555,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1476,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "12-pr-label-assigner",
@@ -237,7 +368,17 @@
     "sq_test_to_code_ratio": 0.43,
     "sq_test_count": 20,
     "sq_assertion_count": 31,
-    "sq_assertions_per_test": 1.6
+    "sq_assertions_per_test": 1.6,
+    "lj_coverage": 5,
+    "lj_rigor": 4,
+    "lj_design": 4,
+    "lj_overall": 4,
+    "lj_summary": "The test suite demonstrates strong coverage of the stated requirements: glob matching (docs/**, *.test.*, *.spec.*, .github/**), multiple labels per file, deduplication, priority ordering, exclusive conflict resolution, per-file breakdown, empty/no-rules edge cases, and root-level markdown. Mock PR scenario tests add realistic integration-style validation. Rigor is good \u2014 empty inputs, no-match scenarios, and exclusive rules are all exercised \u2014 but a few gaps exist: no tests for malformed/invalid glob patterns, no boundary tests for equal-priority rules, no tests for files with unusual characters or deeply nested paths beyond what's incidentally covered, and the `*.md` root pattern vs `docs/*.md` distinction isn't explicitly stress-tested. Design is clean: fixtures are defined once at the top, describe blocks logically separate unit and scenario tests, comments reference the TDD RED step, and tests are independent and readable. The one design weakness is that some test descriptions say 'RED' uniformly without distinguishing refactored final state, and a few assertions use `toContain` where `toEqual` on the full set would be more precise (though this is intentional flexibility). Overall this is a trustworthy suite that would catch most regressions in the labeler logic.",
+    "lj_tqs": 4.3,
+    "lj_judge_cost_usd": 0.044,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 316,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "13-dependency-license-checker",
@@ -252,7 +393,17 @@
     "sq_test_to_code_ratio": 0.32,
     "sq_test_count": 18,
     "sq_assertion_count": 46,
-    "sq_assertions_per_test": 2.6
+    "sq_assertions_per_test": 2.6,
+    "lj_coverage": 4,
+    "lj_rigor": 3,
+    "lj_design": 4,
+    "lj_overall": 4,
+    "lj_summary": "The suite covers the core requirements well: both manifest types (package.json, requirements.txt), all three license statuses (approved/denied/unknown), exit codes (0/1/2), JSON output format, and five distinct error conditions. Fixtures are reused sensibly and tmpdir-based custom manifests are cleaned up correctly. Design is clean \u2014 section comments, descriptive @test names, and focused per-test scope. Gaps in rigor pull the score down: no tests for empty manifests (the script would die/exit 2), no tests for alternative version specifiers in requirements.txt (>=, ~=, !=), no test that an unknown --format value is rejected, no test for config or license-db files being missing (only manifest is tested for non-existence), and no test that comments/blank lines in requirements.txt are silently skipped. The multi-assertion pattern ([[ \"$output\" == *\"express\"*\"MIT\"*\"approved\"* ]]) is brittle because it depends on columnar word order but does not use bats assert helpers; a reformatted output line could silently pass. Several package.json tests re-run the same invocation rather than sharing a cached result via setup/teardown, wasting execution time. Despite these gaps the suite would reliably catch most regressions in the happy paths and primary error paths.",
+    "lj_tqs": 3.8,
+    "lj_judge_cost_usd": 0.0602,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1375,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "13-dependency-license-checker",
@@ -267,7 +418,17 @@
     "sq_test_to_code_ratio": 0.65,
     "sq_test_count": 17,
     "sq_assertion_count": 28,
-    "sq_assertions_per_test": 1.6
+    "sq_assertions_per_test": 1.6,
+    "lj_coverage": 3,
+    "lj_rigor": 2,
+    "lj_design": 3,
+    "lj_overall": 2,
+    "lj_summary": "The suite hits the main happy paths \u2014 both manifest formats, license status classification (approved/denied/unknown), exit codes, error handling for missing files, and workflow structure checks. However, significant gaps exist: the task's central requirement that 'ALL TESTS MUST RUN THROUGH ACT' is completely ignored; every test invokes the script directly. There are no tests for empty manifests, manifests with zero dependencies, malformed JSON, or the variety of requirements.txt version specifiers (~=, !=, bare names, comments). The version-stripping logic for package.json (^, ~, >=) is not independently exercised beyond a weak string-presence check. The act-result.txt artifact requirement and assertions on exact act output values are absent. Assertions in several tests use loose OR-patterns (e.g., `*express*APPROVED* || *APPROVED*express*`) that would pass even if the columns were scrambled. Tests 4 and 5 both run the identical command, wasting a test slot that could cover a distinct scenario. The setup fixture paths are established cleanly and test independence is maintained, but the mixed placement of workflow-structure checks among functional tests reduces cohesion. Overall, this suite would catch obvious breakage in the core parsing/reporting flow but would miss parsing edge cases, version specifier bugs, and the entire CI pipeline layer the task mandated be tested.",
+    "lj_tqs": 2.5,
+    "lj_judge_cost_usd": 0.0261,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1439,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "13-dependency-license-checker",
@@ -282,7 +443,17 @@
     "sq_test_to_code_ratio": 1.31,
     "sq_test_count": 50,
     "sq_assertion_count": 32,
-    "sq_assertions_per_test": 0.6
+    "sq_assertions_per_test": 0.6,
+    "lj_coverage": 5,
+    "lj_rigor": 4,
+    "lj_design": 5,
+    "lj_overall": 5,
+    "lj_summary": "The test suite is comprehensive and well-organized, covering all six functional areas from the task description: package.json parsing, requirements.txt parsing, license lookup with mocking, compliance checking, report generation, and error handling. TDD cycle organization with descriptive class names and docstrings makes the intent of each test immediately clear. Fixtures use pytest's tmp_path cleanly, and mock resolvers are simple lambdas rather than heavyweight mocking frameworks. Edge cases are solid: deny-list precedence over allow-list, resolver returning None, missing files, malformed JSON, unsupported formats, and mixed statuses in a single compliance check. Minor gaps preventing a perfect rigor score: no tests for empty requirements.txt, no test for the mock_license_resolver itself or the MOCK_LICENSE_DB contents, and no integration-level test that chains parse\u2192lookup\u2192check\u2192report together end-to-end. The main CLI entry point is also untested. But for unit coverage of the public API, this is thorough and would catch virtually any regression in the core logic.",
+    "lj_tqs": 4.8,
+    "lj_judge_cost_usd": 0.0086,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 253,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "13-dependency-license-checker",
@@ -297,7 +468,17 @@
     "sq_test_to_code_ratio": 0.49,
     "sq_test_count": 26,
     "sq_assertion_count": 55,
-    "sq_assertions_per_test": 2.1
+    "sq_assertions_per_test": 2.1,
+    "lj_coverage": 4,
+    "lj_rigor": 4,
+    "lj_design": 4,
+    "lj_overall": 4,
+    "lj_summary": "The test suite demonstrates solid TDD structure across 8 clearly labeled 'red phases,' covering all major requirements: manifest parsing (package.json and requirements.txt), license config loading, classification logic, mock lookups, full report generation, format detection, and text output. Coverage is good but the CLI entry point (main()) is entirely untested \u2014 no tests verify argument parsing, exit codes (0 vs 1 vs 2), JSON output writing, or error paths for bad CLI inputs. Rigor is strong for classification (deny-takes-priority edge case, None handling, empty deps, missing config keys) and parsing (comments, blanks, no-version specifiers), but there are gaps: no test for malformed JSON in a package.json file, no test for requirements.txt with extras syntax (package[extra]==1.0), and no test for the make_mock_lookup_fn closure directly. Design is clean \u2014 fixtures are module-level constants, tests import lazily (allowing pre-implementation red-phase behavior), and each phase is well-commented. Minor issue: tests import from the module inside each function rather than at the top, which is intentional for TDD but slightly unconventional. The load_license_config_file (file-reading variant) is untested despite being a distinct public function. Overall this is a trustworthy suite for the core logic, with meaningful gaps only at the CLI and file-I/O boundary layers.",
+    "lj_tqs": 4.0,
+    "lj_judge_cost_usd": 0.0556,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 349,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "13-dependency-license-checker",
@@ -312,7 +493,17 @@
     "sq_test_to_code_ratio": 0.34,
     "sq_test_count": 37,
     "sq_assertion_count": 43,
-    "sq_assertions_per_test": 1.2
+    "sq_assertions_per_test": 1.2,
+    "lj_coverage": 4,
+    "lj_rigor": 3,
+    "lj_design": 4,
+    "lj_overall": 3,
+    "lj_summary": "The suite covers all five core functions and three manifest scenarios (mixed, all-approved, all-denied), plus file-not-found and unsupported-format errors. That accounts for most stated requirements. However, `Import-LicenseConfig` is never tested in isolation \u2014 only consumed by a `BeforeAll` block \u2014 so its own error paths and return shape are untested directly. Key edge cases are missing: devDependencies extraction is not explicitly exercised; requirements.txt with alternative specifiers (`>=`, `~=`, bare names returning 'any') are absent; the deny-list-over-allow-list precedence rule (a license on both lists) is never asserted; malformed or empty JSON/txt inputs are not probed. The BeforeAll-chained fixture for `Test-LicenseCompliance` creates hidden test coupling \u2014 if `Import-LicenseConfig` breaks, all six compliance tests fail with misleading messages. On the positive side, the Describe/Context/It hierarchy is clean and readable, `BeforeAll` scoping is used correctly, TDD commentary is instructive, and error assertions use specific glob patterns rather than bare `Should -Throw`. The test file relies entirely on external fixture files (no in-test fixture construction), which is pragmatic but reduces portability. Overall the suite would catch obvious regressions but would miss subtle bugs around version parsing variety, config edge cases, and the deny-precedence invariant.",
+    "lj_tqs": 3.5,
+    "lj_judge_cost_usd": 0.0746,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1517,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "13-dependency-license-checker",
@@ -327,7 +518,17 @@
     "sq_test_to_code_ratio": 1.59,
     "sq_test_count": 38,
     "sq_assertion_count": 84,
-    "sq_assertions_per_test": 2.2
+    "sq_assertions_per_test": 2.2,
+    "lj_coverage": 4,
+    "lj_rigor": 2,
+    "lj_design": 3,
+    "lj_overall": 3,
+    "lj_summary": "The unit test layer (LicenseChecker.Tests.ps1) is comprehensive and covers all eight public functions with both happy-path and basic file-not-found error cases. WorkflowStructure.Tests.ps1 is clean and methodically checks triggers, jobs, steps, and actionlint compliance. However, rigor is the main weakness: edge cases are largely absent \u2014 malformed/empty JSON, requirements.txt with only comments or unpinned packages, empty allow/deny lists, the unsupported-manifest-type throw path, the -FailOnDenied switch in run.ps1, the devDependencies parsing branch, and version-range-stripping correctness are all untested. The ActRunner integration tests have structural problems: all three test cases call Invoke-ActRun with no ExtraFiles overrides so they all exercise the same default workflow state rather than distinct fixture scenarios, making them nearly redundant; the function-sharing workaround ($script:InvokeActRun = ${function:Invoke-ActRun}) is an awkward Pester scope hack; and some assertions (e.g., 'MIT-only check: all 2 dependencies approved', 'All \\d+ tests passed') are tied to step output strings that may not reflect real workflow output. Brittle hard-coded Count assertions (Should -Be 5) are fragile against fixture changes. There is no AfterAll cleanup and no assertion on the act-result.txt file's final content. The suite would catch obvious regressions in core logic but would miss many realistic failure modes.",
+    "lj_tqs": 3.0,
+    "lj_judge_cost_usd": 0.0709,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 2017,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "13-dependency-license-checker",
@@ -342,7 +543,17 @@
     "sq_test_to_code_ratio": 0.35,
     "sq_test_count": 19,
     "sq_assertion_count": 37,
-    "sq_assertions_per_test": 1.9
+    "sq_assertions_per_test": 1.9,
+    "lj_coverage": 5,
+    "lj_rigor": 4,
+    "lj_design": 5,
+    "lj_overall": 4,
+    "lj_summary": "The unit test suite covers all core requirements well: manifest parsing (package.json and requirements.txt), license classification, compliance report generation, and error handling. Both parser.test.ts and checker.test.ts are clearly organized with descriptive names, logically grouped describe blocks, and inline comments that reinforce the TDD narrative. Fixtures and mocks are minimal but purposeful \u2014 the inline mockLookup in checker.test.ts is clean and deterministic. Edge cases are handled notably well: invalid JSON, empty dependency lists, packages without version specifiers, comment/blank-line skipping, and lookup failures that must degrade gracefully. Case-insensitive matching is explicitly tested. Minor gaps: no test directly exercises formatReport (report.ts is untested in the unit suite), and the requirements.txt parser isn't tested with >= or ~= operators despite the implementation claiming to support them. The test-harness.ts integration layer adds strong end-to-end coverage via act, asserting exact output strings and exit codes, which compensates for some unit-level gaps. Overall a well-designed, trustworthy suite that would catch most regressions.",
+    "lj_tqs": 4.5,
+    "lj_judge_cost_usd": 0.0454,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 285,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "13-dependency-license-checker",
@@ -357,7 +568,17 @@
     "sq_test_to_code_ratio": 1.37,
     "sq_test_count": 39,
     "sq_assertion_count": 72,
-    "sq_assertions_per_test": 1.8
+    "sq_assertions_per_test": 1.8,
+    "lj_coverage": 3,
+    "lj_rigor": 3,
+    "lj_design": 3,
+    "lj_overall": 3,
+    "lj_summary": "The suite covers the core happy paths well \u2014 parsing, license status classification, report generation, workflow structure, and act integration are all represented. However, notable gaps exist: the `checkLicenses` error-handling branch (when `lookupFn` throws) is never exercised; there is no test for a dependency whose license exists but appears on neither the allow nor deny list (the third 'unknown' path beyond null return); `main.ts` CLI argument parsing goes entirely untested; and the task description mentions parsing requirements.txt but neither implementation nor tests address it. The `act.test.ts` assertion `expect(stdout).toContain('16 pass')` is a hard-coded count that will silently become a regression magnet the moment any test is added or removed. The workflow test's `setup()` pattern re-reads the file inside every `it` block instead of using `beforeAll`, and the `act-result.txt` artifact tests carry an implicit ordering dependency on the act integration tests completing first. The `null as unknown as string` type cast in the mock fixture is a code smell that bypasses TypeScript's safety. Design would benefit from `beforeAll` for file loading, a proper `LicenseLookupFn` mock type, and relative count assertions ('tests passed', '0 fail') rather than absolute pass counts.",
+    "lj_tqs": 3.0,
+    "lj_judge_cost_usd": 0.0678,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1673,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "14-docker-image-tag-generator",
@@ -371,8 +592,18 @@
     "sq_impl_lines": 87,
     "sq_test_to_code_ratio": 3.44,
     "sq_test_count": 17,
-    "sq_assertion_count": 33,
-    "sq_assertions_per_test": 1.9
+    "sq_assertion_count": 31,
+    "sq_assertions_per_test": 1.8,
+    "lj_coverage": 4,
+    "lj_rigor": 3,
+    "lj_design": 3,
+    "lj_overall": 3,
+    "lj_summary": "The test suite covers the core happy-path requirements well: main/master \u2192 latest, feature branch \u2192 branch-sha, semver tag \u2192 tag+latest, PR \u2192 pr-{N}, and branch name sanitization are all exercised. Workflow structure checks (triggers, job steps, actionlint, shellcheck) are a nice addition. However, several gaps reduce the score: error conditions (empty COMMIT_SHA, missing both BRANCH_NAME and GIT_TAG) are never tested; the 128-character truncation boundary is untested; non-semver tag behavior (should it suppress 'latest'?) is not explicitly verified; and duplicate-tag elimination is not covered. The pre-release tag test is incomplete \u2014 it asserts the sanitized tag exists but makes no assertion about whether 'latest' should or should not appear. Design-wise, the helper functions (create_test_repo, run_act, extract_tags, assert_tag_present/absent) are well-abstracted and test names are descriptive. However, pushd is used inside create_test_repo which runs in a subshell, making teardown's popd potentially wrong. The extract_tags parser is tightly coupled to a specific workflow output format, making the tests brittle if the delimiter strings change. The entire suite depends on Docker + act being available, which adds significant environmental fragility unrelated to the logic under test and makes failures harder to diagnose. Overall the suite would catch obvious regressions in the main flows but would miss error-handling bugs and certain edge cases.",
+    "lj_tqs": 3.3,
+    "lj_judge_cost_usd": 0.05,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1688,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "14-docker-image-tag-generator",
@@ -387,7 +618,17 @@
     "sq_test_to_code_ratio": 1.67,
     "sq_test_count": 17,
     "sq_assertion_count": 12,
-    "sq_assertions_per_test": 0.7
+    "sq_assertions_per_test": 0.7,
+    "lj_coverage": 4,
+    "lj_rigor": 3,
+    "lj_design": 4,
+    "lj_overall": 4,
+    "lj_summary": "The test suite covers all primary requirements (main\u2192latest, PR\u2192pr-N, semver tag, feature branch, sanitization) and adds useful structural validation (shellcheck, actionlint, file existence, workflow triggers). The helper `run_act_case` is well-designed for isolation and reuse, each test uses a fresh temp git repo, and `act-result.txt` is properly delimited. Exact-value assertions (e.g. `DOCKER_IMAGE_TAGS=latest main-abc1234`) are a strength. Gaps in rigor: no test for the `master` branch alias (mentioned in the implementation but never exercised), no error-handling tests (missing all inputs), no explicit test for consecutive-hyphen collapsing or leading/trailing hyphen stripping as isolated behaviors, no boundary test for SHAs shorter than 7 chars, and no test for numeric-only or very long branch names. The integration-only approach via `act` means every case is slow and Docker-dependent, with no fast unit tests for `sanitize_tag` or `short_sha` in isolation \u2014 a regression in those helpers could be harder to diagnose. Overall a solid, professional suite that would catch the main regression paths.",
+    "lj_tqs": 3.8,
+    "lj_judge_cost_usd": 0.0439,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1246,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "14-docker-image-tag-generator",
@@ -401,8 +642,18 @@
     "sq_impl_lines": 149,
     "sq_test_to_code_ratio": 2.78,
     "sq_test_count": 6,
-    "sq_assertion_count": 2,
-    "sq_assertions_per_test": 0.3
+    "sq_assertion_count": 9,
+    "sq_assertions_per_test": 1.5,
+    "lj_coverage": 3,
+    "lj_rigor": 2,
+    "lj_design": 3,
+    "lj_overall": 3,
+    "lj_summary": "The suite covers the four main tag-generation conventions (main/latest, semver, feature branch, special-char sanitization) and includes solid workflow-structure checks (YAML parsing, trigger presence, actionlint, step verification). However, coverage has notable gaps: there is no standalone pull_request-event test for pr-{number} generation (it only appears as a side-effect in the awkward 'workflow_dispatch_pr_override' case), non-semver git tags are never exercised, and JSON output mode is untested. Rigor is the weakest dimension: there are no error-path tests (empty inputs, invalid PR numbers, a branch name that sanitizes to empty), no boundary conditions (SHA shorter than 7 chars, very long branch names), and no tests for overlapping inputs (tag + branch simultaneously, tag + PR). The design is reasonably clean \u2014 good use of test-case table with lambda expected_tags_fn, clear helper functions, act-result.txt output, and finally-cleanup \u2014 but the 'workflow_dispatch_pr_override' case tests a custom INPUT_OVERRIDE env-var convention that is not clearly tied to how the actual workflow works, making it brittle and hard to understand. The absence of any fast unit tests means all edge-case coverage must go through slow act runs, which the author chose not to add. The suite would catch obvious regressions on the happy paths but would miss most edge-case breakage.",
+    "lj_tqs": 2.8,
+    "lj_judge_cost_usd": 0.0512,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1408,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "14-docker-image-tag-generator",
@@ -417,7 +668,17 @@
     "sq_test_to_code_ratio": 0.48,
     "sq_test_count": 70,
     "sq_assertion_count": 36,
-    "sq_assertions_per_test": 0.5
+    "sq_assertions_per_test": 0.5,
+    "lj_coverage": 5,
+    "lj_rigor": 4,
+    "lj_design": 5,
+    "lj_overall": 4,
+    "lj_summary": "The test suite demonstrates strong coverage of all stated requirements: sanitization rules, semver detection, main/master branch logic, PR tagging, feature branch tagging, and git tag handling are each exercised with dedicated test classes. The TDD cycle comments clearly document the red/green/refactor intent and improve readability. Fixtures are simple and appropriate \u2014 pure-function tests with no unnecessary mocking. Test independence is excellent; each test is self-contained with no shared mutable state. Rigor is good but not perfect: boundary conditions like an empty branch with a commit SHA, a very short SHA (fewer than 7 chars), a PR number combined with a semver git tag (priority conflict), and leading/trailing whitespace in env inputs are not tested. The 'different_pr_numbers_work' test also uses 'main' as the branch while testing PR behavior, which is a minor fixture inconsistency. The test for 'no duplicate tags' and 'output is sorted' are lightweight property checks that add useful regression value. Overall this is a well-structured, readable suite that would catch most regressions, with only modest gaps in edge-case depth.",
+    "lj_tqs": 4.5,
+    "lj_judge_cost_usd": 0.0451,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 288,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "14-docker-image-tag-generator",
@@ -432,7 +693,17 @@
     "sq_test_to_code_ratio": 0.31,
     "sq_test_count": 21,
     "sq_assertion_count": 24,
-    "sq_assertions_per_test": 1.1
+    "sq_assertions_per_test": 1.1,
+    "lj_coverage": 4,
+    "lj_rigor": 3,
+    "lj_design": 3,
+    "lj_overall": 3,
+    "lj_summary": "The Pester test suite covers the main requirements well: sanitization, short SHA extraction, main/master branch 'latest' generation, PR tags, semver version tags, feature branch tags, and sanitization of branch names. It also covers the absence of branch-sha for main and combined PR+branch scenarios. However, several gaps exist: there is no test for semver tags with pre-release or build metadata suffixes, no test for empty/null commit SHA on feature branches, no test for the GitHub Actions output behavior (GITHUB_OUTPUT env var), and no edge cases around very long tag names or tags at the docker maximum length. The 'run-tests.ps1' act harness is technically part of the testing infrastructure but is not invoked by Pester and has its own assertion logic that duplicates concerns. Test design is adequate but not excellent: the BeforeAll dot-sources the script with side-effectful params ('main', 'abc1234') which is a fragile approach that could produce unexpected output noise; there are no shared fixtures via BeforeEach; and the test file mixes unit tests for helper functions with integration-style tests for the orchestration function without clear grouping. The Describe blocks are reasonably organized by function, and test names are descriptive. Overall, the suite would catch most regressions in the core logic but has meaningful blind spots around edge cases and the CI/output integration path.",
+    "lj_tqs": 3.3,
+    "lj_judge_cost_usd": 0.0383,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 329,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "14-docker-image-tag-generator",
@@ -447,7 +718,17 @@
     "sq_test_to_code_ratio": 0.62,
     "sq_test_count": 39,
     "sq_assertion_count": 58,
-    "sq_assertions_per_test": 1.5
+    "sq_assertions_per_test": 1.5,
+    "lj_coverage": 5,
+    "lj_rigor": 4,
+    "lj_design": 3,
+    "lj_overall": 4,
+    "lj_summary": "The test suite comprehensively maps to every key requirement: main/master\u2192latest, PR\u2192pr-{number}, semver tags, feature branch sanitization, and workflow structure validation are all exercised. Rigor is strong \u2014 pre-release semver suffixes, nested slashes, underscore-to-hyphen conversion, SHA truncation edge cases, precedence rules (PR overrides branch-sha), and negative assertions (latest absent on PRs, etc.) are all present. Helper unit tests for Get-SanitizedTag and Get-ShortSha cover boundary inputs (SHA shorter than 7 chars). The main design concerns: (1) Pester v5 does not expose functions defined in BeforeAll to It blocks via normal lexical scope \u2014 Invoke-ActJob defined in BeforeAll will be invisible to the It blocks that call it, causing the entire Act Integration Tests describe to throw at runtime rather than fail gracefully; (2) $WorkflowContent and similar variables in Workflow Structure Tests share the same risk depending on Pester version; (3) the integration test layer is heavily environment-dependent (Docker daemon, act, network pull of runner images) with no skip/guard logic, making the suite non-deterministic in CI environments that lack those dependencies; (4) exact string matches against act output (e.g. 'PASS.*branch-sha', 'Job succeeded|success') are brittle against minor act version or output-format changes. Unit-level tests for the core logic are solid and would reliably catch regressions; the integration tier is structurally flawed enough to reduce confidence in its practical value.",
+    "lj_tqs": 4.1,
+    "lj_judge_cost_usd": 0.0793,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 2444,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "14-docker-image-tag-generator",
@@ -462,7 +743,17 @@
     "sq_test_to_code_ratio": 1.96,
     "sq_test_count": 8,
     "sq_assertion_count": 18,
-    "sq_assertions_per_test": 2.2
+    "sq_assertions_per_test": 2.2,
+    "lj_coverage": 4,
+    "lj_rigor": 3,
+    "lj_design": 3,
+    "lj_overall": 3,
+    "lj_summary": "The suite covers all core requirements well: main/master\u2192latest, PR\u2192pr-{n}, semver tags, feature branch+SHA, and sanitization (uppercase, special chars). Eight fixtures map neatly onto the spec. However, error-path scenarios are entirely absent \u2014 there are no tests for missing GIT_BRANCH or GIT_COMMIT (which should cause process.exit(1)), malformed commit SHAs, or non-semver tag strings like 'rc-1'. Sanitization edge cases (consecutive dots, leading dots, very long branch names) are also untested. On the design side, the fixture-array pattern and helpers (setupTempRepo, appendResult, run) are clean and reusable. Strengths end there: each act test spawns a full Docker container, making the suite extremely slow and environment-fragile (Docker + act + catthehacker image required), and zero unit tests exist for sanitiseTag or generateTags directly. The workflow structure tests are brittle \u2014 they hard-code job names ('generate-tags', 'test-tags') and an exact matrix count (8) that will break on any refactor. The setupTempRepo function also creates a bespoke per-fixture workflow rather than exercising the canonical docker-image-tag-generator.yml, meaning the real workflow is only structurally inspected, not executed. Overall the suite is functional and thorough on the happy path, but the absence of error-case coverage and the brittleness introduced by act-only testing lower its regression-catching confidence significantly.",
+    "lj_tqs": 3.3,
+    "lj_judge_cost_usd": 0.0534,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1687,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "14-docker-image-tag-generator",
@@ -477,7 +768,17 @@
     "sq_test_to_code_ratio": 3.84,
     "sq_test_count": 46,
     "sq_assertion_count": 59,
-    "sq_assertions_per_test": 1.3
+    "sq_assertions_per_test": 1.3,
+    "lj_coverage": 5,
+    "lj_rigor": 4,
+    "lj_design": 4,
+    "lj_overall": 4,
+    "lj_summary": "The test suite is comprehensive and well-structured, covering all key requirements: main/master\u2192latest, PR\u2192pr-{num}, semver tags\u2192v{semver}, feature branches\u2192{branch}-{sha}, tag sanitization, workflow structure (triggers, permissions, checkout, actionlint), and act integration with exact TAGS= value assertions plus 'Job succeeded' checks. The act-result.txt artifact requirement is satisfied with deliberate header-writing and per-case appending. Rigor is strong \u2014 empty strings, leading/trailing dashes, consecutive dashes, multiple special chars, large/small PR numbers, pre-release semver, non-semver git tags, and missing required fields are all exercised. A few boundary gaps exist: prNumber=0 is not explicitly tested as a no-PR edge case (the code treats it as absent, but no test covers this), a commitSha shorter than 7 characters is untested, and the test named 'handles undefined tags array gracefully' is misleadingly named since it only passes an empty array rather than exercising undefined/null. Design is clean: describe-blocks group concerns logically, each test has a focused assertion, helpers (runActTestCase, parseTagsFromOutput) are well-extracted, and the 5-minute timeout is appropriate for Docker-based act runs. The one structural oddity is a module-level side effect (writeFileSync for act-result.txt header) that executes at import time, which could interfere if test files are composed differently in the future.",
+    "lj_tqs": 4.3,
+    "lj_judge_cost_usd": 0.0639,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1711,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "15-test-results-aggregator",
@@ -492,7 +793,17 @@
     "sq_test_to_code_ratio": 0.87,
     "sq_test_count": 24,
     "sq_assertion_count": 9,
-    "sq_assertions_per_test": 0.4
+    "sq_assertions_per_test": 0.4,
+    "lj_coverage": 4,
+    "lj_rigor": 3,
+    "lj_design": 2,
+    "lj_overall": 3,
+    "lj_summary": "The test suite covers most task requirements well: XML parsing, JSON parsing, mixed aggregation, exact numeric totals (passed/failed/skipped/duration), flaky detection with specific test names, error handling for three distinct error cases, and workflow structural validation including actionlint. Exact-value assertions (e.g., '| Total Tests | 18 |', 'TOTALS_VERIFIED: passed=10 failed=4') are a strength and would catch regressions reliably. However, the design is fundamentally fragile: all 20+ act-dependent tests share a single cached output blob produced by one `act push` run in `setup_file`. The `|| true` suppresses act failures silently, so if act or Docker is broken every test fails with a useless grep-on-empty-string error. The `cd` in setup_file mutates shell state globally. Edge cases are shallow \u2014 no malformed XML/JSON, no empty files, no zero-duration tests, no tests with special characters or missing classname attributes \u2014 these are all exercised only at the integration level with pre-baked fixtures rather than isolated unit tests. The structural YAML tests are clean but mixed in with integration tests without grouping. The 'TDD Red' comments are misleading (these are passing tests, not red-phase stubs). Overall the suite would detect obvious regressions in the happy path but would not reliably isolate failures or cover parser edge cases.",
+    "lj_tqs": 3.1,
+    "lj_judge_cost_usd": 0.0515,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1404,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "15-test-results-aggregator",
@@ -507,7 +818,17 @@
     "sq_test_to_code_ratio": 0.41,
     "sq_test_count": 23,
     "sq_assertion_count": 36,
-    "sq_assertions_per_test": 1.6
+    "sq_assertions_per_test": 1.6,
+    "lj_coverage": 3,
+    "lj_rigor": 2,
+    "lj_design": 3,
+    "lj_overall": 3,
+    "lj_summary": "The test suite covers the main happy-path requirements reasonably well: JUnit XML parsing (pass/fail/skip), JSON parsing, multi-file aggregation, flaky detection, markdown output, and basic error handling. Workflow structure checks (triggers, checkout version, actionlint) are a nice addition. However, several gaps reduce confidence: (1) No test for --help flag, the flaky=0 case, or combining --markdown with --flaky. (2) Duration accumulation is only spot-checked for presence ('duration='), never for an exact computed value. (3) The flaky test only confirms 'TestFlaky' appears \u2014 it never asserts flaky=1 or the exact flaky_test= line format. (4) Rigor is thin: no tests for malformed/empty XML or JSON, missing required JSON fields, XML with nested failure tags, or multi-file JSON aggregation (only XML+XML is tested). (5) Workflow tests are brittle grep-based substring checks rather than YAML-aware assertions. Design is adequate \u2014 BATS_TEST_DIRNAME paths are correct, test names are readable, and the two-file split (aggregator vs. workflow) is logical \u2014 but there are no setup/teardown hooks and fixtures are shared globals rather than per-test temporaries, creating implicit coupling.",
+    "lj_tqs": 2.8,
+    "lj_judge_cost_usd": 0.0495,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1480,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "15-test-results-aggregator",
@@ -521,8 +842,18 @@
     "sq_impl_lines": 371,
     "sq_test_to_code_ratio": 1.25,
     "sq_test_count": 6,
-    "sq_assertion_count": 49,
-    "sq_assertions_per_test": 8.2
+    "sq_assertion_count": 51,
+    "sq_assertions_per_test": 8.5,
+    "lj_coverage": 4,
+    "lj_rigor": 3,
+    "lj_design": 4,
+    "lj_overall": 3,
+    "lj_summary": "The test suite covers the main requirements well: JUnit XML parsing, JSON parsing, mixed-format aggregation, flaky test detection, empty directory handling, and workflow structure validation \u2014 all six task requirements have dedicated test cases with exact value assertions. The workflow structure test additionally checks actionlint, trigger presence, and file references. However, rigor is limited: there are no tests for malformed/invalid input files (bad XML, bad JSON, missing fields), no boundary conditions on duration rounding, no test for the --output flag or GITHUB_STEP_SUMMARY behavior, and no test for files with unexpected extensions or mixed-root XML schemas. The flaky detection test only covers the case where both outcomes exist; it doesn't test edge cases like a test that only appears once or only fails. The design is generally clean \u2014 test cases are well-isolated via temp repos, assertions are clearly labeled helper functions, TDD narrative comments are present, and act-result.txt output is well-structured with delimiters. However, the TC3 duration assertion comment shows a math error (1.200 + 0.65 \u2260 2.55 unless fixtures differ from expectations, indicating possible brittleness between fixture data and test expectations). The reliance on `act` for every test case introduces significant execution overhead and potential flakiness from Docker/networking, making the suite slow and harder to maintain. Overall trustworthiness is moderate: happy-path regressions would be caught, but many error scenarios and edge cases would slip through.",
+    "lj_tqs": 3.5,
+    "lj_judge_cost_usd": 0.0474,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 365,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "15-test-results-aggregator",
@@ -537,7 +868,17 @@
     "sq_test_to_code_ratio": 0.41,
     "sq_test_count": 58,
     "sq_assertion_count": 77,
-    "sq_assertions_per_test": 1.3
+    "sq_assertions_per_test": 1.3,
+    "lj_coverage": 5,
+    "lj_rigor": 4,
+    "lj_design": 5,
+    "lj_overall": 4,
+    "lj_summary": "The test suite is well-structured and covers all five major functional areas established by the TDD cycles: JUnit XML parsing, JSON parsing, result aggregation, flaky test detection, and markdown generation. Each class maps cleanly to one TDD cycle, fixtures are referenced for file-based tests, and helper factories (_make_suite, _make_result, _make_aggregated) keep tests DRY and readable. Coverage of the core API is thorough \u2014 all public functions are exercised with multiple scenarios including happy paths, edge cases (empty lists, missing fields, single-run flakiness), and error conditions (invalid XML/JSON raise ValueError with meaningful messages). Rigor is strong: error/error-element handling is tested separately from failure elements, the <testsuites> wrapper is tested, skipped tests are verified, and flaky detection correctly handles consistent pass/fail/multi-run scenarios. Minor gaps: no test for the CLI entry point (main()), no test for the --glob flag or --output-file flag, no test for the auto-detection of file type by extension (_load_file), and the 'all-pass success indicator' assertion is loosely written (matches any of four strings). The 'Job succeeded' assertions in run_act_tests.py test the workflow harness but are integration-level, not unit-level. Overall this is a high-quality, trustworthy suite for the core library functions.",
+    "lj_tqs": 4.5,
+    "lj_judge_cost_usd": 0.0684,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 346,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "15-test-results-aggregator",
@@ -552,7 +893,15 @@
     "sq_test_to_code_ratio": 1.63,
     "sq_test_count": 41,
     "sq_assertion_count": 43,
-    "sq_assertions_per_test": 1.0
+    "sq_assertions_per_test": 1.0,
+    "lj_coverage": 3,
+    "lj_rigor": 3,
+    "lj_design": 4,
+    "lj_overall": 3,
+    "lj_summary": "The test suite covers the main happy paths well \u2014 full aggregation, JUnit-only, JSON-only subsets \u2014 with exact value assertions and useful negative assertions (e.g., 'does not list ApiTests.TestGetUsers'). Structural workflow checks (triggers, actionlint, file references) are thorough. However, several stated requirements go untested: error handling for malformed XML/JSON, missing or empty results directories, the GITHUB_STEP_SUMMARY output path, and the 'no flaky tests detected' branch. No boundary/edge-case inputs are exercised (zero-duration tests, special characters in test names, missing JSON fields). Design is a strength: BeforeAll helpers (New-TempActRepo, Invoke-ActPush) keep test bodies clean and DRY, Describe blocks are clearly scoped, temp-dir cleanup is present, and the required act-result.txt artifact is properly produced. The main structural weakness is that script-scoped variables shared across It blocks create implicit ordering dependencies, and Push-Location/Pop-Location in the helper could leave the working directory corrupted on error. Given the task mandate that all tests run through act, the integration-only approach is appropriate, but the absence of any error-path coverage is a meaningful gap for a system designed to 'handle errors gracefully.'",
+    "lj_judge_cost_usd": 0.0571,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1680
   },
   {
     "task_id": "15-test-results-aggregator",
@@ -567,7 +916,17 @@
     "sq_test_to_code_ratio": 1.33,
     "sq_test_count": 69,
     "sq_assertion_count": 83,
-    "sq_assertions_per_test": 1.2
+    "sq_assertions_per_test": 1.2,
+    "lj_coverage": 5,
+    "lj_rigor": 3,
+    "lj_design": 4,
+    "lj_overall": 4,
+    "lj_summary": "The test suite comprehensively covers all task requirements: dedicated Describe blocks for JUnit parsing, JSON parsing, the format dispatcher, aggregation, flaky detection, markdown generation, the main orchestrator, workflow structure validation, and act-based E2E tests that assert exact expected values. Error handling for missing files, invalid XML, unsupported extensions, and empty inputs is present. Design is solid \u2014 BeforeAll/script scoping is used consistently, Invoke-ActTestCase is a well-structured reusable helper, Remove-AnsiCodes cleans act output, and the TDD iteration comments clearly narrate intent. Rigor is the weak point: several boundary conditions go untested \u2014 the <testsuites> wrapper code path is never explicitly exercised, there is no test for malformed JSON (only missing files), no test for a test with an <error> element (vs <failure>), no multi-suite JSON scenario, no test for null/empty duration fields, no partial-failure scenario where some files parse and others fail, and no assertion that PassRate is 0% or 100% at the extremes. The act fixture directories (tc1/tc2/tc3) are referenced but never created within the test file, introducing a silent dependency. These gaps mean some real regression paths would go undetected, keeping rigor at 3.",
+    "lj_tqs": 4.0,
+    "lj_judge_cost_usd": 0.081,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1969,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "15-test-results-aggregator",
@@ -582,7 +941,17 @@
     "sq_test_to_code_ratio": 0.44,
     "sq_test_count": 8,
     "sq_assertion_count": 59,
-    "sq_assertions_per_test": 7.4
+    "sq_assertions_per_test": 7.4,
+    "lj_coverage": 4,
+    "lj_rigor": 2,
+    "lj_design": 3,
+    "lj_overall": 3,
+    "lj_summary": "The suite covers all major happy-path requirements: JUnit XML parsing, JSON parsing, multi-file aggregation, flaky test detection, markdown output, workflow structure validation, and actionlint. Exact value assertions (TOTAL_TESTS=4, FLAKY_TESTS=api::fetchOrder,api::fetchProduct, etc.) are a genuine strength. However, rigor is poor: there is zero testing of error paths (invalid XML, malformed JSON, unsupported file format, missing fixtures directory, empty result sets), no boundary conditions (all-skipped run, zero-duration tests), and no unit tests for the individual parser/aggregator/formatter modules \u2014 every assertion must go through a full Docker/act round-trip, making failures hard to isolate and debug. The design is functional but shows weaknesses: a hand-rolled YAML parser (yaml-helper.ts) is complex and fragile; fixture content is loaded from pre-existing files rather than defined inline, creating an implicit dependency; and 5-minute timeouts per test mean a slow and brittle suite. The beforeAll cleanup, helper functions (setupTempRepo, runAct, appendResult), and temp-dir teardown are well-structured. Overall the suite would catch regressions on the main success path but would miss virtually any parsing or error-handling regression.",
+    "lj_tqs": 3.0,
+    "lj_judge_cost_usd": 0.0702,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1396,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "15-test-results-aggregator",
@@ -597,7 +966,17 @@
     "sq_test_to_code_ratio": 1.17,
     "sq_test_count": 45,
     "sq_assertion_count": 94,
-    "sq_assertions_per_test": 2.1
+    "sq_assertions_per_test": 2.1,
+    "lj_coverage": 3,
+    "lj_rigor": 3,
+    "lj_design": 4,
+    "lj_overall": 3,
+    "lj_summary": "The test suite provides solid unit coverage for the four core modules (JUnit parser, JSON parser, aggregator, flaky detector, reporter) with well-chosen helper factories and real fixture file assertions. However, significant gaps exist relative to the task requirements: there are no tests for the main CLI entry point (index.ts), no CLI argument-parsing tests (--dir flag, missing files, unsupported extensions), no workflow structure tests (triggers, jobs, step references, actionlint), and critically no act-based integration tests \u2014 all of which were explicitly required. The reporter assertions are occasionally brittle (checking for '10' which could match many strings, using broad regex like '/\u2705|:white_check_mark:|passed|success/i'). Edge cases like malformed-but-valid-XML-start, empty JSON results array, zero-duration tests, and special characters in test names are unaddressed. Design is the strongest dimension: describe/it hierarchy is clear, makeSuite helpers reduce boilerplate effectively, fixture files are leveraged for realistic inputs, and tests are independent with no shared mutable state. The TDD RED-phase comments add context. Overall the unit tests are trustworthy for catching regressions in core parsing/aggregation logic, but the absence of integration and workflow tests leaves the pipeline behavior unverified.",
+    "lj_tqs": 3.2,
+    "lj_judge_cost_usd": 0.0859,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1592,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "16-environment-matrix-generator",
@@ -612,7 +991,17 @@
     "sq_test_to_code_ratio": 1.97,
     "sq_test_count": 17,
     "sq_assertion_count": 24,
-    "sq_assertions_per_test": 1.4
+    "sq_assertions_per_test": 1.4,
+    "lj_coverage": 4,
+    "lj_rigor": 3,
+    "lj_design": 3,
+    "lj_overall": 3,
+    "lj_summary": "The test suite covers the main requirements well: basic Cartesian product, include/exclude rules, three-dimension expansion, fail-fast/max-parallel settings, error cases (too many combinations, invalid JSON), and workflow structure checks. However, rigor is limited \u2014 the implementation explicitly handles an empty-matrix-after-exclusions error path that is never tested, there is no boundary test where entry count equals max-combinations exactly (should pass), no test for a config missing all dimension keys (include-only matrix), and no test for fail-fast/max-parallel absent from config (default behavior). Design has meaningful weaknesses: cleanup_act_repo is called manually rather than via bats teardown hooks, meaning a mid-test failure leaks temp directories and leaves cwd changed; the run_act helper relies on cwd being set by setup_act_repo rather than using an explicit path; counting 'Job succeeded' strings and grepping raw act output for JSON fragments is brittle across act versions; and grep checks like 'push:' on raw YAML are too shallow (a comment containing 'push:' would satisfy them). The setup_file pre-pull of the Docker image is a thoughtful touch, and the act-result.txt accumulation pattern with clear delimiters aids debugging. Overall the suite would likely catch obvious regressions but the fragility of act-mediated I/O parsing and the missing edge cases reduce confidence in its reliability.",
+    "lj_tqs": 3.3,
+    "lj_judge_cost_usd": 0.0508,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1435,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "16-environment-matrix-generator",
@@ -627,7 +1016,17 @@
     "sq_test_to_code_ratio": 0.9,
     "sq_test_count": 18,
     "sq_assertion_count": 29,
-    "sq_assertions_per_test": 1.6
+    "sq_assertions_per_test": 1.6,
+    "lj_coverage": 4,
+    "lj_rigor": 3,
+    "lj_design": 3,
+    "lj_overall": 3,
+    "lj_summary": "The bats suite covers all major task requirements well: basic Cartesian product generation, exclude rules, include_extra, fail-fast, max-parallel, max_size validation, error handling, and workflow structure checks. However, several rigor gaps exist: error messages from `die()` are written to stderr while bats `run` captures stdout by default, making tests 10 and 11 (missing-field and invalid-JSON checks) potentially unreliable. Boundary conditions are undertested\u2014no checks for empty arrays, what happens when excludes remove all combinations, or when include_extra alone pushes the count over max_size. Only one exclude rule shape (partial-key match) is exercised; multiple or overlapping excludes go untested. The custom max_size test (TEST 9) passes at exactly the limit but never tests the off-by-one (size = max_size + 1). Design is adequate: tests are clearly labeled with TDD commentary, each creates its own uniquely-named fixture file, and workflow-structure tests are cleanly separated. But there is no teardown to remove fixture files, the fixtures directory accumulates across runs, and the overall test strategy is split between a bats suite (which tests the script directly, violating the 'all tests through act' mandate) and a separate run_act_tests.sh harness that duplicates logic\u2014making the authoritative test path ambiguous. The suite would catch obvious regressions but carries meaningful reliability risk around error-path assertions.",
+    "lj_tqs": 3.3,
+    "lj_judge_cost_usd": 0.0617,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1900,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "16-environment-matrix-generator",
@@ -642,7 +1041,17 @@
     "sq_test_to_code_ratio": 0,
     "sq_test_count": 12,
     "sq_assertion_count": 13,
-    "sq_assertions_per_test": 1.1
+    "sq_assertions_per_test": 1.1,
+    "lj_coverage": 3,
+    "lj_rigor": 2,
+    "lj_design": 2,
+    "lj_overall": 2,
+    "lj_summary": "The test harness has reasonable structural ambition \u2014 it covers most requirements (include/exclude, fail-fast, max-parallel, size validation, error handling, workflow dispatch, actionlint) and correctly uses act as the required test runner. However, serious problems undermine confidence. First, the implementation is entirely empty, so every act integration test would fail in practice. Second, there are real bash bugs: 'local exit_code=$?' inside an else-branch captures the exit code of 'local' (always 0), not the act command, so failure detection is broken. Third, TOTAL_TESTS is double-incremented for the first two structure tests (manually and again inside log_result). Fourth, assertions are extremely weak \u2014 just grep-ing for literal strings like 'total_combinations=6' or 'PASS: basic matrix test' that the workflow would have to emit verbatim; no JSON structure validation, no schema checks, no parsing of the actual matrix output. Fifth, the 'job succeeded' check immediately falls back to 'exit code 0 confirms success,' making that test meaningless. The test loop also does cd into the temp dir but never restores cwd on failure paths, risking broken state for subsequent iterations. Overall the suite reads like scaffolding: the skeleton is there, but the assertions are too fragile and the bugs too numerous to trust it as a regression safety net.",
+    "lj_tqs": 2.3,
+    "lj_judge_cost_usd": 0.047,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1839,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "16-environment-matrix-generator",
@@ -657,7 +1066,17 @@
     "sq_test_to_code_ratio": 2.13,
     "sq_test_count": 76,
     "sq_assertion_count": 46,
-    "sq_assertions_per_test": 0.6
+    "sq_assertions_per_test": 0.6,
+    "lj_coverage": 5,
+    "lj_rigor": 5,
+    "lj_design": 5,
+    "lj_overall": 5,
+    "lj_summary": "This is an exemplary test suite. Coverage is comprehensive: every documented requirement (OS dimensions, language-version axes, feature flags, include/exclude forwarding, max-parallel, fail-fast, max_size validation, file loading, and full integration) has dedicated tests. Rigor is excellent \u2014 edge cases are systematically addressed including empty lists being omitted, missing keys vs. empty keys, boundary conditions (exactly-at-limit vs. one-over-limit for both custom and default max_size), error message content assertions, and both True/False/default variants of fail-fast. Design is clean: tests are organised into TDD-ordered named classes matching the stated development rounds, each class has a clear single responsibility, fixtures use pytest's tmp_path correctly, tests are independent with no shared mutable state, and naming is self-documenting. The integration test in Round 9 meaningfully exercises all features together with specific value assertions rather than just presence checks. The only minor omission is the absence of tests for the CLI main() entry point (stdout delimiter format, exit codes, argument validation), but everything the generator function itself can do is covered thoroughly.",
+    "lj_tqs": 5.0,
+    "lj_judge_cost_usd": 0.0326,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 282,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "16-environment-matrix-generator",
@@ -672,7 +1091,17 @@
     "sq_test_to_code_ratio": 1.13,
     "sq_test_count": 43,
     "sq_assertion_count": 62,
-    "sq_assertions_per_test": 1.4
+    "sq_assertions_per_test": 1.4,
+    "lj_coverage": 3,
+    "lj_rigor": 2,
+    "lj_design": 2,
+    "lj_overall": 2,
+    "lj_summary": "The suite addresses the main task requirements (basic matrix, include/exclude rules, fail-fast, max-parallel, size validation, missing-file error) and validates workflow structure. However, several dimensions of quality are weak. Coverage gaps: no test for invalid/empty JSON config, no test for conflicting include+exclude on the same run, no test for alternate property spellings (failFast vs fail-fast, maxParallel vs max-parallel), no test for a config missing both 'matrix' and 'dimensions' keys, and no test for an empty post-exclude result. Rigor is low \u2014 boundary conditions like max-parallel=1, zero-length dimension arrays, or excludes removing all combinations are absent. The design has serious structural problems: all tests share a single act run in BeforeAll, so any infrastructure failure causes a cascade of unrelated failures; assertions like 'ubuntu-latest' or '\"18\"' are unscoped and could match output from any test section, producing false positives; the section-extraction logic (split on markers) silently returns an empty string if a marker is missing; and git commit in the temp repo lacks user config which can fail in clean environments. The fixture-driven, act-based approach is creative but makes the tests nearly impossible to run in isolation and very brittle against CI infrastructure changes.",
+    "lj_tqs": 2.3,
+    "lj_judge_cost_usd": 0.0571,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1637,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "16-environment-matrix-generator",
@@ -687,7 +1116,17 @@
     "sq_test_to_code_ratio": 2.37,
     "sq_test_count": 36,
     "sq_assertion_count": 37,
-    "sq_assertions_per_test": 1.0
+    "sq_assertions_per_test": 1.0,
+    "lj_coverage": 4,
+    "lj_rigor": 2,
+    "lj_design": 3,
+    "lj_overall": 3,
+    "lj_summary": "The suite covers all eight primary requirements (OS, language versions, feature flags, include/exclude, max-parallel, fail-fast, size validation, workflow structure/actionlint) and correctly runs every case through act as mandated. However, rigor is the main weakness: only one error path is exercised (size exceeded) with no boundary test at exactly the limit, no test for the missing-config-file branch, no empty/null dimension inputs, no invalid JSON, no failFast=true variant, and no verification that the config-level maxMatrixSize truly overrides the parameter-level default (the two code paths exist but only one is exercised). Design is adequate\u2014BeforeAll batching avoids redundant act invocations, the Invoke-ActTest/Get-MatrixFromOutput helpers are clean, and TDD-phase comments add clarity\u2014but Get-MatrixFromOutput silently returns null on parse failure, causing downstream assertions to emit confusing null-reference errors rather than a clear 'could not parse output' message. The script:-scoped helper definitions inside BeforeAll are also an unusual Pester pattern that can cause subtle scoping surprises. The act-result.txt requirement is properly handled.",
+    "lj_tqs": 3.0,
+    "lj_judge_cost_usd": 0.0557,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1633,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "16-environment-matrix-generator",
@@ -702,7 +1141,17 @@
     "sq_test_to_code_ratio": 1.2,
     "sq_test_count": 12,
     "sq_assertion_count": 50,
-    "sq_assertions_per_test": 4.2
+    "sq_assertions_per_test": 4.2,
+    "lj_coverage": 4,
+    "lj_rigor": 3,
+    "lj_design": 3,
+    "lj_overall": 3,
+    "lj_summary": "The suite covers all major requirements (basic cartesian product, exclude rules, include rules, max-parallel, fail-fast, max-size enforcement, error handling, actionlint, workflow structure) and uses exact-value assertions rather than vague presence checks, which is a genuine strength. However, the decision to funnel all testing exclusively through `act` \u2014 while mandated by the task \u2014 creates several structural weaknesses: (1) all integration assertions share a single `actOutput` string from one `beforeAll` run, so any act failure or image-pull problem causes every integration test to fail simultaneously with no isolation; (2) the `extractSection` and `parseJsonFromSection` helpers rely on regex-scraping act's console output format (the `[...] | ` prefix stripping), which is notoriously brittle and will break if act's output format changes or if a step produces unexpected interleaving; (3) there are zero unit tests for the core exported functions (`cartesianProduct`, `entryMatches`, `entriesEqual`, `validateConfig`), so algorithmic regressions in those helpers would only surface indirectly through act output and could be very hard to diagnose; (4) edge cases like duplicate includes, zero-value fail-fast defaulting, non-integer max-parallel, and the boundary at exactly max-size (not just exceeding it) are untested. The workflow-structure tests (YAML field presence, file existence, actionlint exit code) are well-placed and independently valuable. Overall the suite has the right intentions and reasonable coverage breadth, but fragile output parsing and the absence of any unit-level isolation significantly reduce confidence in its ability to catch and diagnose regressions.",
+    "lj_tqs": 3.3,
+    "lj_judge_cost_usd": 0.0589,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1777,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "16-environment-matrix-generator",
@@ -717,7 +1166,17 @@
     "sq_test_to_code_ratio": 2.65,
     "sq_test_count": 35,
     "sq_assertion_count": 62,
-    "sq_assertions_per_test": 1.8
+    "sq_assertions_per_test": 1.8,
+    "lj_coverage": 4,
+    "lj_rigor": 3,
+    "lj_design": 4,
+    "lj_overall": 4,
+    "lj_summary": "The unit test suite in matrix-generator.test.ts covers all major stated requirements: cartesian product generation, include/exclude rules, max-parallel, fail-fast defaults and explicit values, and size validation including the subtle 'matching includes don't count as new jobs' distinction. The act-runner.test.ts adds good workflow structure tests (trigger presence, file references, actionlint) and per-fixture integration tests with exact value assertions. Design is clean: clear TDD RED/GREEN comments, independent tests, a well-factored helper layer (copyDir, initGitRepo, runActWithFixture, extractMatrixJson), and an afterAll flush for the required artifact. Gaps that cap the score: (1) numeric dimension values (the interface allows `number[]`) are never tested; (2) invalid/malformed input (null values, missing required keys, negative maxParallel) is untested \u2014 the generator would silently misbehave rather than throw; (3) exclude entries that match zero base combinations are not exercised; (4) the CLI entry-point error path (missing config file, unreadable file, size-exceeded exit-code 1) has no coverage; (5) 'fail-fast defaults to false' is repeated across three separate describe blocks with no additional behaviour exercised each time; (6) the extractMatrixJson regex approach to strip act prefixes is fragile \u2014 a slight change in act's output format would silently produce empty JSON strings and make assertions vacuous rather than failing loudly.",
+    "lj_tqs": 3.8,
+    "lj_judge_cost_usd": 0.0623,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1508,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "17-artifact-cleanup-script",
@@ -731,8 +1190,18 @@
     "sq_impl_lines": 296,
     "sq_test_to_code_ratio": 1.82,
     "sq_test_count": 15,
-    "sq_assertion_count": 33,
-    "sq_assertions_per_test": 2.2
+    "sq_assertion_count": 29,
+    "sq_assertions_per_test": 1.9,
+    "lj_coverage": 4,
+    "lj_rigor": 3,
+    "lj_design": 3,
+    "lj_overall": 3,
+    "lj_summary": "The test suite covers the main functional requirements well: all three retention policies are tested individually and in combination, dry-run vs execute modes, and two error-handling paths (missing file, empty input). Workflow structure checks (triggers, jobs, checkout action, actionlint) are thorough. However, notable gaps exist: shellcheck and 'bash -n' syntax validation are explicit requirements but never tested; stdin input mode is never exercised (all tests use --input FILE); the --help option and invalid-argument paths (bad date format, non-numeric size, unknown option) are only mentioned in the full-workflow assertion string without a dedicated act test; and no boundary-condition tests exist (artifact exactly at age cutoff, total size exactly at budget). On rigor, only two error scenarios are tested via act despite several more being possible. Design is consistent \u2014 the make_act_repo/run_act_in helpers are a reasonable pattern and tests are mostly independent \u2014 but setup() truncates act-result.txt based on BATS_TEST_NUMBER==1, which breaks if tests are run in isolation or reordered. The structural tests grep for specific job names that must match the production workflow exactly, creating tight coupling. The full-workflow test asserts strings like 'max-age test PASSED' that only appear if the production workflow explicitly echoes them, making the test suite dependent on the workflow's own output discipline. The act-based approach adds significant execution fragility (Docker availability, image pull, network), reducing confidence that the suite will reliably catch regressions in a typical CI environment.",
+    "lj_tqs": 3.3,
+    "lj_judge_cost_usd": 0.0629,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1405,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "17-artifact-cleanup-script",
@@ -747,7 +1216,17 @@
     "sq_test_to_code_ratio": 0.44,
     "sq_test_count": 12,
     "sq_assertion_count": 48,
-    "sq_assertions_per_test": 4.0
+    "sq_assertions_per_test": 4.0,
+    "lj_coverage": 4,
+    "lj_rigor": 3,
+    "lj_design": 4,
+    "lj_overall": 4,
+    "lj_summary": "The test suite covers all five key requirement areas \u2014 max-age, keep-latest-N, max-total-size, combined policies, dry-run, and error handling \u2014 earning a solid coverage score. The keep-latest independence test (two separate run groups) and the 'no deletion when at limit' boundary test are notably good. Design is clean: a write_fixture helper eliminates repetition, setup/teardown gives proper isolation, a fixed REFDATE makes age calculations deterministic, and test names clearly describe intended behavior. Rigor is the main weak point: the max-total-size tests only exercise deleting exactly one artifact \u2014 they never verify the greedy multi-artifact deletion path where more than one item must be removed to satisfy the limit. Other missing edge cases include an empty CSV (zero data rows), keep-latest where N >= group size (nothing should be deleted), all artifacts exceeding max-age (total deletion), invalid/non-numeric argument values, and any test combining all three policies simultaneously. The error tests also only check for 'ERROR' substring presence rather than specific messages. The two-layer approach (bats unit tests + act integration tests with exact value assertions) is architecturally strong, but the unit test layer needs richer boundary coverage to fully trust the suite against regressions.",
+    "lj_tqs": 3.8,
+    "lj_judge_cost_usd": 0.0661,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1497,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "17-artifact-cleanup-script",
@@ -761,8 +1240,18 @@
     "sq_impl_lines": 264,
     "sq_test_to_code_ratio": 1.5,
     "sq_test_count": 8,
-    "sq_assertion_count": 55,
-    "sq_assertions_per_test": 6.9
+    "sq_assertion_count": 58,
+    "sq_assertions_per_test": 7.2,
+    "lj_coverage": 5,
+    "lj_rigor": 4,
+    "lj_design": 4,
+    "lj_overall": 4,
+    "lj_summary": "The test suite covers all six major functional requirements (max_age, keep_latest_n, max_total_size, combined policies, empty input, dry-run vs live mode) plus workflow structure validation and actionlint linting \u2014 giving solid breadth. Assertions go beyond happy-path checks to verify exact numeric values (space reclaimed, artifact counts, MB figures), specific artifact names in output, and reason strings, which is commendable rigor. Edge cases like empty artifact lists and mode-switching (DRY RUN vs LIVE) are included. However, a few gaps hold it back: there is no test for malformed/missing input fields (the ValueError path in parse_input), no boundary test where an artifact is created exactly on the age cutoff boundary, no test for a workflow with zero artifacts per group under keep-latest-N, and no test for max_total_size where retained size is already under the limit (no-op case). Design is clean \u2014 helper functions (assert_contains, assert_exit_code, run_fixture_test) avoid repetition, fixture data is file-based for reproducibility, and result logging is consistent. The architecture of running everything through `act` is ambitious and realistic but introduces external process complexity that could make failures hard to diagnose; the timeout is reasonable but there is no retry or clearer error isolation. Overall this is a well-structured, trustworthy suite that would catch most regressions in the core logic.",
+    "lj_tqs": 4.3,
+    "lj_judge_cost_usd": 0.0432,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 352,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "17-artifact-cleanup-script",
@@ -777,7 +1266,17 @@
     "sq_test_to_code_ratio": 1.9,
     "sq_test_count": 46,
     "sq_assertion_count": 50,
-    "sq_assertions_per_test": 1.1
+    "sq_assertions_per_test": 1.1,
+    "lj_coverage": 4,
+    "lj_rigor": 4,
+    "lj_design": 5,
+    "lj_overall": 4,
+    "lj_summary": "The test suite is well-structured and covers all five functional areas (age policy, size policy, keep-latest-N, combined policies, plan generation/formatting) with clearly delineated TDD cycles and explicit RED/GREEN/REFACTOR commentary. Design is excellent: fixtures are isolated per class, a fixed REF_DATE prevents time-dependent flakiness, helper factories keep tests concise, and a machine-readable ARTIFACT_CLEANUP_SUMMARY marker enables deterministic act-output assertions. Rigor is solid \u2014 boundary conditions (exactly-at-limit, empty lists, no-policies), multi-artifact runs, multi-workflow isolation, and minimum-deletion semantics are all exercised. Coverage gaps: no test for the CLI entry point (main()), missing fixture-file error paths (FileNotFoundError, invalid JSON, malformed 'artifacts' or 'policies' fields), no test for the --reference-date CLI flag, and no test for --output-json mode. The act-based harness is ambitious and properly asserts exact SUMMARY key=value pairs rather than just presence of output, but the 'Job succeeded' check is fragile (searches the entire combined output rather than per-job, so a single success anywhere satisfies both job assertions). Overall this is a trustworthy suite for the core business logic, with meaningful gaps only in CLI/integration error-path coverage.",
+    "lj_tqs": 4.2,
+    "lj_judge_cost_usd": 0.0627,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 337,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "17-artifact-cleanup-script",
@@ -792,7 +1291,17 @@
     "sq_test_to_code_ratio": 0.79,
     "sq_test_count": 19,
     "sq_assertion_count": 53,
-    "sq_assertions_per_test": 2.8
+    "sq_assertions_per_test": 2.8,
+    "lj_coverage": 4,
+    "lj_rigor": 3,
+    "lj_design": 4,
+    "lj_overall": 4,
+    "lj_summary": "The suite covers all five main requirement areas (max-age, keep-latest-N, max-total-size, combined policies, dry-run) with concrete expected values and a fixed reference date for determinism. The helper Invoke-Cleanup wrapper and shared BeforeAll fixtures are clean and reusable, contexts are logically grouped, and inline comments explain the arithmetic behind each assertion clearly. Gaps that prevent a higher score: (1) no tests for error-handling paths \u2014 invalid JSON, artifacts with missing required fields (name/createdAt/workflowRunId), negative sizes, or unparseable dates \u2014 even though the implementation explicitly handles them; (2) the exact boundary condition (artifact aged precisely MaxAgeDays days, e.g., build-log-2 at exactly 10 days) is noted in a comment but never isolated into its own assertion; (3) no test for zero-size artifacts or same-timestamp tie-breaking; (4) the combined-policy test comment contains a minor inconsistency (wrong deletion narrative) though the assertions themselves are correct. Overall a solid, trustworthy suite for the happy-path and simple boundary cases, but error resilience and input-validation branches are left unverified.",
+    "lj_tqs": 3.8,
+    "lj_judge_cost_usd": 0.0644,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1949,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "17-artifact-cleanup-script",
@@ -807,7 +1316,17 @@
     "sq_test_to_code_ratio": 1.01,
     "sq_test_count": 22,
     "sq_assertion_count": 41,
-    "sq_assertions_per_test": 1.9
+    "sq_assertions_per_test": 1.9,
+    "lj_coverage": 4,
+    "lj_rigor": 3,
+    "lj_design": 3,
+    "lj_overall": 3,
+    "lj_summary": "The suite covers all six functions and all three policy types (MaxAgeDays, MaxTotalSizeBytes, KeepLatestN), combined-policy orchestration, the DryRun flag, and basic report formatting \u2014 solid breadth. However, several gaps reduce confidence. Error handling is entirely absent despite being an explicit requirement. Empty-artifact-list inputs are never exercised for any function. Exact boundary conditions are only partially explored (the 'boundary' fixture is good, but a zero-MaxAgeDays or exact-budget-equality case is missing). The `Format-CleanupReport` assertions are notably weak: `Should -Match '1'` matches any '1' anywhere in the output and says nothing about structure; there is no test for the non-DryRun header. In `Invoke-ArtifactCleanup`, the summary is asserted only with `BeGreaterThan 0` rather than pinning expected byte or count values, so a wrong-by-one bug would pass. The `$ReferenceDate` variable is not `$script:`-scoped in `BeforeAll`, which is a latent scoping risk in Pester 5. Test structure is otherwise clean: logical `Describe` grouping, shared fixtures via `$script:`, deterministic reference dates, and readable test names \u2014 but the imprecise assertions undermine rigor and the missing error-path coverage is a meaningful gap.",
+    "lj_tqs": 3.3,
+    "lj_judge_cost_usd": 0.0682,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 2340,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "17-artifact-cleanup-script",
@@ -822,7 +1341,17 @@
     "sq_test_to_code_ratio": 0.38,
     "sq_test_count": 13,
     "sq_assertion_count": 33,
-    "sq_assertions_per_test": 2.5
+    "sq_assertions_per_test": 2.5,
+    "lj_coverage": 4,
+    "lj_rigor": 4,
+    "lj_design": 5,
+    "lj_overall": 4,
+    "lj_summary": "The test suite thoroughly covers the core retention engine (`applyRetentionPolicies`): all three policies (max age, keep-latest-N, max total size) are exercised independently and in combination, dry-run mode is verified, and invalid-input errors are asserted with exact messages. The `makeArtifact` helper with sensible defaults and the constant `REF_DATE` make tests clean and deterministic. Describe-block organization maps 1-to-1 to policy dimensions, which aids readability and future maintenance. The combined-policy test is particularly well-designed, with a comment that walks through the expected eviction chain. Gaps preventing a perfect score: (1) `format.ts` / `formatBytes` has zero unit-test coverage \u2014 a bug there (e.g., wrong unit boundary, off-by-one in log base) would not be caught by the unit suite, only discovered end-to-end via act; (2) `main.ts` error paths (file not found, missing artifacts array, malformed JSON) are not exercised as unit tests; (3) several boundary conditions are absent \u2014 maxAgeDays=0, maxTotalSizeBytes exactly equal to current total, artifacts with identical timestamps (tie-breaking), and a zero-byte artifact; (4) the max-total-size 'retains all' test omits a `toRetain.length` assertion, slightly weakening its guarantee. Overall this is a high-quality suite for the engine layer that would catch the most likely regressions.",
+    "lj_tqs": 4.2,
+    "lj_judge_cost_usd": 0.0746,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1870,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "17-artifact-cleanup-script",
@@ -837,7 +1366,17 @@
     "sq_test_to_code_ratio": 0.99,
     "sq_test_count": 18,
     "sq_assertion_count": 35,
-    "sq_assertions_per_test": 1.9
+    "sq_assertions_per_test": 1.9,
+    "lj_coverage": 3,
+    "lj_rigor": 2,
+    "lj_design": 3,
+    "lj_overall": 2,
+    "lj_summary": "The test suite covers the core business logic reasonably well \u2014 max-age, max-total-size, keep-latest-N, combined policies, deletion plan summary, and dry-run mode all have dedicated tests. However, the task's most prominent requirement \u2014 'ALL TESTS MUST RUN THROUGH ACT' with act-result.txt as a required artifact \u2014 is completely absent. No test invokes `act` against the workflow, captures output, asserts on exact values like space reclaimed or artifact counts in CI output, or checks that act exits 0 with 'Job succeeded'. The workflow structure checks are shallow (triggers, job count, script reference, actionlint pass), but there is no assertion about job steps, checkout action usage, Bun installation, or the actual workflow execution path. Edge cases are thin: no test for an empty artifact list, artifacts with duplicate names (which would silently alias in the deleteSet), keepLatestNPerWorkflow: 0, maxTotalSizeMB: 0, all-artifacts-deleted scenarios, or tie-breaking when two artifacts share the same creation timestamp. The makeArtifact fixture factory is a nice touch and the NOW constant keeps unit tests deterministic, but the async/sync inconsistency in the workflow tests (some use await Bun.file, one uses spawnSync without async) is a mild design smell. The unit tests would catch regressions in the core logic but give no confidence that the CI pipeline actually works end-to-end.",
+    "lj_tqs": 2.5,
+    "lj_judge_cost_usd": 0.0584,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1526,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "18-secret-rotation-validator",
@@ -852,7 +1391,17 @@
     "sq_test_to_code_ratio": 0.85,
     "sq_test_count": 16,
     "sq_assertion_count": 51,
-    "sq_assertions_per_test": 3.2
+    "sq_assertions_per_test": 3.2,
+    "lj_coverage": 4,
+    "lj_rigor": 3,
+    "lj_design": 3,
+    "lj_overall": 3,
+    "lj_summary": "The suite covers all major scenarios \u2014 mixed status, all-ok, all-expired, warning classification, error handling, custom warning window, and workflow structure \u2014 making coverage reasonably good. However, rigor suffers from missing critical boundary conditions: no test for days_until == 0 (expires today), no test for days_until == warning_days exactly (the threshold boundary), no test for invalid date formats in the config, and no test verifying the required_by field content in output. The single-vs-multiple required_by services case is also untested. Design has notable issues: ACT_OUTPUT and ACT_EXIT are globals mutated by run_act_job, creating hidden coupling between tests and making parallel runs unsafe; setup uses a non-atomic file-existence check that would race under concurrency; there are zero unit tests for classify_secret or process_secrets \u2014 every test spins up a full Docker container via act, making the suite very slow and brittle when the container runtime is unavailable. The hardcoded days_since/days_until assertions (e.g., '\"days_since\": 463') are only valid if the workflow pins the date to 2026-04-09, which is an undocumented coupling between the bats assertions and the workflow fixture setup. The markdown vs JSON format switch is only lightly tested (mixed-status implicitly tests markdown, all-ok/all-expired test JSON), and there is no dedicated test asserting that -f markdown and -f json each produce correctly structured output. The 'act-result.txt exists' test is also order-dependent \u2014 it only passes after all the prior act tests have run, making it a fragile integration artifact check rather than an isolated assertion.",
+    "lj_tqs": 3.3,
+    "lj_judge_cost_usd": 0.0609,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1931,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "18-secret-rotation-validator",
@@ -867,7 +1416,17 @@
     "sq_test_to_code_ratio": 0.25,
     "sq_test_count": 15,
     "sq_assertion_count": 43,
-    "sq_assertions_per_test": 2.9
+    "sq_assertions_per_test": 2.9,
+    "lj_coverage": 4,
+    "lj_rigor": 3,
+    "lj_design": 4,
+    "lj_overall": 3,
+    "lj_summary": "The test suite covers most key requirements well: expired/warning/ok classification, JSON and markdown formats, configurable warning window, required-by metadata, summary counts, error handling for missing files and invalid formats, and default behavior. Fifteen named tests map cleanly to task requirements. Fixtures are referenced consistently with a fixed reference date (2024-01-15) for determinism, which is good design. However, rigor is moderate: edge cases like malformed CSV lines, empty files, secrets with exactly zero days until expiry (boundary between expired and warning), secrets expiring exactly on the warning threshold, and multiple services in required_by parsing are not explicitly tested. Test 9 (custom warning-days) only weakly asserts that API_KEY_PROD appears somewhere in output rather than asserting its actual status group, making it a soft check. Test 11 asserts key names exist but doesn't verify the actual count values (e.g., checking expired_count == 2). The bats setup is clean and fixture-driven, but there are no teardown functions and no isolation per test (shared REFERENCE_DATE env var could cause interference if tests are run in parallel). The overall structure is readable and well-commented, following TDD labeling conventions, but the assertions in several tests are loose (using pattern matching where exact value checks would be more reliable).",
+    "lj_tqs": 3.5,
+    "lj_judge_cost_usd": 0.0584,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 328,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "18-secret-rotation-validator",
@@ -881,8 +1440,18 @@
     "sq_impl_lines": 225,
     "sq_test_to_code_ratio": 2.95,
     "sq_test_count": 8,
-    "sq_assertion_count": 0,
-    "sq_assertions_per_test": 0.0
+    "sq_assertion_count": 60,
+    "sq_assertions_per_test": 7.5,
+    "lj_coverage": 4,
+    "lj_rigor": 2,
+    "lj_design": 3,
+    "lj_overall": 3,
+    "lj_summary": "The test suite covers the core functional requirements well \u2014 all urgency categories (expired, warning, ok), both output formats (JSON and markdown), configurable warning windows, and workflow structure validation via actionlint. Exact value assertions (e.g., 'days_until_expiry': -16, specific expiration dates) show good intent. However, rigor is low: the task explicitly requires graceful error handling with meaningful messages, yet no tests exercise invalid config paths (missing file, malformed JSON, missing required fields, empty secrets list). Boundary conditions are mostly absent \u2014 there is no test for a secret expiring in exactly `warning_days` days (the inclusive boundary), zero days remaining, or a single-secret config. The `|| true` workaround in expired/mixed fixtures prevents actually asserting that the script returns exit code 2 for expired secrets, bypassing validation of a named behavior. Design is workable \u2014 fixture isolation via temp repos with `finally` cleanup is solid, and helper functions reduce repetition. But using global mutable state for pass/fail tracking, brittle substring matching against raw act output, and a homegrown assert framework instead of pytest introduce fragility and readability concerns. The structural/actionlint tests are a good inclusion. The act-based integration approach is appropriate for the task but leaves unit-level logic (classify_secret, load_config error paths) entirely unvalidated.",
+    "lj_tqs": 3.0,
+    "lj_judge_cost_usd": 0.0701,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1786,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "18-secret-rotation-validator",
@@ -897,7 +1466,17 @@
     "sq_test_to_code_ratio": 0.49,
     "sq_test_count": 90,
     "sq_assertion_count": 52,
-    "sq_assertions_per_test": 0.6
+    "sq_assertions_per_test": 0.6,
+    "lj_coverage": 5,
+    "lj_rigor": 5,
+    "lj_design": 5,
+    "lj_overall": 5,
+    "lj_summary": "Exceptional test suite. Coverage is comprehensive: every public function (load_secrets, calculate_secret_status, analyze_secrets, format_markdown, format_json) is tested, and all task requirements (expiry detection, warning window, urgency grouping, both output formats, error handling, file I/O) are exercised. Rigor is outstanding \u2014 boundary conditions are explicitly tested (secret expiring exactly on the warning boundary, negative days_until_expiry, empty input, all-ok scenario), error paths are covered with specific exception type and message assertions, and a smoke test validates behavior when reference_date is None. Design is excellent: tests are organized into clearly labeled TDD-cycle classes with a shared REFERENCE_DATE constant ensuring determinism, pytest fixtures avoid repetition in format tests, test names are descriptive and intention-revealing, and test independence is maintained throughout. The only minor gap is the absence of integration/CLI-level tests for the main() entry point (e.g., argument parsing, exit codes), but the unit coverage is thorough enough that the overall suite would reliably catch regressions across all core logic paths.",
+    "lj_tqs": 5.0,
+    "lj_judge_cost_usd": 0.0551,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 279,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "18-secret-rotation-validator",
@@ -912,7 +1491,17 @@
     "sq_test_to_code_ratio": 2.01,
     "sq_test_count": 49,
     "sq_assertion_count": 74,
-    "sq_assertions_per_test": 1.5
+    "sq_assertions_per_test": 1.5,
+    "lj_coverage": 3,
+    "lj_rigor": 2,
+    "lj_design": 3,
+    "lj_overall": 3,
+    "lj_summary": "The suite covers the main happy-path scenarios well \u2014 mixed, all-ok, all-expired, and the warning-window boundary flip \u2014 and checks both markdown and JSON output formats with exact expected values (DaysUntilExpiry of -8, -373, etc.). Workflow-structure tests (triggers, jobs, actionlint, file references) are a useful addition. However, significant gaps exist: no tests for error-handling paths (missing config file, malformed JSON, secrets with missing required fields, invalid lastRotated dates), no test for the exact expiry boundary (daysUntilExpiry == 0), no test for an empty secrets array, and the alternate bare-array config format goes untested. The rigor score suffers most from the complete absence of negative/error tests. Design is adequate \u2014 BeforeAll scoping, a shared Invoke-ActWithFixture helper, and clear labeling are good choices \u2014 but the approach of patching the workflow YAML via regex replacement is brittle, all tests are integration-only (everything flows through act + Docker), making failures slow and hard to diagnose, and shared $script: state means a BeforeAll failure cascades misleadingly through all Its in a Describe. The suite would reliably catch regressions in the core classification and output logic, but a developer could break error handling or boundary conditions entirely without a single test failing.",
+    "lj_tqs": 2.8,
+    "lj_judge_cost_usd": 0.0556,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1469,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "18-secret-rotation-validator",
@@ -927,7 +1516,17 @@
     "sq_test_to_code_ratio": 0.53,
     "sq_test_count": 35,
     "sq_assertion_count": 51,
-    "sq_assertions_per_test": 1.5
+    "sq_assertions_per_test": 1.5,
+    "lj_coverage": 4,
+    "lj_rigor": 3,
+    "lj_design": 3,
+    "lj_overall": 3,
+    "lj_summary": "The test suite covers the core requirements well: secret classification (expired/warning/ok), report generation, both output formats (markdown and JSON), the main entry point, workflow structure checks, and a CI integration test via act. Unit tests for Get-SecretStatus and Get-RotationReport are solid and use a fixed reference date for determinism. However, several gaps reduce the score: the configurable warning window is not tested with non-default values in Get-RotationReport; error handling for malformed/missing JSON config is only superficially tested (one missing-file case, no invalid-JSON or missing-field tests); the WarningWindowDays override in the main entry point is untested; the boundary condition 'exactly on the deadline day' is tested but the 'one day before deadline' boundary is missing. The act integration test is fragile \u2014 it asserts on regex patterns like 'expiredCount.*1' rather than exact structured values, and it only exercises one fixture rather than all three. The 'Act Integration Tests' Describe block partially duplicates Test-WorkflowWithAct.ps1, creating confusion about the canonical test harness. Design issues include: BeforeAll blocks that load fixtures are not isolated per-It (shared mutable state), the workflow structure tests are duplicated between the Pester file and the external PS1 harness, and the act test does heavy setup/teardown inside a single It block which is an anti-pattern. The JSON format tests are thorough with exact count assertions, which is a strength. Overall the suite would catch most obvious regressions but has meaningful blind spots around edge cases and error handling.",
+    "lj_tqs": 3.3,
+    "lj_judge_cost_usd": 0.0622,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 395,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "18-secret-rotation-validator",
@@ -942,7 +1541,17 @@
     "sq_test_to_code_ratio": 1.1,
     "sq_test_count": 7,
     "sq_assertion_count": 77,
-    "sq_assertions_per_test": 11.0
+    "sq_assertions_per_test": 11.0,
+    "lj_coverage": 2,
+    "lj_rigor": 2,
+    "lj_design": 2,
+    "lj_overall": 2,
+    "lj_summary": "The test suite is almost entirely composed of end-to-end act/Docker integration tests, leaving the core library functions (daysBetween, evaluateSecret, buildReport, formatReport, parseArgs) completely without unit tests. The three act test cases cover only happy-path scenarios (mixed, all-ok, all-expired) and never exercise error handling: empty secrets array, invalid dates, missing fields, zero/negative rotation policy, unsupported output format, or missing CLI arguments. The boundary between 'warning' and 'ok' (exactly at the warning threshold) is never tested, nor is a non-default warning window exercised. The workflow structure tests are reasonably thorough (YAML triggers, step names, actionlint). However, the act integration tests are architecturally fragile: the all-ok and all-expired cases patch the workflow YAML via brittle regex substitution, the runAct helper passes --env FIXTURE_FILE but the mixed-urgency test still relies on the workflow's hardcoded default rather than the override, and fixture files are assumed to exist without being defined in the test file itself. Spinning up Docker containers to assert on exact JSON field values is a legitimate strategy only when paired with lower-level unit tests, which are entirely absent here. The suite would fail to catch regressions in the validator or formatter logic without also running Docker, making it slow and unreliable as a regression guard.",
+    "lj_tqs": 2.0,
+    "lj_judge_cost_usd": 0.0576,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 1466,
+    "lj_judge_provider": "claude-cli"
   },
   {
     "task_id": "18-secret-rotation-validator",
@@ -957,6 +1566,16 @@
     "sq_test_to_code_ratio": 1.4,
     "sq_test_count": 46,
     "sq_assertion_count": 89,
-    "sq_assertions_per_test": 1.9
+    "sq_assertions_per_test": 1.9,
+    "lj_coverage": 4,
+    "lj_rigor": 3,
+    "lj_design": 4,
+    "lj_overall": 4,
+    "lj_summary": "The test suite demonstrates solid coverage of the core domain logic: classifySecret, analyzeSecrets, generateReport, formatAsMarkdown, and formatAsJson are all tested with meaningful assertions. Fixtures are well-named, clearly documented, and reused consistently. The act-harness tests add a genuine CI integration layer with exact string assertions (secret names, urgency labels, exact test counts like '28 pass'). However, rigor has notable gaps: boundary conditions such as a secret expiring exactly today (daysUntilExpiry === 0), a secret expiring exactly at the warning-window boundary (daysUntilExpiry === warningWindowDays), negative rotationPolicyDays, and empty requiredBy arrays are not tested. The expiresAt ISO string format and lastRotated serialization in JSON output are asserted only shallowly. The act harness tests are skipped inside CI (IN_CI guard), meaning the most expensive assertions never run in the workflow itself \u2014 the tool self-validates in the environment where it would be most meaningful. The 28-test count assertion is brittle and will fail silently if tests are added without updating the literal. Design is clean: describe blocks map to functions, fixtures live at module scope, and helpers (appendActResult, runActInTempRepo) are well-abstracted, though runActInTempRepo is complex enough that it could benefit from its own unit test or at least inline error handling for individual spawnSync failures.",
+    "lj_tqs": 3.8,
+    "lj_judge_cost_usd": 0.0529,
+    "lj_judge_input_tokens": 3,
+    "lj_judge_output_tokens": 362,
+    "lj_judge_provider": "claude-cli"
   }
 ]
