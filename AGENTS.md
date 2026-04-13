@@ -21,7 +21,7 @@ python3 -c "from llm_providers import get_provider"
 python3 generate_results.py --all
 
 # Run a benchmark (v4, all tasks/modes/models)
-python3 runner.py --tasks 11,12,13,14,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
+python3 runner.py --tasks 11,12,13,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
 
 # Evaluate test quality (structural metrics only)
 python3 test_quality.py results/2026-04-09_152435
@@ -139,9 +139,9 @@ See the docstring in `llm_providers.py` for a complete example skeleton.
 7. If you changed architecture or findings, update this file (`AGENTS.md`).
 8. If you added files or moved things, update the Files table in `README.md`.
 
-## Current state (2026-04-10)
+## Current state (2026-04-13)
 
-### v4 benchmark — complete
+### v4 benchmark — complete, task 14 archived
 
 64/64 runs finished (8 tasks x 4 modes x 2 models). Results in
 `results/2026-04-09_152435/`. Zero failures, zero timeouts, zero
@@ -151,6 +151,11 @@ v4 added trap-awareness guidance from v3 findings, `shell: pwsh` for
 PowerShell mode, "limit to 3 act push" instruction, and a custom act
 Docker image with pwsh/Pester pre-installed. This cut average run time
 by 24% vs v3 (8.6min vs 11.4min).
+
+Post-v4 analysis found Task 14 (Docker Image Tag Generator) redundant
+with Task 16 (Environment Matrix Generator) across TQ scores, cost, and
+duration profiles. Task 14 was archived — see `archived-tasks/`. Future
+runs use 7 tasks (11, 12, 13, 15, 16, 17, 18) x 4 modes x 2 models = 56 runs.
 
 ### Key findings (v4)
 

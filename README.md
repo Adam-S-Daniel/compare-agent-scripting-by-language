@@ -51,6 +51,7 @@ Each benchmark version defines a set of scripting tasks, language modes, and mod
 | `workspaces/` | Temporary agent working directories (git-ignored) |
 | `AGENTS.md` | Agent instructions ([agents.md spec](https://agents.md)) |
 | `skills/` | Agent skills ([agentskills.io spec](https://agentskills.io/specification)) |
+| `archived-tasks/` | Retired task definitions with rationale — results preserved in `results/` |
 | `design-and-planning-artifacts/` | Historical planning docs, v1 analysis, superseded files |
 
 ## Benchmark Runs
