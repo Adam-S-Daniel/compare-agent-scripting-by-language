@@ -1,20 +1,20 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-17 08:10:45 AM ET
+**Last updated:** 2026-04-17 08:11:47 AM ET
 
-**Status:** 2/35 runs completed, 33 remaining
-**Total cost so far:** $2.13
-**Total agent time so far:** 9.6 min
+**Status:** 3/35 runs completed, 32 remaining
+**Total cost so far:** $3.87
+**Total agent time so far:** 17.9 min
 
 ## Observations
 
 - **Fastest (avg):** default/opus47-1m — 4.6min, then powershell/opus47-1m — 5.0min
-- **Slowest (avg):** powershell/opus47-1m — 5.0min, then default/opus47-1m — 4.6min
+- **Slowest (avg):** powershell-tool/opus47-1m — 8.4min, then powershell/opus47-1m — 5.0min
 - **Cheapest (avg):** default/opus47-1m — $0.88, then powershell/opus47-1m — $1.25
-- **Most expensive (avg):** powershell/opus47-1m — $1.25, then default/opus47-1m — $0.88
+- **Most expensive (avg):** powershell-tool/opus47-1m — $1.73, then powershell/opus47-1m — $1.25
 
-- **Estimated time remaining:** 158.3min
-- **Estimated total cost:** $37.32
+- **Estimated time remaining:** 191.5min
+- **Estimated total cost:** $45.09
 
 ## Comparison by Language/Model
 
@@ -22,6 +22,7 @@
 |------|-------|------|-------------|--------------------------|------------|-----------|----------|------------|
 | default | opus47-1m | 1 | 4.6min | 4.6min | 0.0 | 24 | $0.88 | $0.88 |
 | powershell | opus47-1m | 1 | 5.0min | 5.0min | 0.0 | 29 | $1.25 | $1.25 |
+| powershell-tool | opus47-1m | 1 | 8.4min | 8.4min | 1.0 | 33 | $1.73 | $1.73 |
 
 
 <details>
@@ -31,6 +32,7 @@
 |------|-------|------|-------------|--------------------------|------------|-----------|----------|------------|
 | default | opus47-1m | 1 | 4.6min | 4.6min | 0.0 | 24 | $0.88 | $0.88 |
 | powershell | opus47-1m | 1 | 5.0min | 5.0min | 0.0 | 29 | $1.25 | $1.25 |
+| powershell-tool | opus47-1m | 1 | 8.4min | 8.4min | 1.0 | 33 | $1.73 | $1.73 |
 
 </details>
 
@@ -41,6 +43,7 @@
 |------|-------|------|-------------|--------------------------|------------|-----------|----------|------------|
 | default | opus47-1m | 1 | 4.6min | 4.6min | 0.0 | 24 | $0.88 | $0.88 |
 | powershell | opus47-1m | 1 | 5.0min | 5.0min | 0.0 | 29 | $1.25 | $1.25 |
+| powershell-tool | opus47-1m | 1 | 8.4min | 8.4min | 1.0 | 33 | $1.73 | $1.73 |
 
 </details>
 
@@ -51,6 +54,7 @@
 |------|-------|------|-------------|--------------------------|------------|-----------|----------|------------|
 | default | opus47-1m | 1 | 4.6min | 4.6min | 0.0 | 24 | $0.88 | $0.88 |
 | powershell | opus47-1m | 1 | 5.0min | 5.0min | 0.0 | 29 | $1.25 | $1.25 |
+| powershell-tool | opus47-1m | 1 | 8.4min | 8.4min | 1.0 | 33 | $1.73 | $1.73 |
 
 </details>
 
@@ -61,6 +65,7 @@
 |------|-------|------|-------------|--------------------------|------------|-----------|----------|------------|
 | default | opus47-1m | 1 | 4.6min | 4.6min | 0.0 | 24 | $0.88 | $0.88 |
 | powershell | opus47-1m | 1 | 5.0min | 5.0min | 0.0 | 29 | $1.25 | $1.25 |
+| powershell-tool | opus47-1m | 1 | 8.4min | 8.4min | 1.0 | 33 | $1.73 | $1.73 |
 
 </details>
 
@@ -71,6 +76,7 @@
 |------|-------|------|-------------|--------------------------|------------|-----------|----------|------------|
 | default | opus47-1m | 1 | 4.6min | 4.6min | 0.0 | 24 | $0.88 | $0.88 |
 | powershell | opus47-1m | 1 | 5.0min | 5.0min | 0.0 | 29 | $1.25 | $1.25 |
+| powershell-tool | opus47-1m | 1 | 8.4min | 8.4min | 1.0 | 33 | $1.73 | $1.73 |
 
 </details>
 
@@ -83,8 +89,9 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Mode | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time | Test Run Time | % of Test Time Saved |
 |------|-------|-------|--------|------|------------|-----------|----------|-----------|-----------|-----------|---------------|----------------------|
-| default | opus47-1m | 13 | 0 | 0.0% | 0.0min | 0.0% | 0.2min | 1.6% | -0.2min | -1.6% | 1.5min | -9.8% |
-| powershell | opus47-1m | 15 | 0 | 0.0% | 0.0min | 0.0% | 0.1min | 1.0% | -0.1min | -1.0% | 0.2min | -56.3% |
+| default | opus47-1m | 13 | 0 | 0.0% | 0.0min | 0.0% | 0.2min | 0.8% | -0.2min | -0.8% | 1.5min | -9.8% |
+| powershell | opus47-1m | 15 | 0 | 0.0% | 0.0min | 0.0% | 0.1min | 0.5% | -0.1min | -0.5% | 0.2min | -56.3% |
+| powershell-tool | opus47-1m | 14 | 0 | 0.0% | 0.0min | 0.0% | 0.1min | 0.4% | -0.1min | -0.4% | 3.0min | -2.1% |
 
 
 <details>
@@ -92,8 +99,9 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Mode | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time | Test Run Time | % of Test Time Saved |
 |------|-------|-------|--------|------|------------|-----------|----------|-----------|-----------|-----------|---------------|----------------------|
-| powershell | opus47-1m | 15 | 0 | 0.0% | 0.0min | 0.0% | 0.1min | 1.0% | -0.1min | -1.0% | 0.2min | -56.3% |
-| default | opus47-1m | 13 | 0 | 0.0% | 0.0min | 0.0% | 0.2min | 1.6% | -0.2min | -1.6% | 1.5min | -9.8% |
+| powershell-tool | opus47-1m | 14 | 0 | 0.0% | 0.0min | 0.0% | 0.1min | 0.4% | -0.1min | -0.4% | 3.0min | -2.1% |
+| powershell | opus47-1m | 15 | 0 | 0.0% | 0.0min | 0.0% | 0.1min | 0.5% | -0.1min | -0.5% | 0.2min | -56.3% |
+| default | opus47-1m | 13 | 0 | 0.0% | 0.0min | 0.0% | 0.2min | 0.8% | -0.2min | -0.8% | 1.5min | -9.8% |
 
 </details>
 
@@ -102,8 +110,9 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Mode | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time | Test Run Time | % of Test Time Saved |
 |------|-------|-------|--------|------|------------|-----------|----------|-----------|-----------|-----------|---------------|----------------------|
-| default | opus47-1m | 13 | 0 | 0.0% | 0.0min | 0.0% | 0.2min | 1.6% | -0.2min | -1.6% | 1.5min | -9.8% |
-| powershell | opus47-1m | 15 | 0 | 0.0% | 0.0min | 0.0% | 0.1min | 1.0% | -0.1min | -1.0% | 0.2min | -56.3% |
+| powershell-tool | opus47-1m | 14 | 0 | 0.0% | 0.0min | 0.0% | 0.1min | 0.4% | -0.1min | -0.4% | 3.0min | -2.1% |
+| default | opus47-1m | 13 | 0 | 0.0% | 0.0min | 0.0% | 0.2min | 0.8% | -0.2min | -0.8% | 1.5min | -9.8% |
+| powershell | opus47-1m | 15 | 0 | 0.0% | 0.0min | 0.0% | 0.1min | 0.5% | -0.1min | -0.5% | 0.2min | -56.3% |
 
 </details>
 
@@ -112,8 +121,9 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Mode | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time | Test Run Time | % of Test Time Saved |
 |------|-------|-------|--------|------|------------|-----------|----------|-----------|-----------|-----------|---------------|----------------------|
-| default | opus47-1m | 13 | 0 | 0.0% | 0.0min | 0.0% | 0.2min | 1.6% | -0.2min | -1.6% | 1.5min | -9.8% |
-| powershell | opus47-1m | 15 | 0 | 0.0% | 0.0min | 0.0% | 0.1min | 1.0% | -0.1min | -1.0% | 0.2min | -56.3% |
+| default | opus47-1m | 13 | 0 | 0.0% | 0.0min | 0.0% | 0.2min | 0.8% | -0.2min | -0.8% | 1.5min | -9.8% |
+| powershell | opus47-1m | 15 | 0 | 0.0% | 0.0min | 0.0% | 0.1min | 0.5% | -0.1min | -0.5% | 0.2min | -56.3% |
+| powershell-tool | opus47-1m | 14 | 0 | 0.0% | 0.0min | 0.0% | 0.1min | 0.4% | -0.1min | -0.4% | 3.0min | -2.1% |
 
 </details>
 
@@ -122,8 +132,8 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | Status | Runs | $ Saved | % of $ |
 |--------|------|---------|--------|
 | Full hit (100%) | 0 | $0.00 | 0.00% |
-| Partial | 1 | $0.09 | 4.38% |
-| Miss | 1 | $0.00 | 0.00% |
+| Partial | 1 | $0.09 | 2.42% |
+| Miss | 2 | $0.00 | 0.00% |
 
 ## Test Quality Evaluation
 
@@ -135,6 +145,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 |------|-------|-----------|----------------|-----------------|---------------------|
 | default | opus47-1m | 25.0 | 42.0 | 1.7 | 1.61 |
 | powershell | opus47-1m | 30.0 | 47.0 | 1.6 | 1.79 |
+| powershell-tool | opus47-1m | 22.0 | 33.0 | 1.5 | 0.98 |
 
 
 <details>
@@ -144,6 +155,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 |------|-------|-----------|----------------|-----------------|---------------------|
 | powershell | opus47-1m | 30.0 | 47.0 | 1.6 | 1.79 |
 | default | opus47-1m | 25.0 | 42.0 | 1.7 | 1.61 |
+| powershell-tool | opus47-1m | 22.0 | 33.0 | 1.5 | 0.98 |
 
 </details>
 
@@ -154,6 +166,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 |------|-------|-----------|----------------|-----------------|---------------------|
 | powershell | opus47-1m | 30.0 | 47.0 | 1.6 | 1.79 |
 | default | opus47-1m | 25.0 | 42.0 | 1.7 | 1.61 |
+| powershell-tool | opus47-1m | 22.0 | 33.0 | 1.5 | 0.98 |
 
 </details>
 
@@ -164,6 +177,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 |------|-------|-----------|----------------|-----------------|---------------------|
 | powershell | opus47-1m | 30.0 | 47.0 | 1.6 | 1.79 |
 | default | opus47-1m | 25.0 | 42.0 | 1.7 | 1.61 |
+| powershell-tool | opus47-1m | 22.0 | 33.0 | 1.5 | 0.98 |
 
 </details>
 
@@ -175,6 +189,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 |------|------|-------|-------|------------|-------------|------------|------------|-----------|
 | Semantic Version Bumper | default | opus47-1m | 25 | 42 | 1.7 | 333 | 207 | 1.61 |
 | Semantic Version Bumper | powershell | opus47-1m | 30 | 47 | 1.6 | 174 | 97 | 1.79 |
+| Semantic Version Bumper | powershell-tool | opus47-1m | 22 | 33 | 1.5 | 163 | 167 | 0.98 |
 
 </details>
 
@@ -184,6 +199,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 |------|------|-------|----------|-------|--------|------|----------|--------|
 | Semantic Version Bumper | default | opus47-1m | 4.6min | 24 | 0 | $0.88 | python | ok |
 | Semantic Version Bumper | powershell | opus47-1m | 5.0min | 29 | 0 | $1.25 | powershell | ok |
+| Semantic Version Bumper | powershell-tool | opus47-1m | 8.4min | 33 | 1 | $1.73 | powershell | ok |
 
 
 <details>
@@ -193,6 +209,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 |------|------|-------|----------|-------|--------|------|----------|--------|
 | Semantic Version Bumper | default | opus47-1m | 4.6min | 24 | 0 | $0.88 | python | ok |
 | Semantic Version Bumper | powershell | opus47-1m | 5.0min | 29 | 0 | $1.25 | powershell | ok |
+| Semantic Version Bumper | powershell-tool | opus47-1m | 8.4min | 33 | 1 | $1.73 | powershell | ok |
 
 </details>
 
@@ -203,6 +220,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 |------|------|-------|----------|-------|--------|------|----------|--------|
 | Semantic Version Bumper | default | opus47-1m | 4.6min | 24 | 0 | $0.88 | python | ok |
 | Semantic Version Bumper | powershell | opus47-1m | 5.0min | 29 | 0 | $1.25 | powershell | ok |
+| Semantic Version Bumper | powershell-tool | opus47-1m | 8.4min | 33 | 1 | $1.73 | powershell | ok |
 
 </details>
 
@@ -213,6 +231,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 |------|------|-------|----------|-------|--------|------|----------|--------|
 | Semantic Version Bumper | default | opus47-1m | 4.6min | 24 | 0 | $0.88 | python | ok |
 | Semantic Version Bumper | powershell | opus47-1m | 5.0min | 29 | 0 | $1.25 | powershell | ok |
+| Semantic Version Bumper | powershell-tool | opus47-1m | 8.4min | 33 | 1 | $1.73 | powershell | ok |
 
 </details>
 
@@ -223,6 +242,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 |------|------|-------|----------|-------|--------|------|----------|--------|
 | Semantic Version Bumper | default | opus47-1m | 4.6min | 24 | 0 | $0.88 | python | ok |
 | Semantic Version Bumper | powershell | opus47-1m | 5.0min | 29 | 0 | $1.25 | powershell | ok |
+| Semantic Version Bumper | powershell-tool | opus47-1m | 8.4min | 33 | 1 | $1.73 | powershell | ok |
 
 </details>
 
