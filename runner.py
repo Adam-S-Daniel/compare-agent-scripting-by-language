@@ -830,8 +830,15 @@ def run_single_task(
         task_slug = task_id.split("-", 1)[1] if "-" in task_id else task_id
         prompt += "\n" + GHA_WORKFLOW_ADDENDUM.format(task_slug=task_slug)
 
+    # The "variant" qualifies model_short with effort when effort is set. This
+    # lets a single results dir hold runs of the same (task, mode, model) at
+    # different effort levels without collision — e.g. `default-opus47-1m-xhigh`
+    # vs `default-opus47-1m-medium`. When effort is None (the historical default)
+    # we omit the suffix so v1-v4 results keep their existing layout.
+    variant = f"{model_short}-{effort}" if effort else model_short
+
     # Create workspace
-    workspace = repo_root / "workspaces" / run_dir.name / task_id / f"{mode}-{model_short}"
+    workspace = repo_root / "workspaces" / run_dir.name / task_id / f"{mode}-{variant}"
     workspace.mkdir(parents=True, exist_ok=True)
 
     # Initialize workspace as a git repo (act requires one)
@@ -881,7 +888,7 @@ def run_single_task(
         (claude_dir / "settings.json").write_text(json.dumps(hook_config, indent=2))
 
     # Create results directory
-    result_dir = run_dir / "tasks" / task_id / f"{mode}-{model_short}"
+    result_dir = run_dir / "tasks" / task_id / f"{mode}-{variant}"
     result_dir.mkdir(parents=True, exist_ok=True)
 
     # Capture workspace before
@@ -1056,6 +1063,7 @@ def run_single_task(
         "dotnet_version": dotnet_version,
         "model": model_id,
         "model_short": model_short,
+        "variant": variant,
         "claude_code_version": parsed["claude_code_version"],
         "instructions_version": INSTRUCTIONS_VERSION,
         "timestamp_start": timestamp_start,
@@ -1457,8 +1465,10 @@ def main():
         for model_short, model_id in selected_models:
             for mode in selected_modes:
                 run_count += 1
-                # Check if already completed (for --resume)
-                existing_metrics = run_dir / "tasks" / task["id"] / f"{mode}-{model_short}" / "metrics.json"
+                # Check if already completed (for --resume) — same variant logic
+                # as run_single_task's result_dir construction.
+                variant = f"{model_short}-{args.effort}" if args.effort else model_short
+                existing_metrics = run_dir / "tasks" / task["id"] / f"{mode}-{variant}" / "metrics.json"
                 if existing_metrics.exists():
                     log(f"Run {run_count}/{total_runs} — SKIPPED (already completed): {task['id']} | {mode} | {model_short}")
                     pusher.update(run_count, all_metrics)

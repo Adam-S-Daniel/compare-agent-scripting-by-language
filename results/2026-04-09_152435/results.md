@@ -1,6 +1,6 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-10 04:32:52 PM ET
+**Last updated:** 2026-04-17 08:32:25 AM ET
 
 **Status:** 64/64 runs completed, 0 remaining
 **Total cost so far:** $86.90
@@ -363,7 +363,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | Status | Runs | $ Saved | % of $ |
 |--------|------|---------|--------|
 | Full hit (100%) | 1 | $0.06 | 0.07% |
-| Partial | 60 | $7.08 | 8.15% |
+| Partial | 60 | $3.14 | 3.61% |
 | Miss | 3 | $0.00 | 0.00% |
 
 ## Test Quality Evaluation

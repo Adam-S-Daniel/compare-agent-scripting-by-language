@@ -469,8 +469,20 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     # Separate successful and failed runs
     successful = [m for m in all_metrics if m.get("run_success", m.get("exit_code", 0) == 0 and m.get("timing", {}).get("num_turns", 0) > 0)]
     failed = [m for m in all_metrics if m not in successful]
+
+    def _label(m):
+        """Variant label used for grouping and display in tables. Encodes
+        effort into the model short (e.g. `opus47-1m-xhigh`) so one results
+        dir can hold multiple effort levels without collision. Pre-effort
+        runs (effort_level None) fall back to plain model_short."""
+        eff = m.get("effort_level")
+        return f"{m['model_short']}-{eff}" if eff else m["model_short"]
+
     modes_seen = sorted(set(m["language_mode"] for m in all_metrics))
-    models_seen = sorted(set(m["model_short"] for m in all_metrics))
+    models_seen = sorted(set(_label(m) for m in all_metrics))
+    # Map variant label -> plain model_short for pricing lookups (keyed by
+    # COST_PER_MTOK, which indexes on model_short only).
+    _label_to_model_short = {_label(m): m["model_short"] for m in all_metrics}
 
     # ── Helper: format duration as minutes ──
     def _dur(seconds):
@@ -484,7 +496,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     cmp_rows = []
     for mode in modes_seen:
         for model in models_seen:
-            mm = [m for m in successful if m["language_mode"] == mode and m["model_short"] == model]
+            mm = [m for m in successful if m["language_mode"] == mode and _label(m) == model]
             n = len(mm)
             if n == 0:
                 continue
@@ -505,7 +517,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     # Subtract 0.05s baseline for the Write operation itself.
     _write_durs_by_combo: dict[tuple, list] = {}
     for m in all_metrics:
-        combo = (m["language_mode"], m["model_short"])
+        combo = (m["language_mode"], _label(m))
         source = m.get("tool_use_timing", {}).get("all_tool_uses") or m.get("tool_use_timing", {}).get("slowest_tool_uses", [])
         for t in source:
             if t["tool_name"] in ("Write", "Edit"):
@@ -520,7 +532,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     combo_run_counts = {}
 
     for m in all_metrics:
-        mode, model = m["language_mode"], m["model_short"]
+        mode, model = m["language_mode"], _label(m)
         combo = (mode, model)
         combo_run_counts[combo] = combo_run_counts.get(combo, 0) + 1
 
@@ -627,7 +639,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     cache_read_rates = {s: COST_PER_MTOK[mid]["cache_read"] for s, mid in MODELS.items() if mid in COST_PER_MTOK}
     cache_create_rates = {s: COST_PER_MTOK[mid]["cache_write"] for s, mid in MODELS.items() if mid in COST_PER_MTOK}
     for m in all_metrics:
-        cli_path = run_dir / "tasks" / m["task_id"] / f"{m['language_mode']}-{m['model_short']}" / "cli-output.json"
+        cli_path = run_dir / "tasks" / m["task_id"] / f"{m['language_mode']}-{_label(m)}" / "cli-output.json"
         if not cli_path.exists():
             continue
         try:
@@ -639,10 +651,12 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
                 usage = e.get("message", {}).get("usage", {})
                 cr = usage.get("cache_read_input_tokens", 0)
                 cc = usage.get("cache_creation_input_tokens", 0)
-                ms = m["model_short"]
-                saved = cr * (cache_create_rates.get(ms, 0) - cache_read_rates.get(ms, 0)) / 1_000_000 if cr else 0
+                # Pricing lookup uses plain model_short; display label includes effort.
+                ms_price = m["model_short"]
+                ms_label = _label(m)
+                saved = cr * (cache_create_rates.get(ms_price, 0) - cache_read_rates.get(ms_price, 0)) / 1_000_000 if cr else 0
                 status = "full_hit" if cr > 0 and cc == 0 else "partial" if cr > 0 else "miss"
-                cache_data.append({"mode": m["language_mode"], "model": ms, "saved": saved, "status": status})
+                cache_data.append({"mode": m["language_mode"], "model": ms_label, "saved": saved, "status": status})
                 break
 
     # ==================================================================
@@ -687,7 +701,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
             alint = "pass" if alint_val else ("fail" if alint_val is False else "n/a")
             act = "yes" if m.get("quality", {}).get("act_result_txt_exists") else "no"
             lines.append(
-                f"| {m['task_name'][:30]} | {m['language_mode']} | {m['model_short']} "
+                f"| {m['task_name'][:30]} | {m['language_mode']} | {_label(m)} "
                 f"| {_dur(dur)} | {reason} | {m['code_metrics']['total_lines']} | {alint} | {act} |")
         lines.append("")
         lines.append(f"*{len(failed)} run(s) excluded from averages below.*")
@@ -982,12 +996,12 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     llm_rows = []
     has_llm = False
     for m in all_metrics:
-        variant_dir = run_dir / "tasks" / m["task_id"] / f"{m['language_mode']}-{m['model_short']}"
+        variant_dir = run_dir / "tasks" / m["task_id"] / f"{m['language_mode']}-{_label(m)}"
         gen_dir = variant_dir / "generated-code"
         sq = compute_structural_metrics(gen_dir)
 
         tq_rows.append({
-            "task": m["task_name"][:30], "mode": m["language_mode"], "model": m["model_short"],
+            "task": m["task_name"][:30], "mode": m["language_mode"], "model": _label(m),
             "tests": sq["test_count"], "asserts": sq["assertion_count"],
             "apt": sq["assertions_per_test"],
             "t_lines": sq["test_lines"], "i_lines": sq["impl_lines"],
@@ -1002,7 +1016,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
                 lj = json.loads(llm_cache.read_text())
                 has_llm = True
                 llm_rows.append({
-                    "task": m["task_name"][:30], "mode": m["language_mode"], "model": m["model_short"],
+                    "task": m["task_name"][:30], "mode": m["language_mode"], "model": _label(m),
                     "coverage": lj.get("coverage", 0), "rigor": lj.get("rigor", 0),
                     "design": lj.get("design", 0), "overall": lj.get("overall", 0),
                     "summary": lj.get("summary", ""),
@@ -1245,7 +1259,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         dur = m["timing"]["grand_total_duration_ms"] / 1000
         status = "ok" if m in successful else m.get("failure_reason", "failed")
         pr_rows.append({
-            "task": m["task_name"][:30], "mode": m["language_mode"], "model": m["model_short"],
+            "task": m["task_name"][:30], "mode": m["language_mode"], "model": _label(m),
             "dur": dur, "turns": m["timing"]["num_turns"],
             "errors": m["quality"]["error_count"],
             "cost": m["cost"]["total_cost_usd"],
