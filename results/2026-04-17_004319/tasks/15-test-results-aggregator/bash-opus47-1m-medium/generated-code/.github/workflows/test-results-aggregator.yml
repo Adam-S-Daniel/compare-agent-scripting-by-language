@@ -1,0 +1,74 @@
+name: Test Results Aggregator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  FIXTURES_DIR: fixtures
+
+jobs:
+  aggregate:
+    name: Aggregate test results
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          # jq is usually present in act images; install if missing.
+          if ! command -v jq >/dev/null; then
+            apt-get update && apt-get install -y --no-install-recommends jq
+          fi
+          # bats for unit tests.
+          if ! command -v bats >/dev/null; then
+            apt-get update && apt-get install -y --no-install-recommends bats
+          fi
+
+      - name: Syntax check aggregator script
+        shell: bash
+        run: bash -n aggregate.sh
+
+      - name: Run bats unit tests
+        shell: bash
+        run: bats tests/aggregate.bats
+
+      - name: Aggregate fixture results
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash aggregate.sh aggregate \
+            "${FIXTURES_DIR}/run1/junit.xml" \
+            "${FIXTURES_DIR}/run2/results.json" \
+            "${FIXTURES_DIR}/run3/junit.xml" | tee aggregate.txt
+
+      - name: Generate markdown summary
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash aggregate.sh summary \
+            "${FIXTURES_DIR}/run1/junit.xml" \
+            "${FIXTURES_DIR}/run2/results.json" \
+            "${FIXTURES_DIR}/run3/junit.xml" | tee summary.md
+          # When running in real GitHub Actions, also append to the job summary.
+          if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
+            cat summary.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Assert expected totals
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q '^total=12$'    aggregate.txt
+          grep -q '^passed=8$'    aggregate.txt
+          grep -q '^failed=1$'    aggregate.txt
+          grep -q '^skipped=3$'   aggregate.txt
+          grep -q '^flaky=test_flaky_net$' aggregate.txt
+          echo "AGGREGATE_OK"
