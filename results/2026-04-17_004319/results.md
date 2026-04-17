@@ -1,8 +1,8 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-17 12:57:58 AM ET
+**Last updated:** 2026-04-17 01:20:07 AM ET
 
-**Status:** 2/28 runs completed, 26 remaining
+**Status:** 2/35 runs completed, 33 remaining
 **Total cost so far:** $4.72
 **Total agent time so far:** 14.5 min
 
@@ -13,8 +13,8 @@
 - **Cheapest (avg):** powershell/opus47-1m — $2.27, then default/opus47-1m — $2.45
 - **Most expensive (avg):** default/opus47-1m — $2.45, then powershell/opus47-1m — $2.27
 
-- **Estimated time remaining:** 188.7min
-- **Estimated total cost:** $66.05
+- **Estimated time remaining:** 239.5min
+- **Estimated total cost:** $82.56
 
 ## Comparison by Language/Model
 
@@ -122,7 +122,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | Status | Runs | $ Saved | % of $ |
 |--------|------|---------|--------|
 | Full hit (100%) | 0 | $0.00 | 0.00% |
-| Partial | 2 | $0.56 | 11.88% |
+| Partial | 2 | $0.19 | 3.96% |
 | Miss | 0 | $0.00 | 0.00% |
 
 ## Test Quality Evaluation
