@@ -1,0 +1,58 @@
+name: PR Label Assigner
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      changed_files:
+        description: 'Optional newline-separated changed file list'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+env:
+  FIXTURE_FILE: fixtures/changed-files.txt
+  RULES_FILE: rules.example.json
+
+jobs:
+  test:
+    name: Run Pester tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Pester
+        shell: pwsh
+        run: |
+          $result = Invoke-Pester -Path ./PRLabelAssigner.Tests.ps1 -Output Detailed -PassThru
+          if ($result.FailedCount -gt 0) {
+            Write-Error "Pester tests failed: $($result.FailedCount) failure(s)"
+            exit 1
+          }
+
+  assign-labels:
+    name: Assign labels
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Assign labels from fixture
+        id: assign
+        shell: pwsh
+        run: |
+          $fixture = '${{ env.FIXTURE_FILE }}'
+          $rules   = '${{ env.RULES_FILE }}'
+          if (-not (Test-Path $fixture)) {
+            Write-Error "Fixture file not found: $fixture"
+            exit 1
+          }
+          $labels = & ./assign-labels.ps1 -ChangedFilesPath $fixture -RulesPath $rules
+          Write-Output "=== ASSIGNED LABELS ==="
+          foreach ($label in $labels) { Write-Output "LABEL: $label" }
+          Write-Output "=== END LABELS ==="
