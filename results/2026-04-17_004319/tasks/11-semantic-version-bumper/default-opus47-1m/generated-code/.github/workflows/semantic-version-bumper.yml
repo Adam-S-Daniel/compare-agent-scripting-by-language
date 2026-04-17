@@ -1,0 +1,83 @@
+# Semantic version bumper workflow.
+#
+# Drives `bumper.py` with fixture data under `fixtures/<FIXTURE>/` so the same
+# pipeline runs in real CI and inside `act` for local verification. Each run
+# prints a VERIFY: line that the act harness asserts on exactly.
+#
+# FIXTURE selection precedence:
+#   1. workflow_dispatch input `fixture`
+#   2. shell env FIXTURE (act passes this via `--env FIXTURE=...`)
+#   3. default: "minor-bump"
+
+name: semantic-version-bumper
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: "Fixture directory under fixtures/ to bump"
+        required: false
+        default: "minor-bump"
+
+permissions:
+  contents: read
+
+jobs:
+  bump:
+    name: Bump version from fixture
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Verify bumper script is present
+        run: test -f bumper.py
+
+      - name: Sanity-check bumper imports
+        run: |
+          # Full unit test suite runs locally (pytest not always available in
+          # minimal runners). Here we just confirm the module imports cleanly
+          # and its pure-function API works against a quick in-memory input.
+          python3 -c "
+          import bumper
+          commits = bumper.parse_commits('feat: x\nfix: y\n')
+          assert bumper.determine_bump_type(commits) == 'minor'
+          assert bumper.bump_version('1.0.0', 'minor') == '1.1.0'
+          print('bumper import + smoke check OK')
+          "
+
+      - name: Run bumper on fixture
+        id: bump
+        env:
+          # Dispatch input wins if provided; otherwise fall back to any
+          # FIXTURE set in the runner shell, then to a stable default.
+          INPUT_FIXTURE: ${{ inputs.fixture }}
+        run: |
+          set -e
+          FIXTURE_NAME="${INPUT_FIXTURE:-${FIXTURE:-minor-bump}}"
+          FIX_DIR="fixtures/${FIXTURE_NAME}"
+          echo "Using fixture=${FIXTURE_NAME}"
+          test -d "${FIX_DIR}"
+          WORK="$(mktemp -d)"
+          cp "${FIX_DIR}/package.json" "${WORK}/package.json"
+          cp "${FIX_DIR}/commits.txt"   "${WORK}/commits.txt"
+          python3 bumper.py \
+            --version-file "${WORK}/package.json" \
+            --commits-file "${WORK}/commits.txt" \
+            --changelog-file "${WORK}/CHANGELOG.md" \
+            --date 2026-04-17 \
+            | tee "${WORK}/bump.out"
+          NEW_VERSION=$(grep '^NEW_VERSION=' "${WORK}/bump.out" | cut -d= -f2)
+          BUMP_TYPE=$(grep '^BUMP_TYPE=' "${WORK}/bump.out" | cut -d= -f2)
+          echo "new_version=${NEW_VERSION}" >> "${GITHUB_OUTPUT}"
+          echo "bump_type=${BUMP_TYPE}"     >> "${GITHUB_OUTPUT}"
+          # VERIFY line: harness greps for this and asserts exact values.
+          echo "VERIFY: fixture=${FIXTURE_NAME} bump_type=${BUMP_TYPE} new_version=${NEW_VERSION}"
+
+      - name: Show bump result
+        run: |
+          echo "bump_type=${{ steps.bump.outputs.bump_type }}"
+          echo "new_version=${{ steps.bump.outputs.new_version }}"
