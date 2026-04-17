@@ -1,0 +1,415 @@
+
+======================================================================
+Structure tests
+======================================================================
+
+
+  PASS: actionlint exits 0
+  PASS: workflow has push trigger
+  PASS: workflow has pull_request trigger
+  PASS: workflow has schedule trigger
+  PASS: workflow has workflow_dispatch trigger
+  PASS: workflow has tests job
+  PASS: workflow has cleanup job
+  PASS: cleanup needs tests
+  PASS: uses actions/checkout@v4
+  PASS: uses shell: pwsh
+  PASS: Invoke-Cleanup.ps1 referenced and present
+  PASS: ArtifactCleanup.Tests.ps1 referenced and present
+  PASS: ArtifactCleanup.psm1 present
+
+======================================================================
+act test case: age-only
+======================================================================
+
+--- act exit: 0 ---
+time="2026-04-17T06:35:50-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Artifact cleanup/Pester unit tests] ⭐ Run Set up job
+[Artifact cleanup/Pester unit tests] 🚀  Start image=act-ubuntu-pwsh:latest
+[Artifact cleanup/Pester unit tests]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Artifact cleanup/Pester unit tests]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact cleanup/Pester unit tests]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact cleanup/Pester unit tests]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Artifact cleanup/Pester unit tests]   ✅  Success - Set up job
+[Artifact cleanup/Pester unit tests] ⭐ Run Main actions/checkout@v4
+[Artifact cleanup/Pester unit tests]   🐳  docker cp src=/tmp/act-b0aeb2ae0b7646239d5a0d74dd440f7c/. dst=/tmp/act-b0aeb2ae0b7646239d5a0d74dd440f7c
+[Artifact cleanup/Pester unit tests]   ✅  Success - Main actions/checkout@v4 [118.600623ms]
+[Artifact cleanup/Pester unit tests] ⭐ Run Main Run Pester tests
+[Artifact cleanup/Pester unit tests]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/1.ps1] user= workdir=
+[Artifact cleanup/Pester unit tests]   | [95mPester v5.7.1[0m
+[Artifact cleanup/Pester unit tests]   | [95m
+[Artifact cleanup/Pester unit tests]   | [95mStarting discovery in 1 files.[0m
+[Artifact cleanup/Pester unit tests]   | [95mDiscovery found 19 tests in 365ms.[0m
+[Artifact cleanup/Pester unit tests]   | [95mRunning tests.[0m
+[Artifact cleanup/Pester unit tests]   | [95m
+[Artifact cleanup/Pester unit tests]   | [95mRunning tests from '/tmp/act-b0aeb2ae0b7646239d5a0d74dd440f7c/ArtifactCleanup.Tests.ps1'[0m
+[Artifact cleanup/Pester unit tests]   | [92mDescribing Get-ArtifactCleanupPlan - basic shape[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] returns a plan object with Retained, Deleted, and Summary keys when given no artifacts[0m[90m 342ms (276ms|65ms)[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] returns empty Retained and Deleted arrays when given no artifacts[0m[90m 67ms (64ms|3ms)[0m
+[Artifact cleanup/Pester unit tests]   | [0m
+[Artifact cleanup/Pester unit tests]   | [92mDescribing MaxAgeDays policy[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] marks artifacts older than MaxAgeDays for deletion[0m[90m 55ms (50ms|5ms)[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] keeps all artifacts if none exceed MaxAgeDays[0m[90m 18ms (15ms|3ms)[0m
+[Artifact cleanup/Pester unit tests]   | [0m
+[Artifact cleanup/Pester unit tests]   | [92mDescribing KeepLatestNPerWorkflow policy[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] keeps the N most recent artifacts per workflow even if older than MaxAgeDays[0m[90m 45ms (41ms|4ms)[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] applies KeepLatestN independently per workflow[0m[90m 23ms (21ms|3ms)[0m
+[Artifact cleanup/Pester unit tests]   | [0m
+[Artifact cleanup/Pester unit tests]   | [92mDescribing MaxTotalSizeBytes policy[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] deletes oldest artifacts to bring total size under the cap[0m[90m 29ms (25ms|4ms)[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] does nothing when total size is already under the cap[0m[90m 12ms (9ms|2ms)[0m
+[Artifact cleanup/Pester unit tests]   | [0m
+[Artifact cleanup/Pester unit tests]   | [92mDescribing Policy interaction: KeepLatestN protects from all deletion reasons[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] keeps latest-N even when size policy would otherwise delete them[0m[90m 22ms (16ms|7ms)[0m
+[Artifact cleanup/Pester unit tests]   | [0m
+[Artifact cleanup/Pester unit tests]   | [92mDescribing Summary output[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] reports accurate counts and space reclaimed[0m[90m 49ms (43ms|5ms)[0m
+[Artifact cleanup/Pester unit tests]   | [0m
+[Artifact cleanup/Pester unit tests]   | [92mDescribing Invoke-ArtifactCleanup (dry-run)[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] in dry-run mode returns the plan without invoking the delete action[0m[90m 73ms (65ms|8ms)[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] in non-dry-run mode invokes the delete action exactly once per deleted artifact[0m[90m 36ms (32ms|4ms)[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] continues deleting remaining artifacts if the delete action throws for one[0m[90m 53ms (50ms|3ms)[0m
+[Artifact cleanup/Pester unit tests]   | [0m
+[Artifact cleanup/Pester unit tests]   | [92mDescribing Error handling and input validation[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] throws a clear error when MaxAgeDays is negative[0m[90m 75ms (70ms|5ms)[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] throws a clear error when MaxTotalSizeBytes is negative[0m[90m 10ms (7ms|2ms)[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] throws a clear error when KeepLatestNPerWorkflow is negative[0m[90m 9ms (7ms|2ms)[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] throws a clear error when an artifact is missing a required field[0m[90m 10ms (8ms|2ms)[0m
+[Artifact cleanup/Pester unit tests]   | [0m
+[Artifact cleanup/Pester unit tests]   | [92mDescribing Read-ArtifactsFromJson[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] parses an artifacts JSON file into objects with typed fields[0m[90m 154ms (150ms|4ms)[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] throws when the JSON file does not exist[0m[90m 10ms (7ms|2ms)[0m
+[Artifact cleanup/Pester unit tests]   | [97mTests completed in 2.11s[0m
+[Artifact cleanup/Pester unit tests]   | [32mTests Passed: 19, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Artifact cleanup/Pester unit tests]   | All 19 Pester tests passed.
+[Artifact cleanup/Pester unit tests]   ✅  Success - Main Run Pester tests [5.829007474s]
+[Artifact cleanup/Pester unit tests] ⭐ Run Complete job
+[Artifact cleanup/Pester unit tests] Cleaning up container for job Pester unit tests
+[Artifact cleanup/Pester unit tests]   ✅  Success - Complete job
+[Artifact cleanup/Pester unit tests] 🏁  Job succeeded
+[Artifact cleanup/Run cleanup plan ] ⭐ Run Set up job
+[Artifact cleanup/Run cleanup plan ] 🚀  Start image=act-ubuntu-pwsh:latest
+[Artifact cleanup/Run cleanup plan ]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Artifact cleanup/Run cleanup plan ]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact cleanup/Run cleanup plan ]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact cleanup/Run cleanup plan ]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Artifact cleanup/Run cleanup plan ]   ✅  Success - Set up job
+[Artifact cleanup/Run cleanup plan ] ⭐ Run Main actions/checkout@v4
+[Artifact cleanup/Run cleanup plan ]   🐳  docker cp src=/tmp/act-b0aeb2ae0b7646239d5a0d74dd440f7c/. dst=/tmp/act-b0aeb2ae0b7646239d5a0d74dd440f7c
+[Artifact cleanup/Run cleanup plan ]   ✅  Success - Main actions/checkout@v4 [183.501307ms]
+[Artifact cleanup/Run cleanup plan ] ⭐ Run Main Show fixture files
+[Artifact cleanup/Run cleanup plan ]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/1.ps1] user= workdir=
+[Artifact cleanup/Run cleanup plan ]   | Policy config:
+[Artifact cleanup/Run cleanup plan ]   | {
+[Artifact cleanup/Run cleanup plan ]   |   "keepLatestNPerWorkflow": 0,
+[Artifact cleanup/Run cleanup plan ]   |   "maxTotalSizeBytes": 0,
+[Artifact cleanup/Run cleanup plan ]   |   "maxAgeDays": 30,
+[Artifact cleanup/Run cleanup plan ]   |   "now": "2026-04-17T00:00:00Z"
+[Artifact cleanup/Run cleanup plan ]   | }
+[Artifact cleanup/Run cleanup plan ]   | 
+[Artifact cleanup/Run cleanup plan ]   | Artifact count:
+[Artifact cleanup/Run cleanup plan ]   | 6
+[Artifact cleanup/Run cleanup plan ]   ✅  Success - Main Show fixture files [1.739008591s]
+[Artifact cleanup/Run cleanup plan ] ⭐ Run Main Execute cleanup plan (dry-run by default)
+[Artifact cleanup/Run cleanup plan ]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/2.ps1] user= workdir=
+[Artifact cleanup/Run cleanup plan ]   | 
+[Artifact cleanup/Run cleanup plan ]   | Artifact cleanup plan (dry-run=True)
+[Artifact cleanup/Run cleanup plan ]   |   Input file:                 ./fixtures/artifacts.json
+[Artifact cleanup/Run cleanup plan ]   |   MaxAgeDays:                 30
+[Artifact cleanup/Run cleanup plan ]   |   MaxTotalSizeBytes:          0
+[Artifact cleanup/Run cleanup plan ]   |   KeepLatestNPerWorkflow:     0
+[Artifact cleanup/Run cleanup plan ]   |   Now (UTC):                  2026-04-17T00:00:00.0000000Z
+[Artifact cleanup/Run cleanup plan ]   | 
+[Artifact cleanup/Run cleanup plan ]   | Deleted artifacts (4):
+[Artifact cleanup/Run cleanup plan ]   |   - id=1 name=build-w1-old size=1048576 created=2026-01-15T10:00:00.0000000Z workflow=build
+[Artifact cleanup/Run cleanup plan ]   |   - id=2 name=build-w1-older size=2097152 created=2025-12-20T10:00:00.0000000Z workflow=build
+[Artifact cleanup/Run cleanup plan ]   |   - id=3 name=build-w1-ancient size=5242880 created=2025-10-01T10:00:00.0000000Z workflow=build
+[Artifact cleanup/Run cleanup plan ]   |   - id=6 name=test-old size=3145728 created=2026-01-01T10:00:00.0000000Z workflow=test
+[Artifact cleanup/Run cleanup plan ]   | Retained artifacts (2):
+[Artifact cleanup/Run cleanup plan ]   |   - id=4 name=build-w1-newest size=524288 created=2026-04-10T10:00:00.0000000Z workflow=build
+[Artifact cleanup/Run cleanup plan ]   |   - id=5 name=test-latest size=1048576 created=2026-04-15T10:00:00.0000000Z workflow=test
+[Artifact cleanup/Run cleanup plan ]   | 
+[Artifact cleanup/Run cleanup plan ]   | RESULT: deleted=4 retained=2 reclaimed=11534336 total=13107200
+[Artifact cleanup/Run cleanup plan ]   | PLAN_JSON_BEGIN
+[Artifact cleanup/Run cleanup plan ]   | {"Retained":[{"Id":4,"Name":"build-w1-newest","SizeBytes":524288,"CreatedAt":"2026-04-10T10:00:00Z","WorkflowId":"build"},{"Id":5,"Name":"test-latest","SizeBytes":1048576,"CreatedAt":"2026-04-15T10:00:00Z","WorkflowId":"test"}],"Deleted":[{"Id":1,"Name":"build-w1-old","SizeBytes":1048576,"CreatedAt":"2026-01-15T10:00:00Z","WorkflowId":"build"},{"Id":2,"Name":"build-w1-older","SizeBytes":2097152,"CreatedAt":"2025-12-20T10:00:00Z","WorkflowId":"build"},{"Id":3,"Name":"build-w1-ancient","SizeBytes":5242880,"CreatedAt":"2025-10-01T10:00:00Z","WorkflowId":"build"},{"Id":6,"Name":"test-old","SizeBytes":3145728,"CreatedAt":"2026-01-01T10:00:00Z","WorkflowId":"test"}],"Summary":{"RetainedCount":2,"DeletedCount":4,"SpaceReclaimedBytes":11534336,"RetainedSizeBytes":1572864,"TotalSizeBytes":13107200},"DryRun":true,"Errors":[]}
+[Artifact cleanup/Run cleanup plan ]   | PLAN_JSON_END
+[Artifact cleanup/Run cleanup plan ]   ✅  Success - Main Execute cleanup plan (dry-run by default) [1.561496879s]
+[Artifact cleanup/Run cleanup plan ] ⭐ Run Complete job
+[Artifact cleanup/Run cleanup plan ] Cleaning up container for job Run cleanup plan
+[Artifact cleanup/Run cleanup plan ]   ✅  Success - Complete job
+[Artifact cleanup/Run cleanup plan ] 🏁  Job succeeded
+
+  PASS: [age-only] act exited 0
+  PASS: [age-only] tests job succeeded
+  PASS: [age-only] cleanup job succeeded
+  PASS: [age-only] RESULT line present
+  PASS: [age-only] deleted == 4
+  PASS: [age-only] retained == 2
+  PASS: [age-only] reclaimed == 11534336
+  PASS: [age-only] total == 13107200
+
+======================================================================
+act test case: keep-latest-n
+======================================================================
+
+--- act exit: 0 ---
+time="2026-04-17T06:36:06-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Artifact cleanup/Pester unit tests] ⭐ Run Set up job
+[Artifact cleanup/Pester unit tests] 🚀  Start image=act-ubuntu-pwsh:latest
+[Artifact cleanup/Pester unit tests]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Artifact cleanup/Pester unit tests]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact cleanup/Pester unit tests]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact cleanup/Pester unit tests]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Artifact cleanup/Pester unit tests]   ✅  Success - Set up job
+[Artifact cleanup/Pester unit tests] ⭐ Run Main actions/checkout@v4
+[Artifact cleanup/Pester unit tests]   🐳  docker cp src=/tmp/act-99834df769b74adb81ae9a0996103b53/. dst=/tmp/act-99834df769b74adb81ae9a0996103b53
+[Artifact cleanup/Pester unit tests]   ✅  Success - Main actions/checkout@v4 [149.490566ms]
+[Artifact cleanup/Pester unit tests] ⭐ Run Main Run Pester tests
+[Artifact cleanup/Pester unit tests]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/1.ps1] user= workdir=
+[Artifact cleanup/Pester unit tests]   | [95mPester v5.7.1[0m
+[Artifact cleanup/Pester unit tests]   | [95m
+[Artifact cleanup/Pester unit tests]   | [95mStarting discovery in 1 files.[0m
+[Artifact cleanup/Pester unit tests]   | [95mDiscovery found 19 tests in 497ms.[0m
+[Artifact cleanup/Pester unit tests]   | [95mRunning tests.[0m
+[Artifact cleanup/Pester unit tests]   | [95m
+[Artifact cleanup/Pester unit tests]   | [95mRunning tests from '/tmp/act-99834df769b74adb81ae9a0996103b53/ArtifactCleanup.Tests.ps1'[0m
+[Artifact cleanup/Pester unit tests]   | [92mDescribing Get-ArtifactCleanupPlan - basic shape[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] returns a plan object with Retained, Deleted, and Summary keys when given no artifacts[0m[90m 340ms (252ms|88ms)[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] returns empty Retained and Deleted arrays when given no artifacts[0m[90m 82ms (79ms|3ms)[0m
+[Artifact cleanup/Pester unit tests]   | [0m
+[Artifact cleanup/Pester unit tests]   | [92mDescribing MaxAgeDays policy[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] marks artifacts older than MaxAgeDays for deletion[0m[90m 69ms (63ms|6ms)[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] keeps all artifacts if none exceed MaxAgeDays[0m[90m 25ms (21ms|4ms)[0m
+[Artifact cleanup/Pester unit tests]   | [0m
+[Artifact cleanup/Pester unit tests]   | [92mDescribing KeepLatestNPerWorkflow policy[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] keeps the N most recent artifacts per workflow even if older than MaxAgeDays[0m[90m 69ms (60ms|9ms)[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] applies KeepLatestN independently per workflow[0m[90m 38ms (33ms|5ms)[0m
+[Artifact cleanup/Pester unit tests]   | [0m
+[Artifact cleanup/Pester unit tests]   | [92mDescribing MaxTotalSizeBytes policy[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] deletes oldest artifacts to bring total size under the cap[0m[90m 64ms (49ms|15ms)[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] does nothing when total size is already under the cap[0m[90m 20ms (17ms|3ms)[0m
+[Artifact cleanup/Pester unit tests]   | [0m
+[Artifact cleanup/Pester unit tests]   | [92mDescribing Policy interaction: KeepLatestN protects from all deletion reasons[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] keeps latest-N even when size policy would otherwise delete them[0m[90m 31ms (22ms|9ms)[0m
+[Artifact cleanup/Pester unit tests]   | [0m
+[Artifact cleanup/Pester unit tests]   | [92mDescribing Summary output[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] reports accurate counts and space reclaimed[0m[90m 69ms (59ms|11ms)[0m
+[Artifact cleanup/Pester unit tests]   | [0m
+[Artifact cleanup/Pester unit tests]   | [92mDescribing Invoke-ArtifactCleanup (dry-run)[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] in dry-run mode returns the plan without invoking the delete action[0m[90m 90ms (80ms|10ms)[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] in non-dry-run mode invokes the delete action exactly once per deleted artifact[0m[90m 43ms (38ms|5ms)[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] continues deleting remaining artifacts if the delete action throws for one[0m[90m 80ms (76ms|4ms)[0m
+[Artifact cleanup/Pester unit tests]   | [0m
+[Artifact cleanup/Pester unit tests]   | [92mDescribing Error handling and input validation[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] throws a clear error when MaxAgeDays is negative[0m[90m 84ms (77ms|7ms)[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] throws a clear error when MaxTotalSizeBytes is negative[0m[90m 13ms (10ms|3ms)[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] throws a clear error when KeepLatestNPerWorkflow is negative[0m[90m 13ms (9ms|3ms)[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] throws a clear error when an artifact is missing a required field[0m[90m 18ms (15ms|3ms)[0m
+[Artifact cleanup/Pester unit tests]   | [0m
+[Artifact cleanup/Pester unit tests]   | [92mDescribing Read-ArtifactsFromJson[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] parses an artifacts JSON file into objects with typed fields[0m[90m 175ms (170ms|6ms)[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] throws when the JSON file does not exist[0m[90m 22ms (10ms|12ms)[0m
+[Artifact cleanup/Pester unit tests]   | [97mTests completed in 2.94s[0m
+[Artifact cleanup/Pester unit tests]   | [32mTests Passed: 19, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Artifact cleanup/Pester unit tests]   | All 19 Pester tests passed.
+[Artifact cleanup/Pester unit tests]   ✅  Success - Main Run Pester tests [6.846666819s]
+[Artifact cleanup/Pester unit tests] ⭐ Run Complete job
+[Artifact cleanup/Pester unit tests] Cleaning up container for job Pester unit tests
+[Artifact cleanup/Pester unit tests]   ✅  Success - Complete job
+[Artifact cleanup/Pester unit tests] 🏁  Job succeeded
+[Artifact cleanup/Run cleanup plan ] ⭐ Run Set up job
+[Artifact cleanup/Run cleanup plan ] 🚀  Start image=act-ubuntu-pwsh:latest
+[Artifact cleanup/Run cleanup plan ]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Artifact cleanup/Run cleanup plan ]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact cleanup/Run cleanup plan ]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact cleanup/Run cleanup plan ]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Artifact cleanup/Run cleanup plan ]   ✅  Success - Set up job
+[Artifact cleanup/Run cleanup plan ] ⭐ Run Main actions/checkout@v4
+[Artifact cleanup/Run cleanup plan ]   🐳  docker cp src=/tmp/act-99834df769b74adb81ae9a0996103b53/. dst=/tmp/act-99834df769b74adb81ae9a0996103b53
+[Artifact cleanup/Run cleanup plan ]   ✅  Success - Main actions/checkout@v4 [119.609611ms]
+[Artifact cleanup/Run cleanup plan ] ⭐ Run Main Show fixture files
+[Artifact cleanup/Run cleanup plan ]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/1.ps1] user= workdir=
+[Artifact cleanup/Run cleanup plan ]   | Policy config:
+[Artifact cleanup/Run cleanup plan ]   | {
+[Artifact cleanup/Run cleanup plan ]   |   "keepLatestNPerWorkflow": 2,
+[Artifact cleanup/Run cleanup plan ]   |   "maxTotalSizeBytes": 0,
+[Artifact cleanup/Run cleanup plan ]   |   "maxAgeDays": 30,
+[Artifact cleanup/Run cleanup plan ]   |   "now": "2026-04-17T00:00:00Z"
+[Artifact cleanup/Run cleanup plan ]   | }
+[Artifact cleanup/Run cleanup plan ]   | 
+[Artifact cleanup/Run cleanup plan ]   | Artifact count:
+[Artifact cleanup/Run cleanup plan ]   | 6
+[Artifact cleanup/Run cleanup plan ]   ✅  Success - Main Show fixture files [1.23545151s]
+[Artifact cleanup/Run cleanup plan ] ⭐ Run Main Execute cleanup plan (dry-run by default)
+[Artifact cleanup/Run cleanup plan ]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/2.ps1] user= workdir=
+[Artifact cleanup/Run cleanup plan ]   | 
+[Artifact cleanup/Run cleanup plan ]   | Artifact cleanup plan (dry-run=True)
+[Artifact cleanup/Run cleanup plan ]   |   Input file:                 ./fixtures/artifacts.json
+[Artifact cleanup/Run cleanup plan ]   |   MaxAgeDays:                 30
+[Artifact cleanup/Run cleanup plan ]   |   MaxTotalSizeBytes:          0
+[Artifact cleanup/Run cleanup plan ]   |   KeepLatestNPerWorkflow:     2
+[Artifact cleanup/Run cleanup plan ]   |   Now (UTC):                  2026-04-17T00:00:00.0000000Z
+[Artifact cleanup/Run cleanup plan ]   | 
+[Artifact cleanup/Run cleanup plan ]   | Deleted artifacts (2):
+[Artifact cleanup/Run cleanup plan ]   |   - id=2 name=build-w1-older size=2097152 created=2025-12-20T10:00:00.0000000Z workflow=build
+[Artifact cleanup/Run cleanup plan ]   |   - id=3 name=build-w1-ancient size=5242880 created=2025-10-01T10:00:00.0000000Z workflow=build
+[Artifact cleanup/Run cleanup plan ]   | Retained artifacts (4):
+[Artifact cleanup/Run cleanup plan ]   |   - id=1 name=build-w1-old size=1048576 created=2026-01-15T10:00:00.0000000Z workflow=build
+[Artifact cleanup/Run cleanup plan ]   |   - id=4 name=build-w1-newest size=524288 created=2026-04-10T10:00:00.0000000Z workflow=build
+[Artifact cleanup/Run cleanup plan ]   |   - id=5 name=test-latest size=1048576 created=2026-04-15T10:00:00.0000000Z workflow=test
+[Artifact cleanup/Run cleanup plan ]   |   - id=6 name=test-old size=3145728 created=2026-01-01T10:00:00.0000000Z workflow=test
+[Artifact cleanup/Run cleanup plan ]   | 
+[Artifact cleanup/Run cleanup plan ]   | RESULT: deleted=2 retained=4 reclaimed=7340032 total=13107200
+[Artifact cleanup/Run cleanup plan ]   | PLAN_JSON_BEGIN
+[Artifact cleanup/Run cleanup plan ]   | {"Retained":[{"Id":1,"Name":"build-w1-old","SizeBytes":1048576,"CreatedAt":"2026-01-15T10:00:00Z","WorkflowId":"build"},{"Id":4,"Name":"build-w1-newest","SizeBytes":524288,"CreatedAt":"2026-04-10T10:00:00Z","WorkflowId":"build"},{"Id":5,"Name":"test-latest","SizeBytes":1048576,"CreatedAt":"2026-04-15T10:00:00Z","WorkflowId":"test"},{"Id":6,"Name":"test-old","SizeBytes":3145728,"CreatedAt":"2026-01-01T10:00:00Z","WorkflowId":"test"}],"Deleted":[{"Id":2,"Name":"build-w1-older","SizeBytes":2097152,"CreatedAt":"2025-12-20T10:00:00Z","WorkflowId":"build"},{"Id":3,"Name":"build-w1-ancient","SizeBytes":5242880,"CreatedAt":"2025-10-01T10:00:00Z","WorkflowId":"build"}],"Summary":{"RetainedCount":4,"DeletedCount":2,"SpaceReclaimedBytes":7340032,"RetainedSizeBytes":5767168,"TotalSizeBytes":13107200},"DryRun":true,"Errors":[]}
+[Artifact cleanup/Run cleanup plan ]   | PLAN_JSON_END
+[Artifact cleanup/Run cleanup plan ]   ✅  Success - Main Execute cleanup plan (dry-run by default) [1.48951056s]
+[Artifact cleanup/Run cleanup plan ] ⭐ Run Complete job
+[Artifact cleanup/Run cleanup plan ] Cleaning up container for job Run cleanup plan
+[Artifact cleanup/Run cleanup plan ]   ✅  Success - Complete job
+[Artifact cleanup/Run cleanup plan ] 🏁  Job succeeded
+
+  PASS: [keep-latest-n] act exited 0
+  PASS: [keep-latest-n] tests job succeeded
+  PASS: [keep-latest-n] cleanup job succeeded
+  PASS: [keep-latest-n] RESULT line present
+  PASS: [keep-latest-n] deleted == 2
+  PASS: [keep-latest-n] retained == 4
+  PASS: [keep-latest-n] reclaimed == 7340032
+  PASS: [keep-latest-n] total == 13107200
+
+======================================================================
+act test case: size-cap
+======================================================================
+
+--- act exit: 0 ---
+time="2026-04-17T06:36:24-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Artifact cleanup/Pester unit tests] ⭐ Run Set up job
+[Artifact cleanup/Pester unit tests] 🚀  Start image=act-ubuntu-pwsh:latest
+[Artifact cleanup/Pester unit tests]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Artifact cleanup/Pester unit tests]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact cleanup/Pester unit tests]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact cleanup/Pester unit tests]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Artifact cleanup/Pester unit tests]   ✅  Success - Set up job
+[Artifact cleanup/Pester unit tests] ⭐ Run Main actions/checkout@v4
+[Artifact cleanup/Pester unit tests]   🐳  docker cp src=/tmp/act-3fa2b66bc45a486dbe225f29705b4b36/. dst=/tmp/act-3fa2b66bc45a486dbe225f29705b4b36
+[Artifact cleanup/Pester unit tests]   ✅  Success - Main actions/checkout@v4 [110.139512ms]
+[Artifact cleanup/Pester unit tests] ⭐ Run Main Run Pester tests
+[Artifact cleanup/Pester unit tests]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/1.ps1] user= workdir=
+[Artifact cleanup/Pester unit tests]   | [95mPester v5.7.1[0m
+[Artifact cleanup/Pester unit tests]   | [95m
+[Artifact cleanup/Pester unit tests]   | [95mStarting discovery in 1 files.[0m
+[Artifact cleanup/Pester unit tests]   | [95mDiscovery found 19 tests in 332ms.[0m
+[Artifact cleanup/Pester unit tests]   | [95mRunning tests.[0m
+[Artifact cleanup/Pester unit tests]   | [95m
+[Artifact cleanup/Pester unit tests]   | [95mRunning tests from '/tmp/act-3fa2b66bc45a486dbe225f29705b4b36/ArtifactCleanup.Tests.ps1'[0m
+[Artifact cleanup/Pester unit tests]   | [92mDescribing Get-ArtifactCleanupPlan - basic shape[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] returns a plan object with Retained, Deleted, and Summary keys when given no artifacts[0m[90m 219ms (157ms|62ms)[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] returns empty Retained and Deleted arrays when given no artifacts[0m[90m 54ms (52ms|2ms)[0m
+[Artifact cleanup/Pester unit tests]   | [0m
+[Artifact cleanup/Pester unit tests]   | [92mDescribing MaxAgeDays policy[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] marks artifacts older than MaxAgeDays for deletion[0m[90m 45ms (41ms|4ms)[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] keeps all artifacts if none exceed MaxAgeDays[0m[90m 14ms (11ms|3ms)[0m
+[Artifact cleanup/Pester unit tests]   | [0m
+[Artifact cleanup/Pester unit tests]   | [92mDescribing KeepLatestNPerWorkflow policy[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] keeps the N most recent artifacts per workflow even if older than MaxAgeDays[0m[90m 39ms (36ms|3ms)[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] applies KeepLatestN independently per workflow[0m[90m 21ms (19ms|2ms)[0m
+[Artifact cleanup/Pester unit tests]   | [0m
+[Artifact cleanup/Pester unit tests]   | [92mDescribing MaxTotalSizeBytes policy[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] deletes oldest artifacts to bring total size under the cap[0m[90m 30ms (26ms|4ms)[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] does nothing when total size is already under the cap[0m[90m 11ms (10ms|2ms)[0m
+[Artifact cleanup/Pester unit tests]   | [0m
+[Artifact cleanup/Pester unit tests]   | [92mDescribing Policy interaction: KeepLatestN protects from all deletion reasons[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] keeps latest-N even when size policy would otherwise delete them[0m[90m 19ms (12ms|7ms)[0m
+[Artifact cleanup/Pester unit tests]   | [0m
+[Artifact cleanup/Pester unit tests]   | [92mDescribing Summary output[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] reports accurate counts and space reclaimed[0m[90m 44ms (40ms|4ms)[0m
+[Artifact cleanup/Pester unit tests]   | [0m
+[Artifact cleanup/Pester unit tests]   | [92mDescribing Invoke-ArtifactCleanup (dry-run)[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] in dry-run mode returns the plan without invoking the delete action[0m[90m 62ms (57ms|5ms)[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] in non-dry-run mode invokes the delete action exactly once per deleted artifact[0m[90m 36ms (33ms|3ms)[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] continues deleting remaining artifacts if the delete action throws for one[0m[90m 56ms (54ms|3ms)[0m
+[Artifact cleanup/Pester unit tests]   | [0m
+[Artifact cleanup/Pester unit tests]   | [92mDescribing Error handling and input validation[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] throws a clear error when MaxAgeDays is negative[0m[90m 71ms (65ms|6ms)[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] throws a clear error when MaxTotalSizeBytes is negative[0m[90m 10ms (8ms|2ms)[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] throws a clear error when KeepLatestNPerWorkflow is negative[0m[90m 11ms (8ms|3ms)[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] throws a clear error when an artifact is missing a required field[0m[90m 13ms (10ms|3ms)[0m
+[Artifact cleanup/Pester unit tests]   | [0m
+[Artifact cleanup/Pester unit tests]   | [92mDescribing Read-ArtifactsFromJson[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] parses an artifacts JSON file into objects with typed fields[0m[90m 225ms (219ms|6ms)[0m
+[Artifact cleanup/Pester unit tests]   | [32m  [+] throws when the JSON file does not exist[0m[90m 13ms (10ms|3ms)[0m
+[Artifact cleanup/Pester unit tests]   | [97mTests completed in 1.97s[0m
+[Artifact cleanup/Pester unit tests]   | [32mTests Passed: 19, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Artifact cleanup/Pester unit tests]   | All 19 Pester tests passed.
+[Artifact cleanup/Pester unit tests]   ✅  Success - Main Run Pester tests [5.057887444s]
+[Artifact cleanup/Pester unit tests] ⭐ Run Complete job
+[Artifact cleanup/Pester unit tests] Cleaning up container for job Pester unit tests
+[Artifact cleanup/Pester unit tests]   ✅  Success - Complete job
+[Artifact cleanup/Pester unit tests] 🏁  Job succeeded
+[Artifact cleanup/Run cleanup plan ] ⭐ Run Set up job
+[Artifact cleanup/Run cleanup plan ] 🚀  Start image=act-ubuntu-pwsh:latest
+[Artifact cleanup/Run cleanup plan ]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Artifact cleanup/Run cleanup plan ]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact cleanup/Run cleanup plan ]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact cleanup/Run cleanup plan ]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Artifact cleanup/Run cleanup plan ]   ✅  Success - Set up job
+[Artifact cleanup/Run cleanup plan ] ⭐ Run Main actions/checkout@v4
+[Artifact cleanup/Run cleanup plan ]   🐳  docker cp src=/tmp/act-3fa2b66bc45a486dbe225f29705b4b36/. dst=/tmp/act-3fa2b66bc45a486dbe225f29705b4b36
+[Artifact cleanup/Run cleanup plan ]   ✅  Success - Main actions/checkout@v4 [97.951647ms]
+[Artifact cleanup/Run cleanup plan ] ⭐ Run Main Show fixture files
+[Artifact cleanup/Run cleanup plan ]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/1.ps1] user= workdir=
+[Artifact cleanup/Run cleanup plan ]   | Policy config:
+[Artifact cleanup/Run cleanup plan ]   | {
+[Artifact cleanup/Run cleanup plan ]   |   "keepLatestNPerWorkflow": 0,
+[Artifact cleanup/Run cleanup plan ]   |   "maxTotalSizeBytes": 5000000,
+[Artifact cleanup/Run cleanup plan ]   |   "maxAgeDays": 365,
+[Artifact cleanup/Run cleanup plan ]   |   "now": "2026-04-17T00:00:00Z"
+[Artifact cleanup/Run cleanup plan ]   | }
+[Artifact cleanup/Run cleanup plan ]   | 
+[Artifact cleanup/Run cleanup plan ]   | Artifact count:
+[Artifact cleanup/Run cleanup plan ]   | 6
+[Artifact cleanup/Run cleanup plan ]   ✅  Success - Main Show fixture files [1.050022813s]
+[Artifact cleanup/Run cleanup plan ] ⭐ Run Main Execute cleanup plan (dry-run by default)
+[Artifact cleanup/Run cleanup plan ]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/2.ps1] user= workdir=
+[Artifact cleanup/Run cleanup plan ]   | 
+[Artifact cleanup/Run cleanup plan ]   | Artifact cleanup plan (dry-run=True)
+[Artifact cleanup/Run cleanup plan ]   |   Input file:                 ./fixtures/artifacts.json
+[Artifact cleanup/Run cleanup plan ]   |   MaxAgeDays:                 365
+[Artifact cleanup/Run cleanup plan ]   |   MaxTotalSizeBytes:          5000000
+[Artifact cleanup/Run cleanup plan ]   |   KeepLatestNPerWorkflow:     0
+[Artifact cleanup/Run cleanup plan ]   |   Now (UTC):                  2026-04-17T00:00:00.0000000Z
+[Artifact cleanup/Run cleanup plan ]   | 
+[Artifact cleanup/Run cleanup plan ]   | Deleted artifacts (3):
+[Artifact cleanup/Run cleanup plan ]   |   - id=3 name=build-w1-ancient size=5242880 created=2025-10-01T10:00:00.0000000Z workflow=build
+[Artifact cleanup/Run cleanup plan ]   |   - id=2 name=build-w1-older size=2097152 created=2025-12-20T10:00:00.0000000Z workflow=build
+[Artifact cleanup/Run cleanup plan ]   |   - id=6 name=test-old size=3145728 created=2026-01-01T10:00:00.0000000Z workflow=test
+[Artifact cleanup/Run cleanup plan ]   | Retained artifacts (3):
+[Artifact cleanup/Run cleanup plan ]   |   - id=1 name=build-w1-old size=1048576 created=2026-01-15T10:00:00.0000000Z workflow=build
+[Artifact cleanup/Run cleanup plan ]   |   - id=4 name=build-w1-newest size=524288 created=2026-04-10T10:00:00.0000000Z workflow=build
+[Artifact cleanup/Run cleanup plan ]   |   - id=5 name=test-latest size=1048576 created=2026-04-15T10:00:00.0000000Z workflow=test
+[Artifact cleanup/Run cleanup plan ]   | 
+[Artifact cleanup/Run cleanup plan ]   | RESULT: deleted=3 retained=3 reclaimed=10485760 total=13107200
+[Artifact cleanup/Run cleanup plan ]   | PLAN_JSON_BEGIN
+[Artifact cleanup/Run cleanup plan ]   | {"Retained":[{"Id":1,"Name":"build-w1-old","SizeBytes":1048576,"CreatedAt":"2026-01-15T10:00:00Z","WorkflowId":"build"},{"Id":4,"Name":"build-w1-newest","SizeBytes":524288,"CreatedAt":"2026-04-10T10:00:00Z","WorkflowId":"build"},{"Id":5,"Name":"test-latest","SizeBytes":1048576,"CreatedAt":"2026-04-15T10:00:00Z","WorkflowId":"test"}],"Deleted":[{"Id":3,"Name":"build-w1-ancient","SizeBytes":5242880,"CreatedAt":"2025-10-01T10:00:00Z","WorkflowId":"build"},{"Id":2,"Name":"build-w1-older","SizeBytes":2097152,"CreatedAt":"2025-12-20T10:00:00Z","WorkflowId":"build"},{"Id":6,"Name":"test-old","SizeBytes":3145728,"CreatedAt":"2026-01-01T10:00:00Z","WorkflowId":"test"}],"Summary":{"RetainedCount":3,"DeletedCount":3,"SpaceReclaimedBytes":10485760,"RetainedSizeBytes":2621440,"TotalSizeBytes":13107200},"DryRun":true,"Errors":[]}
+[Artifact cleanup/Run cleanup plan ]   | PLAN_JSON_END
+[Artifact cleanup/Run cleanup plan ]   ✅  Success - Main Execute cleanup plan (dry-run by default) [1.285935428s]
+[Artifact cleanup/Run cleanup plan ] ⭐ Run Complete job
+[Artifact cleanup/Run cleanup plan ] Cleaning up container for job Run cleanup plan
+[Artifact cleanup/Run cleanup plan ]   ✅  Success - Complete job
+[Artifact cleanup/Run cleanup plan ] 🏁  Job succeeded
+
+  PASS: [size-cap] act exited 0
+  PASS: [size-cap] tests job succeeded
+  PASS: [size-cap] cleanup job succeeded
+  PASS: [size-cap] RESULT line present
+  PASS: [size-cap] deleted == 3
+  PASS: [size-cap] retained == 3
+  PASS: [size-cap] reclaimed == 10485760
+  PASS: [size-cap] total == 13107200
+
+======================================================================
+Summary
+======================================================================
+
+All act test cases PASSED.
