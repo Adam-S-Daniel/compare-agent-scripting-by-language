@@ -9,7 +9,9 @@ from generate_results import (
     _collapsible_table,
     _detect_traps,
     _find_discrepancies,
+    _llm_tier,
     _rank,
+    _ratio_tier,
     _spearman,
 )
 
@@ -322,3 +324,95 @@ class TestFindDiscrepancies:
         llm = [self._llm(task="Missing")]
         sq = self._sq(task="Other")
         assert _find_discrepancies(llm, sq) == []
+
+
+# =========================================================================
+# _ratio_tier — bin lower-is-better ratios (duration, cost) into A-E
+# =========================================================================
+
+class TestRatioTier:
+    def test_best_itself_is_A(self):
+        assert _ratio_tier(1.0) == "A"
+
+    def test_boundary_of_A_band_inclusive(self):
+        assert _ratio_tier(1.15) == "A"
+        assert _ratio_tier(1.150001) == "B"
+
+    def test_boundary_of_B_band(self):
+        assert _ratio_tier(1.40) == "B"
+        assert _ratio_tier(1.40001) == "C"
+
+    def test_boundary_of_C_band(self):
+        assert _ratio_tier(1.80) == "C"
+        assert _ratio_tier(1.80001) == "D"
+
+    def test_boundary_of_D_band(self):
+        assert _ratio_tier(2.50) == "D"
+        assert _ratio_tier(2.50001) == "E"
+
+    def test_far_out_is_E(self):
+        assert _ratio_tier(10.0) == "E"
+
+    def test_mid_band_examples(self):
+        assert _ratio_tier(1.30) == "B"
+        assert _ratio_tier(1.60) == "C"
+        assert _ratio_tier(2.00) == "D"
+
+
+# =========================================================================
+# _llm_tier — absolute 1-5 score bands
+# =========================================================================
+
+class TestLlmTier:
+    def test_perfect_score_is_A(self):
+        assert _llm_tier(5.0) == "A"
+
+    def test_boundary_of_A_band_inclusive(self):
+        assert _llm_tier(4.5) == "A"
+        assert _llm_tier(4.49) == "B"
+
+    def test_boundary_of_B_band(self):
+        assert _llm_tier(3.5) == "B"
+        assert _llm_tier(3.49) == "C"
+
+    def test_boundary_of_C_band(self):
+        assert _llm_tier(2.5) == "C"
+        assert _llm_tier(2.49) == "D"
+
+    def test_boundary_of_D_band(self):
+        assert _llm_tier(1.5) == "D"
+        assert _llm_tier(1.49) == "E"
+
+    def test_minimum_is_E(self):
+        assert _llm_tier(1.0) == "E"
+
+
+# =========================================================================
+# Display rename — `opus` / `sonnet` resolve to `opus46` / `sonnet46`
+# in combined or multi-run reports so plain names aren't ambiguous
+# now that 4.7 exists.
+# =========================================================================
+
+class TestDisplayRename:
+    def test_combine_results_renames_legacy_opus(self):
+        from combine_results import _label
+        m = {"model_short": "opus", "effort_level": "medium"}
+        assert _label(m) == "opus46-medium"
+
+    def test_combine_results_renames_legacy_sonnet(self):
+        from combine_results import _label
+        m = {"model_short": "sonnet", "effort_level": None}
+        assert _label(m) == "sonnet46"
+
+    def test_combine_results_leaves_explicit_names_untouched(self):
+        from combine_results import _label
+        # opus47-1m is already explicit about the version; no rename.
+        m = {"model_short": "opus47-1m", "effort_level": "xhigh"}
+        assert _label(m) == "opus47-1m-xhigh"
+
+    def test_combine_results_path_label_never_renames(self):
+        # Filesystem subdirs keep their original plain names even when
+        # the display label rewrites them.
+        from combine_results import _path_label
+        m = {"model_short": "opus", "effort_level": None}
+        assert _path_label(m) == "opus"
