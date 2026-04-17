@@ -1432,18 +1432,20 @@ def main():
                 pass
         if all_metrics:
             log(f"Loaded {len(all_metrics)} previously completed run(s) from {run_dir}")
-        # Derive total from the run manifest if available, otherwise from loaded metrics
-        manifest_path = run_dir / "run-manifest.json"
-        if manifest_path.exists():
-            try:
-                manifest = json.loads(manifest_path.read_text())
-                total_runs_for_report = manifest.get("total_runs", total_runs)
-            except Exception:
-                pass
-        if total_runs_for_report == total_runs:
-            # Fallback: count distinct (task, mode, model) combos in loaded metrics
-            combos = set((m["task_id"], m["language_mode"], m["model_short"]) for m in all_metrics)
-            total_runs_for_report = max(len(combos), total_runs)
+        # Cumulative total = already-completed metrics + runs this invocation
+        # will actually execute (i.e. combos whose variant subdir doesn't yet
+        # have a metrics.json). Prior logic read total_runs from the old
+        # manifest, which undercounts when this invocation adds a new effort
+        # variant that won't be skipped, producing "36/35 completed".
+        runs_to_do = 0
+        for task in selected_tasks:
+            for model_short, _ in selected_models:
+                for mode in selected_modes:
+                    variant = f"{model_short}-{args.effort}" if args.effort else model_short
+                    existing = run_dir / "tasks" / task["id"] / f"{mode}-{variant}" / "metrics.json"
+                    if not existing.exists():
+                        runs_to_do += 1
+        total_runs_for_report = len(all_metrics) + runs_to_do
 
     # Detect git branch for periodic pushing
     try:

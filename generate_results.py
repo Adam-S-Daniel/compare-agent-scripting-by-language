@@ -446,7 +446,10 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     now_et = datetime.now(et).strftime("%Y-%m-%d %I:%M:%S %p ET")
 
     completed = len(all_metrics)
-    remaining = total_runs - run_count
+    # Remaining is derived from cumulative completion vs the declared total so
+    # the line stays self-consistent even when a resumed run inherits prior
+    # metrics (which make `completed` exceed the per-invocation `run_count`).
+    remaining = max(0, total_runs - completed)
 
     total_cost = sum(m["cost"]["total_cost_usd"] for m in all_metrics)
     total_duration = sum(m["timing"]["grand_total_duration_ms"] for m in all_metrics) / 1000
