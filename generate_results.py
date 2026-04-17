@@ -495,6 +495,24 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     # COLLECT ALL ANALYSIS DATA UP FRONT
     # ==================================================================
 
+    # ── LLM-as-judge score cache ──
+    # Hoisted here so the aggregate Comparison table and the Per-Run table
+    # can both read scores without re-doing I/O later. Keyed by
+    # (task_id, language_mode, variant_label); value is the full judge dict
+    # (overall/coverage/rigor/design/summary/judge_cost). Runs without a
+    # cached judge result are simply absent from the map.
+    from test_quality import LLM_JUDGE_CACHE_FILE
+    llm_data_by_key: dict[tuple, dict] = {}
+    for m in all_metrics:
+        cache_path = (run_dir / "tasks" / m["task_id"]
+                      / f"{m['language_mode']}-{_label(m)}" / LLM_JUDGE_CACHE_FILE)
+        if not cache_path.exists():
+            continue
+        try:
+            llm_data_by_key[(m["task_id"], m["language_mode"], _label(m))] = json.loads(cache_path.read_text())
+        except Exception:
+            pass
+
     # ── Comparison by Language/Model ──
     cmp_rows = []
     for mode in modes_seen:
@@ -503,6 +521,14 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
             n = len(mm)
             if n == 0:
                 continue
+            # Average LLM-judge Overall across this combo's runs that have a
+            # cached score. Stored as 0.0 for sort purposes + a separate
+            # display string so missing data doesn't sort above zero scores.
+            llm_scores = [llm_data_by_key[(m["task_id"], mode, model)].get("overall")
+                          for m in mm
+                          if (m["task_id"], mode, model) in llm_data_by_key]
+            llm_scores = [s for s in llm_scores if isinstance(s, (int, float))]
+            avg_llm = sum(llm_scores) / len(llm_scores) if llm_scores else None
             cmp_rows.append({
                 "mode": mode, "model": model, "n": n,
                 "avg_dur": sum(m["timing"]["grand_total_duration_ms"] for m in mm) / n / 1000,
@@ -511,6 +537,9 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
                 "avg_turns": sum(m["timing"]["num_turns"] for m in mm) / n,
                 "avg_cost": sum(m["cost"]["total_cost_usd"] for m in mm) / n,
                 "total_cost": sum(m["cost"]["total_cost_usd"] for m in mm),
+                "avg_llm": avg_llm if avg_llm is not None else 0.0,
+                "avg_llm_disp": f"{avg_llm:.1f}" if avg_llm is not None else "—",
+                "avg_llm_n": len(llm_scores),
             })
 
     # ── Trap & Hook data ──
@@ -718,11 +747,12 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         if failed:
             lines.append("*(averages exclude failed/timed-out runs)*")
         lines.append("")
-        cmp_hdr = "| Language | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost |"
-        cmp_sep = "|------|-------|------|-------------|--------------------------|------------|-----------|----------|------------|"
+        cmp_hdr = "| Language | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost | Avg LLM Score |"
+        cmp_sep = "|----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|"
         def _fmt_cmp(r):
             return (f"| {r['mode']} | {r['model']} | {r['n']} | {_dur(r['avg_dur'])} | {_dur(r['avg_dur_net'])} "
-                    f"| {r['avg_errors']:.1f} | {r['avg_turns']:.0f} | ${r['avg_cost']:.2f} | ${r['total_cost']:.2f} |")
+                    f"| {r['avg_errors']:.1f} | {r['avg_turns']:.0f} | ${r['avg_cost']:.2f} | ${r['total_cost']:.2f} "
+                    f"| {r['avg_llm_disp']} |")
         lines.append(cmp_hdr)
         lines.append(cmp_sep)
         for r in cmp_rows:
@@ -734,6 +764,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
             ("Sorted by avg duration net of traps (fastest first)", "avg_dur_net", False),
             ("Sorted by avg errors (fewest first)", "avg_errors", False),
             ("Sorted by avg turns (fewest first)", "avg_turns", False),
+            ("Sorted by LLM-as-judge score (best first)", "avg_llm", True),
         ], _fmt_cmp))
         lines.append("")
 
@@ -1012,21 +1043,17 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
             "lang": sq["language"],
         })
 
-        # LLM-as-judge scores (from cache if available)
-        llm_cache = variant_dir / LLM_JUDGE_CACHE_FILE
-        if llm_cache.exists():
-            try:
-                lj = json.loads(llm_cache.read_text())
-                has_llm = True
-                llm_rows.append({
-                    "task": m["task_name"][:30], "mode": m["language_mode"], "model": _label(m),
-                    "coverage": lj.get("coverage", 0), "rigor": lj.get("rigor", 0),
-                    "design": lj.get("design", 0), "overall": lj.get("overall", 0),
-                    "summary": lj.get("summary", ""),
-                    "judge_cost": lj.get("judge_cost_usd", 0),
-                })
-            except Exception:
-                pass
+        # LLM-as-judge scores — read from the hoisted cache loaded earlier.
+        lj = llm_data_by_key.get((m["task_id"], m["language_mode"], _label(m)))
+        if lj:
+            has_llm = True
+            llm_rows.append({
+                "task": m["task_name"][:30], "mode": m["language_mode"], "model": _label(m),
+                "coverage": lj.get("coverage", 0), "rigor": lj.get("rigor", 0),
+                "design": lj.get("design", 0), "overall": lj.get("overall", 0),
+                "summary": lj.get("summary", ""),
+                "judge_cost": lj.get("judge_cost_usd", 0),
+            })
 
     lines.append("## Test Quality Evaluation")
     lines.append("")
@@ -1255,23 +1282,28 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     # ==================================================================
     lines.append("## Per-Run Results")
     lines.append("")
-    pr_hdr = "| Task | Language | Model | Duration | Turns | Errors | Cost | Chosen | Status |"
-    pr_sep = "|------|----------|-------|----------|-------|--------|------|--------|--------|"
+    pr_hdr = "| Task | Language | Model | Duration | Turns | Errors | Cost | LLM Score | Chosen | Status |"
+    pr_sep = "|------|----------|-------|----------|-------|--------|------|-----------|--------|--------|"
     pr_rows = []
     for m in all_metrics:
         dur = m["timing"]["grand_total_duration_ms"] / 1000
         status = "ok" if m in successful else m.get("failure_reason", "failed")
+        lj = llm_data_by_key.get((m["task_id"], m["language_mode"], _label(m)))
+        llm_overall = lj.get("overall") if lj else None
         pr_rows.append({
             "task": m["task_name"][:30], "mode": m["language_mode"], "model": _label(m),
             "dur": dur, "turns": m["timing"]["num_turns"],
             "errors": m["quality"]["error_count"],
             "cost": m["cost"]["total_cost_usd"],
             "lang": m["language_chosen"], "status": status,
+            "llm": float(llm_overall) if isinstance(llm_overall, (int, float)) else 0.0,
+            "llm_disp": f"{llm_overall:.1f}" if isinstance(llm_overall, (int, float)) else "—",
         })
     def _fmt_pr(r):
         return (f"| {r['task']} | {r['mode']} | {r['model']} "
                 f"| {_dur(r['dur'])} | {r['turns']} "
                 f"| {r['errors']} | ${r['cost']:.2f} "
+                f"| {r['llm_disp']} "
                 f"| {r['lang']} | {r['status']} |")
     lines.append(pr_hdr)
     lines.append(pr_sep)
@@ -1286,6 +1318,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         ("Sorted by duration (fastest first)", "dur", False),
         ("Sorted by errors (fewest first)", "errors", False),
         ("Sorted by turns (fewest first)", "turns", False),
+        ("Sorted by LLM-as-judge score (best first)", "llm", True),
     ], _fmt_pr))
     lines.append("")
 
