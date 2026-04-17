@@ -1,0 +1,11 @@
+{
+  "coverage": 3,
+  "rigor": 2,
+  "design": 3,
+  "overall": 3,
+  "summary": "The unit tests in aggregate.bats cover the main happy paths for all four subcommands (parse_junit, parse_json, aggregate, summary) plus one error case (missing file for parse_junit) and an unknown-command check. The workflow.bats adds structure validation, actionlint, and two act-based integration runs. However, coverage has notable gaps: parse_json has no missing-file error test, detect_format's unknown-extension error path is never exercised, the duration field from aggregate is never asserted, aggregate with zero files is untested, and the 'Failing' vs 'Passing' summary status is not verified. Rigor is the weakest dimension \u2014 only a single error scenario is tested, there are no boundary conditions (empty XML, empty JSON arrays, testcases spanning multiple lines, special characters in names), no multi-file duration-sum accuracy check, and no test that jq-absent systems produce a useful error. Design has a solid separation of unit vs. integration files with proper setup/teardown, but the act integration has a structural flaw: _run_act pipes through tee, so the subshell exit code is lost and the bats 'run' wrapper may never see a non-zero status from act. The all-green override test further relies on fragile python3 string-replacement of exact workflow YAML lines, creating tight coupling to implementation details. These design issues reduce confidence that the integration tests would catch real regressions.",
+  "judge_cost_usd": 0.0613,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 1602,
+  "judge_provider": "claude-cli"
+}

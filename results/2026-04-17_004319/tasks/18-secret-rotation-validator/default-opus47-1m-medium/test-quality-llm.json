@@ -1,0 +1,11 @@
+{
+  "coverage": 4,
+  "rigor": 3,
+  "design": 4,
+  "overall": 3,
+  "summary": "The test suite covers the main functional requirements well: Secret model, all three classification states, JSON loading (including several error paths), both rendering formats, the high-level validate() entry point, workflow YAML structure, and end-to-end act runs with exact expected-value assertions. Gaps exist in coverage of the CLI main() function (exit codes 0/1/2, --today override, --warning-days flag), the 'no secrets key' and 'data is not a dict' error branches, and multi-secret intra-bucket sort order. Rigor suffers from absent boundary-condition tests: remaining==0 (ambiguous between warning and expired under the current strict '<0' threshold), remaining==warning_days (inclusive edge), rotation_days of 0 or negative, and a secret with no services. The sorting assertion in test_classify_secrets_groups_by_urgency uses only one secret per bucket, so sort stability is never exercised. Design is strong: TODAY constant makes tests deterministic, tmp_path is used correctly for isolation, parametrize for act cases is clean and the CASES list is easy to extend, module-level fixture resets the artifact cleanly, and the two-file split (unit vs workflow) is appropriate. The unconditional test_act_result_file_exists_after_runs can spuriously fail when act is absent (no matching skipif), and test_workflow_references_existing_files asserts fixtures/sample-secrets.json exists at repo root even though that file is only created at test runtime.",
+  "judge_cost_usd": 0.0782,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 2210,
+  "judge_provider": "claude-cli"
+}

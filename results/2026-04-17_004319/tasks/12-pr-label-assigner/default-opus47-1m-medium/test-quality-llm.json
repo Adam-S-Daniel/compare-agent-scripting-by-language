@@ -1,0 +1,11 @@
+{
+  "coverage": 2,
+  "rigor": 2,
+  "design": 3,
+  "overall": 2,
+  "summary": "The test suite is a pure integration harness that routes everything through `act` (GitHub Actions locally). There are zero unit tests for the core logic \u2014 `glob_to_regex`, `rule_matches`, and `assign_labels` are never called directly, so none of their edge cases (e.g., `**/` mid-path, trailing `**`, overlapping priorities, dedup across rules) are explicitly exercised. Coverage is entirely determined by fixture directories that aren't shown in the submitted code; without knowing those fixtures we can see the harness supports only happy-path label emission \u2014 error scenarios (malformed JSON, missing 'pattern'/'labels' keys, empty file list, no matching rules) are never wired up as distinct test cases. Rigor is low: the 3-act-run budget and the lack of error-path fixtures mean boundary conditions go untested. Design is better than average: the fixture-driven structure is clean and extensible, `_parse_labels` handles act log prefixes, `_check_workflow_structure` is appropriately isolated, and result accumulation into `act-result.txt` satisfies the artifact requirement. However, the label parser (splitting on '| ') is fragile against act output format changes, there are no timeouts on subprocesses, and test dependencies on Docker/act make the suite non-runnable in most environments without special setup.",
+  "judge_cost_usd": 0.0473,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 1177,
+  "judge_provider": "claude-cli"
+}

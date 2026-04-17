@@ -1,0 +1,11 @@
+{
+  "coverage": 4,
+  "rigor": 3,
+  "design": 3,
+  "overall": 3,
+  "summary": "The unit test suite in MatrixGenerator.Tests.ps1 covers the core requirements well: cartesian product generation, exclude/include semantics (including partial/subset matching), max-parallel and fail-fast passthrough, defaults, maxSize validation at and beyond the boundary, size-counting order (excludes before count, includes added to count), and end-to-end JSON round-tripping with deterministic ordering. Workflow.Structure.Tests.ps1 covers triggers, job definitions, dependency wiring, action pinning, script path existence, permissions, concurrency, and actionlint. However, several gaps reduce the scores. Coverage: the -Path (file input) parameter for Invoke-MatrixGenerator has no test, and 'feature flags' as a distinct concept (mentioned in the task) is only exercised implicitly via fixture 04 in the act harness rather than in Pester. Rigor: no tests for invalid JSON input, non-existent file paths, null/empty values inside dimension arrays, duplicate include entries, empty exclude-rule objects, or type coercion edge cases; the workflow structure tests use crude regex against raw YAML rather than structural parsing, making them brittle to reformatting. Design: the critical flaw is that Invoke-ActHarness.ps1\u2014which contains all the integration assertions over actual expected values\u2014is a bespoke script and cannot be run with Invoke-Pester as the requirements mandate; this breaks the stated test contract. Additionally, the Find-YamlLine helper is defined in BeforeAll but never referenced anywhere in the workflow structure tests, indicating dead code. The Pester 5 idioms used in the unit tests are otherwise clean: BeforeAll/AfterAll module lifecycle, @() wrapping for single-result Where-Object, and well-scoped Describe/It blocks.",
+  "judge_cost_usd": 0.0812,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 1948,
+  "judge_provider": "claude-cli"
+}

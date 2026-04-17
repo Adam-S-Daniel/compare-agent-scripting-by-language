@@ -1,0 +1,11 @@
+{
+  "coverage": 3,
+  "rigor": 2,
+  "design": 3,
+  "overall": 3,
+  "summary": "The test suite demonstrates a thoughtful architecture that satisfies the task's unusual requirement of routing all tests through `act`. Workflow-structure tests (triggers, permissions, checkout, actionlint, shellcheck, bash -n) are solid and comprehensive. The act integration tests make exact numeric assertions (381, 6, 8, 74 days) and verify both output formats, which is good rigor for the happy path. However, serious gaps exist: (1) There are zero error-path tests \u2014 missing --config, invalid format string, malformed JSON, bad date, missing jq, and other die() branches are never exercised. (2) Only one fixture (mixed.json) is used across both runs, so boundary conditions (all-expired, all-ok, empty secrets array, zero policy days, a secret with no required_by, warning/ok boundary at exactly warning_days) are untested. (3) --warning-days configurability, a named requirement, is never varied. (4) The 'act run 1/2' tests write to shared global files (.act-markdown.out, .act-json.out) and all subsequent assertion tests read those files \u2014 creating a hard ordering dependency that bats does not formally guarantee, making the suite brittle. (5) The strip_act_prefix sed pattern strips the act log framing without asserting it was ever present, so a completely silent run would pass silently. The exact-value assertions where present are the strongest part; the overall suite would catch obvious regressions in the main workflow flow but would miss most error-handling and edge-case regressions.",
+  "judge_cost_usd": 0.0661,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 1339,
+  "judge_provider": "claude-cli"
+}

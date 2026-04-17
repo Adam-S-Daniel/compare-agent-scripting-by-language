@@ -1,0 +1,11 @@
+{
+  "coverage": 4,
+  "rigor": 3,
+  "design": 3,
+  "overall": 3,
+  "summary": "The test suite covers the main module functions (XML parsing, JSON parsing, file discovery, aggregation, flaky detection, markdown generation) and adds useful workflow YAML structure tests. Error paths are tested for missing files, malformed XML, invalid JSON status, and missing required fields. However, there are notable gaps: the Invoke-Aggregator.ps1 CLI entrypoint (EmitAssertions, FailOnTestFailure switches, GITHUB_STEP_SUMMARY behavior) is not unit-tested at all. Duration fallback when JSON lacks a document-level field is untested. Empty inputs (zero tests, empty XML) are missing. The most significant design issue is cross-Describe dependencies: $script:SimpleXmlPath and $script:SimpleJsonPath are created in ConvertFrom-JUnitXml's BeforeAll block but consumed by Get-AggregatedResults and New-SummaryMarkdown Describe blocks \u2014 if Pester execution order changes or those blocks run in isolation, the later tests silently break. The synthetic aggregated object in New-SummaryMarkdown's 'shows PASS' test includes a 'ResultSets' property that may not match the real function contract, making the test brittle. Fixture creation is mixed into test setup inline, which works but clutters BeforeAll blocks. Despite these issues the suite would catch the most common regressions in the parsing and aggregation logic.",
+  "judge_cost_usd": 0.0734,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 1568,
+  "judge_provider": "claude-cli"
+}

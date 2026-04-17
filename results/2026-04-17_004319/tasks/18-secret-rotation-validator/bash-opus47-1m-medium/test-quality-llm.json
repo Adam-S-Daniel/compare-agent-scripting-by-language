@@ -1,0 +1,11 @@
+{
+  "coverage": 2,
+  "rigor": 2,
+  "design": 3,
+  "overall": 2,
+  "summary": "The suite has three functional act-based test cases (mixed, all-ok, warning-only) plus two structural checks (workflow file exists, actionlint passes). Those cover the core happy-path classification states and the CI pipeline requirement, and the helper function (`run_act_case`) is a clean DRY abstraction. However, coverage gaps are significant: the JSON output format is never explicitly tested (all cases pass `FORMAT=markdown` yet make JSON-shape assertions \u2014 an inconsistency that suggests the assertions may not be testing what they claim), error/invalid-input scenarios are absent (missing file, bad JSON, invalid date, negative warning-days), boundary conditions are skipped (a secret expiring exactly on day 0, exactly on warning-day boundary), an empty secrets list is never exercised, shellcheck/bash -n validation is not in the bats suite, and the services field is only superficially spot-checked by name. Rigor is low: only happy paths are validated. Design is moderate \u2014 the helper function pattern is good, but global variable handoff (`ACT_RC`/`ACT_OUT`) between helper and test body is fragile and there is no teardown on failure. Overall this suite would catch gross regressions to the three main classifications but would miss format bugs, error-handling regressions, and most edge cases.",
+  "judge_cost_usd": 0.0567,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 1696,
+  "judge_provider": "claude-cli"
+}
