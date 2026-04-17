@@ -1,19 +1,29 @@
 # Benchmark Results: Language Comparison
 
-**Last updated:** 2026-04-17 09:04:31 AM ET
+**Last updated:** 2026-04-17 11:45:05 AM ET
 
 **Status:** 64/64 runs completed, 0 remaining
 **Total cost so far:** $86.90
 **Total agent time so far:** 550.6 min
 
-## Observations
+## Rankings by Language/Model/Effort
 
-- **Fastest (avg):** typescript-bun/opus — 6.9min, then default/opus — 6.9min
-- **Slowest (avg):** powershell/sonnet — 11.0min, then bash/sonnet — 10.4min
-- **Cheapest (avg):** default/sonnet — $1.14, then typescript-bun/sonnet — $1.17
-- **Most expensive (avg):** powershell/opus — $1.55, then bash/opus — $1.52
+*Lower rank = better on that axis (1 = fastest / cheapest / highest LLM score).*
+*LLM Score = Overall (1-5) from LLM-as-judge of generated test code (dimensions: coverage, rigor, design). `—` = no judge data.*
 
-## Comparison by Language/Model
+| Language | Model | Duration | Cost | LLM Score |
+|----------|-------|----------|------|-----------|
+| bash | opus | 3 | 7 | 7 |
+| bash | sonnet | 7 | 5 | 1 |
+| default | opus | 2 | 6 | 5 |
+| default | sonnet | 5 | 1 | 3 |
+| powershell | opus | 4 | 8 | 6 |
+| powershell | sonnet | 8 | 3 | 4 |
+| typescript-bun | opus | 1 | 4 | 8 |
+| typescript-bun | sonnet | 6 | 2 | 2 |
+
+## Comparison by Language/Model/Effort
+*Avg LLM Score = Overall (1-5) from LLM-as-judge of generated test code (dimensions: coverage, rigor, design). `—` = no judge data.*
 
 | Language | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost | Avg LLM Score |
 |----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|
@@ -125,7 +135,7 @@
 
 ## Savings Analysis
 
-### Hook Savings by Language/Model
+### Hook Savings by Language/Model/Effort
 
 Each hook-caught error avoids one test run that would otherwise have been needed to discover it.
 Every hook fire (hit or miss) costs execution time for the syntax/type checker.
@@ -190,7 +200,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 </details>
 
-### Trap Analysis by Language/Model/Category
+### Trap Analysis by Language/Model/Effort/Category
 
 | Trap | Language | Model | Fell In | Time Lost | % of Time | $ Lost | % of $ |
 |------|------|-------|---------|-----------|-----------|--------|--------|
@@ -328,7 +338,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 - **$ Lost**: Proportional cost impact, calculated as (Time Lost / Run Duration) × Run Cost for each affected run.
 - **% of $**: $ Lost as a percentage of total benchmark cost.
 
-### Traps by Language/Model
+### Traps by Language/Model/Effort
 
 | Language | Model | Runs | Traps | Time Lost | % of Time | $ Lost | % of $ |
 |------|-------|------|-------|-----------|-----------|--------|--------|
@@ -384,7 +394,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 ## Test Quality Evaluation
 
-### Structural Metrics by Language/Model
+### Structural Metrics by Language/Model/Effort
 
 Automated analysis of test files: test count, assertion count, and test-to-code line ratio.
 
@@ -705,6 +715,8 @@ Values near +1.0 indicate the LLM agrees with the structural signal; near 0 mean
 | Secret Rotation Validator | powershell | opus | 47 | 48 | 3 | 2 | 3 | 3 | LLM says low rigor (2/5) but 48 assertions detected | The test suite covers the main happy-path requirements well: expired/warning/ok classification, both markdown and JSON output formats, workflow structure, and actionlint validation. Exact-value ass... |
 
 ## Per-Run Results
+
+*LLM Score = Overall (1-5) from LLM-as-judge of generated test code (dimensions: coverage, rigor, design). `—` = no judge data.*
 
 | Task | Language | Model | Duration | Turns | Errors | Cost | LLM Score | Chosen | Status |
 |------|----------|-------|----------|-------|--------|------|-----------|--------|--------|
