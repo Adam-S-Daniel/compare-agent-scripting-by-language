@@ -198,12 +198,7 @@ def _build_markdown(
             r["avg_llm_n"] = 0
         r["avg_llm_disp"] = f"{r['avg_llm']:.1f}" if r["avg_llm_n"] > 0 else "—"
 
-    # ── Rankings ──
-    lines.append("## Rankings by Language/Model/Effort")
-    lines.append("")
-    lines.append("*Lower rank = better on that axis (1 = fastest / cheapest / highest LLM score).*")
-    lines.append("*LLM Score = Overall (1-5) from LLM-as-judge of generated test code (dimensions: coverage, rigor, design). `—` = no judge data.*")
-    lines.append("")
+    # Compute rank + tier once; the Tiers and Rankings sections reuse them.
     for i, r in enumerate(sorted(rows, key=lambda r: r["avg_dur"]), start=1):
         r["dur_rank"] = i
     for i, r in enumerate(sorted(rows, key=lambda r: r["avg_cost"]), start=1):
@@ -215,7 +210,50 @@ def _build_markdown(
     for r in rows:
         r.setdefault("llm_rank", _llm_sentinel)
         r["llm_rank_disp"] = str(r["llm_rank"]) if r["llm_rank"] != _llm_sentinel else "—"
+    best_dur = min(r["avg_dur"] for r in rows)
+    best_cost = min(r["avg_cost"] for r in rows)
+    for r in rows:
+        r["dur_tier"] = _ratio_tier(r["avg_dur"] / best_dur)
+        r["cost_tier"] = _ratio_tier(r["avg_cost"] / best_cost)
+        r["llm_tier"] = _llm_tier(r["avg_llm"]) if r["avg_llm_n"] > 0 else "—"
 
+    # ── Tiers (bin by value so gap-vs-cluster is visible at a glance) ──
+    lines.append("## Tiers by Language/Model/Effort")
+    lines.append("")
+    lines.append("*Duration / Cost tier = ratio of this combo's average to the best combo's "
+                 "average on that axis (lower ratio = better). Bands: "
+                 "**A** ≤1.15×, **B** ≤1.40×, **C** ≤1.80×, **D** ≤2.50×, **E** >2.50×.*")
+    lines.append("*LLM Score tier = absolute Overall score band. "
+                 "**A** ≥4.5, **B** ≥3.5, **C** ≥2.5, **D** ≥1.5, **E** <1.5, `—` = no data.*")
+    lines.append("*If every row in a column is tier A, those combos are effectively tied on that axis.*")
+    lines.append("")
+    tr_hdr = "| Language | Model | Duration | Cost | LLM Score |"
+    tr_sep = "|----------|-------|----------|------|-----------|"
+    def _fmt_tr(r):
+        return (f"| {r['mode']} | {r['variant']} "
+                f"| {r['dur_tier']} ({_dur(r['avg_dur'])}) "
+                f"| {r['cost_tier']} (${r['avg_cost']:.2f}) "
+                f"| {r['llm_tier']}"
+                + (f" ({r['avg_llm']:.1f})" if r['avg_llm_n'] > 0 else "")
+                + " |")
+    lines.append(tr_hdr)
+    lines.append(tr_sep)
+    for r in sorted(rows, key=lambda r: (r["mode"], r["variant"])):
+        lines.append(_fmt_tr(r))
+    lines.append("")
+    lines.extend(_emit_sorted_variants(tr_hdr, tr_sep, rows, [
+        ("Sorted by Duration tier (A-first)", "dur_tier", False),
+        ("Sorted by Cost tier (A-first)", "cost_tier", False),
+        ("Sorted by LLM Score tier (A-first; no-data last)", "llm_tier", False),
+    ], _fmt_tr))
+    lines.append("")
+
+    # ── Rankings ──
+    lines.append("## Rankings by Language/Model/Effort")
+    lines.append("")
+    lines.append("*Lower rank = better on that axis (1 = fastest / cheapest / highest LLM score).*")
+    lines.append("*LLM Score = Overall (1-5) from LLM-as-judge of generated test code (dimensions: coverage, rigor, design). `—` = no judge data.*")
+    lines.append("")
     rk_hdr = "| Language | Model | Duration | Cost | LLM Score |"
     rk_sep = "|----------|-------|----------|------|-----------|"
     def _fmt_rk(r):
@@ -230,37 +268,6 @@ def _build_markdown(
         ("Sorted by Cost rank (cheapest first)", "cost_rank", False),
         ("Sorted by LLM Score rank (best first; no-data last)", "llm_rank", False),
     ], _fmt_rk))
-    lines.append("")
-
-    # ── Tiers (bin by value so gap-vs-cluster is visible at a glance) ──
-    lines.append("## Tiers by Language/Model/Effort")
-    lines.append("")
-    lines.append("*Duration / Cost tier = ratio of this combo's average to the best combo's "
-                 "average on that axis (lower ratio = better). Bands: "
-                 "**A** ≤1.15×, **B** ≤1.40×, **C** ≤1.80×, **D** ≤2.50×, **E** >2.50×.*")
-    lines.append("*LLM Score tier = absolute Overall score band. "
-                 "**A** ≥4.5, **B** ≥3.5, **C** ≥2.5, **D** ≥1.5, **E** <1.5, `—` = no data.*")
-    lines.append("*If every row in a column is tier A, those combos are effectively tied on that axis.*")
-    lines.append("")
-    best_dur = min(r["avg_dur"] for r in rows)
-    best_cost = min(r["avg_cost"] for r in rows)
-    for r in rows:
-        r["dur_tier"] = _ratio_tier(r["avg_dur"] / best_dur)
-        r["cost_tier"] = _ratio_tier(r["avg_cost"] / best_cost)
-        r["llm_tier"] = _llm_tier(r["avg_llm"]) if r["avg_llm_n"] > 0 else "—"
-    tr_hdr = "| Language | Model | Duration | Cost | LLM Score |"
-    tr_sep = "|----------|-------|----------|------|-----------|"
-    def _fmt_tr(r):
-        return (f"| {r['mode']} | {r['variant']} "
-                f"| {r['dur_tier']} ({_dur(r['avg_dur'])}) "
-                f"| {r['cost_tier']} (${r['avg_cost']:.2f}) "
-                f"| {r['llm_tier']}"
-                + (f" ({r['avg_llm']:.1f})" if r['avg_llm_n'] > 0 else "")
-                + " |")
-    lines.append(tr_hdr)
-    lines.append(tr_sep)
-    for r in sorted(rows, key=lambda r: (r["mode"], r["variant"])):
-        lines.append(_fmt_tr(r))
     lines.append("")
 
     # ── Comparison ──

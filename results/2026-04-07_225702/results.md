@@ -1,10 +1,76 @@
 # Benchmark Results: Language Comparison
 
-**Last updated:** 2026-04-17 06:16:07 PM ET
+**Last updated:** 2026-04-17 06:23:33 PM ET
 
 **Status:** 111/144 runs completed, 33 remaining
 **Total cost so far:** $76.34
 **Total agent time so far:** 459.2 min
+
+## Tiers by Language/Model/Effort
+
+*Duration / Cost tier = ratio of this combo's average to the best combo's average on that axis (lower ratio = better). Bands: **A** ≤1.15×, **B** ≤1.40×, **C** ≤1.80×, **D** ≤2.50×, **E** >2.50×.*
+*LLM Score tier = absolute Overall score band. **A** ≥4.5, **B** ≥3.5, **C** ≥2.5, **D** ≥1.5, **E** <1.5, `—` = no data.*
+*If every row in a column is tier A, those combos are effectively tied on that axis.*
+
+| Language | Model | Duration | Cost | LLM Score |
+|----------|-------|----------|------|-----------|
+| csharp-script | opus46 | E (1.8min) | E ($0.42) | B (4.0) |
+| csharp-script | sonnet46 | A (0.6min) | A ($0.12) | B (4.0) |
+| default | opus46 | E (3.5min) | E ($0.88) | B (4.2) |
+| default | sonnet46 | E (2.8min) | E ($0.35) | B (4.2) |
+| powershell | opus46 | E (4.3min) | E ($0.97) | B (4.1) |
+| powershell | sonnet46 | E (3.6min) | E ($0.39) | B (3.9) |
+| powershell-strict | opus46 | E (4.9min) | E ($1.20) | B (3.9) |
+| powershell-strict | sonnet46 | E (6.1min) | E ($0.74) | B (4.0) |
+
+
+<details>
+<summary>Sorted by Duration tier (A-first)</summary>
+
+| Language | Model | Duration | Cost | LLM Score |
+|----------|-------|----------|------|-----------|
+| csharp-script | sonnet46 | A (0.6min) | A ($0.12) | B (4.0) |
+| csharp-script | opus46 | E (1.8min) | E ($0.42) | B (4.0) |
+| default | opus46 | E (3.5min) | E ($0.88) | B (4.2) |
+| default | sonnet46 | E (2.8min) | E ($0.35) | B (4.2) |
+| powershell | opus46 | E (4.3min) | E ($0.97) | B (4.1) |
+| powershell | sonnet46 | E (3.6min) | E ($0.39) | B (3.9) |
+| powershell-strict | opus46 | E (4.9min) | E ($1.20) | B (3.9) |
+| powershell-strict | sonnet46 | E (6.1min) | E ($0.74) | B (4.0) |
+
+</details>
+
+<details>
+<summary>Sorted by Cost tier (A-first)</summary>
+
+| Language | Model | Duration | Cost | LLM Score |
+|----------|-------|----------|------|-----------|
+| csharp-script | sonnet46 | A (0.6min) | A ($0.12) | B (4.0) |
+| csharp-script | opus46 | E (1.8min) | E ($0.42) | B (4.0) |
+| default | opus46 | E (3.5min) | E ($0.88) | B (4.2) |
+| default | sonnet46 | E (2.8min) | E ($0.35) | B (4.2) |
+| powershell | opus46 | E (4.3min) | E ($0.97) | B (4.1) |
+| powershell | sonnet46 | E (3.6min) | E ($0.39) | B (3.9) |
+| powershell-strict | opus46 | E (4.9min) | E ($1.20) | B (3.9) |
+| powershell-strict | sonnet46 | E (6.1min) | E ($0.74) | B (4.0) |
+
+</details>
+
+<details>
+<summary>Sorted by LLM Score tier (A-first; no-data last)</summary>
+
+| Language | Model | Duration | Cost | LLM Score |
+|----------|-------|----------|------|-----------|
+| csharp-script | opus46 | E (1.8min) | E ($0.42) | B (4.0) |
+| csharp-script | sonnet46 | A (0.6min) | A ($0.12) | B (4.0) |
+| default | opus46 | E (3.5min) | E ($0.88) | B (4.2) |
+| default | sonnet46 | E (2.8min) | E ($0.35) | B (4.2) |
+| powershell | opus46 | E (4.3min) | E ($0.97) | B (4.1) |
+| powershell | sonnet46 | E (3.6min) | E ($0.39) | B (3.9) |
+| powershell-strict | opus46 | E (4.9min) | E ($1.20) | B (3.9) |
+| powershell-strict | sonnet46 | E (6.1min) | E ($0.74) | B (4.0) |
+
+</details>
 
 ## Rankings by Language/Model/Effort
 
@@ -70,23 +136,6 @@
 | powershell | sonnet46 | 5 | 3 | 8 |
 
 </details>
-
-## Tiers by Language/Model/Effort
-
-*Duration / Cost tier = ratio of this combo's average to the best combo's average on that axis (lower ratio = better). Bands: **A** ≤1.15×, **B** ≤1.40×, **C** ≤1.80×, **D** ≤2.50×, **E** >2.50×.*
-*LLM Score tier = absolute Overall score band. **A** ≥4.5, **B** ≥3.5, **C** ≥2.5, **D** ≥1.5, **E** <1.5, `—` = no data.*
-*If every row in a column is tier A, those combos are effectively tied on that axis.*
-
-| Language | Model | Duration | Cost | LLM Score |
-|----------|-------|----------|------|-----------|
-| csharp-script | opus46 | E (1.8min) | E ($0.42) | B (4.0) |
-| csharp-script | sonnet46 | A (0.6min) | A ($0.12) | B (4.0) |
-| default | opus46 | E (3.5min) | E ($0.88) | B (4.2) |
-| default | sonnet46 | E (2.8min) | E ($0.35) | B (4.2) |
-| powershell | opus46 | E (4.3min) | E ($0.97) | B (4.1) |
-| powershell | sonnet46 | E (3.6min) | E ($0.39) | B (3.9) |
-| powershell-strict | opus46 | E (4.9min) | E ($1.20) | B (3.9) |
-| powershell-strict | sonnet46 | E (6.1min) | E ($0.74) | B (4.0) |
 
 - **Estimated time remaining:** 0.0min
 - **Estimated total cost:** $99.03
