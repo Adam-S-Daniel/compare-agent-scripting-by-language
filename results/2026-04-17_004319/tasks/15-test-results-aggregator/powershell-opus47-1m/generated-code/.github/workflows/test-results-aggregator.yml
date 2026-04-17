@@ -1,0 +1,71 @@
+name: Test Results Aggregator
+
+# Triggers: PR/push for normal CI, workflow_dispatch for manual runs,
+# and a nightly schedule to re-process stored fixtures.
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      input_dir:
+        description: 'Directory of test result files to aggregate'
+        required: false
+        default: 'fixtures'
+  schedule:
+    - cron: '0 6 * * *'
+
+permissions:
+  contents: read
+
+env:
+  INPUT_DIR: ${{ github.event.inputs.input_dir || 'fixtures' }}
+
+jobs:
+  unit-tests:
+    name: Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $cfg = New-PesterConfiguration
+          $cfg.Run.Path = './tests/TestResultsAggregator.Tests.ps1'
+          $cfg.Run.Exit = $true
+          $cfg.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $cfg
+
+  aggregate:
+    name: Aggregate test results
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Aggregate fixtures into a summary
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          ./Aggregate-TestResults.ps1 `
+            -InputDir "$env:INPUT_DIR" `
+            -SummaryPath 'summary.md' `
+            -PrintRecap
+
+      - name: Show generated summary
+        shell: pwsh
+        run: Get-Content -LiteralPath summary.md
+
+      - name: Upload summary artifact
+        # Skip under act (nektos/act doesn't provide ACTIONS_RUNTIME_TOKEN).
+        if: ${{ !env.ACT }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-summary
+          path: summary.md
+          if-no-files-found: error
