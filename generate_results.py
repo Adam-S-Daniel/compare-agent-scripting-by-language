@@ -513,7 +513,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         except Exception:
             pass
 
-    # ── Comparison by Language/Model ──
+    # ── Comparison by Language/Model/Effort ──
     cmp_rows = []
     for mode in modes_seen:
         for model in models_seen:
@@ -695,22 +695,25 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     # OBSERVATIONS (at top of document)
     # ==================================================================
     if len(successful) >= 2 and len(cmp_rows) >= 2:
-        lines.append("## Observations")
+        lines.append("## Rankings by Language/Model/Effort")
+        lines.append("")
+        lines.append("*Lower rank = better on that axis (1 = fastest / cheapest / highest LLM score).*")
+        lines.append("*LLM Score = Overall (1-5) from LLM-as-judge of generated test code (dimensions: coverage, rigor, design). `—` = no judge data.*")
         lines.append("")
 
-        def _fmt_combo(r, field, fmt="dur"):
-            label = f"{r['mode']}/{r['model']}"
-            if fmt == "dur":
-                return f"{label} — {_dur(r[field])}"
-            return f"{label} — ${r[field]:.2f}"
+        # Rank each combo on every axis. Missing LLM data sorts last and
+        # renders as "—" rather than a numeric rank, so combos without a
+        # judge pass don't falsely win or lose the LLM axis.
+        dur_rank = {id(r): i + 1 for i, r in enumerate(sorted(cmp_rows, key=lambda r: r["avg_dur"]))}
+        cost_rank = {id(r): i + 1 for i, r in enumerate(sorted(cmp_rows, key=lambda r: r["avg_cost"]))}
+        llm_scored = [r for r in cmp_rows if r["avg_llm_n"] > 0]
+        llm_rank = {id(r): i + 1 for i, r in enumerate(sorted(llm_scored, key=lambda r: -r["avg_llm"]))}
 
-        by_dur = sorted(cmp_rows, key=lambda r: r["avg_dur"])
-        by_cost = sorted(cmp_rows, key=lambda r: r["avg_cost"])
-
-        lines.append(f"- **Fastest (avg):** {_fmt_combo(by_dur[0], 'avg_dur')}, then {_fmt_combo(by_dur[1], 'avg_dur')}")
-        lines.append(f"- **Slowest (avg):** {_fmt_combo(by_dur[-1], 'avg_dur')}, then {_fmt_combo(by_dur[-2], 'avg_dur')}")
-        lines.append(f"- **Cheapest (avg):** {_fmt_combo(by_cost[0], 'avg_cost', 'cost')}, then {_fmt_combo(by_cost[1], 'avg_cost', 'cost')}")
-        lines.append(f"- **Most expensive (avg):** {_fmt_combo(by_cost[-1], 'avg_cost', 'cost')}, then {_fmt_combo(by_cost[-2], 'avg_cost', 'cost')}")
+        lines.append("| Language | Model | Duration | Cost | LLM Score |")
+        lines.append("|----------|-------|----------|------|-----------|")
+        for r in sorted(cmp_rows, key=lambda r: (r['mode'], r['model'])):
+            llm_cell = str(llm_rank[id(r)]) if id(r) in llm_rank else "—"
+            lines.append(f"| {r['mode']} | {r['model']} | {dur_rank[id(r)]} | {cost_rank[id(r)]} | {llm_cell} |")
         lines.append("")
 
         if completed < total_runs and total_duration > 0 and completed > 0:
@@ -743,9 +746,10 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     # COMPARISON BY LANGUAGE/MODEL
     # ==================================================================
     if cmp_rows:
-        lines.append("## Comparison by Language/Model")
+        lines.append("## Comparison by Language/Model/Effort")
         if failed:
             lines.append("*(averages exclude failed/timed-out runs)*")
+        lines.append("*Avg LLM Score = Overall (1-5) from LLM-as-judge of generated test code (dimensions: coverage, rigor, design). `—` = no judge data.*")
         lines.append("")
         cmp_hdr = "| Language | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost | Avg LLM Score |"
         cmp_sep = "|----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|"
@@ -774,8 +778,8 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     lines.append("## Savings Analysis")
     lines.append("")
 
-    # ── Hook Savings by Language/Model ──
-    lines.append("### Hook Savings by Language/Model")
+    # ── Hook Savings by Language/Model/Effort ──
+    lines.append("### Hook Savings by Language/Model/Effort")
     lines.append("")
     lines.append("Each hook-caught error avoids one test run that would otherwise have been needed to discover it.")
     lines.append("Every hook fire (hit or miss) costs execution time for the syntax/type checker.")
@@ -842,7 +846,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     lines.extend(_emit_sorted_variants(hook_hdr, hook_sep, hook_rows, sort_specs, _fmt_hook))
     lines.append("")
 
-    # ── Trap Analysis by Language/Model/Category ──
+    # ── Trap Analysis by Language/Model/Effort/Category ──
     if trap_instances:
         # Each value is a tuple of modes the trap applies to. A trap that can
         # fire in any PowerShell variant uses the full PS family so its
@@ -916,7 +920,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
                     "cost_pct": combo_cost / total_cost * 100 if total_cost else 0,
                 })
 
-        lines.append("### Trap Analysis by Language/Model/Category")
+        lines.append("### Trap Analysis by Language/Model/Effort/Category")
         lines.append("")
         tlmc_hdr = "| Trap | Language | Model | Fell In | Time Lost | % of Time | $ Lost | % of $ |"
         tlmc_sep = "|------|------|-------|---------|-----------|-----------|--------|--------|"
@@ -955,9 +959,9 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         lines.append("- **% of $**: $ Lost as a percentage of total benchmark cost.")
         lines.append("")
 
-    # ── Traps by Language/Model ──
+    # ── Traps by Language/Model/Effort ──
     if trap_instances:
-        lines.append("### Traps by Language/Model")
+        lines.append("### Traps by Language/Model/Effort")
         lines.append("")
         tlm_hdr = "| Language | Model | Runs | Traps | Time Lost | % of Time | $ Lost | % of $ |"
         tlm_sep = "|------|-------|------|-------|-----------|-----------|--------|--------|"
@@ -1058,8 +1062,8 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     lines.append("## Test Quality Evaluation")
     lines.append("")
 
-    # ── Structural Metrics by Language/Model ──
-    lines.append("### Structural Metrics by Language/Model")
+    # ── Structural Metrics by Language/Model/Effort ──
+    lines.append("### Structural Metrics by Language/Model/Effort")
     lines.append("")
     lines.append("Automated analysis of test files: test count, assertion count, and test-to-code line ratio.")
     lines.append("")
@@ -1281,6 +1285,8 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     # PER-RUN RESULTS
     # ==================================================================
     lines.append("## Per-Run Results")
+    lines.append("")
+    lines.append("*LLM Score = Overall (1-5) from LLM-as-judge of generated test code (dimensions: coverage, rigor, design). `—` = no judge data.*")
     lines.append("")
     pr_hdr = "| Task | Language | Model | Duration | Turns | Errors | Cost | LLM Score | Chosen | Status |"
     pr_sep = "|------|----------|-------|----------|-------|--------|------|-----------|--------|--------|"

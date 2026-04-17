@@ -146,7 +146,7 @@ Four approaches discussed for evaluating test quality across runs:
   - Current provider: `claude-cli` (pre-authenticated Claude Code CLI, no API key needed).
   - See docstring in `llm_providers.py` for instructions on adding new providers.
 - **`generate_results.py`** — new "Test Quality Evaluation" section in results.md:
-  - Structural Metrics by Language/Model (aggregate table + sorted variants)
+  - Structural Metrics by Language/Model/Effort (aggregate table + sorted variants)
   - Per-run structural metrics (collapsible)
   - LLM-as-Judge Scores with explanations (aggregate + per-run, shown only when cached scores exist)
 
