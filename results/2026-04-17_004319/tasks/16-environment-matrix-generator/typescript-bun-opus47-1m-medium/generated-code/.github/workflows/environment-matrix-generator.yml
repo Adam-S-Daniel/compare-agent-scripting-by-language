@@ -1,0 +1,43 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    env:
+      INPUT_FILE: fixtures/input.json
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile || bun install
+
+      - name: Run unit tests
+        run: bun test tests/matrix.test.ts
+
+      - name: Generate matrix
+        id: gen
+        run: |
+          set +e
+          output=$(bun run src/cli.ts "$INPUT_FILE" 2>&1)
+          code=$?
+          set -e
+          echo "----- MATRIX_OUTPUT_BEGIN -----"
+          echo "$output"
+          echo "----- MATRIX_OUTPUT_END -----"
+          echo "exit_code=$code"
+          if [ "$code" -ne 0 ]; then
+            echo "MATRIX_ERROR: exit $code"
+          fi
