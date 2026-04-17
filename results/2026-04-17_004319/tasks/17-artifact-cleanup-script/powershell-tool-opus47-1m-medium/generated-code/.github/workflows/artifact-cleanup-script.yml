@@ -1,0 +1,54 @@
+name: artifact-cleanup-script
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: Artifact fixture to clean up
+        required: false
+        default: fixtures/artifacts.json
+
+permissions:
+  contents: read
+
+env:
+  FIXTURE_PATH: ${{ github.event.inputs.fixture || 'fixtures/artifacts.json' }}
+  CLEANUP_NOW: '2026-04-17T00:00:00Z'
+
+jobs:
+  test:
+    name: Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Pester suite
+        shell: pwsh
+        run: |
+          $r = Invoke-Pester -Path ./ArtifactCleanup.Tests.ps1 -PassThru -Output Detailed
+          if ($r.FailedCount -gt 0) { throw "Pester failed: $($r.FailedCount)" }
+          Write-Host "PESTER_PASSED=$($r.PassedCount)"
+
+  cleanup:
+    name: Run cleanup plan
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate cleanup plan
+        shell: pwsh
+        env:
+          MAX_AGE_DAYS: ${{ vars.MAX_AGE_DAYS || '30' }}
+          KEEP_LATEST_N: ${{ vars.KEEP_LATEST_N || '2' }}
+          MAX_TOTAL_SIZE: ${{ vars.MAX_TOTAL_SIZE || '1000' }}
+        run: |
+          ./Invoke-ArtifactCleanup.ps1 `
+            -ArtifactsJsonPath $env:FIXTURE_PATH `
+            -MaxAgeDays ([int]$env:MAX_AGE_DAYS) `
+            -KeepLatestNPerWorkflow ([int]$env:KEEP_LATEST_N) `
+            -MaxTotalSizeBytes ([long]$env:MAX_TOTAL_SIZE) `
+            -Now $env:CLEANUP_NOW `
+            -DryRun
