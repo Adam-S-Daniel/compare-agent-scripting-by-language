@@ -1,0 +1,65 @@
+name: semantic-version-bumper
+
+# Runs the version bumper in CI. The test harness (test-via-act.ps1) drives this
+# workflow with different fixture payloads through `act push`.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      version_file:
+        description: 'Path to VERSION or package.json'
+        required: false
+        default: 'VERSION'
+      commits_file:
+        description: 'Path to commits fixture'
+        required: false
+        default: 'commits.txt'
+
+permissions:
+  contents: read
+
+env:
+  VERSION_FILE: ${{ github.event.inputs.version_file || 'VERSION' }}
+  COMMITS_FILE: ${{ github.event.inputs.commits_file || 'commits.txt' }}
+  CHANGELOG_FILE: 'CHANGELOG.md'
+
+jobs:
+  bump:
+    name: Bump semantic version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Pester unit tests
+        shell: pwsh
+        run: |
+          $cfg = New-PesterConfiguration
+          $cfg.Run.Path = './VersionBumper.Tests.ps1'
+          $cfg.Run.Exit = $true
+          $cfg.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $cfg
+
+      - name: Bump version
+        id: bump
+        shell: pwsh
+        run: |
+          $out = ./bump-version.ps1 `
+            -VersionFile $env:VERSION_FILE `
+            -CommitsFile $env:COMMITS_FILE `
+            -ChangelogFile $env:CHANGELOG_FILE `
+            -Date '2026-04-17'
+          Write-Host $out
+          $new = ($out -split '=', 2)[1]
+          "new_version=$new" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          Write-Host "NEW_VERSION_MARKER=$new"
+
+      - name: Show results
+        shell: pwsh
+        run: |
+          Write-Host "RESULT_VERSION=${{ steps.bump.outputs.new_version }}"
+          Write-Host '--- VERSION FILE ---'
+          if (Test-Path $env:VERSION_FILE) { Get-Content $env:VERSION_FILE -Raw | Write-Host }
+          Write-Host '--- CHANGELOG ---'
+          if (Test-Path $env:CHANGELOG_FILE) { Get-Content $env:CHANGELOG_FILE -Raw | Write-Host }
