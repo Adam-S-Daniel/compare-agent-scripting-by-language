@@ -1,0 +1,59 @@
+name: PR Label Assigner
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      config:
+        description: Path to rules JSON
+        required: false
+        default: fixtures/rules.json
+      files:
+        description: Path to changed-files list
+        required: false
+        default: fixtures/changed-files.txt
+
+permissions:
+  contents: read
+
+env:
+  RULES_PATH: ${{ github.event.inputs.config || 'fixtures/rules.json' }}
+  FILES_PATH: ${{ github.event.inputs.files  || 'fixtures/changed-files.txt' }}
+
+jobs:
+  test:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $result = Invoke-Pester -Path ./Assign-PrLabels.Tests.ps1 -Output Detailed -PassThru
+          if ($result.FailedCount -gt 0) {
+            Write-Error "Pester tests failed: $($result.FailedCount)"
+            exit 1
+          }
+
+  assign:
+    name: Assign labels
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run label assigner
+        shell: pwsh
+        run: |
+          Write-Host "::group::Inputs"
+          Write-Host "Rules:  $env:RULES_PATH"
+          Write-Host "Files:  $env:FILES_PATH"
+          Get-Content $env:FILES_PATH | ForEach-Object { Write-Host "  - $_" }
+          Write-Host "::endgroup::"
+
+          $labels = & ./Assign-PrLabels.ps1 -ConfigPath $env:RULES_PATH -FilesPath $env:FILES_PATH
+          Write-Host "LABELS_START"
+          $labels | ForEach-Object { Write-Host $_ }
+          Write-Host "LABELS_END"
