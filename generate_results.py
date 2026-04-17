@@ -701,19 +701,35 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         lines.append("*LLM Score = Overall (1-5) from LLM-as-judge of generated test code (dimensions: coverage, rigor, design). `—` = no judge data.*")
         lines.append("")
 
-        # Rank each combo on every axis. Missing LLM data sorts last and
-        # renders as "—" rather than a numeric rank, so combos without a
+        # Rank each combo on every axis. Missing LLM data renders as "—"
+        # and sorts last (via a sentinel rank = len+1) so combos without a
         # judge pass don't falsely win or lose the LLM axis.
-        dur_rank = {id(r): i + 1 for i, r in enumerate(sorted(cmp_rows, key=lambda r: r["avg_dur"]))}
-        cost_rank = {id(r): i + 1 for i, r in enumerate(sorted(cmp_rows, key=lambda r: r["avg_cost"]))}
+        for i, r in enumerate(sorted(cmp_rows, key=lambda r: r["avg_dur"]), start=1):
+            r["dur_rank"] = i
+        for i, r in enumerate(sorted(cmp_rows, key=lambda r: r["avg_cost"]), start=1):
+            r["cost_rank"] = i
         llm_scored = [r for r in cmp_rows if r["avg_llm_n"] > 0]
-        llm_rank = {id(r): i + 1 for i, r in enumerate(sorted(llm_scored, key=lambda r: -r["avg_llm"]))}
+        for i, r in enumerate(sorted(llm_scored, key=lambda r: -r["avg_llm"]), start=1):
+            r["llm_rank"] = i
+        _llm_sentinel = len(cmp_rows) + 1
+        for r in cmp_rows:
+            r.setdefault("llm_rank", _llm_sentinel)
+            r["llm_rank_disp"] = str(r["llm_rank"]) if r["llm_rank"] != _llm_sentinel else "—"
 
-        lines.append("| Language | Model | Duration | Cost | LLM Score |")
-        lines.append("|----------|-------|----------|------|-----------|")
+        rk_hdr = "| Language | Model | Duration | Cost | LLM Score |"
+        rk_sep = "|----------|-------|----------|------|-----------|"
+        def _fmt_rk(r):
+            return f"| {r['mode']} | {r['model']} | {r['dur_rank']} | {r['cost_rank']} | {r['llm_rank_disp']} |"
+        lines.append(rk_hdr)
+        lines.append(rk_sep)
         for r in sorted(cmp_rows, key=lambda r: (r['mode'], r['model'])):
-            llm_cell = str(llm_rank[id(r)]) if id(r) in llm_rank else "—"
-            lines.append(f"| {r['mode']} | {r['model']} | {dur_rank[id(r)]} | {cost_rank[id(r)]} | {llm_cell} |")
+            lines.append(_fmt_rk(r))
+        lines.append("")
+        lines.extend(_emit_sorted_variants(rk_hdr, rk_sep, cmp_rows, [
+            ("Sorted by Duration rank (fastest first)", "dur_rank", False),
+            ("Sorted by Cost rank (cheapest first)", "cost_rank", False),
+            ("Sorted by LLM Score rank (best first; no-data last)", "llm_rank", False),
+        ], _fmt_rk))
         lines.append("")
 
         if completed < total_runs and total_duration > 0 and completed > 0:

@@ -22,6 +22,11 @@ from pathlib import Path
 from collections import defaultdict
 from zoneinfo import ZoneInfo
 
+# Reuse the collapsible-sort helpers from generate_results so the
+# rankings/comparison tables here share the same look-and-feel (single
+# source of truth for how <details> blocks render).
+from generate_results import _collapsible_table, _emit_sorted_variants  # noqa: E402
+
 
 def load_run_metrics(run_dir: Path) -> list[dict]:
     """Load all metrics.json under run_dir/tasks/*/*/metrics.json."""
@@ -185,15 +190,32 @@ def _build_markdown(
     lines.append("*Lower rank = better on that axis (1 = fastest / cheapest / highest LLM score).*")
     lines.append("*LLM Score = Overall (1-5) from LLM-as-judge of generated test code (dimensions: coverage, rigor, design). `—` = no judge data.*")
     lines.append("")
-    dur_rank = {id(r): i + 1 for i, r in enumerate(sorted(rows, key=lambda r: r["avg_dur"]))}
-    cost_rank = {id(r): i + 1 for i, r in enumerate(sorted(rows, key=lambda r: r["avg_cost"]))}
+    for i, r in enumerate(sorted(rows, key=lambda r: r["avg_dur"]), start=1):
+        r["dur_rank"] = i
+    for i, r in enumerate(sorted(rows, key=lambda r: r["avg_cost"]), start=1):
+        r["cost_rank"] = i
     llm_scored = [r for r in rows if r["avg_llm_n"] > 0]
-    llm_rank = {id(r): i + 1 for i, r in enumerate(sorted(llm_scored, key=lambda r: -r["avg_llm"]))}
-    lines.append("| Language | Model | Duration | Cost | LLM Score |")
-    lines.append("|----------|-------|----------|------|-----------|")
+    for i, r in enumerate(sorted(llm_scored, key=lambda r: -r["avg_llm"]), start=1):
+        r["llm_rank"] = i
+    _llm_sentinel = len(rows) + 1
+    for r in rows:
+        r.setdefault("llm_rank", _llm_sentinel)
+        r["llm_rank_disp"] = str(r["llm_rank"]) if r["llm_rank"] != _llm_sentinel else "—"
+
+    rk_hdr = "| Language | Model | Duration | Cost | LLM Score |"
+    rk_sep = "|----------|-------|----------|------|-----------|"
+    def _fmt_rk(r):
+        return f"| {r['mode']} | {r['variant']} | {r['dur_rank']} | {r['cost_rank']} | {r['llm_rank_disp']} |"
+    lines.append(rk_hdr)
+    lines.append(rk_sep)
     for r in sorted(rows, key=lambda r: (r["mode"], r["variant"])):
-        llm_cell = str(llm_rank[id(r)]) if id(r) in llm_rank else "—"
-        lines.append(f"| {r['mode']} | {r['variant']} | {dur_rank[id(r)]} | {cost_rank[id(r)]} | {llm_cell} |")
+        lines.append(_fmt_rk(r))
+    lines.append("")
+    lines.extend(_emit_sorted_variants(rk_hdr, rk_sep, rows, [
+        ("Sorted by Duration rank (fastest first)", "dur_rank", False),
+        ("Sorted by Cost rank (cheapest first)", "cost_rank", False),
+        ("Sorted by LLM Score rank (best first; no-data last)", "llm_rank", False),
+    ], _fmt_rk))
     lines.append("")
 
     # ── Comparison ──

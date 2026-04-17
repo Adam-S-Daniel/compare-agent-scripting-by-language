@@ -1,6 +1,6 @@
 # Benchmark Results: Language Comparison
 
-**Last updated:** 2026-04-17 02:27:30 PM ET
+**Last updated:** 2026-04-17 02:36:14 PM ET
 
 **Status:** 70/70 runs completed, 0 remaining
 **Total cost so far:** $150.04
@@ -23,6 +23,61 @@
 | powershell-tool | opus47-1m-xhigh | 7 | 8 | 4 |
 | typescript-bun | opus47-1m-medium | 3 | 3 | 8 |
 | typescript-bun | opus47-1m-xhigh | 9 | 10 | 1 |
+
+
+<details>
+<summary>Sorted by Duration rank (fastest first)</summary>
+
+| Language | Model | Duration | Cost | LLM Score |
+|----------|-------|----------|------|-----------|
+| bash | opus47-1m-medium | 1 | 2 | 10 |
+| default | opus47-1m-medium | 2 | 1 | 9 |
+| typescript-bun | opus47-1m-medium | 3 | 3 | 8 |
+| default | opus47-1m-xhigh | 4 | 6 | 2 |
+| powershell-tool | opus47-1m-medium | 5 | 4 | 7 |
+| powershell | opus47-1m-medium | 6 | 5 | 6 |
+| powershell-tool | opus47-1m-xhigh | 7 | 8 | 4 |
+| powershell | opus47-1m-xhigh | 8 | 9 | 3 |
+| typescript-bun | opus47-1m-xhigh | 9 | 10 | 1 |
+| bash | opus47-1m-xhigh | 10 | 7 | 5 |
+
+</details>
+
+<details>
+<summary>Sorted by Cost rank (cheapest first)</summary>
+
+| Language | Model | Duration | Cost | LLM Score |
+|----------|-------|----------|------|-----------|
+| default | opus47-1m-medium | 2 | 1 | 9 |
+| bash | opus47-1m-medium | 1 | 2 | 10 |
+| typescript-bun | opus47-1m-medium | 3 | 3 | 8 |
+| powershell-tool | opus47-1m-medium | 5 | 4 | 7 |
+| powershell | opus47-1m-medium | 6 | 5 | 6 |
+| default | opus47-1m-xhigh | 4 | 6 | 2 |
+| bash | opus47-1m-xhigh | 10 | 7 | 5 |
+| powershell-tool | opus47-1m-xhigh | 7 | 8 | 4 |
+| powershell | opus47-1m-xhigh | 8 | 9 | 3 |
+| typescript-bun | opus47-1m-xhigh | 9 | 10 | 1 |
+
+</details>
+
+<details>
+<summary>Sorted by LLM Score rank (best first; no-data last)</summary>
+
+| Language | Model | Duration | Cost | LLM Score |
+|----------|-------|----------|------|-----------|
+| typescript-bun | opus47-1m-xhigh | 9 | 10 | 1 |
+| default | opus47-1m-xhigh | 4 | 6 | 2 |
+| powershell | opus47-1m-xhigh | 8 | 9 | 3 |
+| powershell-tool | opus47-1m-xhigh | 7 | 8 | 4 |
+| bash | opus47-1m-xhigh | 10 | 7 | 5 |
+| powershell | opus47-1m-medium | 6 | 5 | 6 |
+| powershell-tool | opus47-1m-medium | 5 | 4 | 7 |
+| typescript-bun | opus47-1m-medium | 3 | 3 | 8 |
+| default | opus47-1m-medium | 2 | 1 | 9 |
+| bash | opus47-1m-medium | 1 | 2 | 10 |
+
+</details>
 
 ## Comparison by Language/Model/Effort
 *Avg LLM Score = Overall (1-5) from LLM-as-judge of generated test code (dimensions: coverage, rigor, design). `—` = no judge data.*
