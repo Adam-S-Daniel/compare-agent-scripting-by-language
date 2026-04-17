@@ -37,6 +37,7 @@ TEST_FILE_PATTERNS = {
     "typescript": [r".*\.test\.ts$", r".*\.spec\.ts$"],
     "powershell": [r".*\.Tests\.ps1$"],
     "bash": [r".*\.bats$", r"run_tests\.sh$"],
+    "csharp": [r".*Tests\.cs$", r"^tests\.cs$"],
 }
 
 IMPL_FILE_PATTERNS = {
@@ -44,6 +45,7 @@ IMPL_FILE_PATTERNS = {
     "typescript": [r"(?!.*\.test\.)(?!.*\.spec\.).*\.ts$"],
     "powershell": [r"(?!.*\.Tests\.).*\.ps1$"],
     "bash": [r"(?!.*\.bats$)(?!run_tests\.).*\.sh$"],
+    "csharp": [r"(?!.*Tests).*\.cs$"],
 }
 
 # Files to always skip (not code)
@@ -68,6 +70,8 @@ def _detect_language(files: list[str]) -> str:
             return "typescript"
         if re.search(r"test_.*\.py$|.*_test\.py$|run_tests\.py$", f):
             return "python"
+        if f.endswith("Tests.cs") or f == "tests.cs":
+            return "csharp"
     # Fallback: look at implementation files
     for f in files:
         if f.endswith(".ps1"):
@@ -76,6 +80,8 @@ def _detect_language(files: list[str]) -> str:
             return "typescript"
         if f.endswith(".sh"):
             return "bash"
+        if f.endswith(".cs"):
+            return "csharp"
         if f.endswith(".py"):
             return "python"
     return "unknown"
@@ -100,7 +106,7 @@ def _is_impl_file(filepath: str, language: str) -> bool:
 
 def _is_code_file(filepath: str) -> bool:
     """Check if a file is any kind of source code."""
-    return filepath.endswith((".py", ".ts", ".ps1", ".sh", ".bats"))
+    return filepath.endswith((".py", ".ts", ".ps1", ".sh", ".bats", ".cs"))
 
 
 # ---------------------------------------------------------------------------
@@ -131,10 +137,21 @@ def _count_python(content: str) -> dict:
 
     # Custom harness assertions: record_pass calls (record_pass/record_fail
     # are paired branches of the same check — count only the positive path).
-    # Also count "PASS:" string writes (not FAIL — same pairing logic).
     custom_asserts = len(re.findall(r'\brecord_pass\s*\(', content))
-    custom_asserts += len(re.findall(r'["\'].*?PASS\s*:', content))
     asserts += custom_asserts
+
+    # run_test(name, actual, expected) — custom comparison function.
+    # Count call sites (not the function definition) as assertions.
+    run_test_calls = len(re.findall(r'(?<!def )\brun_test\s*\(', content))
+    asserts += run_test_calls
+
+    # log_pass(msg) — each call represents a verified check.
+    # Count call sites as assertions; also count as tests when no standard
+    # test functions were found.
+    log_pass_calls = len(re.findall(r'(?<!def )\blog_pass\s*\(', content))
+    asserts += log_pass_calls
+    if tests == 0 and log_pass_calls > 0:
+        tests = log_pass_calls
 
     return {"tests": tests, "assertions": asserts}
 
@@ -172,11 +189,47 @@ def _count_bash(content: str) -> dict:
     return {"tests": tests, "assertions": asserts}
 
 
+def _count_csharp(content: str) -> dict:
+    """Count tests and assertions in C# code (xUnit, NUnit, custom harnesses)."""
+    # xUnit: [Fact], [Theory]
+    tests = len(re.findall(r"^\s*\[Fact\]", content, re.MULTILINE))
+    tests += len(re.findall(r"^\s*\[Theory\]", content, re.MULTILINE))
+    # NUnit: [Test], [TestCase]
+    tests += len(re.findall(r"^\s*\[Test\]", content, re.MULTILINE))
+    tests += len(re.findall(r"^\s*\[TestCase\b", content, re.MULTILINE))
+
+    # Custom harness: AssertTrue/AssertEqual/AssertThrows calls as implicit tests
+    # (only count if no standard test attributes were found)
+    if tests == 0:
+        custom = len(re.findall(r"\bAssertTrue\s*\(", content))
+        custom += len(re.findall(r"\bAssertEqual\s*[<(]", content))
+        custom += len(re.findall(r"\bAssertThrows\s*<", content))
+        custom += len(re.findall(r"\bAssertApprox\s*\(", content))
+        tests = custom
+
+    # Assertions: Assert.* (xUnit/NUnit/MSTest)
+    asserts = len(re.findall(r"\bAssert\.\w+\s*[<(]", content))
+    # NUnit constraint model: Assert.That(
+    asserts += len(re.findall(r"\bAssert\.That\s*\(", content))
+    # Deduplicate: Assert.That also matches Assert.\w+ — subtract overlap
+    overlap = len(re.findall(r"\bAssert\.That\s*\(", content))
+    asserts -= overlap
+
+    # Custom harness assertions
+    asserts += len(re.findall(r"\bAssertTrue\s*\(", content))
+    asserts += len(re.findall(r"\bAssertEqual\s*[<(]", content))
+    asserts += len(re.findall(r"\bAssertThrows\s*<", content))
+    asserts += len(re.findall(r"\bAssertApprox\s*\(", content))
+
+    return {"tests": tests, "assertions": asserts}
+
+
 COUNTERS = {
     "python": _count_python,
     "typescript": _count_typescript,
     "powershell": _count_powershell,
     "bash": _count_bash,
+    "csharp": _count_csharp,
 }
 
 

@@ -1,0 +1,11 @@
+{
+  "coverage": 3,
+  "rigor": 2,
+  "design": 2,
+  "overall": 2,
+  "summary": "The test suite covers the major requirements (cartesian product, excludes, includes, max-parallel, fail-fast, size validation, workflow structure, actionlint) but does so almost entirely through `act` integration tests, with zero unit tests for the exported pure functions (cartesianProduct, applyExcludes, applyIncludes, matchesRule, validateConfig). Rigor is poor: only one error path is exercised (oversized matrix), and there are no tests for duplicate dimension names, empty dimensions, invalid max-parallel values, empty-matrix-after-excludes, malformed JSON input, fail-fast=true, or the exact 256-limit boundary. Design has serious structural problems: all integration tests share a single `actOutput` string, making assertions both slow and fragile \u2014 `toContain('\"total-jobs\": 1')` would false-positive against `\"total-jobs\": 10` (substring match), and multiple fixtures producing the same total-jobs value would be indistinguishable in the combined output. The single `beforeAll` act run means any infrastructure failure silently invalidates every integration test. The YAML parser using a Python subprocess adds an external dependency without a fallback. The overall design sacrifices speed, isolation, and debuggability for an all-in-one pipeline approach that makes it very hard to trust failures or successes.",
+  "judge_cost_usd": 0.0579,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 1921,
+  "judge_provider": "claude-cli"
+}

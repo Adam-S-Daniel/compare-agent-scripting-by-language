@@ -8,6 +8,7 @@ from generate_results import (
     _categorize_tool_time,
     _collapsible_table,
     _detect_traps,
+    _find_discrepancies,
     _rank,
     _spearman,
 )
@@ -252,3 +253,72 @@ class TestDetectTraps:
 
     def test_empty_events(self):
         assert _detect_traps([], "", {"language_mode": "default"}) == []
+
+
+# =========================================================================
+# _find_discrepancies
+# =========================================================================
+
+class TestFindDiscrepancies:
+    def _llm(self, task="Task", mode="default", model="opus",
+             cov=3, rig=3, des=3, ovr=3, summary="Good tests."):
+        return {"task": task, "mode": mode, "model": model,
+                "coverage": cov, "rigor": rig, "design": des,
+                "overall": ovr, "summary": summary}
+
+    def _sq(self, task="Task", mode="default", model="opus",
+            tests=10, asserts=20, ratio=1.5):
+        return {(task, mode, model): {
+            "tests": tests, "asserts": asserts, "ratio": ratio,
+        }}
+
+    def test_no_discrepancies(self):
+        llm = [self._llm(cov=3, rig=3, des=3, ovr=3)]
+        sq = self._sq(tests=10, asserts=20)
+        assert _find_discrepancies(llm, sq) == []
+
+    def test_counter_gap_zero_tests_high_coverage(self):
+        llm = [self._llm(cov=4)]
+        sq = self._sq(tests=0, asserts=5)
+        result = _find_discrepancies(llm, sq)
+        gaps = [d for d in result if d["kind"] == "counter-gap"]
+        assert len(gaps) >= 1
+        assert any("0 tests" in d["flag"] for d in gaps)
+
+    def test_counter_gap_zero_asserts_high_overall(self):
+        llm = [self._llm(ovr=4)]
+        sq = self._sq(tests=10, asserts=0)
+        result = _find_discrepancies(llm, sq)
+        gaps = [d for d in result if d["kind"] == "counter-gap"]
+        assert len(gaps) >= 1
+        assert any("0 assertions" in d["flag"] for d in gaps)
+
+    def test_qualitative_low_rigor_many_asserts(self):
+        llm = [self._llm(rig=2, summary="Tests lack edge cases.")]
+        sq = self._sq(tests=15, asserts=50)
+        result = _find_discrepancies(llm, sq)
+        qual = [d for d in result if d["kind"] == "qualitative"]
+        assert len(qual) == 1
+        assert "low rigor" in qual[0]["flag"]
+        assert qual[0]["justification"] == "Tests lack edge cases."
+
+    def test_qualitative_has_justification(self):
+        llm = [self._llm(rig=2, summary="No boundary tests.")]
+        sq = self._sq(tests=20, asserts=45)
+        result = _find_discrepancies(llm, sq)
+        for d in result:
+            if d["kind"] == "qualitative":
+                assert d["justification"] != ""
+
+    def test_counter_gap_has_no_justification(self):
+        llm = [self._llm(ovr=4, summary="Great tests.")]
+        sq = self._sq(tests=0, asserts=0)
+        result = _find_discrepancies(llm, sq)
+        for d in result:
+            if d["kind"] == "counter-gap":
+                assert d["justification"] == ""
+
+    def test_missing_lookup_key_skipped(self):
+        llm = [self._llm(task="Missing")]
+        sq = self._sq(task="Other")
+        assert _find_discrepancies(llm, sq) == []

@@ -24,6 +24,90 @@ from models import COST_PER_MTOK, MODELS  # noqa: E402  (single source of truth)
 INSTRUCTIONS_VERSION = "v4"
 
 
+def _find_discrepancies(llm_rows: list[dict], tq_lookup: dict) -> list[dict]:
+    """Find discrepancies between LLM judge scores and structural metrics.
+
+    Each discrepancy is classified as:
+    - "counter-gap": structural metrics are implausibly low (e.g. 0 tests or
+      0 assertions despite high LLM scores). Likely a missing pattern in
+      test_quality.py — should be investigated and fixed.
+    - "qualitative": structural metrics look reasonable but the LLM disagrees
+      on quality. The LLM is judging aspects (edge cases, test isolation,
+      error paths) that raw counts can't measure. The LLM's summary is
+      included as justification.
+
+    Returns list of dicts with keys: task, mode, model, tests, asserts,
+    cov, rig, des, ovr, flag, kind, justification.
+    """
+    discrepancies = []
+    for lr in llm_rows:
+        key = (lr["task"], lr["mode"], lr["model"])
+        sq = tq_lookup.get(key)
+        if not sq:
+            continue
+
+        tests = sq["tests"]
+        asserts = sq["asserts"]
+        ratio = sq["ratio"]
+        summary = lr.get("summary", "")
+
+        def _add(flag: str, kind: str):
+            discrepancies.append({
+                "task": lr["task"], "mode": lr["mode"], "model": lr["model"],
+                "tests": tests, "asserts": asserts, "ratio": ratio,
+                "cov": lr["coverage"], "rig": lr["rigor"],
+                "des": lr["design"], "ovr": lr["overall"],
+                "flag": flag, "kind": kind,
+                "justification": summary if kind == "qualitative" else "",
+            })
+
+        # --- Counter-gap signals: structural metrics implausibly low ---
+
+        # High LLM coverage but very few tests
+        if lr["coverage"] >= 4 and tests <= 3:
+            _add(f"LLM says high coverage ({lr['coverage']}/5) but only {tests} tests detected",
+                 "counter-gap" if tests == 0 else "qualitative")
+
+        # High LLM rigor but few assertions
+        if lr["rigor"] >= 4 and asserts <= 5:
+            _add(f"LLM says high rigor ({lr['rigor']}/5) but only {asserts} assertions detected",
+                 "counter-gap" if asserts == 0 else "qualitative")
+
+        # High LLM overall but no tests
+        if lr["overall"] >= 4 and tests == 0:
+            _add(f"LLM says high overall ({lr['overall']}/5) but 0 tests detected",
+                 "counter-gap")
+
+        # High LLM overall but zero assertions per test
+        if lr["overall"] >= 4 and tests > 0 and asserts == 0:
+            _add(f"LLM says high overall ({lr['overall']}/5) but 0 assertions detected",
+                 "counter-gap")
+
+        # High LLM overall but very low assertion density (non-zero)
+        if lr["overall"] >= 4 and tests > 0 and 0 < asserts / tests < 0.5:
+            _add(f"LLM says high overall ({lr['overall']}/5) but only {asserts/tests:.1f} assertions/test",
+                 "qualitative")
+
+        # --- Qualitative signals: metrics look reasonable, LLM disagrees ---
+
+        # Low LLM coverage but many tests
+        if lr["coverage"] <= 2 and tests >= 20:
+            _add(f"LLM says low coverage ({lr['coverage']}/5) but {tests} tests detected",
+                 "qualitative")
+
+        # Low LLM rigor but many assertions
+        if lr["rigor"] <= 2 and asserts >= 40:
+            _add(f"LLM says low rigor ({lr['rigor']}/5) but {asserts} assertions detected",
+                 "qualitative")
+
+        # Low LLM design but high test-to-code ratio
+        if lr["design"] <= 2 and ratio >= 2.0:
+            _add(f"LLM says poor design ({lr['design']}/5) but test:code ratio is {ratio:.1f}",
+                 "qualitative")
+
+    return discrepancies
+
+
 def _detect_traps(events: list[dict], console: str, metrics: dict) -> list[dict]:
     """Detect time-costly debugging traps from a run's event stream.
 
@@ -1098,70 +1182,48 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
             lines.append(f"*Based on {len(paired_tests)} runs with both structural and LLM scores.*")
             lines.append("")
 
-        discrepancies = []
-        for lr in llm_rows:
-            key = (lr["task"], lr["mode"], lr["model"])
-            sq = tq_lookup.get(key)
-            if not sq:
-                continue
-
-            tests = sq["tests"]
-            asserts = sq["asserts"]
-            ratio = sq["ratio"]
-            flags = []
-
-            # High LLM coverage but very few tests
-            if lr["coverage"] >= 4 and tests <= 3:
-                flags.append(f"LLM says high coverage ({lr['coverage']}/5) but only {tests} tests detected")
-            # Low LLM coverage but many tests
-            if lr["coverage"] <= 2 and tests >= 20:
-                flags.append(f"LLM says low coverage ({lr['coverage']}/5) but {tests} tests detected")
-
-            # High LLM rigor but few assertions
-            if lr["rigor"] >= 4 and asserts <= 5:
-                flags.append(f"LLM says high rigor ({lr['rigor']}/5) but only {asserts} assertions detected")
-            # Low LLM rigor but many assertions
-            if lr["rigor"] <= 2 and asserts >= 40:
-                flags.append(f"LLM says low rigor ({lr['rigor']}/5) but {asserts} assertions detected")
-
-            # High LLM overall but no tests or assertions
-            if lr["overall"] >= 4 and tests == 0:
-                flags.append(f"LLM says high overall ({lr['overall']}/5) but 0 tests detected")
-
-            # Low LLM design but high test-to-code ratio
-            if lr["design"] <= 2 and ratio >= 2.0:
-                flags.append(f"LLM says poor design ({lr['design']}/5) but test:code ratio is {ratio:.1f}")
-
-            # High LLM overall but very low assertion density
-            if lr["overall"] >= 4 and tests > 0 and asserts / tests < 0.5:
-                flags.append(f"LLM says high overall ({lr['overall']}/5) but only {asserts/tests:.1f} assertions/test")
-
-            if flags:
-                discrepancies.append({
-                    "task": lr["task"], "mode": lr["mode"], "model": lr["model"],
-                    "tests": tests, "asserts": asserts, "ratio": ratio,
-                    "cov": lr["coverage"], "rig": lr["rigor"],
-                    "des": lr["design"], "ovr": lr["overall"],
-                    "flags": flags,
-                })
+        discrepancies = _find_discrepancies(llm_rows, tq_lookup)
 
         if discrepancies:
+            counter_gaps = [d for d in discrepancies if d["kind"] == "counter-gap"]
+            qualitative = [d for d in discrepancies if d["kind"] == "qualitative"]
+
             lines.append("### LLM vs Structural Discrepancies")
             lines.append("")
-            lines.append("Cases where the LLM judge's scores diverge significantly from structural metrics.")
-            lines.append("These may indicate the LLM is weighing qualitative factors the counters miss,")
-            lines.append("or that the structural counters are undercounting for an unusual test pattern.")
-            lines.append("")
-            lines.append("| Task | Mode | Model | Tests | Asserts | Cov | Rig | Des | Ovr | Flag |")
-            lines.append("|------|------|-------|-------|---------|-----|-----|-----|-----|------|")
-            for d in discrepancies:
-                for flag in d["flags"]:
+
+            if counter_gaps:
+                lines.append("**Probable counter gaps** — structural counters may be missing "
+                             "a test pattern. Investigate and fix `test_quality.py`.")
+                lines.append("")
+                lines.append("| Task | Mode | Model | Tests | Asserts | Cov | Rig | Des | Ovr | Flag |")
+                lines.append("|------|------|-------|-------|---------|-----|-----|-----|-----|------|")
+                for d in counter_gaps:
                     lines.append(
                         f"| {d['task']} | {d['mode']} | {d['model']} "
                         f"| {d['tests']} | {d['asserts']} "
                         f"| {d['cov']} | {d['rig']} | {d['des']} | {d['ovr']} "
-                        f"| {flag} |")
-            lines.append("")
+                        f"| {d['flag']} |")
+                lines.append("")
+
+            if qualitative:
+                lines.append("**Qualitative disagreements** — structural metrics look reasonable; "
+                             "the LLM judge is weighing factors the counters can't measure.")
+                lines.append("")
+                lines.append("| Task | Mode | Model | Tests | Asserts | Cov | Rig | Des | Ovr | Flag | Justification |")
+                lines.append("|------|------|-------|-------|---------|-----|-----|-----|-----|------|---------------|")
+                for d in qualitative:
+                    # Truncate justification to keep table readable
+                    justification = d.get("justification", "")
+                    if len(justification) > 200:
+                        justification = justification[:197] + "..."
+                    # Escape pipes in justification text
+                    justification = justification.replace("|", "\\|")
+                    lines.append(
+                        f"| {d['task']} | {d['mode']} | {d['model']} "
+                        f"| {d['tests']} | {d['asserts']} "
+                        f"| {d['cov']} | {d['rig']} | {d['des']} | {d['ovr']} "
+                        f"| {d['flag']} | {justification} |")
+                lines.append("")
 
     # ==================================================================
     # PER-RUN RESULTS

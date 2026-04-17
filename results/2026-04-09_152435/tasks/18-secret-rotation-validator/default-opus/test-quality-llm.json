@@ -1,0 +1,11 @@
+{
+  "coverage": 4,
+  "rigor": 3,
+  "design": 3,
+  "overall": 3,
+  "summary": "The unit test suite (test_secret_rotation_validator.py) is well-organized with clear TDD commentary and covers the core requirements solidly: config parsing, all three classification states, both output formats, grouping, and the config-level warning-window override. The boundary at days_until=0 is explicitly tested as 'warning', and invalid-input error paths are exercised for every public function. Gaps: the CLI entry-point (main(), argument parsing) is never directly exercised in the unit tests; an empty secrets list is untested; the exact boundary between 'warning' and 'ok' (days_until == warning_window_days, not 0) is only implicitly covered; and extreme/malformed inputs (negative rotation policy, empty required_by) are absent. Design is competent for the pytest portion \u2014 class-per-TDD-cycle, shared SAMPLE_SECRET/REF_DATE constants, a reusable _write_config helper, and tmp_path fixtures \u2014 but the test_harness.py is a plain print-based script rather than proper pytest infrastructure, its act-output assertions are brittle string matches, and it mixes fixture management styles (tmp_path vs manual tempfile.mkdtemp). The harness also re-runs act for 'all_expired' without providing a distinct fixture override, so that test case is not meaningfully different from the first. Overall the suite would catch most classification and formatting regressions but would miss CLI and boundary-edge regressions.",
+  "judge_cost_usd": 0.075,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 2195,
+  "judge_provider": "claude-cli"
+}

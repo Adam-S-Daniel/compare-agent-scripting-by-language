@@ -1,0 +1,11 @@
+{
+  "coverage": 3,
+  "rigor": 2,
+  "design": 2,
+  "overall": 2,
+  "summary": "The test suite is split into workflow-structure checks and act-based integration tests, which is a reasonable high-level structure. Coverage of happy-path scenarios is decent: main/master, feature branch, semver tag, pre-release tag, and PR scenarios are all represented. However, several problems significantly reduce quality. First, the test file imports `sanitizeTag` and `generateTags` but never calls them \u2014 there are zero direct unit tests for the core logic, so the only testing path is through a 5-minute act/Docker run. Second, several expected values contradict the implementation: `sanitizeTag` replaces `_` (underscore is not in `[a-z0-9._-]`) yet tests assert strings like `feature-my-cool_feature-def4567` and `bugfix-jira-1234_fix-login-page-ccc9876` containing underscores \u2014 these would always fail against the actual code. Third, error paths (missing ref, SHA too short, missing PR number) are not tested at all. Fourth, all assertions are loose `toContain()` checks on combined stdout+stderr act output, which is brittle: any noise in act's logging could produce false positives, and the 'Total tags: 2' assertion will match multiple unrelated lines. Fifth, the test suite is entirely dependent on Docker/act being present and operational, making it impossible to run in most CI environments without special setup. The beforeAll timeout of 5 minutes for a single act run means failures are slow to diagnose. Overall, the suite looks comprehensive on the surface but contains correctness mismatches, no unit-level coverage, and architectural fragility.",
+  "judge_cost_usd": 0.0469,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 1492,
+  "judge_provider": "claude-cli"
+}

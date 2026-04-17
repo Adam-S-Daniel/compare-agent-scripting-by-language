@@ -51,6 +51,7 @@ Each benchmark version defines a set of scripting tasks, language modes, and mod
 | `workspaces/` | Temporary agent working directories (git-ignored) |
 | `AGENTS.md` | Agent instructions ([agents.md spec](https://agents.md)) |
 | `skills/` | Agent skills ([agentskills.io spec](https://agentskills.io/specification)) |
+| `archived-tasks/` | Retired task definitions with rationale — results preserved in `results/` |
 | `design-and-planning-artifacts/` | Historical planning docs, v1 analysis, superseded files |
 
 ## Benchmark Runs
@@ -91,10 +92,10 @@ After a benchmark run, evaluate the quality of agent-generated test suites:
 
 ```bash
 # Structural metrics only (fast, no LLM calls)
-python3 test_quality.py results/2026-04-08_192624
+python3 test_quality.py results/2026-04-09_152435
 
 # LLM-as-judge (requires a provider — default: claude-cli)
-python3 test_quality.py --llm-judge --provider claude-cli results/2026-04-08_192624
+python3 test_quality.py --llm-judge --provider claude-cli results/2026-04-09_152435
 ```
 
 Structural metrics count tests, assertions, and test-to-code ratios across Python, TypeScript, PowerShell, and Bash. The LLM-as-judge sends each run's code and tests to an LLM for scoring on four dimensions (1-5 scale):

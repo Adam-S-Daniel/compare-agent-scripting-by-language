@@ -186,8 +186,9 @@ Given a list of changed file paths (simulating a PR's changed files), apply labe
 
 Parse a dependency manifest (package.json, requirements.txt, or similar), extract dependency names and versions, check each against an allow-list and deny-list of licenses (provided as config), and generate a compliance report listing each dependency's license status (approved, denied, unknown). Mock the license lookup for testing.
 
-### Task 14: Docker Image Tag Generator
+### ~~Task 14: Docker Image Tag Generator~~ (Archived)
 **Category**: GitHub Actions / CI/CD
+**Status**: Archived after v4 — redundant with Task 16. See [archived-tasks/14-docker-image-tag-generator.md](archived-tasks/14-docker-image-tag-generator.md).
 
 Given git context (branch name, commit SHA, tags, PR number -- all provided as mock inputs), generate appropriate Docker image tags following common conventions: latest for main, pr-{number} for PRs, v{semver} for tags, {branch}-{short-sha} for feature branches. Handle tag sanitization (lowercase, no special chars). Output the tag list.
 

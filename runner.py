@@ -186,17 +186,8 @@ TASKS = [
             "denied, unknown). Mock the license lookup for testing."
         ),
     },
-    {
-        "id": "14-docker-image-tag-generator",
-        "name": "Docker Image Tag Generator",
-        "category": "GitHub Actions / CI/CD",
-        "description": (
-            "Given git context (branch name, commit SHA, tags, PR number — all provided as mock inputs), "
-            "generate appropriate Docker image tags following common conventions: latest for main, pr-{number} "
-            "for PRs, v{semver} for tags, {branch}-{short-sha} for feature branches. Handle tag sanitization "
-            "(lowercase, no special chars). Output the tag list."
-        ),
-    },
+    # Task 14 (Docker Image Tag Generator) archived — redundant with Task 16.
+    # See archived-tasks/14-docker-image-tag-generator.md for definition and rationale.
     {
         "id": "15-test-results-aggregator",
         "name": "Test Results Aggregator",
@@ -303,7 +294,7 @@ GHA_TASK_IDS = {
     "11-semantic-version-bumper",
     "12-pr-label-assigner",
     "13-dependency-license-checker",
-    "14-docker-image-tag-generator",
+    # 14-docker-image-tag-generator archived — see archived-tasks/
     "15-test-results-aggregator",
     "16-environment-matrix-generator",
     "17-artifact-cleanup-script",

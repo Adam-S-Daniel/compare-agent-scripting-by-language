@@ -1,0 +1,11 @@
+{
+  "coverage": 3,
+  "rigor": 2,
+  "design": 3,
+  "overall": 2,
+  "summary": "The suite takes an interesting integration-first approach by routing all functional testing through `act`, but this strategy comes at significant cost. Coverage of the three bump-type happy paths (patch/minor/major) is solid and workflow structure checks are thorough, but large requirement areas go completely untested: changelog content/structure is never verified (only the version string is asserted), the 'no conventional commits' / 'version unchanged' path has no test, the missing VERSION file error path is absent, and there are zero unit tests for any of the six core functions (Parse-SemanticVersion, Get-ConventionalCommits, Get-BumpType, Invoke-VersionBump, Format-Version, New-ChangelogEntry). Rigor is low: no edge cases are exercised \u2014 invalid semver strings, 'v'-prefixed versions, priority ordering when multiple bump levels are present in one run, non-conventional commits mixed in, or scope/breaking-indicator parsing. Design is serviceable: the Invoke-ActTest helper is well-encapsulated, the fixture-based data approach is clean, and Describe blocks are logically grouped. However, defining a helper function inside BeforeAll (rather than a separate BeforeAll-scoped scriptblock or a standalone function) is a Pester scoping risk; git exit codes inside the helper are ignored; the 'act-result.txt has content' assertion (length > 100) is trivially weak; and the entire suite is gated on Docker+act availability, making it slow and environmentally fragile with no fast-feedback fallback. Overall trustworthiness is low: a regression in changelog generation, error handling, or any core function that doesn't break the version string output would pass all tests undetected.",
+  "judge_cost_usd": 0.0523,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 1690,
+  "judge_provider": "claude-cli"
+}

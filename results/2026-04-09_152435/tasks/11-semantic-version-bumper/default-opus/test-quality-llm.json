@@ -1,0 +1,11 @@
+{
+  "coverage": 2,
+  "rigor": 2,
+  "design": 3,
+  "overall": 2,
+  "summary": "The test suite only exercises three happy-path scenarios (patch/minor/major bump) entirely through `act` (Docker-based GitHub Actions). It never directly unit-tests any of the pure functions\u2014parse_version, determine_bump_type, bump_version, generate_changelog, update_changelog\u2014leaving large swaths of logic unverified at the function level. Key requirements from the task are untested: package.json fallback, BREAKING CHANGE in commit body (vs. feat!), scoped commits (feat(scope):), invalid/malformed version strings, the empty-commits error path, and the 'no conventional commits defaults to patch' behavior. Structural design is reasonable\u2014clear phase separation, well-defined TEST_CASES fixtures, use of tempfile for isolation, and a delimited act-result.txt\u2014but the suite is fragile due to string-matching on act's stdout (e.g., checking for '=== Updated VERSION ===' which depends on a specific workflow echo step), the complete absence of a test framework (pytest/unittest), and coupling Phase 1 failure to skipping all Phase 2 tests. The total reliance on a Docker CI runner makes the suite slow, environment-dependent, and unlikely to catch regressions in the core logic.",
+  "judge_cost_usd": 0.0517,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 1211,
+  "judge_provider": "claude-cli"
+}

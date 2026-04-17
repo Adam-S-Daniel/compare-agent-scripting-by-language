@@ -1,0 +1,11 @@
+{
+  "coverage": 4,
+  "rigor": 4,
+  "design": 4,
+  "overall": 4,
+  "summary": "The test suite thoroughly covers the three core retention policies (maxAgeDays, maxTotalSizeBytes, keepLatestNPerWorkflow), their combination/union behavior, the DeletionPlan generation, and output formatting \u2014 with exact numeric assertions backed by hand-computed comments. Workflow structure validation via YAML parsing and actionlint is a nice bonus. Key gaps: the entire CLI layer (main.ts \u2014 argument parsing, fixture loading, error paths) is completely untested; the ARTIFACTS fixture is duplicated verbatim between retention.test.ts and cleanup.test.ts rather than shared from a common fixtures module; boundary conditions are missing (artifact created exactly N days ago sits on the cutoff, ties between same-timestamp artifacts, zero-byte artifacts); and the 'keepLatestNPerWorkflow' semantics group by artifact name rather than workflowRunId as the task description implies, which the tests encode without surfacing the potential mismatch. The formatPlan tests rely on loose substring containment rather than line-by-line structure checks, leaving formatting regressions partially undetected. Overall a confident, readable suite for the business logic core that would catch most regressions there, but the untested main.ts entry point is a meaningful blind spot.",
+  "judge_cost_usd": 0.076,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 1862,
+  "judge_provider": "claude-cli"
+}

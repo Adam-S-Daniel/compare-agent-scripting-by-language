@@ -21,13 +21,13 @@ python3 -c "from llm_providers import get_provider"
 python3 generate_results.py --all
 
 # Run a benchmark (v4, all tasks/modes/models)
-python3 runner.py --tasks 11,12,13,14,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
+python3 runner.py --tasks 11,12,13,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
 
 # Evaluate test quality (structural metrics only)
-python3 test_quality.py results/2026-04-08_192624
+python3 test_quality.py results/2026-04-09_152435
 
 # Evaluate test quality with LLM-as-judge (requires a provider)
-python3 test_quality.py --llm-judge --provider claude-cli results/2026-04-08_192624
+python3 test_quality.py --llm-judge --provider claude-cli results/2026-04-09_152435
 
 # Build custom act container (optional, eliminates pwsh install overhead)
 docker build -t act-ubuntu-pwsh:latest -f Dockerfile.act .
@@ -68,6 +68,26 @@ docker build -t act-ubuntu-pwsh:latest -f Dockerfile.act .
 See the docstring on `_detect_traps()` in `generate_results.py`. Each trap needs:
 a kebab-case name, detection logic over bash_cmds/console/metrics, a time estimate,
 and an entry in `trap_applicable_mode` if mode-specific.
+
+### LLM vs structural discrepancy checks
+
+After every report generation (`python3 generate_results.py --all`), check the
+"LLM vs Structural Discrepancies" section in each `results.md`. Discrepancies
+are auto-classified by `_find_discrepancies()` in `generate_results.py`:
+
+- **counter-gap**: structural metrics are implausibly low (e.g. 0 tests or 0
+  assertions while LLM scores high). This means `test_quality.py` is missing a
+  test pattern. **Fix the counter** — read the generated test files to identify
+  the pattern the counter doesn't recognize, add it to the appropriate
+  `_count_*()` function and the detection/classification patterns, add unit
+  tests, and regenerate. Counter-gap discrepancies should not persist across PRs.
+- **qualitative**: structural metrics look reasonable but the LLM disagrees on
+  quality. The report includes the LLM's justification (from the `summary`
+  field in `test-quality-llm.json`). These are expected and acceptable — review
+  the justification to confirm it's coherent, then leave them.
+
+If a **new counter-gap** appears after changing `test_quality.py`, it's a
+regression. Fix it before merging.
 
 ### Updating model pricing
 
@@ -110,14 +130,18 @@ See the docstring in `llm_providers.py` for a complete example skeleton.
 2. **If you added or changed code, add or update unit tests** in `tests/`.
    New functions need test coverage. Changed behavior needs updated assertions.
 3. Run `python3 generate_results.py --all` and verify no errors.
-4. Verify all import paths work: `python3 -c "from runner import main"`.
-5. Spot-check a few numbers in results.md against raw metrics.json.
-6. If you changed architecture or findings, update this file (`AGENTS.md`).
-7. If you added files or moved things, update the Files table in `README.md`.
+4. **Check for counter-gap discrepancies** in the generated `results.md` files.
+   If any "Probable counter gaps" appear, fix them in `test_quality.py` before
+   merging (see "LLM vs structural discrepancy checks" above). Qualitative
+   disagreements are expected — verify the LLM justification is coherent.
+5. Verify all import paths work: `python3 -c "from runner import main"`.
+6. Spot-check a few numbers in results.md against raw metrics.json.
+7. If you changed architecture or findings, update this file (`AGENTS.md`).
+8. If you added files or moved things, update the Files table in `README.md`.
 
-## Current state (2026-04-10)
+## Current state (2026-04-13)
 
-### v4 benchmark — complete
+### v4 benchmark — complete, task 14 archived
 
 64/64 runs finished (8 tasks x 4 modes x 2 models). Results in
 `results/2026-04-09_152435/`. Zero failures, zero timeouts, zero
@@ -127,6 +151,11 @@ v4 added trap-awareness guidance from v3 findings, `shell: pwsh` for
 PowerShell mode, "limit to 3 act push" instruction, and a custom act
 Docker image with pwsh/Pester pre-installed. This cut average run time
 by 24% vs v3 (8.6min vs 11.4min).
+
+Post-v4 analysis found Task 14 (Docker Image Tag Generator) redundant
+with Task 16 (Environment Matrix Generator) across TQ scores, cost, and
+duration profiles. Task 14 was archived — see `archived-tasks/`. Future
+runs use 7 tasks (11, 12, 13, 15, 16, 17, 18) x 4 modes x 2 models = 56 runs.
 
 ### Key findings (v4)
 
