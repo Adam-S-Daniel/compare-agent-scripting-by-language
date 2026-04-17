@@ -1,0 +1,99 @@
+name: Artifact Cleanup
+
+# Triggers cover: CI on code changes (push/PR), scheduled daily sweep in prod,
+# and manual dispatch. In act we exercise the push trigger.
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Defaults — the test harness writes a `config.env` file that overrides these
+# per run using $GITHUB_ENV. CURRENT_DATE is pinned for deterministic output.
+env:
+  CURRENT_DATE: '2026-04-17'
+  INPUT_TSV: input.tsv
+  MAX_AGE_DAYS: ''
+  KEEP_LATEST: ''
+  MAX_TOTAL_SIZE: ''
+
+jobs:
+  lint:
+    name: Lint (shellcheck + bash -n)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install shellcheck
+        run: |
+          if ! command -v shellcheck >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y shellcheck
+          fi
+
+      - name: bash -n syntax check
+        run: bash -n cleanup.sh
+
+      - name: shellcheck
+        run: shellcheck cleanup.sh
+
+  test:
+    name: Unit tests (bats)
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install bats
+        run: |
+          if ! command -v bats >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y bats
+          fi
+
+      - name: Run bats
+        run: bats test/cleanup.bats
+
+  plan:
+    name: Generate cleanup plan
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Load test-case overrides
+        # Test harness drops a config.env with per-case overrides. Absent in
+        # normal CI runs — defaults above apply.
+        run: |
+          if [ -f config.env ]; then
+            cat config.env >> "$GITHUB_ENV"
+          fi
+
+      - name: Produce deletion plan
+        run: |
+          set -euo pipefail
+          if [ ! -f "${INPUT_TSV}" ]; then
+            echo "No ${INPUT_TSV} found — skipping plan generation." >&2
+            echo "=== Deletion Plan ==="
+            echo "=== Summary ==="
+            echo "Artifacts retained: 0"
+            echo "Artifacts deleted: 0"
+            echo "Space reclaimed: 0 bytes"
+            exit 0
+          fi
+          args=(--input "${INPUT_TSV}" --current-date "${CURRENT_DATE}" --dry-run)
+          if [ -n "${MAX_AGE_DAYS}" ]; then
+            args+=(--max-age-days "${MAX_AGE_DAYS}")
+          fi
+          if [ -n "${KEEP_LATEST}" ]; then
+            args+=(--keep-latest "${KEEP_LATEST}")
+          fi
+          if [ -n "${MAX_TOTAL_SIZE}" ]; then
+            args+=(--max-total-size "${MAX_TOTAL_SIZE}")
+          fi
+          ./cleanup.sh "${args[@]}"
