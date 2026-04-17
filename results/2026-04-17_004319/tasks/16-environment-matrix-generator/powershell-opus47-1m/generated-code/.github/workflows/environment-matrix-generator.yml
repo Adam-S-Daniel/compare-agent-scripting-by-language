@@ -1,0 +1,113 @@
+name: Environment Matrix Generator
+
+# Runs on push / PR / manual dispatch. Iterates over every fixture file in
+# fixtures/ so a single CI run validates every supported input shape and act
+# only needs to be invoked once by the test harness.
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+# Least-privilege token: this workflow only reads code and prints output.
+permissions:
+  contents: read
+
+# Cancel superseded runs on the same ref.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Unit tests (Pester)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show PowerShell + Pester versions
+        shell: pwsh
+        run: |
+          $PSVersionTable.PSVersion
+          Get-Module -ListAvailable Pester | Select-Object Name, Version
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = './MatrixGenerator.Tests.ps1'
+          $config.Run.Exit = $true
+          $config.Output.Verbosity = 'Detailed'
+          $config.TestResult.Enabled = $true
+          $config.TestResult.OutputFormat = 'NUnitXml'
+          $config.TestResult.OutputPath = './pester-results.xml'
+          Invoke-Pester -Configuration $config
+
+      - name: Upload Pester results
+        # Skip under nektos/act: upload-artifact@v4 requires the
+        # ACTIONS_RUNTIME_TOKEN, which act does not provide. The step still
+        # runs on real GitHub-hosted runners.
+        if: always() && !env.ACT
+        uses: actions/upload-artifact@v4
+        with:
+          name: pester-results
+          path: pester-results.xml
+          if-no-files-found: ignore
+
+  generate:
+    name: Generate matrix (all fixtures)
+    runs-on: ubuntu-latest
+    needs: test
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Generate-Matrix against every fixture
+        shell: pwsh
+        run: |
+          # Iterate over every *.json under fixtures/ and emit a per-fixture
+          # block surrounded by sentinel markers. The test harness parses this
+          # output deterministically. Generator failures (e.g. maxSize
+          # violations) are captured and reported as status=error, so the
+          # workflow job itself stays green for the expected-error fixtures.
+          Import-Module ./MatrixGenerator.psm1 -Force
+
+          $fixtureDir = Join-Path $env:GITHUB_WORKSPACE 'fixtures'
+          if (-not (Test-Path -LiteralPath $fixtureDir)) {
+              throw "Fixture directory not found: $fixtureDir"
+          }
+
+          $fixtures = Get-ChildItem -LiteralPath $fixtureDir -Filter *.json |
+                      Sort-Object Name
+
+          Write-Host "Discovered $($fixtures.Count) fixture(s)."
+
+          foreach ($file in $fixtures) {
+              $name = $file.BaseName
+              Write-Host "==BEGIN-FIXTURE==$name"
+              Write-Host "FIXTURE_FILE=$($file.Name)"
+              $status = 'ok'
+              try {
+                  $json = Invoke-MatrixGenerator -Path $file.FullName
+                  Write-Host '---OUTPUT---'
+                  Write-Host $json
+                  Write-Host '---OUTPUT-END---'
+              } catch {
+                  Write-Host '---OUTPUT---'
+                  Write-Host "ERROR: $($_.Exception.Message)"
+                  Write-Host '---OUTPUT-END---'
+                  $status = 'error'
+              }
+              Write-Host "STATUS=$status"
+              Write-Host "==END-FIXTURE==$name"
+          }
+
+      - name: Summary
+        if: always()
+        shell: pwsh
+        run: |
+          Write-Host 'Matrix generation for all fixtures complete.'
