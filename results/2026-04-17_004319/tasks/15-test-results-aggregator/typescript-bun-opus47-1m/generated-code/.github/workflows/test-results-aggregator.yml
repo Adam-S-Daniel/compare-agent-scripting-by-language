@@ -1,0 +1,113 @@
+name: Test Results Aggregator
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      scenario:
+        description: "Fixture scenario to aggregate"
+        required: false
+        default: "green"
+        type: choice
+        options:
+          - green
+          - flaky
+          - consistently-failing
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+
+env:
+  BUN_VERSION: "1.3.11"
+
+jobs:
+  unit-tests:
+    name: Unit tests (bun test)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile || bun install
+
+      - name: Run tests
+        # Pass explicit `./tests/unit` and `./tests/e2e` paths so bun test
+        # treats them as roots rather than as name filters. The act-harness
+        # file skips its act-invoking block when GITHUB_ACTIONS=true, so only
+        # the non-act portions (workflow structure checks) run in CI.
+        run: |
+          set -euo pipefail
+          echo "pwd: $(pwd)"
+          ls -la
+          echo "--- tests tree ---"
+          ls -R tests
+          echo "--- running bun test ---"
+          bun test ./tests/unit ./tests/e2e
+
+  aggregate:
+    name: Aggregate results
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile || bun install
+
+      - name: Select scenario fixtures
+        id: select
+        env:
+          DISPATCH_SCENARIO: ${{ github.event.inputs.scenario || '' }}
+        run: |
+          # Resolution order: workflow_dispatch input, then SCENARIO env var
+          # (used by the act harness), then default to 'green'.
+          scenario="${DISPATCH_SCENARIO:-${SCENARIO:-green}}"
+          dir="fixtures/scenarios/${scenario}"
+          if [ ! -d "${dir}" ]; then
+            echo "::error::Unknown scenario: ${scenario}"
+            exit 1
+          fi
+          echo "scenario=${scenario}" >> "${GITHUB_OUTPUT}"
+          echo "dir=${dir}" >> "${GITHUB_OUTPUT}"
+          echo "Using fixtures from ${dir}"
+
+      - name: Aggregate and render summary
+        run: |
+          bun run src/index.ts \
+            "${{ steps.select.outputs.dir }}"/*.xml \
+            "${{ steps.select.outputs.dir }}"/*.json \
+            --output summary.md
+
+      - name: Echo summary markers for act assertions
+        run: |
+          echo "=== SCENARIO:${{ steps.select.outputs.scenario }} ==="
+          cat summary.md
+          echo "=== END:${{ steps.select.outputs.scenario }} ==="
+
+      - name: Upload summary artifact
+        # Skip under act: nektos/act does not run the GitHub artifact server
+        # by default, so upload-artifact@v4 would fail. The env.ACT flag is
+        # set to 'true' by act inside all containers.
+        if: ${{ !env.ACT }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-summary-${{ steps.select.outputs.scenario }}
+          path: summary.md
+          if-no-files-found: error
