@@ -1,0 +1,54 @@
+name: Dependency License Check
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+env:
+  MANIFEST_PATH: fixtures/package.json
+  CONFIG_PATH: fixtures/license-config.json
+  LICENSE_DATA_PATH: fixtures/license-data.json
+
+jobs:
+  test:
+    name: Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Pester
+        shell: pwsh
+        run: |
+          $r = Invoke-Pester -Path ./LicenseChecker.Tests.ps1 -PassThru -Output Detailed
+          if ($r.FailedCount -gt 0) { exit 1 }
+
+  compliance:
+    name: License compliance report
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate compliance report
+        id: report
+        shell: pwsh
+        run: |
+          . ./LicenseChecker.ps1
+          $data = Get-Content -LiteralPath $env:LICENSE_DATA_PATH -Raw | ConvertFrom-Json -AsHashtable
+          $lookup = { param($n,$v) $data[$n] }.GetNewClosure()
+          $report = Invoke-LicenseCheck `
+              -ManifestPath $env:MANIFEST_PATH `
+              -ConfigPath   $env:CONFIG_PATH `
+              -LicenseLookup $lookup
+          $text = Format-ComplianceReport -Report $report
+          Write-Output $text
+          $text | Set-Content compliance-report.txt
+          $denied = @($report | Where-Object Status -eq 'denied').Count
+          Write-Output "DENIED_COUNT=$denied"
+          if ($denied -gt 0) {
+            Write-Output "::warning::Denied licenses found: $denied"
+          }
