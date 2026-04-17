@@ -1,0 +1,57 @@
+name: artifact-cleanup-script
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: "Path to fixture JSON (relative to repo root)"
+        required: false
+        default: "fixtures/default.json"
+  schedule:
+    - cron: "0 3 * * *"
+
+permissions:
+  contents: read
+
+env:
+  FIXTURE_PATH: ${{ github.event.inputs.fixture || 'fixtures/default.json' }}
+  NOW_ISO: "2026-04-17T12:00:00Z"
+
+jobs:
+  unit-tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run unittest
+        shell: bash
+        run: |
+          python3 --version
+          python3 -m unittest test_cleanup.py -v
+
+  cleanup-plan:
+    name: Build cleanup plan
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate fixture exists
+        shell: bash
+        run: |
+          test -f "$FIXTURE_PATH" || { echo "Fixture not found: $FIXTURE_PATH"; exit 1; }
+          echo "Using fixture: $FIXTURE_PATH"
+      - name: Run cleanup (dry-run)
+        shell: bash
+        run: |
+          python3 cleanup.py \
+            --input "$FIXTURE_PATH" \
+            --max-age-days 30 \
+            --keep-latest-n 2 \
+            --max-total-size 5000 \
+            --now "$NOW_ISO" \
+            --dry-run \
+            --output plan.json
+          echo "---PLAN-SUMMARY---"
+          python3 -c "import json; s=json.load(open('plan.json'))['summary']; print('deleted=%d retained=%d reclaimed=%d' % (s['deleted_count'], s['retained_count'], s['total_reclaimed_bytes']))"
