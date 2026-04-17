@@ -111,10 +111,12 @@ class TestAggregateRows:
             _mk_metric("12", mode="bash", model="opus", effort="xhigh", cost=4.0),
         ]
         rows = aggregate_rows(mm)
+        # `opus` is renamed to `opus46` in the display, matching the way
+        # combine/generate reports disambiguate legacy plain short names.
         by_key = {(r["mode"], r["model"], r["effort"]): r for r in rows}
-        assert by_key[("default", "opus", "xhigh")]["avg_cost"] == pytest.approx(4.0)
-        assert by_key[("default", "opus", "medium")]["n"] == 1
-        assert by_key[("bash", "opus", "xhigh")]["n"] == 1
+        assert by_key[("default", "opus46", "xhigh")]["avg_cost"] == pytest.approx(4.0)
+        assert by_key[("default", "opus46", "medium")]["n"] == 1
+        assert by_key[("bash", "opus46", "xhigh")]["n"] == 1
 
     def test_handles_empty(self):
         assert aggregate_rows([]) == []
@@ -149,8 +151,9 @@ class TestCombineIntegration:
         assert summary["dropped"]["run_b"] == {"14"}
         # Sanity: the combined markdown does not mention task 14 in body.
         assert "14-" not in text
-        # v4 runs (effort=None) got annotated as medium.
-        assert "sonnet-medium" in text
+        # v4 runs (effort=None) got annotated as medium, and `sonnet` is
+        # display-renamed to `sonnet46` to disambiguate from future defaults.
+        assert "sonnet46-medium" in text
 
     def test_empty_intersection_still_writes_file_with_warning(self, tmp_path):
         a = self._write_run_dir(tmp_path, "A", [_mk_metric("11", cost=1.0)])

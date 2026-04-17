@@ -25,7 +25,9 @@ from zoneinfo import ZoneInfo
 # Reuse the collapsible-sort helpers from generate_results so the
 # rankings/comparison tables here share the same look-and-feel (single
 # source of truth for how <details> blocks render).
-from generate_results import _collapsible_table, _emit_sorted_variants  # noqa: E402
+from generate_results import (  # noqa: E402
+    _collapsible_table, _emit_sorted_variants, _ratio_tier, _llm_tier,
+)
 
 
 def load_run_metrics(run_dir: Path) -> list[dict]:
@@ -64,12 +66,23 @@ def infer_default_effort(m: dict, inferred_default: str = "medium") -> dict:
     return m
 
 
-def _label(m: dict) -> str:
-    """Variant label combining model_short with effort_level. Matches the
-    identifier used by generate_results.py so a reader comparing the two
-    reports sees the same strings."""
+_DISPLAY_RENAME = {"opus": "opus46", "sonnet": "sonnet46"}
+
+
+def _path_label(m: dict) -> str:
+    """On-disk subdir label — exact filesystem path component, no rename."""
     eff = m.get("effort_level")
     return f"{m['model_short']}-{eff}" if eff else m["model_short"]
+
+
+def _label(m: dict) -> str:
+    """Display label used for grouping and the Model column in tables.
+    Applies _DISPLAY_RENAME so legacy `opus`/`sonnet` (pre-effort CLI,
+    resolving to 4.6 in this repo's history) read as `opus46`/`sonnet46`
+    alongside explicit `opus47-1m-*` entries. Matches generate_results.py."""
+    eff = m.get("effort_level")
+    short = _DISPLAY_RENAME.get(m["model_short"], m["model_short"])
+    return f"{short}-{eff}" if eff else short
 
 
 def aggregate_rows(metrics: list[dict]) -> list[dict]:
@@ -83,11 +96,12 @@ def aggregate_rows(metrics: list[dict]) -> list[dict]:
         n = len(mm)
         if n == 0:
             continue
+        display_model = _DISPLAY_RENAME.get(model, model)
         rows.append({
             "mode": mode,
-            "model": model,
+            "model": display_model,
             "effort": effort,
-            "variant": f"{model}-{effort}" if effort else model,
+            "variant": f"{display_model}-{effort}" if effort else display_model,
             "n": n,
             "avg_dur": sum(m["timing"]["grand_total_duration_ms"] for m in mm) / n / 1000,
             "avg_errors": sum(m["quality"]["error_count"] for m in mm) / n,
@@ -218,6 +232,37 @@ def _build_markdown(
     ], _fmt_rk))
     lines.append("")
 
+    # ── Tiers (bin by value so gap-vs-cluster is visible at a glance) ──
+    lines.append("## Tiers by Language/Model/Effort")
+    lines.append("")
+    lines.append("*Duration / Cost tier = ratio of this combo's average to the best combo's "
+                 "average on that axis (lower ratio = better). Bands: "
+                 "**A** ≤1.15×, **B** ≤1.40×, **C** ≤1.80×, **D** ≤2.50×, **E** >2.50×.*")
+    lines.append("*LLM Score tier = absolute Overall score band. "
+                 "**A** ≥4.5, **B** ≥3.5, **C** ≥2.5, **D** ≥1.5, **E** <1.5, `—` = no data.*")
+    lines.append("*If every row in a column is tier A, those combos are effectively tied on that axis.*")
+    lines.append("")
+    best_dur = min(r["avg_dur"] for r in rows)
+    best_cost = min(r["avg_cost"] for r in rows)
+    for r in rows:
+        r["dur_tier"] = _ratio_tier(r["avg_dur"] / best_dur)
+        r["cost_tier"] = _ratio_tier(r["avg_cost"] / best_cost)
+        r["llm_tier"] = _llm_tier(r["avg_llm"]) if r["avg_llm_n"] > 0 else "—"
+    tr_hdr = "| Language | Model | Duration | Cost | LLM Score |"
+    tr_sep = "|----------|-------|----------|------|-----------|"
+    def _fmt_tr(r):
+        return (f"| {r['mode']} | {r['variant']} "
+                f"| {r['dur_tier']} ({_dur(r['avg_dur'])}) "
+                f"| {r['cost_tier']} (${r['avg_cost']:.2f}) "
+                f"| {r['llm_tier']}"
+                + (f" ({r['avg_llm']:.1f})" if r['avg_llm_n'] > 0 else "")
+                + " |")
+    lines.append(tr_hdr)
+    lines.append(tr_sep)
+    for r in sorted(rows, key=lambda r: (r["mode"], r["variant"])):
+        lines.append(_fmt_tr(r))
+    lines.append("")
+
     # ── Comparison ──
     lines.append("## Comparison by Language/Model/Effort")
     lines.append("")
@@ -288,14 +333,14 @@ def combine(run_dirs: list[Path], output_path: Path,
     for d, ms in zip(run_dirs, metrics_lists):
         filtered = filter_to_tasks(ms, common)
         for m in filtered:
-            # Capture the on-disk subdir name BEFORE effort annotation so
-            # downstream LLM-cache lookups resolve to real files. v4-era
-            # metrics live at `<mode>-<model>/` (no effort suffix) even
-            # after we annotate `effort_level=medium` for display.
-            original_variant = _label(m)
+            # Capture the on-disk subdir name BEFORE effort annotation AND
+            # before the _label display rename so downstream LLM-cache
+            # lookups resolve to real files. v4-era metrics live at
+            # `<mode>-<model>/` (plain short name, no effort suffix)
+            # regardless of how we render them in tables.
             a = infer_default_effort(m, inferred_default_effort)
             a["source_run_dir"] = d.name
-            a["original_subdir"] = f"{m['language_mode']}-{original_variant}"
+            a["original_subdir"] = f"{m['language_mode']}-{_path_label(m)}"
             annotated.append(a)
 
     llm_scores = _load_llm_scores(run_dirs)

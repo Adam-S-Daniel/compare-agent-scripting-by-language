@@ -434,6 +434,28 @@ def _emit_sorted_variants(header: str, separator: str, data_rows: list[dict],
     return out
 
 
+# ── Tier binning: groups close values into bands so tables can answer
+# "is 1st tightly clustered with the rest, or a runaway?" at a glance.
+# Ratio-based for lower-is-better axes (duration, cost); absolute-band
+# for LLM score since its 1-5 scale makes ratios meaningless.
+def _ratio_tier(ratio: float) -> str:
+    """Return tier letter A-E for a ratio where 1.0 is best."""
+    if ratio <= 1.15: return "A"
+    if ratio <= 1.40: return "B"
+    if ratio <= 1.80: return "C"
+    if ratio <= 2.50: return "D"
+    return "E"
+
+
+def _llm_tier(score: float) -> str:
+    """Return tier letter A-E for an LLM judge Overall score (1-5 scale)."""
+    if score >= 4.5: return "A"
+    if score >= 3.5: return "B"
+    if score >= 2.5: return "C"
+    if score >= 1.5: return "D"
+    return "E"
+
+
 
 def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     """Generate/update a results.md file with tables, commentary, and status."""
@@ -473,13 +495,26 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     successful = [m for m in all_metrics if m.get("run_success", m.get("exit_code", 0) == 0 and m.get("timing", {}).get("num_turns", 0) > 0)]
     failed = [m for m in all_metrics if m not in successful]
 
-    def _label(m):
-        """Variant label used for grouping and display in tables. Encodes
-        effort into the model short (e.g. `opus47-1m-xhigh`) so one results
-        dir can hold multiple effort levels without collision. Pre-effort
-        runs (effort_level None) fall back to plain model_short."""
+    # Pre-effort-flag runs (v1-v4) used `opus`/`sonnet` as short names in
+    # the CLI, which today resolve to different models across providers.
+    # Rename them in DISPLAY so readers of the merged report know which
+    # concrete version was tested (Opus 4.6 / Sonnet 4.6 on this repo's
+    # history). Filesystem subdirs keep their original plain name.
+    _DISPLAY_RENAME = {"opus": "opus46", "sonnet": "sonnet46"}
+
+    def _path_label(m):
+        """On-disk subdir label: exactly matches directories already on
+        the filesystem. No rename here — breaking this breaks file I/O."""
         eff = m.get("effort_level")
         return f"{m['model_short']}-{eff}" if eff else m["model_short"]
+
+    def _label(m):
+        """Display label used for grouping and the Model column in tables.
+        Applies _DISPLAY_RENAME so legacy `opus`/`sonnet` rows read as
+        `opus46`/`sonnet46`. Do NOT use for paths — use _path_label."""
+        eff = m.get("effort_level")
+        short = _DISPLAY_RENAME.get(m["model_short"], m["model_short"])
+        return f"{short}-{eff}" if eff else short
 
     modes_seen = sorted(set(m["language_mode"] for m in all_metrics))
     models_seen = sorted(set(_label(m) for m in all_metrics))
@@ -505,7 +540,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     llm_data_by_key: dict[tuple, dict] = {}
     for m in all_metrics:
         cache_path = (run_dir / "tasks" / m["task_id"]
-                      / f"{m['language_mode']}-{_label(m)}" / LLM_JUDGE_CACHE_FILE)
+                      / f"{m['language_mode']}-{_path_label(m)}" / LLM_JUDGE_CACHE_FILE)
         if not cache_path.exists():
             continue
         try:
@@ -565,11 +600,12 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
 
     for m in all_metrics:
         mode, model = m["language_mode"], _label(m)
+        path_subdir = f"{mode}-{_path_label(m)}"
         combo = (mode, model)
         combo_run_counts[combo] = combo_run_counts.get(combo, 0) + 1
 
-        cli_path = run_dir / "tasks" / m["task_id"] / f"{mode}-{model}" / "cli-output.json"
-        console_path = run_dir / "tasks" / m["task_id"] / f"{mode}-{model}" / "console-log.txt"
+        cli_path = run_dir / "tasks" / m["task_id"] / path_subdir / "cli-output.json"
+        console_path = run_dir / "tasks" / m["task_id"] / path_subdir / "console-log.txt"
         try:
             evts = json.loads(cli_path.read_text())
         except Exception:
@@ -590,7 +626,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         # Primary source: act-result.txt step timings.  Fallback: event stream.
         if mode in ("powershell", "powershell-tool"):
             act_result_path = (run_dir / "tasks" / m["task_id"]
-                               / f"{mode}-{model}" / "generated-code" / "act-result.txt")
+                               / path_subdir / "generated-code" / "act-result.txt")
             act_text = act_result_path.read_text() if act_result_path.exists() else ""
             # Primary: parse exact step durations from act output
             pwsh_times = [float(x) for x in re.findall(
@@ -671,7 +707,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     cache_read_rates = {s: COST_PER_MTOK[mid]["cache_read"] for s, mid in MODELS.items() if mid in COST_PER_MTOK}
     cache_create_rates = {s: COST_PER_MTOK[mid]["cache_write"] for s, mid in MODELS.items() if mid in COST_PER_MTOK}
     for m in all_metrics:
-        cli_path = run_dir / "tasks" / m["task_id"] / f"{m['language_mode']}-{_label(m)}" / "cli-output.json"
+        cli_path = run_dir / "tasks" / m["task_id"] / f"{m['language_mode']}-{_path_label(m)}" / "cli-output.json"
         if not cli_path.exists():
             continue
         try:
@@ -730,6 +766,41 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
             ("Sorted by Cost rank (cheapest first)", "cost_rank", False),
             ("Sorted by LLM Score rank (best first; no-data last)", "llm_rank", False),
         ], _fmt_rk))
+        lines.append("")
+
+        # ── Tiers (bin by value so gap-vs-cluster is visible at a glance) ──
+        # Ranks alone don't reveal whether 1st and 5th are close or miles
+        # apart. Tiers bin each axis into A-E bands so a reader can see
+        # `all A` (tight cluster) vs a mix (spread).
+        lines.append("## Tiers by Language/Model/Effort")
+        lines.append("")
+        lines.append("*Duration / Cost tier = ratio of this combo's average to the best combo's "
+                     "average on that axis (lower ratio = better). Bands: "
+                     "**A** ≤1.15×, **B** ≤1.40×, **C** ≤1.80×, **D** ≤2.50×, **E** >2.50×.*")
+        lines.append("*LLM Score tier = absolute Overall score band. "
+                     "**A** ≥4.5, **B** ≥3.5, **C** ≥2.5, **D** ≥1.5, **E** <1.5, `—` = no data.*")
+        lines.append("*If every row in a column is tier A, those combos are effectively tied on that axis.*")
+        lines.append("")
+        best_dur = min(r["avg_dur"] for r in cmp_rows)
+        best_cost = min(r["avg_cost"] for r in cmp_rows)
+        for r in cmp_rows:
+            r["dur_tier"] = _ratio_tier(r["avg_dur"] / best_dur)
+            r["cost_tier"] = _ratio_tier(r["avg_cost"] / best_cost)
+            r["llm_tier"] = _llm_tier(r["avg_llm"]) if r["avg_llm_n"] > 0 else "—"
+
+        tr_hdr = "| Language | Model | Duration | Cost | LLM Score |"
+        tr_sep = "|----------|-------|----------|------|-----------|"
+        def _fmt_tr(r):
+            return (f"| {r['mode']} | {r['model']} "
+                    f"| {r['dur_tier']} ({_dur(r['avg_dur'])}) "
+                    f"| {r['cost_tier']} (${r['avg_cost']:.2f}) "
+                    f"| {r['llm_tier']}"
+                    + (f" ({r['avg_llm']:.1f})" if r['avg_llm_n'] > 0 else "")
+                    + " |")
+        lines.append(tr_hdr)
+        lines.append(tr_sep)
+        for r in sorted(cmp_rows, key=lambda r: (r['mode'], r['model'])):
+            lines.append(_fmt_tr(r))
         lines.append("")
 
         if completed < total_runs and total_duration > 0 and completed > 0:
@@ -1050,7 +1121,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     llm_rows = []
     has_llm = False
     for m in all_metrics:
-        variant_dir = run_dir / "tasks" / m["task_id"] / f"{m['language_mode']}-{_label(m)}"
+        variant_dir = run_dir / "tasks" / m["task_id"] / f"{m['language_mode']}-{_path_label(m)}"
         gen_dir = variant_dir / "generated-code"
         sq = compute_structural_metrics(gen_dir)
 
