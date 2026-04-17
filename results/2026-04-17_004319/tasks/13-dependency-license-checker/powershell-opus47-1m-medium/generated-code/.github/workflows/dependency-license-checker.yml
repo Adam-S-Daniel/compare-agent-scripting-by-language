@@ -1,0 +1,46 @@
+name: Dependency License Checker
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      manifest:
+        description: Path to manifest
+        default: package.json
+        required: false
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+env:
+  MANIFEST_PATH: ${{ github.event.inputs.manifest || 'package.json' }}
+  LICENSE_CONFIG: fixtures/licenses.json
+  LICENSE_DB: fixtures/license-db.json
+
+jobs:
+  license-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          Install-Module Pester -MinimumVersion 5.0 -Scope CurrentUser -Force -SkipPublisherCheck -ErrorAction SilentlyContinue
+          $result = Invoke-Pester -Path ./LicenseChecker.Tests.ps1 -Output Detailed -PassThru
+          if ($result.FailedCount -gt 0) { exit 1 }
+
+      - name: Run license compliance check
+        shell: pwsh
+        run: |
+          ./Invoke-LicenseChecker.ps1 `
+            -ManifestPath $env:MANIFEST_PATH `
+            -ConfigPath   $env:LICENSE_CONFIG `
+            -LicenseDbPath $env:LICENSE_DB `
+            -OutputJson   report.json
+          Write-Host "=== report.json ==="
+          Get-Content report.json
