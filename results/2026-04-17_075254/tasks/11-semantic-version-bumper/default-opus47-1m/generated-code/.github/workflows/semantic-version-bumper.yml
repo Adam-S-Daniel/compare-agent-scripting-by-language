@@ -1,0 +1,66 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONUNBUFFERED: "1"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Detect version file
+        id: detect
+        shell: bash
+        run: |
+          if [ -f package.json ]; then
+            echo "version_file=package.json" >> "$GITHUB_OUTPUT"
+          elif [ -f version.txt ]; then
+            echo "version_file=version.txt" >> "$GITHUB_OUTPUT"
+          else
+            echo "ERROR: no version.txt or package.json found" >&2
+            exit 1
+          fi
+
+      - name: Show inputs
+        shell: bash
+        run: |
+          echo "--- version file (${{ steps.detect.outputs.version_file }}) ---"
+          cat "${{ steps.detect.outputs.version_file }}"
+          echo "--- commits.txt ---"
+          cat commits.txt
+
+      - name: Bump version
+        id: bump
+        shell: bash
+        run: |
+          python3 bumper.py \
+            --version-file "${{ steps.detect.outputs.version_file }}" \
+            --commits-file commits.txt \
+            --changelog CHANGELOG.md | tee bump.out
+          new_version=$(grep '^NEW_VERSION=' bump.out | cut -d= -f2)
+          echo "new_version=$new_version" >> "$GITHUB_OUTPUT"
+
+      - name: Show outputs
+        shell: bash
+        run: |
+          echo "RESULT_VERSION=${{ steps.bump.outputs.new_version }}"
+          echo "--- updated version file ---"
+          cat "${{ steps.detect.outputs.version_file }}"
+          echo "--- changelog ---"
+          cat CHANGELOG.md
