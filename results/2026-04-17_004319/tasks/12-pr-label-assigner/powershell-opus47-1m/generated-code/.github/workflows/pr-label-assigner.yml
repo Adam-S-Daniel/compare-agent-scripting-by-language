@@ -1,0 +1,67 @@
+# GitHub Actions workflow for the PR label assigner.
+#
+# Two jobs:
+#   1. test  - runs the Pester unit suite (Get-PrLabels.Tests.ps1).
+#   2. label - reads `current-fixture/changed-files.txt` + `current-fixture/config.json`
+#              from the repo, runs Get-PrLabels.ps1, and prints the resulting
+#              labels between BEGIN/END markers so the test harness can parse them.
+#
+# The harness drops a different fixture into `current-fixture/` for each test
+# case, then runs `act push --rm` to exercise this workflow end-to-end.
+
+name: PR Label Assigner
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          # Pester is preinstalled in the act-ubuntu-pwsh container; on the real
+          # GitHub runner image it ships with PowerShell 7. We only need to make
+          # sure the version is >= 5 so the v5 syntax in our tests works.
+          $cfg = New-PesterConfiguration
+          $cfg.Run.Path = './tests'
+          $cfg.Output.Verbosity = 'Detailed'
+          $cfg.Run.Exit = $true
+          Invoke-Pester -Configuration $cfg
+
+  label:
+    name: Apply labels for current fixture
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show fixture inputs (for debugging)
+        shell: pwsh
+        run: |
+          Write-Host '--- changed-files.txt ---'
+          Get-Content ./current-fixture/changed-files.txt
+          Write-Host '--- config.json ---'
+          Get-Content ./current-fixture/config.json
+
+      - name: Run label assigner
+        shell: pwsh
+        run: |
+          # Print BEGIN/END markers around the script output so the harness
+          # can extract just the labels from the surrounding act log noise.
+          Write-Host '===PR_LABELS_BEGIN==='
+          ./Get-PrLabels.ps1 `
+            -ChangedFilesPath ./current-fixture/changed-files.txt `
+            -ConfigPath ./current-fixture/config.json
+          Write-Host '===PR_LABELS_END==='
