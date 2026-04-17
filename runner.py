@@ -1292,7 +1292,7 @@ def main():
         help="Resume a previous run by providing its timestamp directory name (e.g., 2026-04-02_181500). Skips runs that already have metrics.json."
     )
     parser.add_argument(
-        "--effort", default=None, choices=["low", "medium", "high", "max"],
+        "--effort", default=None, choices=["low", "medium", "high", "xhigh", "max"],
         help="Reasoning effort level passed to claude CLI (default: not set, uses CLI default)"
     )
     parser.add_argument(
