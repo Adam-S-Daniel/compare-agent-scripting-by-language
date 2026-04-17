@@ -1,0 +1,61 @@
+name: PR Label Assigner
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: Path (relative to repo) to fixture file list
+        required: false
+        default: tests/fixtures/changed-files.txt
+
+permissions:
+  contents: read
+
+jobs:
+  assign-labels:
+    runs-on: ubuntu-latest
+    env:
+      RULES_FILE: tests/fixtures/rules.conf
+      FILES_LIST: ${{ github.event.inputs.fixture || 'tests/fixtures/changed-files.txt' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install shellcheck
+        run: |
+          if ! command -v shellcheck >/dev/null 2>&1; then
+            apt-get update -y && apt-get install -y --no-install-recommends shellcheck
+          fi
+
+      - name: Lint script
+        run: |
+          bash -n pr-label-assigner.sh
+          shellcheck pr-label-assigner.sh
+
+      - name: Show inputs
+        run: |
+          echo "Rules file: $RULES_FILE"
+          echo "Files list: $FILES_LIST"
+          cat "$RULES_FILE"
+          echo "---"
+          cat "$FILES_LIST"
+
+      - name: Assign labels
+        id: labels
+        run: |
+          chmod +x pr-label-assigner.sh
+          labels=$(./pr-label-assigner.sh --rules "$RULES_FILE" --files "$FILES_LIST")
+          echo "Assigned labels:"
+          printf '%s\n' "$labels"
+          {
+            echo "LABELS<<EOF"
+            printf '%s\n' "$labels"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+          # Emit delimited marker line for the harness to parse.
+          echo "::notice::labels=$(echo "$labels" | tr '\n' ',' | sed 's/,$//')"
+          echo "RESULT_LABELS_BEGIN"
+          printf '%s\n' "$labels"
+          echo "RESULT_LABELS_END"
