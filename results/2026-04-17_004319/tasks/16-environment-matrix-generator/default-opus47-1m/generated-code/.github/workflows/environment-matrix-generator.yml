@@ -1,0 +1,81 @@
+---
+name: Environment Matrix Generator
+# Runs unit tests for matrix_generator and exercises it against a
+# fixture config placed at config.json by the caller. EXPECT_FAILURE=true
+# flips the last step to assert that the generator rejected the config
+# with a non-zero exit code (used for max_size violations).
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-and-generate:
+    name: Validate and generate matrix
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Show Python version
+        run: python3 --version
+
+      - name: Install pytest
+        run: pip3 install --quiet --break-system-packages pytest
+
+      - name: Run unit tests
+        run: python3 -m pytest tests/ -v
+
+      - name: Confirm fixture is present
+        run: |
+          if [ ! -f config.json ]; then
+            echo "config.json missing — the test harness must stage a fixture before running act"
+            exit 1
+          fi
+          echo "--- fixture ---"
+          cat config.json
+
+      - name: Generate matrix from fixture
+        id: generate
+        run: |
+          set +e
+          python3 matrix_generator.py --config config.json --pretty > matrix.json 2> errors.txt
+          rc=$?
+          set -e
+          echo "SCRIPT_EXIT_CODE=${rc}"
+          echo "--- stdout ---"
+          cat matrix.json || true
+          echo "--- stderr ---"
+          cat errors.txt || true
+          expect_failure="${EXPECT_FAILURE:-false}"
+          if [ "$expect_failure" = "true" ]; then
+            if [ "$rc" -eq 0 ]; then
+              echo "FAIL: expected the generator to reject this config, but it succeeded"
+              exit 1
+            fi
+            echo "EXPECTED_FAILURE_OK rc=${rc}"
+          else
+            if [ "$rc" -ne 0 ]; then
+              echo "FAIL: generator exited with ${rc}"
+              exit 1
+            fi
+            python3 -c "import json; json.load(open('matrix.json'))"
+            echo "MATRIX_OK"
+          fi
+
+      - name: Summarise result
+        run: |
+          expect_failure="${EXPECT_FAILURE:-false}"
+          echo "=== Matrix Generator Summary ==="
+          echo "expect_failure=${expect_failure}"
+          if [ "$expect_failure" = "false" ]; then
+            python3 -c "import json; d = json.load(open('matrix.json')); print('total_combinations=' + str(d.get('total_combinations'))); print('fail-fast=' + str(d.get('fail-fast'))); print('max-parallel=' + str(d.get('max-parallel'))); print('matrix_keys=' + ','.join(sorted(d['matrix'].keys())))"
+          else
+            grep -o 'matrix has [0-9]\+ combinations' errors.txt || true
+          fi
