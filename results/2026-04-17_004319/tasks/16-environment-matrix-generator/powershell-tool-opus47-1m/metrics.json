@@ -1,0 +1,799 @@
+{
+  "task_id": "16-environment-matrix-generator",
+  "task_name": "Environment Matrix Generator",
+  "task_category": "GitHub Actions / CI Configuration",
+  "language_mode": "powershell-tool",
+  "language_chosen": "powershell",
+  "language_breakdown": {
+    "powershell": 100.0
+  },
+  "interpreter_versions": {},
+  "powershell_version": "",
+  "dotnet_version": "",
+  "model": "claude-opus-4-7[1m]",
+  "model_short": "opus47-1m",
+  "claude_code_version": "2.1.112",
+  "instructions_version": "v4",
+  "timestamp_start": "2026-04-17T09:50:40.709690+00:00",
+  "timestamp_end": "2026-04-17T10:00:51.539147+00:00",
+  "prompt_text": "You are completing a scripting task. You MUST use PowerShell as your implementation language.\n\nTASK: Given a configuration describing OS options, language versions, and feature flags, generate a build matrix (as JSON) suitable for GitHub Actions strategy.matrix. Support include/exclude rules, max-parallel limits, and fail-fast configuration. Validate that the matrix doesn't exceed a maximum size. Output the complete matrix JSON.\n\nREQUIREMENTS:\n1. Use red/green TDD methodology: write a failing test FIRST, then write the minimum code to make it pass, then refactor. Repeat for each piece of functionality.\n2. Create mocks and test fixtures as necessary for testability. Use Pester as the testing framework.\n3. All tests must be runnable with `Invoke-Pester` and must pass at the end.\n4. Include clear comments explaining your approach.\n5. Handle errors gracefully with meaningful error messages.\n\nCreate your solution in the current working directory. Start by writing your first failing test.\n\nGITHUB ACTIONS REQUIREMENT:\nCreate a GitHub Actions workflow file at .github/workflows/environment-matrix-generator.yml that uses\nyour script in a real CI/CD pipeline. The workflow must:\n- Use appropriate trigger events (push, pull_request, schedule, workflow_dispatch, etc.)\n- Reference your script correctly\n- Pass actionlint validation (valid YAML, valid action references, correct syntax)\n- Include appropriate permissions, environment variables, and job dependencies\n- Actually run successfully when executed locally with `act` (nektos/act)\n\nDesign your workflow so its steps work in an isolated Docker container \u2014 use\n`actions/checkout@v4`, install dependencies your script needs, and run it.\nAvoid steps requiring external services or secrets without sensible defaults.\n\nIMPORTANT for PowerShell mode: Use `shell: pwsh` on your workflow run: steps instead\nof invoking `pwsh -Command` or `pwsh -File` from bash. This avoids escaping issues\nand works correctly in act containers. pwsh and Pester are pre-installed in the\ncontainer.\n\nWORKFLOW VALIDATION:\nRun `actionlint .github/workflows/environment-matrix-generator.yml` and fix any errors. actionlint is\npre-installed. Iterate until it passes cleanly. Validate with actionlint BEFORE\nrunning act \u2014 actionlint is instant, act takes 30-90 seconds per run.\n\nALL TESTS MUST RUN THROUGH ACT:\nEvery single test case must execute through the GitHub Actions workflow via `act`.\nDo NOT test your script directly \u2014 all testing goes through the pipeline.\n\nStructure your workflow to accept test fixture data and produce verifiable output.\nYour test harness must:\n1. For each test case: set up a temp git repo with your project files + that case's\n   fixture data, run `act push --rm`, capture the output\n2. Save all act output to `act-result.txt` in the current working directory (append\n   each test case's output, clearly delimited)\n3. Assert that act exited with code 0 for each case\n4. Parse the act output and assert on EXACT EXPECTED VALUES \u2014 not just that output\n   appeared, but that it matches the known-good result for that test case's input.\n   For example: if your workflow bumps version 1.1.0 with a feat commit, assert\n   the output contains exactly \"1.2.0\", not just \"a version number\"\n5. Assert every job shows \"Job succeeded\"\n\nThe `act-result.txt` file MUST exist when done. It is a required artifact.\n`act` and Docker are pre-installed. Limit yourself to at most 3 `act push` runs \u2014\ndiagnose errors from the output rather than re-running blindly.\n\nWORKFLOW STRUCTURE TESTS (also required):\n- Parse the YAML and check expected structure (triggers, jobs, steps)\n- Verify the workflow references your script files correctly (paths exist)\n- Verify actionlint passes (assert exit code 0)\n",
+  "exit_code": 0,
+  "run_success": true,
+  "failure_reason": null,
+  "session": {
+    "session_id": "e2e86898-2550-4c6f-9a97-34f945d80069",
+    "stop_reason": "end_turn",
+    "terminal_reason": "completed",
+    "fast_mode_state": "off",
+    "service_tier": "standard",
+    "speed": "standard",
+    "inference_geo": "",
+    "context_window": 200000,
+    "max_output_tokens": 32000,
+    "permission_mode": "bypassPermissions",
+    "output_style": "default",
+    "tools_available_count": 28,
+    "mcp_servers": [],
+    "permission_denials": []
+  },
+  "model_usage_detail": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 1246,
+      "outputTokens": 14,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.001316,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "claude-opus-4-7[1m]": {
+      "inputTokens": 47,
+      "outputTokens": 44790,
+      "cacheReadInputTokens": 2744444,
+      "cacheCreationInputTokens": 94120,
+      "webSearchRequests": 0,
+      "costUSD": 3.080457000000001,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000
+    }
+  },
+  "effort_level": "xhigh",
+  "timing": {
+    "grand_total_duration_ms": 610829,
+    "total_api_duration_ms": 539033,
+    "total_execution_duration_ms": 70519,
+    "num_turns": 43
+  },
+  "tokens": {
+    "input_tokens": 47,
+    "output_tokens": 44790,
+    "cache_read_tokens": 2744444,
+    "cache_creation_tokens": 94120,
+    "total_context_consumed": 2838611,
+    "compaction_count": 0
+  },
+  "cost": {
+    "total_cost_usd": 3.081773000000001,
+    "assumed_input_cost_per_mtok": 5.0,
+    "assumed_output_cost_per_mtok": 25.0,
+    "assumed_cache_read_cost_per_mtok": 0.5,
+    "assumed_cache_write_cost_per_mtok": 6.25
+  },
+  "code_metrics": {
+    "total_lines": 1008,
+    "total_tokens_estimate": 12946,
+    "file_count": 12,
+    "files": [
+      "act-result.txt",
+      "run-act-tests.ps1",
+      "fixtures/basic.json",
+      "fixtures/full-featured.json",
+      "fixtures/oversized.json",
+      "fixtures/with-exclude.json",
+      "fixtures/with-include.json",
+      "src/Invoke-MatrixGenerator.ps1",
+      "src/New-BuildMatrix.ps1",
+      ".github/workflows/environment-matrix-generator.yml",
+      "tests/New-BuildMatrix.Tests.ps1",
+      "tests/Workflow.Tests.ps1"
+    ]
+  },
+  "quality": {
+    "tests_pass": null,
+    "error_count": 1,
+    "error_details": [
+      "Exit code 2\n/bin/bash: eval: line 2: unexpected EOF while looking for matching `)'"
+    ],
+    "actionlint_pass": true,
+    "actionlint_errors": 0,
+    "actionlint_results": [
+      {
+        "file": ".github/workflows/environment-matrix-generator.yml",
+        "passed": true,
+        "errors": ""
+      }
+    ],
+    "act_result_txt_exists": true,
+    "act_result_txt_size": 23782,
+    "areas_of_difficulty": [],
+    "observations": ""
+  },
+  "tool_install": {
+    "tool_install_duration_ms": 0,
+    "tools_installed": [],
+    "install_commands_count": 0
+  },
+  "tool_use_timing": {
+    "total_tool_uses": 42,
+    "total_tool_duration_ms": 72502,
+    "bash_tool_uses": 24,
+    "bash_total_ms": 63826,
+    "slowest_tool_uses": [
+      {
+        "tool_name": "Bash",
+        "command": "rm -f ./act-result.txt && pwsh -NoProfile -File ./run-act-tests.ps1 2>&1 | tail -25",
+        "duration_ms": 14326,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -NoProfile -File ./run-act-tests.ps1 2>&1 | tail -80",
+        "duration_ms": 13660,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -NoProfile -Command \"Invoke-Pester -Path ./tests/New-BuildMatrix.Tests.ps1 -Output Minimal 2>&1\" | tail -15",
+        "duration_ms": 5542,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -NoProfile -Command \"Invoke-Pester -Path ./tests -Output Minimal 2>&1\" | tail -20",
+        "duration_ms": 5513,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -NoProfile -Command \"Invoke-Pester -Path ./tests -Output Minimal 2>&1\" | tail -8 && echo \"---actionlint---\" && actionlint .github/workflows/environment-matrix-generator.yml && echo \"OK\" && echo \"",
+        "duration_ms": 4710,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -NoProfile -Command \"Invoke-Pester -Path ./tests/New-BuildMatrix.Tests.ps1 -Output Detailed 2>&1\" | tail -80",
+        "duration_ms": 4540,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -NoProfile -Command \"Invoke-Pester -Path ./tests/New-BuildMatrix.Tests.ps1 -Output Minimal 2>&1 | Select-Object -Last 10\"",
+        "duration_ms": 3993,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -NoProfile -File ./run-act-tests.ps1 2>&1 | tail -50",
+        "duration_ms": 2872,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cp ./act-result.txt /tmp/act-result-backup.txt && pwsh -NoProfile -File ./run-act-tests.ps1 -SkipAct 2>&1 | tail -40",
+        "duration_ms": 1633,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cp /tmp/act-result-backup.txt ./act-result.txt && pwsh -NoProfile -File ./run-act-tests.ps1 -SkipAct 2>&1 | tail -20",
+        "duration_ms": 1522,
+        "is_error": false,
+        "is_install": false
+      }
+    ],
+    "all_tool_uses": [
+      {
+        "tool_name": "Bash",
+        "command": "pwd && ls -la",
+        "duration_ms": 150,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cat .actrc && cat /home/passp/repos/compare-agent-scripting-by-language/AGENTS.md 2>/dev/null | head -100",
+        "duration_ms": 63,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "which pwsh && pwsh -c 'Get-Module -ListAvailable Pester | Select-Object Version'",
+        "duration_ms": 1203,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "which act && which actionlint && docker images | grep act-ubuntu",
+        "duration_ms": 164,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "mkdir -p src tests fixtures .github/workflows",
+        "duration_ms": 68,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 716,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -NoProfile -Command \"Invoke-Pester -Path ./tests/New-BuildMatrix.Tests.ps1 -Output Minimal 2>&1 | Select-Object -Last 10\"",
+        "duration_ms": 3993,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 956,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -NoProfile -Command \"Invoke-Pester -Path ./tests/New-BuildMatrix.Tests.ps1 -Output Detailed 2>&1\" | tail -80",
+        "duration_ms": 4540,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -NoProfile -Command \". ./src/New-BuildMatrix.ps1; `$m = New-BuildMatrix -Config @{ os = @('ubuntu-latest', 'macos-latest'); version = @('18', '20') }; Write-Host 'count:' `$m.count; Write-Host 't",
+        "duration_ms": 85,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 601,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -NoProfile -File /tmp/debug-matrix.ps1",
+        "duration_ms": 929,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 637,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 789,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 766,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -NoProfile -Command \"Invoke-Pester -Path ./tests/New-BuildMatrix.Tests.ps1 -Output Minimal 2>&1\" | tail -15",
+        "duration_ms": 5542,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 73,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 72,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 42,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 49,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 54,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 601,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -NoProfile -File ./src/Invoke-MatrixGenerator.ps1 -FixtureDir ./fixtures 2>&1 | head -80",
+        "duration_ms": 1362,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 102,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "actionlint .github/workflows/environment-matrix-generator.yml && echo \"OK\"",
+        "duration_ms": 102,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 680,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -NoProfile -Command \"Invoke-Pester -Path ./tests -Output Minimal 2>&1\" | tail -20",
+        "duration_ms": 5513,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 682,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "git -c user.email=test@local -c user.name=test add -A && git -c user.email=test@local -c user.name=test commit -m \"pre-act snapshot\" --allow-empty 2>&1 | tail -5",
+        "duration_ms": 83,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -NoProfile -File ./run-act-tests.ps1 2>&1 | tail -50",
+        "duration_ms": 2872,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 574,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -NoProfile -File ./run-act-tests.ps1 2>&1 | tail -80",
+        "duration_ms": 13660,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -NoProfile -Command \"(Get-Content ./act-result.txt -Raw) -split \\\"``n\\\" | Select-Object -First 50\"",
+        "duration_ms": 1101,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "head -80 ./act-result.txt",
+        "duration_ms": 74,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "grep -A 2 \"FIXTURE:basic:START\" ./act-result.txt | head -30 && echo \"---\" && grep \"JSON\" ./act-result.txt | head -20",
+        "duration_ms": 77,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 597,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cp ./act-result.txt /tmp/act-result-backup.txt && pwsh -NoProfile -File ./run-act-tests.ps1 -SkipAct 2>&1 | tail -40",
+        "duration_ms": 1633,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 685,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cp /tmp/act-result-backup.txt ./act-result.txt && pwsh -NoProfile -File ./run-act-tests.ps1 -SkipAct 2>&1 | tail -20",
+        "duration_ms": 1522,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "rm -f ./act-result.txt && pwsh -NoProfile -File ./run-act-tests.ps1 2>&1 | tail -25",
+        "duration_ms": 14326,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -NoProfile -Command \"Invoke-Pester -Path ./tests -Output Minimal 2>&1\" | tail -8 && echo \"---actionlint---\" && actionlint .github/workflows/environment-matrix-generator.yml && echo \"OK\" && echo \"",
+        "duration_ms": 4710,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "ls -la && echo \"---\" && ls -la src tests fixtures .github/workflows",
+        "duration_ms": 54,
+        "is_error": false,
+        "is_install": false
+      }
+    ],
+    "install_duration_ms": 0,
+    "test_duration_ms": 58311,
+    "act_duration_ms": 0
+  },
+  "hooks": {
+    "hook_fires": 18,
+    "hook_errors_caught": 0,
+    "hook_failures": 0,
+    "hook_events": [
+      {
+        "subtype": "hook_started",
+        "hook_id": "40e9bccb-2a40-4f84-b91c-2e261bb21ccf",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "40e9bccb-2a40-4f84-b91c-2e261bb21ccf",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "11234ef5-85ba-4f98-a35b-b9fbcf6617e3",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "11234ef5-85ba-4f98-a35b-b9fbcf6617e3",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "a0761e7c-8774-43a6-8d08-85de315a5e2d",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "a0761e7c-8774-43a6-8d08-85de315a5e2d",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "33fbd3ec-0e78-454c-b686-7a12969a3438",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "33fbd3ec-0e78-454c-b686-7a12969a3438",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "a71c2d07-f4b9-4cbf-ba95-92e09414ce44",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "a71c2d07-f4b9-4cbf-ba95-92e09414ce44",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "3b41a9c5-f5a5-43bd-ba49-b130a0b292b9",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "3b41a9c5-f5a5-43bd-ba49-b130a0b292b9",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "e3e1963f-1d93-4188-8f8f-6ba4a533b722",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "e3e1963f-1d93-4188-8f8f-6ba4a533b722",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "95770e1a-5925-4b06-a0a3-e43e9233fb0c",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "95770e1a-5925-4b06-a0a3-e43e9233fb0c",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "82d05fbc-db30-4d28-8d69-a64ba66aef35",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "82d05fbc-db30-4d28-8d69-a64ba66aef35",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "35b908e0-0a2e-4b88-9f46-2ca44e2b9159",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "35b908e0-0a2e-4b88-9f46-2ca44e2b9159",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "d66d8893-61c3-4b42-88a4-d98d74175bd9",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "d66d8893-61c3-4b42-88a4-d98d74175bd9",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "7d3e8836-2caa-4c16-9cfe-9dd0aa8e283b",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "7d3e8836-2caa-4c16-9cfe-9dd0aa8e283b",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "dbe5cf96-0eff-43c3-a3ac-59c92ed7697b",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "dbe5cf96-0eff-43c3-a3ac-59c92ed7697b",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "e8d254ec-8735-4953-88bc-c91d72dff92b",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "e8d254ec-8735-4953-88bc-c91d72dff92b",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "e8085844-30c4-46f1-ae8c-0c72c9a97a4d",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "e8085844-30c4-46f1-ae8c-0c72c9a97a4d",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "113a0aac-45fd-469a-a692-d5f502c3b9dc",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "113a0aac-45fd-469a-a692-d5f502c3b9dc",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "1072bb09-c8bd-4be3-a36a-97f22cce4c1d",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "1072bb09-c8bd-4be3-a36a-97f22cce4c1d",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "20f5f437-a20c-4a55-89f3-eb07323034ce",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "20f5f437-a20c-4a55-89f3-eb07323034ce",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  }
+}
