@@ -1,10 +1,10 @@
 # Benchmark Results: Language Mode Comparison
 
-**Last updated:** 2026-04-17 12:38:25 PM ET
+**Last updated:** 2026-04-17 12:39:32 PM ET
 
-**Status:** 68/35 runs completed, 2 remaining
-**Total cost so far:** $147.49
-**Total agent time so far:** 647.7 min
+**Status:** 69/35 runs completed, 1 remaining
+**Total cost so far:** $148.58
+**Total agent time so far:** 653.2 min
 
 ## Observations
 
@@ -17,7 +17,7 @@
 
 | Mode | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost |
 |------|-------|------|-------------|--------------------------|------------|-----------|----------|------------|
-| bash | opus47-1m-medium | 6 | 4.9min | 4.4min | 1.3 | 28 | $1.11 | $6.65 |
+| bash | opus47-1m-medium | 7 | 4.9min | 4.5min | 1.1 | 27 | $1.11 | $7.74 |
 | bash | opus47-1m-xhigh | 7 | 16.5min | 16.2min | 1.4 | 49 | $2.87 | $20.11 |
 | default | opus47-1m-medium | 7 | 5.4min | 5.4min | 0.3 | 25 | $1.03 | $7.24 |
 | default | opus47-1m-xhigh | 7 | 7.8min | 7.4min | 0.6 | 42 | $2.29 | $16.00 |
@@ -35,7 +35,7 @@
 | Mode | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost |
 |------|-------|------|-------------|--------------------------|------------|-----------|----------|------------|
 | default | opus47-1m-medium | 7 | 5.4min | 5.4min | 0.3 | 25 | $1.03 | $7.24 |
-| bash | opus47-1m-medium | 6 | 4.9min | 4.4min | 1.3 | 28 | $1.11 | $6.65 |
+| bash | opus47-1m-medium | 7 | 4.9min | 4.5min | 1.1 | 27 | $1.11 | $7.74 |
 | typescript-bun | opus47-1m-medium | 6 | 7.6min | 6.4min | 0.2 | 31 | $1.26 | $7.54 |
 | powershell-tool | opus47-1m-medium | 7 | 8.0min | 7.5min | 0.7 | 31 | $1.43 | $9.99 |
 | powershell | opus47-1m-medium | 7 | 10.2min | 9.8min | 0.0 | 32 | $1.52 | $10.61 |
@@ -52,7 +52,7 @@
 
 | Mode | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost |
 |------|-------|------|-------------|--------------------------|------------|-----------|----------|------------|
-| bash | opus47-1m-medium | 6 | 4.9min | 4.4min | 1.3 | 28 | $1.11 | $6.65 |
+| bash | opus47-1m-medium | 7 | 4.9min | 4.5min | 1.1 | 27 | $1.11 | $7.74 |
 | default | opus47-1m-medium | 7 | 5.4min | 5.4min | 0.3 | 25 | $1.03 | $7.24 |
 | typescript-bun | opus47-1m-medium | 6 | 7.6min | 6.4min | 0.2 | 31 | $1.26 | $7.54 |
 | default | opus47-1m-xhigh | 7 | 7.8min | 7.4min | 0.6 | 42 | $2.29 | $16.00 |
@@ -70,7 +70,7 @@
 
 | Mode | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost |
 |------|-------|------|-------------|--------------------------|------------|-----------|----------|------------|
-| bash | opus47-1m-medium | 6 | 4.9min | 4.4min | 1.3 | 28 | $1.11 | $6.65 |
+| bash | opus47-1m-medium | 7 | 4.9min | 4.5min | 1.1 | 27 | $1.11 | $7.74 |
 | default | opus47-1m-medium | 7 | 5.4min | 5.4min | 0.3 | 25 | $1.03 | $7.24 |
 | typescript-bun | opus47-1m-medium | 6 | 7.6min | 6.4min | 0.2 | 31 | $1.26 | $7.54 |
 | default | opus47-1m-xhigh | 7 | 7.8min | 7.4min | 0.6 | 42 | $2.29 | $16.00 |
@@ -96,7 +96,7 @@
 | typescript-bun | opus47-1m-xhigh | 7 | 12.0min | 7.9min | 0.4 | 66 | $3.54 | $24.75 |
 | default | opus47-1m-xhigh | 7 | 7.8min | 7.4min | 0.6 | 42 | $2.29 | $16.00 |
 | powershell-tool | opus47-1m-medium | 7 | 8.0min | 7.5min | 0.7 | 31 | $1.43 | $9.99 |
-| bash | opus47-1m-medium | 6 | 4.9min | 4.4min | 1.3 | 28 | $1.11 | $6.65 |
+| bash | opus47-1m-medium | 7 | 4.9min | 4.5min | 1.1 | 27 | $1.11 | $7.74 |
 | bash | opus47-1m-xhigh | 7 | 16.5min | 16.2min | 1.4 | 49 | $2.87 | $20.11 |
 
 </details>
@@ -107,7 +107,7 @@
 | Mode | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost |
 |------|-------|------|-------------|--------------------------|------------|-----------|----------|------------|
 | default | opus47-1m-medium | 7 | 5.4min | 5.4min | 0.3 | 25 | $1.03 | $7.24 |
-| bash | opus47-1m-medium | 6 | 4.9min | 4.4min | 1.3 | 28 | $1.11 | $6.65 |
+| bash | opus47-1m-medium | 7 | 4.9min | 4.5min | 1.1 | 27 | $1.11 | $7.74 |
 | powershell-tool | opus47-1m-medium | 7 | 8.0min | 7.5min | 0.7 | 31 | $1.43 | $9.99 |
 | typescript-bun | opus47-1m-medium | 6 | 7.6min | 6.4min | 0.2 | 31 | $1.26 | $7.54 |
 | powershell | opus47-1m-medium | 7 | 10.2min | 9.8min | 0.0 | 32 | $1.52 | $10.61 |
@@ -128,7 +128,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Mode | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time | Test Run Time | % of Test Time Saved |
 |------|-------|-------|--------|------|------------|-----------|----------|-----------|-----------|-----------|---------------|----------------------|
-| bash | opus47-1m-medium | 61 | 3 | 4.9% | 0.6min | 0.1% | 0.1min | 0.0% | 0.5min | 0.1% | 6.6min | 7.4% |
+| bash | opus47-1m-medium | 70 | 3 | 4.3% | 0.6min | 0.1% | 0.2min | 0.0% | 0.4min | 0.1% | 7.6min | 5.2% |
 | bash | opus47-1m-xhigh | 112 | 4 | 3.6% | 0.8min | 0.1% | 0.1min | 0.0% | 0.7min | 0.1% | 28.8min | 2.4% |
 | default | opus47-1m-medium | 75 | 1 | 1.3% | 0.1min | 0.0% | 0.2min | 0.0% | -0.1min | -0.0% | 13.4min | -0.7% |
 | default | opus47-1m-xhigh | 103 | 3 | 2.9% | 0.4min | 0.1% | 0.2min | 0.0% | 0.2min | 0.0% | 7.0min | 2.3% |
@@ -148,7 +148,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | typescript-bun | opus47-1m-xhigh | 159 | 86 | 54.1% | 11.5min | 1.8% | 4.8min | 0.7% | 6.7min | 1.0% | 14.7min | 45.5% |
 | typescript-bun | opus47-1m-medium | 76 | 32 | 42.1% | 4.3min | 0.7% | 2.2min | 0.3% | 2.0min | 0.3% | 15.4min | 13.3% |
 | bash | opus47-1m-xhigh | 112 | 4 | 3.6% | 0.8min | 0.1% | 0.1min | 0.0% | 0.7min | 0.1% | 28.8min | 2.4% |
-| bash | opus47-1m-medium | 61 | 3 | 4.9% | 0.6min | 0.1% | 0.1min | 0.0% | 0.5min | 0.1% | 6.6min | 7.4% |
+| bash | opus47-1m-medium | 70 | 3 | 4.3% | 0.6min | 0.1% | 0.2min | 0.0% | 0.4min | 0.1% | 7.6min | 5.2% |
 | default | opus47-1m-xhigh | 103 | 3 | 2.9% | 0.4min | 0.1% | 0.2min | 0.0% | 0.2min | 0.0% | 7.0min | 2.3% |
 | default | opus47-1m-medium | 75 | 1 | 1.3% | 0.1min | 0.0% | 0.2min | 0.0% | -0.1min | -0.0% | 13.4min | -0.7% |
 | powershell-tool | opus47-1m-xhigh | 122 | 0 | 0.0% | 0.0min | 0.0% | 0.7min | 0.1% | -0.7min | -0.1% | 8.4min | -8.9% |
@@ -165,7 +165,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 |------|-------|-------|--------|------|------------|-----------|----------|-----------|-----------|-----------|---------------|----------------------|
 | typescript-bun | opus47-1m-xhigh | 159 | 86 | 54.1% | 11.5min | 1.8% | 4.8min | 0.7% | 6.7min | 1.0% | 14.7min | 45.5% |
 | typescript-bun | opus47-1m-medium | 76 | 32 | 42.1% | 4.3min | 0.7% | 2.2min | 0.3% | 2.0min | 0.3% | 15.4min | 13.3% |
-| bash | opus47-1m-medium | 61 | 3 | 4.9% | 0.6min | 0.1% | 0.1min | 0.0% | 0.5min | 0.1% | 6.6min | 7.4% |
+| bash | opus47-1m-medium | 70 | 3 | 4.3% | 0.6min | 0.1% | 0.2min | 0.0% | 0.4min | 0.1% | 7.6min | 5.2% |
 | bash | opus47-1m-xhigh | 112 | 4 | 3.6% | 0.8min | 0.1% | 0.1min | 0.0% | 0.7min | 0.1% | 28.8min | 2.4% |
 | default | opus47-1m-xhigh | 103 | 3 | 2.9% | 0.4min | 0.1% | 0.2min | 0.0% | 0.2min | 0.0% | 7.0min | 2.3% |
 | default | opus47-1m-medium | 75 | 1 | 1.3% | 0.1min | 0.0% | 0.2min | 0.0% | -0.1min | -0.0% | 13.4min | -0.7% |
@@ -183,7 +183,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 |------|-------|-------|--------|------|------------|-----------|----------|-----------|-----------|-----------|---------------|----------------------|
 | typescript-bun | opus47-1m-xhigh | 159 | 86 | 54.1% | 11.5min | 1.8% | 4.8min | 0.7% | 6.7min | 1.0% | 14.7min | 45.5% |
 | typescript-bun | opus47-1m-medium | 76 | 32 | 42.1% | 4.3min | 0.7% | 2.2min | 0.3% | 2.0min | 0.3% | 15.4min | 13.3% |
-| bash | opus47-1m-medium | 61 | 3 | 4.9% | 0.6min | 0.1% | 0.1min | 0.0% | 0.5min | 0.1% | 6.6min | 7.4% |
+| bash | opus47-1m-medium | 70 | 3 | 4.3% | 0.6min | 0.1% | 0.2min | 0.0% | 0.4min | 0.1% | 7.6min | 5.2% |
 | bash | opus47-1m-xhigh | 112 | 4 | 3.6% | 0.8min | 0.1% | 0.1min | 0.0% | 0.7min | 0.1% | 28.8min | 2.4% |
 | default | opus47-1m-xhigh | 103 | 3 | 2.9% | 0.4min | 0.1% | 0.2min | 0.0% | 0.2min | 0.0% | 7.0min | 2.3% |
 | default | opus47-1m-medium | 75 | 1 | 1.3% | 0.1min | 0.0% | 0.2min | 0.0% | -0.1min | -0.0% | 13.4min | -0.7% |
@@ -198,25 +198,25 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Trap | Mode | Model | Fell In | Time Lost | % of Time | $ Lost | % of $ |
 |------|------|-------|---------|-----------|-----------|--------|--------|
-| ts-type-error-fix-cycles | typescript-bun | opus47-1m-medium | 6 | 6.4min | 1.0% | $1.08 | 0.73% |
-| ts-type-error-fix-cycles | typescript-bun | opus47-1m-xhigh | 7 | 17.2min | 2.7% | $5.12 | 3.47% |
+| ts-type-error-fix-cycles | typescript-bun | opus47-1m-medium | 6 | 6.4min | 1.0% | $1.08 | 0.72% |
+| ts-type-error-fix-cycles | typescript-bun | opus47-1m-xhigh | 7 | 17.2min | 2.6% | $5.12 | 3.44% |
 | repeated-test-reruns | bash | opus47-1m-medium | 1 | 1.0min | 0.2% | $0.25 | 0.17% |
 | repeated-test-reruns | bash | opus47-1m-xhigh | 1 | 1.7min | 0.3% | $0.52 | 0.35% |
 | repeated-test-reruns | default | opus47-1m-xhigh | 1 | 0.7min | 0.1% | $0.18 | 0.12% |
 | repeated-test-reruns | powershell | opus47-1m-medium | 2 | 2.7min | 0.4% | $0.57 | 0.39% |
-| repeated-test-reruns | powershell | opus47-1m-xhigh | 4 | 3.3min | 0.5% | $0.93 | 0.63% |
+| repeated-test-reruns | powershell | opus47-1m-xhigh | 4 | 3.3min | 0.5% | $0.93 | 0.62% |
 | repeated-test-reruns | powershell-tool | opus47-1m-medium | 1 | 1.0min | 0.2% | $0.18 | 0.12% |
 | repeated-test-reruns | powershell-tool | opus47-1m-xhigh | 2 | 1.7min | 0.3% | $0.60 | 0.41% |
 | repeated-test-reruns | typescript-bun | opus47-1m-medium | 1 | 0.7min | 0.1% | $0.16 | 0.11% |
-| repeated-test-reruns | typescript-bun | opus47-1m-xhigh | 5 | 7.7min | 1.2% | $2.28 | 1.54% |
-| fixture-rework | bash | opus47-1m-medium | 2 | 1.5min | 0.2% | $0.40 | 0.27% |
+| repeated-test-reruns | typescript-bun | opus47-1m-xhigh | 5 | 7.7min | 1.2% | $2.28 | 1.53% |
+| fixture-rework | bash | opus47-1m-medium | 3 | 2.2min | 0.3% | $0.55 | 0.37% |
 | fixture-rework | default | opus47-1m-xhigh | 3 | 1.8min | 0.3% | $0.50 | 0.34% |
-| fixture-rework | powershell | opus47-1m-xhigh | 3 | 3.0min | 0.5% | $0.82 | 0.56% |
+| fixture-rework | powershell | opus47-1m-xhigh | 3 | 3.0min | 0.5% | $0.82 | 0.55% |
 | fixture-rework | powershell-tool | opus47-1m-medium | 1 | 0.5min | 0.1% | $0.11 | 0.07% |
 | fixture-rework | powershell-tool | opus47-1m-xhigh | 2 | 1.8min | 0.3% | $0.60 | 0.41% |
 | fixture-rework | typescript-bun | opus47-1m-xhigh | 3 | 2.5min | 0.4% | $0.74 | 0.50% |
-| mid-run-module-restructure | powershell-tool | opus47-1m-medium | 1 | 2.0min | 0.3% | $0.44 | 0.30% |
-| mid-run-module-restructure | powershell-tool | opus47-1m-xhigh | 2 | 4.0min | 0.6% | $1.06 | 0.72% |
+| mid-run-module-restructure | powershell-tool | opus47-1m-medium | 1 | 2.0min | 0.3% | $0.44 | 0.29% |
+| mid-run-module-restructure | powershell-tool | opus47-1m-xhigh | 2 | 4.0min | 0.6% | $1.06 | 0.71% |
 | docker-pwsh-install | powershell | opus47-1m-xhigh | 1 | 1.5min | 0.2% | $0.42 | 0.28% |
 | act-push-debug-loops | typescript-bun | opus47-1m-xhigh | 1 | 0.8min | 0.1% | $0.24 | 0.16% |
 
@@ -232,21 +232,21 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | act-push-debug-loops | typescript-bun | opus47-1m-xhigh | 1 | 0.8min | 0.1% | $0.24 | 0.16% |
 | repeated-test-reruns | bash | opus47-1m-medium | 1 | 1.0min | 0.2% | $0.25 | 0.17% |
 | repeated-test-reruns | powershell-tool | opus47-1m-medium | 1 | 1.0min | 0.2% | $0.18 | 0.12% |
-| fixture-rework | bash | opus47-1m-medium | 2 | 1.5min | 0.2% | $0.40 | 0.27% |
 | docker-pwsh-install | powershell | opus47-1m-xhigh | 1 | 1.5min | 0.2% | $0.42 | 0.28% |
 | repeated-test-reruns | bash | opus47-1m-xhigh | 1 | 1.7min | 0.3% | $0.52 | 0.35% |
 | repeated-test-reruns | powershell-tool | opus47-1m-xhigh | 2 | 1.7min | 0.3% | $0.60 | 0.41% |
 | fixture-rework | default | opus47-1m-xhigh | 3 | 1.8min | 0.3% | $0.50 | 0.34% |
 | fixture-rework | powershell-tool | opus47-1m-xhigh | 2 | 1.8min | 0.3% | $0.60 | 0.41% |
-| mid-run-module-restructure | powershell-tool | opus47-1m-medium | 1 | 2.0min | 0.3% | $0.44 | 0.30% |
+| mid-run-module-restructure | powershell-tool | opus47-1m-medium | 1 | 2.0min | 0.3% | $0.44 | 0.29% |
+| fixture-rework | bash | opus47-1m-medium | 3 | 2.2min | 0.3% | $0.55 | 0.37% |
 | fixture-rework | typescript-bun | opus47-1m-xhigh | 3 | 2.5min | 0.4% | $0.74 | 0.50% |
 | repeated-test-reruns | powershell | opus47-1m-medium | 2 | 2.7min | 0.4% | $0.57 | 0.39% |
-| fixture-rework | powershell | opus47-1m-xhigh | 3 | 3.0min | 0.5% | $0.82 | 0.56% |
-| repeated-test-reruns | powershell | opus47-1m-xhigh | 4 | 3.3min | 0.5% | $0.93 | 0.63% |
-| mid-run-module-restructure | powershell-tool | opus47-1m-xhigh | 2 | 4.0min | 0.6% | $1.06 | 0.72% |
-| ts-type-error-fix-cycles | typescript-bun | opus47-1m-medium | 6 | 6.4min | 1.0% | $1.08 | 0.73% |
-| repeated-test-reruns | typescript-bun | opus47-1m-xhigh | 5 | 7.7min | 1.2% | $2.28 | 1.54% |
-| ts-type-error-fix-cycles | typescript-bun | opus47-1m-xhigh | 7 | 17.2min | 2.7% | $5.12 | 3.47% |
+| fixture-rework | powershell | opus47-1m-xhigh | 3 | 3.0min | 0.5% | $0.82 | 0.55% |
+| repeated-test-reruns | powershell | opus47-1m-xhigh | 4 | 3.3min | 0.5% | $0.93 | 0.62% |
+| mid-run-module-restructure | powershell-tool | opus47-1m-xhigh | 2 | 4.0min | 0.6% | $1.06 | 0.71% |
+| ts-type-error-fix-cycles | typescript-bun | opus47-1m-medium | 6 | 6.4min | 1.0% | $1.08 | 0.72% |
+| repeated-test-reruns | typescript-bun | opus47-1m-xhigh | 5 | 7.7min | 1.2% | $2.28 | 1.53% |
+| ts-type-error-fix-cycles | typescript-bun | opus47-1m-xhigh | 7 | 17.2min | 2.6% | $5.12 | 3.44% |
 
 </details>
 
@@ -261,21 +261,21 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | repeated-test-reruns | default | opus47-1m-xhigh | 1 | 0.7min | 0.1% | $0.18 | 0.12% |
 | act-push-debug-loops | typescript-bun | opus47-1m-xhigh | 1 | 0.8min | 0.1% | $0.24 | 0.16% |
 | repeated-test-reruns | bash | opus47-1m-medium | 1 | 1.0min | 0.2% | $0.25 | 0.17% |
-| fixture-rework | bash | opus47-1m-medium | 2 | 1.5min | 0.2% | $0.40 | 0.27% |
 | docker-pwsh-install | powershell | opus47-1m-xhigh | 1 | 1.5min | 0.2% | $0.42 | 0.28% |
-| mid-run-module-restructure | powershell-tool | opus47-1m-medium | 1 | 2.0min | 0.3% | $0.44 | 0.30% |
+| mid-run-module-restructure | powershell-tool | opus47-1m-medium | 1 | 2.0min | 0.3% | $0.44 | 0.29% |
 | fixture-rework | default | opus47-1m-xhigh | 3 | 1.8min | 0.3% | $0.50 | 0.34% |
 | repeated-test-reruns | bash | opus47-1m-xhigh | 1 | 1.7min | 0.3% | $0.52 | 0.35% |
+| fixture-rework | bash | opus47-1m-medium | 3 | 2.2min | 0.3% | $0.55 | 0.37% |
 | repeated-test-reruns | powershell | opus47-1m-medium | 2 | 2.7min | 0.4% | $0.57 | 0.39% |
 | fixture-rework | powershell-tool | opus47-1m-xhigh | 2 | 1.8min | 0.3% | $0.60 | 0.41% |
 | repeated-test-reruns | powershell-tool | opus47-1m-xhigh | 2 | 1.7min | 0.3% | $0.60 | 0.41% |
 | fixture-rework | typescript-bun | opus47-1m-xhigh | 3 | 2.5min | 0.4% | $0.74 | 0.50% |
-| fixture-rework | powershell | opus47-1m-xhigh | 3 | 3.0min | 0.5% | $0.82 | 0.56% |
-| repeated-test-reruns | powershell | opus47-1m-xhigh | 4 | 3.3min | 0.5% | $0.93 | 0.63% |
-| mid-run-module-restructure | powershell-tool | opus47-1m-xhigh | 2 | 4.0min | 0.6% | $1.06 | 0.72% |
-| ts-type-error-fix-cycles | typescript-bun | opus47-1m-medium | 6 | 6.4min | 1.0% | $1.08 | 0.73% |
-| repeated-test-reruns | typescript-bun | opus47-1m-xhigh | 5 | 7.7min | 1.2% | $2.28 | 1.54% |
-| ts-type-error-fix-cycles | typescript-bun | opus47-1m-xhigh | 7 | 17.2min | 2.7% | $5.12 | 3.47% |
+| fixture-rework | powershell | opus47-1m-xhigh | 3 | 3.0min | 0.5% | $0.82 | 0.55% |
+| repeated-test-reruns | powershell | opus47-1m-xhigh | 4 | 3.3min | 0.5% | $0.93 | 0.62% |
+| mid-run-module-restructure | powershell-tool | opus47-1m-xhigh | 2 | 4.0min | 0.6% | $1.06 | 0.71% |
+| ts-type-error-fix-cycles | typescript-bun | opus47-1m-medium | 6 | 6.4min | 1.0% | $1.08 | 0.72% |
+| repeated-test-reruns | typescript-bun | opus47-1m-xhigh | 5 | 7.7min | 1.2% | $2.28 | 1.53% |
+| ts-type-error-fix-cycles | typescript-bun | opus47-1m-xhigh | 7 | 17.2min | 2.6% | $5.12 | 3.44% |
 
 </details>
 
@@ -290,21 +290,21 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | repeated-test-reruns | powershell-tool | opus47-1m-medium | 1 | 1.0min | 0.2% | $0.18 | 0.12% |
 | repeated-test-reruns | typescript-bun | opus47-1m-medium | 1 | 0.7min | 0.1% | $0.16 | 0.11% |
 | fixture-rework | powershell-tool | opus47-1m-medium | 1 | 0.5min | 0.1% | $0.11 | 0.07% |
-| mid-run-module-restructure | powershell-tool | opus47-1m-medium | 1 | 2.0min | 0.3% | $0.44 | 0.30% |
+| mid-run-module-restructure | powershell-tool | opus47-1m-medium | 1 | 2.0min | 0.3% | $0.44 | 0.29% |
 | docker-pwsh-install | powershell | opus47-1m-xhigh | 1 | 1.5min | 0.2% | $0.42 | 0.28% |
 | act-push-debug-loops | typescript-bun | opus47-1m-xhigh | 1 | 0.8min | 0.1% | $0.24 | 0.16% |
 | repeated-test-reruns | powershell | opus47-1m-medium | 2 | 2.7min | 0.4% | $0.57 | 0.39% |
 | repeated-test-reruns | powershell-tool | opus47-1m-xhigh | 2 | 1.7min | 0.3% | $0.60 | 0.41% |
-| fixture-rework | bash | opus47-1m-medium | 2 | 1.5min | 0.2% | $0.40 | 0.27% |
 | fixture-rework | powershell-tool | opus47-1m-xhigh | 2 | 1.8min | 0.3% | $0.60 | 0.41% |
-| mid-run-module-restructure | powershell-tool | opus47-1m-xhigh | 2 | 4.0min | 0.6% | $1.06 | 0.72% |
+| mid-run-module-restructure | powershell-tool | opus47-1m-xhigh | 2 | 4.0min | 0.6% | $1.06 | 0.71% |
+| fixture-rework | bash | opus47-1m-medium | 3 | 2.2min | 0.3% | $0.55 | 0.37% |
 | fixture-rework | default | opus47-1m-xhigh | 3 | 1.8min | 0.3% | $0.50 | 0.34% |
-| fixture-rework | powershell | opus47-1m-xhigh | 3 | 3.0min | 0.5% | $0.82 | 0.56% |
+| fixture-rework | powershell | opus47-1m-xhigh | 3 | 3.0min | 0.5% | $0.82 | 0.55% |
 | fixture-rework | typescript-bun | opus47-1m-xhigh | 3 | 2.5min | 0.4% | $0.74 | 0.50% |
-| repeated-test-reruns | powershell | opus47-1m-xhigh | 4 | 3.3min | 0.5% | $0.93 | 0.63% |
-| repeated-test-reruns | typescript-bun | opus47-1m-xhigh | 5 | 7.7min | 1.2% | $2.28 | 1.54% |
-| ts-type-error-fix-cycles | typescript-bun | opus47-1m-medium | 6 | 6.4min | 1.0% | $1.08 | 0.73% |
-| ts-type-error-fix-cycles | typescript-bun | opus47-1m-xhigh | 7 | 17.2min | 2.7% | $5.12 | 3.47% |
+| repeated-test-reruns | powershell | opus47-1m-xhigh | 4 | 3.3min | 0.5% | $0.93 | 0.62% |
+| repeated-test-reruns | typescript-bun | opus47-1m-xhigh | 5 | 7.7min | 1.2% | $2.28 | 1.53% |
+| ts-type-error-fix-cycles | typescript-bun | opus47-1m-medium | 6 | 6.4min | 1.0% | $1.08 | 0.72% |
+| ts-type-error-fix-cycles | typescript-bun | opus47-1m-xhigh | 7 | 17.2min | 2.6% | $5.12 | 3.44% |
 
 </details>
 
@@ -330,16 +330,16 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Mode | Model | Runs | Traps | Time Lost | % of Time | $ Lost | % of $ |
 |------|-------|------|-------|-----------|-----------|--------|--------|
-| bash | opus47-1m-medium | 6 | 3 | 2.5min | 0.4% | $0.65 | 0.44% |
+| bash | opus47-1m-medium | 7 | 4 | 3.2min | 0.5% | $0.80 | 0.54% |
 | bash | opus47-1m-xhigh | 7 | 1 | 1.7min | 0.3% | $0.52 | 0.35% |
 | default | opus47-1m-medium | 7 | 0 | 0.0min | 0.0% | $0.00 | 0.00% |
 | default | opus47-1m-xhigh | 7 | 4 | 2.4min | 0.4% | $0.68 | 0.46% |
 | powershell | opus47-1m-medium | 7 | 2 | 2.7min | 0.4% | $0.57 | 0.39% |
-| powershell | opus47-1m-xhigh | 7 | 8 | 7.8min | 1.2% | $2.17 | 1.47% |
+| powershell | opus47-1m-xhigh | 7 | 8 | 7.8min | 1.2% | $2.17 | 1.46% |
 | powershell-tool | opus47-1m-medium | 7 | 3 | 3.5min | 0.5% | $0.73 | 0.49% |
-| powershell-tool | opus47-1m-xhigh | 7 | 6 | 7.4min | 1.1% | $2.26 | 1.53% |
-| typescript-bun | opus47-1m-medium | 6 | 7 | 7.1min | 1.1% | $1.23 | 0.84% |
-| typescript-bun | opus47-1m-xhigh | 7 | 16 | 28.2min | 4.4% | $8.37 | 5.67% |
+| powershell-tool | opus47-1m-xhigh | 7 | 6 | 7.4min | 1.1% | $2.26 | 1.52% |
+| typescript-bun | opus47-1m-medium | 6 | 7 | 7.1min | 1.1% | $1.23 | 0.83% |
+| typescript-bun | opus47-1m-xhigh | 7 | 16 | 28.2min | 4.3% | $8.37 | 5.63% |
 
 
 <details>
@@ -350,13 +350,13 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | default | opus47-1m-medium | 7 | 0 | 0.0min | 0.0% | $0.00 | 0.00% |
 | bash | opus47-1m-xhigh | 7 | 1 | 1.7min | 0.3% | $0.52 | 0.35% |
 | default | opus47-1m-xhigh | 7 | 4 | 2.4min | 0.4% | $0.68 | 0.46% |
-| bash | opus47-1m-medium | 6 | 3 | 2.5min | 0.4% | $0.65 | 0.44% |
 | powershell | opus47-1m-medium | 7 | 2 | 2.7min | 0.4% | $0.57 | 0.39% |
+| bash | opus47-1m-medium | 7 | 4 | 3.2min | 0.5% | $0.80 | 0.54% |
 | powershell-tool | opus47-1m-medium | 7 | 3 | 3.5min | 0.5% | $0.73 | 0.49% |
-| typescript-bun | opus47-1m-medium | 6 | 7 | 7.1min | 1.1% | $1.23 | 0.84% |
-| powershell-tool | opus47-1m-xhigh | 7 | 6 | 7.4min | 1.1% | $2.26 | 1.53% |
-| powershell | opus47-1m-xhigh | 7 | 8 | 7.8min | 1.2% | $2.17 | 1.47% |
-| typescript-bun | opus47-1m-xhigh | 7 | 16 | 28.2min | 4.4% | $8.37 | 5.67% |
+| typescript-bun | opus47-1m-medium | 6 | 7 | 7.1min | 1.1% | $1.23 | 0.83% |
+| powershell-tool | opus47-1m-xhigh | 7 | 6 | 7.4min | 1.1% | $2.26 | 1.52% |
+| powershell | opus47-1m-xhigh | 7 | 8 | 7.8min | 1.2% | $2.17 | 1.46% |
+| typescript-bun | opus47-1m-xhigh | 7 | 16 | 28.2min | 4.3% | $8.37 | 5.63% |
 
 </details>
 
@@ -368,13 +368,13 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | default | opus47-1m-medium | 7 | 0 | 0.0min | 0.0% | $0.00 | 0.00% |
 | bash | opus47-1m-xhigh | 7 | 1 | 1.7min | 0.3% | $0.52 | 0.35% |
 | powershell | opus47-1m-medium | 7 | 2 | 2.7min | 0.4% | $0.57 | 0.39% |
-| bash | opus47-1m-medium | 6 | 3 | 2.5min | 0.4% | $0.65 | 0.44% |
 | default | opus47-1m-xhigh | 7 | 4 | 2.4min | 0.4% | $0.68 | 0.46% |
 | powershell-tool | opus47-1m-medium | 7 | 3 | 3.5min | 0.5% | $0.73 | 0.49% |
-| typescript-bun | opus47-1m-medium | 6 | 7 | 7.1min | 1.1% | $1.23 | 0.84% |
-| powershell | opus47-1m-xhigh | 7 | 8 | 7.8min | 1.2% | $2.17 | 1.47% |
-| powershell-tool | opus47-1m-xhigh | 7 | 6 | 7.4min | 1.1% | $2.26 | 1.53% |
-| typescript-bun | opus47-1m-xhigh | 7 | 16 | 28.2min | 4.4% | $8.37 | 5.67% |
+| bash | opus47-1m-medium | 7 | 4 | 3.2min | 0.5% | $0.80 | 0.54% |
+| typescript-bun | opus47-1m-medium | 6 | 7 | 7.1min | 1.1% | $1.23 | 0.83% |
+| powershell | opus47-1m-xhigh | 7 | 8 | 7.8min | 1.2% | $2.17 | 1.46% |
+| powershell-tool | opus47-1m-xhigh | 7 | 6 | 7.4min | 1.1% | $2.26 | 1.52% |
+| typescript-bun | opus47-1m-xhigh | 7 | 16 | 28.2min | 4.3% | $8.37 | 5.63% |
 
 </details>
 
@@ -383,7 +383,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | Status | Runs | $ Saved | % of $ |
 |--------|------|---------|--------|
 | Full hit (100%) | 0 | $0.00 | 0.00% |
-| Partial | 65 | $6.24 | 4.23% |
+| Partial | 66 | $6.33 | 4.26% |
 | Miss | 3 | $0.00 | 0.00% |
 
 ## Test Quality Evaluation
@@ -394,7 +394,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 
 | Mode | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
 |------|-------|-----------|----------------|-----------------|---------------------|
-| bash | opus47-1m-medium | 13.0 | 33.5 | 2.6 | 1.32 |
+| bash | opus47-1m-medium | 11.9 | 31.7 | 2.7 | 1.21 |
 | bash | opus47-1m-xhigh | 25.9 | 47.3 | 1.8 | 1.26 |
 | default | opus47-1m-medium | 17.0 | 33.3 | 2.0 | 1.64 |
 | default | opus47-1m-xhigh | 24.0 | 50.6 | 2.1 | 1.55 |
@@ -420,7 +420,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | powershell-tool | opus47-1m-medium | 18.9 | 40.6 | 2.2 | 3.47 |
 | typescript-bun | opus47-1m-medium | 17.7 | 42.0 | 2.4 | 1.53 |
 | default | opus47-1m-medium | 17.0 | 33.3 | 2.0 | 1.64 |
-| bash | opus47-1m-medium | 13.0 | 33.5 | 2.6 | 1.32 |
+| bash | opus47-1m-medium | 11.9 | 31.7 | 2.7 | 1.21 |
 
 </details>
 
@@ -437,8 +437,8 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | typescript-bun | opus47-1m-medium | 17.7 | 42.0 | 2.4 | 1.53 |
 | powershell-tool | opus47-1m-medium | 18.9 | 40.6 | 2.2 | 3.47 |
 | powershell | opus47-1m-medium | 20.0 | 38.9 | 1.9 | 3.38 |
-| bash | opus47-1m-medium | 13.0 | 33.5 | 2.6 | 1.32 |
 | default | opus47-1m-medium | 17.0 | 33.3 | 2.0 | 1.64 |
+| bash | opus47-1m-medium | 11.9 | 31.7 | 2.7 | 1.21 |
 
 </details>
 
@@ -454,8 +454,8 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | default | opus47-1m-medium | 17.0 | 33.3 | 2.0 | 1.64 |
 | default | opus47-1m-xhigh | 24.0 | 50.6 | 2.1 | 1.55 |
 | typescript-bun | opus47-1m-medium | 17.7 | 42.0 | 2.4 | 1.53 |
-| bash | opus47-1m-medium | 13.0 | 33.5 | 2.6 | 1.32 |
 | bash | opus47-1m-xhigh | 25.9 | 47.3 | 1.8 | 1.26 |
+| bash | opus47-1m-medium | 11.9 | 31.7 | 2.7 | 1.21 |
 | powershell | opus47-1m-xhigh | 28.1 | 56.7 | 2.0 | 0.99 |
 
 </details>
@@ -534,6 +534,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Secret Rotation Validator | default | opus47-1m-medium | 21 | 43 | 2.0 | 397 | 244 | 1.63 |
 | Secret Rotation Validator | powershell | opus47-1m-medium | 21 | 46 | 2.2 | 184 | 225 | 0.82 |
 | Secret Rotation Validator | powershell-tool | opus47-1m-medium | 24 | 68 | 2.8 | 310 | 159 | 1.95 |
+| Secret Rotation Validator | bash | opus47-1m-medium | 5 | 21 | 4.2 | 120 | 209 | 0.57 |
 
 </details>
 
@@ -609,6 +610,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Secret Rotation Validator | default | opus47-1m-medium | 7.0min | 19 | 0 | $0.88 | python | ok |
 | Secret Rotation Validator | powershell | opus47-1m-medium | 22.5min | 31 | 0 | $1.27 | powershell | ok |
 | Secret Rotation Validator | powershell-tool | opus47-1m-medium | 17.8min | 38 | 2 | $1.70 | powershell | ok |
+| Secret Rotation Validator | bash | opus47-1m-medium | 5.4min | 24 | 0 | $1.09 | bash | ok |
 
 
 <details>
@@ -629,6 +631,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Semantic Version Bumper | bash | opus47-1m-medium | 4.2min | 30 | 2 | $1.07 | bash | ok |
 | Environment Matrix Generator | typescript-bun | opus47-1m-medium | 7.4min | 29 | 0 | $1.07 | typescript | ok |
 | Artifact Cleanup Script | powershell | opus47-1m-medium | 4.7min | 22 | 0 | $1.08 | powershell | ok |
+| Secret Rotation Validator | bash | opus47-1m-medium | 5.4min | 24 | 0 | $1.09 | bash | ok |
 | PR Label Assigner | powershell | opus47-1m-medium | 5.1min | 27 | 0 | $1.11 | powershell | ok |
 | Environment Matrix Generator | default | opus47-1m-medium | 5.4min | 26 | 0 | $1.12 | python | ok |
 | Dependency License Checker | powershell-tool | opus47-1m-medium | 4.9min | 26 | 0 | $1.18 | powershell | ok |
@@ -704,6 +707,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Dependency License Checker | powershell-tool | opus47-1m-medium | 4.9min | 26 | 0 | $1.18 | powershell | ok |
 | PR Label Assigner | powershell | opus47-1m-medium | 5.1min | 27 | 0 | $1.11 | powershell | ok |
 | Environment Matrix Generator | default | opus47-1m-medium | 5.4min | 26 | 0 | $1.12 | python | ok |
+| Secret Rotation Validator | bash | opus47-1m-medium | 5.4min | 24 | 0 | $1.09 | bash | ok |
 | Dependency License Checker | bash | opus47-1m-medium | 5.5min | 30 | 1 | $1.55 | bash | ok |
 | Semantic Version Bumper | typescript-bun | opus47-1m-medium | 5.6min | 33 | 0 | $1.31 | typescript | ok |
 | PR Label Assigner | bash | opus47-1m-medium | 6.2min | 23 | 1 | $0.87 | bash | ok |
@@ -810,6 +814,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Artifact Cleanup Script | typescript-bun | opus47-1m-medium | 7.2min | 29 | 0 | $1.25 | typescript | ok |
 | Secret Rotation Validator | default | opus47-1m-medium | 7.0min | 19 | 0 | $0.88 | python | ok |
 | Secret Rotation Validator | powershell | opus47-1m-medium | 22.5min | 31 | 0 | $1.27 | powershell | ok |
+| Secret Rotation Validator | bash | opus47-1m-medium | 5.4min | 24 | 0 | $1.09 | bash | ok |
 | Semantic Version Bumper | typescript-bun | opus47-1m-xhigh | 14.3min | 80 | 1 | $4.21 | typescript | ok |
 | Dependency License Checker | powershell | opus47-1m-xhigh | 10.2min | 48 | 1 | $2.95 | powershell | ok |
 | Test Results Aggregator | bash | opus47-1m-xhigh | 16.5min | 79 | 1 | $5.09 | bash | ok |
@@ -854,6 +859,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Dependency License Checker | powershell | opus47-1m-medium | 6.6min | 23 | 0 | $1.00 | powershell | ok |
 | Environment Matrix Generator | bash | opus47-1m-medium | 3.5min | 23 | 1 | $0.88 | bash | ok |
 | Artifact Cleanup Script | bash | opus47-1m-medium | 3.1min | 24 | 3 | $0.92 | bash | ok |
+| Secret Rotation Validator | bash | opus47-1m-medium | 5.4min | 24 | 0 | $1.09 | bash | ok |
 | Dependency License Checker | powershell-tool | opus47-1m-medium | 4.9min | 26 | 0 | $1.18 | powershell | ok |
 | Environment Matrix Generator | default | opus47-1m-medium | 5.4min | 26 | 0 | $1.12 | python | ok |
 | PR Label Assigner | powershell | opus47-1m-medium | 5.1min | 27 | 0 | $1.11 | powershell | ok |

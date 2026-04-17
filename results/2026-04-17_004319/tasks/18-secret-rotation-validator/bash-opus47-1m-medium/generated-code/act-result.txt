@@ -1,0 +1,404 @@
+========== BEGIN CASE: mixed_warn14 ==========
+config=fixtures/mixed.json warning_days=14 today=2026-04-17
+expected: exit=1 expired=1 warning=0 ok=2
+act exit code: 0
+time="2026-04-17T12:38:00-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Secret Rotation Validator/Validate secret rotation] ⭐ Run Set up job
+[Secret Rotation Validator/Validate secret rotation] 🚀  Start image=act-ubuntu-pwsh:latest
+[Secret Rotation Validator/Validate secret rotation]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Secret Rotation Validator/Validate secret rotation]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/Validate secret rotation]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/Validate secret rotation]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Secret Rotation Validator/Validate secret rotation]   ✅  Success - Set up job
+[Secret Rotation Validator/Validate secret rotation] ⭐ Run Main Checkout
+[Secret Rotation Validator/Validate secret rotation]   🐳  docker cp src=/tmp/tmp.nDipCPzUqq/. dst=/tmp/tmp.nDipCPzUqq
+[Secret Rotation Validator/Validate secret rotation]   ✅  Success - Main Checkout [145.321882ms]
+[Secret Rotation Validator/Validate secret rotation] ⭐ Run Main Install dependencies
+[Secret Rotation Validator/Validate secret rotation]   🐳  docker exec cmd=[bash --noprofile --norc -e -o pipefail /var/run/act/workflow/1.sh] user= workdir=
+[Secret Rotation Validator/Validate secret rotation]   | jq-1.6
+[Secret Rotation Validator/Validate secret rotation]   ✅  Success - Main Install dependencies [484.168693ms]
+[Secret Rotation Validator/Validate secret rotation] ⭐ Run Main Syntax check
+[Secret Rotation Validator/Validate secret rotation]   🐳  docker exec cmd=[bash --noprofile --norc -e -o pipefail /var/run/act/workflow/2.sh] user= workdir=
+[Secret Rotation Validator/Validate secret rotation]   ✅  Success - Main Syntax check [624.974351ms]
+[Secret Rotation Validator/Validate secret rotation] ⭐ Run Main Run validator (JSON for assertions)
+[Secret Rotation Validator/Validate secret rotation]   🐳  docker exec cmd=[bash --noprofile --norc -e -o pipefail /var/run/act/workflow/run_json.sh] user= workdir=
+[Secret Rotation Validator/Validate secret rotation]   | ---BEGIN JSON OUTPUT---
+[Secret Rotation Validator/Validate secret rotation]   | {
+[Secret Rotation Validator/Validate secret rotation]   |   "today": "2026-04-17",
+[Secret Rotation Validator/Validate secret rotation]   |   "warning_days": 14,
+[Secret Rotation Validator/Validate secret rotation]   |   "counts": {
+[Secret Rotation Validator/Validate secret rotation]   |     "expired": 1,
+[Secret Rotation Validator/Validate secret rotation]   |     "warning": 0,
+[Secret Rotation Validator/Validate secret rotation]   |     "ok": 2
+[Secret Rotation Validator/Validate secret rotation]   |   },
+[Secret Rotation Validator/Validate secret rotation]   |   "expired": [
+[Secret Rotation Validator/Validate secret rotation]   |     {
+[Secret Rotation Validator/Validate secret rotation]   |       "name": "DB_PASSWORD",
+[Secret Rotation Validator/Validate secret rotation]   |       "last_rotated": "2025-01-01",
+[Secret Rotation Validator/Validate secret rotation]   |       "rotation_days": 90,
+[Secret Rotation Validator/Validate secret rotation]   |       "days_until_expiry": -381,
+[Secret Rotation Validator/Validate secret rotation]   |       "services": [
+[Secret Rotation Validator/Validate secret rotation]   |         "api",
+[Secret Rotation Validator/Validate secret rotation]   |         "worker"
+[Secret Rotation Validator/Validate secret rotation]   |       ]
+[Secret Rotation Validator/Validate secret rotation]   |     }
+[Secret Rotation Validator/Validate secret rotation]   |   ],
+[Secret Rotation Validator/Validate secret rotation]   |   "warning": [],
+[Secret Rotation Validator/Validate secret rotation]   |   "ok": [
+[Secret Rotation Validator/Validate secret rotation]   |     {
+[Secret Rotation Validator/Validate secret rotation]   |       "name": "API_KEY",
+[Secret Rotation Validator/Validate secret rotation]   |       "last_rotated": "2026-02-01",
+[Secret Rotation Validator/Validate secret rotation]   |       "rotation_days": 90,
+[Secret Rotation Validator/Validate secret rotation]   |       "days_until_expiry": 15,
+[Secret Rotation Validator/Validate secret rotation]   |       "services": [
+[Secret Rotation Validator/Validate secret rotation]   |         "web"
+[Secret Rotation Validator/Validate secret rotation]   |       ]
+[Secret Rotation Validator/Validate secret rotation]   |     },
+[Secret Rotation Validator/Validate secret rotation]   |     {
+[Secret Rotation Validator/Validate secret rotation]   |       "name": "WEBHOOK_SECRET",
+[Secret Rotation Validator/Validate secret rotation]   |       "last_rotated": "2026-04-10",
+[Secret Rotation Validator/Validate secret rotation]   |       "rotation_days": 365,
+[Secret Rotation Validator/Validate secret rotation]   |       "days_until_expiry": 358,
+[Secret Rotation Validator/Validate secret rotation]   |       "services": [
+[Secret Rotation Validator/Validate secret rotation]   |         "webhook"
+[Secret Rotation Validator/Validate secret rotation]   |       ]
+[Secret Rotation Validator/Validate secret rotation]   |     }
+[Secret Rotation Validator/Validate secret rotation]   |   ]
+[Secret Rotation Validator/Validate secret rotation]   | }
+[Secret Rotation Validator/Validate secret rotation]   | ---END JSON OUTPUT---
+[Secret Rotation Validator/Validate secret rotation]   ✅  Success - Main Run validator (JSON for assertions) [1.189773066s]
+[Secret Rotation Validator/Validate secret rotation]   ⚙  ::set-output:: exit_code=1
+[Secret Rotation Validator/Validate secret rotation]   ⚙  ::set-output:: report_json={
+  "today": "2026-04-17",
+  "warning_days": 14,
+  "counts": {
+    "expired": 1,
+    "warning": 0,
+    "ok": 2
+  },
+  "expired": [
+    {
+      "name": "DB_PASSWORD",
+      "last_rotated": "2025-01-01",
+      "rotation_days": 90,
+      "days_until_expiry": -381,
+      "services": [
+        "api",
+        "worker"
+      ]
+    }
+  ],
+  "warning": [],
+  "ok": [
+    {
+      "name": "API_KEY",
+      "last_rotated": "2026-02-01",
+      "rotation_days": 90,
+      "days_until_expiry": 15,
+      "services": [
+        "web"
+      ]
+    },
+    {
+      "name": "WEBHOOK_SECRET",
+      "last_rotated": "2026-04-10",
+      "rotation_days": 365,
+      "days_until_expiry": 358,
+      "services": [
+        "webhook"
+      ]
+    }
+  ]
+}
+[Secret Rotation Validator/Validate secret rotation] ⭐ Run Main Run validator (markdown report)
+[Secret Rotation Validator/Validate secret rotation]   🐳  docker exec cmd=[bash --noprofile --norc -e -o pipefail /var/run/act/workflow/4.sh] user= workdir=
+[Secret Rotation Validator/Validate secret rotation]   | # Secret Rotation Report
+[Secret Rotation Validator/Validate secret rotation]   | 
+[Secret Rotation Validator/Validate secret rotation]   | Reference date: 2026-04-17
+[Secret Rotation Validator/Validate secret rotation]   | Warning window: 14 days
+[Secret Rotation Validator/Validate secret rotation]   | 
+[Secret Rotation Validator/Validate secret rotation]   | ## EXPIRED (1)
+[Secret Rotation Validator/Validate secret rotation]   | 
+[Secret Rotation Validator/Validate secret rotation]   | | Name | Last Rotated | Rotation Days | Days Until Expiry | Services |
+[Secret Rotation Validator/Validate secret rotation]   | | --- | --- | --- | --- | --- |
+[Secret Rotation Validator/Validate secret rotation]   | | DB_PASSWORD | 2025-01-01 | 90 | -381 | api,worker |
+[Secret Rotation Validator/Validate secret rotation]   | 
+[Secret Rotation Validator/Validate secret rotation]   | ## WARNING (0)
+[Secret Rotation Validator/Validate secret rotation]   | 
+[Secret Rotation Validator/Validate secret rotation]   | _None._
+[Secret Rotation Validator/Validate secret rotation]   | 
+[Secret Rotation Validator/Validate secret rotation]   | ## OK (2)
+[Secret Rotation Validator/Validate secret rotation]   | 
+[Secret Rotation Validator/Validate secret rotation]   | | Name | Last Rotated | Rotation Days | Days Until Expiry | Services |
+[Secret Rotation Validator/Validate secret rotation]   | | --- | --- | --- | --- | --- |
+[Secret Rotation Validator/Validate secret rotation]   | | API_KEY | 2026-02-01 | 90 | 15 | web |
+[Secret Rotation Validator/Validate secret rotation]   | | WEBHOOK_SECRET | 2026-04-10 | 365 | 358 | webhook |
+[Secret Rotation Validator/Validate secret rotation]   | 
+[Secret Rotation Validator/Validate secret rotation]   | Markdown report exit code: 1
+[Secret Rotation Validator/Validate secret rotation]   ✅  Success - Main Run validator (markdown report) [803.592669ms]
+[Secret Rotation Validator/Validate secret rotation] ⭐ Run Main Assert expected counts and exit code
+[Secret Rotation Validator/Validate secret rotation]   🐳  docker exec cmd=[bash --noprofile --norc -e -o pipefail /var/run/act/workflow/5.sh] user= workdir=
+[Secret Rotation Validator/Validate secret rotation]   | Expected exit: 1, actual: 1
+[Secret Rotation Validator/Validate secret rotation]   | Counts: expired=1 warning=0 ok=2
+[Secret Rotation Validator/Validate secret rotation]   | All assertions passed.
+[Secret Rotation Validator/Validate secret rotation]   ✅  Success - Main Assert expected counts and exit code [752.927107ms]
+[Secret Rotation Validator/Validate secret rotation] ⭐ Run Complete job
+[Secret Rotation Validator/Validate secret rotation] Cleaning up container for job Validate secret rotation
+[Secret Rotation Validator/Validate secret rotation]   ✅  Success - Complete job
+[Secret Rotation Validator/Validate secret rotation] 🏁  Job succeeded
+========== END CASE: mixed_warn14 ==========
+
+========== BEGIN CASE: all_ok ==========
+config=fixtures/all-ok.json warning_days=14 today=2026-04-17
+expected: exit=0 expired=0 warning=0 ok=2
+act exit code: 0
+time="2026-04-17T12:38:11-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Secret Rotation Validator/Validate secret rotation] ⭐ Run Set up job
+[Secret Rotation Validator/Validate secret rotation] 🚀  Start image=act-ubuntu-pwsh:latest
+[Secret Rotation Validator/Validate secret rotation]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Secret Rotation Validator/Validate secret rotation]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/Validate secret rotation]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/Validate secret rotation]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Secret Rotation Validator/Validate secret rotation]   ✅  Success - Set up job
+[Secret Rotation Validator/Validate secret rotation] ⭐ Run Main Checkout
+[Secret Rotation Validator/Validate secret rotation]   🐳  docker cp src=/tmp/tmp.8jq8MC2ksK/. dst=/tmp/tmp.8jq8MC2ksK
+[Secret Rotation Validator/Validate secret rotation]   ✅  Success - Main Checkout [176.916827ms]
+[Secret Rotation Validator/Validate secret rotation] ⭐ Run Main Install dependencies
+[Secret Rotation Validator/Validate secret rotation]   🐳  docker exec cmd=[bash --noprofile --norc -e -o pipefail /var/run/act/workflow/1.sh] user= workdir=
+[Secret Rotation Validator/Validate secret rotation]   | jq-1.6
+[Secret Rotation Validator/Validate secret rotation]   ✅  Success - Main Install dependencies [490.507958ms]
+[Secret Rotation Validator/Validate secret rotation] ⭐ Run Main Syntax check
+[Secret Rotation Validator/Validate secret rotation]   🐳  docker exec cmd=[bash --noprofile --norc -e -o pipefail /var/run/act/workflow/2.sh] user= workdir=
+[Secret Rotation Validator/Validate secret rotation]   ✅  Success - Main Syntax check [1.792583643s]
+[Secret Rotation Validator/Validate secret rotation] ⭐ Run Main Run validator (JSON for assertions)
+[Secret Rotation Validator/Validate secret rotation]   🐳  docker exec cmd=[bash --noprofile --norc -e -o pipefail /var/run/act/workflow/run_json.sh] user= workdir=
+[Secret Rotation Validator/Validate secret rotation]   | ---BEGIN JSON OUTPUT---
+[Secret Rotation Validator/Validate secret rotation]   | {
+[Secret Rotation Validator/Validate secret rotation]   |   "today": "2026-04-17",
+[Secret Rotation Validator/Validate secret rotation]   |   "warning_days": 14,
+[Secret Rotation Validator/Validate secret rotation]   |   "counts": {
+[Secret Rotation Validator/Validate secret rotation]   |     "expired": 0,
+[Secret Rotation Validator/Validate secret rotation]   |     "warning": 0,
+[Secret Rotation Validator/Validate secret rotation]   |     "ok": 2
+[Secret Rotation Validator/Validate secret rotation]   |   },
+[Secret Rotation Validator/Validate secret rotation]   |   "expired": [],
+[Secret Rotation Validator/Validate secret rotation]   |   "warning": [],
+[Secret Rotation Validator/Validate secret rotation]   |   "ok": [
+[Secret Rotation Validator/Validate secret rotation]   |     {
+[Secret Rotation Validator/Validate secret rotation]   |       "name": "CERT_KEY",
+[Secret Rotation Validator/Validate secret rotation]   |       "last_rotated": "2026-04-01",
+[Secret Rotation Validator/Validate secret rotation]   |       "rotation_days": 180,
+[Secret Rotation Validator/Validate secret rotation]   |       "days_until_expiry": 164,
+[Secret Rotation Validator/Validate secret rotation]   |       "services": [
+[Secret Rotation Validator/Validate secret rotation]   |         "tls"
+[Secret Rotation Validator/Validate secret rotation]   |       ]
+[Secret Rotation Validator/Validate secret rotation]   |     },
+[Secret Rotation Validator/Validate secret rotation]   |     {
+[Secret Rotation Validator/Validate secret rotation]   |       "name": "SMTP_PASS",
+[Secret Rotation Validator/Validate secret rotation]   |       "last_rotated": "2026-03-01",
+[Secret Rotation Validator/Validate secret rotation]   |       "rotation_days": 365,
+[Secret Rotation Validator/Validate secret rotation]   |       "days_until_expiry": 318,
+[Secret Rotation Validator/Validate secret rotation]   |       "services": [
+[Secret Rotation Validator/Validate secret rotation]   |         "mail"
+[Secret Rotation Validator/Validate secret rotation]   |       ]
+[Secret Rotation Validator/Validate secret rotation]   |     }
+[Secret Rotation Validator/Validate secret rotation]   |   ]
+[Secret Rotation Validator/Validate secret rotation]   | }
+[Secret Rotation Validator/Validate secret rotation]   | ---END JSON OUTPUT---
+[Secret Rotation Validator/Validate secret rotation]   ✅  Success - Main Run validator (JSON for assertions) [1.617729402s]
+[Secret Rotation Validator/Validate secret rotation]   ⚙  ::set-output:: exit_code=0
+[Secret Rotation Validator/Validate secret rotation]   ⚙  ::set-output:: report_json={
+  "today": "2026-04-17",
+  "warning_days": 14,
+  "counts": {
+    "expired": 0,
+    "warning": 0,
+    "ok": 2
+  },
+  "expired": [],
+  "warning": [],
+  "ok": [
+    {
+      "name": "CERT_KEY",
+      "last_rotated": "2026-04-01",
+      "rotation_days": 180,
+      "days_until_expiry": 164,
+      "services": [
+        "tls"
+      ]
+    },
+    {
+      "name": "SMTP_PASS",
+      "last_rotated": "2026-03-01",
+      "rotation_days": 365,
+      "days_until_expiry": 318,
+      "services": [
+        "mail"
+      ]
+    }
+  ]
+}
+[Secret Rotation Validator/Validate secret rotation] ⭐ Run Main Run validator (markdown report)
+[Secret Rotation Validator/Validate secret rotation]   🐳  docker exec cmd=[bash --noprofile --norc -e -o pipefail /var/run/act/workflow/4.sh] user= workdir=
+[Secret Rotation Validator/Validate secret rotation]   | # Secret Rotation Report
+[Secret Rotation Validator/Validate secret rotation]   | 
+[Secret Rotation Validator/Validate secret rotation]   | Reference date: 2026-04-17
+[Secret Rotation Validator/Validate secret rotation]   | Warning window: 14 days
+[Secret Rotation Validator/Validate secret rotation]   | 
+[Secret Rotation Validator/Validate secret rotation]   | ## EXPIRED (0)
+[Secret Rotation Validator/Validate secret rotation]   | 
+[Secret Rotation Validator/Validate secret rotation]   | _None._
+[Secret Rotation Validator/Validate secret rotation]   | 
+[Secret Rotation Validator/Validate secret rotation]   | ## WARNING (0)
+[Secret Rotation Validator/Validate secret rotation]   | 
+[Secret Rotation Validator/Validate secret rotation]   | _None._
+[Secret Rotation Validator/Validate secret rotation]   | 
+[Secret Rotation Validator/Validate secret rotation]   | ## OK (2)
+[Secret Rotation Validator/Validate secret rotation]   | 
+[Secret Rotation Validator/Validate secret rotation]   | | Name | Last Rotated | Rotation Days | Days Until Expiry | Services |
+[Secret Rotation Validator/Validate secret rotation]   | | --- | --- | --- | --- | --- |
+[Secret Rotation Validator/Validate secret rotation]   | | CERT_KEY | 2026-04-01 | 180 | 164 | tls |
+[Secret Rotation Validator/Validate secret rotation]   | | SMTP_PASS | 2026-03-01 | 365 | 318 | mail |
+[Secret Rotation Validator/Validate secret rotation]   | 
+[Secret Rotation Validator/Validate secret rotation]   | Markdown report exit code: 0
+[Secret Rotation Validator/Validate secret rotation]   ✅  Success - Main Run validator (markdown report) [1.423113591s]
+[Secret Rotation Validator/Validate secret rotation] ⭐ Run Main Assert expected counts and exit code
+[Secret Rotation Validator/Validate secret rotation]   🐳  docker exec cmd=[bash --noprofile --norc -e -o pipefail /var/run/act/workflow/5.sh] user= workdir=
+[Secret Rotation Validator/Validate secret rotation]   | Expected exit: 0, actual: 0
+[Secret Rotation Validator/Validate secret rotation]   | Counts: expired=0 warning=0 ok=2
+[Secret Rotation Validator/Validate secret rotation]   | All assertions passed.
+[Secret Rotation Validator/Validate secret rotation]   ✅  Success - Main Assert expected counts and exit code [1.668388896s]
+[Secret Rotation Validator/Validate secret rotation] ⭐ Run Complete job
+[Secret Rotation Validator/Validate secret rotation] Cleaning up container for job Validate secret rotation
+[Secret Rotation Validator/Validate secret rotation]   ✅  Success - Complete job
+[Secret Rotation Validator/Validate secret rotation] 🏁  Job succeeded
+========== END CASE: all_ok ==========
+
+========== BEGIN CASE: warning_only ==========
+config=fixtures/warning-only.json warning_days=30 today=2026-04-17
+expected: exit=0 expired=0 warning=2 ok=0
+act exit code: 0
+time="2026-04-17T12:38:29-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Secret Rotation Validator/Validate secret rotation] ⭐ Run Set up job
+[Secret Rotation Validator/Validate secret rotation] 🚀  Start image=act-ubuntu-pwsh:latest
+[Secret Rotation Validator/Validate secret rotation]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Secret Rotation Validator/Validate secret rotation]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/Validate secret rotation]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/Validate secret rotation]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Secret Rotation Validator/Validate secret rotation]   ✅  Success - Set up job
+[Secret Rotation Validator/Validate secret rotation] ⭐ Run Main Checkout
+[Secret Rotation Validator/Validate secret rotation]   🐳  docker cp src=/tmp/tmp.djWiO0oRWJ/. dst=/tmp/tmp.djWiO0oRWJ
+[Secret Rotation Validator/Validate secret rotation]   ✅  Success - Main Checkout [254.236272ms]
+[Secret Rotation Validator/Validate secret rotation] ⭐ Run Main Install dependencies
+[Secret Rotation Validator/Validate secret rotation]   🐳  docker exec cmd=[bash --noprofile --norc -e -o pipefail /var/run/act/workflow/1.sh] user= workdir=
+[Secret Rotation Validator/Validate secret rotation]   | jq-1.6
+[Secret Rotation Validator/Validate secret rotation]   ✅  Success - Main Install dependencies [545.806498ms]
+[Secret Rotation Validator/Validate secret rotation] ⭐ Run Main Syntax check
+[Secret Rotation Validator/Validate secret rotation]   🐳  docker exec cmd=[bash --noprofile --norc -e -o pipefail /var/run/act/workflow/2.sh] user= workdir=
+[Secret Rotation Validator/Validate secret rotation]   ✅  Success - Main Syntax check [570.131057ms]
+[Secret Rotation Validator/Validate secret rotation] ⭐ Run Main Run validator (JSON for assertions)
+[Secret Rotation Validator/Validate secret rotation]   🐳  docker exec cmd=[bash --noprofile --norc -e -o pipefail /var/run/act/workflow/run_json.sh] user= workdir=
+[Secret Rotation Validator/Validate secret rotation]   | ---BEGIN JSON OUTPUT---
+[Secret Rotation Validator/Validate secret rotation]   | {
+[Secret Rotation Validator/Validate secret rotation]   |   "today": "2026-04-17",
+[Secret Rotation Validator/Validate secret rotation]   |   "warning_days": 30,
+[Secret Rotation Validator/Validate secret rotation]   |   "counts": {
+[Secret Rotation Validator/Validate secret rotation]   |     "expired": 0,
+[Secret Rotation Validator/Validate secret rotation]   |     "warning": 2,
+[Secret Rotation Validator/Validate secret rotation]   |     "ok": 0
+[Secret Rotation Validator/Validate secret rotation]   |   },
+[Secret Rotation Validator/Validate secret rotation]   |   "expired": [],
+[Secret Rotation Validator/Validate secret rotation]   |   "warning": [
+[Secret Rotation Validator/Validate secret rotation]   |     {
+[Secret Rotation Validator/Validate secret rotation]   |       "name": "OAUTH_CLIENT_SECRET",
+[Secret Rotation Validator/Validate secret rotation]   |       "last_rotated": "2026-02-01",
+[Secret Rotation Validator/Validate secret rotation]   |       "rotation_days": 90,
+[Secret Rotation Validator/Validate secret rotation]   |       "days_until_expiry": 15,
+[Secret Rotation Validator/Validate secret rotation]   |       "services": [
+[Secret Rotation Validator/Validate secret rotation]   |         "auth",
+[Secret Rotation Validator/Validate secret rotation]   |         "api"
+[Secret Rotation Validator/Validate secret rotation]   |       ]
+[Secret Rotation Validator/Validate secret rotation]   |     },
+[Secret Rotation Validator/Validate secret rotation]   |     {
+[Secret Rotation Validator/Validate secret rotation]   |       "name": "INTERNAL_TOKEN",
+[Secret Rotation Validator/Validate secret rotation]   |       "last_rotated": "2026-01-15",
+[Secret Rotation Validator/Validate secret rotation]   |       "rotation_days": 100,
+[Secret Rotation Validator/Validate secret rotation]   |       "days_until_expiry": 8,
+[Secret Rotation Validator/Validate secret rotation]   |       "services": [
+[Secret Rotation Validator/Validate secret rotation]   |         "cron"
+[Secret Rotation Validator/Validate secret rotation]   |       ]
+[Secret Rotation Validator/Validate secret rotation]   |     }
+[Secret Rotation Validator/Validate secret rotation]   |   ],
+[Secret Rotation Validator/Validate secret rotation]   |   "ok": []
+[Secret Rotation Validator/Validate secret rotation]   | }
+[Secret Rotation Validator/Validate secret rotation]   | ---END JSON OUTPUT---
+[Secret Rotation Validator/Validate secret rotation]   ✅  Success - Main Run validator (JSON for assertions) [879.409299ms]
+[Secret Rotation Validator/Validate secret rotation]   ⚙  ::set-output:: exit_code=0
+[Secret Rotation Validator/Validate secret rotation]   ⚙  ::set-output:: report_json={
+  "today": "2026-04-17",
+  "warning_days": 30,
+  "counts": {
+    "expired": 0,
+    "warning": 2,
+    "ok": 0
+  },
+  "expired": [],
+  "warning": [
+    {
+      "name": "OAUTH_CLIENT_SECRET",
+      "last_rotated": "2026-02-01",
+      "rotation_days": 90,
+      "days_until_expiry": 15,
+      "services": [
+        "auth",
+        "api"
+      ]
+    },
+    {
+      "name": "INTERNAL_TOKEN",
+      "last_rotated": "2026-01-15",
+      "rotation_days": 100,
+      "days_until_expiry": 8,
+      "services": [
+        "cron"
+      ]
+    }
+  ],
+  "ok": []
+}
+[Secret Rotation Validator/Validate secret rotation] ⭐ Run Main Run validator (markdown report)
+[Secret Rotation Validator/Validate secret rotation]   🐳  docker exec cmd=[bash --noprofile --norc -e -o pipefail /var/run/act/workflow/4.sh] user= workdir=
+[Secret Rotation Validator/Validate secret rotation]   | # Secret Rotation Report
+[Secret Rotation Validator/Validate secret rotation]   | 
+[Secret Rotation Validator/Validate secret rotation]   | Reference date: 2026-04-17
+[Secret Rotation Validator/Validate secret rotation]   | Warning window: 30 days
+[Secret Rotation Validator/Validate secret rotation]   | 
+[Secret Rotation Validator/Validate secret rotation]   | ## EXPIRED (0)
+[Secret Rotation Validator/Validate secret rotation]   | 
+[Secret Rotation Validator/Validate secret rotation]   | _None._
+[Secret Rotation Validator/Validate secret rotation]   | 
+[Secret Rotation Validator/Validate secret rotation]   | ## WARNING (2)
+[Secret Rotation Validator/Validate secret rotation]   | 
+[Secret Rotation Validator/Validate secret rotation]   | | Name | Last Rotated | Rotation Days | Days Until Expiry | Services |
+[Secret Rotation Validator/Validate secret rotation]   | | --- | --- | --- | --- | --- |
+[Secret Rotation Validator/Validate secret rotation]   | | OAUTH_CLIENT_SECRET | 2026-02-01 | 90 | 15 | auth,api |
+[Secret Rotation Validator/Validate secret rotation]   | | INTERNAL_TOKEN | 2026-01-15 | 100 | 8 | cron |
+[Secret Rotation Validator/Validate secret rotation]   | 
+[Secret Rotation Validator/Validate secret rotation]   | ## OK (0)
+[Secret Rotation Validator/Validate secret rotation]   | 
+[Secret Rotation Validator/Validate secret rotation]   | _None._
+[Secret Rotation Validator/Validate secret rotation]   | 
+[Secret Rotation Validator/Validate secret rotation]   | Markdown report exit code: 0
+[Secret Rotation Validator/Validate secret rotation]   ✅  Success - Main Run validator (markdown report) [583.738167ms]
+[Secret Rotation Validator/Validate secret rotation] ⭐ Run Main Assert expected counts and exit code
+[Secret Rotation Validator/Validate secret rotation]   🐳  docker exec cmd=[bash --noprofile --norc -e -o pipefail /var/run/act/workflow/5.sh] user= workdir=
+[Secret Rotation Validator/Validate secret rotation]   | Expected exit: 0, actual: 0
+[Secret Rotation Validator/Validate secret rotation]   | Counts: expired=0 warning=2 ok=0
+[Secret Rotation Validator/Validate secret rotation]   | All assertions passed.
+[Secret Rotation Validator/Validate secret rotation]   ✅  Success - Main Assert expected counts and exit code [571.248497ms]
+[Secret Rotation Validator/Validate secret rotation] ⭐ Run Complete job
+[Secret Rotation Validator/Validate secret rotation] Cleaning up container for job Validate secret rotation
+[Secret Rotation Validator/Validate secret rotation]   ✅  Success - Complete job
+[Secret Rotation Validator/Validate secret rotation] 🏁  Job succeeded
+========== END CASE: warning_only ==========
+
