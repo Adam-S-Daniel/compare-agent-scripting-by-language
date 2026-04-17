@@ -1,0 +1,72 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  VERSION_FILE: VERSION
+  CHANGELOG_FILE: CHANGELOG.md
+
+jobs:
+  test:
+    name: Run Pester tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $r = Invoke-Pester -Path ./SemanticVersionBumper.Tests.ps1 -PassThru -Output Detailed
+          if ($r.FailedCount -gt 0) { throw "Pester failures: $($r.FailedCount)" }
+
+  bump:
+    name: Bump (${{ matrix.fixture }})
+    needs: test
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - fixture: commits-minor.txt
+            expected: '1.2.0'
+            bump: minor
+          - fixture: commits-patch.txt
+            expected: '1.1.1'
+            bump: patch
+          - fixture: commits-major.txt
+            expected: '2.0.0'
+            bump: major
+          - fixture: commits-none.txt
+            expected: '1.1.0'
+            bump: none
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bump version from fixture
+        shell: pwsh
+        env:
+          FIXTURE: ${{ matrix.fixture }}
+          EXPECTED: ${{ matrix.expected }}
+          EXPECTED_BUMP: ${{ matrix.bump }}
+        run: |
+          $out = ./Invoke-Bumper.ps1 -VersionFile $env:VERSION_FILE `
+            -CommitsFile "fixtures/$env:FIXTURE" `
+            -ChangelogFile $env:CHANGELOG_FILE 2>&1 | Out-String
+          Write-Host $out
+          $newVersion = ($out -split "`n" | Where-Object { $_ -match 'NEW_VERSION=' }) -replace '.*NEW_VERSION=', '' | ForEach-Object { $_.Trim() }
+          $bumpType   = ($out -split "`n" | Where-Object { $_ -match 'BUMP_TYPE=' })  -replace '.*BUMP_TYPE=',   '' | ForEach-Object { $_.Trim() }
+          Write-Host "ASSERT_FIXTURE=$env:FIXTURE"
+          Write-Host "ASSERT_NEW_VERSION=$newVersion"
+          Write-Host "ASSERT_BUMP_TYPE=$bumpType"
+          if ($newVersion -ne $env:EXPECTED) {
+            throw "Expected NEW_VERSION=$env:EXPECTED but got '$newVersion'"
+          }
+          if ($bumpType -ne $env:EXPECTED_BUMP) {
+            throw "Expected BUMP_TYPE=$env:EXPECTED_BUMP but got '$bumpType'"
+          }
+          Write-Host "RESULT_OK fixture=$env:FIXTURE new=$newVersion bump=$bumpType"
