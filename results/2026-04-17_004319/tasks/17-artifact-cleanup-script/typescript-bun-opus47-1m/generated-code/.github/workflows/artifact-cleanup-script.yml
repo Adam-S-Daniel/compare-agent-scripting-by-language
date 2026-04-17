@@ -1,0 +1,76 @@
+name: Artifact Cleanup
+
+# Runs the cleanup planner against a chosen fixture. The harness drives this
+# workflow once per fixture by passing FIXTURE in via `act --env`.
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: 'Fixture case name (without extension)'
+        required: false
+        default: 'case-combined'
+
+permissions:
+  contents: read
+
+env:
+  # Pin "now" so date-based retention is deterministic in CI.
+  NOW: '2026-04-17T00:00:00Z'
+
+jobs:
+  cleanup:
+    name: Plan artifact cleanup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+
+      - name: Show Bun version
+        run: bun --version
+
+      - name: Run unit tests (bun test)
+        # Only the pure-logic tests run here. harness.test.ts shells out to
+        # `act` and is for the local outer test harness, not for inside-CI.
+        run: bun test cleanup.test.ts
+
+      - name: Pick fixture
+        id: pick
+        env:
+          INPUT_FIXTURE: ${{ github.event.inputs.fixture }}
+          ENV_FIXTURE: ${{ env.FIXTURE }}
+        run: |
+          # Precedence: act/--env FIXTURE > workflow_dispatch input > default.
+          NAME="${ENV_FIXTURE:-${INPUT_FIXTURE:-case-combined}}"
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "Selected fixture: $NAME"
+
+      - name: Validate fixture files exist
+        run: |
+          NAME="${{ steps.pick.outputs.name }}"
+          test -f "fixtures/${NAME}.artifacts.json"
+          test -f "fixtures/${NAME}.policy.json"
+
+      - name: Run cleanup planner
+        env:
+          DRY_RUN: ${{ env.DRY_RUN }}
+        run: |
+          NAME="${{ steps.pick.outputs.name }}"
+          FLAGS=""
+          if [ "${DRY_RUN:-false}" = "true" ]; then
+            FLAGS="--dry-run"
+          fi
+          # shellcheck disable=SC2086
+          bun run cleanup.ts \
+            --input "fixtures/${NAME}.artifacts.json" \
+            --policy "fixtures/${NAME}.policy.json" \
+            --now "$NOW" \
+            $FLAGS

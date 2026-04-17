@@ -1,0 +1,296 @@
+[Tool: Bash] ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/
+[Result] total 44
+drwxr-xr-x 4 passp passp  4096 Apr 17 06:56 .
+drwxr-xr-x 7 passp passp  4096 Apr 17 06:56 ..
+-rw-r--r-- 1 passp passp    40 Apr 17 06:56 .actrc
+drwxr-xr-x 2 passp passp  4096 Apr 17 06:56 .claude
+drwxr-xr-x 7 passp passp  4096 Apr 17 06:56 .git
+-rw-r--r-- 1 passp passp 21843 Apr 17 00:12 benchmark-instructions-v4.md
+[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/AGENTS.md 2>/dev/null | head -200
+[Result] # Agent Instructions
+
+All agent-facing instructions live in this file. `CLAUDE.md` contains only a
+reference here. If you are a Claude Code agent, you have already loaded this
+via `CLAUDE.md`. Other agents: read this file directly.
+
+## Build and test
+
+```bash
+# Run unit tests (REQUIRED before every PR)
+pip install pytest  # if not already installed
+python3 -m pytest tests/ -v
+
+# Validate imports
+python3 -c "from runner import main"
+python3 -c "from generate_results import generate_results_md"
+python3 -c "from test_quality import compute_structural_metrics"
+python3 -c "from llm_providers import get_provider"
+
+# Regenerate all reports
+python3 generate_results.py --all
+
+# Run a benchmark (v4, all tasks/modes/models)
+python3 runner.py --tasks 11,12,13,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
+
+# Evaluate test quality (structural metrics only)
+python3 test_quality.py results/2026-04-09_152435
+
+# Evaluate test quality with LLM-as-judge (requires a provid
+[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/.actrc
+[Result] -P ubuntu-latest=act-ubuntu-pwsh:latest
+[Tool: Bash] which bun actionlint act docker && bun --version
+[Result] /home/passp/.bun/bin/bun
+/home/passp/.local/bin/actionlint
+/home/passp/.local/bin/act
+/usr/bin/docker
+1.3.11
+[Assistant] I'll plan the structure and start TDD. Stating what I'm about to do: write the first failing test for the artifact cleanup core logic.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/package.json", "content": "{\n  \"name\": \"artifa
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/package.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/tsconfig.json", "content": "{\n  \"compilerOptions
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/tsconfig.json (file state is current in your context — no need to Read it back)
+[Assistant] Now the first failing test — start with the simplest piece: max-age policy.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/cleanup.test.ts", "content": "// Tests for the art
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/cleanup.test.ts (file state is current in your context — no need to Read it back)
+[Tool: Bash] bun test 2>&1 | head -40
+[Result] bun test v1.3.11 (af24e281)
+
+cleanup.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module './cleanup.ts' from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/cleanup.test.ts'
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [14.00ms]
+[Assistant] Red confirmed. Now write the minimum implementation to make tests pass.
+[Tool: ToolSearch] {"query": "select:TodoWrite", "max_results": 1}
+[Result] {'type': 'tool_reference', 'tool_name': 'TodoWrite'}
+[Tool: TodoWrite] {"todos": [{"content": "Implement cleanup.ts (green phase)", "status": "in_progress", "activeForm": "Implementing cleanup.ts"}, {"content": "Add CLI entry + JSON I/O", "status": "pending", "activeForm
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/cleanup.ts", "content": "// Artifact cleanup plann
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/cleanup.ts (file state is current in your context — no need to Read it back)
+[Tool: Bash] bun test 2>&1 | tail -40
+[Result] bun test v1.3.11 (af24e281)
+
+ 13 pass
+ 0 fail
+ 27 expect() calls
+Ran 13 tests across 1 file. [16.00ms]
+[Assistant] All 13 tests green. Now let me create test fixtures and the GitHub Actions workflow.
+[Tool: Bash] mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/.github/workflows /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/fixtures
+[Result] (Bash completed with no output)
+[Assistant] I need the CLI to accept a `--now` flag so date-based policies are deterministic in CI. Let me update.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/cleanup.ts", "old_string": "
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/cleanup.ts has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/cleanup.ts", "old_string": "
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/cleanup.ts has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Now create three test fixtures with known expected outputs.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/fixtures/case-max-age.artifacts.json", "content": 
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/fixtures/case-max-age.artifacts.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/fixtures/case-max-age.policy.json", "content": "{ 
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/fixtures/case-max-age.policy.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/fixtures/case-keep-latest.artifacts.json", "conten
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/fixtures/case-keep-latest.policy.json", "content":
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/fixtures/case-keep-latest.artifacts.json (file state is current in your context — no need to Read it back)
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/fixtures/case-keep-latest.policy.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/fixtures/case-combined.artifacts.json", "content":
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/fixtures/case-combined.artifacts.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/fixtures/case-combined.policy.json", "content": "{
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/fixtures/case-combined.policy.json (file state is current in your context — no need to Read it back)
+[Tool: TodoWrite] {"todos": [{"content": "Implement cleanup.ts (green phase)", "status": "completed", "activeForm": "Implementing cleanup.ts"}, {"content": "Add CLI entry + JSON I/O", "status": "completed", "activeForm
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Assistant] Verify my fixture expectations by running locally:
+[Tool: Bash] bun run cleanup.ts --input fixtures/case-max-age.artifacts.json --policy fixtures/case-max-age.policy.json --now 2026-04-17T00:00:00Z --dry-run
+[Result] === DRY RUN — no artifacts will be deleted ===
+Artifact cleanup plan
+---------------------
+Total artifacts: 4
+To delete: 2
+To retain: 2
+Bytes reclaimed: 3072
+Bytes retained: 12288
+
+Deletions:
+  - old-build-1 (1024 bytes) — older than 30 days
+  - old-build-2 (2048 bytes) — older than 30 days
+SUMMARY {"totalArtifacts":4,"deletedCount":2,"retainedCount":2,"bytesReclaimed":3072,"bytesRetained":12288}
+[Tool: Bash] bun run cleanup.ts --input fixtures/case-keep-latest.artifacts.json --policy fixtures/case-keep-latest.policy.json --now 2026-04-17T00:00:00Z --dry-run
+[Result] === DRY RUN — no artifacts will be deleted ===
+Artifact cleanup plan
+---------------------
+Total artifacts: 5
+To delete: 2
+To retain: 3
+Bytes reclaimed: 200
+Bytes retained: 700
+
+Deletions:
+  - ci-a (100 bytes) — exceeds keep-latest-2 for workflow 'ci'
+  - ci-b (100 bytes) — exceeds keep-latest-2 for workflow 'ci'
+SUMMARY {"totalArtifacts":5,"deletedCount":2,"retainedCount":3,"bytesReclaimed":200,"bytesRetained":700}
+[Tool: Bash] bun run cleanup.ts --input fixtures/case-combined.artifacts.json --policy fixtures/case-combined.policy.json --now 2026-04-17T00:00:00Z
+[Result] Artifact cleanup plan
+---------------------
+Total artifacts: 4
+To delete: 3
+To retain: 1
+Bytes reclaimed: 5400
+Bytes retained: 200
+
+Deletions:
+  - ancient (200 bytes) — older than 30 days
+  - ci-extra (200 bytes) — exceeds keep-latest-1 for workflow 'ci'
+  - huge-recent (5000 bytes) — total size budget 1000 bytes exceeded
+SUMMARY {"totalArtifacts":4,"deletedCount":3,"retainedCount":1,"bytesReclaimed":5400,"bytesRetained":200}
+[Tool: Bash] docker images | grep act-ubuntu-pwsh
+[Result] WARNING: This output is designed for human readability. For machine-readable output, please use --format.
+act-ubuntu-pwsh:latest                   ba4101fd0f65       2.55GB          639MB
+[Tool: Bash] docker run --rm act-ubuntu-pwsh:latest bash -c "which curl bun node npm pwsh; bun --version 2>/dev/null || echo 'no bun'"
+[Result] /usr/bin/curl
+/opt/acttoolcache/node/24.14.1/x64/bin/node
+/opt/acttoolcache/node/24.14.1/x64/bin/npm
+/usr/bin/pwsh
+no bun
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/.github/workflows/artifact-cleanup-script.yml", "c
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/.github/workflows/artifact-cleanup-script.yml (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/artifact-cleanup-script.yml
+[Result] (Bash completed with no output)
+[Assistant] actionlint passes cleanly. Now write the act-based test harness.
+[Tool: TodoWrite] {"todos": [{"content": "Implement cleanup.ts (green phase)", "status": "completed", "activeForm": "Implementing cleanup.ts"}, {"content": "Add CLI entry + JSON I/O", "status": "completed", "activeForm
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/harness.test.ts", "content": "// Test harness that
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/harness.test.ts (file state is current in your context — no need to Read it back)
+[Tool: Bash] bun -e "const f = await Bun.file('.github/workflows/artifact-cleanup-script.yml').text(); try { const y = Bun.YAML?.parse?.(f); console.log('YAML built-in:', !!y); } catch(e) { console.log('no built-in YAML:', e.message); }"
+[Result] YAML built-in: true
+[Assistant] Bun has built-in YAML. Let me update the harness to use it (no extra dep).
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/harness.test.ts", "old_strin
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/harness.test.ts has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] bun -e "
+const f = await Bun.file('.github/workflows/artifact-cleanup-script.yml').text();
+const y = Bun.YAML.parse(f);
+console.log('keys:', Object.keys(y));
+console.log('on type:', typeof y.on, 'value:', JSON.stringify(y.on));
+console.log('jobs.cleanup defined:', !!y.jobs?.cleanup);
+"
+[Result] keys: [ "name", "on", "permissions", "env", "jobs" ]
+on type: object value: {"push":null,"pull_request":null,"schedule":[{"cron":"0 3 * * *"}],"workflow_dispatch":{"inputs":{"fixture":{"description":"Fixture case name (without extension)","required":false,"default":"case-combined"}}}}
+jobs.cleanup defined: true
+[Tool: Bash] bun test cleanup.test.ts 2>&1 | tail -20
+[Result] bun test v1.3.11 (af24e281)
+
+ 13 pass
+ 0 fail
+ 27 expect() calls
+Ran 13 tests across 1 file. [18.00ms]
+[Tool: Bash] bun test harness.test.ts -t "workflow structure" 2>&1 | tail -30
+[Result] bun test v1.3.11 (af24e281)
+
+ 4 pass
+ 3 filtered out
+ 0 fail
+ 14 expect() calls
+Ran 4 tests across 1 file. [104.00ms]
+[Assistant] Structure tests pass. Now let me run one act case first to validate end-to-end before running all three.
+[Tool: Bash] cd /tmp && rm -rf act-smoke && mkdir act-smoke && cp -r /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/. act-smoke/ && cd act-smoke && rm -rf .git node_modules act-result.txt && git init -q -b main && git config user.email "ci@example.com" && git config user.name "ci" && git add -A && git commit -q -m "seed" && echo "Repo set up at $(pwd)"
+[Result] Repo set up at /tmp/act-smoke
+Shell cwd was reset to /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m
+[Tool: Bash] cd /tmp/act-smoke && act push --rm --env FIXTURE=case-max-age --env DRY_RUN=true 2>&1 | tail -80
+[Result] time="2026-04-17T07:01:30-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Artifact Cleanup/Plan artifact cleanup] ⭐ Run Set up job
+[Artifact Cleanup/Plan artifact cleanup] 🚀  Start image=act-ubuntu-pwsh:latest
+[Artifact Cleanup/Plan artifact cleanup]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=true
+[Artifact Cleanup/Plan artifact cleanup] using DockerAuthConfig authentication for docker pull
+[Artifact Cleanup/Plan artifact cleanup] Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+[Artifact Cleanup/Plan artifact cleanup]   ❌  Failure - Set up job
+[Artifact Cleanup/Plan artifact cleanup] 🏁  Job failed
+Error: Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+Shell cwd was reset to /home/passp/repos/compare-agent-scripting-by-language/work
+[Assistant] Need to disable image pulling since the image is local. Let me update .actrc.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/.actrc"}
+[Result] 1	-P ubuntu-latest=act-ubuntu-pwsh:latest
+2	
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/.actrc", "content": "-P ubuntu-latest=act-ubuntu-p
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/.actrc has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] cd /tmp && rm -rf act-smoke && mkdir act-smoke && cp -r /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/. act-smoke/ && cd act-smoke && rm -rf .git node_modules act-result.txt && git init -q -b main && git config user.email "ci@example.com" && git config user.name "ci" && git add -A && git commit -q -m "seed" && act push --rm --env FIXTURE=case-max-age --env DRY_RUN=true 2>&1 | tail -120
+[Result] [Artifact Cleanup/Plan artifact cleanup]   | #=#=#                                                                                                                                                     0.2%##                                                                         3.1%####                                                                       6.0%######                                                                     8.7%########                                                                  12.0%##########                                                                15.0%############                                                              17.4%###############                                                           21.0%################                                                          23.4%###################                                                       27.3%######################                                                    
+[Assistant] The workflow runs all tests including the harness, which tries to recursively run act inside act. Limit the workflow to only the unit tests.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/.github/workflows/artifact-c
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/.github/workflows/artifact-cleanup-script.yml has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/artifact-cleanup-script.yml && echo "actionlint OK"
+[Result] actionlint OK
+[Tool: Bash] cd /tmp && rm -rf act-smoke && mkdir act-smoke && cp -r /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/. act-smoke/ && cd act-smoke && rm -rf .git node_modules act-result.txt && git init -q -b main && git config user.email "ci@example.com" && git config user.name "ci" && git add -A && git commit -q -m "seed" && act push --rm --env FIXTURE=case-max-age --env DRY_RUN=true 2>&1 | tail -60
+[Result] [Artifact Cleanup/Plan artifact cleanup]   ✅  Success - Main Install Bun [6.152714904s]
+[Artifact Cleanup/Plan artifact cleanup]   ⚙  ::add-path:: /root/.bun/bin
+[Artifact Cleanup/Plan artifact cleanup] ⭐ Run Main Show Bun version
+[Artifact Cleanup/Plan artifact cleanup]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Artifact Cleanup/Plan artifact cleanup]   | 1.3.12
+[Artifact Cleanup/Plan artifact cleanup]   ✅  Success - Main Show Bun version [433.938577ms]
+[Artifact Cleanup/Plan artifact cleanup] ⭐ Run Main Run unit tests (bun test)
+[Artifact Cleanup/Plan artifact cleanup]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/3] user= workdir=
+[Artifact Cleanup/Plan artifact cleanup]   | bun test v1.3.12 (700fc117)
+[Artifact Cleanup/Plan artifact cleanup]   | 
+[Artifact Cleanup/Plan artifact cleanup]   ❓  ::group::cleanup.test.ts:
+[Artifact Cleanup/Plan artifact cleanup]   | (pass) max-age policy > deletes artifacts older than maxAgeDays [2.27ms]
+[Artifact Clean
+[Assistant] Smoke run works (Job succeeded, all expected output present). Now run the full harness (3 act invocations for 3 cases).
+[Tool: TodoWrite] {"todos": [{"content": "Implement cleanup.ts (green phase)", "status": "completed", "activeForm": "Implementing cleanup.ts"}, {"content": "Add CLI entry + JSON I/O", "status": "completed", "activeForm
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Bash] bun test 2>&1 | tail -50
+[Result] bun test v1.3.11 (af24e281)
+
+harness.test.ts:
+252 |         expect(r.status).toBe(0);
+253 |         for (const needle of c.mustContain) {
+254 |           expect(combined).toContain(needle);
+255 |         }
+256 |         for (const needle of c.mustNotContain) {
+257 |           expect(combined).not.toContain(needle);
+                                     ^
+error: expect(received).not.toContain(expected)
+
+Expected to not contain: "DRY RUN"
+Received: "[Artifact Cleanup/Plan artifact cleanup] ⭐ Run Set up job\n[Artifact Cleanup/Plan artifact cleanup] 🚀  Start image=act-ubuntu-pwsh:latest\n[Artifact Cleanup/Plan artifact cleanup]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false\n[Artifact Cleanup/Plan artifact cleanup]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=[\"tail\" \"-f\" \"/dev/null\"] cmd=[] network=\"host\"\n[Artifact Cleanup/Plan artifact cleanup]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=[\"tail\" \"
+[Assistant] 19/20 pass — the one failure is because "DRY RUN" appears in the unit test name printed inside act output. Let me use a more specific anti-pattern.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/harness.test.ts", "old_strin
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/typescript-bun-opus47-1m/harness.test.ts has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] ls -la act-result.txt && wc -l act-result.txt
+[Result] -rw-r--r-- 1 passp passp 30365 Apr 17 07:03 act-result.txt
+268 act-result.txt
+[Tool: Bash] grep -c "Job succeeded" act-result.txt && grep -c "=== CASE:" act-result.txt && grep "=== CASE:" act-result.txt
+[Result] 3
+3
+=== CASE: case-max-age  (dryRun=true)  exit=0 ===
+=== CASE: case-keep-latest  (dryRun=true)  exit=0 ===
+=== CASE: case-combined  (dryRun=false)  exit=0 ===
+[Assistant] act-result.txt has all 3 cases with exit=0. The only failure was an assertion over-match. Re-run the harness to confirm the fix.
+[Tool: Bash] bun test 2>&1 | tail -10
+[Result] bun test v1.3.11 (af24e281)
+
+ 20 pass
+ 0 fail
+ 84 expect() calls
+Ran 20 tests across 2 files. [42.91s]
+[Assistant] All 20 tests pass (13 unit + 4 structure + 3 act-driven).
+[Tool: Bash] ls -la act-result.txt && grep -c "Job succeeded" act-result.txt && grep "=== CASE:" act-result.txt
+[Result] -rw-r--r-- 1 passp passp 32608 Apr 17 07:04 act-result.txt
+3
+=== CASE: case-max-age  (dryRun=true)  exit=0 ===
+=== CASE: case-keep-latest  (dryRun=true)  exit=0 ===
+=== CASE: case-combined  (dryRun=false)  exit=0 ===
+[Tool: TodoWrite] {"todos": [{"content": "Implement cleanup.ts (green phase)", "status": "completed", "activeForm": "Implementing cleanup.ts"}, {"content": "Add CLI entry + JSON I/O", "status": "completed", "activeForm
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Assistant] Done. Summary of what's in place:
+
+- **`cleanup.ts`** — pure `applyRetention()` for max-age, keep-latest-N-per-workflow, max-total-size; `formatPlan()` with DRY RUN banner; `parseArtifacts()` with field validation; CLI with `--input`, `--policy`, `--now`, `--dry-run`.
+- **`cleanup.test.ts`** — 13 TDD-driven unit tests (one per behavior).
+- **`fixtures/`** — three case pairs (`*.artifacts.json` + `*.policy.json`).
+- **`.github/workflows/artifact-cleanup-script.yml`** — push/PR/schedule/dispatch triggers, `actions/checkout@v4`, installs Bun, runs `bun test cleanup.test.ts`, runs the planner against the selected fixture. **actionlint passes.**
+- **`harness.test.ts`** — 4 workflow-structure tests (file exists, YAML parses, paths exist, actionlint exits 0) + 3 end-to-end tests, each spinning up a temp git repo, running `act push --rm`, asserting exit=0, "Job succeeded", and exact summary strings (e.g. `SUMMARY {"totalArtifacts":4,"deletedCount":3,"retainedCount":1,"bytesReclaimed":5400,"bytesRetained":200}`).
+- **`act-result.txt`** — 32 KB, contains all three case outputs delimited by `=== CASE: ... ===` banners; `Job succeeded` appears 3 times.
+
+Final: `bun test` → **20 pass / 0 fail**.
