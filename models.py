@@ -18,15 +18,21 @@ MODELS = {
     "opus46-1m": "claude-opus-4-6[1m]",
 }
 
-# All costs in USD per million tokens.
-# `[1m]` variants use the 1M-context beta. Under 200k tokens of input, standard
-# rates apply; above 200k, Anthropic bills at a 2x input / 1.5x output multiplier.
+# All costs in USD per million tokens. Source: https://claude.com/pricing
+# cache_write is the 5-minute TTL rate (1.25x base input). 1-hour TTL cache
+# writes are documented as 2x base input but Anthropic appears to bill Claude
+# Code CLI cache creation at the 5m rate regardless of TTL tag (confirmed
+# empirically against a probe run on claude-opus-4-7[1m] — reported cost
+# matched 5m-rate math to the penny).
+# `[1m]` variants extend the context window to 1M tokens; the pricing docs
+# state pricing "applies uniformly regardless of context length", so these
+# entries mirror the base-model rates.
 # These are assumption fields — the CLI's reported `total_cost_usd` is the
 # authoritative per-run cost and is what appears in results.md.
 COST_PER_MTOK = {
-    "claude-opus-4-6":       {"input": 15.0, "output": 75.0,  "cache_read": 1.5, "cache_write": 18.75},
-    "claude-opus-4-7":       {"input": 15.0, "output": 75.0,  "cache_read": 1.5, "cache_write": 18.75},
-    "claude-opus-4-6[1m]":   {"input": 15.0, "output": 75.0,  "cache_read": 1.5, "cache_write": 18.75},
-    "claude-opus-4-7[1m]":   {"input": 15.0, "output": 75.0,  "cache_read": 1.5, "cache_write": 18.75},
-    "claude-sonnet-4-6":     {"input": 3.0,  "output": 15.0,  "cache_read": 0.3, "cache_write": 3.75},
+    "claude-opus-4-6":       {"input": 5.0, "output": 25.0, "cache_read": 0.50, "cache_write": 6.25},
+    "claude-opus-4-7":       {"input": 5.0, "output": 25.0, "cache_read": 0.50, "cache_write": 6.25},
+    "claude-opus-4-6[1m]":   {"input": 5.0, "output": 25.0, "cache_read": 0.50, "cache_write": 6.25},
+    "claude-opus-4-7[1m]":   {"input": 5.0, "output": 25.0, "cache_read": 0.50, "cache_write": 6.25},
+    "claude-sonnet-4-6":     {"input": 3.0, "output": 15.0, "cache_read": 0.30, "cache_write": 3.75},
 }
