@@ -1146,6 +1146,21 @@ def run_single_task(
 # CLI & Main
 # ---------------------------------------------------------------------------
 
+
+def select_tasks(task_arg: str) -> list[dict]:
+    """Resolve the --tasks argument to a list of task dicts.
+
+    Numbers are interpreted as task IDs (the "NN-..." prefix), not positions
+    in TASKS. This keeps IDs stable across archival (e.g. task 14 archived;
+    `--tasks 15` must still pick id "15-test-results-aggregator"). Unknown IDs
+    are silently skipped.
+    """
+    if task_arg == "all":
+        return list(TASKS)
+    task_by_id = {int(t["id"].split("-", 1)[0]): t for t in TASKS}
+    task_nums = [int(t.strip()) for t in task_arg.split(",") if t.strip()]
+    return [task_by_id[n] for n in task_nums if n in task_by_id]
+
 def print_summary_table(all_metrics: list[dict]) -> None:
     """Print a summary table of all runs."""
     print("\n" + "=" * 130)
@@ -1277,7 +1292,8 @@ def main():
     parser = argparse.ArgumentParser(description="Benchmark Claude Code agents on scripting tasks")
     parser.add_argument(
         "--tasks", default="all",
-        help="Comma-separated task numbers (1-18) or 'all' (default: all)"
+        help="Comma-separated task IDs (e.g. 11,12,13,15,16,17,18) or 'all' (default: all). "
+             "Unknown IDs are silently skipped."
     )
     parser.add_argument(
         "--models", default="opus,sonnet",
@@ -1301,12 +1317,7 @@ def main():
     )
     args = parser.parse_args()
 
-    # Parse tasks
-    if args.tasks == "all":
-        selected_tasks = TASKS
-    else:
-        task_nums = [int(t.strip()) for t in args.tasks.split(",")]
-        selected_tasks = [TASKS[n - 1] for n in task_nums if 1 <= n <= len(TASKS)]
+    selected_tasks = select_tasks(args.tasks)
 
     # Parse models
     selected_models = [(short, MODELS[short]) for short in args.models.split(",") if short in MODELS]

@@ -8,6 +8,10 @@ class TestModels:
         assert "opus" in MODELS
         assert "sonnet" in MODELS
 
+    def test_models_has_1m_context_variants(self):
+        assert MODELS["opus47-1m"] == "claude-opus-4-7[1m]"
+        assert MODELS["opus46-1m"] == "claude-opus-4-6[1m]"
+
     def test_model_ids_are_strings(self):
         for short, model_id in MODELS.items():
             assert isinstance(model_id, str)
