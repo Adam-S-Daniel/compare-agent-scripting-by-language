@@ -1,0 +1,80 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: Commits fixture filename under fixtures/
+        required: false
+        default: feat-commits.txt
+      start_version:
+        description: Starting version to bump from
+        required: false
+        default: 1.1.0
+
+permissions:
+  contents: read
+
+jobs:
+  bump:
+    name: Run semantic version bump
+    runs-on: ubuntu-latest
+    env:
+      # Allow the harness (act) or workflow_dispatch inputs to override these.
+      # `act --env FIXTURE=...` sets the process env, and the shell expansion
+      # below uses it as a default, falling back to feat-commits.txt.
+      INPUT_FIXTURE: ${{ github.event.inputs.fixture }}
+      INPUT_START_VERSION: ${{ github.event.inputs.start_version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL https://bun.sh/install | bash
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+
+      - name: Show Bun version
+        shell: bash
+        run: bun --version
+
+      - name: Run unit tests
+        shell: bash
+        # Exclude act.test.ts here — that is the outer harness that drives `act`
+        # itself, and would recurse infinitely inside the workflow.
+        run: bun test src/bumper.test.ts src/cli.test.ts
+
+      - name: Prepare scratch package.json
+        shell: bash
+        run: |
+          set -euo pipefail
+          SV="${INPUT_START_VERSION:-${START_VERSION:-1.1.0}}"
+          mkdir -p scratch
+          printf '{"name":"demo","version":"%s"}\n' "$SV" > scratch/package.json
+          echo "Using start version: $SV"
+
+      - name: Bump version using fixture
+        shell: bash
+        run: |
+          set -euo pipefail
+          FIX="${INPUT_FIXTURE:-${FIXTURE:-feat-commits.txt}}"
+          echo "Using fixture: $FIX"
+          bun run src/cli.ts \
+            --version-file scratch/package.json \
+            --commits-file "fixtures/${FIX}" \
+            --changelog-file scratch/CHANGELOG.md \
+            --date 2026-04-17 | tee bump-output.txt
+
+      - name: Show results
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "=== RESULT package.json ==="
+          cat scratch/package.json
+          echo
+          echo "=== RESULT CHANGELOG.md ==="
+          cat scratch/CHANGELOG.md
