@@ -1,0 +1,62 @@
+name: dependency-license-checker
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  license-check:
+    runs-on: ubuntu-latest
+    env:
+      MANIFEST: ${{ github.workspace }}/fixtures/package.json
+      CONFIG:   ${{ github.workspace }}/fixtures/config.json
+      DB:       ${{ github.workspace }}/fixtures/licenses.json
+      REPORT:   ${{ github.workspace }}/report.json
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        run: |
+          python3 --version
+          python3 -m pip install --quiet --break-system-packages pytest pyyaml
+
+      - name: Run unit tests
+        run: python3 -m pytest tests/test_license_checker.py -v
+
+      - name: Run license compliance check
+        id: compliance
+        continue-on-error: true
+        run: |
+          python3 license_checker.py \
+            --manifest "$MANIFEST" \
+            --config "$CONFIG" \
+            --license-db "$DB" \
+            --output "$REPORT"
+          echo "exit_code=$?" >> "$GITHUB_OUTPUT"
+
+      - name: Print report
+        run: |
+          echo "=== REPORT JSON ==="
+          cat "$REPORT"
+          echo "=== END REPORT ==="
+
+      - name: Assert expected compliance outcome
+        run: |
+          expected=$(tr -d '[:space:]' < "${{ github.workspace }}/fixtures/expected.txt")
+          compliant=$(python3 -c "import json; print(str(json.load(open('$REPORT'))['compliant']).lower())")
+          approved=$(python3 -c "import json; print(json.load(open('$REPORT'))['summary']['approved'])")
+          denied=$(python3 -c "import json; print(json.load(open('$REPORT'))['summary']['denied'])")
+          unknown=$(python3 -c "import json; print(json.load(open('$REPORT'))['summary']['unknown'])")
+          echo "RESULT compliant=$compliant approved=$approved denied=$denied unknown=$unknown"
+          echo "EXPECTED $expected"
+          if [ "$compliant" != "$expected" ]; then
+            echo "Compliance mismatch: got $compliant, expected $expected" >&2
+            exit 1
+          fi
