@@ -1,0 +1,79 @@
+name: Dependency License Checker
+
+# Runs on common events so a PR is blocked on a compliance failure, plus a
+# weekly schedule to catch newly-denied licenses in previously-green repos,
+# plus workflow_dispatch for manual/ad-hoc runs (and to make `act push` easy).
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch: {}
+
+# Read-only by default; the script does not need to mutate the repo.
+permissions:
+  contents: read
+
+jobs:
+  unit-tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pytest
+        run: python -m pip install --upgrade pip pytest
+
+      - name: Run unit tests
+        run: python -m pytest tests/ -v
+
+  license-check:
+    name: License compliance check
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    env:
+      MANIFEST: fixtures/requirements.txt
+      CONFIG: fixtures/config.json
+      REPORT: report.json
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # We do not fail the step on a non-zero exit code — we want the test
+      # harness to observe and assert on the exit code and the JSON output
+      # that the script wrote. The overall job only fails on genuine errors
+      # (missing files, bad config, etc.) which use exit code 3.
+      - name: Run license checker
+        id: check
+        run: |
+          set +e
+          python license_checker.py \
+            --manifest "${MANIFEST}" \
+            --config "${CONFIG}" \
+            --output "${REPORT}"
+          rc=$?
+          echo "LICENSE_CHECK_EXIT_CODE=${rc}"
+          if [ "${rc}" -eq 3 ]; then
+            echo "usage error from checker" >&2
+            exit 1
+          fi
+          exit 0
+
+      - name: Print compliance report
+        run: |
+          echo "BEGIN_REPORT"
+          cat "${REPORT}"
+          echo "END_REPORT"
