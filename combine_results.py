@@ -27,6 +27,7 @@ from zoneinfo import ZoneInfo
 # source of truth for how <details> blocks render).
 from generate_results import (  # noqa: E402
     _collapsible_table, _emit_sorted_variants, _ratio_tier, _llm_tier,
+    _tier_num,
 )
 
 
@@ -241,10 +242,22 @@ def _build_markdown(
     for r in sorted(rows, key=lambda r: (r["mode"], r["variant"])):
         lines.append(_fmt_tr(r))
     lines.append("")
+    # Sort variants for Tiers. Primary = sorted-on axis; secondary =
+    # average numeric tier of the OTHER two axes, so ties on primary
+    # break toward the combo that is stronger overall.
     lines.extend(_emit_sorted_variants(tr_hdr, tr_sep, rows, [
-        ("Sorted by Duration tier (A-first)", "dur_tier", False),
-        ("Sorted by Cost tier (A-first)", "cost_tier", False),
-        ("Sorted by LLM Score tier (A-first; no-data last)", "llm_tier", False),
+        ("Sorted by Duration tier (A-first), then avg of Cost/LLM tiers",
+         lambda r: (_tier_num(r["dur_tier"]),
+                    (_tier_num(r["cost_tier"]) + _tier_num(r["llm_tier"])) / 2),
+         False),
+        ("Sorted by Cost tier (A-first), then avg of Duration/LLM tiers",
+         lambda r: (_tier_num(r["cost_tier"]),
+                    (_tier_num(r["dur_tier"]) + _tier_num(r["llm_tier"])) / 2),
+         False),
+        ("Sorted by LLM Score tier (A-first; no-data last), then avg of Duration/Cost tiers",
+         lambda r: (_tier_num(r["llm_tier"]),
+                    (_tier_num(r["dur_tier"]) + _tier_num(r["cost_tier"])) / 2),
+         False),
     ], _fmt_tr))
     lines.append("")
 

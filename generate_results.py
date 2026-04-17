@@ -419,19 +419,35 @@ def _spearman(xs, ys):
 
 
 def _emit_sorted_variants(header: str, separator: str, data_rows: list[dict],
-                           sort_specs: list[tuple[str, str, bool]],
+                           sort_specs: list[tuple[str, object, bool]],
                            row_formatter) -> list[str]:
     """Emit multiple collapsed copies of a table, each sorted differently.
 
-    sort_specs: list of (summary_label, sort_key, reverse).
+    sort_specs: list of (summary_label, sort_key, reverse). `sort_key` is
+    either a dict-key string (lookup + numeric/string fallback) or a
+    callable(row_dict)->sort_key for compound / computed orderings.
     row_formatter: callable(row_dict) -> markdown row string.
     """
     out: list[str] = []
     for label, key, reverse in sort_specs:
-        sorted_rows = sorted(data_rows, key=lambda r: (r.get(key, 0) if isinstance(r.get(key, 0), (int, float)) else str(r.get(key, ""))), reverse=reverse)
+        if callable(key):
+            sorted_rows = sorted(data_rows, key=key, reverse=reverse)
+        else:
+            sorted_rows = sorted(data_rows, key=lambda r: (r.get(key, 0) if isinstance(r.get(key, 0), (int, float)) else str(r.get(key, ""))), reverse=reverse)
         row_strs = [row_formatter(r) for r in sorted_rows]
         out.extend(_collapsible_table(label, header, separator, row_strs))
     return out
+
+
+# Tier letters mapped to numeric positions for compound sort keys.
+# "—" (em-dash, no data) gets the highest value so no-data rows sink
+# to the bottom when sorting ascending/A-first.
+_TIER_RANK = {"A": 1, "B": 2, "C": 3, "D": 4, "E": 5, "—": 6}
+
+
+def _tier_num(tier: str) -> int:
+    """Return the numeric position of a tier letter (A=1 ... E=5; —=6)."""
+    return _TIER_RANK.get(tier, 6)
 
 
 # ── Tier binning: groups close values into bands so tables can answer
@@ -780,13 +796,23 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         for r in sorted(cmp_rows, key=lambda r: (r['mode'], r['model'])):
             lines.append(_fmt_tr(r))
         lines.append("")
-        # Sort variants for Tiers. Tier letters sort alphabetically so
-        # ascending puts A-first naturally; "—" (U+2014) has a higher
-        # codepoint than A-Z so no-data rows land at the bottom.
+        # Sort variants for Tiers. Primary key is the sorted-on axis's
+        # tier; secondary is the average numeric tier of the OTHER two
+        # axes, so ties on the primary axis break toward the combo that
+        # is stronger overall. A-first / ascending on both.
         lines.extend(_emit_sorted_variants(tr_hdr, tr_sep, cmp_rows, [
-            ("Sorted by Duration tier (A-first)", "dur_tier", False),
-            ("Sorted by Cost tier (A-first)", "cost_tier", False),
-            ("Sorted by LLM Score tier (A-first; no-data last)", "llm_tier", False),
+            ("Sorted by Duration tier (A-first), then avg of Cost/LLM tiers",
+             lambda r: (_tier_num(r["dur_tier"]),
+                        (_tier_num(r["cost_tier"]) + _tier_num(r["llm_tier"])) / 2),
+             False),
+            ("Sorted by Cost tier (A-first), then avg of Duration/LLM tiers",
+             lambda r: (_tier_num(r["cost_tier"]),
+                        (_tier_num(r["dur_tier"]) + _tier_num(r["llm_tier"])) / 2),
+             False),
+            ("Sorted by LLM Score tier (A-first; no-data last), then avg of Duration/Cost tiers",
+             lambda r: (_tier_num(r["llm_tier"]),
+                        (_tier_num(r["dur_tier"]) + _tier_num(r["cost_tier"])) / 2),
+             False),
         ], _fmt_tr))
         lines.append("")
 

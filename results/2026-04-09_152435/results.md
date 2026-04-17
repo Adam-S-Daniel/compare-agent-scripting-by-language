@@ -1,6 +1,6 @@
 # Benchmark Results: Language Comparison
 
-**Last updated:** 2026-04-17 06:23:46 PM ET
+**Last updated:** 2026-04-17 06:40:31 PM ET
 
 **Status:** 64/64 runs completed, 0 remaining
 **Total cost so far:** $86.90
@@ -25,7 +25,7 @@
 
 
 <details>
-<summary>Sorted by Duration tier (A-first)</summary>
+<summary>Sorted by Duration tier (A-first), then avg of Cost/LLM tiers</summary>
 
 | Language | Model | Duration | Cost | LLM Score |
 |----------|-------|----------|------|-----------|
@@ -33,42 +33,42 @@
 | default | opus46 | A (6.9min) | B ($1.45) | C (3.1) |
 | typescript-bun | opus46 | A (6.9min) | B ($1.32) | C (2.9) |
 | default | sonnet46 | B (8.3min) | A ($1.14) | B (3.8) |
-| powershell | opus46 | B (8.2min) | B ($1.55) | C (3.1) |
 | typescript-bun | sonnet46 | B (9.5min) | A ($1.17) | B (3.9) |
-| bash | sonnet46 | C (10.4min) | B ($1.40) | B (3.9) |
+| powershell | opus46 | B (8.2min) | B ($1.55) | C (3.1) |
 | powershell | sonnet46 | C (11.0min) | A ($1.30) | B (3.5) |
+| bash | sonnet46 | C (10.4min) | B ($1.40) | B (3.9) |
 
 </details>
 
 <details>
-<summary>Sorted by Cost tier (A-first)</summary>
+<summary>Sorted by Cost tier (A-first), then avg of Duration/LLM tiers</summary>
 
 | Language | Model | Duration | Cost | LLM Score |
 |----------|-------|----------|------|-----------|
 | default | sonnet46 | B (8.3min) | A ($1.14) | B (3.8) |
-| powershell | sonnet46 | C (11.0min) | A ($1.30) | B (3.5) |
 | typescript-bun | sonnet46 | B (9.5min) | A ($1.17) | B (3.9) |
+| powershell | sonnet46 | C (11.0min) | A ($1.30) | B (3.5) |
 | bash | opus46 | A (7.7min) | B ($1.52) | C (3.0) |
-| bash | sonnet46 | C (10.4min) | B ($1.40) | B (3.9) |
 | default | opus46 | A (6.9min) | B ($1.45) | C (3.1) |
-| powershell | opus46 | B (8.2min) | B ($1.55) | C (3.1) |
 | typescript-bun | opus46 | A (6.9min) | B ($1.32) | C (2.9) |
+| bash | sonnet46 | C (10.4min) | B ($1.40) | B (3.9) |
+| powershell | opus46 | B (8.2min) | B ($1.55) | C (3.1) |
 
 </details>
 
 <details>
-<summary>Sorted by LLM Score tier (A-first; no-data last)</summary>
+<summary>Sorted by LLM Score tier (A-first; no-data last), then avg of Duration/Cost tiers</summary>
 
 | Language | Model | Duration | Cost | LLM Score |
 |----------|-------|----------|------|-----------|
-| bash | sonnet46 | C (10.4min) | B ($1.40) | B (3.9) |
 | default | sonnet46 | B (8.3min) | A ($1.14) | B (3.8) |
-| powershell | sonnet46 | C (11.0min) | A ($1.30) | B (3.5) |
 | typescript-bun | sonnet46 | B (9.5min) | A ($1.17) | B (3.9) |
+| powershell | sonnet46 | C (11.0min) | A ($1.30) | B (3.5) |
+| bash | sonnet46 | C (10.4min) | B ($1.40) | B (3.9) |
 | bash | opus46 | A (7.7min) | B ($1.52) | C (3.0) |
 | default | opus46 | A (6.9min) | B ($1.45) | C (3.1) |
-| powershell | opus46 | B (8.2min) | B ($1.55) | C (3.1) |
 | typescript-bun | opus46 | A (6.9min) | B ($1.32) | C (2.9) |
+| powershell | opus46 | B (8.2min) | B ($1.55) | C (3.1) |
 
 </details>
 

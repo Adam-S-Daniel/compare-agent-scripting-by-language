@@ -1,6 +1,6 @@
 # Benchmark Results: Language Comparison
 
-**Last updated:** 2026-04-17 06:23:33 PM ET
+**Last updated:** 2026-04-17 06:40:18 PM ET
 
 **Status:** 111/144 runs completed, 33 remaining
 **Total cost so far:** $76.34
@@ -25,7 +25,7 @@
 
 
 <details>
-<summary>Sorted by Duration tier (A-first)</summary>
+<summary>Sorted by Duration tier (A-first), then avg of Cost/LLM tiers</summary>
 
 | Language | Model | Duration | Cost | LLM Score |
 |----------|-------|----------|------|-----------|
@@ -41,7 +41,7 @@
 </details>
 
 <details>
-<summary>Sorted by Cost tier (A-first)</summary>
+<summary>Sorted by Cost tier (A-first), then avg of Duration/LLM tiers</summary>
 
 | Language | Model | Duration | Cost | LLM Score |
 |----------|-------|----------|------|-----------|
@@ -57,12 +57,12 @@
 </details>
 
 <details>
-<summary>Sorted by LLM Score tier (A-first; no-data last)</summary>
+<summary>Sorted by LLM Score tier (A-first; no-data last), then avg of Duration/Cost tiers</summary>
 
 | Language | Model | Duration | Cost | LLM Score |
 |----------|-------|----------|------|-----------|
-| csharp-script | opus46 | E (1.8min) | E ($0.42) | B (4.0) |
 | csharp-script | sonnet46 | A (0.6min) | A ($0.12) | B (4.0) |
+| csharp-script | opus46 | E (1.8min) | E ($0.42) | B (4.0) |
 | default | opus46 | E (3.5min) | E ($0.88) | B (4.2) |
 | default | sonnet46 | E (2.8min) | E ($0.35) | B (4.2) |
 | powershell | opus46 | E (4.3min) | E ($0.97) | B (4.1) |

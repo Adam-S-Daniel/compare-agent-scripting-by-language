@@ -8,11 +8,13 @@ from generate_results import (
     _categorize_tool_time,
     _collapsible_table,
     _detect_traps,
+    _emit_sorted_variants,
     _find_discrepancies,
     _llm_tier,
     _rank,
     _ratio_tier,
     _spearman,
+    _tier_num,
 )
 
 
@@ -416,3 +418,60 @@ class TestDisplayRename:
         from combine_results import _path_label
         m = {"model_short": "opus", "effort_level": None}
         assert _path_label(m) == "opus"
+
+
+# =========================================================================
+# _tier_num — map tier letter to numeric rank for compound sort keys
+# =========================================================================
+
+class TestTierNum:
+    def test_letter_mapping(self):
+        assert _tier_num("A") == 1
+        assert _tier_num("B") == 2
+        assert _tier_num("C") == 3
+        assert _tier_num("D") == 4
+        assert _tier_num("E") == 5
+
+    def test_em_dash_sorts_last(self):
+        # "—" (U+2014) is the "no data" marker and must always outrank E
+        # so unranked rows sink to the bottom when sorting ascending.
+        assert _tier_num("—") == 6
+        assert _tier_num("—") > _tier_num("E")
+
+    def test_unknown_defaults_to_last(self):
+        assert _tier_num("Z") == 6
+
+
+# =========================================================================
+# _emit_sorted_variants — callable sort key supports compound ordering
+# =========================================================================
+
+class TestEmitSortedVariantsCallableKey:
+    def test_callable_key_enables_secondary_sort(self):
+        # Two rows tie on primary axis "a" but differ on "b"; the
+        # compound callable sort key must break the tie on b.
+        rows = [
+            {"name": "X", "a": 1, "b": 2},
+            {"name": "Y", "a": 1, "b": 1},
+            {"name": "Z", "a": 2, "b": 0},
+        ]
+        out = _emit_sorted_variants(
+            "| name |", "|------|", rows,
+            [("primary a then b", lambda r: (r["a"], r["b"]), False)],
+            lambda r: f"| {r['name']} |",
+        )
+        # Expected order: Y (a=1,b=1), X (a=1,b=2), Z (a=2,b=0)
+        names = [line for line in out if line.startswith("| ") and "name" not in line and "---" not in line]
+        assert names == ["| Y |", "| X |", "| Z |"]
+
+    def test_string_key_still_works(self):
+        # Regression: the pre-callable behavior (plain dict-key lookup)
+        # must keep working for existing callers.
+        rows = [{"k": 3}, {"k": 1}, {"k": 2}]
+        out = _emit_sorted_variants(
+            "| k |", "|---|", rows,
+            [("asc", "k", False)],
+            lambda r: f"| {r['k']} |",
+        )
+        ks = [line for line in out if line.startswith("| ") and "k |" not in line and "---" not in line]
+        assert ks == ["| 1 |", "| 2 |", "| 3 |"]
