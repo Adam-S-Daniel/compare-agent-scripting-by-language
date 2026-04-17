@@ -1,0 +1,30 @@
+name: PR Label Assigner
+
+# Runs the label assigner script against a fixture of changed files and
+# rules. The test harness swaps `fixture/` with per-case data before running
+# `act push`, then asserts on the block emitted between LABELS_BEGIN /
+# LABELS_END.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  assign:
+    name: Assign labels
+    runs-on: ubuntu-latest
+    env:
+      RULES_FILE: fixture/rules.json
+      FILES_LIST: fixture/files.txt
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Show Python version
+        run: python3 --version
+
+      - name: Run label assigner
+        run: python3 label_assigner.py "$RULES_FILE" "$FILES_LIST"
