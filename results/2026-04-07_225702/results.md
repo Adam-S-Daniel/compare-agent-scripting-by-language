@@ -1,6 +1,6 @@
 # Benchmark Results: Language Comparison
 
-**Last updated:** 2026-04-17 02:27:11 PM ET
+**Last updated:** 2026-04-17 03:59:46 PM ET
 
 **Status:** 111/144 runs completed, 33 remaining
 **Total cost so far:** $76.34
@@ -13,14 +13,63 @@
 
 | Language | Model | Duration | Cost | LLM Score |
 |----------|-------|----------|------|-----------|
-| csharp-script | opus | 2 | 4 | — |
-| csharp-script | sonnet | 1 | 1 | — |
-| default | opus | 4 | 6 | — |
-| default | sonnet | 3 | 2 | — |
-| powershell | opus | 6 | 7 | — |
-| powershell | sonnet | 5 | 3 | — |
-| powershell-strict | opus | 7 | 8 | — |
-| powershell-strict | sonnet | 8 | 5 | — |
+| csharp-script | opus | 2 | 4 | 4 |
+| csharp-script | sonnet | 1 | 1 | 5 |
+| default | opus | 4 | 6 | 1 |
+| default | sonnet | 3 | 2 | 2 |
+| powershell | opus | 6 | 7 | 3 |
+| powershell | sonnet | 5 | 3 | 8 |
+| powershell-strict | opus | 7 | 8 | 7 |
+| powershell-strict | sonnet | 8 | 5 | 6 |
+
+
+<details>
+<summary>Sorted by Duration rank (fastest first)</summary>
+
+| Language | Model | Duration | Cost | LLM Score |
+|----------|-------|----------|------|-----------|
+| csharp-script | sonnet | 1 | 1 | 5 |
+| csharp-script | opus | 2 | 4 | 4 |
+| default | sonnet | 3 | 2 | 2 |
+| default | opus | 4 | 6 | 1 |
+| powershell | sonnet | 5 | 3 | 8 |
+| powershell | opus | 6 | 7 | 3 |
+| powershell-strict | opus | 7 | 8 | 7 |
+| powershell-strict | sonnet | 8 | 5 | 6 |
+
+</details>
+
+<details>
+<summary>Sorted by Cost rank (cheapest first)</summary>
+
+| Language | Model | Duration | Cost | LLM Score |
+|----------|-------|----------|------|-----------|
+| csharp-script | sonnet | 1 | 1 | 5 |
+| default | sonnet | 3 | 2 | 2 |
+| powershell | sonnet | 5 | 3 | 8 |
+| csharp-script | opus | 2 | 4 | 4 |
+| powershell-strict | sonnet | 8 | 5 | 6 |
+| default | opus | 4 | 6 | 1 |
+| powershell | opus | 6 | 7 | 3 |
+| powershell-strict | opus | 7 | 8 | 7 |
+
+</details>
+
+<details>
+<summary>Sorted by LLM Score rank (best first; no-data last)</summary>
+
+| Language | Model | Duration | Cost | LLM Score |
+|----------|-------|----------|------|-----------|
+| default | opus | 4 | 6 | 1 |
+| default | sonnet | 3 | 2 | 2 |
+| powershell | opus | 6 | 7 | 3 |
+| csharp-script | opus | 2 | 4 | 4 |
+| csharp-script | sonnet | 1 | 1 | 5 |
+| powershell-strict | sonnet | 8 | 5 | 6 |
+| powershell-strict | opus | 7 | 8 | 7 |
+| powershell | sonnet | 5 | 3 | 8 |
+
+</details>
 
 - **Estimated time remaining:** 0.0min
 - **Estimated total cost:** $99.03
@@ -49,14 +98,14 @@
 
 | Language | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost | Avg LLM Score |
 |----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|
-| csharp-script | opus | 2 | 1.8min | 1.8min | 0.0 | 10 | $0.42 | $0.84 | — |
-| csharp-script | sonnet | 1 | 0.6min | 0.6min | 0.0 | 7 | $0.12 | $0.12 | — |
-| default | opus | 18 | 3.5min | 2.0min | 1.1 | 32 | $0.88 | $15.75 | — |
-| default | sonnet | 14 | 2.8min | 2.8min | 0.9 | 12 | $0.35 | $4.91 | — |
-| powershell | opus | 18 | 4.3min | 1.9min | 0.4 | 32 | $0.97 | $17.49 | — |
-| powershell | sonnet | 16 | 3.6min | 3.5min | 0.0 | 11 | $0.39 | $6.32 | — |
-| powershell-strict | opus | 17 | 4.9min | 2.0min | 0.8 | 37 | $1.20 | $20.45 | — |
-| powershell-strict | sonnet | 14 | 6.1min | 5.7min | 0.1 | 17 | $0.74 | $10.31 | — |
+| csharp-script | opus | 2 | 1.8min | 1.8min | 0.0 | 10 | $0.42 | $0.84 | 4.0 |
+| csharp-script | sonnet | 1 | 0.6min | 0.6min | 0.0 | 7 | $0.12 | $0.12 | 4.0 |
+| default | opus | 18 | 3.5min | 2.0min | 1.1 | 32 | $0.88 | $15.75 | 4.2 |
+| default | sonnet | 14 | 2.8min | 2.8min | 0.9 | 12 | $0.35 | $4.91 | 4.2 |
+| powershell | opus | 18 | 4.3min | 1.9min | 0.4 | 32 | $0.97 | $17.49 | 4.1 |
+| powershell | sonnet | 16 | 3.6min | 3.5min | 0.0 | 11 | $0.39 | $6.32 | 3.9 |
+| powershell-strict | opus | 17 | 4.9min | 2.0min | 0.8 | 37 | $1.20 | $20.45 | 3.9 |
+| powershell-strict | sonnet | 14 | 6.1min | 5.7min | 0.1 | 17 | $0.74 | $10.31 | 4.0 |
 
 
 <details>
@@ -64,14 +113,14 @@
 
 | Language | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost | Avg LLM Score |
 |----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|
-| csharp-script | sonnet | 1 | 0.6min | 0.6min | 0.0 | 7 | $0.12 | $0.12 | — |
-| default | sonnet | 14 | 2.8min | 2.8min | 0.9 | 12 | $0.35 | $4.91 | — |
-| powershell | sonnet | 16 | 3.6min | 3.5min | 0.0 | 11 | $0.39 | $6.32 | — |
-| csharp-script | opus | 2 | 1.8min | 1.8min | 0.0 | 10 | $0.42 | $0.84 | — |
-| powershell-strict | sonnet | 14 | 6.1min | 5.7min | 0.1 | 17 | $0.74 | $10.31 | — |
-| default | opus | 18 | 3.5min | 2.0min | 1.1 | 32 | $0.88 | $15.75 | — |
-| powershell | opus | 18 | 4.3min | 1.9min | 0.4 | 32 | $0.97 | $17.49 | — |
-| powershell-strict | opus | 17 | 4.9min | 2.0min | 0.8 | 37 | $1.20 | $20.45 | — |
+| csharp-script | sonnet | 1 | 0.6min | 0.6min | 0.0 | 7 | $0.12 | $0.12 | 4.0 |
+| default | sonnet | 14 | 2.8min | 2.8min | 0.9 | 12 | $0.35 | $4.91 | 4.2 |
+| powershell | sonnet | 16 | 3.6min | 3.5min | 0.0 | 11 | $0.39 | $6.32 | 3.9 |
+| csharp-script | opus | 2 | 1.8min | 1.8min | 0.0 | 10 | $0.42 | $0.84 | 4.0 |
+| powershell-strict | sonnet | 14 | 6.1min | 5.7min | 0.1 | 17 | $0.74 | $10.31 | 4.0 |
+| default | opus | 18 | 3.5min | 2.0min | 1.1 | 32 | $0.88 | $15.75 | 4.2 |
+| powershell | opus | 18 | 4.3min | 1.9min | 0.4 | 32 | $0.97 | $17.49 | 4.1 |
+| powershell-strict | opus | 17 | 4.9min | 2.0min | 0.8 | 37 | $1.20 | $20.45 | 3.9 |
 
 </details>
 
@@ -80,14 +129,14 @@
 
 | Language | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost | Avg LLM Score |
 |----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|
-| csharp-script | sonnet | 1 | 0.6min | 0.6min | 0.0 | 7 | $0.12 | $0.12 | — |
-| csharp-script | opus | 2 | 1.8min | 1.8min | 0.0 | 10 | $0.42 | $0.84 | — |
-| default | sonnet | 14 | 2.8min | 2.8min | 0.9 | 12 | $0.35 | $4.91 | — |
-| default | opus | 18 | 3.5min | 2.0min | 1.1 | 32 | $0.88 | $15.75 | — |
-| powershell | sonnet | 16 | 3.6min | 3.5min | 0.0 | 11 | $0.39 | $6.32 | — |
-| powershell | opus | 18 | 4.3min | 1.9min | 0.4 | 32 | $0.97 | $17.49 | — |
-| powershell-strict | opus | 17 | 4.9min | 2.0min | 0.8 | 37 | $1.20 | $20.45 | — |
-| powershell-strict | sonnet | 14 | 6.1min | 5.7min | 0.1 | 17 | $0.74 | $10.31 | — |
+| csharp-script | sonnet | 1 | 0.6min | 0.6min | 0.0 | 7 | $0.12 | $0.12 | 4.0 |
+| csharp-script | opus | 2 | 1.8min | 1.8min | 0.0 | 10 | $0.42 | $0.84 | 4.0 |
+| default | sonnet | 14 | 2.8min | 2.8min | 0.9 | 12 | $0.35 | $4.91 | 4.2 |
+| default | opus | 18 | 3.5min | 2.0min | 1.1 | 32 | $0.88 | $15.75 | 4.2 |
+| powershell | sonnet | 16 | 3.6min | 3.5min | 0.0 | 11 | $0.39 | $6.32 | 3.9 |
+| powershell | opus | 18 | 4.3min | 1.9min | 0.4 | 32 | $0.97 | $17.49 | 4.1 |
+| powershell-strict | opus | 17 | 4.9min | 2.0min | 0.8 | 37 | $1.20 | $20.45 | 3.9 |
+| powershell-strict | sonnet | 14 | 6.1min | 5.7min | 0.1 | 17 | $0.74 | $10.31 | 4.0 |
 
 </details>
 
@@ -96,14 +145,14 @@
 
 | Language | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost | Avg LLM Score |
 |----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|
-| csharp-script | sonnet | 1 | 0.6min | 0.6min | 0.0 | 7 | $0.12 | $0.12 | — |
-| csharp-script | opus | 2 | 1.8min | 1.8min | 0.0 | 10 | $0.42 | $0.84 | — |
-| powershell | opus | 18 | 4.3min | 1.9min | 0.4 | 32 | $0.97 | $17.49 | — |
-| default | opus | 18 | 3.5min | 2.0min | 1.1 | 32 | $0.88 | $15.75 | — |
-| powershell-strict | opus | 17 | 4.9min | 2.0min | 0.8 | 37 | $1.20 | $20.45 | — |
-| default | sonnet | 14 | 2.8min | 2.8min | 0.9 | 12 | $0.35 | $4.91 | — |
-| powershell | sonnet | 16 | 3.6min | 3.5min | 0.0 | 11 | $0.39 | $6.32 | — |
-| powershell-strict | sonnet | 14 | 6.1min | 5.7min | 0.1 | 17 | $0.74 | $10.31 | — |
+| csharp-script | sonnet | 1 | 0.6min | 0.6min | 0.0 | 7 | $0.12 | $0.12 | 4.0 |
+| csharp-script | opus | 2 | 1.8min | 1.8min | 0.0 | 10 | $0.42 | $0.84 | 4.0 |
+| powershell | opus | 18 | 4.3min | 1.9min | 0.4 | 32 | $0.97 | $17.49 | 4.1 |
+| default | opus | 18 | 3.5min | 2.0min | 1.1 | 32 | $0.88 | $15.75 | 4.2 |
+| powershell-strict | opus | 17 | 4.9min | 2.0min | 0.8 | 37 | $1.20 | $20.45 | 3.9 |
+| default | sonnet | 14 | 2.8min | 2.8min | 0.9 | 12 | $0.35 | $4.91 | 4.2 |
+| powershell | sonnet | 16 | 3.6min | 3.5min | 0.0 | 11 | $0.39 | $6.32 | 3.9 |
+| powershell-strict | sonnet | 14 | 6.1min | 5.7min | 0.1 | 17 | $0.74 | $10.31 | 4.0 |
 
 </details>
 
@@ -112,14 +161,14 @@
 
 | Language | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost | Avg LLM Score |
 |----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|
-| csharp-script | opus | 2 | 1.8min | 1.8min | 0.0 | 10 | $0.42 | $0.84 | — |
-| csharp-script | sonnet | 1 | 0.6min | 0.6min | 0.0 | 7 | $0.12 | $0.12 | — |
-| powershell | sonnet | 16 | 3.6min | 3.5min | 0.0 | 11 | $0.39 | $6.32 | — |
-| powershell-strict | sonnet | 14 | 6.1min | 5.7min | 0.1 | 17 | $0.74 | $10.31 | — |
-| powershell | opus | 18 | 4.3min | 1.9min | 0.4 | 32 | $0.97 | $17.49 | — |
-| powershell-strict | opus | 17 | 4.9min | 2.0min | 0.8 | 37 | $1.20 | $20.45 | — |
-| default | sonnet | 14 | 2.8min | 2.8min | 0.9 | 12 | $0.35 | $4.91 | — |
-| default | opus | 18 | 3.5min | 2.0min | 1.1 | 32 | $0.88 | $15.75 | — |
+| csharp-script | opus | 2 | 1.8min | 1.8min | 0.0 | 10 | $0.42 | $0.84 | 4.0 |
+| csharp-script | sonnet | 1 | 0.6min | 0.6min | 0.0 | 7 | $0.12 | $0.12 | 4.0 |
+| powershell | sonnet | 16 | 3.6min | 3.5min | 0.0 | 11 | $0.39 | $6.32 | 3.9 |
+| powershell-strict | sonnet | 14 | 6.1min | 5.7min | 0.1 | 17 | $0.74 | $10.31 | 4.0 |
+| powershell | opus | 18 | 4.3min | 1.9min | 0.4 | 32 | $0.97 | $17.49 | 4.1 |
+| powershell-strict | opus | 17 | 4.9min | 2.0min | 0.8 | 37 | $1.20 | $20.45 | 3.9 |
+| default | sonnet | 14 | 2.8min | 2.8min | 0.9 | 12 | $0.35 | $4.91 | 4.2 |
+| default | opus | 18 | 3.5min | 2.0min | 1.1 | 32 | $0.88 | $15.75 | 4.2 |
 
 </details>
 
@@ -128,14 +177,14 @@
 
 | Language | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost | Avg LLM Score |
 |----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|
-| csharp-script | sonnet | 1 | 0.6min | 0.6min | 0.0 | 7 | $0.12 | $0.12 | — |
-| csharp-script | opus | 2 | 1.8min | 1.8min | 0.0 | 10 | $0.42 | $0.84 | — |
-| powershell | sonnet | 16 | 3.6min | 3.5min | 0.0 | 11 | $0.39 | $6.32 | — |
-| default | sonnet | 14 | 2.8min | 2.8min | 0.9 | 12 | $0.35 | $4.91 | — |
-| powershell-strict | sonnet | 14 | 6.1min | 5.7min | 0.1 | 17 | $0.74 | $10.31 | — |
-| default | opus | 18 | 3.5min | 2.0min | 1.1 | 32 | $0.88 | $15.75 | — |
-| powershell | opus | 18 | 4.3min | 1.9min | 0.4 | 32 | $0.97 | $17.49 | — |
-| powershell-strict | opus | 17 | 4.9min | 2.0min | 0.8 | 37 | $1.20 | $20.45 | — |
+| csharp-script | sonnet | 1 | 0.6min | 0.6min | 0.0 | 7 | $0.12 | $0.12 | 4.0 |
+| csharp-script | opus | 2 | 1.8min | 1.8min | 0.0 | 10 | $0.42 | $0.84 | 4.0 |
+| powershell | sonnet | 16 | 3.6min | 3.5min | 0.0 | 11 | $0.39 | $6.32 | 3.9 |
+| default | sonnet | 14 | 2.8min | 2.8min | 0.9 | 12 | $0.35 | $4.91 | 4.2 |
+| powershell-strict | sonnet | 14 | 6.1min | 5.7min | 0.1 | 17 | $0.74 | $10.31 | 4.0 |
+| default | opus | 18 | 3.5min | 2.0min | 1.1 | 32 | $0.88 | $15.75 | 4.2 |
+| powershell | opus | 18 | 4.3min | 1.9min | 0.4 | 32 | $0.97 | $17.49 | 4.1 |
+| powershell-strict | opus | 17 | 4.9min | 2.0min | 0.8 | 37 | $1.20 | $20.45 | 3.9 |
 
 </details>
 
@@ -144,14 +193,14 @@
 
 | Language | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost | Avg LLM Score |
 |----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|
-| csharp-script | opus | 2 | 1.8min | 1.8min | 0.0 | 10 | $0.42 | $0.84 | — |
-| csharp-script | sonnet | 1 | 0.6min | 0.6min | 0.0 | 7 | $0.12 | $0.12 | — |
-| default | opus | 18 | 3.5min | 2.0min | 1.1 | 32 | $0.88 | $15.75 | — |
-| default | sonnet | 14 | 2.8min | 2.8min | 0.9 | 12 | $0.35 | $4.91 | — |
-| powershell | opus | 18 | 4.3min | 1.9min | 0.4 | 32 | $0.97 | $17.49 | — |
-| powershell | sonnet | 16 | 3.6min | 3.5min | 0.0 | 11 | $0.39 | $6.32 | — |
-| powershell-strict | opus | 17 | 4.9min | 2.0min | 0.8 | 37 | $1.20 | $20.45 | — |
-| powershell-strict | sonnet | 14 | 6.1min | 5.7min | 0.1 | 17 | $0.74 | $10.31 | — |
+| default | opus | 18 | 3.5min | 2.0min | 1.1 | 32 | $0.88 | $15.75 | 4.2 |
+| default | sonnet | 14 | 2.8min | 2.8min | 0.9 | 12 | $0.35 | $4.91 | 4.2 |
+| powershell | opus | 18 | 4.3min | 1.9min | 0.4 | 32 | $0.97 | $17.49 | 4.1 |
+| csharp-script | opus | 2 | 1.8min | 1.8min | 0.0 | 10 | $0.42 | $0.84 | 4.0 |
+| csharp-script | sonnet | 1 | 0.6min | 0.6min | 0.0 | 7 | $0.12 | $0.12 | 4.0 |
+| powershell-strict | sonnet | 14 | 6.1min | 5.7min | 0.1 | 17 | $0.74 | $10.31 | 4.0 |
+| powershell-strict | opus | 17 | 4.9min | 2.0min | 0.8 | 37 | $1.20 | $20.45 | 3.9 |
+| powershell | sonnet | 16 | 3.6min | 3.5min | 0.0 | 11 | $0.39 | $6.32 | 3.9 |
 
 </details>
 
@@ -498,123 +547,348 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 
 </details>
 
+### LLM-as-Judge Scores
+
+An LLM evaluates each test suite on four dimensions (1-5 scale):
+
+- **Coverage** (1-5): Do tests exercise the key requirements? 1 = most untested, 5 = all covered.
+- **Rigor** (1-5): Edge cases, error handling, boundary conditions? 1 = happy path only, 5 = thorough.
+- **Design** (1-5): Test organization, fixtures, readability? 1 = messy/brittle, 5 = well-structured.
+- **Overall** (1-5): Holistic quality — would you trust this suite to catch regressions? 1 = no, 5 = absolutely. Use this as the primary ranking metric.
+
+| Language | Model | Avg Overall | Avg Coverage | Avg Rigor | Avg Design | Judge Cost |
+|------|-------|-------------|-------------|-----------|------------|------------|
+| csharp-script | opus | **4.0** | 5.0 | 4.0 | 4.0 | $0.1328 |
+| csharp-script | sonnet | **4.0** | 5.0 | 3.0 | 4.0 | $0.0662 |
+| default | opus | **4.2** | 4.9 | 3.9 | 4.4 | $0.8973 |
+| default | sonnet | **4.2** | 4.6 | 3.5 | 4.5 | $0.7411 |
+| powershell | opus | **4.1** | 4.8 | 3.7 | 4.2 | $1.0395 |
+| powershell | sonnet | **3.9** | 4.2 | 3.2 | 4.1 | $0.9164 |
+| powershell-strict | opus | **3.9** | 4.7 | 3.6 | 3.9 | $1.1270 |
+| powershell-strict | sonnet | **4.0** | 4.9 | 3.7 | 4.3 | $0.7898 |
+| **Total** | | | | | | **$5.7101** |
+
+
+<details>
+<summary>Sorted by avg overall (highest first)</summary>
+
+| Language | Model | Avg Overall | Avg Coverage | Avg Rigor | Avg Design | Judge Cost |
+|------|-------|-------------|-------------|-----------|------------|------------|
+| default | opus | **4.2** | 4.9 | 3.9 | 4.4 | $0.8973 |
+| default | sonnet | **4.2** | 4.6 | 3.5 | 4.5 | $0.7411 |
+| powershell | opus | **4.1** | 4.8 | 3.7 | 4.2 | $1.0395 |
+| csharp-script | opus | **4.0** | 5.0 | 4.0 | 4.0 | $0.1328 |
+| csharp-script | sonnet | **4.0** | 5.0 | 3.0 | 4.0 | $0.0662 |
+| powershell-strict | sonnet | **4.0** | 4.9 | 3.7 | 4.3 | $0.7898 |
+| powershell-strict | opus | **3.9** | 4.7 | 3.6 | 3.9 | $1.1270 |
+| powershell | sonnet | **3.9** | 4.2 | 3.2 | 4.1 | $0.9164 |
+
+</details>
+
+<details>
+<summary>Sorted by avg coverage (highest first)</summary>
+
+| Language | Model | Avg Overall | Avg Coverage | Avg Rigor | Avg Design | Judge Cost |
+|------|-------|-------------|-------------|-----------|------------|------------|
+| csharp-script | opus | **4.0** | 5.0 | 4.0 | 4.0 | $0.1328 |
+| csharp-script | sonnet | **4.0** | 5.0 | 3.0 | 4.0 | $0.0662 |
+| powershell-strict | sonnet | **4.0** | 4.9 | 3.7 | 4.3 | $0.7898 |
+| default | opus | **4.2** | 4.9 | 3.9 | 4.4 | $0.8973 |
+| powershell | opus | **4.1** | 4.8 | 3.7 | 4.2 | $1.0395 |
+| powershell-strict | opus | **3.9** | 4.7 | 3.6 | 3.9 | $1.1270 |
+| default | sonnet | **4.2** | 4.6 | 3.5 | 4.5 | $0.7411 |
+| powershell | sonnet | **3.9** | 4.2 | 3.2 | 4.1 | $0.9164 |
+
+</details>
+
+<details>
+<summary>Sorted by avg rigor (highest first)</summary>
+
+| Language | Model | Avg Overall | Avg Coverage | Avg Rigor | Avg Design | Judge Cost |
+|------|-------|-------------|-------------|-----------|------------|------------|
+| csharp-script | opus | **4.0** | 5.0 | 4.0 | 4.0 | $0.1328 |
+| default | opus | **4.2** | 4.9 | 3.9 | 4.4 | $0.8973 |
+| powershell | opus | **4.1** | 4.8 | 3.7 | 4.2 | $1.0395 |
+| powershell-strict | sonnet | **4.0** | 4.9 | 3.7 | 4.3 | $0.7898 |
+| powershell-strict | opus | **3.9** | 4.7 | 3.6 | 3.9 | $1.1270 |
+| default | sonnet | **4.2** | 4.6 | 3.5 | 4.5 | $0.7411 |
+| powershell | sonnet | **3.9** | 4.2 | 3.2 | 4.1 | $0.9164 |
+| csharp-script | sonnet | **4.0** | 5.0 | 3.0 | 4.0 | $0.0662 |
+
+</details>
+
+<details>
+<summary>Sorted by avg design (highest first)</summary>
+
+| Language | Model | Avg Overall | Avg Coverage | Avg Rigor | Avg Design | Judge Cost |
+|------|-------|-------------|-------------|-----------|------------|------------|
+| default | sonnet | **4.2** | 4.6 | 3.5 | 4.5 | $0.7411 |
+| default | opus | **4.2** | 4.9 | 3.9 | 4.4 | $0.8973 |
+| powershell-strict | sonnet | **4.0** | 4.9 | 3.7 | 4.3 | $0.7898 |
+| powershell | opus | **4.1** | 4.8 | 3.7 | 4.2 | $1.0395 |
+| powershell | sonnet | **3.9** | 4.2 | 3.2 | 4.1 | $0.9164 |
+| csharp-script | opus | **4.0** | 5.0 | 4.0 | 4.0 | $0.1328 |
+| csharp-script | sonnet | **4.0** | 5.0 | 3.0 | 4.0 | $0.0662 |
+| powershell-strict | opus | **3.9** | 4.7 | 3.6 | 3.9 | $1.1270 |
+
+</details>
+
+
+<details>
+<summary>Per-run LLM judge scores</summary>
+
+| Task | Language | Model | Cov | Rig | Des | Ovr | Summary |
+|------|------|-------|-----|-----|-----|-----|---------|
+| CSV Report Generator | csharp-script | opus | 5 | 4 | 4 | 4 | The test suite provides thorough coverage of all major requi |
+| CSV Report Generator | csharp-script | sonnet | 5 | 3 | 4 | 4 | The suite covers all core requirements: CSV string/file pars |
+| CSV Report Generator | default | opus | 5 | 4 | 5 | 5 | This is a high-quality test suite that thoroughly covers all |
+| CSV Report Generator | default | sonnet | 5 | 4 | 5 | 4 | The test suite is comprehensive and well-structured, coverin |
+| CSV Report Generator | powershell | opus | 5 | 3 | 4 | 4 | The test suite covers every public function and all major re |
+| CSV Report Generator | powershell | sonnet | 4 | 3 | 3 | 3 | The test suite covers all five feature areas (CSV import, ac |
+| CSV Report Generator | powershell-strict | opus | 4 | 3 | 4 | 4 | The test suite covers the core requirements well: CSV import |
+| CSV Report Generator | powershell-strict | sonnet | 5 | 3 | 4 | 4 | The suite comprehensively exercises every stated requirement |
+| Log File Analyzer | csharp-script | opus | 5 | 4 | 4 | 4 | The test suite is comprehensive and maps cleanly onto every  |
+| Log File Analyzer | default | opus | 5 | 4 | 5 | 5 | This is an excellent test suite that closely mirrors the TDD |
+| Log File Analyzer | default | sonnet | 5 | 4 | 5 | 5 | The test suite is excellent overall. Coverage is comprehensi |
+| Log File Analyzer | powershell | opus | 4 | 3 | 4 | 4 | The test suite covers all seven public functions and exercis |
+| Log File Analyzer | powershell | sonnet | 5 | 3 | 4 | 4 | The suite maps one Describe block to each of the nine implem |
+| Log File Analyzer | powershell-strict | opus | 4 | 3 | 4 | 4 | The test suite covers all seven functions, including an end- |
+| Log File Analyzer | powershell-strict | sonnet | 5 | 3 | 4 | 4 | The suite comprehensively covers all stated requirements: sy |
+| Directory Tree Sync | default | opus | 5 | 4 | 4 | 4 | The suite comprehensively covers all stated requirements acr |
+| Directory Tree Sync | default | sonnet | 5 | 4 | 5 | 5 | The test suite covers all major requirements: SHA-256 hashin |
+| Directory Tree Sync | powershell | opus | 5 | 4 | 5 | 4 | The test suite comprehensively covers all six public functio |
+| Directory Tree Sync | powershell | sonnet | 5 | 4 | 5 | 4 | The suite covers all six required features end-to-end: SHA-2 |
+| Directory Tree Sync | powershell-strict | opus | 5 | 4 | 4 | 4 | The test suite comprehensively covers all four public functi |
+| Directory Tree Sync | powershell-strict | sonnet | 5 | 4 | 5 | 4 | The test suite maps directly to every stated requirement: SH |
+| REST API Client | default | opus | 5 | 5 | 5 | 5 | Exceptional test suite that methodically covers every requir |
+| REST API Client | default | sonnet | 5 | 4 | 5 | 5 | The test suite achieves excellent coverage across all major  |
+| REST API Client | powershell | opus | 5 | 4 | 3 | 4 | The suite covers all major requirements well: Get-Posts, Get |
+| REST API Client | powershell | sonnet | 4 | 3 | 3 | 3 | The test suite systematically mirrors the six TDD cycles and |
+| REST API Client | powershell-strict | opus | 5 | 4 | 4 | 4 | The test suite comprehensively covers all five stated requir |
+| REST API Client | powershell-strict | sonnet | 5 | 4 | 5 | 4 | This is a high-quality, well-structured test suite that full |
+| Process Monitor | default | opus | 4 | 3 | 3 | 3 | The suite covers all five core requirements (parsing, filter |
+| Process Monitor | default | sonnet | 5 | 3 | 4 | 4 | The suite covers all four core requirements (ProcessInfo mod |
+| Process Monitor | powershell | opus | 4 | 4 | 4 | 4 | The test suite is solid and purposeful. All five public func |
+| Process Monitor | powershell | sonnet | 5 | 3 | 4 | 4 | The suite covers all five features end-to-end — data ingesti |
+| Process Monitor | powershell-strict | opus | 5 | 4 | 4 | 4 | The test suite comprehensively covers all five public functi |
+| Process Monitor | powershell-strict | sonnet | 5 | 4 | 5 | 4 | The test suite is comprehensive and well-organized, covering |
+| Config File Migrator | default | opus | 5 | 4 | 5 | 4 | The test suite is comprehensive and well-structured, coverin |
+| Config File Migrator | default | sonnet | 4 | 4 | 5 | 4 | The test suite is well-structured and covers all core requir |
+| Config File Migrator | powershell | opus | 4 | 3 | 4 | 4 | The test suite provides solid coverage of all major task req |
+| Config File Migrator | powershell | sonnet | 4 | 3 | 4 | 4 | The suite maps cleanly to all six stated requirements—INI pa |
+| Config File Migrator | powershell-strict | opus | 4 | 3 | 4 | 4 | The test suite covers all major requirements well: INI parsi |
+| Config File Migrator | powershell-strict | sonnet | 5 | 4 | 4 | 4 | The test suite is comprehensive and closely mirrors the task |
+| Batch File Renamer | default | opus | 5 | 4 | 4 | 4 | The test suite covers all four core requirements thoroughly: |
+| Batch File Renamer | default | sonnet | 5 | 3 | 4 | 4 | The suite covers all four core requirements — preview mode,  |
+| Batch File Renamer | powershell | opus | 5 | 4 | 5 | 4 | The test suite is comprehensive and well-structured. All thr |
+| Batch File Renamer | powershell | sonnet | 3 | 2 | 3 | 3 | The suite covers all four primary requirements (preview, und |
+| Batch File Renamer | powershell-strict | opus | 4 | 4 | 4 | 4 | The test suite is solid and covers all four primary function |
+| Batch File Renamer | powershell-strict | sonnet | 4 | 3 | 4 | 4 | The test suite covers all four major requirements (preview,  |
+| Database Seed Script | default | opus | 5 | 4 | 5 | 5 | This is a high-quality test suite that thoroughly covers all |
+| Database Seed Script | powershell | opus | 5 | 4 | 4 | 4 | The test suite is comprehensive and well-structured, coverin |
+| Database Seed Script | powershell-strict | opus | 5 | 4 | 4 | 4 | The test suite is impressively comprehensive, covering all m |
+| Error Retry Pipeline | default | opus | 5 | 3 | 4 | 4 | The test suite covers all five stated requirements (exponent |
+| Error Retry Pipeline | powershell | opus | 5 | 4 | 4 | 4 | The test suite covers all stated requirements thoroughly: mo |
+| Error Retry Pipeline | powershell-strict | opus | 5 | 3 | 4 | 4 | The suite covers all stated requirements well: config defaul |
+| Multi-file Search and Replace | default | opus | 5 | 4 | 4 | 4 | The suite covers all five major feature areas required by th |
+| Multi-file Search and Replace | powershell | opus | 5 | 4 | 4 | 4 | The test suite comprehensively covers all stated requirement |
+| Multi-file Search and Replace | powershell | sonnet | 4 | 3 | 4 | 4 | The test suite covers all four major requirements well: glob |
+| Multi-file Search and Replace | powershell-strict | opus | 4 | 3 | 3 | 3 | The test suite covers the majority of stated requirements: r |
+| Semantic Version Bumper | default | opus | 5 | 4 | 5 | 4 | The test suite is comprehensive and well-structured. All key |
+| Semantic Version Bumper | default | sonnet | 5 | 4 | 4 | 4 | The test suite is thorough and well-structured, covering all |
+| Semantic Version Bumper | powershell | opus | 5 | 3 | 4 | 4 | The test suite comprehensively covers all major requirements |
+| Semantic Version Bumper | powershell | sonnet | 4 | 3 | 4 | 4 | The test suite covers all five public functions with both ha |
+| Semantic Version Bumper | powershell-strict | opus | 5 | 4 | 4 | 4 | The suite comprehensively covers every public function and a |
+| Semantic Version Bumper | powershell-strict | sonnet | 5 | 4 | 4 | 4 | The test suite covers all five major requirements: version f |
+| PR Label Assigner | default | opus | 5 | 4 | 4 | 4 | The test suite is well-organized and comprehensively covers  |
+| PR Label Assigner | default | sonnet | 5 | 4 | 5 | 5 | The test suite is excellent overall. Coverage is comprehensi |
+| PR Label Assigner | powershell | opus | 5 | 4 | 4 | 4 | The test suite covers all major requirements: glob patterns  |
+| PR Label Assigner | powershell | sonnet | 5 | 4 | 5 | 4 | The test suite is comprehensive and well-structured. Coverag |
+| PR Label Assigner | powershell-strict | opus | 4 | 3 | 4 | 4 | The suite covers all stated requirements well: basic glob ma |
+| PR Label Assigner | powershell-strict | sonnet | 5 | 4 | 5 | 4 | The test suite is impressively comprehensive, covering all s |
+| Dependency License Checker | default | opus | 5 | 4 | 5 | 5 | This is an exceptionally well-structured test suite that cov |
+| Dependency License Checker | powershell | opus | 5 | 4 | 5 | 5 | The test suite is comprehensive and well-structured. Coverag |
+| Dependency License Checker | powershell | sonnet | 5 | 4 | 5 | 5 | The test suite is comprehensive and well-structured, coverin |
+| Dependency License Checker | powershell-strict | opus | 5 | 3 | 4 | 4 | The test suite covers all core requirements thoroughly: both |
+| Dependency License Checker | powershell-strict | sonnet | 5 | 4 | 5 | 4 | The test suite is comprehensive and well-structured, coverin |
+| Docker Image Tag Generator | default | opus | 5 | 4 | 5 | 4 | A well-structured, clearly organized test suite that covers  |
+| Docker Image Tag Generator | default | sonnet | 5 | 4 | 5 | 4 | The test suite is well-structured and covers all five major  |
+| Docker Image Tag Generator | powershell | opus | 5 | 4 | 5 | 4 | The test suite is thorough and well-structured, covering all |
+| Docker Image Tag Generator | powershell | sonnet | 4 | 4 | 5 | 4 | The test suite is well-structured and covers all four primar |
+| Docker Image Tag Generator | powershell-strict | opus | 5 | 4 | 4 | 4 | The test suite covers all stated requirements: latest for ma |
+| Docker Image Tag Generator | powershell-strict | sonnet | 5 | 3 | 4 | 4 | The test suite comprehensively covers all four core requirem |
+| Test Results Aggregator | default | opus | 5 | 3 | 4 | 4 | The test suite covers all major requirements thoroughly: JUn |
+| Test Results Aggregator | default | sonnet | 4 | 2 | 3 | 3 | The test suite covers all core requirements: JUnit XML parsi |
+| Test Results Aggregator | powershell | opus | 5 | 3 | 4 | 4 | The suite covers every stated requirement: JUnit parsing, JS |
+| Test Results Aggregator | powershell | sonnet | 4 | 3 | 4 | 4 | The suite covers all five major functions with dedicated Des |
+| Test Results Aggregator | powershell-strict | opus | 5 | 3 | 4 | 4 | The test suite covers all stated requirements comprehensivel |
+| Test Results Aggregator | powershell-strict | sonnet | 5 | 4 | 4 | 4 | The test suite is comprehensive and well-structured, coverin |
+| Environment Matrix Generator | default | opus | 5 | 4 | 4 | 4 | The test suite comprehensively covers all stated requirement |
+| Environment Matrix Generator | default | sonnet | 4 | 3 | 5 | 4 | The test suite is well-structured and covers all major requi |
+| Environment Matrix Generator | powershell | opus | 5 | 4 | 5 | 4 | The test suite thoroughly covers every stated requirement: c |
+| Environment Matrix Generator | powershell | sonnet | 4 | 3 | 5 | 4 | The test suite covers all seven task requirements (cartesian |
+| Environment Matrix Generator | powershell-strict | opus | 5 | 4 | 4 | 4 | Comprehensive suite covering all task requirements: cartesia |
+| Environment Matrix Generator | powershell-strict | sonnet | 5 | 3 | 4 | 4 | The test suite covers all key requirements from the task des |
+| Artifact Cleanup Script | default | opus | 5 | 4 | 5 | 4 | Strong test suite covering all seven functional requirements |
+| Artifact Cleanup Script | default | sonnet | 4 | 3 | 4 | 4 | The test suite covers all major requirements well: the Artif |
+| Artifact Cleanup Script | powershell | opus | 5 | 4 | 4 | 4 | The test suite is comprehensive and covers all stated requir |
+| Artifact Cleanup Script | powershell | sonnet | 4 | 3 | 4 | 4 | The test suite covers all seven public functions and exercis |
+| Artifact Cleanup Script | powershell-strict | opus | 5 | 4 | 4 | 4 | The test suite covers all major requirements thoroughly: art |
+| Artifact Cleanup Script | powershell-strict | sonnet | 5 | 4 | 4 | 4 | The test suite comprehensively covers all seven requirements |
+| Secret Rotation Validator | default | opus | 4 | 4 | 4 | 4 | Solid test suite with good breadth. All major functional req |
+| Secret Rotation Validator | default | sonnet | 4 | 3 | 4 | 4 | The test suite comprehensively covers the core functional re |
+| Secret Rotation Validator | powershell | opus | 5 | 4 | 4 | 4 | The test suite covers all key requirements well: status clas |
+| Secret Rotation Validator | powershell | sonnet | 4 | 4 | 4 | 4 | The test suite is comprehensive and well-structured, coverin |
+| Secret Rotation Validator | powershell-strict | opus | 5 | 4 | 4 | 4 | The test suite comprehensively covers all task requirements: |
+| Secret Rotation Validator | powershell-strict | sonnet | 5 | 4 | 4 | 4 | The suite covers all five functional requirements from the t |
+
+</details>
+
+### Correlation: Structural Metrics vs LLM Scores
+
+Spearman rank correlation between automated counts and LLM judge scores.
+Values near +1.0 indicate the LLM agrees with the structural signal; near 0 means no relationship.
+
+| Structural Metric | vs Coverage | vs Rigor | vs Design | vs Overall |
+|-------------------|------------|---------|----------|-----------|
+| Test count | 0.25 | 0.27 | 0.19 | 0.16 |
+| Assertion count | 0.15 | 0.11 | 0.05 | 0.15 |
+| Test:code ratio | 0.1 | 0.15 | 0.13 | 0.21 |
+
+*Based on 102 runs with both structural and LLM scores.*
+
+### LLM vs Structural Discrepancies
+
+**Probable counter gaps** — structural counters may be missing a test pattern. Investigate and fix `test_quality.py`.
+
+| Task | Language | Model | Tests | Asserts | Cov | Rig | Des | Ovr | Flag |
+|------|------|-------|-------|---------|-----|-----|-----|-----|------|
+| CSV Report Generator | csharp-script | sonnet | 0 | 0 | 5 | 3 | 4 | 4 | LLM says high coverage (5/5) but only 0 tests detected |
+| CSV Report Generator | csharp-script | sonnet | 0 | 0 | 5 | 3 | 4 | 4 | LLM says high overall (4/5) but 0 tests detected |
+
+**Qualitative disagreements** — structural metrics look reasonable; the LLM judge is weighing factors the counters can't measure.
+
+| Task | Language | Model | Tests | Asserts | Cov | Rig | Des | Ovr | Flag | Justification |
+|------|------|-------|-------|---------|-----|-----|-----|-----|------|---------------|
+| Test Results Aggregator | default | sonnet | 10 | 47 | 4 | 2 | 3 | 3 | LLM says low rigor (2/5) but 47 assertions detected | The test suite covers all core requirements: JUnit XML parsing (including single-testsuite root), JSON parsing, multi-run aggregation, flaky-test detection, markdown generation, file dispatch, and ... |
+
 ## Per-Run Results
 
 *LLM Score = Overall (1-5) from LLM-as-judge of generated test code (dimensions: coverage, rigor, design). `—` = no judge data.*
 
 | Task | Language | Model | Duration | Turns | Errors | Cost | LLM Score | Chosen | Status |
 |------|----------|-------|----------|-------|--------|------|-----------|--------|--------|
-| Artifact Cleanup Script | default | opus | 4.4min | 34 | 0 | $0.98 | — | python | ok |
-| Artifact Cleanup Script | default | sonnet | 2.6min | 17 | 4 | $0.44 | — | python | ok |
-| Artifact Cleanup Script | powershell | opus | 4.9min | 30 | 0 | $1.16 | — | powershell | ok |
-| Artifact Cleanup Script | powershell | sonnet | 2.6min | 9 | 0 | $0.35 | — | powershell | ok |
-| Artifact Cleanup Script | powershell-strict | opus | 5.5min | 37 | 1 | $1.37 | — | powershell | ok |
-| Artifact Cleanup Script | powershell-strict | sonnet | 3.6min | 15 | 0 | $0.49 | — | powershell | ok |
-| Batch File Renamer | default | opus | 2.8min | 30 | 2 | $0.81 | — | python | ok |
-| Batch File Renamer | default | sonnet | 2.3min | 8 | 0 | $0.22 | — | python | ok |
-| Batch File Renamer | powershell | opus | 3.0min | 21 | 0 | $0.59 | — | powershell | ok |
-| Batch File Renamer | powershell | sonnet | 1.4min | 6 | 0 | $0.16 | — | powershell | ok |
-| Batch File Renamer | powershell-strict | opus | 4.5min | 35 | 0 | $1.05 | — | powershell | ok |
-| Batch File Renamer | powershell-strict | sonnet | 3.7min | 16 | 1 | $0.50 | — | powershell | ok |
-| CSV Report Generator | csharp-script | opus | 2.8min | 12 | 0 | $0.58 | — | csharp | ok |
-| CSV Report Generator | csharp-script | sonnet | 0.6min | 7 | 0 | $0.12 | — | csharp | ok |
-| CSV Report Generator | default | opus | 1.7min | 12 | 0 | $0.38 | — | python | ok |
-| CSV Report Generator | default | sonnet | 6.3min | 1 | 3 | $0.71 | — | python | ok |
-| CSV Report Generator | powershell | opus | 4.3min | 37 | 0 | $1.05 | — | powershell | ok |
-| CSV Report Generator | powershell | sonnet | 2.1min | 9 | 0 | $0.31 | — | powershell | ok |
-| CSV Report Generator | powershell-strict | opus | 4.3min | 40 | 1 | $1.04 | — | powershell | ok |
-| CSV Report Generator | powershell-strict | sonnet | 6.5min | 29 | 0 | $0.97 | — | powershell | ok |
-| Config File Migrator | default | opus | 2.8min | 14 | 1 | $0.59 | — | python | ok |
-| Config File Migrator | default | sonnet | 3.4min | 18 | 1 | $0.47 | — | python | ok |
-| Config File Migrator | powershell | opus | 3.7min | 20 | 0 | $0.69 | — | powershell | ok |
-| Config File Migrator | powershell | sonnet | 3.4min | 15 | 0 | $0.38 | — | powershell | ok |
-| Config File Migrator | powershell-strict | opus | 2.7min | 12 | 0 | $0.49 | — | powershell | ok |
-| Config File Migrator | powershell-strict | sonnet | 13.9min | 21 | 0 | $1.60 | — | powershell | ok |
-| Database Seed Script | default | opus | 4.3min | 36 | 1 | $1.04 | — | python | ok |
+| Artifact Cleanup Script | default | opus | 4.4min | 34 | 0 | $0.98 | 4.0 | python | ok |
+| Artifact Cleanup Script | default | sonnet | 2.6min | 17 | 4 | $0.44 | 4.0 | python | ok |
+| Artifact Cleanup Script | powershell | opus | 4.9min | 30 | 0 | $1.16 | 4.0 | powershell | ok |
+| Artifact Cleanup Script | powershell | sonnet | 2.6min | 9 | 0 | $0.35 | 4.0 | powershell | ok |
+| Artifact Cleanup Script | powershell-strict | opus | 5.5min | 37 | 1 | $1.37 | 4.0 | powershell | ok |
+| Artifact Cleanup Script | powershell-strict | sonnet | 3.6min | 15 | 0 | $0.49 | 4.0 | powershell | ok |
+| Batch File Renamer | default | opus | 2.8min | 30 | 2 | $0.81 | 4.0 | python | ok |
+| Batch File Renamer | default | sonnet | 2.3min | 8 | 0 | $0.22 | 4.0 | python | ok |
+| Batch File Renamer | powershell | opus | 3.0min | 21 | 0 | $0.59 | 4.0 | powershell | ok |
+| Batch File Renamer | powershell | sonnet | 1.4min | 6 | 0 | $0.16 | 3.0 | powershell | ok |
+| Batch File Renamer | powershell-strict | opus | 4.5min | 35 | 0 | $1.05 | 4.0 | powershell | ok |
+| Batch File Renamer | powershell-strict | sonnet | 3.7min | 16 | 1 | $0.50 | 4.0 | powershell | ok |
+| CSV Report Generator | csharp-script | opus | 2.8min | 12 | 0 | $0.58 | 4.0 | csharp | ok |
+| CSV Report Generator | csharp-script | sonnet | 0.6min | 7 | 0 | $0.12 | 4.0 | csharp | ok |
+| CSV Report Generator | default | opus | 1.7min | 12 | 0 | $0.38 | 5.0 | python | ok |
+| CSV Report Generator | default | sonnet | 6.3min | 1 | 3 | $0.71 | 4.0 | python | ok |
+| CSV Report Generator | powershell | opus | 4.3min | 37 | 0 | $1.05 | 4.0 | powershell | ok |
+| CSV Report Generator | powershell | sonnet | 2.1min | 9 | 0 | $0.31 | 3.0 | powershell | ok |
+| CSV Report Generator | powershell-strict | opus | 4.3min | 40 | 1 | $1.04 | 4.0 | powershell | ok |
+| CSV Report Generator | powershell-strict | sonnet | 6.5min | 29 | 0 | $0.97 | 4.0 | powershell | ok |
+| Config File Migrator | default | opus | 2.8min | 14 | 1 | $0.59 | 4.0 | python | ok |
+| Config File Migrator | default | sonnet | 3.4min | 18 | 1 | $0.47 | 4.0 | python | ok |
+| Config File Migrator | powershell | opus | 3.7min | 20 | 0 | $0.69 | 4.0 | powershell | ok |
+| Config File Migrator | powershell | sonnet | 3.4min | 15 | 0 | $0.38 | 4.0 | powershell | ok |
+| Config File Migrator | powershell-strict | opus | 2.7min | 12 | 0 | $0.49 | 4.0 | powershell | ok |
+| Config File Migrator | powershell-strict | sonnet | 13.9min | 21 | 0 | $1.60 | 4.0 | powershell | ok |
+| Database Seed Script | default | opus | 4.3min | 36 | 1 | $1.04 | 5.0 | python | ok |
 | Database Seed Script | default | sonnet | 3.9min | 1 | 0 | $0.00 | — |  | failed |
-| Database Seed Script | powershell | opus | 5.8min | 42 | 4 | $1.32 | — | powershell | ok |
+| Database Seed Script | powershell | opus | 5.8min | 42 | 4 | $1.32 | 4.0 | powershell | ok |
 | Database Seed Script | powershell | sonnet | 3.8min | 1 | 0 | $0.00 | — | powershell | failed |
-| Database Seed Script | powershell-strict | opus | 8.7min | 56 | 2 | $2.03 | — | powershell | ok |
+| Database Seed Script | powershell-strict | opus | 8.7min | 56 | 2 | $2.03 | 4.0 | powershell | ok |
 | Database Seed Script | powershell-strict | sonnet | 3.6min | 1 | 0 | $0.00 | — | powershell | failed |
-| Dependency License Checker | default | opus | 5.6min | 64 | 4 | $1.73 | — | python | ok |
+| Dependency License Checker | default | opus | 5.6min | 64 | 4 | $1.73 | 5.0 | python | ok |
 | Dependency License Checker | default | sonnet | 4.0min | 1 | 0 | $0.00 | — |  | failed |
-| Dependency License Checker | powershell | opus | 5.8min | 45 | 1 | $1.37 | — | powershell | ok |
-| Dependency License Checker | powershell | sonnet | 2.6min | 11 | 0 | $0.36 | — | powershell | ok |
-| Dependency License Checker | powershell-strict | opus | 5.4min | 52 | 4 | $1.59 | — | powershell | ok |
-| Dependency License Checker | powershell-strict | sonnet | 9.5min | 18 | 0 | $0.97 | — | powershell | ok |
-| Directory Tree Sync | default | opus | 3.8min | 43 | 0 | $1.18 | — | python | ok |
-| Directory Tree Sync | default | sonnet | 3.9min | 11 | 1 | $0.45 | — | python | ok |
-| Directory Tree Sync | powershell | opus | 5.3min | 42 | 0 | $1.13 | — | powershell | ok |
-| Directory Tree Sync | powershell | sonnet | 3.0min | 11 | 0 | $0.37 | — | powershell | ok |
-| Directory Tree Sync | powershell-strict | opus | 5.4min | 34 | 0 | $1.21 | — | powershell | ok |
-| Directory Tree Sync | powershell-strict | sonnet | 4.3min | 13 | 0 | $0.49 | — | powershell | ok |
-| Docker Image Tag Generator | default | opus | 2.7min | 30 | 0 | $0.67 | — | python | ok |
-| Docker Image Tag Generator | default | sonnet | 1.8min | 10 | 1 | $0.23 | — | python | ok |
-| Docker Image Tag Generator | powershell | opus | 3.5min | 32 | 0 | $0.84 | — | powershell | ok |
-| Docker Image Tag Generator | powershell | sonnet | 2.9min | 9 | 0 | $0.31 | — | powershell | ok |
-| Docker Image Tag Generator | powershell-strict | opus | 5.0min | 44 | 0 | $1.28 | — | powershell | ok |
-| Docker Image Tag Generator | powershell-strict | sonnet | 2.5min | 13 | 0 | $0.33 | — | powershell | ok |
-| Environment Matrix Generator | default | opus | 4.7min | 38 | 1 | $1.11 | — | python | ok |
-| Environment Matrix Generator | default | sonnet | 2.0min | 9 | 0 | $0.26 | — | python | ok |
-| Environment Matrix Generator | powershell | opus | 2.3min | 18 | 0 | $0.54 | — | powershell | ok |
-| Environment Matrix Generator | powershell | sonnet | 2.8min | 13 | 0 | $0.36 | — | powershell | ok |
-| Environment Matrix Generator | powershell-strict | opus | 4.2min | 31 | 2 | $0.96 | — | powershell | ok |
-| Environment Matrix Generator | powershell-strict | sonnet | 5.4min | 16 | 0 | $0.62 | — | powershell | ok |
-| Error Retry Pipeline | default | opus | 2.3min | 24 | 0 | $0.54 | — | python | ok |
+| Dependency License Checker | powershell | opus | 5.8min | 45 | 1 | $1.37 | 5.0 | powershell | ok |
+| Dependency License Checker | powershell | sonnet | 2.6min | 11 | 0 | $0.36 | 5.0 | powershell | ok |
+| Dependency License Checker | powershell-strict | opus | 5.4min | 52 | 4 | $1.59 | 4.0 | powershell | ok |
+| Dependency License Checker | powershell-strict | sonnet | 9.5min | 18 | 0 | $0.97 | 4.0 | powershell | ok |
+| Directory Tree Sync | default | opus | 3.8min | 43 | 0 | $1.18 | 4.0 | python | ok |
+| Directory Tree Sync | default | sonnet | 3.9min | 11 | 1 | $0.45 | 5.0 | python | ok |
+| Directory Tree Sync | powershell | opus | 5.3min | 42 | 0 | $1.13 | 4.0 | powershell | ok |
+| Directory Tree Sync | powershell | sonnet | 3.0min | 11 | 0 | $0.37 | 4.0 | powershell | ok |
+| Directory Tree Sync | powershell-strict | opus | 5.4min | 34 | 0 | $1.21 | 4.0 | powershell | ok |
+| Directory Tree Sync | powershell-strict | sonnet | 4.3min | 13 | 0 | $0.49 | 4.0 | powershell | ok |
+| Docker Image Tag Generator | default | opus | 2.7min | 30 | 0 | $0.67 | 4.0 | python | ok |
+| Docker Image Tag Generator | default | sonnet | 1.8min | 10 | 1 | $0.23 | 4.0 | python | ok |
+| Docker Image Tag Generator | powershell | opus | 3.5min | 32 | 0 | $0.84 | 4.0 | powershell | ok |
+| Docker Image Tag Generator | powershell | sonnet | 2.9min | 9 | 0 | $0.31 | 4.0 | powershell | ok |
+| Docker Image Tag Generator | powershell-strict | opus | 5.0min | 44 | 0 | $1.28 | 4.0 | powershell | ok |
+| Docker Image Tag Generator | powershell-strict | sonnet | 2.5min | 13 | 0 | $0.33 | 4.0 | powershell | ok |
+| Environment Matrix Generator | default | opus | 4.7min | 38 | 1 | $1.11 | 4.0 | python | ok |
+| Environment Matrix Generator | default | sonnet | 2.0min | 9 | 0 | $0.26 | 4.0 | python | ok |
+| Environment Matrix Generator | powershell | opus | 2.3min | 18 | 0 | $0.54 | 4.0 | powershell | ok |
+| Environment Matrix Generator | powershell | sonnet | 2.8min | 13 | 0 | $0.36 | 4.0 | powershell | ok |
+| Environment Matrix Generator | powershell-strict | opus | 4.2min | 31 | 2 | $0.96 | 4.0 | powershell | ok |
+| Environment Matrix Generator | powershell-strict | sonnet | 5.4min | 16 | 0 | $0.62 | 4.0 | powershell | ok |
+| Error Retry Pipeline | default | opus | 2.3min | 24 | 0 | $0.54 | 4.0 | python | ok |
 | Error Retry Pipeline | default | sonnet | 3.7min | 1 | 0 | $0.00 | — |  | failed |
-| Error Retry Pipeline | powershell | opus | 3.8min | 34 | 0 | $0.93 | — | powershell | ok |
+| Error Retry Pipeline | powershell | opus | 3.8min | 34 | 0 | $0.93 | 4.0 | powershell | ok |
 | Error Retry Pipeline | powershell | sonnet | 3.8min | 1 | 0 | $0.00 | — | powershell | failed |
-| Error Retry Pipeline | powershell-strict | opus | 9.7min | 0 | 1 | $0.00 | — | powershell | failed |
+| Error Retry Pipeline | powershell-strict | opus | 9.7min | 0 | 1 | $0.00 | 4.0 | powershell | failed |
 | Error Retry Pipeline | powershell-strict | sonnet | 3.8min | 1 | 0 | $0.00 | — | powershell | failed |
-| Log File Analyzer | csharp-script | opus | 0.7min | 9 | 0 | $0.25 | — | csharp | ok |
-| Log File Analyzer | default | opus | 4.2min | 43 | 0 | $1.18 | — | python | ok |
-| Log File Analyzer | default | sonnet | 2.9min | 19 | 0 | $0.48 | — | python | ok |
-| Log File Analyzer | powershell | opus | 4.6min | 41 | 0 | $1.14 | — | powershell | ok |
-| Log File Analyzer | powershell | sonnet | 3.9min | 10 | 0 | $0.44 | — | powershell | ok |
-| Log File Analyzer | powershell-strict | opus | 4.5min | 31 | 1 | $0.95 | — | powershell | ok |
-| Log File Analyzer | powershell-strict | sonnet | 3.8min | 14 | 1 | $0.50 | — | powershell | ok |
-| Multi-file Search and Replace | default | opus | 3.1min | 25 | 3 | $0.70 | — | python | ok |
+| Log File Analyzer | csharp-script | opus | 0.7min | 9 | 0 | $0.25 | 4.0 | csharp | ok |
+| Log File Analyzer | default | opus | 4.2min | 43 | 0 | $1.18 | 5.0 | python | ok |
+| Log File Analyzer | default | sonnet | 2.9min | 19 | 0 | $0.48 | 5.0 | python | ok |
+| Log File Analyzer | powershell | opus | 4.6min | 41 | 0 | $1.14 | 4.0 | powershell | ok |
+| Log File Analyzer | powershell | sonnet | 3.9min | 10 | 0 | $0.44 | 4.0 | powershell | ok |
+| Log File Analyzer | powershell-strict | opus | 4.5min | 31 | 1 | $0.95 | 4.0 | powershell | ok |
+| Log File Analyzer | powershell-strict | sonnet | 3.8min | 14 | 1 | $0.50 | 4.0 | powershell | ok |
+| Multi-file Search and Replace | default | opus | 3.1min | 25 | 3 | $0.70 | 4.0 | python | ok |
 | Multi-file Search and Replace | default | sonnet | 3.9min | 1 | 0 | $0.00 | — |  | failed |
-| Multi-file Search and Replace | powershell | opus | 3.6min | 21 | 0 | $0.65 | — | powershell | ok |
-| Multi-file Search and Replace | powershell | sonnet | 1.4min | 10 | 0 | $0.19 | — | powershell | ok |
-| Multi-file Search and Replace | powershell-strict | opus | 4.1min | 34 | 0 | $1.09 | — | powershell | ok |
+| Multi-file Search and Replace | powershell | opus | 3.6min | 21 | 0 | $0.65 | 4.0 | powershell | ok |
+| Multi-file Search and Replace | powershell | sonnet | 1.4min | 10 | 0 | $0.19 | 4.0 | powershell | ok |
+| Multi-file Search and Replace | powershell-strict | opus | 4.1min | 34 | 0 | $1.09 | 3.0 | powershell | ok |
 | Multi-file Search and Replace | powershell-strict | sonnet | 3.8min | 1 | 0 | $0.00 | — | powershell | failed |
-| PR Label Assigner | default | opus | 1.9min | 11 | 1 | $0.38 | — | python | ok |
-| PR Label Assigner | default | sonnet | 1.8min | 8 | 0 | $0.21 | — | python | ok |
-| PR Label Assigner | powershell | opus | 3.1min | 23 | 0 | $0.61 | — | powershell | ok |
-| PR Label Assigner | powershell | sonnet | 3.7min | 10 | 0 | $0.38 | — | powershell | ok |
-| PR Label Assigner | powershell-strict | opus | 4.0min | 37 | 0 | $1.03 | — | powershell | ok |
-| PR Label Assigner | powershell-strict | sonnet | 3.3min | 12 | 0 | $0.35 | — | powershell | ok |
-| Process Monitor | default | opus | 3.3min | 40 | 1 | $1.00 | — | python | ok |
-| Process Monitor | default | sonnet | 2.0min | 12 | 0 | $0.25 | — | python | ok |
-| Process Monitor | powershell | opus | 5.4min | 39 | 0 | $1.21 | — | powershell | ok |
-| Process Monitor | powershell | sonnet | 3.8min | 13 | 0 | $0.40 | — | powershell | ok |
-| Process Monitor | powershell-strict | opus | 5.6min | 53 | 0 | $1.61 | — | powershell | ok |
-| Process Monitor | powershell-strict | sonnet | 4.6min | 19 | 0 | $0.54 | — | powershell | ok |
-| REST API Client | default | opus | 5.2min | 45 | 0 | $1.21 | — | python | ok |
-| REST API Client | default | sonnet | 1.8min | 9 | 1 | $0.23 | — | python | ok |
-| REST API Client | powershell | opus | 7.2min | 51 | 1 | $1.82 | — | powershell | ok |
-| REST API Client | powershell | sonnet | 12.6min | 13 | 0 | $0.96 | — | powershell | ok |
-| REST API Client | powershell-strict | opus | 5.1min | 19 | 0 | $0.94 | — | powershell | ok |
-| REST API Client | powershell-strict | sonnet | 9.2min | 14 | 0 | $0.99 | — | powershell | ok |
-| Secret Rotation Validator | default | opus | 2.6min | 17 | 0 | $0.51 | — | python | ok |
-| Secret Rotation Validator | default | sonnet | 1.5min | 11 | 0 | $0.22 | — | python | ok |
-| Secret Rotation Validator | powershell | opus | 3.3min | 23 | 1 | $0.72 | — | powershell | ok |
-| Secret Rotation Validator | powershell | sonnet | 3.5min | 11 | 0 | $0.48 | — | powershell | ok |
-| Secret Rotation Validator | powershell-strict | opus | 5.3min | 39 | 2 | $1.27 | — | powershell | ok |
-| Secret Rotation Validator | powershell-strict | sonnet | 4.0min | 20 | 0 | $0.53 | — | powershell | ok |
-| Semantic Version Bumper | default | opus | 4.8min | 47 | 5 | $1.23 | — | python | ok |
-| Semantic Version Bumper | default | sonnet | 2.5min | 11 | 0 | $0.25 | — | python | ok |
-| Semantic Version Bumper | powershell | opus | 3.6min | 27 | 0 | $0.77 | — | powershell | ok |
-| Semantic Version Bumper | powershell | sonnet | 2.7min | 16 | 0 | $0.33 | — | powershell | ok |
-| Semantic Version Bumper | powershell-strict | opus | 5.8min | 52 | 0 | $1.57 | — | powershell | ok |
-| Semantic Version Bumper | powershell-strict | sonnet | 5.3min | 5 | 0 | $0.15 | — | powershell | failed |
-| Test Results Aggregator | default | opus | 2.3min | 15 | 1 | $0.51 | — | python | ok |
-| Test Results Aggregator | default | sonnet | 4.0min | 20 | 1 | $0.49 | — | python | ok |
-| Test Results Aggregator | powershell | opus | 4.3min | 33 | 0 | $0.95 | — | powershell | ok |
-| Test Results Aggregator | powershell | sonnet | 5.0min | 15 | 0 | $0.55 | — | powershell | ok |
-| Test Results Aggregator | powershell-strict | opus | 4.0min | 24 | 0 | $0.95 | — | powershell | ok |
-| Test Results Aggregator | powershell-strict | sonnet | 11.5min | 20 | 0 | $1.42 | — | powershell | ok |
+| PR Label Assigner | default | opus | 1.9min | 11 | 1 | $0.38 | 4.0 | python | ok |
+| PR Label Assigner | default | sonnet | 1.8min | 8 | 0 | $0.21 | 5.0 | python | ok |
+| PR Label Assigner | powershell | opus | 3.1min | 23 | 0 | $0.61 | 4.0 | powershell | ok |
+| PR Label Assigner | powershell | sonnet | 3.7min | 10 | 0 | $0.38 | 4.0 | powershell | ok |
+| PR Label Assigner | powershell-strict | opus | 4.0min | 37 | 0 | $1.03 | 4.0 | powershell | ok |
+| PR Label Assigner | powershell-strict | sonnet | 3.3min | 12 | 0 | $0.35 | 4.0 | powershell | ok |
+| Process Monitor | default | opus | 3.3min | 40 | 1 | $1.00 | 3.0 | python | ok |
+| Process Monitor | default | sonnet | 2.0min | 12 | 0 | $0.25 | 4.0 | python | ok |
+| Process Monitor | powershell | opus | 5.4min | 39 | 0 | $1.21 | 4.0 | powershell | ok |
+| Process Monitor | powershell | sonnet | 3.8min | 13 | 0 | $0.40 | 4.0 | powershell | ok |
+| Process Monitor | powershell-strict | opus | 5.6min | 53 | 0 | $1.61 | 4.0 | powershell | ok |
+| Process Monitor | powershell-strict | sonnet | 4.6min | 19 | 0 | $0.54 | 4.0 | powershell | ok |
+| REST API Client | default | opus | 5.2min | 45 | 0 | $1.21 | 5.0 | python | ok |
+| REST API Client | default | sonnet | 1.8min | 9 | 1 | $0.23 | 5.0 | python | ok |
+| REST API Client | powershell | opus | 7.2min | 51 | 1 | $1.82 | 4.0 | powershell | ok |
+| REST API Client | powershell | sonnet | 12.6min | 13 | 0 | $0.96 | 3.0 | powershell | ok |
+| REST API Client | powershell-strict | opus | 5.1min | 19 | 0 | $0.94 | 4.0 | powershell | ok |
+| REST API Client | powershell-strict | sonnet | 9.2min | 14 | 0 | $0.99 | 4.0 | powershell | ok |
+| Secret Rotation Validator | default | opus | 2.6min | 17 | 0 | $0.51 | 4.0 | python | ok |
+| Secret Rotation Validator | default | sonnet | 1.5min | 11 | 0 | $0.22 | 4.0 | python | ok |
+| Secret Rotation Validator | powershell | opus | 3.3min | 23 | 1 | $0.72 | 4.0 | powershell | ok |
+| Secret Rotation Validator | powershell | sonnet | 3.5min | 11 | 0 | $0.48 | 4.0 | powershell | ok |
+| Secret Rotation Validator | powershell-strict | opus | 5.3min | 39 | 2 | $1.27 | 4.0 | powershell | ok |
+| Secret Rotation Validator | powershell-strict | sonnet | 4.0min | 20 | 0 | $0.53 | 4.0 | powershell | ok |
+| Semantic Version Bumper | default | opus | 4.8min | 47 | 5 | $1.23 | 4.0 | python | ok |
+| Semantic Version Bumper | default | sonnet | 2.5min | 11 | 0 | $0.25 | 4.0 | python | ok |
+| Semantic Version Bumper | powershell | opus | 3.6min | 27 | 0 | $0.77 | 4.0 | powershell | ok |
+| Semantic Version Bumper | powershell | sonnet | 2.7min | 16 | 0 | $0.33 | 4.0 | powershell | ok |
+| Semantic Version Bumper | powershell-strict | opus | 5.8min | 52 | 0 | $1.57 | 4.0 | powershell | ok |
+| Semantic Version Bumper | powershell-strict | sonnet | 5.3min | 5 | 0 | $0.15 | 4.0 | powershell | failed |
+| Test Results Aggregator | default | opus | 2.3min | 15 | 1 | $0.51 | 4.0 | python | ok |
+| Test Results Aggregator | default | sonnet | 4.0min | 20 | 1 | $0.49 | 3.0 | python | ok |
+| Test Results Aggregator | powershell | opus | 4.3min | 33 | 0 | $0.95 | 4.0 | powershell | ok |
+| Test Results Aggregator | powershell | sonnet | 5.0min | 15 | 0 | $0.55 | 4.0 | powershell | ok |
+| Test Results Aggregator | powershell-strict | opus | 4.0min | 24 | 0 | $0.95 | 4.0 | powershell | ok |
+| Test Results Aggregator | powershell-strict | sonnet | 11.5min | 20 | 0 | $1.42 | 4.0 | powershell | ok |
 
 
 <details>
@@ -627,112 +901,112 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Database Seed Script | powershell-strict | sonnet | 3.6min | 1 | 0 | $0.00 | — | powershell | failed |
 | Error Retry Pipeline | default | sonnet | 3.7min | 1 | 0 | $0.00 | — |  | failed |
 | Error Retry Pipeline | powershell | sonnet | 3.8min | 1 | 0 | $0.00 | — | powershell | failed |
-| Error Retry Pipeline | powershell-strict | opus | 9.7min | 0 | 1 | $0.00 | — | powershell | failed |
+| Error Retry Pipeline | powershell-strict | opus | 9.7min | 0 | 1 | $0.00 | 4.0 | powershell | failed |
 | Error Retry Pipeline | powershell-strict | sonnet | 3.8min | 1 | 0 | $0.00 | — | powershell | failed |
 | Multi-file Search and Replace | default | sonnet | 3.9min | 1 | 0 | $0.00 | — |  | failed |
 | Multi-file Search and Replace | powershell-strict | sonnet | 3.8min | 1 | 0 | $0.00 | — | powershell | failed |
 | Dependency License Checker | default | sonnet | 4.0min | 1 | 0 | $0.00 | — |  | failed |
-| CSV Report Generator | csharp-script | sonnet | 0.6min | 7 | 0 | $0.12 | — | csharp | ok |
-| Semantic Version Bumper | powershell-strict | sonnet | 5.3min | 5 | 0 | $0.15 | — | powershell | failed |
-| Batch File Renamer | powershell | sonnet | 1.4min | 6 | 0 | $0.16 | — | powershell | ok |
-| Multi-file Search and Replace | powershell | sonnet | 1.4min | 10 | 0 | $0.19 | — | powershell | ok |
-| PR Label Assigner | default | sonnet | 1.8min | 8 | 0 | $0.21 | — | python | ok |
-| Secret Rotation Validator | default | sonnet | 1.5min | 11 | 0 | $0.22 | — | python | ok |
-| Batch File Renamer | default | sonnet | 2.3min | 8 | 0 | $0.22 | — | python | ok |
-| REST API Client | default | sonnet | 1.8min | 9 | 1 | $0.23 | — | python | ok |
-| Docker Image Tag Generator | default | sonnet | 1.8min | 10 | 1 | $0.23 | — | python | ok |
-| Semantic Version Bumper | default | sonnet | 2.5min | 11 | 0 | $0.25 | — | python | ok |
-| Process Monitor | default | sonnet | 2.0min | 12 | 0 | $0.25 | — | python | ok |
-| Log File Analyzer | csharp-script | opus | 0.7min | 9 | 0 | $0.25 | — | csharp | ok |
-| Environment Matrix Generator | default | sonnet | 2.0min | 9 | 0 | $0.26 | — | python | ok |
-| CSV Report Generator | powershell | sonnet | 2.1min | 9 | 0 | $0.31 | — | powershell | ok |
-| Docker Image Tag Generator | powershell | sonnet | 2.9min | 9 | 0 | $0.31 | — | powershell | ok |
-| Semantic Version Bumper | powershell | sonnet | 2.7min | 16 | 0 | $0.33 | — | powershell | ok |
-| Docker Image Tag Generator | powershell-strict | sonnet | 2.5min | 13 | 0 | $0.33 | — | powershell | ok |
-| Artifact Cleanup Script | powershell | sonnet | 2.6min | 9 | 0 | $0.35 | — | powershell | ok |
-| PR Label Assigner | powershell-strict | sonnet | 3.3min | 12 | 0 | $0.35 | — | powershell | ok |
-| Environment Matrix Generator | powershell | sonnet | 2.8min | 13 | 0 | $0.36 | — | powershell | ok |
-| Dependency License Checker | powershell | sonnet | 2.6min | 11 | 0 | $0.36 | — | powershell | ok |
-| Directory Tree Sync | powershell | sonnet | 3.0min | 11 | 0 | $0.37 | — | powershell | ok |
-| PR Label Assigner | default | opus | 1.9min | 11 | 1 | $0.38 | — | python | ok |
-| CSV Report Generator | default | opus | 1.7min | 12 | 0 | $0.38 | — | python | ok |
-| Config File Migrator | powershell | sonnet | 3.4min | 15 | 0 | $0.38 | — | powershell | ok |
-| PR Label Assigner | powershell | sonnet | 3.7min | 10 | 0 | $0.38 | — | powershell | ok |
-| Process Monitor | powershell | sonnet | 3.8min | 13 | 0 | $0.40 | — | powershell | ok |
-| Artifact Cleanup Script | default | sonnet | 2.6min | 17 | 4 | $0.44 | — | python | ok |
-| Log File Analyzer | powershell | sonnet | 3.9min | 10 | 0 | $0.44 | — | powershell | ok |
-| Directory Tree Sync | default | sonnet | 3.9min | 11 | 1 | $0.45 | — | python | ok |
-| Config File Migrator | default | sonnet | 3.4min | 18 | 1 | $0.47 | — | python | ok |
-| Secret Rotation Validator | powershell | sonnet | 3.5min | 11 | 0 | $0.48 | — | powershell | ok |
-| Log File Analyzer | default | sonnet | 2.9min | 19 | 0 | $0.48 | — | python | ok |
-| Artifact Cleanup Script | powershell-strict | sonnet | 3.6min | 15 | 0 | $0.49 | — | powershell | ok |
-| Config File Migrator | powershell-strict | opus | 2.7min | 12 | 0 | $0.49 | — | powershell | ok |
-| Directory Tree Sync | powershell-strict | sonnet | 4.3min | 13 | 0 | $0.49 | — | powershell | ok |
-| Test Results Aggregator | default | sonnet | 4.0min | 20 | 1 | $0.49 | — | python | ok |
-| Batch File Renamer | powershell-strict | sonnet | 3.7min | 16 | 1 | $0.50 | — | powershell | ok |
-| Log File Analyzer | powershell-strict | sonnet | 3.8min | 14 | 1 | $0.50 | — | powershell | ok |
-| Test Results Aggregator | default | opus | 2.3min | 15 | 1 | $0.51 | — | python | ok |
-| Secret Rotation Validator | default | opus | 2.6min | 17 | 0 | $0.51 | — | python | ok |
-| Secret Rotation Validator | powershell-strict | sonnet | 4.0min | 20 | 0 | $0.53 | — | powershell | ok |
-| Process Monitor | powershell-strict | sonnet | 4.6min | 19 | 0 | $0.54 | — | powershell | ok |
-| Environment Matrix Generator | powershell | opus | 2.3min | 18 | 0 | $0.54 | — | powershell | ok |
-| Error Retry Pipeline | default | opus | 2.3min | 24 | 0 | $0.54 | — | python | ok |
-| Test Results Aggregator | powershell | sonnet | 5.0min | 15 | 0 | $0.55 | — | powershell | ok |
-| CSV Report Generator | csharp-script | opus | 2.8min | 12 | 0 | $0.58 | — | csharp | ok |
-| Config File Migrator | default | opus | 2.8min | 14 | 1 | $0.59 | — | python | ok |
-| Batch File Renamer | powershell | opus | 3.0min | 21 | 0 | $0.59 | — | powershell | ok |
-| PR Label Assigner | powershell | opus | 3.1min | 23 | 0 | $0.61 | — | powershell | ok |
-| Environment Matrix Generator | powershell-strict | sonnet | 5.4min | 16 | 0 | $0.62 | — | powershell | ok |
-| Multi-file Search and Replace | powershell | opus | 3.6min | 21 | 0 | $0.65 | — | powershell | ok |
-| Docker Image Tag Generator | default | opus | 2.7min | 30 | 0 | $0.67 | — | python | ok |
-| Config File Migrator | powershell | opus | 3.7min | 20 | 0 | $0.69 | — | powershell | ok |
-| Multi-file Search and Replace | default | opus | 3.1min | 25 | 3 | $0.70 | — | python | ok |
-| CSV Report Generator | default | sonnet | 6.3min | 1 | 3 | $0.71 | — | python | ok |
-| Secret Rotation Validator | powershell | opus | 3.3min | 23 | 1 | $0.72 | — | powershell | ok |
-| Semantic Version Bumper | powershell | opus | 3.6min | 27 | 0 | $0.77 | — | powershell | ok |
-| Batch File Renamer | default | opus | 2.8min | 30 | 2 | $0.81 | — | python | ok |
-| Docker Image Tag Generator | powershell | opus | 3.5min | 32 | 0 | $0.84 | — | powershell | ok |
-| Error Retry Pipeline | powershell | opus | 3.8min | 34 | 0 | $0.93 | — | powershell | ok |
-| REST API Client | powershell-strict | opus | 5.1min | 19 | 0 | $0.94 | — | powershell | ok |
-| Log File Analyzer | powershell-strict | opus | 4.5min | 31 | 1 | $0.95 | — | powershell | ok |
-| Test Results Aggregator | powershell-strict | opus | 4.0min | 24 | 0 | $0.95 | — | powershell | ok |
-| Test Results Aggregator | powershell | opus | 4.3min | 33 | 0 | $0.95 | — | powershell | ok |
-| REST API Client | powershell | sonnet | 12.6min | 13 | 0 | $0.96 | — | powershell | ok |
-| Environment Matrix Generator | powershell-strict | opus | 4.2min | 31 | 2 | $0.96 | — | powershell | ok |
-| Dependency License Checker | powershell-strict | sonnet | 9.5min | 18 | 0 | $0.97 | — | powershell | ok |
-| CSV Report Generator | powershell-strict | sonnet | 6.5min | 29 | 0 | $0.97 | — | powershell | ok |
-| Artifact Cleanup Script | default | opus | 4.4min | 34 | 0 | $0.98 | — | python | ok |
-| REST API Client | powershell-strict | sonnet | 9.2min | 14 | 0 | $0.99 | — | powershell | ok |
-| Process Monitor | default | opus | 3.3min | 40 | 1 | $1.00 | — | python | ok |
-| PR Label Assigner | powershell-strict | opus | 4.0min | 37 | 0 | $1.03 | — | powershell | ok |
-| Database Seed Script | default | opus | 4.3min | 36 | 1 | $1.04 | — | python | ok |
-| CSV Report Generator | powershell-strict | opus | 4.3min | 40 | 1 | $1.04 | — | powershell | ok |
-| CSV Report Generator | powershell | opus | 4.3min | 37 | 0 | $1.05 | — | powershell | ok |
-| Batch File Renamer | powershell-strict | opus | 4.5min | 35 | 0 | $1.05 | — | powershell | ok |
-| Multi-file Search and Replace | powershell-strict | opus | 4.1min | 34 | 0 | $1.09 | — | powershell | ok |
-| Environment Matrix Generator | default | opus | 4.7min | 38 | 1 | $1.11 | — | python | ok |
-| Directory Tree Sync | powershell | opus | 5.3min | 42 | 0 | $1.13 | — | powershell | ok |
-| Log File Analyzer | powershell | opus | 4.6min | 41 | 0 | $1.14 | — | powershell | ok |
-| Artifact Cleanup Script | powershell | opus | 4.9min | 30 | 0 | $1.16 | — | powershell | ok |
-| Directory Tree Sync | default | opus | 3.8min | 43 | 0 | $1.18 | — | python | ok |
-| Log File Analyzer | default | opus | 4.2min | 43 | 0 | $1.18 | — | python | ok |
-| Process Monitor | powershell | opus | 5.4min | 39 | 0 | $1.21 | — | powershell | ok |
-| Directory Tree Sync | powershell-strict | opus | 5.4min | 34 | 0 | $1.21 | — | powershell | ok |
-| REST API Client | default | opus | 5.2min | 45 | 0 | $1.21 | — | python | ok |
-| Semantic Version Bumper | default | opus | 4.8min | 47 | 5 | $1.23 | — | python | ok |
-| Secret Rotation Validator | powershell-strict | opus | 5.3min | 39 | 2 | $1.27 | — | powershell | ok |
-| Docker Image Tag Generator | powershell-strict | opus | 5.0min | 44 | 0 | $1.28 | — | powershell | ok |
-| Database Seed Script | powershell | opus | 5.8min | 42 | 4 | $1.32 | — | powershell | ok |
-| Artifact Cleanup Script | powershell-strict | opus | 5.5min | 37 | 1 | $1.37 | — | powershell | ok |
-| Dependency License Checker | powershell | opus | 5.8min | 45 | 1 | $1.37 | — | powershell | ok |
-| Test Results Aggregator | powershell-strict | sonnet | 11.5min | 20 | 0 | $1.42 | — | powershell | ok |
-| Semantic Version Bumper | powershell-strict | opus | 5.8min | 52 | 0 | $1.57 | — | powershell | ok |
-| Dependency License Checker | powershell-strict | opus | 5.4min | 52 | 4 | $1.59 | — | powershell | ok |
-| Config File Migrator | powershell-strict | sonnet | 13.9min | 21 | 0 | $1.60 | — | powershell | ok |
-| Process Monitor | powershell-strict | opus | 5.6min | 53 | 0 | $1.61 | — | powershell | ok |
-| Dependency License Checker | default | opus | 5.6min | 64 | 4 | $1.73 | — | python | ok |
-| REST API Client | powershell | opus | 7.2min | 51 | 1 | $1.82 | — | powershell | ok |
-| Database Seed Script | powershell-strict | opus | 8.7min | 56 | 2 | $2.03 | — | powershell | ok |
+| CSV Report Generator | csharp-script | sonnet | 0.6min | 7 | 0 | $0.12 | 4.0 | csharp | ok |
+| Semantic Version Bumper | powershell-strict | sonnet | 5.3min | 5 | 0 | $0.15 | 4.0 | powershell | failed |
+| Batch File Renamer | powershell | sonnet | 1.4min | 6 | 0 | $0.16 | 3.0 | powershell | ok |
+| Multi-file Search and Replace | powershell | sonnet | 1.4min | 10 | 0 | $0.19 | 4.0 | powershell | ok |
+| PR Label Assigner | default | sonnet | 1.8min | 8 | 0 | $0.21 | 5.0 | python | ok |
+| Secret Rotation Validator | default | sonnet | 1.5min | 11 | 0 | $0.22 | 4.0 | python | ok |
+| Batch File Renamer | default | sonnet | 2.3min | 8 | 0 | $0.22 | 4.0 | python | ok |
+| REST API Client | default | sonnet | 1.8min | 9 | 1 | $0.23 | 5.0 | python | ok |
+| Docker Image Tag Generator | default | sonnet | 1.8min | 10 | 1 | $0.23 | 4.0 | python | ok |
+| Semantic Version Bumper | default | sonnet | 2.5min | 11 | 0 | $0.25 | 4.0 | python | ok |
+| Process Monitor | default | sonnet | 2.0min | 12 | 0 | $0.25 | 4.0 | python | ok |
+| Log File Analyzer | csharp-script | opus | 0.7min | 9 | 0 | $0.25 | 4.0 | csharp | ok |
+| Environment Matrix Generator | default | sonnet | 2.0min | 9 | 0 | $0.26 | 4.0 | python | ok |
+| CSV Report Generator | powershell | sonnet | 2.1min | 9 | 0 | $0.31 | 3.0 | powershell | ok |
+| Docker Image Tag Generator | powershell | sonnet | 2.9min | 9 | 0 | $0.31 | 4.0 | powershell | ok |
+| Semantic Version Bumper | powershell | sonnet | 2.7min | 16 | 0 | $0.33 | 4.0 | powershell | ok |
+| Docker Image Tag Generator | powershell-strict | sonnet | 2.5min | 13 | 0 | $0.33 | 4.0 | powershell | ok |
+| Artifact Cleanup Script | powershell | sonnet | 2.6min | 9 | 0 | $0.35 | 4.0 | powershell | ok |
+| PR Label Assigner | powershell-strict | sonnet | 3.3min | 12 | 0 | $0.35 | 4.0 | powershell | ok |
+| Environment Matrix Generator | powershell | sonnet | 2.8min | 13 | 0 | $0.36 | 4.0 | powershell | ok |
+| Dependency License Checker | powershell | sonnet | 2.6min | 11 | 0 | $0.36 | 5.0 | powershell | ok |
+| Directory Tree Sync | powershell | sonnet | 3.0min | 11 | 0 | $0.37 | 4.0 | powershell | ok |
+| PR Label Assigner | default | opus | 1.9min | 11 | 1 | $0.38 | 4.0 | python | ok |
+| CSV Report Generator | default | opus | 1.7min | 12 | 0 | $0.38 | 5.0 | python | ok |
+| Config File Migrator | powershell | sonnet | 3.4min | 15 | 0 | $0.38 | 4.0 | powershell | ok |
+| PR Label Assigner | powershell | sonnet | 3.7min | 10 | 0 | $0.38 | 4.0 | powershell | ok |
+| Process Monitor | powershell | sonnet | 3.8min | 13 | 0 | $0.40 | 4.0 | powershell | ok |
+| Artifact Cleanup Script | default | sonnet | 2.6min | 17 | 4 | $0.44 | 4.0 | python | ok |
+| Log File Analyzer | powershell | sonnet | 3.9min | 10 | 0 | $0.44 | 4.0 | powershell | ok |
+| Directory Tree Sync | default | sonnet | 3.9min | 11 | 1 | $0.45 | 5.0 | python | ok |
+| Config File Migrator | default | sonnet | 3.4min | 18 | 1 | $0.47 | 4.0 | python | ok |
+| Secret Rotation Validator | powershell | sonnet | 3.5min | 11 | 0 | $0.48 | 4.0 | powershell | ok |
+| Log File Analyzer | default | sonnet | 2.9min | 19 | 0 | $0.48 | 5.0 | python | ok |
+| Artifact Cleanup Script | powershell-strict | sonnet | 3.6min | 15 | 0 | $0.49 | 4.0 | powershell | ok |
+| Config File Migrator | powershell-strict | opus | 2.7min | 12 | 0 | $0.49 | 4.0 | powershell | ok |
+| Directory Tree Sync | powershell-strict | sonnet | 4.3min | 13 | 0 | $0.49 | 4.0 | powershell | ok |
+| Test Results Aggregator | default | sonnet | 4.0min | 20 | 1 | $0.49 | 3.0 | python | ok |
+| Batch File Renamer | powershell-strict | sonnet | 3.7min | 16 | 1 | $0.50 | 4.0 | powershell | ok |
+| Log File Analyzer | powershell-strict | sonnet | 3.8min | 14 | 1 | $0.50 | 4.0 | powershell | ok |
+| Test Results Aggregator | default | opus | 2.3min | 15 | 1 | $0.51 | 4.0 | python | ok |
+| Secret Rotation Validator | default | opus | 2.6min | 17 | 0 | $0.51 | 4.0 | python | ok |
+| Secret Rotation Validator | powershell-strict | sonnet | 4.0min | 20 | 0 | $0.53 | 4.0 | powershell | ok |
+| Process Monitor | powershell-strict | sonnet | 4.6min | 19 | 0 | $0.54 | 4.0 | powershell | ok |
+| Environment Matrix Generator | powershell | opus | 2.3min | 18 | 0 | $0.54 | 4.0 | powershell | ok |
+| Error Retry Pipeline | default | opus | 2.3min | 24 | 0 | $0.54 | 4.0 | python | ok |
+| Test Results Aggregator | powershell | sonnet | 5.0min | 15 | 0 | $0.55 | 4.0 | powershell | ok |
+| CSV Report Generator | csharp-script | opus | 2.8min | 12 | 0 | $0.58 | 4.0 | csharp | ok |
+| Config File Migrator | default | opus | 2.8min | 14 | 1 | $0.59 | 4.0 | python | ok |
+| Batch File Renamer | powershell | opus | 3.0min | 21 | 0 | $0.59 | 4.0 | powershell | ok |
+| PR Label Assigner | powershell | opus | 3.1min | 23 | 0 | $0.61 | 4.0 | powershell | ok |
+| Environment Matrix Generator | powershell-strict | sonnet | 5.4min | 16 | 0 | $0.62 | 4.0 | powershell | ok |
+| Multi-file Search and Replace | powershell | opus | 3.6min | 21 | 0 | $0.65 | 4.0 | powershell | ok |
+| Docker Image Tag Generator | default | opus | 2.7min | 30 | 0 | $0.67 | 4.0 | python | ok |
+| Config File Migrator | powershell | opus | 3.7min | 20 | 0 | $0.69 | 4.0 | powershell | ok |
+| Multi-file Search and Replace | default | opus | 3.1min | 25 | 3 | $0.70 | 4.0 | python | ok |
+| CSV Report Generator | default | sonnet | 6.3min | 1 | 3 | $0.71 | 4.0 | python | ok |
+| Secret Rotation Validator | powershell | opus | 3.3min | 23 | 1 | $0.72 | 4.0 | powershell | ok |
+| Semantic Version Bumper | powershell | opus | 3.6min | 27 | 0 | $0.77 | 4.0 | powershell | ok |
+| Batch File Renamer | default | opus | 2.8min | 30 | 2 | $0.81 | 4.0 | python | ok |
+| Docker Image Tag Generator | powershell | opus | 3.5min | 32 | 0 | $0.84 | 4.0 | powershell | ok |
+| Error Retry Pipeline | powershell | opus | 3.8min | 34 | 0 | $0.93 | 4.0 | powershell | ok |
+| REST API Client | powershell-strict | opus | 5.1min | 19 | 0 | $0.94 | 4.0 | powershell | ok |
+| Log File Analyzer | powershell-strict | opus | 4.5min | 31 | 1 | $0.95 | 4.0 | powershell | ok |
+| Test Results Aggregator | powershell-strict | opus | 4.0min | 24 | 0 | $0.95 | 4.0 | powershell | ok |
+| Test Results Aggregator | powershell | opus | 4.3min | 33 | 0 | $0.95 | 4.0 | powershell | ok |
+| REST API Client | powershell | sonnet | 12.6min | 13 | 0 | $0.96 | 3.0 | powershell | ok |
+| Environment Matrix Generator | powershell-strict | opus | 4.2min | 31 | 2 | $0.96 | 4.0 | powershell | ok |
+| Dependency License Checker | powershell-strict | sonnet | 9.5min | 18 | 0 | $0.97 | 4.0 | powershell | ok |
+| CSV Report Generator | powershell-strict | sonnet | 6.5min | 29 | 0 | $0.97 | 4.0 | powershell | ok |
+| Artifact Cleanup Script | default | opus | 4.4min | 34 | 0 | $0.98 | 4.0 | python | ok |
+| REST API Client | powershell-strict | sonnet | 9.2min | 14 | 0 | $0.99 | 4.0 | powershell | ok |
+| Process Monitor | default | opus | 3.3min | 40 | 1 | $1.00 | 3.0 | python | ok |
+| PR Label Assigner | powershell-strict | opus | 4.0min | 37 | 0 | $1.03 | 4.0 | powershell | ok |
+| Database Seed Script | default | opus | 4.3min | 36 | 1 | $1.04 | 5.0 | python | ok |
+| CSV Report Generator | powershell-strict | opus | 4.3min | 40 | 1 | $1.04 | 4.0 | powershell | ok |
+| CSV Report Generator | powershell | opus | 4.3min | 37 | 0 | $1.05 | 4.0 | powershell | ok |
+| Batch File Renamer | powershell-strict | opus | 4.5min | 35 | 0 | $1.05 | 4.0 | powershell | ok |
+| Multi-file Search and Replace | powershell-strict | opus | 4.1min | 34 | 0 | $1.09 | 3.0 | powershell | ok |
+| Environment Matrix Generator | default | opus | 4.7min | 38 | 1 | $1.11 | 4.0 | python | ok |
+| Directory Tree Sync | powershell | opus | 5.3min | 42 | 0 | $1.13 | 4.0 | powershell | ok |
+| Log File Analyzer | powershell | opus | 4.6min | 41 | 0 | $1.14 | 4.0 | powershell | ok |
+| Artifact Cleanup Script | powershell | opus | 4.9min | 30 | 0 | $1.16 | 4.0 | powershell | ok |
+| Directory Tree Sync | default | opus | 3.8min | 43 | 0 | $1.18 | 4.0 | python | ok |
+| Log File Analyzer | default | opus | 4.2min | 43 | 0 | $1.18 | 5.0 | python | ok |
+| Process Monitor | powershell | opus | 5.4min | 39 | 0 | $1.21 | 4.0 | powershell | ok |
+| Directory Tree Sync | powershell-strict | opus | 5.4min | 34 | 0 | $1.21 | 4.0 | powershell | ok |
+| REST API Client | default | opus | 5.2min | 45 | 0 | $1.21 | 5.0 | python | ok |
+| Semantic Version Bumper | default | opus | 4.8min | 47 | 5 | $1.23 | 4.0 | python | ok |
+| Secret Rotation Validator | powershell-strict | opus | 5.3min | 39 | 2 | $1.27 | 4.0 | powershell | ok |
+| Docker Image Tag Generator | powershell-strict | opus | 5.0min | 44 | 0 | $1.28 | 4.0 | powershell | ok |
+| Database Seed Script | powershell | opus | 5.8min | 42 | 4 | $1.32 | 4.0 | powershell | ok |
+| Artifact Cleanup Script | powershell-strict | opus | 5.5min | 37 | 1 | $1.37 | 4.0 | powershell | ok |
+| Dependency License Checker | powershell | opus | 5.8min | 45 | 1 | $1.37 | 5.0 | powershell | ok |
+| Test Results Aggregator | powershell-strict | sonnet | 11.5min | 20 | 0 | $1.42 | 4.0 | powershell | ok |
+| Semantic Version Bumper | powershell-strict | opus | 5.8min | 52 | 0 | $1.57 | 4.0 | powershell | ok |
+| Dependency License Checker | powershell-strict | opus | 5.4min | 52 | 4 | $1.59 | 4.0 | powershell | ok |
+| Config File Migrator | powershell-strict | sonnet | 13.9min | 21 | 0 | $1.60 | 4.0 | powershell | ok |
+| Process Monitor | powershell-strict | opus | 5.6min | 53 | 0 | $1.61 | 4.0 | powershell | ok |
+| Dependency License Checker | default | opus | 5.6min | 64 | 4 | $1.73 | 5.0 | python | ok |
+| REST API Client | powershell | opus | 7.2min | 51 | 1 | $1.82 | 4.0 | powershell | ok |
+| Database Seed Script | powershell-strict | opus | 8.7min | 56 | 2 | $2.03 | 4.0 | powershell | ok |
 
 </details>
 
@@ -741,117 +1015,117 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 
 | Task | Language | Model | Duration | Turns | Errors | Cost | LLM Score | Chosen | Status |
 |------|----------|-------|----------|-------|--------|------|-----------|--------|--------|
-| CSV Report Generator | csharp-script | sonnet | 0.6min | 7 | 0 | $0.12 | — | csharp | ok |
-| Log File Analyzer | csharp-script | opus | 0.7min | 9 | 0 | $0.25 | — | csharp | ok |
-| Batch File Renamer | powershell | sonnet | 1.4min | 6 | 0 | $0.16 | — | powershell | ok |
-| Multi-file Search and Replace | powershell | sonnet | 1.4min | 10 | 0 | $0.19 | — | powershell | ok |
-| Secret Rotation Validator | default | sonnet | 1.5min | 11 | 0 | $0.22 | — | python | ok |
-| CSV Report Generator | default | opus | 1.7min | 12 | 0 | $0.38 | — | python | ok |
-| PR Label Assigner | default | sonnet | 1.8min | 8 | 0 | $0.21 | — | python | ok |
-| Docker Image Tag Generator | default | sonnet | 1.8min | 10 | 1 | $0.23 | — | python | ok |
-| REST API Client | default | sonnet | 1.8min | 9 | 1 | $0.23 | — | python | ok |
-| PR Label Assigner | default | opus | 1.9min | 11 | 1 | $0.38 | — | python | ok |
-| Process Monitor | default | sonnet | 2.0min | 12 | 0 | $0.25 | — | python | ok |
-| Environment Matrix Generator | default | sonnet | 2.0min | 9 | 0 | $0.26 | — | python | ok |
-| CSV Report Generator | powershell | sonnet | 2.1min | 9 | 0 | $0.31 | — | powershell | ok |
-| Batch File Renamer | default | sonnet | 2.3min | 8 | 0 | $0.22 | — | python | ok |
-| Test Results Aggregator | default | opus | 2.3min | 15 | 1 | $0.51 | — | python | ok |
-| Error Retry Pipeline | default | opus | 2.3min | 24 | 0 | $0.54 | — | python | ok |
-| Environment Matrix Generator | powershell | opus | 2.3min | 18 | 0 | $0.54 | — | powershell | ok |
-| Semantic Version Bumper | default | sonnet | 2.5min | 11 | 0 | $0.25 | — | python | ok |
-| Docker Image Tag Generator | powershell-strict | sonnet | 2.5min | 13 | 0 | $0.33 | — | powershell | ok |
-| Dependency License Checker | powershell | sonnet | 2.6min | 11 | 0 | $0.36 | — | powershell | ok |
-| Artifact Cleanup Script | powershell | sonnet | 2.6min | 9 | 0 | $0.35 | — | powershell | ok |
-| Artifact Cleanup Script | default | sonnet | 2.6min | 17 | 4 | $0.44 | — | python | ok |
-| Secret Rotation Validator | default | opus | 2.6min | 17 | 0 | $0.51 | — | python | ok |
-| Semantic Version Bumper | powershell | sonnet | 2.7min | 16 | 0 | $0.33 | — | powershell | ok |
-| Docker Image Tag Generator | default | opus | 2.7min | 30 | 0 | $0.67 | — | python | ok |
-| Config File Migrator | powershell-strict | opus | 2.7min | 12 | 0 | $0.49 | — | powershell | ok |
-| Config File Migrator | default | opus | 2.8min | 14 | 1 | $0.59 | — | python | ok |
-| Batch File Renamer | default | opus | 2.8min | 30 | 2 | $0.81 | — | python | ok |
-| Environment Matrix Generator | powershell | sonnet | 2.8min | 13 | 0 | $0.36 | — | powershell | ok |
-| CSV Report Generator | csharp-script | opus | 2.8min | 12 | 0 | $0.58 | — | csharp | ok |
-| Log File Analyzer | default | sonnet | 2.9min | 19 | 0 | $0.48 | — | python | ok |
-| Docker Image Tag Generator | powershell | sonnet | 2.9min | 9 | 0 | $0.31 | — | powershell | ok |
-| Batch File Renamer | powershell | opus | 3.0min | 21 | 0 | $0.59 | — | powershell | ok |
-| Directory Tree Sync | powershell | sonnet | 3.0min | 11 | 0 | $0.37 | — | powershell | ok |
-| PR Label Assigner | powershell | opus | 3.1min | 23 | 0 | $0.61 | — | powershell | ok |
-| Multi-file Search and Replace | default | opus | 3.1min | 25 | 3 | $0.70 | — | python | ok |
-| PR Label Assigner | powershell-strict | sonnet | 3.3min | 12 | 0 | $0.35 | — | powershell | ok |
-| Secret Rotation Validator | powershell | opus | 3.3min | 23 | 1 | $0.72 | — | powershell | ok |
-| Process Monitor | default | opus | 3.3min | 40 | 1 | $1.00 | — | python | ok |
-| Config File Migrator | default | sonnet | 3.4min | 18 | 1 | $0.47 | — | python | ok |
-| Config File Migrator | powershell | sonnet | 3.4min | 15 | 0 | $0.38 | — | powershell | ok |
-| Docker Image Tag Generator | powershell | opus | 3.5min | 32 | 0 | $0.84 | — | powershell | ok |
-| Secret Rotation Validator | powershell | sonnet | 3.5min | 11 | 0 | $0.48 | — | powershell | ok |
-| Semantic Version Bumper | powershell | opus | 3.6min | 27 | 0 | $0.77 | — | powershell | ok |
+| CSV Report Generator | csharp-script | sonnet | 0.6min | 7 | 0 | $0.12 | 4.0 | csharp | ok |
+| Log File Analyzer | csharp-script | opus | 0.7min | 9 | 0 | $0.25 | 4.0 | csharp | ok |
+| Batch File Renamer | powershell | sonnet | 1.4min | 6 | 0 | $0.16 | 3.0 | powershell | ok |
+| Multi-file Search and Replace | powershell | sonnet | 1.4min | 10 | 0 | $0.19 | 4.0 | powershell | ok |
+| Secret Rotation Validator | default | sonnet | 1.5min | 11 | 0 | $0.22 | 4.0 | python | ok |
+| CSV Report Generator | default | opus | 1.7min | 12 | 0 | $0.38 | 5.0 | python | ok |
+| PR Label Assigner | default | sonnet | 1.8min | 8 | 0 | $0.21 | 5.0 | python | ok |
+| Docker Image Tag Generator | default | sonnet | 1.8min | 10 | 1 | $0.23 | 4.0 | python | ok |
+| REST API Client | default | sonnet | 1.8min | 9 | 1 | $0.23 | 5.0 | python | ok |
+| PR Label Assigner | default | opus | 1.9min | 11 | 1 | $0.38 | 4.0 | python | ok |
+| Process Monitor | default | sonnet | 2.0min | 12 | 0 | $0.25 | 4.0 | python | ok |
+| Environment Matrix Generator | default | sonnet | 2.0min | 9 | 0 | $0.26 | 4.0 | python | ok |
+| CSV Report Generator | powershell | sonnet | 2.1min | 9 | 0 | $0.31 | 3.0 | powershell | ok |
+| Batch File Renamer | default | sonnet | 2.3min | 8 | 0 | $0.22 | 4.0 | python | ok |
+| Test Results Aggregator | default | opus | 2.3min | 15 | 1 | $0.51 | 4.0 | python | ok |
+| Error Retry Pipeline | default | opus | 2.3min | 24 | 0 | $0.54 | 4.0 | python | ok |
+| Environment Matrix Generator | powershell | opus | 2.3min | 18 | 0 | $0.54 | 4.0 | powershell | ok |
+| Semantic Version Bumper | default | sonnet | 2.5min | 11 | 0 | $0.25 | 4.0 | python | ok |
+| Docker Image Tag Generator | powershell-strict | sonnet | 2.5min | 13 | 0 | $0.33 | 4.0 | powershell | ok |
+| Dependency License Checker | powershell | sonnet | 2.6min | 11 | 0 | $0.36 | 5.0 | powershell | ok |
+| Artifact Cleanup Script | powershell | sonnet | 2.6min | 9 | 0 | $0.35 | 4.0 | powershell | ok |
+| Artifact Cleanup Script | default | sonnet | 2.6min | 17 | 4 | $0.44 | 4.0 | python | ok |
+| Secret Rotation Validator | default | opus | 2.6min | 17 | 0 | $0.51 | 4.0 | python | ok |
+| Semantic Version Bumper | powershell | sonnet | 2.7min | 16 | 0 | $0.33 | 4.0 | powershell | ok |
+| Docker Image Tag Generator | default | opus | 2.7min | 30 | 0 | $0.67 | 4.0 | python | ok |
+| Config File Migrator | powershell-strict | opus | 2.7min | 12 | 0 | $0.49 | 4.0 | powershell | ok |
+| Config File Migrator | default | opus | 2.8min | 14 | 1 | $0.59 | 4.0 | python | ok |
+| Batch File Renamer | default | opus | 2.8min | 30 | 2 | $0.81 | 4.0 | python | ok |
+| Environment Matrix Generator | powershell | sonnet | 2.8min | 13 | 0 | $0.36 | 4.0 | powershell | ok |
+| CSV Report Generator | csharp-script | opus | 2.8min | 12 | 0 | $0.58 | 4.0 | csharp | ok |
+| Log File Analyzer | default | sonnet | 2.9min | 19 | 0 | $0.48 | 5.0 | python | ok |
+| Docker Image Tag Generator | powershell | sonnet | 2.9min | 9 | 0 | $0.31 | 4.0 | powershell | ok |
+| Batch File Renamer | powershell | opus | 3.0min | 21 | 0 | $0.59 | 4.0 | powershell | ok |
+| Directory Tree Sync | powershell | sonnet | 3.0min | 11 | 0 | $0.37 | 4.0 | powershell | ok |
+| PR Label Assigner | powershell | opus | 3.1min | 23 | 0 | $0.61 | 4.0 | powershell | ok |
+| Multi-file Search and Replace | default | opus | 3.1min | 25 | 3 | $0.70 | 4.0 | python | ok |
+| PR Label Assigner | powershell-strict | sonnet | 3.3min | 12 | 0 | $0.35 | 4.0 | powershell | ok |
+| Secret Rotation Validator | powershell | opus | 3.3min | 23 | 1 | $0.72 | 4.0 | powershell | ok |
+| Process Monitor | default | opus | 3.3min | 40 | 1 | $1.00 | 3.0 | python | ok |
+| Config File Migrator | default | sonnet | 3.4min | 18 | 1 | $0.47 | 4.0 | python | ok |
+| Config File Migrator | powershell | sonnet | 3.4min | 15 | 0 | $0.38 | 4.0 | powershell | ok |
+| Docker Image Tag Generator | powershell | opus | 3.5min | 32 | 0 | $0.84 | 4.0 | powershell | ok |
+| Secret Rotation Validator | powershell | sonnet | 3.5min | 11 | 0 | $0.48 | 4.0 | powershell | ok |
+| Semantic Version Bumper | powershell | opus | 3.6min | 27 | 0 | $0.77 | 4.0 | powershell | ok |
 | Database Seed Script | powershell-strict | sonnet | 3.6min | 1 | 0 | $0.00 | — | powershell | failed |
-| Artifact Cleanup Script | powershell-strict | sonnet | 3.6min | 15 | 0 | $0.49 | — | powershell | ok |
-| Multi-file Search and Replace | powershell | opus | 3.6min | 21 | 0 | $0.65 | — | powershell | ok |
-| PR Label Assigner | powershell | sonnet | 3.7min | 10 | 0 | $0.38 | — | powershell | ok |
-| Batch File Renamer | powershell-strict | sonnet | 3.7min | 16 | 1 | $0.50 | — | powershell | ok |
+| Artifact Cleanup Script | powershell-strict | sonnet | 3.6min | 15 | 0 | $0.49 | 4.0 | powershell | ok |
+| Multi-file Search and Replace | powershell | opus | 3.6min | 21 | 0 | $0.65 | 4.0 | powershell | ok |
+| PR Label Assigner | powershell | sonnet | 3.7min | 10 | 0 | $0.38 | 4.0 | powershell | ok |
+| Batch File Renamer | powershell-strict | sonnet | 3.7min | 16 | 1 | $0.50 | 4.0 | powershell | ok |
 | Error Retry Pipeline | default | sonnet | 3.7min | 1 | 0 | $0.00 | — |  | failed |
-| Config File Migrator | powershell | opus | 3.7min | 20 | 0 | $0.69 | — | powershell | ok |
+| Config File Migrator | powershell | opus | 3.7min | 20 | 0 | $0.69 | 4.0 | powershell | ok |
 | Database Seed Script | powershell | sonnet | 3.8min | 1 | 0 | $0.00 | — | powershell | failed |
-| Process Monitor | powershell | sonnet | 3.8min | 13 | 0 | $0.40 | — | powershell | ok |
-| Directory Tree Sync | default | opus | 3.8min | 43 | 0 | $1.18 | — | python | ok |
+| Process Monitor | powershell | sonnet | 3.8min | 13 | 0 | $0.40 | 4.0 | powershell | ok |
+| Directory Tree Sync | default | opus | 3.8min | 43 | 0 | $1.18 | 4.0 | python | ok |
 | Multi-file Search and Replace | powershell-strict | sonnet | 3.8min | 1 | 0 | $0.00 | — | powershell | failed |
-| Log File Analyzer | powershell-strict | sonnet | 3.8min | 14 | 1 | $0.50 | — | powershell | ok |
-| Error Retry Pipeline | powershell | opus | 3.8min | 34 | 0 | $0.93 | — | powershell | ok |
+| Log File Analyzer | powershell-strict | sonnet | 3.8min | 14 | 1 | $0.50 | 4.0 | powershell | ok |
+| Error Retry Pipeline | powershell | opus | 3.8min | 34 | 0 | $0.93 | 4.0 | powershell | ok |
 | Error Retry Pipeline | powershell | sonnet | 3.8min | 1 | 0 | $0.00 | — | powershell | failed |
 | Error Retry Pipeline | powershell-strict | sonnet | 3.8min | 1 | 0 | $0.00 | — | powershell | failed |
 | Database Seed Script | default | sonnet | 3.9min | 1 | 0 | $0.00 | — |  | failed |
-| Log File Analyzer | powershell | sonnet | 3.9min | 10 | 0 | $0.44 | — | powershell | ok |
+| Log File Analyzer | powershell | sonnet | 3.9min | 10 | 0 | $0.44 | 4.0 | powershell | ok |
 | Multi-file Search and Replace | default | sonnet | 3.9min | 1 | 0 | $0.00 | — |  | failed |
-| Directory Tree Sync | default | sonnet | 3.9min | 11 | 1 | $0.45 | — | python | ok |
-| Test Results Aggregator | powershell-strict | opus | 4.0min | 24 | 0 | $0.95 | — | powershell | ok |
-| Secret Rotation Validator | powershell-strict | sonnet | 4.0min | 20 | 0 | $0.53 | — | powershell | ok |
+| Directory Tree Sync | default | sonnet | 3.9min | 11 | 1 | $0.45 | 5.0 | python | ok |
+| Test Results Aggregator | powershell-strict | opus | 4.0min | 24 | 0 | $0.95 | 4.0 | powershell | ok |
+| Secret Rotation Validator | powershell-strict | sonnet | 4.0min | 20 | 0 | $0.53 | 4.0 | powershell | ok |
 | Dependency License Checker | default | sonnet | 4.0min | 1 | 0 | $0.00 | — |  | failed |
-| Test Results Aggregator | default | sonnet | 4.0min | 20 | 1 | $0.49 | — | python | ok |
-| PR Label Assigner | powershell-strict | opus | 4.0min | 37 | 0 | $1.03 | — | powershell | ok |
-| Multi-file Search and Replace | powershell-strict | opus | 4.1min | 34 | 0 | $1.09 | — | powershell | ok |
-| Log File Analyzer | default | opus | 4.2min | 43 | 0 | $1.18 | — | python | ok |
-| Environment Matrix Generator | powershell-strict | opus | 4.2min | 31 | 2 | $0.96 | — | powershell | ok |
-| CSV Report Generator | powershell | opus | 4.3min | 37 | 0 | $1.05 | — | powershell | ok |
-| CSV Report Generator | powershell-strict | opus | 4.3min | 40 | 1 | $1.04 | — | powershell | ok |
-| Test Results Aggregator | powershell | opus | 4.3min | 33 | 0 | $0.95 | — | powershell | ok |
-| Database Seed Script | default | opus | 4.3min | 36 | 1 | $1.04 | — | python | ok |
-| Directory Tree Sync | powershell-strict | sonnet | 4.3min | 13 | 0 | $0.49 | — | powershell | ok |
-| Artifact Cleanup Script | default | opus | 4.4min | 34 | 0 | $0.98 | — | python | ok |
-| Log File Analyzer | powershell-strict | opus | 4.5min | 31 | 1 | $0.95 | — | powershell | ok |
-| Batch File Renamer | powershell-strict | opus | 4.5min | 35 | 0 | $1.05 | — | powershell | ok |
-| Log File Analyzer | powershell | opus | 4.6min | 41 | 0 | $1.14 | — | powershell | ok |
-| Process Monitor | powershell-strict | sonnet | 4.6min | 19 | 0 | $0.54 | — | powershell | ok |
-| Environment Matrix Generator | default | opus | 4.7min | 38 | 1 | $1.11 | — | python | ok |
-| Semantic Version Bumper | default | opus | 4.8min | 47 | 5 | $1.23 | — | python | ok |
-| Artifact Cleanup Script | powershell | opus | 4.9min | 30 | 0 | $1.16 | — | powershell | ok |
-| Test Results Aggregator | powershell | sonnet | 5.0min | 15 | 0 | $0.55 | — | powershell | ok |
-| Docker Image Tag Generator | powershell-strict | opus | 5.0min | 44 | 0 | $1.28 | — | powershell | ok |
-| REST API Client | powershell-strict | opus | 5.1min | 19 | 0 | $0.94 | — | powershell | ok |
-| REST API Client | default | opus | 5.2min | 45 | 0 | $1.21 | — | python | ok |
-| Semantic Version Bumper | powershell-strict | sonnet | 5.3min | 5 | 0 | $0.15 | — | powershell | failed |
-| Secret Rotation Validator | powershell-strict | opus | 5.3min | 39 | 2 | $1.27 | — | powershell | ok |
-| Directory Tree Sync | powershell | opus | 5.3min | 42 | 0 | $1.13 | — | powershell | ok |
-| Process Monitor | powershell | opus | 5.4min | 39 | 0 | $1.21 | — | powershell | ok |
-| Directory Tree Sync | powershell-strict | opus | 5.4min | 34 | 0 | $1.21 | — | powershell | ok |
-| Environment Matrix Generator | powershell-strict | sonnet | 5.4min | 16 | 0 | $0.62 | — | powershell | ok |
-| Dependency License Checker | powershell-strict | opus | 5.4min | 52 | 4 | $1.59 | — | powershell | ok |
-| Artifact Cleanup Script | powershell-strict | opus | 5.5min | 37 | 1 | $1.37 | — | powershell | ok |
-| Dependency License Checker | default | opus | 5.6min | 64 | 4 | $1.73 | — | python | ok |
-| Process Monitor | powershell-strict | opus | 5.6min | 53 | 0 | $1.61 | — | powershell | ok |
-| Dependency License Checker | powershell | opus | 5.8min | 45 | 1 | $1.37 | — | powershell | ok |
-| Semantic Version Bumper | powershell-strict | opus | 5.8min | 52 | 0 | $1.57 | — | powershell | ok |
-| Database Seed Script | powershell | opus | 5.8min | 42 | 4 | $1.32 | — | powershell | ok |
-| CSV Report Generator | default | sonnet | 6.3min | 1 | 3 | $0.71 | — | python | ok |
-| CSV Report Generator | powershell-strict | sonnet | 6.5min | 29 | 0 | $0.97 | — | powershell | ok |
-| REST API Client | powershell | opus | 7.2min | 51 | 1 | $1.82 | — | powershell | ok |
-| Database Seed Script | powershell-strict | opus | 8.7min | 56 | 2 | $2.03 | — | powershell | ok |
-| REST API Client | powershell-strict | sonnet | 9.2min | 14 | 0 | $0.99 | — | powershell | ok |
-| Dependency License Checker | powershell-strict | sonnet | 9.5min | 18 | 0 | $0.97 | — | powershell | ok |
-| Error Retry Pipeline | powershell-strict | opus | 9.7min | 0 | 1 | $0.00 | — | powershell | failed |
-| Test Results Aggregator | powershell-strict | sonnet | 11.5min | 20 | 0 | $1.42 | — | powershell | ok |
-| REST API Client | powershell | sonnet | 12.6min | 13 | 0 | $0.96 | — | powershell | ok |
-| Config File Migrator | powershell-strict | sonnet | 13.9min | 21 | 0 | $1.60 | — | powershell | ok |
+| Test Results Aggregator | default | sonnet | 4.0min | 20 | 1 | $0.49 | 3.0 | python | ok |
+| PR Label Assigner | powershell-strict | opus | 4.0min | 37 | 0 | $1.03 | 4.0 | powershell | ok |
+| Multi-file Search and Replace | powershell-strict | opus | 4.1min | 34 | 0 | $1.09 | 3.0 | powershell | ok |
+| Log File Analyzer | default | opus | 4.2min | 43 | 0 | $1.18 | 5.0 | python | ok |
+| Environment Matrix Generator | powershell-strict | opus | 4.2min | 31 | 2 | $0.96 | 4.0 | powershell | ok |
+| CSV Report Generator | powershell | opus | 4.3min | 37 | 0 | $1.05 | 4.0 | powershell | ok |
+| CSV Report Generator | powershell-strict | opus | 4.3min | 40 | 1 | $1.04 | 4.0 | powershell | ok |
+| Test Results Aggregator | powershell | opus | 4.3min | 33 | 0 | $0.95 | 4.0 | powershell | ok |
+| Database Seed Script | default | opus | 4.3min | 36 | 1 | $1.04 | 5.0 | python | ok |
+| Directory Tree Sync | powershell-strict | sonnet | 4.3min | 13 | 0 | $0.49 | 4.0 | powershell | ok |
+| Artifact Cleanup Script | default | opus | 4.4min | 34 | 0 | $0.98 | 4.0 | python | ok |
+| Log File Analyzer | powershell-strict | opus | 4.5min | 31 | 1 | $0.95 | 4.0 | powershell | ok |
+| Batch File Renamer | powershell-strict | opus | 4.5min | 35 | 0 | $1.05 | 4.0 | powershell | ok |
+| Log File Analyzer | powershell | opus | 4.6min | 41 | 0 | $1.14 | 4.0 | powershell | ok |
+| Process Monitor | powershell-strict | sonnet | 4.6min | 19 | 0 | $0.54 | 4.0 | powershell | ok |
+| Environment Matrix Generator | default | opus | 4.7min | 38 | 1 | $1.11 | 4.0 | python | ok |
+| Semantic Version Bumper | default | opus | 4.8min | 47 | 5 | $1.23 | 4.0 | python | ok |
+| Artifact Cleanup Script | powershell | opus | 4.9min | 30 | 0 | $1.16 | 4.0 | powershell | ok |
+| Test Results Aggregator | powershell | sonnet | 5.0min | 15 | 0 | $0.55 | 4.0 | powershell | ok |
+| Docker Image Tag Generator | powershell-strict | opus | 5.0min | 44 | 0 | $1.28 | 4.0 | powershell | ok |
+| REST API Client | powershell-strict | opus | 5.1min | 19 | 0 | $0.94 | 4.0 | powershell | ok |
+| REST API Client | default | opus | 5.2min | 45 | 0 | $1.21 | 5.0 | python | ok |
+| Semantic Version Bumper | powershell-strict | sonnet | 5.3min | 5 | 0 | $0.15 | 4.0 | powershell | failed |
+| Secret Rotation Validator | powershell-strict | opus | 5.3min | 39 | 2 | $1.27 | 4.0 | powershell | ok |
+| Directory Tree Sync | powershell | opus | 5.3min | 42 | 0 | $1.13 | 4.0 | powershell | ok |
+| Process Monitor | powershell | opus | 5.4min | 39 | 0 | $1.21 | 4.0 | powershell | ok |
+| Directory Tree Sync | powershell-strict | opus | 5.4min | 34 | 0 | $1.21 | 4.0 | powershell | ok |
+| Environment Matrix Generator | powershell-strict | sonnet | 5.4min | 16 | 0 | $0.62 | 4.0 | powershell | ok |
+| Dependency License Checker | powershell-strict | opus | 5.4min | 52 | 4 | $1.59 | 4.0 | powershell | ok |
+| Artifact Cleanup Script | powershell-strict | opus | 5.5min | 37 | 1 | $1.37 | 4.0 | powershell | ok |
+| Dependency License Checker | default | opus | 5.6min | 64 | 4 | $1.73 | 5.0 | python | ok |
+| Process Monitor | powershell-strict | opus | 5.6min | 53 | 0 | $1.61 | 4.0 | powershell | ok |
+| Dependency License Checker | powershell | opus | 5.8min | 45 | 1 | $1.37 | 5.0 | powershell | ok |
+| Semantic Version Bumper | powershell-strict | opus | 5.8min | 52 | 0 | $1.57 | 4.0 | powershell | ok |
+| Database Seed Script | powershell | opus | 5.8min | 42 | 4 | $1.32 | 4.0 | powershell | ok |
+| CSV Report Generator | default | sonnet | 6.3min | 1 | 3 | $0.71 | 4.0 | python | ok |
+| CSV Report Generator | powershell-strict | sonnet | 6.5min | 29 | 0 | $0.97 | 4.0 | powershell | ok |
+| REST API Client | powershell | opus | 7.2min | 51 | 1 | $1.82 | 4.0 | powershell | ok |
+| Database Seed Script | powershell-strict | opus | 8.7min | 56 | 2 | $2.03 | 4.0 | powershell | ok |
+| REST API Client | powershell-strict | sonnet | 9.2min | 14 | 0 | $0.99 | 4.0 | powershell | ok |
+| Dependency License Checker | powershell-strict | sonnet | 9.5min | 18 | 0 | $0.97 | 4.0 | powershell | ok |
+| Error Retry Pipeline | powershell-strict | opus | 9.7min | 0 | 1 | $0.00 | 4.0 | powershell | failed |
+| Test Results Aggregator | powershell-strict | sonnet | 11.5min | 20 | 0 | $1.42 | 4.0 | powershell | ok |
+| REST API Client | powershell | sonnet | 12.6min | 13 | 0 | $0.96 | 3.0 | powershell | ok |
+| Config File Migrator | powershell-strict | sonnet | 13.9min | 21 | 0 | $1.60 | 4.0 | powershell | ok |
 
 </details>
 
@@ -860,117 +1134,117 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 
 | Task | Language | Model | Duration | Turns | Errors | Cost | LLM Score | Chosen | Status |
 |------|----------|-------|----------|-------|--------|------|-----------|--------|--------|
-| CSV Report Generator | csharp-script | opus | 2.8min | 12 | 0 | $0.58 | — | csharp | ok |
-| CSV Report Generator | csharp-script | sonnet | 0.6min | 7 | 0 | $0.12 | — | csharp | ok |
-| CSV Report Generator | default | opus | 1.7min | 12 | 0 | $0.38 | — | python | ok |
-| CSV Report Generator | powershell | opus | 4.3min | 37 | 0 | $1.05 | — | powershell | ok |
-| CSV Report Generator | powershell | sonnet | 2.1min | 9 | 0 | $0.31 | — | powershell | ok |
-| CSV Report Generator | powershell-strict | sonnet | 6.5min | 29 | 0 | $0.97 | — | powershell | ok |
-| Log File Analyzer | csharp-script | opus | 0.7min | 9 | 0 | $0.25 | — | csharp | ok |
-| Log File Analyzer | default | opus | 4.2min | 43 | 0 | $1.18 | — | python | ok |
-| Log File Analyzer | default | sonnet | 2.9min | 19 | 0 | $0.48 | — | python | ok |
-| Log File Analyzer | powershell | opus | 4.6min | 41 | 0 | $1.14 | — | powershell | ok |
-| Log File Analyzer | powershell | sonnet | 3.9min | 10 | 0 | $0.44 | — | powershell | ok |
-| Directory Tree Sync | default | opus | 3.8min | 43 | 0 | $1.18 | — | python | ok |
-| Directory Tree Sync | powershell | opus | 5.3min | 42 | 0 | $1.13 | — | powershell | ok |
-| Directory Tree Sync | powershell | sonnet | 3.0min | 11 | 0 | $0.37 | — | powershell | ok |
-| Directory Tree Sync | powershell-strict | opus | 5.4min | 34 | 0 | $1.21 | — | powershell | ok |
-| Directory Tree Sync | powershell-strict | sonnet | 4.3min | 13 | 0 | $0.49 | — | powershell | ok |
-| REST API Client | default | opus | 5.2min | 45 | 0 | $1.21 | — | python | ok |
-| REST API Client | powershell | sonnet | 12.6min | 13 | 0 | $0.96 | — | powershell | ok |
-| REST API Client | powershell-strict | opus | 5.1min | 19 | 0 | $0.94 | — | powershell | ok |
-| REST API Client | powershell-strict | sonnet | 9.2min | 14 | 0 | $0.99 | — | powershell | ok |
-| Process Monitor | default | sonnet | 2.0min | 12 | 0 | $0.25 | — | python | ok |
-| Process Monitor | powershell | opus | 5.4min | 39 | 0 | $1.21 | — | powershell | ok |
-| Process Monitor | powershell | sonnet | 3.8min | 13 | 0 | $0.40 | — | powershell | ok |
-| Process Monitor | powershell-strict | opus | 5.6min | 53 | 0 | $1.61 | — | powershell | ok |
-| Process Monitor | powershell-strict | sonnet | 4.6min | 19 | 0 | $0.54 | — | powershell | ok |
-| Config File Migrator | powershell | opus | 3.7min | 20 | 0 | $0.69 | — | powershell | ok |
-| Config File Migrator | powershell | sonnet | 3.4min | 15 | 0 | $0.38 | — | powershell | ok |
-| Config File Migrator | powershell-strict | opus | 2.7min | 12 | 0 | $0.49 | — | powershell | ok |
-| Config File Migrator | powershell-strict | sonnet | 13.9min | 21 | 0 | $1.60 | — | powershell | ok |
-| Batch File Renamer | default | sonnet | 2.3min | 8 | 0 | $0.22 | — | python | ok |
-| Batch File Renamer | powershell | opus | 3.0min | 21 | 0 | $0.59 | — | powershell | ok |
-| Batch File Renamer | powershell | sonnet | 1.4min | 6 | 0 | $0.16 | — | powershell | ok |
-| Batch File Renamer | powershell-strict | opus | 4.5min | 35 | 0 | $1.05 | — | powershell | ok |
+| CSV Report Generator | csharp-script | opus | 2.8min | 12 | 0 | $0.58 | 4.0 | csharp | ok |
+| CSV Report Generator | csharp-script | sonnet | 0.6min | 7 | 0 | $0.12 | 4.0 | csharp | ok |
+| CSV Report Generator | default | opus | 1.7min | 12 | 0 | $0.38 | 5.0 | python | ok |
+| CSV Report Generator | powershell | opus | 4.3min | 37 | 0 | $1.05 | 4.0 | powershell | ok |
+| CSV Report Generator | powershell | sonnet | 2.1min | 9 | 0 | $0.31 | 3.0 | powershell | ok |
+| CSV Report Generator | powershell-strict | sonnet | 6.5min | 29 | 0 | $0.97 | 4.0 | powershell | ok |
+| Log File Analyzer | csharp-script | opus | 0.7min | 9 | 0 | $0.25 | 4.0 | csharp | ok |
+| Log File Analyzer | default | opus | 4.2min | 43 | 0 | $1.18 | 5.0 | python | ok |
+| Log File Analyzer | default | sonnet | 2.9min | 19 | 0 | $0.48 | 5.0 | python | ok |
+| Log File Analyzer | powershell | opus | 4.6min | 41 | 0 | $1.14 | 4.0 | powershell | ok |
+| Log File Analyzer | powershell | sonnet | 3.9min | 10 | 0 | $0.44 | 4.0 | powershell | ok |
+| Directory Tree Sync | default | opus | 3.8min | 43 | 0 | $1.18 | 4.0 | python | ok |
+| Directory Tree Sync | powershell | opus | 5.3min | 42 | 0 | $1.13 | 4.0 | powershell | ok |
+| Directory Tree Sync | powershell | sonnet | 3.0min | 11 | 0 | $0.37 | 4.0 | powershell | ok |
+| Directory Tree Sync | powershell-strict | opus | 5.4min | 34 | 0 | $1.21 | 4.0 | powershell | ok |
+| Directory Tree Sync | powershell-strict | sonnet | 4.3min | 13 | 0 | $0.49 | 4.0 | powershell | ok |
+| REST API Client | default | opus | 5.2min | 45 | 0 | $1.21 | 5.0 | python | ok |
+| REST API Client | powershell | sonnet | 12.6min | 13 | 0 | $0.96 | 3.0 | powershell | ok |
+| REST API Client | powershell-strict | opus | 5.1min | 19 | 0 | $0.94 | 4.0 | powershell | ok |
+| REST API Client | powershell-strict | sonnet | 9.2min | 14 | 0 | $0.99 | 4.0 | powershell | ok |
+| Process Monitor | default | sonnet | 2.0min | 12 | 0 | $0.25 | 4.0 | python | ok |
+| Process Monitor | powershell | opus | 5.4min | 39 | 0 | $1.21 | 4.0 | powershell | ok |
+| Process Monitor | powershell | sonnet | 3.8min | 13 | 0 | $0.40 | 4.0 | powershell | ok |
+| Process Monitor | powershell-strict | opus | 5.6min | 53 | 0 | $1.61 | 4.0 | powershell | ok |
+| Process Monitor | powershell-strict | sonnet | 4.6min | 19 | 0 | $0.54 | 4.0 | powershell | ok |
+| Config File Migrator | powershell | opus | 3.7min | 20 | 0 | $0.69 | 4.0 | powershell | ok |
+| Config File Migrator | powershell | sonnet | 3.4min | 15 | 0 | $0.38 | 4.0 | powershell | ok |
+| Config File Migrator | powershell-strict | opus | 2.7min | 12 | 0 | $0.49 | 4.0 | powershell | ok |
+| Config File Migrator | powershell-strict | sonnet | 13.9min | 21 | 0 | $1.60 | 4.0 | powershell | ok |
+| Batch File Renamer | default | sonnet | 2.3min | 8 | 0 | $0.22 | 4.0 | python | ok |
+| Batch File Renamer | powershell | opus | 3.0min | 21 | 0 | $0.59 | 4.0 | powershell | ok |
+| Batch File Renamer | powershell | sonnet | 1.4min | 6 | 0 | $0.16 | 3.0 | powershell | ok |
+| Batch File Renamer | powershell-strict | opus | 4.5min | 35 | 0 | $1.05 | 4.0 | powershell | ok |
 | Database Seed Script | default | sonnet | 3.9min | 1 | 0 | $0.00 | — |  | failed |
 | Database Seed Script | powershell | sonnet | 3.8min | 1 | 0 | $0.00 | — | powershell | failed |
 | Database Seed Script | powershell-strict | sonnet | 3.6min | 1 | 0 | $0.00 | — | powershell | failed |
-| Error Retry Pipeline | default | opus | 2.3min | 24 | 0 | $0.54 | — | python | ok |
+| Error Retry Pipeline | default | opus | 2.3min | 24 | 0 | $0.54 | 4.0 | python | ok |
 | Error Retry Pipeline | default | sonnet | 3.7min | 1 | 0 | $0.00 | — |  | failed |
-| Error Retry Pipeline | powershell | opus | 3.8min | 34 | 0 | $0.93 | — | powershell | ok |
+| Error Retry Pipeline | powershell | opus | 3.8min | 34 | 0 | $0.93 | 4.0 | powershell | ok |
 | Error Retry Pipeline | powershell | sonnet | 3.8min | 1 | 0 | $0.00 | — | powershell | failed |
 | Error Retry Pipeline | powershell-strict | sonnet | 3.8min | 1 | 0 | $0.00 | — | powershell | failed |
 | Multi-file Search and Replace | default | sonnet | 3.9min | 1 | 0 | $0.00 | — |  | failed |
-| Multi-file Search and Replace | powershell | opus | 3.6min | 21 | 0 | $0.65 | — | powershell | ok |
-| Multi-file Search and Replace | powershell | sonnet | 1.4min | 10 | 0 | $0.19 | — | powershell | ok |
-| Multi-file Search and Replace | powershell-strict | opus | 4.1min | 34 | 0 | $1.09 | — | powershell | ok |
+| Multi-file Search and Replace | powershell | opus | 3.6min | 21 | 0 | $0.65 | 4.0 | powershell | ok |
+| Multi-file Search and Replace | powershell | sonnet | 1.4min | 10 | 0 | $0.19 | 4.0 | powershell | ok |
+| Multi-file Search and Replace | powershell-strict | opus | 4.1min | 34 | 0 | $1.09 | 3.0 | powershell | ok |
 | Multi-file Search and Replace | powershell-strict | sonnet | 3.8min | 1 | 0 | $0.00 | — | powershell | failed |
-| Semantic Version Bumper | default | sonnet | 2.5min | 11 | 0 | $0.25 | — | python | ok |
-| Semantic Version Bumper | powershell | opus | 3.6min | 27 | 0 | $0.77 | — | powershell | ok |
-| Semantic Version Bumper | powershell | sonnet | 2.7min | 16 | 0 | $0.33 | — | powershell | ok |
-| Semantic Version Bumper | powershell-strict | opus | 5.8min | 52 | 0 | $1.57 | — | powershell | ok |
-| Semantic Version Bumper | powershell-strict | sonnet | 5.3min | 5 | 0 | $0.15 | — | powershell | failed |
-| PR Label Assigner | default | sonnet | 1.8min | 8 | 0 | $0.21 | — | python | ok |
-| PR Label Assigner | powershell | opus | 3.1min | 23 | 0 | $0.61 | — | powershell | ok |
-| PR Label Assigner | powershell | sonnet | 3.7min | 10 | 0 | $0.38 | — | powershell | ok |
-| PR Label Assigner | powershell-strict | opus | 4.0min | 37 | 0 | $1.03 | — | powershell | ok |
-| PR Label Assigner | powershell-strict | sonnet | 3.3min | 12 | 0 | $0.35 | — | powershell | ok |
+| Semantic Version Bumper | default | sonnet | 2.5min | 11 | 0 | $0.25 | 4.0 | python | ok |
+| Semantic Version Bumper | powershell | opus | 3.6min | 27 | 0 | $0.77 | 4.0 | powershell | ok |
+| Semantic Version Bumper | powershell | sonnet | 2.7min | 16 | 0 | $0.33 | 4.0 | powershell | ok |
+| Semantic Version Bumper | powershell-strict | opus | 5.8min | 52 | 0 | $1.57 | 4.0 | powershell | ok |
+| Semantic Version Bumper | powershell-strict | sonnet | 5.3min | 5 | 0 | $0.15 | 4.0 | powershell | failed |
+| PR Label Assigner | default | sonnet | 1.8min | 8 | 0 | $0.21 | 5.0 | python | ok |
+| PR Label Assigner | powershell | opus | 3.1min | 23 | 0 | $0.61 | 4.0 | powershell | ok |
+| PR Label Assigner | powershell | sonnet | 3.7min | 10 | 0 | $0.38 | 4.0 | powershell | ok |
+| PR Label Assigner | powershell-strict | opus | 4.0min | 37 | 0 | $1.03 | 4.0 | powershell | ok |
+| PR Label Assigner | powershell-strict | sonnet | 3.3min | 12 | 0 | $0.35 | 4.0 | powershell | ok |
 | Dependency License Checker | default | sonnet | 4.0min | 1 | 0 | $0.00 | — |  | failed |
-| Dependency License Checker | powershell | sonnet | 2.6min | 11 | 0 | $0.36 | — | powershell | ok |
-| Dependency License Checker | powershell-strict | sonnet | 9.5min | 18 | 0 | $0.97 | — | powershell | ok |
-| Docker Image Tag Generator | default | opus | 2.7min | 30 | 0 | $0.67 | — | python | ok |
-| Docker Image Tag Generator | powershell | opus | 3.5min | 32 | 0 | $0.84 | — | powershell | ok |
-| Docker Image Tag Generator | powershell | sonnet | 2.9min | 9 | 0 | $0.31 | — | powershell | ok |
-| Docker Image Tag Generator | powershell-strict | opus | 5.0min | 44 | 0 | $1.28 | — | powershell | ok |
-| Docker Image Tag Generator | powershell-strict | sonnet | 2.5min | 13 | 0 | $0.33 | — | powershell | ok |
-| Test Results Aggregator | powershell | opus | 4.3min | 33 | 0 | $0.95 | — | powershell | ok |
-| Test Results Aggregator | powershell | sonnet | 5.0min | 15 | 0 | $0.55 | — | powershell | ok |
-| Test Results Aggregator | powershell-strict | opus | 4.0min | 24 | 0 | $0.95 | — | powershell | ok |
-| Test Results Aggregator | powershell-strict | sonnet | 11.5min | 20 | 0 | $1.42 | — | powershell | ok |
-| Environment Matrix Generator | default | sonnet | 2.0min | 9 | 0 | $0.26 | — | python | ok |
-| Environment Matrix Generator | powershell | opus | 2.3min | 18 | 0 | $0.54 | — | powershell | ok |
-| Environment Matrix Generator | powershell | sonnet | 2.8min | 13 | 0 | $0.36 | — | powershell | ok |
-| Environment Matrix Generator | powershell-strict | sonnet | 5.4min | 16 | 0 | $0.62 | — | powershell | ok |
-| Artifact Cleanup Script | default | opus | 4.4min | 34 | 0 | $0.98 | — | python | ok |
-| Artifact Cleanup Script | powershell | opus | 4.9min | 30 | 0 | $1.16 | — | powershell | ok |
-| Artifact Cleanup Script | powershell | sonnet | 2.6min | 9 | 0 | $0.35 | — | powershell | ok |
-| Artifact Cleanup Script | powershell-strict | sonnet | 3.6min | 15 | 0 | $0.49 | — | powershell | ok |
-| Secret Rotation Validator | default | opus | 2.6min | 17 | 0 | $0.51 | — | python | ok |
-| Secret Rotation Validator | default | sonnet | 1.5min | 11 | 0 | $0.22 | — | python | ok |
-| Secret Rotation Validator | powershell | sonnet | 3.5min | 11 | 0 | $0.48 | — | powershell | ok |
-| Secret Rotation Validator | powershell-strict | sonnet | 4.0min | 20 | 0 | $0.53 | — | powershell | ok |
-| CSV Report Generator | powershell-strict | opus | 4.3min | 40 | 1 | $1.04 | — | powershell | ok |
-| Log File Analyzer | powershell-strict | opus | 4.5min | 31 | 1 | $0.95 | — | powershell | ok |
-| Log File Analyzer | powershell-strict | sonnet | 3.8min | 14 | 1 | $0.50 | — | powershell | ok |
-| Directory Tree Sync | default | sonnet | 3.9min | 11 | 1 | $0.45 | — | python | ok |
-| REST API Client | default | sonnet | 1.8min | 9 | 1 | $0.23 | — | python | ok |
-| REST API Client | powershell | opus | 7.2min | 51 | 1 | $1.82 | — | powershell | ok |
-| Process Monitor | default | opus | 3.3min | 40 | 1 | $1.00 | — | python | ok |
-| Config File Migrator | default | opus | 2.8min | 14 | 1 | $0.59 | — | python | ok |
-| Config File Migrator | default | sonnet | 3.4min | 18 | 1 | $0.47 | — | python | ok |
-| Batch File Renamer | powershell-strict | sonnet | 3.7min | 16 | 1 | $0.50 | — | powershell | ok |
-| Database Seed Script | default | opus | 4.3min | 36 | 1 | $1.04 | — | python | ok |
-| Error Retry Pipeline | powershell-strict | opus | 9.7min | 0 | 1 | $0.00 | — | powershell | failed |
-| PR Label Assigner | default | opus | 1.9min | 11 | 1 | $0.38 | — | python | ok |
-| Dependency License Checker | powershell | opus | 5.8min | 45 | 1 | $1.37 | — | powershell | ok |
-| Docker Image Tag Generator | default | sonnet | 1.8min | 10 | 1 | $0.23 | — | python | ok |
-| Test Results Aggregator | default | opus | 2.3min | 15 | 1 | $0.51 | — | python | ok |
-| Test Results Aggregator | default | sonnet | 4.0min | 20 | 1 | $0.49 | — | python | ok |
-| Environment Matrix Generator | default | opus | 4.7min | 38 | 1 | $1.11 | — | python | ok |
-| Artifact Cleanup Script | powershell-strict | opus | 5.5min | 37 | 1 | $1.37 | — | powershell | ok |
-| Secret Rotation Validator | powershell | opus | 3.3min | 23 | 1 | $0.72 | — | powershell | ok |
-| Batch File Renamer | default | opus | 2.8min | 30 | 2 | $0.81 | — | python | ok |
-| Database Seed Script | powershell-strict | opus | 8.7min | 56 | 2 | $2.03 | — | powershell | ok |
-| Environment Matrix Generator | powershell-strict | opus | 4.2min | 31 | 2 | $0.96 | — | powershell | ok |
-| Secret Rotation Validator | powershell-strict | opus | 5.3min | 39 | 2 | $1.27 | — | powershell | ok |
-| CSV Report Generator | default | sonnet | 6.3min | 1 | 3 | $0.71 | — | python | ok |
-| Multi-file Search and Replace | default | opus | 3.1min | 25 | 3 | $0.70 | — | python | ok |
-| Database Seed Script | powershell | opus | 5.8min | 42 | 4 | $1.32 | — | powershell | ok |
-| Dependency License Checker | default | opus | 5.6min | 64 | 4 | $1.73 | — | python | ok |
-| Dependency License Checker | powershell-strict | opus | 5.4min | 52 | 4 | $1.59 | — | powershell | ok |
-| Artifact Cleanup Script | default | sonnet | 2.6min | 17 | 4 | $0.44 | — | python | ok |
-| Semantic Version Bumper | default | opus | 4.8min | 47 | 5 | $1.23 | — | python | ok |
+| Dependency License Checker | powershell | sonnet | 2.6min | 11 | 0 | $0.36 | 5.0 | powershell | ok |
+| Dependency License Checker | powershell-strict | sonnet | 9.5min | 18 | 0 | $0.97 | 4.0 | powershell | ok |
+| Docker Image Tag Generator | default | opus | 2.7min | 30 | 0 | $0.67 | 4.0 | python | ok |
+| Docker Image Tag Generator | powershell | opus | 3.5min | 32 | 0 | $0.84 | 4.0 | powershell | ok |
+| Docker Image Tag Generator | powershell | sonnet | 2.9min | 9 | 0 | $0.31 | 4.0 | powershell | ok |
+| Docker Image Tag Generator | powershell-strict | opus | 5.0min | 44 | 0 | $1.28 | 4.0 | powershell | ok |
+| Docker Image Tag Generator | powershell-strict | sonnet | 2.5min | 13 | 0 | $0.33 | 4.0 | powershell | ok |
+| Test Results Aggregator | powershell | opus | 4.3min | 33 | 0 | $0.95 | 4.0 | powershell | ok |
+| Test Results Aggregator | powershell | sonnet | 5.0min | 15 | 0 | $0.55 | 4.0 | powershell | ok |
+| Test Results Aggregator | powershell-strict | opus | 4.0min | 24 | 0 | $0.95 | 4.0 | powershell | ok |
+| Test Results Aggregator | powershell-strict | sonnet | 11.5min | 20 | 0 | $1.42 | 4.0 | powershell | ok |
+| Environment Matrix Generator | default | sonnet | 2.0min | 9 | 0 | $0.26 | 4.0 | python | ok |
+| Environment Matrix Generator | powershell | opus | 2.3min | 18 | 0 | $0.54 | 4.0 | powershell | ok |
+| Environment Matrix Generator | powershell | sonnet | 2.8min | 13 | 0 | $0.36 | 4.0 | powershell | ok |
+| Environment Matrix Generator | powershell-strict | sonnet | 5.4min | 16 | 0 | $0.62 | 4.0 | powershell | ok |
+| Artifact Cleanup Script | default | opus | 4.4min | 34 | 0 | $0.98 | 4.0 | python | ok |
+| Artifact Cleanup Script | powershell | opus | 4.9min | 30 | 0 | $1.16 | 4.0 | powershell | ok |
+| Artifact Cleanup Script | powershell | sonnet | 2.6min | 9 | 0 | $0.35 | 4.0 | powershell | ok |
+| Artifact Cleanup Script | powershell-strict | sonnet | 3.6min | 15 | 0 | $0.49 | 4.0 | powershell | ok |
+| Secret Rotation Validator | default | opus | 2.6min | 17 | 0 | $0.51 | 4.0 | python | ok |
+| Secret Rotation Validator | default | sonnet | 1.5min | 11 | 0 | $0.22 | 4.0 | python | ok |
+| Secret Rotation Validator | powershell | sonnet | 3.5min | 11 | 0 | $0.48 | 4.0 | powershell | ok |
+| Secret Rotation Validator | powershell-strict | sonnet | 4.0min | 20 | 0 | $0.53 | 4.0 | powershell | ok |
+| CSV Report Generator | powershell-strict | opus | 4.3min | 40 | 1 | $1.04 | 4.0 | powershell | ok |
+| Log File Analyzer | powershell-strict | opus | 4.5min | 31 | 1 | $0.95 | 4.0 | powershell | ok |
+| Log File Analyzer | powershell-strict | sonnet | 3.8min | 14 | 1 | $0.50 | 4.0 | powershell | ok |
+| Directory Tree Sync | default | sonnet | 3.9min | 11 | 1 | $0.45 | 5.0 | python | ok |
+| REST API Client | default | sonnet | 1.8min | 9 | 1 | $0.23 | 5.0 | python | ok |
+| REST API Client | powershell | opus | 7.2min | 51 | 1 | $1.82 | 4.0 | powershell | ok |
+| Process Monitor | default | opus | 3.3min | 40 | 1 | $1.00 | 3.0 | python | ok |
+| Config File Migrator | default | opus | 2.8min | 14 | 1 | $0.59 | 4.0 | python | ok |
+| Config File Migrator | default | sonnet | 3.4min | 18 | 1 | $0.47 | 4.0 | python | ok |
+| Batch File Renamer | powershell-strict | sonnet | 3.7min | 16 | 1 | $0.50 | 4.0 | powershell | ok |
+| Database Seed Script | default | opus | 4.3min | 36 | 1 | $1.04 | 5.0 | python | ok |
+| Error Retry Pipeline | powershell-strict | opus | 9.7min | 0 | 1 | $0.00 | 4.0 | powershell | failed |
+| PR Label Assigner | default | opus | 1.9min | 11 | 1 | $0.38 | 4.0 | python | ok |
+| Dependency License Checker | powershell | opus | 5.8min | 45 | 1 | $1.37 | 5.0 | powershell | ok |
+| Docker Image Tag Generator | default | sonnet | 1.8min | 10 | 1 | $0.23 | 4.0 | python | ok |
+| Test Results Aggregator | default | opus | 2.3min | 15 | 1 | $0.51 | 4.0 | python | ok |
+| Test Results Aggregator | default | sonnet | 4.0min | 20 | 1 | $0.49 | 3.0 | python | ok |
+| Environment Matrix Generator | default | opus | 4.7min | 38 | 1 | $1.11 | 4.0 | python | ok |
+| Artifact Cleanup Script | powershell-strict | opus | 5.5min | 37 | 1 | $1.37 | 4.0 | powershell | ok |
+| Secret Rotation Validator | powershell | opus | 3.3min | 23 | 1 | $0.72 | 4.0 | powershell | ok |
+| Batch File Renamer | default | opus | 2.8min | 30 | 2 | $0.81 | 4.0 | python | ok |
+| Database Seed Script | powershell-strict | opus | 8.7min | 56 | 2 | $2.03 | 4.0 | powershell | ok |
+| Environment Matrix Generator | powershell-strict | opus | 4.2min | 31 | 2 | $0.96 | 4.0 | powershell | ok |
+| Secret Rotation Validator | powershell-strict | opus | 5.3min | 39 | 2 | $1.27 | 4.0 | powershell | ok |
+| CSV Report Generator | default | sonnet | 6.3min | 1 | 3 | $0.71 | 4.0 | python | ok |
+| Multi-file Search and Replace | default | opus | 3.1min | 25 | 3 | $0.70 | 4.0 | python | ok |
+| Database Seed Script | powershell | opus | 5.8min | 42 | 4 | $1.32 | 4.0 | powershell | ok |
+| Dependency License Checker | default | opus | 5.6min | 64 | 4 | $1.73 | 5.0 | python | ok |
+| Dependency License Checker | powershell-strict | opus | 5.4min | 52 | 4 | $1.59 | 4.0 | powershell | ok |
+| Artifact Cleanup Script | default | sonnet | 2.6min | 17 | 4 | $0.44 | 4.0 | python | ok |
+| Semantic Version Bumper | default | opus | 4.8min | 47 | 5 | $1.23 | 4.0 | python | ok |
 
 </details>
 
@@ -979,8 +1253,8 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 
 | Task | Language | Model | Duration | Turns | Errors | Cost | LLM Score | Chosen | Status |
 |------|----------|-------|----------|-------|--------|------|-----------|--------|--------|
-| Error Retry Pipeline | powershell-strict | opus | 9.7min | 0 | 1 | $0.00 | — | powershell | failed |
-| CSV Report Generator | default | sonnet | 6.3min | 1 | 3 | $0.71 | — | python | ok |
+| Error Retry Pipeline | powershell-strict | opus | 9.7min | 0 | 1 | $0.00 | 4.0 | powershell | failed |
+| CSV Report Generator | default | sonnet | 6.3min | 1 | 3 | $0.71 | 4.0 | python | ok |
 | Database Seed Script | default | sonnet | 3.9min | 1 | 0 | $0.00 | — |  | failed |
 | Database Seed Script | powershell | sonnet | 3.8min | 1 | 0 | $0.00 | — | powershell | failed |
 | Database Seed Script | powershell-strict | sonnet | 3.6min | 1 | 0 | $0.00 | — | powershell | failed |
@@ -990,106 +1264,106 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Multi-file Search and Replace | default | sonnet | 3.9min | 1 | 0 | $0.00 | — |  | failed |
 | Multi-file Search and Replace | powershell-strict | sonnet | 3.8min | 1 | 0 | $0.00 | — | powershell | failed |
 | Dependency License Checker | default | sonnet | 4.0min | 1 | 0 | $0.00 | — |  | failed |
-| Semantic Version Bumper | powershell-strict | sonnet | 5.3min | 5 | 0 | $0.15 | — | powershell | failed |
-| Batch File Renamer | powershell | sonnet | 1.4min | 6 | 0 | $0.16 | — | powershell | ok |
-| CSV Report Generator | csharp-script | sonnet | 0.6min | 7 | 0 | $0.12 | — | csharp | ok |
-| Batch File Renamer | default | sonnet | 2.3min | 8 | 0 | $0.22 | — | python | ok |
-| PR Label Assigner | default | sonnet | 1.8min | 8 | 0 | $0.21 | — | python | ok |
-| CSV Report Generator | powershell | sonnet | 2.1min | 9 | 0 | $0.31 | — | powershell | ok |
-| Log File Analyzer | csharp-script | opus | 0.7min | 9 | 0 | $0.25 | — | csharp | ok |
-| REST API Client | default | sonnet | 1.8min | 9 | 1 | $0.23 | — | python | ok |
-| Docker Image Tag Generator | powershell | sonnet | 2.9min | 9 | 0 | $0.31 | — | powershell | ok |
-| Environment Matrix Generator | default | sonnet | 2.0min | 9 | 0 | $0.26 | — | python | ok |
-| Artifact Cleanup Script | powershell | sonnet | 2.6min | 9 | 0 | $0.35 | — | powershell | ok |
-| Log File Analyzer | powershell | sonnet | 3.9min | 10 | 0 | $0.44 | — | powershell | ok |
-| Multi-file Search and Replace | powershell | sonnet | 1.4min | 10 | 0 | $0.19 | — | powershell | ok |
-| PR Label Assigner | powershell | sonnet | 3.7min | 10 | 0 | $0.38 | — | powershell | ok |
-| Docker Image Tag Generator | default | sonnet | 1.8min | 10 | 1 | $0.23 | — | python | ok |
-| Directory Tree Sync | default | sonnet | 3.9min | 11 | 1 | $0.45 | — | python | ok |
-| Directory Tree Sync | powershell | sonnet | 3.0min | 11 | 0 | $0.37 | — | powershell | ok |
-| Semantic Version Bumper | default | sonnet | 2.5min | 11 | 0 | $0.25 | — | python | ok |
-| PR Label Assigner | default | opus | 1.9min | 11 | 1 | $0.38 | — | python | ok |
-| Dependency License Checker | powershell | sonnet | 2.6min | 11 | 0 | $0.36 | — | powershell | ok |
-| Secret Rotation Validator | default | sonnet | 1.5min | 11 | 0 | $0.22 | — | python | ok |
-| Secret Rotation Validator | powershell | sonnet | 3.5min | 11 | 0 | $0.48 | — | powershell | ok |
-| CSV Report Generator | csharp-script | opus | 2.8min | 12 | 0 | $0.58 | — | csharp | ok |
-| CSV Report Generator | default | opus | 1.7min | 12 | 0 | $0.38 | — | python | ok |
-| Process Monitor | default | sonnet | 2.0min | 12 | 0 | $0.25 | — | python | ok |
-| Config File Migrator | powershell-strict | opus | 2.7min | 12 | 0 | $0.49 | — | powershell | ok |
-| PR Label Assigner | powershell-strict | sonnet | 3.3min | 12 | 0 | $0.35 | — | powershell | ok |
-| Directory Tree Sync | powershell-strict | sonnet | 4.3min | 13 | 0 | $0.49 | — | powershell | ok |
-| REST API Client | powershell | sonnet | 12.6min | 13 | 0 | $0.96 | — | powershell | ok |
-| Process Monitor | powershell | sonnet | 3.8min | 13 | 0 | $0.40 | — | powershell | ok |
-| Docker Image Tag Generator | powershell-strict | sonnet | 2.5min | 13 | 0 | $0.33 | — | powershell | ok |
-| Environment Matrix Generator | powershell | sonnet | 2.8min | 13 | 0 | $0.36 | — | powershell | ok |
-| Log File Analyzer | powershell-strict | sonnet | 3.8min | 14 | 1 | $0.50 | — | powershell | ok |
-| REST API Client | powershell-strict | sonnet | 9.2min | 14 | 0 | $0.99 | — | powershell | ok |
-| Config File Migrator | default | opus | 2.8min | 14 | 1 | $0.59 | — | python | ok |
-| Config File Migrator | powershell | sonnet | 3.4min | 15 | 0 | $0.38 | — | powershell | ok |
-| Test Results Aggregator | default | opus | 2.3min | 15 | 1 | $0.51 | — | python | ok |
-| Test Results Aggregator | powershell | sonnet | 5.0min | 15 | 0 | $0.55 | — | powershell | ok |
-| Artifact Cleanup Script | powershell-strict | sonnet | 3.6min | 15 | 0 | $0.49 | — | powershell | ok |
-| Batch File Renamer | powershell-strict | sonnet | 3.7min | 16 | 1 | $0.50 | — | powershell | ok |
-| Semantic Version Bumper | powershell | sonnet | 2.7min | 16 | 0 | $0.33 | — | powershell | ok |
-| Environment Matrix Generator | powershell-strict | sonnet | 5.4min | 16 | 0 | $0.62 | — | powershell | ok |
-| Artifact Cleanup Script | default | sonnet | 2.6min | 17 | 4 | $0.44 | — | python | ok |
-| Secret Rotation Validator | default | opus | 2.6min | 17 | 0 | $0.51 | — | python | ok |
-| Config File Migrator | default | sonnet | 3.4min | 18 | 1 | $0.47 | — | python | ok |
-| Dependency License Checker | powershell-strict | sonnet | 9.5min | 18 | 0 | $0.97 | — | powershell | ok |
-| Environment Matrix Generator | powershell | opus | 2.3min | 18 | 0 | $0.54 | — | powershell | ok |
-| Log File Analyzer | default | sonnet | 2.9min | 19 | 0 | $0.48 | — | python | ok |
-| REST API Client | powershell-strict | opus | 5.1min | 19 | 0 | $0.94 | — | powershell | ok |
-| Process Monitor | powershell-strict | sonnet | 4.6min | 19 | 0 | $0.54 | — | powershell | ok |
-| Config File Migrator | powershell | opus | 3.7min | 20 | 0 | $0.69 | — | powershell | ok |
-| Test Results Aggregator | default | sonnet | 4.0min | 20 | 1 | $0.49 | — | python | ok |
-| Test Results Aggregator | powershell-strict | sonnet | 11.5min | 20 | 0 | $1.42 | — | powershell | ok |
-| Secret Rotation Validator | powershell-strict | sonnet | 4.0min | 20 | 0 | $0.53 | — | powershell | ok |
-| Config File Migrator | powershell-strict | sonnet | 13.9min | 21 | 0 | $1.60 | — | powershell | ok |
-| Batch File Renamer | powershell | opus | 3.0min | 21 | 0 | $0.59 | — | powershell | ok |
-| Multi-file Search and Replace | powershell | opus | 3.6min | 21 | 0 | $0.65 | — | powershell | ok |
-| PR Label Assigner | powershell | opus | 3.1min | 23 | 0 | $0.61 | — | powershell | ok |
-| Secret Rotation Validator | powershell | opus | 3.3min | 23 | 1 | $0.72 | — | powershell | ok |
-| Error Retry Pipeline | default | opus | 2.3min | 24 | 0 | $0.54 | — | python | ok |
-| Test Results Aggregator | powershell-strict | opus | 4.0min | 24 | 0 | $0.95 | — | powershell | ok |
-| Multi-file Search and Replace | default | opus | 3.1min | 25 | 3 | $0.70 | — | python | ok |
-| Semantic Version Bumper | powershell | opus | 3.6min | 27 | 0 | $0.77 | — | powershell | ok |
-| CSV Report Generator | powershell-strict | sonnet | 6.5min | 29 | 0 | $0.97 | — | powershell | ok |
-| Batch File Renamer | default | opus | 2.8min | 30 | 2 | $0.81 | — | python | ok |
-| Docker Image Tag Generator | default | opus | 2.7min | 30 | 0 | $0.67 | — | python | ok |
-| Artifact Cleanup Script | powershell | opus | 4.9min | 30 | 0 | $1.16 | — | powershell | ok |
-| Log File Analyzer | powershell-strict | opus | 4.5min | 31 | 1 | $0.95 | — | powershell | ok |
-| Environment Matrix Generator | powershell-strict | opus | 4.2min | 31 | 2 | $0.96 | — | powershell | ok |
-| Docker Image Tag Generator | powershell | opus | 3.5min | 32 | 0 | $0.84 | — | powershell | ok |
-| Test Results Aggregator | powershell | opus | 4.3min | 33 | 0 | $0.95 | — | powershell | ok |
-| Directory Tree Sync | powershell-strict | opus | 5.4min | 34 | 0 | $1.21 | — | powershell | ok |
-| Error Retry Pipeline | powershell | opus | 3.8min | 34 | 0 | $0.93 | — | powershell | ok |
-| Multi-file Search and Replace | powershell-strict | opus | 4.1min | 34 | 0 | $1.09 | — | powershell | ok |
-| Artifact Cleanup Script | default | opus | 4.4min | 34 | 0 | $0.98 | — | python | ok |
-| Batch File Renamer | powershell-strict | opus | 4.5min | 35 | 0 | $1.05 | — | powershell | ok |
-| Database Seed Script | default | opus | 4.3min | 36 | 1 | $1.04 | — | python | ok |
-| CSV Report Generator | powershell | opus | 4.3min | 37 | 0 | $1.05 | — | powershell | ok |
-| PR Label Assigner | powershell-strict | opus | 4.0min | 37 | 0 | $1.03 | — | powershell | ok |
-| Artifact Cleanup Script | powershell-strict | opus | 5.5min | 37 | 1 | $1.37 | — | powershell | ok |
-| Environment Matrix Generator | default | opus | 4.7min | 38 | 1 | $1.11 | — | python | ok |
-| Process Monitor | powershell | opus | 5.4min | 39 | 0 | $1.21 | — | powershell | ok |
-| Secret Rotation Validator | powershell-strict | opus | 5.3min | 39 | 2 | $1.27 | — | powershell | ok |
-| CSV Report Generator | powershell-strict | opus | 4.3min | 40 | 1 | $1.04 | — | powershell | ok |
-| Process Monitor | default | opus | 3.3min | 40 | 1 | $1.00 | — | python | ok |
-| Log File Analyzer | powershell | opus | 4.6min | 41 | 0 | $1.14 | — | powershell | ok |
-| Directory Tree Sync | powershell | opus | 5.3min | 42 | 0 | $1.13 | — | powershell | ok |
-| Database Seed Script | powershell | opus | 5.8min | 42 | 4 | $1.32 | — | powershell | ok |
-| Log File Analyzer | default | opus | 4.2min | 43 | 0 | $1.18 | — | python | ok |
-| Directory Tree Sync | default | opus | 3.8min | 43 | 0 | $1.18 | — | python | ok |
-| Docker Image Tag Generator | powershell-strict | opus | 5.0min | 44 | 0 | $1.28 | — | powershell | ok |
-| REST API Client | default | opus | 5.2min | 45 | 0 | $1.21 | — | python | ok |
-| Dependency License Checker | powershell | opus | 5.8min | 45 | 1 | $1.37 | — | powershell | ok |
-| Semantic Version Bumper | default | opus | 4.8min | 47 | 5 | $1.23 | — | python | ok |
-| REST API Client | powershell | opus | 7.2min | 51 | 1 | $1.82 | — | powershell | ok |
-| Semantic Version Bumper | powershell-strict | opus | 5.8min | 52 | 0 | $1.57 | — | powershell | ok |
-| Dependency License Checker | powershell-strict | opus | 5.4min | 52 | 4 | $1.59 | — | powershell | ok |
-| Process Monitor | powershell-strict | opus | 5.6min | 53 | 0 | $1.61 | — | powershell | ok |
-| Database Seed Script | powershell-strict | opus | 8.7min | 56 | 2 | $2.03 | — | powershell | ok |
-| Dependency License Checker | default | opus | 5.6min | 64 | 4 | $1.73 | — | python | ok |
+| Semantic Version Bumper | powershell-strict | sonnet | 5.3min | 5 | 0 | $0.15 | 4.0 | powershell | failed |
+| Batch File Renamer | powershell | sonnet | 1.4min | 6 | 0 | $0.16 | 3.0 | powershell | ok |
+| CSV Report Generator | csharp-script | sonnet | 0.6min | 7 | 0 | $0.12 | 4.0 | csharp | ok |
+| Batch File Renamer | default | sonnet | 2.3min | 8 | 0 | $0.22 | 4.0 | python | ok |
+| PR Label Assigner | default | sonnet | 1.8min | 8 | 0 | $0.21 | 5.0 | python | ok |
+| CSV Report Generator | powershell | sonnet | 2.1min | 9 | 0 | $0.31 | 3.0 | powershell | ok |
+| Log File Analyzer | csharp-script | opus | 0.7min | 9 | 0 | $0.25 | 4.0 | csharp | ok |
+| REST API Client | default | sonnet | 1.8min | 9 | 1 | $0.23 | 5.0 | python | ok |
+| Docker Image Tag Generator | powershell | sonnet | 2.9min | 9 | 0 | $0.31 | 4.0 | powershell | ok |
+| Environment Matrix Generator | default | sonnet | 2.0min | 9 | 0 | $0.26 | 4.0 | python | ok |
+| Artifact Cleanup Script | powershell | sonnet | 2.6min | 9 | 0 | $0.35 | 4.0 | powershell | ok |
+| Log File Analyzer | powershell | sonnet | 3.9min | 10 | 0 | $0.44 | 4.0 | powershell | ok |
+| Multi-file Search and Replace | powershell | sonnet | 1.4min | 10 | 0 | $0.19 | 4.0 | powershell | ok |
+| PR Label Assigner | powershell | sonnet | 3.7min | 10 | 0 | $0.38 | 4.0 | powershell | ok |
+| Docker Image Tag Generator | default | sonnet | 1.8min | 10 | 1 | $0.23 | 4.0 | python | ok |
+| Directory Tree Sync | default | sonnet | 3.9min | 11 | 1 | $0.45 | 5.0 | python | ok |
+| Directory Tree Sync | powershell | sonnet | 3.0min | 11 | 0 | $0.37 | 4.0 | powershell | ok |
+| Semantic Version Bumper | default | sonnet | 2.5min | 11 | 0 | $0.25 | 4.0 | python | ok |
+| PR Label Assigner | default | opus | 1.9min | 11 | 1 | $0.38 | 4.0 | python | ok |
+| Dependency License Checker | powershell | sonnet | 2.6min | 11 | 0 | $0.36 | 5.0 | powershell | ok |
+| Secret Rotation Validator | default | sonnet | 1.5min | 11 | 0 | $0.22 | 4.0 | python | ok |
+| Secret Rotation Validator | powershell | sonnet | 3.5min | 11 | 0 | $0.48 | 4.0 | powershell | ok |
+| CSV Report Generator | csharp-script | opus | 2.8min | 12 | 0 | $0.58 | 4.0 | csharp | ok |
+| CSV Report Generator | default | opus | 1.7min | 12 | 0 | $0.38 | 5.0 | python | ok |
+| Process Monitor | default | sonnet | 2.0min | 12 | 0 | $0.25 | 4.0 | python | ok |
+| Config File Migrator | powershell-strict | opus | 2.7min | 12 | 0 | $0.49 | 4.0 | powershell | ok |
+| PR Label Assigner | powershell-strict | sonnet | 3.3min | 12 | 0 | $0.35 | 4.0 | powershell | ok |
+| Directory Tree Sync | powershell-strict | sonnet | 4.3min | 13 | 0 | $0.49 | 4.0 | powershell | ok |
+| REST API Client | powershell | sonnet | 12.6min | 13 | 0 | $0.96 | 3.0 | powershell | ok |
+| Process Monitor | powershell | sonnet | 3.8min | 13 | 0 | $0.40 | 4.0 | powershell | ok |
+| Docker Image Tag Generator | powershell-strict | sonnet | 2.5min | 13 | 0 | $0.33 | 4.0 | powershell | ok |
+| Environment Matrix Generator | powershell | sonnet | 2.8min | 13 | 0 | $0.36 | 4.0 | powershell | ok |
+| Log File Analyzer | powershell-strict | sonnet | 3.8min | 14 | 1 | $0.50 | 4.0 | powershell | ok |
+| REST API Client | powershell-strict | sonnet | 9.2min | 14 | 0 | $0.99 | 4.0 | powershell | ok |
+| Config File Migrator | default | opus | 2.8min | 14 | 1 | $0.59 | 4.0 | python | ok |
+| Config File Migrator | powershell | sonnet | 3.4min | 15 | 0 | $0.38 | 4.0 | powershell | ok |
+| Test Results Aggregator | default | opus | 2.3min | 15 | 1 | $0.51 | 4.0 | python | ok |
+| Test Results Aggregator | powershell | sonnet | 5.0min | 15 | 0 | $0.55 | 4.0 | powershell | ok |
+| Artifact Cleanup Script | powershell-strict | sonnet | 3.6min | 15 | 0 | $0.49 | 4.0 | powershell | ok |
+| Batch File Renamer | powershell-strict | sonnet | 3.7min | 16 | 1 | $0.50 | 4.0 | powershell | ok |
+| Semantic Version Bumper | powershell | sonnet | 2.7min | 16 | 0 | $0.33 | 4.0 | powershell | ok |
+| Environment Matrix Generator | powershell-strict | sonnet | 5.4min | 16 | 0 | $0.62 | 4.0 | powershell | ok |
+| Artifact Cleanup Script | default | sonnet | 2.6min | 17 | 4 | $0.44 | 4.0 | python | ok |
+| Secret Rotation Validator | default | opus | 2.6min | 17 | 0 | $0.51 | 4.0 | python | ok |
+| Config File Migrator | default | sonnet | 3.4min | 18 | 1 | $0.47 | 4.0 | python | ok |
+| Dependency License Checker | powershell-strict | sonnet | 9.5min | 18 | 0 | $0.97 | 4.0 | powershell | ok |
+| Environment Matrix Generator | powershell | opus | 2.3min | 18 | 0 | $0.54 | 4.0 | powershell | ok |
+| Log File Analyzer | default | sonnet | 2.9min | 19 | 0 | $0.48 | 5.0 | python | ok |
+| REST API Client | powershell-strict | opus | 5.1min | 19 | 0 | $0.94 | 4.0 | powershell | ok |
+| Process Monitor | powershell-strict | sonnet | 4.6min | 19 | 0 | $0.54 | 4.0 | powershell | ok |
+| Config File Migrator | powershell | opus | 3.7min | 20 | 0 | $0.69 | 4.0 | powershell | ok |
+| Test Results Aggregator | default | sonnet | 4.0min | 20 | 1 | $0.49 | 3.0 | python | ok |
+| Test Results Aggregator | powershell-strict | sonnet | 11.5min | 20 | 0 | $1.42 | 4.0 | powershell | ok |
+| Secret Rotation Validator | powershell-strict | sonnet | 4.0min | 20 | 0 | $0.53 | 4.0 | powershell | ok |
+| Config File Migrator | powershell-strict | sonnet | 13.9min | 21 | 0 | $1.60 | 4.0 | powershell | ok |
+| Batch File Renamer | powershell | opus | 3.0min | 21 | 0 | $0.59 | 4.0 | powershell | ok |
+| Multi-file Search and Replace | powershell | opus | 3.6min | 21 | 0 | $0.65 | 4.0 | powershell | ok |
+| PR Label Assigner | powershell | opus | 3.1min | 23 | 0 | $0.61 | 4.0 | powershell | ok |
+| Secret Rotation Validator | powershell | opus | 3.3min | 23 | 1 | $0.72 | 4.0 | powershell | ok |
+| Error Retry Pipeline | default | opus | 2.3min | 24 | 0 | $0.54 | 4.0 | python | ok |
+| Test Results Aggregator | powershell-strict | opus | 4.0min | 24 | 0 | $0.95 | 4.0 | powershell | ok |
+| Multi-file Search and Replace | default | opus | 3.1min | 25 | 3 | $0.70 | 4.0 | python | ok |
+| Semantic Version Bumper | powershell | opus | 3.6min | 27 | 0 | $0.77 | 4.0 | powershell | ok |
+| CSV Report Generator | powershell-strict | sonnet | 6.5min | 29 | 0 | $0.97 | 4.0 | powershell | ok |
+| Batch File Renamer | default | opus | 2.8min | 30 | 2 | $0.81 | 4.0 | python | ok |
+| Docker Image Tag Generator | default | opus | 2.7min | 30 | 0 | $0.67 | 4.0 | python | ok |
+| Artifact Cleanup Script | powershell | opus | 4.9min | 30 | 0 | $1.16 | 4.0 | powershell | ok |
+| Log File Analyzer | powershell-strict | opus | 4.5min | 31 | 1 | $0.95 | 4.0 | powershell | ok |
+| Environment Matrix Generator | powershell-strict | opus | 4.2min | 31 | 2 | $0.96 | 4.0 | powershell | ok |
+| Docker Image Tag Generator | powershell | opus | 3.5min | 32 | 0 | $0.84 | 4.0 | powershell | ok |
+| Test Results Aggregator | powershell | opus | 4.3min | 33 | 0 | $0.95 | 4.0 | powershell | ok |
+| Directory Tree Sync | powershell-strict | opus | 5.4min | 34 | 0 | $1.21 | 4.0 | powershell | ok |
+| Error Retry Pipeline | powershell | opus | 3.8min | 34 | 0 | $0.93 | 4.0 | powershell | ok |
+| Multi-file Search and Replace | powershell-strict | opus | 4.1min | 34 | 0 | $1.09 | 3.0 | powershell | ok |
+| Artifact Cleanup Script | default | opus | 4.4min | 34 | 0 | $0.98 | 4.0 | python | ok |
+| Batch File Renamer | powershell-strict | opus | 4.5min | 35 | 0 | $1.05 | 4.0 | powershell | ok |
+| Database Seed Script | default | opus | 4.3min | 36 | 1 | $1.04 | 5.0 | python | ok |
+| CSV Report Generator | powershell | opus | 4.3min | 37 | 0 | $1.05 | 4.0 | powershell | ok |
+| PR Label Assigner | powershell-strict | opus | 4.0min | 37 | 0 | $1.03 | 4.0 | powershell | ok |
+| Artifact Cleanup Script | powershell-strict | opus | 5.5min | 37 | 1 | $1.37 | 4.0 | powershell | ok |
+| Environment Matrix Generator | default | opus | 4.7min | 38 | 1 | $1.11 | 4.0 | python | ok |
+| Process Monitor | powershell | opus | 5.4min | 39 | 0 | $1.21 | 4.0 | powershell | ok |
+| Secret Rotation Validator | powershell-strict | opus | 5.3min | 39 | 2 | $1.27 | 4.0 | powershell | ok |
+| CSV Report Generator | powershell-strict | opus | 4.3min | 40 | 1 | $1.04 | 4.0 | powershell | ok |
+| Process Monitor | default | opus | 3.3min | 40 | 1 | $1.00 | 3.0 | python | ok |
+| Log File Analyzer | powershell | opus | 4.6min | 41 | 0 | $1.14 | 4.0 | powershell | ok |
+| Directory Tree Sync | powershell | opus | 5.3min | 42 | 0 | $1.13 | 4.0 | powershell | ok |
+| Database Seed Script | powershell | opus | 5.8min | 42 | 4 | $1.32 | 4.0 | powershell | ok |
+| Log File Analyzer | default | opus | 4.2min | 43 | 0 | $1.18 | 5.0 | python | ok |
+| Directory Tree Sync | default | opus | 3.8min | 43 | 0 | $1.18 | 4.0 | python | ok |
+| Docker Image Tag Generator | powershell-strict | opus | 5.0min | 44 | 0 | $1.28 | 4.0 | powershell | ok |
+| REST API Client | default | opus | 5.2min | 45 | 0 | $1.21 | 5.0 | python | ok |
+| Dependency License Checker | powershell | opus | 5.8min | 45 | 1 | $1.37 | 5.0 | powershell | ok |
+| Semantic Version Bumper | default | opus | 4.8min | 47 | 5 | $1.23 | 4.0 | python | ok |
+| REST API Client | powershell | opus | 7.2min | 51 | 1 | $1.82 | 4.0 | powershell | ok |
+| Semantic Version Bumper | powershell-strict | opus | 5.8min | 52 | 0 | $1.57 | 4.0 | powershell | ok |
+| Dependency License Checker | powershell-strict | opus | 5.4min | 52 | 4 | $1.59 | 4.0 | powershell | ok |
+| Process Monitor | powershell-strict | opus | 5.6min | 53 | 0 | $1.61 | 4.0 | powershell | ok |
+| Database Seed Script | powershell-strict | opus | 8.7min | 56 | 2 | $2.03 | 4.0 | powershell | ok |
+| Dependency License Checker | default | opus | 5.6min | 64 | 4 | $1.73 | 5.0 | python | ok |
 
 </details>
 
@@ -1098,117 +1372,117 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 
 | Task | Language | Model | Duration | Turns | Errors | Cost | LLM Score | Chosen | Status |
 |------|----------|-------|----------|-------|--------|------|-----------|--------|--------|
-| CSV Report Generator | csharp-script | opus | 2.8min | 12 | 0 | $0.58 | — | csharp | ok |
-| CSV Report Generator | csharp-script | sonnet | 0.6min | 7 | 0 | $0.12 | — | csharp | ok |
-| CSV Report Generator | default | opus | 1.7min | 12 | 0 | $0.38 | — | python | ok |
-| CSV Report Generator | default | sonnet | 6.3min | 1 | 3 | $0.71 | — | python | ok |
-| CSV Report Generator | powershell | opus | 4.3min | 37 | 0 | $1.05 | — | powershell | ok |
-| CSV Report Generator | powershell | sonnet | 2.1min | 9 | 0 | $0.31 | — | powershell | ok |
-| CSV Report Generator | powershell-strict | opus | 4.3min | 40 | 1 | $1.04 | — | powershell | ok |
-| CSV Report Generator | powershell-strict | sonnet | 6.5min | 29 | 0 | $0.97 | — | powershell | ok |
-| Log File Analyzer | csharp-script | opus | 0.7min | 9 | 0 | $0.25 | — | csharp | ok |
-| Log File Analyzer | default | opus | 4.2min | 43 | 0 | $1.18 | — | python | ok |
-| Log File Analyzer | default | sonnet | 2.9min | 19 | 0 | $0.48 | — | python | ok |
-| Log File Analyzer | powershell | opus | 4.6min | 41 | 0 | $1.14 | — | powershell | ok |
-| Log File Analyzer | powershell | sonnet | 3.9min | 10 | 0 | $0.44 | — | powershell | ok |
-| Log File Analyzer | powershell-strict | opus | 4.5min | 31 | 1 | $0.95 | — | powershell | ok |
-| Log File Analyzer | powershell-strict | sonnet | 3.8min | 14 | 1 | $0.50 | — | powershell | ok |
-| Directory Tree Sync | default | opus | 3.8min | 43 | 0 | $1.18 | — | python | ok |
-| Directory Tree Sync | default | sonnet | 3.9min | 11 | 1 | $0.45 | — | python | ok |
-| Directory Tree Sync | powershell | opus | 5.3min | 42 | 0 | $1.13 | — | powershell | ok |
-| Directory Tree Sync | powershell | sonnet | 3.0min | 11 | 0 | $0.37 | — | powershell | ok |
-| Directory Tree Sync | powershell-strict | opus | 5.4min | 34 | 0 | $1.21 | — | powershell | ok |
-| Directory Tree Sync | powershell-strict | sonnet | 4.3min | 13 | 0 | $0.49 | — | powershell | ok |
-| REST API Client | default | opus | 5.2min | 45 | 0 | $1.21 | — | python | ok |
-| REST API Client | default | sonnet | 1.8min | 9 | 1 | $0.23 | — | python | ok |
-| REST API Client | powershell | opus | 7.2min | 51 | 1 | $1.82 | — | powershell | ok |
-| REST API Client | powershell | sonnet | 12.6min | 13 | 0 | $0.96 | — | powershell | ok |
-| REST API Client | powershell-strict | opus | 5.1min | 19 | 0 | $0.94 | — | powershell | ok |
-| REST API Client | powershell-strict | sonnet | 9.2min | 14 | 0 | $0.99 | — | powershell | ok |
-| Process Monitor | default | opus | 3.3min | 40 | 1 | $1.00 | — | python | ok |
-| Process Monitor | default | sonnet | 2.0min | 12 | 0 | $0.25 | — | python | ok |
-| Process Monitor | powershell | opus | 5.4min | 39 | 0 | $1.21 | — | powershell | ok |
-| Process Monitor | powershell | sonnet | 3.8min | 13 | 0 | $0.40 | — | powershell | ok |
-| Process Monitor | powershell-strict | opus | 5.6min | 53 | 0 | $1.61 | — | powershell | ok |
-| Process Monitor | powershell-strict | sonnet | 4.6min | 19 | 0 | $0.54 | — | powershell | ok |
-| Config File Migrator | default | opus | 2.8min | 14 | 1 | $0.59 | — | python | ok |
-| Config File Migrator | default | sonnet | 3.4min | 18 | 1 | $0.47 | — | python | ok |
-| Config File Migrator | powershell | opus | 3.7min | 20 | 0 | $0.69 | — | powershell | ok |
-| Config File Migrator | powershell | sonnet | 3.4min | 15 | 0 | $0.38 | — | powershell | ok |
-| Config File Migrator | powershell-strict | opus | 2.7min | 12 | 0 | $0.49 | — | powershell | ok |
-| Config File Migrator | powershell-strict | sonnet | 13.9min | 21 | 0 | $1.60 | — | powershell | ok |
-| Batch File Renamer | default | opus | 2.8min | 30 | 2 | $0.81 | — | python | ok |
-| Batch File Renamer | default | sonnet | 2.3min | 8 | 0 | $0.22 | — | python | ok |
-| Batch File Renamer | powershell | opus | 3.0min | 21 | 0 | $0.59 | — | powershell | ok |
-| Batch File Renamer | powershell | sonnet | 1.4min | 6 | 0 | $0.16 | — | powershell | ok |
-| Batch File Renamer | powershell-strict | opus | 4.5min | 35 | 0 | $1.05 | — | powershell | ok |
-| Batch File Renamer | powershell-strict | sonnet | 3.7min | 16 | 1 | $0.50 | — | powershell | ok |
-| Database Seed Script | default | opus | 4.3min | 36 | 1 | $1.04 | — | python | ok |
+| CSV Report Generator | default | opus | 1.7min | 12 | 0 | $0.38 | 5.0 | python | ok |
+| Log File Analyzer | default | opus | 4.2min | 43 | 0 | $1.18 | 5.0 | python | ok |
+| Log File Analyzer | default | sonnet | 2.9min | 19 | 0 | $0.48 | 5.0 | python | ok |
+| Directory Tree Sync | default | sonnet | 3.9min | 11 | 1 | $0.45 | 5.0 | python | ok |
+| REST API Client | default | opus | 5.2min | 45 | 0 | $1.21 | 5.0 | python | ok |
+| REST API Client | default | sonnet | 1.8min | 9 | 1 | $0.23 | 5.0 | python | ok |
+| Database Seed Script | default | opus | 4.3min | 36 | 1 | $1.04 | 5.0 | python | ok |
+| PR Label Assigner | default | sonnet | 1.8min | 8 | 0 | $0.21 | 5.0 | python | ok |
+| Dependency License Checker | default | opus | 5.6min | 64 | 4 | $1.73 | 5.0 | python | ok |
+| Dependency License Checker | powershell | opus | 5.8min | 45 | 1 | $1.37 | 5.0 | powershell | ok |
+| Dependency License Checker | powershell | sonnet | 2.6min | 11 | 0 | $0.36 | 5.0 | powershell | ok |
+| CSV Report Generator | csharp-script | opus | 2.8min | 12 | 0 | $0.58 | 4.0 | csharp | ok |
+| CSV Report Generator | csharp-script | sonnet | 0.6min | 7 | 0 | $0.12 | 4.0 | csharp | ok |
+| CSV Report Generator | default | sonnet | 6.3min | 1 | 3 | $0.71 | 4.0 | python | ok |
+| CSV Report Generator | powershell | opus | 4.3min | 37 | 0 | $1.05 | 4.0 | powershell | ok |
+| CSV Report Generator | powershell-strict | opus | 4.3min | 40 | 1 | $1.04 | 4.0 | powershell | ok |
+| CSV Report Generator | powershell-strict | sonnet | 6.5min | 29 | 0 | $0.97 | 4.0 | powershell | ok |
+| Log File Analyzer | csharp-script | opus | 0.7min | 9 | 0 | $0.25 | 4.0 | csharp | ok |
+| Log File Analyzer | powershell | opus | 4.6min | 41 | 0 | $1.14 | 4.0 | powershell | ok |
+| Log File Analyzer | powershell | sonnet | 3.9min | 10 | 0 | $0.44 | 4.0 | powershell | ok |
+| Log File Analyzer | powershell-strict | opus | 4.5min | 31 | 1 | $0.95 | 4.0 | powershell | ok |
+| Log File Analyzer | powershell-strict | sonnet | 3.8min | 14 | 1 | $0.50 | 4.0 | powershell | ok |
+| Directory Tree Sync | default | opus | 3.8min | 43 | 0 | $1.18 | 4.0 | python | ok |
+| Directory Tree Sync | powershell | opus | 5.3min | 42 | 0 | $1.13 | 4.0 | powershell | ok |
+| Directory Tree Sync | powershell | sonnet | 3.0min | 11 | 0 | $0.37 | 4.0 | powershell | ok |
+| Directory Tree Sync | powershell-strict | opus | 5.4min | 34 | 0 | $1.21 | 4.0 | powershell | ok |
+| Directory Tree Sync | powershell-strict | sonnet | 4.3min | 13 | 0 | $0.49 | 4.0 | powershell | ok |
+| REST API Client | powershell | opus | 7.2min | 51 | 1 | $1.82 | 4.0 | powershell | ok |
+| REST API Client | powershell-strict | opus | 5.1min | 19 | 0 | $0.94 | 4.0 | powershell | ok |
+| REST API Client | powershell-strict | sonnet | 9.2min | 14 | 0 | $0.99 | 4.0 | powershell | ok |
+| Process Monitor | default | sonnet | 2.0min | 12 | 0 | $0.25 | 4.0 | python | ok |
+| Process Monitor | powershell | opus | 5.4min | 39 | 0 | $1.21 | 4.0 | powershell | ok |
+| Process Monitor | powershell | sonnet | 3.8min | 13 | 0 | $0.40 | 4.0 | powershell | ok |
+| Process Monitor | powershell-strict | opus | 5.6min | 53 | 0 | $1.61 | 4.0 | powershell | ok |
+| Process Monitor | powershell-strict | sonnet | 4.6min | 19 | 0 | $0.54 | 4.0 | powershell | ok |
+| Config File Migrator | default | opus | 2.8min | 14 | 1 | $0.59 | 4.0 | python | ok |
+| Config File Migrator | default | sonnet | 3.4min | 18 | 1 | $0.47 | 4.0 | python | ok |
+| Config File Migrator | powershell | opus | 3.7min | 20 | 0 | $0.69 | 4.0 | powershell | ok |
+| Config File Migrator | powershell | sonnet | 3.4min | 15 | 0 | $0.38 | 4.0 | powershell | ok |
+| Config File Migrator | powershell-strict | opus | 2.7min | 12 | 0 | $0.49 | 4.0 | powershell | ok |
+| Config File Migrator | powershell-strict | sonnet | 13.9min | 21 | 0 | $1.60 | 4.0 | powershell | ok |
+| Batch File Renamer | default | opus | 2.8min | 30 | 2 | $0.81 | 4.0 | python | ok |
+| Batch File Renamer | default | sonnet | 2.3min | 8 | 0 | $0.22 | 4.0 | python | ok |
+| Batch File Renamer | powershell | opus | 3.0min | 21 | 0 | $0.59 | 4.0 | powershell | ok |
+| Batch File Renamer | powershell-strict | opus | 4.5min | 35 | 0 | $1.05 | 4.0 | powershell | ok |
+| Batch File Renamer | powershell-strict | sonnet | 3.7min | 16 | 1 | $0.50 | 4.0 | powershell | ok |
+| Database Seed Script | powershell | opus | 5.8min | 42 | 4 | $1.32 | 4.0 | powershell | ok |
+| Database Seed Script | powershell-strict | opus | 8.7min | 56 | 2 | $2.03 | 4.0 | powershell | ok |
+| Error Retry Pipeline | default | opus | 2.3min | 24 | 0 | $0.54 | 4.0 | python | ok |
+| Error Retry Pipeline | powershell | opus | 3.8min | 34 | 0 | $0.93 | 4.0 | powershell | ok |
+| Error Retry Pipeline | powershell-strict | opus | 9.7min | 0 | 1 | $0.00 | 4.0 | powershell | failed |
+| Multi-file Search and Replace | default | opus | 3.1min | 25 | 3 | $0.70 | 4.0 | python | ok |
+| Multi-file Search and Replace | powershell | opus | 3.6min | 21 | 0 | $0.65 | 4.0 | powershell | ok |
+| Multi-file Search and Replace | powershell | sonnet | 1.4min | 10 | 0 | $0.19 | 4.0 | powershell | ok |
+| Semantic Version Bumper | default | opus | 4.8min | 47 | 5 | $1.23 | 4.0 | python | ok |
+| Semantic Version Bumper | default | sonnet | 2.5min | 11 | 0 | $0.25 | 4.0 | python | ok |
+| Semantic Version Bumper | powershell | opus | 3.6min | 27 | 0 | $0.77 | 4.0 | powershell | ok |
+| Semantic Version Bumper | powershell | sonnet | 2.7min | 16 | 0 | $0.33 | 4.0 | powershell | ok |
+| Semantic Version Bumper | powershell-strict | opus | 5.8min | 52 | 0 | $1.57 | 4.0 | powershell | ok |
+| Semantic Version Bumper | powershell-strict | sonnet | 5.3min | 5 | 0 | $0.15 | 4.0 | powershell | failed |
+| PR Label Assigner | default | opus | 1.9min | 11 | 1 | $0.38 | 4.0 | python | ok |
+| PR Label Assigner | powershell | opus | 3.1min | 23 | 0 | $0.61 | 4.0 | powershell | ok |
+| PR Label Assigner | powershell | sonnet | 3.7min | 10 | 0 | $0.38 | 4.0 | powershell | ok |
+| PR Label Assigner | powershell-strict | opus | 4.0min | 37 | 0 | $1.03 | 4.0 | powershell | ok |
+| PR Label Assigner | powershell-strict | sonnet | 3.3min | 12 | 0 | $0.35 | 4.0 | powershell | ok |
+| Dependency License Checker | powershell-strict | opus | 5.4min | 52 | 4 | $1.59 | 4.0 | powershell | ok |
+| Dependency License Checker | powershell-strict | sonnet | 9.5min | 18 | 0 | $0.97 | 4.0 | powershell | ok |
+| Docker Image Tag Generator | default | opus | 2.7min | 30 | 0 | $0.67 | 4.0 | python | ok |
+| Docker Image Tag Generator | default | sonnet | 1.8min | 10 | 1 | $0.23 | 4.0 | python | ok |
+| Docker Image Tag Generator | powershell | opus | 3.5min | 32 | 0 | $0.84 | 4.0 | powershell | ok |
+| Docker Image Tag Generator | powershell | sonnet | 2.9min | 9 | 0 | $0.31 | 4.0 | powershell | ok |
+| Docker Image Tag Generator | powershell-strict | opus | 5.0min | 44 | 0 | $1.28 | 4.0 | powershell | ok |
+| Docker Image Tag Generator | powershell-strict | sonnet | 2.5min | 13 | 0 | $0.33 | 4.0 | powershell | ok |
+| Test Results Aggregator | default | opus | 2.3min | 15 | 1 | $0.51 | 4.0 | python | ok |
+| Test Results Aggregator | powershell | opus | 4.3min | 33 | 0 | $0.95 | 4.0 | powershell | ok |
+| Test Results Aggregator | powershell | sonnet | 5.0min | 15 | 0 | $0.55 | 4.0 | powershell | ok |
+| Test Results Aggregator | powershell-strict | opus | 4.0min | 24 | 0 | $0.95 | 4.0 | powershell | ok |
+| Test Results Aggregator | powershell-strict | sonnet | 11.5min | 20 | 0 | $1.42 | 4.0 | powershell | ok |
+| Environment Matrix Generator | default | opus | 4.7min | 38 | 1 | $1.11 | 4.0 | python | ok |
+| Environment Matrix Generator | default | sonnet | 2.0min | 9 | 0 | $0.26 | 4.0 | python | ok |
+| Environment Matrix Generator | powershell | opus | 2.3min | 18 | 0 | $0.54 | 4.0 | powershell | ok |
+| Environment Matrix Generator | powershell | sonnet | 2.8min | 13 | 0 | $0.36 | 4.0 | powershell | ok |
+| Environment Matrix Generator | powershell-strict | opus | 4.2min | 31 | 2 | $0.96 | 4.0 | powershell | ok |
+| Environment Matrix Generator | powershell-strict | sonnet | 5.4min | 16 | 0 | $0.62 | 4.0 | powershell | ok |
+| Artifact Cleanup Script | default | opus | 4.4min | 34 | 0 | $0.98 | 4.0 | python | ok |
+| Artifact Cleanup Script | default | sonnet | 2.6min | 17 | 4 | $0.44 | 4.0 | python | ok |
+| Artifact Cleanup Script | powershell | opus | 4.9min | 30 | 0 | $1.16 | 4.0 | powershell | ok |
+| Artifact Cleanup Script | powershell | sonnet | 2.6min | 9 | 0 | $0.35 | 4.0 | powershell | ok |
+| Artifact Cleanup Script | powershell-strict | opus | 5.5min | 37 | 1 | $1.37 | 4.0 | powershell | ok |
+| Artifact Cleanup Script | powershell-strict | sonnet | 3.6min | 15 | 0 | $0.49 | 4.0 | powershell | ok |
+| Secret Rotation Validator | default | opus | 2.6min | 17 | 0 | $0.51 | 4.0 | python | ok |
+| Secret Rotation Validator | default | sonnet | 1.5min | 11 | 0 | $0.22 | 4.0 | python | ok |
+| Secret Rotation Validator | powershell | opus | 3.3min | 23 | 1 | $0.72 | 4.0 | powershell | ok |
+| Secret Rotation Validator | powershell | sonnet | 3.5min | 11 | 0 | $0.48 | 4.0 | powershell | ok |
+| Secret Rotation Validator | powershell-strict | opus | 5.3min | 39 | 2 | $1.27 | 4.0 | powershell | ok |
+| Secret Rotation Validator | powershell-strict | sonnet | 4.0min | 20 | 0 | $0.53 | 4.0 | powershell | ok |
+| CSV Report Generator | powershell | sonnet | 2.1min | 9 | 0 | $0.31 | 3.0 | powershell | ok |
+| REST API Client | powershell | sonnet | 12.6min | 13 | 0 | $0.96 | 3.0 | powershell | ok |
+| Process Monitor | default | opus | 3.3min | 40 | 1 | $1.00 | 3.0 | python | ok |
+| Batch File Renamer | powershell | sonnet | 1.4min | 6 | 0 | $0.16 | 3.0 | powershell | ok |
+| Multi-file Search and Replace | powershell-strict | opus | 4.1min | 34 | 0 | $1.09 | 3.0 | powershell | ok |
+| Test Results Aggregator | default | sonnet | 4.0min | 20 | 1 | $0.49 | 3.0 | python | ok |
 | Database Seed Script | default | sonnet | 3.9min | 1 | 0 | $0.00 | — |  | failed |
-| Database Seed Script | powershell | opus | 5.8min | 42 | 4 | $1.32 | — | powershell | ok |
 | Database Seed Script | powershell | sonnet | 3.8min | 1 | 0 | $0.00 | — | powershell | failed |
-| Database Seed Script | powershell-strict | opus | 8.7min | 56 | 2 | $2.03 | — | powershell | ok |
 | Database Seed Script | powershell-strict | sonnet | 3.6min | 1 | 0 | $0.00 | — | powershell | failed |
-| Error Retry Pipeline | default | opus | 2.3min | 24 | 0 | $0.54 | — | python | ok |
 | Error Retry Pipeline | default | sonnet | 3.7min | 1 | 0 | $0.00 | — |  | failed |
-| Error Retry Pipeline | powershell | opus | 3.8min | 34 | 0 | $0.93 | — | powershell | ok |
 | Error Retry Pipeline | powershell | sonnet | 3.8min | 1 | 0 | $0.00 | — | powershell | failed |
-| Error Retry Pipeline | powershell-strict | opus | 9.7min | 0 | 1 | $0.00 | — | powershell | failed |
 | Error Retry Pipeline | powershell-strict | sonnet | 3.8min | 1 | 0 | $0.00 | — | powershell | failed |
-| Multi-file Search and Replace | default | opus | 3.1min | 25 | 3 | $0.70 | — | python | ok |
 | Multi-file Search and Replace | default | sonnet | 3.9min | 1 | 0 | $0.00 | — |  | failed |
-| Multi-file Search and Replace | powershell | opus | 3.6min | 21 | 0 | $0.65 | — | powershell | ok |
-| Multi-file Search and Replace | powershell | sonnet | 1.4min | 10 | 0 | $0.19 | — | powershell | ok |
-| Multi-file Search and Replace | powershell-strict | opus | 4.1min | 34 | 0 | $1.09 | — | powershell | ok |
 | Multi-file Search and Replace | powershell-strict | sonnet | 3.8min | 1 | 0 | $0.00 | — | powershell | failed |
-| Semantic Version Bumper | default | opus | 4.8min | 47 | 5 | $1.23 | — | python | ok |
-| Semantic Version Bumper | default | sonnet | 2.5min | 11 | 0 | $0.25 | — | python | ok |
-| Semantic Version Bumper | powershell | opus | 3.6min | 27 | 0 | $0.77 | — | powershell | ok |
-| Semantic Version Bumper | powershell | sonnet | 2.7min | 16 | 0 | $0.33 | — | powershell | ok |
-| Semantic Version Bumper | powershell-strict | opus | 5.8min | 52 | 0 | $1.57 | — | powershell | ok |
-| Semantic Version Bumper | powershell-strict | sonnet | 5.3min | 5 | 0 | $0.15 | — | powershell | failed |
-| PR Label Assigner | default | opus | 1.9min | 11 | 1 | $0.38 | — | python | ok |
-| PR Label Assigner | default | sonnet | 1.8min | 8 | 0 | $0.21 | — | python | ok |
-| PR Label Assigner | powershell | opus | 3.1min | 23 | 0 | $0.61 | — | powershell | ok |
-| PR Label Assigner | powershell | sonnet | 3.7min | 10 | 0 | $0.38 | — | powershell | ok |
-| PR Label Assigner | powershell-strict | opus | 4.0min | 37 | 0 | $1.03 | — | powershell | ok |
-| PR Label Assigner | powershell-strict | sonnet | 3.3min | 12 | 0 | $0.35 | — | powershell | ok |
-| Dependency License Checker | default | opus | 5.6min | 64 | 4 | $1.73 | — | python | ok |
 | Dependency License Checker | default | sonnet | 4.0min | 1 | 0 | $0.00 | — |  | failed |
-| Dependency License Checker | powershell | opus | 5.8min | 45 | 1 | $1.37 | — | powershell | ok |
-| Dependency License Checker | powershell | sonnet | 2.6min | 11 | 0 | $0.36 | — | powershell | ok |
-| Dependency License Checker | powershell-strict | opus | 5.4min | 52 | 4 | $1.59 | — | powershell | ok |
-| Dependency License Checker | powershell-strict | sonnet | 9.5min | 18 | 0 | $0.97 | — | powershell | ok |
-| Docker Image Tag Generator | default | opus | 2.7min | 30 | 0 | $0.67 | — | python | ok |
-| Docker Image Tag Generator | default | sonnet | 1.8min | 10 | 1 | $0.23 | — | python | ok |
-| Docker Image Tag Generator | powershell | opus | 3.5min | 32 | 0 | $0.84 | — | powershell | ok |
-| Docker Image Tag Generator | powershell | sonnet | 2.9min | 9 | 0 | $0.31 | — | powershell | ok |
-| Docker Image Tag Generator | powershell-strict | opus | 5.0min | 44 | 0 | $1.28 | — | powershell | ok |
-| Docker Image Tag Generator | powershell-strict | sonnet | 2.5min | 13 | 0 | $0.33 | — | powershell | ok |
-| Test Results Aggregator | default | opus | 2.3min | 15 | 1 | $0.51 | — | python | ok |
-| Test Results Aggregator | default | sonnet | 4.0min | 20 | 1 | $0.49 | — | python | ok |
-| Test Results Aggregator | powershell | opus | 4.3min | 33 | 0 | $0.95 | — | powershell | ok |
-| Test Results Aggregator | powershell | sonnet | 5.0min | 15 | 0 | $0.55 | — | powershell | ok |
-| Test Results Aggregator | powershell-strict | opus | 4.0min | 24 | 0 | $0.95 | — | powershell | ok |
-| Test Results Aggregator | powershell-strict | sonnet | 11.5min | 20 | 0 | $1.42 | — | powershell | ok |
-| Environment Matrix Generator | default | opus | 4.7min | 38 | 1 | $1.11 | — | python | ok |
-| Environment Matrix Generator | default | sonnet | 2.0min | 9 | 0 | $0.26 | — | python | ok |
-| Environment Matrix Generator | powershell | opus | 2.3min | 18 | 0 | $0.54 | — | powershell | ok |
-| Environment Matrix Generator | powershell | sonnet | 2.8min | 13 | 0 | $0.36 | — | powershell | ok |
-| Environment Matrix Generator | powershell-strict | opus | 4.2min | 31 | 2 | $0.96 | — | powershell | ok |
-| Environment Matrix Generator | powershell-strict | sonnet | 5.4min | 16 | 0 | $0.62 | — | powershell | ok |
-| Artifact Cleanup Script | default | opus | 4.4min | 34 | 0 | $0.98 | — | python | ok |
-| Artifact Cleanup Script | default | sonnet | 2.6min | 17 | 4 | $0.44 | — | python | ok |
-| Artifact Cleanup Script | powershell | opus | 4.9min | 30 | 0 | $1.16 | — | powershell | ok |
-| Artifact Cleanup Script | powershell | sonnet | 2.6min | 9 | 0 | $0.35 | — | powershell | ok |
-| Artifact Cleanup Script | powershell-strict | opus | 5.5min | 37 | 1 | $1.37 | — | powershell | ok |
-| Artifact Cleanup Script | powershell-strict | sonnet | 3.6min | 15 | 0 | $0.49 | — | powershell | ok |
-| Secret Rotation Validator | default | opus | 2.6min | 17 | 0 | $0.51 | — | python | ok |
-| Secret Rotation Validator | default | sonnet | 1.5min | 11 | 0 | $0.22 | — | python | ok |
-| Secret Rotation Validator | powershell | opus | 3.3min | 23 | 1 | $0.72 | — | powershell | ok |
-| Secret Rotation Validator | powershell | sonnet | 3.5min | 11 | 0 | $0.48 | — | powershell | ok |
-| Secret Rotation Validator | powershell-strict | opus | 5.3min | 39 | 2 | $1.27 | — | powershell | ok |
-| Secret Rotation Validator | powershell-strict | sonnet | 4.0min | 20 | 0 | $0.53 | — | powershell | ok |
 
 </details>
 

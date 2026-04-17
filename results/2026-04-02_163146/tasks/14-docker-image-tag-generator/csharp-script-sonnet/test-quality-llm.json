@@ -1,0 +1,11 @@
+{
+  "coverage": 4,
+  "rigor": 3,
+  "design": 3,
+  "overall": 3,
+  "summary": "The suite covers all major domain requirements (latest, pr-{n}, semver tags, feature branch sha, sanitization, short-sha extraction, null guard). However, the CLI argument-parsing class (CliArgs.Parse) is entirely untested. Rigor has real gaps: null commit SHA is never tested (only empty string), there is no boundary test for a SHA of exactly 7 characters, and no test verifies what tags the 'master' branch produces beyond 'latest' \u2014 the implementation silently emits 'main-{sha}' for master builds, a likely bug that slips through. The two most critical negative-case tests are materially broken: `Assert.DoesNotContain(\"pr-\", tags.FindAll(t => t.StartsWith(\"pr-\")))` always passes because the filtered elements are strings like 'pr-42', not the literal string 'pr-', so the assertion can never fail even when a PR tag IS present. The same flaw applies to the feature-branch negative test. This means those tests provide zero regression protection. Test class decomposition by feature area is clean and readable, and comments narrate the TDD cycle, but the broken assertions undermine confidence in the suite's ability to catch regressions.",
+  "judge_cost_usd": 0.0738,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 2158,
+  "judge_provider": "claude-cli"
+}

@@ -1,0 +1,11 @@
+{
+  "coverage": 5,
+  "rigor": 3,
+  "design": 4,
+  "overall": 4,
+  "summary": "The test suite covers all major requirements: secret classification (expired/warning/ok), report generation with grouping and summary, both output formats (JSON and Markdown), and config file loading. Organization is excellent \u2014 Describe/Context/BeforeAll/AfterAll structure is used throughout, a fixed reference date ensures determinism, and each suite dots-sources the script independently for isolation. Boundary conditions at expiry thresholds are exercised (exactly on expiry date, exactly at warning window boundary, just outside it), and error paths cover missing name, bad date, zero policy, missing file, and invalid JSON. The main weaknesses are in value-level rigor: tests almost never assert the actual computed DaysUntilExpiry or ExpiryDate values \u2014 only the Status classification \u2014 so a regression in the arithmetic would go undetected as long as classification is still correct. Several input edge cases are absent: negative RotationPolicyDays, secrets with no RequiredBy field, and a config file that omits warningWindowDays (to verify the default-14 path). The 'throws for unsupported format' test expects '*format*' in the message, but PowerShell's ValidateSet throws a parameter-binding error whose text may not contain that word, making the test fragile. The RequiredBy 'Should -Not -BeNullOrEmpty' assertion is weak since it only checks presence, not content. Overall a solid, readable suite that would catch most obvious regressions, but tighter value assertions and a few more input-boundary tests would significantly raise confidence.",
+  "judge_cost_usd": 0.0834,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 2019,
+  "judge_provider": "claude-cli"
+}

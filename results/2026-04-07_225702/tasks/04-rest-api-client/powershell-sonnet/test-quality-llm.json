@@ -1,0 +1,11 @@
+{
+  "coverage": 4,
+  "rigor": 3,
+  "design": 3,
+  "overall": 3,
+  "summary": "The test suite systematically mirrors the six TDD cycles and exercises every named function: Save-Cache, Get-Cache, Invoke-ApiRequest, Get-Posts, Get-Comments, Get-AllPosts, and Get-PostsWithComments. All three top-level requirements that are directly testable (caching, retry, pagination) have at least one test. That said, rigor is uneven. The exponential backoff arithmetic is never verified \u2014 BaseDelayMs=0 is the only value used, so a broken backoff formula would pass silently. The retry exhaustion test only asserts that something is thrown; the error message content and the exact call count are not checked. There are no boundary tests for PostId (0, negative), no test for a completely empty dataset (zero pages), no test for corrupted/malformed cache JSON, and no test that confirms Invoke-RestMethod is called with the correct URL structure (Should -Invoke -ParameterFilter). On design, BeforeEach isolation via TestDrive is good, but $script:CallCount and $script:PageCallCount are shared mutable state that could bleed between runs if test ordering changes. The mock inside Get-PostsWithComments uses a regex pattern whose correctness is not obviously guaranteed across URL formats, and the commented-out note ('not /posts$') reads like unfinished reasoning rather than documentation. Should -Invoke assertions are absent throughout, so tests could pass even if the wrong internal function is producing the output. Overall the suite would catch gross regressions but would miss subtle bugs in backoff delay, URL construction, or error-message formatting.",
+  "judge_cost_usd": 0.0513,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 1416,
+  "judge_provider": "claude-cli"
+}

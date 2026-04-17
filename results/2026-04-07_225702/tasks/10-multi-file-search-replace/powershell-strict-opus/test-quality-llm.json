@@ -1,0 +1,11 @@
+{
+  "coverage": 4,
+  "rigor": 3,
+  "design": 3,
+  "overall": 3,
+  "summary": "The test suite covers the majority of stated requirements: recursive file discovery, regex search with context, preview mode (no-modify), backup creation, summary reporting, capture-group replacement, multi-match-per-line, and deeply nested directories. Error handling is tested for Find-MatchingFiles but not for Search-FileContent (missing non-existent file throw test) or for invalid regex patterns. Rigor is moderate: context-at-boundary conditions (first/last line of file) are not explicitly validated, empty files are untested, backup-already-exists overwrite behavior is untested, and the Format-PreviewReport test is thin (string-contains checks only, no structural assertions). Design has meaningful issues: all Invoke-SearchReplace contexts share a single $script:TestRoot, so files accumulate across contexts and tests depend on execution order \u2014 for example, 'Actual replacement with backup' operates on *.txt while preview.txt from the prior context already exists. The BeforeAll/AfterAll per-Describe approach with GUID temp dirs is good for isolation between Describe blocks, but within the Invoke-SearchReplace Describe, Context-level BeforeAll blocks layer onto shared state without teardown, creating fragility. Fixtures are otherwise clear and readable, and Pester idioms (typed [array] casts, $script: scope) are used correctly.",
+  "judge_cost_usd": 0.0704,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 2185,
+  "judge_provider": "claude-cli"
+}

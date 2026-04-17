@@ -1,0 +1,11 @@
+{
+  "coverage": 5,
+  "rigor": 4,
+  "design": 4,
+  "overall": 4,
+  "summary": "The test suite comprehensively covers every stated requirement: post retrieval, comment retrieval, pagination with a sentinel empty-page, retry with exponential backoff, local JSON caching (including ForceRefresh and Clear-ApiCache), the composite Get-PostsWithComments, and error propagation. Mocking is correctly scoped to the module via -ModuleName RestApiClient, and the TDD cycle comments make intent clear. Rigor is strong for the retry and caching paths \u2014 backoff delay values are numerically verified, cache hit/miss and force-refresh paths are each isolated, and the 'pages+1 empty sentinel' call count is asserted. Minor gaps: Get-PostsWithComments has no test for an empty posts response, Get-AllPosts has no single-page boundary test, and invalid/negative parameter inputs are never exercised. Design is solid \u2014 BeforeAll/BeforeEach/AfterAll are used correctly for isolation, shared fixtures prevent duplication, and test names are descriptive. The one design fragility is the cache-dir swap achieved via (Get-Module RestApiClient).Invoke({ ... }), which couples tests tightly to an internal $script:CacheDir variable; if that implementation detail changes the whole caching describe block breaks. Similarly, $script:retryCallCount being a script-scoped counter risks leaking state if test order ever changes, though BeforeEach doesn't reset it. Overall this is a trustworthy suite that would catch virtually all requirement-level regressions.",
+  "judge_cost_usd": 0.0537,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 1478,
+  "judge_provider": "claude-cli"
+}

@@ -1,0 +1,11 @@
+{
+  "coverage": 5,
+  "rigor": 4,
+  "design": 3,
+  "overall": 4,
+  "summary": "The suite covers all major requirements well: Get-Posts, Get-Comments, Get-AllPosts pagination, Invoke-WithRetry (including exponential backoff timing), Save-ToCache, Get-FromCache, Get-PostsWithComments, and error propagation. Rigor is solid \u2014 stale cache, retry exhaustion, empty-page termination, and backoff delay values are all explicitly verified. However, design has meaningful weaknesses. The 'uses cache on second call' test is fragile and order-dependent: it relies on earlier tests in the same Context having already populated the shared cache dir, then re-mocks Invoke-RestMethod to throw \u2014 the dummy `(Get-Command Invoke-RestMethod).Version` line does nothing and signals confusion. The $script:callCount pattern for pagination is brittle global state that requires manual resets. The Get-PostsWithComments integration tests share one cache directory across all its It-blocks, so results from the first test silently bleed into subsequent ones. Missing edge cases include malformed/corrupt cache JSON, cache directory creation failures, MaxAgeMinutes=0, and network timeouts. Despite these structural issues, the suite is broad enough to catch most regressions and the temporal backoff assertion (0.1s, 0.2s, 0.4s) is a standout quality check.",
+  "judge_cost_usd": 0.0654,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 1814,
+  "judge_provider": "claude-cli"
+}

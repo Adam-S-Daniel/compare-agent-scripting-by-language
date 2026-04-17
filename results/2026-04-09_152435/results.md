@@ -1,6 +1,6 @@
 # Benchmark Results: Language Comparison
 
-**Last updated:** 2026-04-17 02:27:24 PM ET
+**Last updated:** 2026-04-17 04:00:09 PM ET
 
 **Status:** 64/64 runs completed, 0 remaining
 **Total cost so far:** $86.90
@@ -21,6 +21,55 @@
 | powershell | sonnet | 8 | 3 | 4 |
 | typescript-bun | opus | 1 | 4 | 8 |
 | typescript-bun | sonnet | 6 | 2 | 2 |
+
+
+<details>
+<summary>Sorted by Duration rank (fastest first)</summary>
+
+| Language | Model | Duration | Cost | LLM Score |
+|----------|-------|----------|------|-----------|
+| typescript-bun | opus | 1 | 4 | 8 |
+| default | opus | 2 | 6 | 5 |
+| bash | opus | 3 | 7 | 7 |
+| powershell | opus | 4 | 8 | 6 |
+| default | sonnet | 5 | 1 | 3 |
+| typescript-bun | sonnet | 6 | 2 | 2 |
+| bash | sonnet | 7 | 5 | 1 |
+| powershell | sonnet | 8 | 3 | 4 |
+
+</details>
+
+<details>
+<summary>Sorted by Cost rank (cheapest first)</summary>
+
+| Language | Model | Duration | Cost | LLM Score |
+|----------|-------|----------|------|-----------|
+| default | sonnet | 5 | 1 | 3 |
+| typescript-bun | sonnet | 6 | 2 | 2 |
+| powershell | sonnet | 8 | 3 | 4 |
+| typescript-bun | opus | 1 | 4 | 8 |
+| bash | sonnet | 7 | 5 | 1 |
+| default | opus | 2 | 6 | 5 |
+| bash | opus | 3 | 7 | 7 |
+| powershell | opus | 4 | 8 | 6 |
+
+</details>
+
+<details>
+<summary>Sorted by LLM Score rank (best first; no-data last)</summary>
+
+| Language | Model | Duration | Cost | LLM Score |
+|----------|-------|----------|------|-----------|
+| bash | sonnet | 7 | 5 | 1 |
+| typescript-bun | sonnet | 6 | 2 | 2 |
+| default | sonnet | 5 | 1 | 3 |
+| powershell | sonnet | 8 | 3 | 4 |
+| default | opus | 2 | 6 | 5 |
+| powershell | opus | 4 | 8 | 6 |
+| bash | opus | 3 | 7 | 7 |
+| typescript-bun | opus | 1 | 4 | 8 |
+
+</details>
 
 ## Comparison by Language/Model/Effort
 *Avg LLM Score = Overall (1-5) from LLM-as-judge of generated test code (dimensions: coverage, rigor, design). `—` = no judge data.*
