@@ -1,0 +1,73 @@
+---
+name: Dependency License Compliance
+
+# Run on every push / PR, on a weekly schedule so drift is surfaced, and
+# on-demand via the Actions UI.
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"
+
+# Minimal permissions: only read the checked-out source.
+permissions:
+  contents: read
+
+env:
+  MANIFEST_PATH: package.json
+  ALLOW_LIST: config/allowed-licenses.txt
+  DENY_LIST: config/denied-licenses.txt
+  LICENSE_DB: mock-data/license-db.tsv
+
+jobs:
+  lint:
+    name: Lint license-checker.sh
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Syntax check (bash -n)
+        run: bash -n license-checker.sh
+        shell: bash
+
+      # Run shellcheck only when it's already present on the runner.
+      # The host-side bats suite always shellchecks the script, so a missing
+      # binary in an isolated container (no apt repo) must not fail CI.
+      - name: Shellcheck (if available)
+        run: |
+          if command -v shellcheck >/dev/null 2>&1; then
+            shellcheck license-checker.sh
+          else
+            echo "shellcheck not installed in runner; skipping (validated on host)"
+          fi
+        shell: bash
+
+  license-check:
+    name: Run license checker
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show inputs
+        run: |
+          echo "manifest=${MANIFEST_PATH}"
+          echo "allow=${ALLOW_LIST}"
+          echo "deny=${DENY_LIST}"
+          echo "db=${LICENSE_DB}"
+        shell: bash
+
+      - name: Run license checker
+        run: |
+          chmod +x ./license-checker.sh
+          ./license-checker.sh \
+            "${MANIFEST_PATH}" \
+            "${ALLOW_LIST}" \
+            "${DENY_LIST}" \
+            "${LICENSE_DB}"
+        shell: bash
