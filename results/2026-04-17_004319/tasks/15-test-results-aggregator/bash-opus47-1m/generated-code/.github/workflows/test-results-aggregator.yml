@@ -1,0 +1,80 @@
+name: Test Results Aggregator
+
+# The workflow exercises bin/aggregate.sh end-to-end in CI. The harness in
+# tests/harness.bats drives it locally with act, swapping out the files in
+# results/ per test case so the same pipeline emits different summaries.
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unit-tests:
+    name: Unit tests (bats)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install bats and jq
+        run: |
+          set -euo pipefail
+          if ! command -v bats >/dev/null 2>&1 || ! command -v jq >/dev/null 2>&1; then
+            sudo apt-get update -y
+            sudo apt-get install -y --no-install-recommends bats jq
+          fi
+          bats --version
+          jq --version
+
+      - name: Run unit tests
+        run: bats tests/aggregate.bats
+
+  aggregate:
+    name: Aggregate test results
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install jq
+        run: |
+          set -euo pipefail
+          if ! command -v jq >/dev/null 2>&1; then
+            sudo apt-get update -y
+            sudo apt-get install -y --no-install-recommends jq
+          fi
+          jq --version
+
+      - name: Prepare results directory
+        run: |
+          set -euo pipefail
+          mkdir -p results
+          # The external harness overlays case-specific fixtures into
+          # results/ before invoking act. When the directory is empty
+          # (e.g. a plain CI run) fall back to the bundled sample files
+          # so the workflow is still self-demonstrable.
+          if [ -z "$(ls -A results 2>/dev/null || true)" ]; then
+            cp tests/fixtures/*.xml tests/fixtures/*.json results/
+          fi
+          echo "--- results/ contents ---"
+          ls -la results
+
+      - name: Aggregate and emit summary
+        run: |
+          # The script exits 1 when any test failed. That is expected for
+          # some fixture sets and reflects the aggregated test outcomes,
+          # not a malfunction of the aggregator. Capture the exit code but
+          # do NOT propagate it so the workflow itself still succeeds.
+          agg_exit=0
+          bash bin/aggregate.sh results/ > summary.md || agg_exit=$?
+          echo "AGGREGATOR_EXIT=${agg_exit}"
+          echo "--- summary.md ---"
+          cat summary.md
+          echo "--- end summary.md ---"
+          cat summary.md >> "$GITHUB_STEP_SUMMARY"
