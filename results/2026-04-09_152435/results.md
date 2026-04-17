@@ -1,6 +1,6 @@
-# Benchmark Results: Language Mode Comparison
+# Benchmark Results: Language Comparison
 
-**Last updated:** 2026-04-17 08:32:25 AM ET
+**Last updated:** 2026-04-17 09:04:31 AM ET
 
 **Status:** 64/64 runs completed, 0 remaining
 **Total cost so far:** $86.90
@@ -15,95 +15,111 @@
 
 ## Comparison by Language/Model
 
-| Mode | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|--------------------------|------------|-----------|----------|------------|
-| bash | opus | 8 | 7.7min | 7.1min | 1.6 | 43 | $1.52 | $12.19 |
-| bash | sonnet | 8 | 10.4min | 9.9min | 4.0 | 42 | $1.40 | $11.21 |
-| default | opus | 8 | 6.9min | 6.9min | 1.5 | 34 | $1.45 | $11.57 |
-| default | sonnet | 8 | 8.3min | 7.8min | 2.8 | 38 | $1.14 | $9.14 |
-| powershell | opus | 8 | 8.2min | 8.0min | 1.5 | 34 | $1.55 | $12.37 |
-| powershell | sonnet | 8 | 11.0min | 9.6min | 1.6 | 38 | $1.30 | $10.43 |
-| typescript-bun | opus | 8 | 6.9min | 5.7min | 2.0 | 39 | $1.32 | $10.60 |
-| typescript-bun | sonnet | 8 | 9.5min | 8.1min | 1.6 | 37 | $1.17 | $9.39 |
+| Language | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost | Avg LLM Score |
+|----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|
+| bash | opus | 8 | 7.7min | 7.1min | 1.6 | 43 | $1.52 | $12.19 | 3.0 |
+| bash | sonnet | 8 | 10.4min | 9.9min | 4.0 | 42 | $1.40 | $11.21 | 3.9 |
+| default | opus | 8 | 6.9min | 6.9min | 1.5 | 34 | $1.45 | $11.57 | 3.1 |
+| default | sonnet | 8 | 8.3min | 7.8min | 2.8 | 38 | $1.14 | $9.14 | 3.8 |
+| powershell | opus | 8 | 8.2min | 8.0min | 1.5 | 34 | $1.55 | $12.37 | 3.1 |
+| powershell | sonnet | 8 | 11.0min | 9.6min | 1.6 | 38 | $1.30 | $10.43 | 3.5 |
+| typescript-bun | opus | 8 | 6.9min | 5.7min | 2.0 | 39 | $1.32 | $10.60 | 2.9 |
+| typescript-bun | sonnet | 8 | 9.5min | 8.1min | 1.6 | 37 | $1.17 | $9.39 | 3.9 |
 
 
 <details>
 <summary>Sorted by avg cost (cheapest first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|--------------------------|------------|-----------|----------|------------|
-| default | sonnet | 8 | 8.3min | 7.8min | 2.8 | 38 | $1.14 | $9.14 |
-| typescript-bun | sonnet | 8 | 9.5min | 8.1min | 1.6 | 37 | $1.17 | $9.39 |
-| powershell | sonnet | 8 | 11.0min | 9.6min | 1.6 | 38 | $1.30 | $10.43 |
-| typescript-bun | opus | 8 | 6.9min | 5.7min | 2.0 | 39 | $1.32 | $10.60 |
-| bash | sonnet | 8 | 10.4min | 9.9min | 4.0 | 42 | $1.40 | $11.21 |
-| default | opus | 8 | 6.9min | 6.9min | 1.5 | 34 | $1.45 | $11.57 |
-| bash | opus | 8 | 7.7min | 7.1min | 1.6 | 43 | $1.52 | $12.19 |
-| powershell | opus | 8 | 8.2min | 8.0min | 1.5 | 34 | $1.55 | $12.37 |
+| Language | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost | Avg LLM Score |
+|----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|
+| default | sonnet | 8 | 8.3min | 7.8min | 2.8 | 38 | $1.14 | $9.14 | 3.8 |
+| typescript-bun | sonnet | 8 | 9.5min | 8.1min | 1.6 | 37 | $1.17 | $9.39 | 3.9 |
+| powershell | sonnet | 8 | 11.0min | 9.6min | 1.6 | 38 | $1.30 | $10.43 | 3.5 |
+| typescript-bun | opus | 8 | 6.9min | 5.7min | 2.0 | 39 | $1.32 | $10.60 | 2.9 |
+| bash | sonnet | 8 | 10.4min | 9.9min | 4.0 | 42 | $1.40 | $11.21 | 3.9 |
+| default | opus | 8 | 6.9min | 6.9min | 1.5 | 34 | $1.45 | $11.57 | 3.1 |
+| bash | opus | 8 | 7.7min | 7.1min | 1.6 | 43 | $1.52 | $12.19 | 3.0 |
+| powershell | opus | 8 | 8.2min | 8.0min | 1.5 | 34 | $1.55 | $12.37 | 3.1 |
 
 </details>
 
 <details>
 <summary>Sorted by avg duration (fastest first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|--------------------------|------------|-----------|----------|------------|
-| typescript-bun | opus | 8 | 6.9min | 5.7min | 2.0 | 39 | $1.32 | $10.60 |
-| default | opus | 8 | 6.9min | 6.9min | 1.5 | 34 | $1.45 | $11.57 |
-| bash | opus | 8 | 7.7min | 7.1min | 1.6 | 43 | $1.52 | $12.19 |
-| powershell | opus | 8 | 8.2min | 8.0min | 1.5 | 34 | $1.55 | $12.37 |
-| default | sonnet | 8 | 8.3min | 7.8min | 2.8 | 38 | $1.14 | $9.14 |
-| typescript-bun | sonnet | 8 | 9.5min | 8.1min | 1.6 | 37 | $1.17 | $9.39 |
-| bash | sonnet | 8 | 10.4min | 9.9min | 4.0 | 42 | $1.40 | $11.21 |
-| powershell | sonnet | 8 | 11.0min | 9.6min | 1.6 | 38 | $1.30 | $10.43 |
+| Language | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost | Avg LLM Score |
+|----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|
+| typescript-bun | opus | 8 | 6.9min | 5.7min | 2.0 | 39 | $1.32 | $10.60 | 2.9 |
+| default | opus | 8 | 6.9min | 6.9min | 1.5 | 34 | $1.45 | $11.57 | 3.1 |
+| bash | opus | 8 | 7.7min | 7.1min | 1.6 | 43 | $1.52 | $12.19 | 3.0 |
+| powershell | opus | 8 | 8.2min | 8.0min | 1.5 | 34 | $1.55 | $12.37 | 3.1 |
+| default | sonnet | 8 | 8.3min | 7.8min | 2.8 | 38 | $1.14 | $9.14 | 3.8 |
+| typescript-bun | sonnet | 8 | 9.5min | 8.1min | 1.6 | 37 | $1.17 | $9.39 | 3.9 |
+| bash | sonnet | 8 | 10.4min | 9.9min | 4.0 | 42 | $1.40 | $11.21 | 3.9 |
+| powershell | sonnet | 8 | 11.0min | 9.6min | 1.6 | 38 | $1.30 | $10.43 | 3.5 |
 
 </details>
 
 <details>
 <summary>Sorted by avg duration net of traps (fastest first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|--------------------------|------------|-----------|----------|------------|
-| typescript-bun | opus | 8 | 6.9min | 5.7min | 2.0 | 39 | $1.32 | $10.60 |
-| default | opus | 8 | 6.9min | 6.9min | 1.5 | 34 | $1.45 | $11.57 |
-| bash | opus | 8 | 7.7min | 7.1min | 1.6 | 43 | $1.52 | $12.19 |
-| default | sonnet | 8 | 8.3min | 7.8min | 2.8 | 38 | $1.14 | $9.14 |
-| powershell | opus | 8 | 8.2min | 8.0min | 1.5 | 34 | $1.55 | $12.37 |
-| typescript-bun | sonnet | 8 | 9.5min | 8.1min | 1.6 | 37 | $1.17 | $9.39 |
-| powershell | sonnet | 8 | 11.0min | 9.6min | 1.6 | 38 | $1.30 | $10.43 |
-| bash | sonnet | 8 | 10.4min | 9.9min | 4.0 | 42 | $1.40 | $11.21 |
+| Language | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost | Avg LLM Score |
+|----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|
+| typescript-bun | opus | 8 | 6.9min | 5.7min | 2.0 | 39 | $1.32 | $10.60 | 2.9 |
+| default | opus | 8 | 6.9min | 6.9min | 1.5 | 34 | $1.45 | $11.57 | 3.1 |
+| bash | opus | 8 | 7.7min | 7.1min | 1.6 | 43 | $1.52 | $12.19 | 3.0 |
+| default | sonnet | 8 | 8.3min | 7.8min | 2.8 | 38 | $1.14 | $9.14 | 3.8 |
+| powershell | opus | 8 | 8.2min | 8.0min | 1.5 | 34 | $1.55 | $12.37 | 3.1 |
+| typescript-bun | sonnet | 8 | 9.5min | 8.1min | 1.6 | 37 | $1.17 | $9.39 | 3.9 |
+| powershell | sonnet | 8 | 11.0min | 9.6min | 1.6 | 38 | $1.30 | $10.43 | 3.5 |
+| bash | sonnet | 8 | 10.4min | 9.9min | 4.0 | 42 | $1.40 | $11.21 | 3.9 |
 
 </details>
 
 <details>
 <summary>Sorted by avg errors (fewest first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|--------------------------|------------|-----------|----------|------------|
-| default | opus | 8 | 6.9min | 6.9min | 1.5 | 34 | $1.45 | $11.57 |
-| powershell | opus | 8 | 8.2min | 8.0min | 1.5 | 34 | $1.55 | $12.37 |
-| bash | opus | 8 | 7.7min | 7.1min | 1.6 | 43 | $1.52 | $12.19 |
-| powershell | sonnet | 8 | 11.0min | 9.6min | 1.6 | 38 | $1.30 | $10.43 |
-| typescript-bun | sonnet | 8 | 9.5min | 8.1min | 1.6 | 37 | $1.17 | $9.39 |
-| typescript-bun | opus | 8 | 6.9min | 5.7min | 2.0 | 39 | $1.32 | $10.60 |
-| default | sonnet | 8 | 8.3min | 7.8min | 2.8 | 38 | $1.14 | $9.14 |
-| bash | sonnet | 8 | 10.4min | 9.9min | 4.0 | 42 | $1.40 | $11.21 |
+| Language | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost | Avg LLM Score |
+|----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|
+| default | opus | 8 | 6.9min | 6.9min | 1.5 | 34 | $1.45 | $11.57 | 3.1 |
+| powershell | opus | 8 | 8.2min | 8.0min | 1.5 | 34 | $1.55 | $12.37 | 3.1 |
+| bash | opus | 8 | 7.7min | 7.1min | 1.6 | 43 | $1.52 | $12.19 | 3.0 |
+| powershell | sonnet | 8 | 11.0min | 9.6min | 1.6 | 38 | $1.30 | $10.43 | 3.5 |
+| typescript-bun | sonnet | 8 | 9.5min | 8.1min | 1.6 | 37 | $1.17 | $9.39 | 3.9 |
+| typescript-bun | opus | 8 | 6.9min | 5.7min | 2.0 | 39 | $1.32 | $10.60 | 2.9 |
+| default | sonnet | 8 | 8.3min | 7.8min | 2.8 | 38 | $1.14 | $9.14 | 3.8 |
+| bash | sonnet | 8 | 10.4min | 9.9min | 4.0 | 42 | $1.40 | $11.21 | 3.9 |
 
 </details>
 
 <details>
 <summary>Sorted by avg turns (fewest first)</summary>
 
-| Mode | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost |
-|------|-------|------|-------------|--------------------------|------------|-----------|----------|------------|
-| powershell | opus | 8 | 8.2min | 8.0min | 1.5 | 34 | $1.55 | $12.37 |
-| default | opus | 8 | 6.9min | 6.9min | 1.5 | 34 | $1.45 | $11.57 |
-| typescript-bun | sonnet | 8 | 9.5min | 8.1min | 1.6 | 37 | $1.17 | $9.39 |
-| default | sonnet | 8 | 8.3min | 7.8min | 2.8 | 38 | $1.14 | $9.14 |
-| powershell | sonnet | 8 | 11.0min | 9.6min | 1.6 | 38 | $1.30 | $10.43 |
-| typescript-bun | opus | 8 | 6.9min | 5.7min | 2.0 | 39 | $1.32 | $10.60 |
-| bash | sonnet | 8 | 10.4min | 9.9min | 4.0 | 42 | $1.40 | $11.21 |
-| bash | opus | 8 | 7.7min | 7.1min | 1.6 | 43 | $1.52 | $12.19 |
+| Language | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost | Avg LLM Score |
+|----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|
+| powershell | opus | 8 | 8.2min | 8.0min | 1.5 | 34 | $1.55 | $12.37 | 3.1 |
+| default | opus | 8 | 6.9min | 6.9min | 1.5 | 34 | $1.45 | $11.57 | 3.1 |
+| typescript-bun | sonnet | 8 | 9.5min | 8.1min | 1.6 | 37 | $1.17 | $9.39 | 3.9 |
+| default | sonnet | 8 | 8.3min | 7.8min | 2.8 | 38 | $1.14 | $9.14 | 3.8 |
+| powershell | sonnet | 8 | 11.0min | 9.6min | 1.6 | 38 | $1.30 | $10.43 | 3.5 |
+| typescript-bun | opus | 8 | 6.9min | 5.7min | 2.0 | 39 | $1.32 | $10.60 | 2.9 |
+| bash | sonnet | 8 | 10.4min | 9.9min | 4.0 | 42 | $1.40 | $11.21 | 3.9 |
+| bash | opus | 8 | 7.7min | 7.1min | 1.6 | 43 | $1.52 | $12.19 | 3.0 |
+
+</details>
+
+<details>
+<summary>Sorted by LLM-as-judge score (best first)</summary>
+
+| Language | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost | Avg LLM Score |
+|----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|
+| bash | sonnet | 8 | 10.4min | 9.9min | 4.0 | 42 | $1.40 | $11.21 | 3.9 |
+| typescript-bun | sonnet | 8 | 9.5min | 8.1min | 1.6 | 37 | $1.17 | $9.39 | 3.9 |
+| default | sonnet | 8 | 8.3min | 7.8min | 2.8 | 38 | $1.14 | $9.14 | 3.8 |
+| powershell | sonnet | 8 | 11.0min | 9.6min | 1.6 | 38 | $1.30 | $10.43 | 3.5 |
+| default | opus | 8 | 6.9min | 6.9min | 1.5 | 34 | $1.45 | $11.57 | 3.1 |
+| powershell | opus | 8 | 8.2min | 8.0min | 1.5 | 34 | $1.55 | $12.37 | 3.1 |
+| bash | opus | 8 | 7.7min | 7.1min | 1.6 | 43 | $1.52 | $12.19 | 3.0 |
+| typescript-bun | opus | 8 | 6.9min | 5.7min | 2.0 | 39 | $1.32 | $10.60 | 2.9 |
 
 </details>
 
@@ -114,7 +130,7 @@
 Each hook-caught error avoids one test run that would otherwise have been needed to discover it.
 Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
-| Mode | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time | Test Run Time | % of Test Time Saved |
+| Language | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time | Test Run Time | % of Test Time Saved |
 |------|-------|-------|--------|------|------------|-----------|----------|-----------|-----------|-----------|---------------|----------------------|
 | bash | opus | 91 | 3 | 3.3% | 0.6min | 0.1% | 0.6min | 0.1% | 0.0min | 0.0% | 7.1min | 0.1% |
 | bash | sonnet | 107 | 9 | 8.4% | 1.8min | 0.3% | 0.2min | 0.0% | 1.6min | 0.3% | 9.0min | 17.7% |
@@ -129,7 +145,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 <details>
 <summary>Sorted by net saved (most first)</summary>
 
-| Mode | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time | Test Run Time | % of Test Time Saved |
+| Language | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time | Test Run Time | % of Test Time Saved |
 |------|-------|-------|--------|------|------------|-----------|----------|-----------|-----------|-----------|---------------|----------------------|
 | powershell | opus | 86 | 10 | 11.6% | 5.8min | 1.1% | 0.7min | 0.1% | 5.2min | 0.9% | 5.9min | 87.1% |
 | typescript-bun | sonnet | 94 | 46 | 48.9% | 6.1min | 1.1% | 2.4min | 0.4% | 3.7min | 0.7% | 5.3min | 70.3% |
@@ -145,7 +161,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 <details>
 <summary>Sorted by net % of test time saved (most first)</summary>
 
-| Mode | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time | Test Run Time | % of Test Time Saved |
+| Language | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time | Test Run Time | % of Test Time Saved |
 |------|-------|-------|--------|------|------------|-----------|----------|-----------|-----------|-----------|---------------|----------------------|
 | powershell | opus | 86 | 10 | 11.6% | 5.8min | 1.1% | 0.7min | 0.1% | 5.2min | 0.9% | 5.9min | 87.1% |
 | typescript-bun | sonnet | 94 | 46 | 48.9% | 6.1min | 1.1% | 2.4min | 0.4% | 3.7min | 0.7% | 5.3min | 70.3% |
@@ -161,7 +177,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 <details>
 <summary>Sorted by catch rate (highest first)</summary>
 
-| Mode | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time | Test Run Time | % of Test Time Saved |
+| Language | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time | Test Run Time | % of Test Time Saved |
 |------|-------|-------|--------|------|------------|-----------|----------|-----------|-----------|-----------|---------------|----------------------|
 | typescript-bun | opus | 66 | 36 | 54.5% | 4.8min | 0.9% | 4.3min | 0.8% | 0.5min | 0.1% | 5.3min | 10.1% |
 | typescript-bun | sonnet | 94 | 46 | 48.9% | 6.1min | 1.1% | 2.4min | 0.4% | 3.7min | 0.7% | 5.3min | 70.3% |
@@ -176,7 +192,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 ### Trap Analysis by Language/Model/Category
 
-| Trap | Mode | Model | Fell In | Time Lost | % of Time | $ Lost | % of $ |
+| Trap | Language | Model | Fell In | Time Lost | % of Time | $ Lost | % of $ |
 |------|------|-------|---------|-----------|-----------|--------|--------|
 | ts-type-error-fix-cycles | typescript-bun | opus | 7 | 7.2min | 1.3% | $1.41 | 1.63% |
 | ts-type-error-fix-cycles | typescript-bun | sonnet | 8 | 9.2min | 1.7% | $1.15 | 1.32% |
@@ -205,7 +221,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 <details>
 <summary>Sorted by time lost (least first)</summary>
 
-| Trap | Mode | Model | Fell In | Time Lost | % of Time | $ Lost | % of $ |
+| Trap | Language | Model | Fell In | Time Lost | % of Time | $ Lost | % of $ |
 |------|------|-------|---------|-----------|-----------|--------|--------|
 | act-push-debug-loops | bash | sonnet | 1 | 0.4min | 0.1% | $0.05 | 0.05% |
 | act-push-debug-loops | typescript-bun | opus | 1 | 0.5min | 0.1% | $0.09 | 0.11% |
@@ -235,7 +251,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 <details>
 <summary>Sorted by $ lost (least first)</summary>
 
-| Trap | Mode | Model | Fell In | Time Lost | % of Time | $ Lost | % of $ |
+| Trap | Language | Model | Fell In | Time Lost | % of Time | $ Lost | % of $ |
 |------|------|-------|---------|-----------|-----------|--------|--------|
 | act-push-debug-loops | bash | sonnet | 1 | 0.4min | 0.1% | $0.05 | 0.05% |
 | repeated-test-reruns | default | sonnet | 1 | 0.7min | 0.1% | $0.08 | 0.09% |
@@ -265,7 +281,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 <details>
 <summary>Sorted by fell-in count (fewest first)</summary>
 
-| Trap | Mode | Model | Fell In | Time Lost | % of Time | $ Lost | % of $ |
+| Trap | Language | Model | Fell In | Time Lost | % of Time | $ Lost | % of $ |
 |------|------|-------|---------|-----------|-----------|--------|--------|
 | fixture-rework | powershell | opus | 1 | 1.5min | 0.3% | $0.37 | 0.42% |
 | fixture-rework | typescript-bun | opus | 1 | 0.8min | 0.1% | $0.14 | 0.16% |
@@ -305,7 +321,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 #### Column Definitions
 
-- **Fell In**: Number of runs (within that mode/model) where this trap was detected.
+- **Fell In**: Number of runs (within that language/model) where this trap was detected.
 - **Time Lost**: Estimated wall-clock seconds wasted on the trap, based on the number of
   wasted commands multiplied by a per-command cost (15–25s for typical Bash, 45s for Docker runs, 50s for act push).
 - **% of Time**: Time Lost as a percentage of total benchmark duration.
@@ -314,7 +330,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 ### Traps by Language/Model
 
-| Mode | Model | Runs | Traps | Time Lost | % of Time | $ Lost | % of $ |
+| Language | Model | Runs | Traps | Time Lost | % of Time | $ Lost | % of $ |
 |------|-------|------|-------|-----------|-----------|--------|--------|
 | bash | opus | 8 | 6 | 5.0min | 0.9% | $0.96 | 1.11% |
 | bash | sonnet | 8 | 6 | 3.9min | 0.7% | $0.55 | 0.63% |
@@ -329,7 +345,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 <details>
 <summary>Sorted by time lost (least first)</summary>
 
-| Mode | Model | Runs | Traps | Time Lost | % of Time | $ Lost | % of $ |
+| Language | Model | Runs | Traps | Time Lost | % of Time | $ Lost | % of $ |
 |------|-------|------|-------|-----------|-----------|--------|--------|
 | default | opus | 8 | 0 | 0.0min | 0.0% | $0.00 | 0.00% |
 | powershell | opus | 8 | 1 | 1.5min | 0.3% | $0.37 | 0.42% |
@@ -345,7 +361,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 <details>
 <summary>Sorted by $ lost (least first)</summary>
 
-| Mode | Model | Runs | Traps | Time Lost | % of Time | $ Lost | % of $ |
+| Language | Model | Runs | Traps | Time Lost | % of Time | $ Lost | % of $ |
 |------|-------|------|-------|-----------|-----------|--------|--------|
 | default | opus | 8 | 0 | 0.0min | 0.0% | $0.00 | 0.00% |
 | powershell | opus | 8 | 1 | 1.5min | 0.3% | $0.37 | 0.42% |
@@ -372,7 +388,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 Automated analysis of test files: test count, assertion count, and test-to-code line ratio.
 
-| Mode | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
+| Language | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
 |------|-------|-----------|----------------|-----------------|---------------------|
 | bash | opus | 26.1 | 35.1 | 1.3 | 1.12 |
 | bash | sonnet | 27.2 | 43.5 | 1.6 | 0.91 |
@@ -387,7 +403,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 <details>
 <summary>Sorted by avg tests (most first)</summary>
 
-| Mode | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
+| Language | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
 |------|-------|-----------|----------------|-----------------|---------------------|
 | powershell | sonnet | 37.9 | 51.8 | 1.4 | 0.78 |
 | default | sonnet | 34.5 | 47.5 | 1.4 | 1.76 |
@@ -403,7 +419,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 <details>
 <summary>Sorted by avg assertions (most first)</summary>
 
-| Mode | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
+| Language | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
 |------|-------|-----------|----------------|-----------------|---------------------|
 | typescript-bun | sonnet | 33.2 | 62.5 | 1.9 | 1.01 |
 | powershell | sonnet | 37.9 | 51.8 | 1.4 | 0.78 |
@@ -419,7 +435,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 <details>
 <summary>Sorted by avg test:code ratio (highest first)</summary>
 
-| Mode | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
+| Language | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
 |------|-------|-----------|----------------|-----------------|---------------------|
 | default | opus | 17.8 | 26.8 | 1.5 | 2.21 |
 | default | sonnet | 34.5 | 47.5 | 1.4 | 1.76 |
@@ -436,7 +452,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 <details>
 <summary>Per-run structural metrics</summary>
 
-| Task | Mode | Model | Tests | Assertions | Assert/Test | Test Lines | Impl Lines | Test:Code |
+| Task | Language | Model | Tests | Assertions | Assert/Test | Test Lines | Impl Lines | Test:Code |
 |------|------|-------|-------|------------|-------------|------------|------------|-----------|
 | Semantic Version Bumper | bash | opus | 20 | 37 | 1.9 | 206 | 530 | 0.39 |
 | Semantic Version Bumper | bash | sonnet | 29 | 42 | 1.4 | 270 | 473 | 0.57 |
@@ -514,7 +530,7 @@ An LLM evaluates each test suite on four dimensions (1-5 scale):
 - **Design** (1-5): Test organization, fixtures, readability? 1 = messy/brittle, 5 = well-structured.
 - **Overall** (1-5): Holistic quality — would you trust this suite to catch regressions? 1 = no, 5 = absolutely. Use this as the primary ranking metric.
 
-| Mode | Model | Avg Overall | Avg Coverage | Avg Rigor | Avg Design | Judge Cost |
+| Language | Model | Avg Overall | Avg Coverage | Avg Rigor | Avg Design | Judge Cost |
 |------|-------|-------------|-------------|-----------|------------|------------|
 | bash | opus | **3.0** | 3.6 | 2.6 | 3.0 | $0.4007 |
 | bash | sonnet | **3.9** | 4.2 | 3.0 | 3.9 | $0.4460 |
@@ -530,7 +546,7 @@ An LLM evaluates each test suite on four dimensions (1-5 scale):
 <details>
 <summary>Sorted by avg overall (highest first)</summary>
 
-| Mode | Model | Avg Overall | Avg Coverage | Avg Rigor | Avg Design | Judge Cost |
+| Language | Model | Avg Overall | Avg Coverage | Avg Rigor | Avg Design | Judge Cost |
 |------|-------|-------------|-------------|-----------|------------|------------|
 | bash | sonnet | **3.9** | 4.2 | 3.0 | 3.9 | $0.4460 |
 | typescript-bun | sonnet | **3.9** | 4.0 | 3.6 | 4.2 | $0.4455 |
@@ -546,7 +562,7 @@ An LLM evaluates each test suite on four dimensions (1-5 scale):
 <details>
 <summary>Sorted by avg coverage (highest first)</summary>
 
-| Mode | Model | Avg Overall | Avg Coverage | Avg Rigor | Avg Design | Judge Cost |
+| Language | Model | Avg Overall | Avg Coverage | Avg Rigor | Avg Design | Judge Cost |
 |------|-------|-------------|-------------|-----------|------------|------------|
 | bash | sonnet | **3.9** | 4.2 | 3.0 | 3.9 | $0.4460 |
 | default | sonnet | **3.8** | 4.2 | 3.5 | 4.2 | $0.4590 |
@@ -562,7 +578,7 @@ An LLM evaluates each test suite on four dimensions (1-5 scale):
 <details>
 <summary>Sorted by avg rigor (highest first)</summary>
 
-| Mode | Model | Avg Overall | Avg Coverage | Avg Rigor | Avg Design | Judge Cost |
+| Language | Model | Avg Overall | Avg Coverage | Avg Rigor | Avg Design | Judge Cost |
 |------|-------|-------------|-------------|-----------|------------|------------|
 | typescript-bun | sonnet | **3.9** | 4.0 | 3.6 | 4.2 | $0.4455 |
 | default | sonnet | **3.8** | 4.2 | 3.5 | 4.2 | $0.4590 |
@@ -578,7 +594,7 @@ An LLM evaluates each test suite on four dimensions (1-5 scale):
 <details>
 <summary>Sorted by avg design (highest first)</summary>
 
-| Mode | Model | Avg Overall | Avg Coverage | Avg Rigor | Avg Design | Judge Cost |
+| Language | Model | Avg Overall | Avg Coverage | Avg Rigor | Avg Design | Judge Cost |
 |------|-------|-------------|-------------|-----------|------------|------------|
 | default | sonnet | **3.8** | 4.2 | 3.5 | 4.2 | $0.4590 |
 | typescript-bun | sonnet | **3.9** | 4.0 | 3.6 | 4.2 | $0.4455 |
@@ -595,7 +611,7 @@ An LLM evaluates each test suite on four dimensions (1-5 scale):
 <details>
 <summary>Per-run LLM judge scores</summary>
 
-| Task | Mode | Model | Cov | Rig | Des | Ovr | Summary |
+| Task | Language | Model | Cov | Rig | Des | Ovr | Summary |
 |------|------|-------|-----|-----|-----|-----|---------|
 | Semantic Version Bumper | bash | opus | 4 | 3 | 4 | 4 | The test suite covers all primary requirements well: VERSION |
 | Semantic Version Bumper | bash | sonnet | 4 | 3 | 4 | 4 | The test suite is well-organized with clear TDD cycle commen |
@@ -681,7 +697,7 @@ Values near +1.0 indicate the LLM agrees with the structural signal; near 0 mean
 
 **Qualitative disagreements** — structural metrics look reasonable; the LLM judge is weighing factors the counters can't measure.
 
-| Task | Mode | Model | Tests | Asserts | Cov | Rig | Des | Ovr | Flag | Justification |
+| Task | Language | Model | Tests | Asserts | Cov | Rig | Des | Ovr | Flag | Justification |
 |------|------|-------|-------|---------|-----|-----|-----|-----|------|---------------|
 | Docker Image Tag Generator | powershell | opus | 13 | 40 | 4 | 2 | 3 | 3 | LLM says low rigor (2/5) but 40 assertions detected | The suite covers six well-chosen scenarios (main, master, feature branch, PR, semver tag, sanitization) and adds useful workflow-structure checks (actionlint, file existence, YAML shape). Exact tag... |
 | Test Results Aggregator | bash | opus | 14 | 43 | 3 | 2 | 3 | 3 | LLM says low rigor (2/5) but 43 assertions detected | The suite covers the main happy-path requirements well: it checks JUnit-only, JSON-only, and mixed scenarios through act with exact value assertions, verifies flaky-test detection by name, validate... |
@@ -690,359 +706,431 @@ Values near +1.0 indicate the LLM agrees with the structural signal; near 0 mean
 
 ## Per-Run Results
 
-| Task | Mode | Model | Duration | Turns | Errors | Cost | Language | Status |
-|------|------|-------|----------|-------|--------|------|----------|--------|
-| Semantic Version Bumper | bash | opus | 12.4min | 50 | 1 | $1.65 | bash | ok |
-| Semantic Version Bumper | bash | sonnet | 9.0min | 57 | 6 | $1.38 | bash | ok |
-| Semantic Version Bumper | default | opus | 7.1min | 28 | 1 | $1.33 | python | ok |
-| Semantic Version Bumper | default | sonnet | 7.3min | 46 | 1 | $0.99 | python | ok |
-| Semantic Version Bumper | powershell | opus | 6.9min | 27 | 0 | $1.04 | powershell | ok |
-| Semantic Version Bumper | powershell | sonnet | 11.4min | 43 | 3 | $0.92 | powershell | ok |
-| Semantic Version Bumper | typescript-bun | opus | 10.3min | 32 | 1 | $1.54 | typescript | ok |
-| Semantic Version Bumper | typescript-bun | sonnet | 8.1min | 30 | 1 | $0.97 | typescript | ok |
-| PR Label Assigner | bash | opus | 5.6min | 42 | 2 | $1.16 | bash | ok |
-| PR Label Assigner | bash | sonnet | 13.2min | 39 | 6 | $1.73 | bash | ok |
-| PR Label Assigner | default | opus | 7.7min | 29 | 2 | $1.57 | python | ok |
-| PR Label Assigner | default | sonnet | 10.3min | 43 | 4 | $1.52 | python | ok |
-| PR Label Assigner | powershell | opus | 11.4min | 35 | 2 | $1.93 | powershell | ok |
-| PR Label Assigner | powershell | sonnet | 8.7min | 29 | 1 | $1.09 | powershell | ok |
-| PR Label Assigner | typescript-bun | opus | 5.1min | 33 | 2 | $1.01 | typescript | ok |
-| PR Label Assigner | typescript-bun | sonnet | 8.1min | 43 | 1 | $0.89 | typescript | ok |
-| Dependency License Checker | bash | opus | 6.9min | 55 | 3 | $1.50 | bash | ok |
-| Dependency License Checker | bash | sonnet | 14.1min | 42 | 3 | $1.68 | bash | ok |
-| Dependency License Checker | default | opus | 5.9min | 39 | 0 | $1.24 | python | ok |
-| Dependency License Checker | default | sonnet | 9.2min | 39 | 3 | $1.30 | python | ok |
-| Dependency License Checker | powershell | opus | 6.0min | 38 | 3 | $1.24 | powershell | ok |
-| Dependency License Checker | powershell | sonnet | 12.3min | 58 | 2 | $1.93 | powershell | ok |
-| Dependency License Checker | typescript-bun | opus | 6.8min | 48 | 3 | $1.35 | typescript | ok |
-| Dependency License Checker | typescript-bun | sonnet | 9.5min | 43 | 2 | $1.47 | typescript | ok |
-| Docker Image Tag Generator | bash | opus | 3.7min | 28 | 1 | $0.78 | bash | ok |
-| Docker Image Tag Generator | bash | sonnet | 4.5min | 26 | 2 | $0.61 | bash | ok |
-| Docker Image Tag Generator | default | opus | 5.5min | 27 | 2 | $1.25 | python | ok |
-| Docker Image Tag Generator | default | sonnet | 8.4min | 35 | 1 | $1.00 | python | ok |
-| Docker Image Tag Generator | powershell | opus | 7.9min | 24 | 0 | $1.39 | powershell | ok |
-| Docker Image Tag Generator | powershell | sonnet | 9.2min | 35 | 2 | $1.13 | powershell | ok |
-| Docker Image Tag Generator | typescript-bun | opus | 8.6min | 38 | 1 | $1.53 | typescript | ok |
-| Docker Image Tag Generator | typescript-bun | sonnet | 12.0min | 25 | 3 | $0.98 | typescript | ok |
-| Test Results Aggregator | bash | opus | 15.8min | 42 | 2 | $2.85 | bash | ok |
-| Test Results Aggregator | bash | sonnet | 9.0min | 31 | 3 | $1.22 | bash | ok |
-| Test Results Aggregator | default | opus | 5.7min | 35 | 3 | $1.27 | python | ok |
-| Test Results Aggregator | default | sonnet | 9.9min | 24 | 2 | $1.20 | python | ok |
-| Test Results Aggregator | powershell | opus | 10.0min | 48 | 2 | $2.45 | powershell | ok |
-| Test Results Aggregator | powershell | sonnet | 11.8min | 29 | 1 | $1.36 | powershell | ok |
-| Test Results Aggregator | typescript-bun | opus | 2.3min | 29 | 1 | $0.61 | typescript | ok |
-| Test Results Aggregator | typescript-bun | sonnet | 10.9min | 35 | 1 | $1.41 | typescript | ok |
-| Environment Matrix Generator | bash | opus | 4.1min | 42 | 1 | $0.98 | bash | ok |
-| Environment Matrix Generator | bash | sonnet | 10.5min | 25 | 3 | $1.22 | bash | ok |
-| Environment Matrix Generator | default | opus | 6.4min | 29 | 1 | $1.21 | python | ok |
-| Environment Matrix Generator | default | sonnet | 7.8min | 36 | 5 | $1.05 | python | ok |
-| Environment Matrix Generator | powershell | opus | 5.3min | 38 | 3 | $1.25 | powershell | ok |
-| Environment Matrix Generator | powershell | sonnet | 11.5min | 54 | 1 | $1.46 | powershell | ok |
-| Environment Matrix Generator | typescript-bun | opus | 6.0min | 42 | 3 | $1.10 | typescript | ok |
-| Environment Matrix Generator | typescript-bun | sonnet | 8.5min | 48 | 3 | $1.22 | typescript | ok |
-| Artifact Cleanup Script | bash | opus | 5.7min | 50 | 2 | $1.50 | bash | ok |
-| Artifact Cleanup Script | bash | sonnet | 7.2min | 35 | 1 | $0.77 | bash | ok |
-| Artifact Cleanup Script | default | opus | 9.2min | 49 | 2 | $2.19 | python | ok |
-| Artifact Cleanup Script | default | sonnet | 6.3min | 31 | 2 | $0.83 | python | ok |
-| Artifact Cleanup Script | powershell | opus | 5.4min | 29 | 2 | $1.07 | powershell | ok |
-| Artifact Cleanup Script | powershell | sonnet | 12.0min | 15 | 0 | $0.99 | powershell | ok |
-| Artifact Cleanup Script | typescript-bun | opus | 7.7min | 34 | 1 | $1.68 | typescript | ok |
-| Artifact Cleanup Script | typescript-bun | sonnet | 9.2min | 38 | 2 | $1.17 | typescript | ok |
-| Secret Rotation Validator | bash | opus | 7.8min | 38 | 1 | $1.78 | bash | ok |
-| Secret Rotation Validator | bash | sonnet | 15.6min | 78 | 8 | $2.60 | bash | ok |
-| Secret Rotation Validator | default | opus | 7.3min | 38 | 1 | $1.51 | python | ok |
-| Secret Rotation Validator | default | sonnet | 7.1min | 47 | 4 | $1.25 | python | ok |
-| Secret Rotation Validator | powershell | opus | 12.4min | 30 | 0 | $1.99 | powershell | ok |
-| Secret Rotation Validator | powershell | sonnet | 10.8min | 40 | 3 | $1.55 | powershell | ok |
-| Secret Rotation Validator | typescript-bun | opus | 8.1min | 56 | 4 | $1.79 | typescript | ok |
-| Secret Rotation Validator | typescript-bun | sonnet | 10.1min | 32 | 0 | $1.28 | typescript | ok |
+| Task | Language | Model | Duration | Turns | Errors | Cost | LLM Score | Chosen | Status |
+|------|----------|-------|----------|-------|--------|------|-----------|--------|--------|
+| Artifact Cleanup Script | bash | opus | 5.7min | 50 | 2 | $1.50 | 3.0 | bash | ok |
+| Artifact Cleanup Script | bash | sonnet | 7.2min | 35 | 1 | $0.77 | 4.0 | bash | ok |
+| Artifact Cleanup Script | default | opus | 9.2min | 49 | 2 | $2.19 | 4.0 | python | ok |
+| Artifact Cleanup Script | default | sonnet | 6.3min | 31 | 2 | $0.83 | 3.0 | python | ok |
+| Artifact Cleanup Script | powershell | opus | 5.4min | 29 | 2 | $1.07 | 4.0 | powershell | ok |
+| Artifact Cleanup Script | powershell | sonnet | 12.0min | 15 | 0 | $0.99 | 3.0 | powershell | ok |
+| Artifact Cleanup Script | typescript-bun | opus | 7.7min | 34 | 1 | $1.68 | 4.0 | typescript | ok |
+| Artifact Cleanup Script | typescript-bun | sonnet | 9.2min | 38 | 2 | $1.17 | 4.0 | typescript | ok |
+| Dependency License Checker | bash | opus | 6.9min | 55 | 3 | $1.50 | 4.0 | bash | ok |
+| Dependency License Checker | bash | sonnet | 14.1min | 42 | 3 | $1.68 | 3.0 | bash | ok |
+| Dependency License Checker | default | opus | 5.9min | 39 | 0 | $1.24 | 4.0 | python | ok |
+| Dependency License Checker | default | sonnet | 9.2min | 39 | 3 | $1.30 | 4.0 | python | ok |
+| Dependency License Checker | powershell | opus | 6.0min | 38 | 3 | $1.24 | 4.0 | powershell | ok |
+| Dependency License Checker | powershell | sonnet | 12.3min | 58 | 2 | $1.93 | 4.0 | powershell | ok |
+| Dependency License Checker | typescript-bun | opus | 6.8min | 48 | 3 | $1.35 | 3.0 | typescript | ok |
+| Dependency License Checker | typescript-bun | sonnet | 9.5min | 43 | 2 | $1.47 | 3.0 | typescript | ok |
+| Docker Image Tag Generator | bash | opus | 3.7min | 28 | 1 | $0.78 | 3.0 | bash | ok |
+| Docker Image Tag Generator | bash | sonnet | 4.5min | 26 | 2 | $0.61 | 5.0 | bash | ok |
+| Docker Image Tag Generator | default | opus | 5.5min | 27 | 2 | $1.25 | 3.0 | python | ok |
+| Docker Image Tag Generator | default | sonnet | 8.4min | 35 | 1 | $1.00 | 4.0 | python | ok |
+| Docker Image Tag Generator | powershell | opus | 7.9min | 24 | 0 | $1.39 | 3.0 | powershell | ok |
+| Docker Image Tag Generator | powershell | sonnet | 9.2min | 35 | 2 | $1.13 | 4.0 | powershell | ok |
+| Docker Image Tag Generator | typescript-bun | opus | 8.6min | 38 | 1 | $1.53 | 2.0 | typescript | ok |
+| Docker Image Tag Generator | typescript-bun | sonnet | 12.0min | 25 | 3 | $0.98 | 4.0 | typescript | ok |
+| Environment Matrix Generator | bash | opus | 4.1min | 42 | 1 | $0.98 | 2.0 | bash | ok |
+| Environment Matrix Generator | bash | sonnet | 10.5min | 25 | 3 | $1.22 | 4.0 | bash | ok |
+| Environment Matrix Generator | default | opus | 6.4min | 29 | 1 | $1.21 | 3.0 | python | ok |
+| Environment Matrix Generator | default | sonnet | 7.8min | 36 | 5 | $1.05 | 4.0 | python | ok |
+| Environment Matrix Generator | powershell | opus | 5.3min | 38 | 3 | $1.25 | 3.0 | powershell | ok |
+| Environment Matrix Generator | powershell | sonnet | 11.5min | 54 | 1 | $1.46 | 4.0 | powershell | ok |
+| Environment Matrix Generator | typescript-bun | opus | 6.0min | 42 | 3 | $1.10 | 2.0 | typescript | ok |
+| Environment Matrix Generator | typescript-bun | sonnet | 8.5min | 48 | 3 | $1.22 | 3.0 | typescript | ok |
+| PR Label Assigner | bash | opus | 5.6min | 42 | 2 | $1.16 | 2.0 | bash | ok |
+| PR Label Assigner | bash | sonnet | 13.2min | 39 | 6 | $1.73 | 5.0 | bash | ok |
+| PR Label Assigner | default | opus | 7.7min | 29 | 2 | $1.57 | 4.0 | python | ok |
+| PR Label Assigner | default | sonnet | 10.3min | 43 | 4 | $1.52 | 4.0 | python | ok |
+| PR Label Assigner | powershell | opus | 11.4min | 35 | 2 | $1.93 | 4.0 | powershell | ok |
+| PR Label Assigner | powershell | sonnet | 8.7min | 29 | 1 | $1.09 | 4.0 | powershell | ok |
+| PR Label Assigner | typescript-bun | opus | 5.1min | 33 | 2 | $1.01 | 4.0 | typescript | ok |
+| PR Label Assigner | typescript-bun | sonnet | 8.1min | 43 | 1 | $0.89 | 5.0 | typescript | ok |
+| Secret Rotation Validator | bash | opus | 7.8min | 38 | 1 | $1.78 | 3.0 | bash | ok |
+| Secret Rotation Validator | bash | sonnet | 15.6min | 78 | 8 | $2.60 | 3.0 | bash | ok |
+| Secret Rotation Validator | default | opus | 7.3min | 38 | 1 | $1.51 | 3.0 | python | ok |
+| Secret Rotation Validator | default | sonnet | 7.1min | 47 | 4 | $1.25 | 3.0 | python | ok |
+| Secret Rotation Validator | powershell | opus | 12.4min | 30 | 0 | $1.99 | 3.0 | powershell | ok |
+| Secret Rotation Validator | powershell | sonnet | 10.8min | 40 | 3 | $1.55 | 3.0 | powershell | ok |
+| Secret Rotation Validator | typescript-bun | opus | 8.1min | 56 | 4 | $1.79 | 3.0 | typescript | ok |
+| Secret Rotation Validator | typescript-bun | sonnet | 10.1min | 32 | 0 | $1.28 | 4.0 | typescript | ok |
+| Semantic Version Bumper | bash | opus | 12.4min | 50 | 1 | $1.65 | 4.0 | bash | ok |
+| Semantic Version Bumper | bash | sonnet | 9.0min | 57 | 6 | $1.38 | 4.0 | bash | ok |
+| Semantic Version Bumper | default | opus | 7.1min | 28 | 1 | $1.33 | 2.0 | python | ok |
+| Semantic Version Bumper | default | sonnet | 7.3min | 46 | 1 | $0.99 | 4.0 | python | ok |
+| Semantic Version Bumper | powershell | opus | 6.9min | 27 | 0 | $1.04 | 2.0 | powershell | ok |
+| Semantic Version Bumper | powershell | sonnet | 11.4min | 43 | 3 | $0.92 | 4.0 | powershell | ok |
+| Semantic Version Bumper | typescript-bun | opus | 10.3min | 32 | 1 | $1.54 | 2.0 | typescript | ok |
+| Semantic Version Bumper | typescript-bun | sonnet | 8.1min | 30 | 1 | $0.97 | 3.0 | typescript | ok |
+| Test Results Aggregator | bash | opus | 15.8min | 42 | 2 | $2.85 | 3.0 | bash | ok |
+| Test Results Aggregator | bash | sonnet | 9.0min | 31 | 3 | $1.22 | 3.0 | bash | ok |
+| Test Results Aggregator | default | opus | 5.7min | 35 | 3 | $1.27 | 2.0 | python | ok |
+| Test Results Aggregator | default | sonnet | 9.9min | 24 | 2 | $1.20 | 4.0 | python | ok |
+| Test Results Aggregator | powershell | opus | 10.0min | 48 | 2 | $2.45 | 2.0 | powershell | ok |
+| Test Results Aggregator | powershell | sonnet | 11.8min | 29 | 1 | $1.36 | 2.0 | powershell | ok |
+| Test Results Aggregator | typescript-bun | opus | 2.3min | 29 | 1 | $0.61 | 3.0 | typescript | ok |
+| Test Results Aggregator | typescript-bun | sonnet | 10.9min | 35 | 1 | $1.41 | 5.0 | typescript | ok |
 
 
 <details>
 <summary>Sorted by cost (cheapest first)</summary>
 
-| Task | Mode | Model | Duration | Turns | Errors | Cost | Language | Status |
-|------|------|-------|----------|-------|--------|------|----------|--------|
-| Docker Image Tag Generator | bash | sonnet | 4.5min | 26 | 2 | $0.61 | bash | ok |
-| Test Results Aggregator | typescript-bun | opus | 2.3min | 29 | 1 | $0.61 | typescript | ok |
-| Artifact Cleanup Script | bash | sonnet | 7.2min | 35 | 1 | $0.77 | bash | ok |
-| Docker Image Tag Generator | bash | opus | 3.7min | 28 | 1 | $0.78 | bash | ok |
-| Artifact Cleanup Script | default | sonnet | 6.3min | 31 | 2 | $0.83 | python | ok |
-| PR Label Assigner | typescript-bun | sonnet | 8.1min | 43 | 1 | $0.89 | typescript | ok |
-| Semantic Version Bumper | powershell | sonnet | 11.4min | 43 | 3 | $0.92 | powershell | ok |
-| Semantic Version Bumper | typescript-bun | sonnet | 8.1min | 30 | 1 | $0.97 | typescript | ok |
-| Environment Matrix Generator | bash | opus | 4.1min | 42 | 1 | $0.98 | bash | ok |
-| Docker Image Tag Generator | typescript-bun | sonnet | 12.0min | 25 | 3 | $0.98 | typescript | ok |
-| Semantic Version Bumper | default | sonnet | 7.3min | 46 | 1 | $0.99 | python | ok |
-| Artifact Cleanup Script | powershell | sonnet | 12.0min | 15 | 0 | $0.99 | powershell | ok |
-| Docker Image Tag Generator | default | sonnet | 8.4min | 35 | 1 | $1.00 | python | ok |
-| PR Label Assigner | typescript-bun | opus | 5.1min | 33 | 2 | $1.01 | typescript | ok |
-| Semantic Version Bumper | powershell | opus | 6.9min | 27 | 0 | $1.04 | powershell | ok |
-| Environment Matrix Generator | default | sonnet | 7.8min | 36 | 5 | $1.05 | python | ok |
-| Artifact Cleanup Script | powershell | opus | 5.4min | 29 | 2 | $1.07 | powershell | ok |
-| PR Label Assigner | powershell | sonnet | 8.7min | 29 | 1 | $1.09 | powershell | ok |
-| Environment Matrix Generator | typescript-bun | opus | 6.0min | 42 | 3 | $1.10 | typescript | ok |
-| Docker Image Tag Generator | powershell | sonnet | 9.2min | 35 | 2 | $1.13 | powershell | ok |
-| PR Label Assigner | bash | opus | 5.6min | 42 | 2 | $1.16 | bash | ok |
-| Artifact Cleanup Script | typescript-bun | sonnet | 9.2min | 38 | 2 | $1.17 | typescript | ok |
-| Test Results Aggregator | default | sonnet | 9.9min | 24 | 2 | $1.20 | python | ok |
-| Environment Matrix Generator | default | opus | 6.4min | 29 | 1 | $1.21 | python | ok |
-| Test Results Aggregator | bash | sonnet | 9.0min | 31 | 3 | $1.22 | bash | ok |
-| Environment Matrix Generator | typescript-bun | sonnet | 8.5min | 48 | 3 | $1.22 | typescript | ok |
-| Environment Matrix Generator | bash | sonnet | 10.5min | 25 | 3 | $1.22 | bash | ok |
-| Dependency License Checker | powershell | opus | 6.0min | 38 | 3 | $1.24 | powershell | ok |
-| Dependency License Checker | default | opus | 5.9min | 39 | 0 | $1.24 | python | ok |
-| Secret Rotation Validator | default | sonnet | 7.1min | 47 | 4 | $1.25 | python | ok |
-| Environment Matrix Generator | powershell | opus | 5.3min | 38 | 3 | $1.25 | powershell | ok |
-| Docker Image Tag Generator | default | opus | 5.5min | 27 | 2 | $1.25 | python | ok |
-| Test Results Aggregator | default | opus | 5.7min | 35 | 3 | $1.27 | python | ok |
-| Secret Rotation Validator | typescript-bun | sonnet | 10.1min | 32 | 0 | $1.28 | typescript | ok |
-| Dependency License Checker | default | sonnet | 9.2min | 39 | 3 | $1.30 | python | ok |
-| Semantic Version Bumper | default | opus | 7.1min | 28 | 1 | $1.33 | python | ok |
-| Dependency License Checker | typescript-bun | opus | 6.8min | 48 | 3 | $1.35 | typescript | ok |
-| Test Results Aggregator | powershell | sonnet | 11.8min | 29 | 1 | $1.36 | powershell | ok |
-| Semantic Version Bumper | bash | sonnet | 9.0min | 57 | 6 | $1.38 | bash | ok |
-| Docker Image Tag Generator | powershell | opus | 7.9min | 24 | 0 | $1.39 | powershell | ok |
-| Test Results Aggregator | typescript-bun | sonnet | 10.9min | 35 | 1 | $1.41 | typescript | ok |
-| Environment Matrix Generator | powershell | sonnet | 11.5min | 54 | 1 | $1.46 | powershell | ok |
-| Dependency License Checker | typescript-bun | sonnet | 9.5min | 43 | 2 | $1.47 | typescript | ok |
-| Dependency License Checker | bash | opus | 6.9min | 55 | 3 | $1.50 | bash | ok |
-| Artifact Cleanup Script | bash | opus | 5.7min | 50 | 2 | $1.50 | bash | ok |
-| Secret Rotation Validator | default | opus | 7.3min | 38 | 1 | $1.51 | python | ok |
-| PR Label Assigner | default | sonnet | 10.3min | 43 | 4 | $1.52 | python | ok |
-| Docker Image Tag Generator | typescript-bun | opus | 8.6min | 38 | 1 | $1.53 | typescript | ok |
-| Semantic Version Bumper | typescript-bun | opus | 10.3min | 32 | 1 | $1.54 | typescript | ok |
-| Secret Rotation Validator | powershell | sonnet | 10.8min | 40 | 3 | $1.55 | powershell | ok |
-| PR Label Assigner | default | opus | 7.7min | 29 | 2 | $1.57 | python | ok |
-| Semantic Version Bumper | bash | opus | 12.4min | 50 | 1 | $1.65 | bash | ok |
-| Artifact Cleanup Script | typescript-bun | opus | 7.7min | 34 | 1 | $1.68 | typescript | ok |
-| Dependency License Checker | bash | sonnet | 14.1min | 42 | 3 | $1.68 | bash | ok |
-| PR Label Assigner | bash | sonnet | 13.2min | 39 | 6 | $1.73 | bash | ok |
-| Secret Rotation Validator | bash | opus | 7.8min | 38 | 1 | $1.78 | bash | ok |
-| Secret Rotation Validator | typescript-bun | opus | 8.1min | 56 | 4 | $1.79 | typescript | ok |
-| Dependency License Checker | powershell | sonnet | 12.3min | 58 | 2 | $1.93 | powershell | ok |
-| PR Label Assigner | powershell | opus | 11.4min | 35 | 2 | $1.93 | powershell | ok |
-| Secret Rotation Validator | powershell | opus | 12.4min | 30 | 0 | $1.99 | powershell | ok |
-| Artifact Cleanup Script | default | opus | 9.2min | 49 | 2 | $2.19 | python | ok |
-| Test Results Aggregator | powershell | opus | 10.0min | 48 | 2 | $2.45 | powershell | ok |
-| Secret Rotation Validator | bash | sonnet | 15.6min | 78 | 8 | $2.60 | bash | ok |
-| Test Results Aggregator | bash | opus | 15.8min | 42 | 2 | $2.85 | bash | ok |
+| Task | Language | Model | Duration | Turns | Errors | Cost | LLM Score | Chosen | Status |
+|------|----------|-------|----------|-------|--------|------|-----------|--------|--------|
+| Docker Image Tag Generator | bash | sonnet | 4.5min | 26 | 2 | $0.61 | 5.0 | bash | ok |
+| Test Results Aggregator | typescript-bun | opus | 2.3min | 29 | 1 | $0.61 | 3.0 | typescript | ok |
+| Artifact Cleanup Script | bash | sonnet | 7.2min | 35 | 1 | $0.77 | 4.0 | bash | ok |
+| Docker Image Tag Generator | bash | opus | 3.7min | 28 | 1 | $0.78 | 3.0 | bash | ok |
+| Artifact Cleanup Script | default | sonnet | 6.3min | 31 | 2 | $0.83 | 3.0 | python | ok |
+| PR Label Assigner | typescript-bun | sonnet | 8.1min | 43 | 1 | $0.89 | 5.0 | typescript | ok |
+| Semantic Version Bumper | powershell | sonnet | 11.4min | 43 | 3 | $0.92 | 4.0 | powershell | ok |
+| Semantic Version Bumper | typescript-bun | sonnet | 8.1min | 30 | 1 | $0.97 | 3.0 | typescript | ok |
+| Environment Matrix Generator | bash | opus | 4.1min | 42 | 1 | $0.98 | 2.0 | bash | ok |
+| Docker Image Tag Generator | typescript-bun | sonnet | 12.0min | 25 | 3 | $0.98 | 4.0 | typescript | ok |
+| Semantic Version Bumper | default | sonnet | 7.3min | 46 | 1 | $0.99 | 4.0 | python | ok |
+| Artifact Cleanup Script | powershell | sonnet | 12.0min | 15 | 0 | $0.99 | 3.0 | powershell | ok |
+| Docker Image Tag Generator | default | sonnet | 8.4min | 35 | 1 | $1.00 | 4.0 | python | ok |
+| PR Label Assigner | typescript-bun | opus | 5.1min | 33 | 2 | $1.01 | 4.0 | typescript | ok |
+| Semantic Version Bumper | powershell | opus | 6.9min | 27 | 0 | $1.04 | 2.0 | powershell | ok |
+| Environment Matrix Generator | default | sonnet | 7.8min | 36 | 5 | $1.05 | 4.0 | python | ok |
+| Artifact Cleanup Script | powershell | opus | 5.4min | 29 | 2 | $1.07 | 4.0 | powershell | ok |
+| PR Label Assigner | powershell | sonnet | 8.7min | 29 | 1 | $1.09 | 4.0 | powershell | ok |
+| Environment Matrix Generator | typescript-bun | opus | 6.0min | 42 | 3 | $1.10 | 2.0 | typescript | ok |
+| Docker Image Tag Generator | powershell | sonnet | 9.2min | 35 | 2 | $1.13 | 4.0 | powershell | ok |
+| PR Label Assigner | bash | opus | 5.6min | 42 | 2 | $1.16 | 2.0 | bash | ok |
+| Artifact Cleanup Script | typescript-bun | sonnet | 9.2min | 38 | 2 | $1.17 | 4.0 | typescript | ok |
+| Test Results Aggregator | default | sonnet | 9.9min | 24 | 2 | $1.20 | 4.0 | python | ok |
+| Environment Matrix Generator | default | opus | 6.4min | 29 | 1 | $1.21 | 3.0 | python | ok |
+| Test Results Aggregator | bash | sonnet | 9.0min | 31 | 3 | $1.22 | 3.0 | bash | ok |
+| Environment Matrix Generator | typescript-bun | sonnet | 8.5min | 48 | 3 | $1.22 | 3.0 | typescript | ok |
+| Environment Matrix Generator | bash | sonnet | 10.5min | 25 | 3 | $1.22 | 4.0 | bash | ok |
+| Dependency License Checker | powershell | opus | 6.0min | 38 | 3 | $1.24 | 4.0 | powershell | ok |
+| Dependency License Checker | default | opus | 5.9min | 39 | 0 | $1.24 | 4.0 | python | ok |
+| Secret Rotation Validator | default | sonnet | 7.1min | 47 | 4 | $1.25 | 3.0 | python | ok |
+| Environment Matrix Generator | powershell | opus | 5.3min | 38 | 3 | $1.25 | 3.0 | powershell | ok |
+| Docker Image Tag Generator | default | opus | 5.5min | 27 | 2 | $1.25 | 3.0 | python | ok |
+| Test Results Aggregator | default | opus | 5.7min | 35 | 3 | $1.27 | 2.0 | python | ok |
+| Secret Rotation Validator | typescript-bun | sonnet | 10.1min | 32 | 0 | $1.28 | 4.0 | typescript | ok |
+| Dependency License Checker | default | sonnet | 9.2min | 39 | 3 | $1.30 | 4.0 | python | ok |
+| Semantic Version Bumper | default | opus | 7.1min | 28 | 1 | $1.33 | 2.0 | python | ok |
+| Dependency License Checker | typescript-bun | opus | 6.8min | 48 | 3 | $1.35 | 3.0 | typescript | ok |
+| Test Results Aggregator | powershell | sonnet | 11.8min | 29 | 1 | $1.36 | 2.0 | powershell | ok |
+| Semantic Version Bumper | bash | sonnet | 9.0min | 57 | 6 | $1.38 | 4.0 | bash | ok |
+| Docker Image Tag Generator | powershell | opus | 7.9min | 24 | 0 | $1.39 | 3.0 | powershell | ok |
+| Test Results Aggregator | typescript-bun | sonnet | 10.9min | 35 | 1 | $1.41 | 5.0 | typescript | ok |
+| Environment Matrix Generator | powershell | sonnet | 11.5min | 54 | 1 | $1.46 | 4.0 | powershell | ok |
+| Dependency License Checker | typescript-bun | sonnet | 9.5min | 43 | 2 | $1.47 | 3.0 | typescript | ok |
+| Dependency License Checker | bash | opus | 6.9min | 55 | 3 | $1.50 | 4.0 | bash | ok |
+| Artifact Cleanup Script | bash | opus | 5.7min | 50 | 2 | $1.50 | 3.0 | bash | ok |
+| Secret Rotation Validator | default | opus | 7.3min | 38 | 1 | $1.51 | 3.0 | python | ok |
+| PR Label Assigner | default | sonnet | 10.3min | 43 | 4 | $1.52 | 4.0 | python | ok |
+| Docker Image Tag Generator | typescript-bun | opus | 8.6min | 38 | 1 | $1.53 | 2.0 | typescript | ok |
+| Semantic Version Bumper | typescript-bun | opus | 10.3min | 32 | 1 | $1.54 | 2.0 | typescript | ok |
+| Secret Rotation Validator | powershell | sonnet | 10.8min | 40 | 3 | $1.55 | 3.0 | powershell | ok |
+| PR Label Assigner | default | opus | 7.7min | 29 | 2 | $1.57 | 4.0 | python | ok |
+| Semantic Version Bumper | bash | opus | 12.4min | 50 | 1 | $1.65 | 4.0 | bash | ok |
+| Artifact Cleanup Script | typescript-bun | opus | 7.7min | 34 | 1 | $1.68 | 4.0 | typescript | ok |
+| Dependency License Checker | bash | sonnet | 14.1min | 42 | 3 | $1.68 | 3.0 | bash | ok |
+| PR Label Assigner | bash | sonnet | 13.2min | 39 | 6 | $1.73 | 5.0 | bash | ok |
+| Secret Rotation Validator | bash | opus | 7.8min | 38 | 1 | $1.78 | 3.0 | bash | ok |
+| Secret Rotation Validator | typescript-bun | opus | 8.1min | 56 | 4 | $1.79 | 3.0 | typescript | ok |
+| Dependency License Checker | powershell | sonnet | 12.3min | 58 | 2 | $1.93 | 4.0 | powershell | ok |
+| PR Label Assigner | powershell | opus | 11.4min | 35 | 2 | $1.93 | 4.0 | powershell | ok |
+| Secret Rotation Validator | powershell | opus | 12.4min | 30 | 0 | $1.99 | 3.0 | powershell | ok |
+| Artifact Cleanup Script | default | opus | 9.2min | 49 | 2 | $2.19 | 4.0 | python | ok |
+| Test Results Aggregator | powershell | opus | 10.0min | 48 | 2 | $2.45 | 2.0 | powershell | ok |
+| Secret Rotation Validator | bash | sonnet | 15.6min | 78 | 8 | $2.60 | 3.0 | bash | ok |
+| Test Results Aggregator | bash | opus | 15.8min | 42 | 2 | $2.85 | 3.0 | bash | ok |
 
 </details>
 
 <details>
 <summary>Sorted by duration (fastest first)</summary>
 
-| Task | Mode | Model | Duration | Turns | Errors | Cost | Language | Status |
-|------|------|-------|----------|-------|--------|------|----------|--------|
-| Test Results Aggregator | typescript-bun | opus | 2.3min | 29 | 1 | $0.61 | typescript | ok |
-| Docker Image Tag Generator | bash | opus | 3.7min | 28 | 1 | $0.78 | bash | ok |
-| Environment Matrix Generator | bash | opus | 4.1min | 42 | 1 | $0.98 | bash | ok |
-| Docker Image Tag Generator | bash | sonnet | 4.5min | 26 | 2 | $0.61 | bash | ok |
-| PR Label Assigner | typescript-bun | opus | 5.1min | 33 | 2 | $1.01 | typescript | ok |
-| Environment Matrix Generator | powershell | opus | 5.3min | 38 | 3 | $1.25 | powershell | ok |
-| Artifact Cleanup Script | powershell | opus | 5.4min | 29 | 2 | $1.07 | powershell | ok |
-| Docker Image Tag Generator | default | opus | 5.5min | 27 | 2 | $1.25 | python | ok |
-| PR Label Assigner | bash | opus | 5.6min | 42 | 2 | $1.16 | bash | ok |
-| Artifact Cleanup Script | bash | opus | 5.7min | 50 | 2 | $1.50 | bash | ok |
-| Test Results Aggregator | default | opus | 5.7min | 35 | 3 | $1.27 | python | ok |
-| Dependency License Checker | default | opus | 5.9min | 39 | 0 | $1.24 | python | ok |
-| Environment Matrix Generator | typescript-bun | opus | 6.0min | 42 | 3 | $1.10 | typescript | ok |
-| Dependency License Checker | powershell | opus | 6.0min | 38 | 3 | $1.24 | powershell | ok |
-| Artifact Cleanup Script | default | sonnet | 6.3min | 31 | 2 | $0.83 | python | ok |
-| Environment Matrix Generator | default | opus | 6.4min | 29 | 1 | $1.21 | python | ok |
-| Dependency License Checker | typescript-bun | opus | 6.8min | 48 | 3 | $1.35 | typescript | ok |
-| Dependency License Checker | bash | opus | 6.9min | 55 | 3 | $1.50 | bash | ok |
-| Semantic Version Bumper | powershell | opus | 6.9min | 27 | 0 | $1.04 | powershell | ok |
-| Secret Rotation Validator | default | sonnet | 7.1min | 47 | 4 | $1.25 | python | ok |
-| Semantic Version Bumper | default | opus | 7.1min | 28 | 1 | $1.33 | python | ok |
-| Artifact Cleanup Script | bash | sonnet | 7.2min | 35 | 1 | $0.77 | bash | ok |
-| Secret Rotation Validator | default | opus | 7.3min | 38 | 1 | $1.51 | python | ok |
-| Semantic Version Bumper | default | sonnet | 7.3min | 46 | 1 | $0.99 | python | ok |
-| Artifact Cleanup Script | typescript-bun | opus | 7.7min | 34 | 1 | $1.68 | typescript | ok |
-| PR Label Assigner | default | opus | 7.7min | 29 | 2 | $1.57 | python | ok |
-| Secret Rotation Validator | bash | opus | 7.8min | 38 | 1 | $1.78 | bash | ok |
-| Environment Matrix Generator | default | sonnet | 7.8min | 36 | 5 | $1.05 | python | ok |
-| Docker Image Tag Generator | powershell | opus | 7.9min | 24 | 0 | $1.39 | powershell | ok |
-| Semantic Version Bumper | typescript-bun | sonnet | 8.1min | 30 | 1 | $0.97 | typescript | ok |
-| Secret Rotation Validator | typescript-bun | opus | 8.1min | 56 | 4 | $1.79 | typescript | ok |
-| PR Label Assigner | typescript-bun | sonnet | 8.1min | 43 | 1 | $0.89 | typescript | ok |
-| Docker Image Tag Generator | default | sonnet | 8.4min | 35 | 1 | $1.00 | python | ok |
-| Environment Matrix Generator | typescript-bun | sonnet | 8.5min | 48 | 3 | $1.22 | typescript | ok |
-| Docker Image Tag Generator | typescript-bun | opus | 8.6min | 38 | 1 | $1.53 | typescript | ok |
-| PR Label Assigner | powershell | sonnet | 8.7min | 29 | 1 | $1.09 | powershell | ok |
-| Semantic Version Bumper | bash | sonnet | 9.0min | 57 | 6 | $1.38 | bash | ok |
-| Test Results Aggregator | bash | sonnet | 9.0min | 31 | 3 | $1.22 | bash | ok |
-| Docker Image Tag Generator | powershell | sonnet | 9.2min | 35 | 2 | $1.13 | powershell | ok |
-| Artifact Cleanup Script | typescript-bun | sonnet | 9.2min | 38 | 2 | $1.17 | typescript | ok |
-| Dependency License Checker | default | sonnet | 9.2min | 39 | 3 | $1.30 | python | ok |
-| Artifact Cleanup Script | default | opus | 9.2min | 49 | 2 | $2.19 | python | ok |
-| Dependency License Checker | typescript-bun | sonnet | 9.5min | 43 | 2 | $1.47 | typescript | ok |
-| Test Results Aggregator | default | sonnet | 9.9min | 24 | 2 | $1.20 | python | ok |
-| Test Results Aggregator | powershell | opus | 10.0min | 48 | 2 | $2.45 | powershell | ok |
-| Secret Rotation Validator | typescript-bun | sonnet | 10.1min | 32 | 0 | $1.28 | typescript | ok |
-| Semantic Version Bumper | typescript-bun | opus | 10.3min | 32 | 1 | $1.54 | typescript | ok |
-| PR Label Assigner | default | sonnet | 10.3min | 43 | 4 | $1.52 | python | ok |
-| Environment Matrix Generator | bash | sonnet | 10.5min | 25 | 3 | $1.22 | bash | ok |
-| Secret Rotation Validator | powershell | sonnet | 10.8min | 40 | 3 | $1.55 | powershell | ok |
-| Test Results Aggregator | typescript-bun | sonnet | 10.9min | 35 | 1 | $1.41 | typescript | ok |
-| PR Label Assigner | powershell | opus | 11.4min | 35 | 2 | $1.93 | powershell | ok |
-| Semantic Version Bumper | powershell | sonnet | 11.4min | 43 | 3 | $0.92 | powershell | ok |
-| Environment Matrix Generator | powershell | sonnet | 11.5min | 54 | 1 | $1.46 | powershell | ok |
-| Test Results Aggregator | powershell | sonnet | 11.8min | 29 | 1 | $1.36 | powershell | ok |
-| Docker Image Tag Generator | typescript-bun | sonnet | 12.0min | 25 | 3 | $0.98 | typescript | ok |
-| Artifact Cleanup Script | powershell | sonnet | 12.0min | 15 | 0 | $0.99 | powershell | ok |
-| Dependency License Checker | powershell | sonnet | 12.3min | 58 | 2 | $1.93 | powershell | ok |
-| Semantic Version Bumper | bash | opus | 12.4min | 50 | 1 | $1.65 | bash | ok |
-| Secret Rotation Validator | powershell | opus | 12.4min | 30 | 0 | $1.99 | powershell | ok |
-| PR Label Assigner | bash | sonnet | 13.2min | 39 | 6 | $1.73 | bash | ok |
-| Dependency License Checker | bash | sonnet | 14.1min | 42 | 3 | $1.68 | bash | ok |
-| Secret Rotation Validator | bash | sonnet | 15.6min | 78 | 8 | $2.60 | bash | ok |
-| Test Results Aggregator | bash | opus | 15.8min | 42 | 2 | $2.85 | bash | ok |
+| Task | Language | Model | Duration | Turns | Errors | Cost | LLM Score | Chosen | Status |
+|------|----------|-------|----------|-------|--------|------|-----------|--------|--------|
+| Test Results Aggregator | typescript-bun | opus | 2.3min | 29 | 1 | $0.61 | 3.0 | typescript | ok |
+| Docker Image Tag Generator | bash | opus | 3.7min | 28 | 1 | $0.78 | 3.0 | bash | ok |
+| Environment Matrix Generator | bash | opus | 4.1min | 42 | 1 | $0.98 | 2.0 | bash | ok |
+| Docker Image Tag Generator | bash | sonnet | 4.5min | 26 | 2 | $0.61 | 5.0 | bash | ok |
+| PR Label Assigner | typescript-bun | opus | 5.1min | 33 | 2 | $1.01 | 4.0 | typescript | ok |
+| Environment Matrix Generator | powershell | opus | 5.3min | 38 | 3 | $1.25 | 3.0 | powershell | ok |
+| Artifact Cleanup Script | powershell | opus | 5.4min | 29 | 2 | $1.07 | 4.0 | powershell | ok |
+| Docker Image Tag Generator | default | opus | 5.5min | 27 | 2 | $1.25 | 3.0 | python | ok |
+| PR Label Assigner | bash | opus | 5.6min | 42 | 2 | $1.16 | 2.0 | bash | ok |
+| Artifact Cleanup Script | bash | opus | 5.7min | 50 | 2 | $1.50 | 3.0 | bash | ok |
+| Test Results Aggregator | default | opus | 5.7min | 35 | 3 | $1.27 | 2.0 | python | ok |
+| Dependency License Checker | default | opus | 5.9min | 39 | 0 | $1.24 | 4.0 | python | ok |
+| Environment Matrix Generator | typescript-bun | opus | 6.0min | 42 | 3 | $1.10 | 2.0 | typescript | ok |
+| Dependency License Checker | powershell | opus | 6.0min | 38 | 3 | $1.24 | 4.0 | powershell | ok |
+| Artifact Cleanup Script | default | sonnet | 6.3min | 31 | 2 | $0.83 | 3.0 | python | ok |
+| Environment Matrix Generator | default | opus | 6.4min | 29 | 1 | $1.21 | 3.0 | python | ok |
+| Dependency License Checker | typescript-bun | opus | 6.8min | 48 | 3 | $1.35 | 3.0 | typescript | ok |
+| Dependency License Checker | bash | opus | 6.9min | 55 | 3 | $1.50 | 4.0 | bash | ok |
+| Semantic Version Bumper | powershell | opus | 6.9min | 27 | 0 | $1.04 | 2.0 | powershell | ok |
+| Secret Rotation Validator | default | sonnet | 7.1min | 47 | 4 | $1.25 | 3.0 | python | ok |
+| Semantic Version Bumper | default | opus | 7.1min | 28 | 1 | $1.33 | 2.0 | python | ok |
+| Artifact Cleanup Script | bash | sonnet | 7.2min | 35 | 1 | $0.77 | 4.0 | bash | ok |
+| Secret Rotation Validator | default | opus | 7.3min | 38 | 1 | $1.51 | 3.0 | python | ok |
+| Semantic Version Bumper | default | sonnet | 7.3min | 46 | 1 | $0.99 | 4.0 | python | ok |
+| Artifact Cleanup Script | typescript-bun | opus | 7.7min | 34 | 1 | $1.68 | 4.0 | typescript | ok |
+| PR Label Assigner | default | opus | 7.7min | 29 | 2 | $1.57 | 4.0 | python | ok |
+| Secret Rotation Validator | bash | opus | 7.8min | 38 | 1 | $1.78 | 3.0 | bash | ok |
+| Environment Matrix Generator | default | sonnet | 7.8min | 36 | 5 | $1.05 | 4.0 | python | ok |
+| Docker Image Tag Generator | powershell | opus | 7.9min | 24 | 0 | $1.39 | 3.0 | powershell | ok |
+| Semantic Version Bumper | typescript-bun | sonnet | 8.1min | 30 | 1 | $0.97 | 3.0 | typescript | ok |
+| Secret Rotation Validator | typescript-bun | opus | 8.1min | 56 | 4 | $1.79 | 3.0 | typescript | ok |
+| PR Label Assigner | typescript-bun | sonnet | 8.1min | 43 | 1 | $0.89 | 5.0 | typescript | ok |
+| Docker Image Tag Generator | default | sonnet | 8.4min | 35 | 1 | $1.00 | 4.0 | python | ok |
+| Environment Matrix Generator | typescript-bun | sonnet | 8.5min | 48 | 3 | $1.22 | 3.0 | typescript | ok |
+| Docker Image Tag Generator | typescript-bun | opus | 8.6min | 38 | 1 | $1.53 | 2.0 | typescript | ok |
+| PR Label Assigner | powershell | sonnet | 8.7min | 29 | 1 | $1.09 | 4.0 | powershell | ok |
+| Semantic Version Bumper | bash | sonnet | 9.0min | 57 | 6 | $1.38 | 4.0 | bash | ok |
+| Test Results Aggregator | bash | sonnet | 9.0min | 31 | 3 | $1.22 | 3.0 | bash | ok |
+| Docker Image Tag Generator | powershell | sonnet | 9.2min | 35 | 2 | $1.13 | 4.0 | powershell | ok |
+| Artifact Cleanup Script | typescript-bun | sonnet | 9.2min | 38 | 2 | $1.17 | 4.0 | typescript | ok |
+| Dependency License Checker | default | sonnet | 9.2min | 39 | 3 | $1.30 | 4.0 | python | ok |
+| Artifact Cleanup Script | default | opus | 9.2min | 49 | 2 | $2.19 | 4.0 | python | ok |
+| Dependency License Checker | typescript-bun | sonnet | 9.5min | 43 | 2 | $1.47 | 3.0 | typescript | ok |
+| Test Results Aggregator | default | sonnet | 9.9min | 24 | 2 | $1.20 | 4.0 | python | ok |
+| Test Results Aggregator | powershell | opus | 10.0min | 48 | 2 | $2.45 | 2.0 | powershell | ok |
+| Secret Rotation Validator | typescript-bun | sonnet | 10.1min | 32 | 0 | $1.28 | 4.0 | typescript | ok |
+| Semantic Version Bumper | typescript-bun | opus | 10.3min | 32 | 1 | $1.54 | 2.0 | typescript | ok |
+| PR Label Assigner | default | sonnet | 10.3min | 43 | 4 | $1.52 | 4.0 | python | ok |
+| Environment Matrix Generator | bash | sonnet | 10.5min | 25 | 3 | $1.22 | 4.0 | bash | ok |
+| Secret Rotation Validator | powershell | sonnet | 10.8min | 40 | 3 | $1.55 | 3.0 | powershell | ok |
+| Test Results Aggregator | typescript-bun | sonnet | 10.9min | 35 | 1 | $1.41 | 5.0 | typescript | ok |
+| PR Label Assigner | powershell | opus | 11.4min | 35 | 2 | $1.93 | 4.0 | powershell | ok |
+| Semantic Version Bumper | powershell | sonnet | 11.4min | 43 | 3 | $0.92 | 4.0 | powershell | ok |
+| Environment Matrix Generator | powershell | sonnet | 11.5min | 54 | 1 | $1.46 | 4.0 | powershell | ok |
+| Test Results Aggregator | powershell | sonnet | 11.8min | 29 | 1 | $1.36 | 2.0 | powershell | ok |
+| Docker Image Tag Generator | typescript-bun | sonnet | 12.0min | 25 | 3 | $0.98 | 4.0 | typescript | ok |
+| Artifact Cleanup Script | powershell | sonnet | 12.0min | 15 | 0 | $0.99 | 3.0 | powershell | ok |
+| Dependency License Checker | powershell | sonnet | 12.3min | 58 | 2 | $1.93 | 4.0 | powershell | ok |
+| Semantic Version Bumper | bash | opus | 12.4min | 50 | 1 | $1.65 | 4.0 | bash | ok |
+| Secret Rotation Validator | powershell | opus | 12.4min | 30 | 0 | $1.99 | 3.0 | powershell | ok |
+| PR Label Assigner | bash | sonnet | 13.2min | 39 | 6 | $1.73 | 5.0 | bash | ok |
+| Dependency License Checker | bash | sonnet | 14.1min | 42 | 3 | $1.68 | 3.0 | bash | ok |
+| Secret Rotation Validator | bash | sonnet | 15.6min | 78 | 8 | $2.60 | 3.0 | bash | ok |
+| Test Results Aggregator | bash | opus | 15.8min | 42 | 2 | $2.85 | 3.0 | bash | ok |
 
 </details>
 
 <details>
 <summary>Sorted by errors (fewest first)</summary>
 
-| Task | Mode | Model | Duration | Turns | Errors | Cost | Language | Status |
-|------|------|-------|----------|-------|--------|------|----------|--------|
-| Semantic Version Bumper | powershell | opus | 6.9min | 27 | 0 | $1.04 | powershell | ok |
-| Dependency License Checker | default | opus | 5.9min | 39 | 0 | $1.24 | python | ok |
-| Docker Image Tag Generator | powershell | opus | 7.9min | 24 | 0 | $1.39 | powershell | ok |
-| Artifact Cleanup Script | powershell | sonnet | 12.0min | 15 | 0 | $0.99 | powershell | ok |
-| Secret Rotation Validator | powershell | opus | 12.4min | 30 | 0 | $1.99 | powershell | ok |
-| Secret Rotation Validator | typescript-bun | sonnet | 10.1min | 32 | 0 | $1.28 | typescript | ok |
-| Semantic Version Bumper | bash | opus | 12.4min | 50 | 1 | $1.65 | bash | ok |
-| Semantic Version Bumper | default | opus | 7.1min | 28 | 1 | $1.33 | python | ok |
-| Semantic Version Bumper | default | sonnet | 7.3min | 46 | 1 | $0.99 | python | ok |
-| Semantic Version Bumper | typescript-bun | opus | 10.3min | 32 | 1 | $1.54 | typescript | ok |
-| Semantic Version Bumper | typescript-bun | sonnet | 8.1min | 30 | 1 | $0.97 | typescript | ok |
-| PR Label Assigner | powershell | sonnet | 8.7min | 29 | 1 | $1.09 | powershell | ok |
-| PR Label Assigner | typescript-bun | sonnet | 8.1min | 43 | 1 | $0.89 | typescript | ok |
-| Docker Image Tag Generator | bash | opus | 3.7min | 28 | 1 | $0.78 | bash | ok |
-| Docker Image Tag Generator | default | sonnet | 8.4min | 35 | 1 | $1.00 | python | ok |
-| Docker Image Tag Generator | typescript-bun | opus | 8.6min | 38 | 1 | $1.53 | typescript | ok |
-| Test Results Aggregator | powershell | sonnet | 11.8min | 29 | 1 | $1.36 | powershell | ok |
-| Test Results Aggregator | typescript-bun | opus | 2.3min | 29 | 1 | $0.61 | typescript | ok |
-| Test Results Aggregator | typescript-bun | sonnet | 10.9min | 35 | 1 | $1.41 | typescript | ok |
-| Environment Matrix Generator | bash | opus | 4.1min | 42 | 1 | $0.98 | bash | ok |
-| Environment Matrix Generator | default | opus | 6.4min | 29 | 1 | $1.21 | python | ok |
-| Environment Matrix Generator | powershell | sonnet | 11.5min | 54 | 1 | $1.46 | powershell | ok |
-| Artifact Cleanup Script | bash | sonnet | 7.2min | 35 | 1 | $0.77 | bash | ok |
-| Artifact Cleanup Script | typescript-bun | opus | 7.7min | 34 | 1 | $1.68 | typescript | ok |
-| Secret Rotation Validator | bash | opus | 7.8min | 38 | 1 | $1.78 | bash | ok |
-| Secret Rotation Validator | default | opus | 7.3min | 38 | 1 | $1.51 | python | ok |
-| PR Label Assigner | bash | opus | 5.6min | 42 | 2 | $1.16 | bash | ok |
-| PR Label Assigner | default | opus | 7.7min | 29 | 2 | $1.57 | python | ok |
-| PR Label Assigner | powershell | opus | 11.4min | 35 | 2 | $1.93 | powershell | ok |
-| PR Label Assigner | typescript-bun | opus | 5.1min | 33 | 2 | $1.01 | typescript | ok |
-| Dependency License Checker | powershell | sonnet | 12.3min | 58 | 2 | $1.93 | powershell | ok |
-| Dependency License Checker | typescript-bun | sonnet | 9.5min | 43 | 2 | $1.47 | typescript | ok |
-| Docker Image Tag Generator | bash | sonnet | 4.5min | 26 | 2 | $0.61 | bash | ok |
-| Docker Image Tag Generator | default | opus | 5.5min | 27 | 2 | $1.25 | python | ok |
-| Docker Image Tag Generator | powershell | sonnet | 9.2min | 35 | 2 | $1.13 | powershell | ok |
-| Test Results Aggregator | bash | opus | 15.8min | 42 | 2 | $2.85 | bash | ok |
-| Test Results Aggregator | default | sonnet | 9.9min | 24 | 2 | $1.20 | python | ok |
-| Test Results Aggregator | powershell | opus | 10.0min | 48 | 2 | $2.45 | powershell | ok |
-| Artifact Cleanup Script | bash | opus | 5.7min | 50 | 2 | $1.50 | bash | ok |
-| Artifact Cleanup Script | default | opus | 9.2min | 49 | 2 | $2.19 | python | ok |
-| Artifact Cleanup Script | default | sonnet | 6.3min | 31 | 2 | $0.83 | python | ok |
-| Artifact Cleanup Script | powershell | opus | 5.4min | 29 | 2 | $1.07 | powershell | ok |
-| Artifact Cleanup Script | typescript-bun | sonnet | 9.2min | 38 | 2 | $1.17 | typescript | ok |
-| Semantic Version Bumper | powershell | sonnet | 11.4min | 43 | 3 | $0.92 | powershell | ok |
-| Dependency License Checker | bash | opus | 6.9min | 55 | 3 | $1.50 | bash | ok |
-| Dependency License Checker | bash | sonnet | 14.1min | 42 | 3 | $1.68 | bash | ok |
-| Dependency License Checker | default | sonnet | 9.2min | 39 | 3 | $1.30 | python | ok |
-| Dependency License Checker | powershell | opus | 6.0min | 38 | 3 | $1.24 | powershell | ok |
-| Dependency License Checker | typescript-bun | opus | 6.8min | 48 | 3 | $1.35 | typescript | ok |
-| Docker Image Tag Generator | typescript-bun | sonnet | 12.0min | 25 | 3 | $0.98 | typescript | ok |
-| Test Results Aggregator | bash | sonnet | 9.0min | 31 | 3 | $1.22 | bash | ok |
-| Test Results Aggregator | default | opus | 5.7min | 35 | 3 | $1.27 | python | ok |
-| Environment Matrix Generator | bash | sonnet | 10.5min | 25 | 3 | $1.22 | bash | ok |
-| Environment Matrix Generator | powershell | opus | 5.3min | 38 | 3 | $1.25 | powershell | ok |
-| Environment Matrix Generator | typescript-bun | opus | 6.0min | 42 | 3 | $1.10 | typescript | ok |
-| Environment Matrix Generator | typescript-bun | sonnet | 8.5min | 48 | 3 | $1.22 | typescript | ok |
-| Secret Rotation Validator | powershell | sonnet | 10.8min | 40 | 3 | $1.55 | powershell | ok |
-| PR Label Assigner | default | sonnet | 10.3min | 43 | 4 | $1.52 | python | ok |
-| Secret Rotation Validator | default | sonnet | 7.1min | 47 | 4 | $1.25 | python | ok |
-| Secret Rotation Validator | typescript-bun | opus | 8.1min | 56 | 4 | $1.79 | typescript | ok |
-| Environment Matrix Generator | default | sonnet | 7.8min | 36 | 5 | $1.05 | python | ok |
-| Semantic Version Bumper | bash | sonnet | 9.0min | 57 | 6 | $1.38 | bash | ok |
-| PR Label Assigner | bash | sonnet | 13.2min | 39 | 6 | $1.73 | bash | ok |
-| Secret Rotation Validator | bash | sonnet | 15.6min | 78 | 8 | $2.60 | bash | ok |
+| Task | Language | Model | Duration | Turns | Errors | Cost | LLM Score | Chosen | Status |
+|------|----------|-------|----------|-------|--------|------|-----------|--------|--------|
+| Semantic Version Bumper | powershell | opus | 6.9min | 27 | 0 | $1.04 | 2.0 | powershell | ok |
+| Dependency License Checker | default | opus | 5.9min | 39 | 0 | $1.24 | 4.0 | python | ok |
+| Docker Image Tag Generator | powershell | opus | 7.9min | 24 | 0 | $1.39 | 3.0 | powershell | ok |
+| Artifact Cleanup Script | powershell | sonnet | 12.0min | 15 | 0 | $0.99 | 3.0 | powershell | ok |
+| Secret Rotation Validator | powershell | opus | 12.4min | 30 | 0 | $1.99 | 3.0 | powershell | ok |
+| Secret Rotation Validator | typescript-bun | sonnet | 10.1min | 32 | 0 | $1.28 | 4.0 | typescript | ok |
+| Semantic Version Bumper | bash | opus | 12.4min | 50 | 1 | $1.65 | 4.0 | bash | ok |
+| Semantic Version Bumper | default | opus | 7.1min | 28 | 1 | $1.33 | 2.0 | python | ok |
+| Semantic Version Bumper | default | sonnet | 7.3min | 46 | 1 | $0.99 | 4.0 | python | ok |
+| Semantic Version Bumper | typescript-bun | opus | 10.3min | 32 | 1 | $1.54 | 2.0 | typescript | ok |
+| Semantic Version Bumper | typescript-bun | sonnet | 8.1min | 30 | 1 | $0.97 | 3.0 | typescript | ok |
+| PR Label Assigner | powershell | sonnet | 8.7min | 29 | 1 | $1.09 | 4.0 | powershell | ok |
+| PR Label Assigner | typescript-bun | sonnet | 8.1min | 43 | 1 | $0.89 | 5.0 | typescript | ok |
+| Docker Image Tag Generator | bash | opus | 3.7min | 28 | 1 | $0.78 | 3.0 | bash | ok |
+| Docker Image Tag Generator | default | sonnet | 8.4min | 35 | 1 | $1.00 | 4.0 | python | ok |
+| Docker Image Tag Generator | typescript-bun | opus | 8.6min | 38 | 1 | $1.53 | 2.0 | typescript | ok |
+| Test Results Aggregator | powershell | sonnet | 11.8min | 29 | 1 | $1.36 | 2.0 | powershell | ok |
+| Test Results Aggregator | typescript-bun | opus | 2.3min | 29 | 1 | $0.61 | 3.0 | typescript | ok |
+| Test Results Aggregator | typescript-bun | sonnet | 10.9min | 35 | 1 | $1.41 | 5.0 | typescript | ok |
+| Environment Matrix Generator | bash | opus | 4.1min | 42 | 1 | $0.98 | 2.0 | bash | ok |
+| Environment Matrix Generator | default | opus | 6.4min | 29 | 1 | $1.21 | 3.0 | python | ok |
+| Environment Matrix Generator | powershell | sonnet | 11.5min | 54 | 1 | $1.46 | 4.0 | powershell | ok |
+| Artifact Cleanup Script | bash | sonnet | 7.2min | 35 | 1 | $0.77 | 4.0 | bash | ok |
+| Artifact Cleanup Script | typescript-bun | opus | 7.7min | 34 | 1 | $1.68 | 4.0 | typescript | ok |
+| Secret Rotation Validator | bash | opus | 7.8min | 38 | 1 | $1.78 | 3.0 | bash | ok |
+| Secret Rotation Validator | default | opus | 7.3min | 38 | 1 | $1.51 | 3.0 | python | ok |
+| PR Label Assigner | bash | opus | 5.6min | 42 | 2 | $1.16 | 2.0 | bash | ok |
+| PR Label Assigner | default | opus | 7.7min | 29 | 2 | $1.57 | 4.0 | python | ok |
+| PR Label Assigner | powershell | opus | 11.4min | 35 | 2 | $1.93 | 4.0 | powershell | ok |
+| PR Label Assigner | typescript-bun | opus | 5.1min | 33 | 2 | $1.01 | 4.0 | typescript | ok |
+| Dependency License Checker | powershell | sonnet | 12.3min | 58 | 2 | $1.93 | 4.0 | powershell | ok |
+| Dependency License Checker | typescript-bun | sonnet | 9.5min | 43 | 2 | $1.47 | 3.0 | typescript | ok |
+| Docker Image Tag Generator | bash | sonnet | 4.5min | 26 | 2 | $0.61 | 5.0 | bash | ok |
+| Docker Image Tag Generator | default | opus | 5.5min | 27 | 2 | $1.25 | 3.0 | python | ok |
+| Docker Image Tag Generator | powershell | sonnet | 9.2min | 35 | 2 | $1.13 | 4.0 | powershell | ok |
+| Test Results Aggregator | bash | opus | 15.8min | 42 | 2 | $2.85 | 3.0 | bash | ok |
+| Test Results Aggregator | default | sonnet | 9.9min | 24 | 2 | $1.20 | 4.0 | python | ok |
+| Test Results Aggregator | powershell | opus | 10.0min | 48 | 2 | $2.45 | 2.0 | powershell | ok |
+| Artifact Cleanup Script | bash | opus | 5.7min | 50 | 2 | $1.50 | 3.0 | bash | ok |
+| Artifact Cleanup Script | default | opus | 9.2min | 49 | 2 | $2.19 | 4.0 | python | ok |
+| Artifact Cleanup Script | default | sonnet | 6.3min | 31 | 2 | $0.83 | 3.0 | python | ok |
+| Artifact Cleanup Script | powershell | opus | 5.4min | 29 | 2 | $1.07 | 4.0 | powershell | ok |
+| Artifact Cleanup Script | typescript-bun | sonnet | 9.2min | 38 | 2 | $1.17 | 4.0 | typescript | ok |
+| Semantic Version Bumper | powershell | sonnet | 11.4min | 43 | 3 | $0.92 | 4.0 | powershell | ok |
+| Dependency License Checker | bash | opus | 6.9min | 55 | 3 | $1.50 | 4.0 | bash | ok |
+| Dependency License Checker | bash | sonnet | 14.1min | 42 | 3 | $1.68 | 3.0 | bash | ok |
+| Dependency License Checker | default | sonnet | 9.2min | 39 | 3 | $1.30 | 4.0 | python | ok |
+| Dependency License Checker | powershell | opus | 6.0min | 38 | 3 | $1.24 | 4.0 | powershell | ok |
+| Dependency License Checker | typescript-bun | opus | 6.8min | 48 | 3 | $1.35 | 3.0 | typescript | ok |
+| Docker Image Tag Generator | typescript-bun | sonnet | 12.0min | 25 | 3 | $0.98 | 4.0 | typescript | ok |
+| Test Results Aggregator | bash | sonnet | 9.0min | 31 | 3 | $1.22 | 3.0 | bash | ok |
+| Test Results Aggregator | default | opus | 5.7min | 35 | 3 | $1.27 | 2.0 | python | ok |
+| Environment Matrix Generator | bash | sonnet | 10.5min | 25 | 3 | $1.22 | 4.0 | bash | ok |
+| Environment Matrix Generator | powershell | opus | 5.3min | 38 | 3 | $1.25 | 3.0 | powershell | ok |
+| Environment Matrix Generator | typescript-bun | opus | 6.0min | 42 | 3 | $1.10 | 2.0 | typescript | ok |
+| Environment Matrix Generator | typescript-bun | sonnet | 8.5min | 48 | 3 | $1.22 | 3.0 | typescript | ok |
+| Secret Rotation Validator | powershell | sonnet | 10.8min | 40 | 3 | $1.55 | 3.0 | powershell | ok |
+| PR Label Assigner | default | sonnet | 10.3min | 43 | 4 | $1.52 | 4.0 | python | ok |
+| Secret Rotation Validator | default | sonnet | 7.1min | 47 | 4 | $1.25 | 3.0 | python | ok |
+| Secret Rotation Validator | typescript-bun | opus | 8.1min | 56 | 4 | $1.79 | 3.0 | typescript | ok |
+| Environment Matrix Generator | default | sonnet | 7.8min | 36 | 5 | $1.05 | 4.0 | python | ok |
+| Semantic Version Bumper | bash | sonnet | 9.0min | 57 | 6 | $1.38 | 4.0 | bash | ok |
+| PR Label Assigner | bash | sonnet | 13.2min | 39 | 6 | $1.73 | 5.0 | bash | ok |
+| Secret Rotation Validator | bash | sonnet | 15.6min | 78 | 8 | $2.60 | 3.0 | bash | ok |
 
 </details>
 
 <details>
 <summary>Sorted by turns (fewest first)</summary>
 
-| Task | Mode | Model | Duration | Turns | Errors | Cost | Language | Status |
-|------|------|-------|----------|-------|--------|------|----------|--------|
-| Artifact Cleanup Script | powershell | sonnet | 12.0min | 15 | 0 | $0.99 | powershell | ok |
-| Docker Image Tag Generator | powershell | opus | 7.9min | 24 | 0 | $1.39 | powershell | ok |
-| Test Results Aggregator | default | sonnet | 9.9min | 24 | 2 | $1.20 | python | ok |
-| Docker Image Tag Generator | typescript-bun | sonnet | 12.0min | 25 | 3 | $0.98 | typescript | ok |
-| Environment Matrix Generator | bash | sonnet | 10.5min | 25 | 3 | $1.22 | bash | ok |
-| Docker Image Tag Generator | bash | sonnet | 4.5min | 26 | 2 | $0.61 | bash | ok |
-| Semantic Version Bumper | powershell | opus | 6.9min | 27 | 0 | $1.04 | powershell | ok |
-| Docker Image Tag Generator | default | opus | 5.5min | 27 | 2 | $1.25 | python | ok |
-| Semantic Version Bumper | default | opus | 7.1min | 28 | 1 | $1.33 | python | ok |
-| Docker Image Tag Generator | bash | opus | 3.7min | 28 | 1 | $0.78 | bash | ok |
-| PR Label Assigner | default | opus | 7.7min | 29 | 2 | $1.57 | python | ok |
-| PR Label Assigner | powershell | sonnet | 8.7min | 29 | 1 | $1.09 | powershell | ok |
-| Test Results Aggregator | powershell | sonnet | 11.8min | 29 | 1 | $1.36 | powershell | ok |
-| Test Results Aggregator | typescript-bun | opus | 2.3min | 29 | 1 | $0.61 | typescript | ok |
-| Environment Matrix Generator | default | opus | 6.4min | 29 | 1 | $1.21 | python | ok |
-| Artifact Cleanup Script | powershell | opus | 5.4min | 29 | 2 | $1.07 | powershell | ok |
-| Semantic Version Bumper | typescript-bun | sonnet | 8.1min | 30 | 1 | $0.97 | typescript | ok |
-| Secret Rotation Validator | powershell | opus | 12.4min | 30 | 0 | $1.99 | powershell | ok |
-| Test Results Aggregator | bash | sonnet | 9.0min | 31 | 3 | $1.22 | bash | ok |
-| Artifact Cleanup Script | default | sonnet | 6.3min | 31 | 2 | $0.83 | python | ok |
-| Semantic Version Bumper | typescript-bun | opus | 10.3min | 32 | 1 | $1.54 | typescript | ok |
-| Secret Rotation Validator | typescript-bun | sonnet | 10.1min | 32 | 0 | $1.28 | typescript | ok |
-| PR Label Assigner | typescript-bun | opus | 5.1min | 33 | 2 | $1.01 | typescript | ok |
-| Artifact Cleanup Script | typescript-bun | opus | 7.7min | 34 | 1 | $1.68 | typescript | ok |
-| PR Label Assigner | powershell | opus | 11.4min | 35 | 2 | $1.93 | powershell | ok |
-| Docker Image Tag Generator | default | sonnet | 8.4min | 35 | 1 | $1.00 | python | ok |
-| Docker Image Tag Generator | powershell | sonnet | 9.2min | 35 | 2 | $1.13 | powershell | ok |
-| Test Results Aggregator | default | opus | 5.7min | 35 | 3 | $1.27 | python | ok |
-| Test Results Aggregator | typescript-bun | sonnet | 10.9min | 35 | 1 | $1.41 | typescript | ok |
-| Artifact Cleanup Script | bash | sonnet | 7.2min | 35 | 1 | $0.77 | bash | ok |
-| Environment Matrix Generator | default | sonnet | 7.8min | 36 | 5 | $1.05 | python | ok |
-| Dependency License Checker | powershell | opus | 6.0min | 38 | 3 | $1.24 | powershell | ok |
-| Docker Image Tag Generator | typescript-bun | opus | 8.6min | 38 | 1 | $1.53 | typescript | ok |
-| Environment Matrix Generator | powershell | opus | 5.3min | 38 | 3 | $1.25 | powershell | ok |
-| Artifact Cleanup Script | typescript-bun | sonnet | 9.2min | 38 | 2 | $1.17 | typescript | ok |
-| Secret Rotation Validator | bash | opus | 7.8min | 38 | 1 | $1.78 | bash | ok |
-| Secret Rotation Validator | default | opus | 7.3min | 38 | 1 | $1.51 | python | ok |
-| PR Label Assigner | bash | sonnet | 13.2min | 39 | 6 | $1.73 | bash | ok |
-| Dependency License Checker | default | opus | 5.9min | 39 | 0 | $1.24 | python | ok |
-| Dependency License Checker | default | sonnet | 9.2min | 39 | 3 | $1.30 | python | ok |
-| Secret Rotation Validator | powershell | sonnet | 10.8min | 40 | 3 | $1.55 | powershell | ok |
-| PR Label Assigner | bash | opus | 5.6min | 42 | 2 | $1.16 | bash | ok |
-| Dependency License Checker | bash | sonnet | 14.1min | 42 | 3 | $1.68 | bash | ok |
-| Test Results Aggregator | bash | opus | 15.8min | 42 | 2 | $2.85 | bash | ok |
-| Environment Matrix Generator | bash | opus | 4.1min | 42 | 1 | $0.98 | bash | ok |
-| Environment Matrix Generator | typescript-bun | opus | 6.0min | 42 | 3 | $1.10 | typescript | ok |
-| Semantic Version Bumper | powershell | sonnet | 11.4min | 43 | 3 | $0.92 | powershell | ok |
-| PR Label Assigner | default | sonnet | 10.3min | 43 | 4 | $1.52 | python | ok |
-| PR Label Assigner | typescript-bun | sonnet | 8.1min | 43 | 1 | $0.89 | typescript | ok |
-| Dependency License Checker | typescript-bun | sonnet | 9.5min | 43 | 2 | $1.47 | typescript | ok |
-| Semantic Version Bumper | default | sonnet | 7.3min | 46 | 1 | $0.99 | python | ok |
-| Secret Rotation Validator | default | sonnet | 7.1min | 47 | 4 | $1.25 | python | ok |
-| Dependency License Checker | typescript-bun | opus | 6.8min | 48 | 3 | $1.35 | typescript | ok |
-| Test Results Aggregator | powershell | opus | 10.0min | 48 | 2 | $2.45 | powershell | ok |
-| Environment Matrix Generator | typescript-bun | sonnet | 8.5min | 48 | 3 | $1.22 | typescript | ok |
-| Artifact Cleanup Script | default | opus | 9.2min | 49 | 2 | $2.19 | python | ok |
-| Semantic Version Bumper | bash | opus | 12.4min | 50 | 1 | $1.65 | bash | ok |
-| Artifact Cleanup Script | bash | opus | 5.7min | 50 | 2 | $1.50 | bash | ok |
-| Environment Matrix Generator | powershell | sonnet | 11.5min | 54 | 1 | $1.46 | powershell | ok |
-| Dependency License Checker | bash | opus | 6.9min | 55 | 3 | $1.50 | bash | ok |
-| Secret Rotation Validator | typescript-bun | opus | 8.1min | 56 | 4 | $1.79 | typescript | ok |
-| Semantic Version Bumper | bash | sonnet | 9.0min | 57 | 6 | $1.38 | bash | ok |
-| Dependency License Checker | powershell | sonnet | 12.3min | 58 | 2 | $1.93 | powershell | ok |
-| Secret Rotation Validator | bash | sonnet | 15.6min | 78 | 8 | $2.60 | bash | ok |
+| Task | Language | Model | Duration | Turns | Errors | Cost | LLM Score | Chosen | Status |
+|------|----------|-------|----------|-------|--------|------|-----------|--------|--------|
+| Artifact Cleanup Script | powershell | sonnet | 12.0min | 15 | 0 | $0.99 | 3.0 | powershell | ok |
+| Docker Image Tag Generator | powershell | opus | 7.9min | 24 | 0 | $1.39 | 3.0 | powershell | ok |
+| Test Results Aggregator | default | sonnet | 9.9min | 24 | 2 | $1.20 | 4.0 | python | ok |
+| Docker Image Tag Generator | typescript-bun | sonnet | 12.0min | 25 | 3 | $0.98 | 4.0 | typescript | ok |
+| Environment Matrix Generator | bash | sonnet | 10.5min | 25 | 3 | $1.22 | 4.0 | bash | ok |
+| Docker Image Tag Generator | bash | sonnet | 4.5min | 26 | 2 | $0.61 | 5.0 | bash | ok |
+| Semantic Version Bumper | powershell | opus | 6.9min | 27 | 0 | $1.04 | 2.0 | powershell | ok |
+| Docker Image Tag Generator | default | opus | 5.5min | 27 | 2 | $1.25 | 3.0 | python | ok |
+| Semantic Version Bumper | default | opus | 7.1min | 28 | 1 | $1.33 | 2.0 | python | ok |
+| Docker Image Tag Generator | bash | opus | 3.7min | 28 | 1 | $0.78 | 3.0 | bash | ok |
+| PR Label Assigner | default | opus | 7.7min | 29 | 2 | $1.57 | 4.0 | python | ok |
+| PR Label Assigner | powershell | sonnet | 8.7min | 29 | 1 | $1.09 | 4.0 | powershell | ok |
+| Test Results Aggregator | powershell | sonnet | 11.8min | 29 | 1 | $1.36 | 2.0 | powershell | ok |
+| Test Results Aggregator | typescript-bun | opus | 2.3min | 29 | 1 | $0.61 | 3.0 | typescript | ok |
+| Environment Matrix Generator | default | opus | 6.4min | 29 | 1 | $1.21 | 3.0 | python | ok |
+| Artifact Cleanup Script | powershell | opus | 5.4min | 29 | 2 | $1.07 | 4.0 | powershell | ok |
+| Semantic Version Bumper | typescript-bun | sonnet | 8.1min | 30 | 1 | $0.97 | 3.0 | typescript | ok |
+| Secret Rotation Validator | powershell | opus | 12.4min | 30 | 0 | $1.99 | 3.0 | powershell | ok |
+| Test Results Aggregator | bash | sonnet | 9.0min | 31 | 3 | $1.22 | 3.0 | bash | ok |
+| Artifact Cleanup Script | default | sonnet | 6.3min | 31 | 2 | $0.83 | 3.0 | python | ok |
+| Semantic Version Bumper | typescript-bun | opus | 10.3min | 32 | 1 | $1.54 | 2.0 | typescript | ok |
+| Secret Rotation Validator | typescript-bun | sonnet | 10.1min | 32 | 0 | $1.28 | 4.0 | typescript | ok |
+| PR Label Assigner | typescript-bun | opus | 5.1min | 33 | 2 | $1.01 | 4.0 | typescript | ok |
+| Artifact Cleanup Script | typescript-bun | opus | 7.7min | 34 | 1 | $1.68 | 4.0 | typescript | ok |
+| PR Label Assigner | powershell | opus | 11.4min | 35 | 2 | $1.93 | 4.0 | powershell | ok |
+| Docker Image Tag Generator | default | sonnet | 8.4min | 35 | 1 | $1.00 | 4.0 | python | ok |
+| Docker Image Tag Generator | powershell | sonnet | 9.2min | 35 | 2 | $1.13 | 4.0 | powershell | ok |
+| Test Results Aggregator | default | opus | 5.7min | 35 | 3 | $1.27 | 2.0 | python | ok |
+| Test Results Aggregator | typescript-bun | sonnet | 10.9min | 35 | 1 | $1.41 | 5.0 | typescript | ok |
+| Artifact Cleanup Script | bash | sonnet | 7.2min | 35 | 1 | $0.77 | 4.0 | bash | ok |
+| Environment Matrix Generator | default | sonnet | 7.8min | 36 | 5 | $1.05 | 4.0 | python | ok |
+| Dependency License Checker | powershell | opus | 6.0min | 38 | 3 | $1.24 | 4.0 | powershell | ok |
+| Docker Image Tag Generator | typescript-bun | opus | 8.6min | 38 | 1 | $1.53 | 2.0 | typescript | ok |
+| Environment Matrix Generator | powershell | opus | 5.3min | 38 | 3 | $1.25 | 3.0 | powershell | ok |
+| Artifact Cleanup Script | typescript-bun | sonnet | 9.2min | 38 | 2 | $1.17 | 4.0 | typescript | ok |
+| Secret Rotation Validator | bash | opus | 7.8min | 38 | 1 | $1.78 | 3.0 | bash | ok |
+| Secret Rotation Validator | default | opus | 7.3min | 38 | 1 | $1.51 | 3.0 | python | ok |
+| PR Label Assigner | bash | sonnet | 13.2min | 39 | 6 | $1.73 | 5.0 | bash | ok |
+| Dependency License Checker | default | opus | 5.9min | 39 | 0 | $1.24 | 4.0 | python | ok |
+| Dependency License Checker | default | sonnet | 9.2min | 39 | 3 | $1.30 | 4.0 | python | ok |
+| Secret Rotation Validator | powershell | sonnet | 10.8min | 40 | 3 | $1.55 | 3.0 | powershell | ok |
+| PR Label Assigner | bash | opus | 5.6min | 42 | 2 | $1.16 | 2.0 | bash | ok |
+| Dependency License Checker | bash | sonnet | 14.1min | 42 | 3 | $1.68 | 3.0 | bash | ok |
+| Test Results Aggregator | bash | opus | 15.8min | 42 | 2 | $2.85 | 3.0 | bash | ok |
+| Environment Matrix Generator | bash | opus | 4.1min | 42 | 1 | $0.98 | 2.0 | bash | ok |
+| Environment Matrix Generator | typescript-bun | opus | 6.0min | 42 | 3 | $1.10 | 2.0 | typescript | ok |
+| Semantic Version Bumper | powershell | sonnet | 11.4min | 43 | 3 | $0.92 | 4.0 | powershell | ok |
+| PR Label Assigner | default | sonnet | 10.3min | 43 | 4 | $1.52 | 4.0 | python | ok |
+| PR Label Assigner | typescript-bun | sonnet | 8.1min | 43 | 1 | $0.89 | 5.0 | typescript | ok |
+| Dependency License Checker | typescript-bun | sonnet | 9.5min | 43 | 2 | $1.47 | 3.0 | typescript | ok |
+| Semantic Version Bumper | default | sonnet | 7.3min | 46 | 1 | $0.99 | 4.0 | python | ok |
+| Secret Rotation Validator | default | sonnet | 7.1min | 47 | 4 | $1.25 | 3.0 | python | ok |
+| Dependency License Checker | typescript-bun | opus | 6.8min | 48 | 3 | $1.35 | 3.0 | typescript | ok |
+| Test Results Aggregator | powershell | opus | 10.0min | 48 | 2 | $2.45 | 2.0 | powershell | ok |
+| Environment Matrix Generator | typescript-bun | sonnet | 8.5min | 48 | 3 | $1.22 | 3.0 | typescript | ok |
+| Artifact Cleanup Script | default | opus | 9.2min | 49 | 2 | $2.19 | 4.0 | python | ok |
+| Semantic Version Bumper | bash | opus | 12.4min | 50 | 1 | $1.65 | 4.0 | bash | ok |
+| Artifact Cleanup Script | bash | opus | 5.7min | 50 | 2 | $1.50 | 3.0 | bash | ok |
+| Environment Matrix Generator | powershell | sonnet | 11.5min | 54 | 1 | $1.46 | 4.0 | powershell | ok |
+| Dependency License Checker | bash | opus | 6.9min | 55 | 3 | $1.50 | 4.0 | bash | ok |
+| Secret Rotation Validator | typescript-bun | opus | 8.1min | 56 | 4 | $1.79 | 3.0 | typescript | ok |
+| Semantic Version Bumper | bash | sonnet | 9.0min | 57 | 6 | $1.38 | 4.0 | bash | ok |
+| Dependency License Checker | powershell | sonnet | 12.3min | 58 | 2 | $1.93 | 4.0 | powershell | ok |
+| Secret Rotation Validator | bash | sonnet | 15.6min | 78 | 8 | $2.60 | 3.0 | bash | ok |
+
+</details>
+
+<details>
+<summary>Sorted by LLM-as-judge score (best first)</summary>
+
+| Task | Language | Model | Duration | Turns | Errors | Cost | LLM Score | Chosen | Status |
+|------|----------|-------|----------|-------|--------|------|-----------|--------|--------|
+| PR Label Assigner | bash | sonnet | 13.2min | 39 | 6 | $1.73 | 5.0 | bash | ok |
+| PR Label Assigner | typescript-bun | sonnet | 8.1min | 43 | 1 | $0.89 | 5.0 | typescript | ok |
+| Docker Image Tag Generator | bash | sonnet | 4.5min | 26 | 2 | $0.61 | 5.0 | bash | ok |
+| Test Results Aggregator | typescript-bun | sonnet | 10.9min | 35 | 1 | $1.41 | 5.0 | typescript | ok |
+| Semantic Version Bumper | bash | opus | 12.4min | 50 | 1 | $1.65 | 4.0 | bash | ok |
+| Semantic Version Bumper | bash | sonnet | 9.0min | 57 | 6 | $1.38 | 4.0 | bash | ok |
+| Semantic Version Bumper | default | sonnet | 7.3min | 46 | 1 | $0.99 | 4.0 | python | ok |
+| Semantic Version Bumper | powershell | sonnet | 11.4min | 43 | 3 | $0.92 | 4.0 | powershell | ok |
+| PR Label Assigner | default | opus | 7.7min | 29 | 2 | $1.57 | 4.0 | python | ok |
+| PR Label Assigner | default | sonnet | 10.3min | 43 | 4 | $1.52 | 4.0 | python | ok |
+| PR Label Assigner | powershell | opus | 11.4min | 35 | 2 | $1.93 | 4.0 | powershell | ok |
+| PR Label Assigner | powershell | sonnet | 8.7min | 29 | 1 | $1.09 | 4.0 | powershell | ok |
+| PR Label Assigner | typescript-bun | opus | 5.1min | 33 | 2 | $1.01 | 4.0 | typescript | ok |
+| Dependency License Checker | bash | opus | 6.9min | 55 | 3 | $1.50 | 4.0 | bash | ok |
+| Dependency License Checker | default | opus | 5.9min | 39 | 0 | $1.24 | 4.0 | python | ok |
+| Dependency License Checker | default | sonnet | 9.2min | 39 | 3 | $1.30 | 4.0 | python | ok |
+| Dependency License Checker | powershell | opus | 6.0min | 38 | 3 | $1.24 | 4.0 | powershell | ok |
+| Dependency License Checker | powershell | sonnet | 12.3min | 58 | 2 | $1.93 | 4.0 | powershell | ok |
+| Docker Image Tag Generator | default | sonnet | 8.4min | 35 | 1 | $1.00 | 4.0 | python | ok |
+| Docker Image Tag Generator | powershell | sonnet | 9.2min | 35 | 2 | $1.13 | 4.0 | powershell | ok |
+| Docker Image Tag Generator | typescript-bun | sonnet | 12.0min | 25 | 3 | $0.98 | 4.0 | typescript | ok |
+| Test Results Aggregator | default | sonnet | 9.9min | 24 | 2 | $1.20 | 4.0 | python | ok |
+| Environment Matrix Generator | bash | sonnet | 10.5min | 25 | 3 | $1.22 | 4.0 | bash | ok |
+| Environment Matrix Generator | default | sonnet | 7.8min | 36 | 5 | $1.05 | 4.0 | python | ok |
+| Environment Matrix Generator | powershell | sonnet | 11.5min | 54 | 1 | $1.46 | 4.0 | powershell | ok |
+| Artifact Cleanup Script | bash | sonnet | 7.2min | 35 | 1 | $0.77 | 4.0 | bash | ok |
+| Artifact Cleanup Script | default | opus | 9.2min | 49 | 2 | $2.19 | 4.0 | python | ok |
+| Artifact Cleanup Script | powershell | opus | 5.4min | 29 | 2 | $1.07 | 4.0 | powershell | ok |
+| Artifact Cleanup Script | typescript-bun | opus | 7.7min | 34 | 1 | $1.68 | 4.0 | typescript | ok |
+| Artifact Cleanup Script | typescript-bun | sonnet | 9.2min | 38 | 2 | $1.17 | 4.0 | typescript | ok |
+| Secret Rotation Validator | typescript-bun | sonnet | 10.1min | 32 | 0 | $1.28 | 4.0 | typescript | ok |
+| Semantic Version Bumper | typescript-bun | sonnet | 8.1min | 30 | 1 | $0.97 | 3.0 | typescript | ok |
+| Dependency License Checker | bash | sonnet | 14.1min | 42 | 3 | $1.68 | 3.0 | bash | ok |
+| Dependency License Checker | typescript-bun | opus | 6.8min | 48 | 3 | $1.35 | 3.0 | typescript | ok |
+| Dependency License Checker | typescript-bun | sonnet | 9.5min | 43 | 2 | $1.47 | 3.0 | typescript | ok |
+| Docker Image Tag Generator | bash | opus | 3.7min | 28 | 1 | $0.78 | 3.0 | bash | ok |
+| Docker Image Tag Generator | default | opus | 5.5min | 27 | 2 | $1.25 | 3.0 | python | ok |
+| Docker Image Tag Generator | powershell | opus | 7.9min | 24 | 0 | $1.39 | 3.0 | powershell | ok |
+| Test Results Aggregator | bash | opus | 15.8min | 42 | 2 | $2.85 | 3.0 | bash | ok |
+| Test Results Aggregator | bash | sonnet | 9.0min | 31 | 3 | $1.22 | 3.0 | bash | ok |
+| Test Results Aggregator | typescript-bun | opus | 2.3min | 29 | 1 | $0.61 | 3.0 | typescript | ok |
+| Environment Matrix Generator | default | opus | 6.4min | 29 | 1 | $1.21 | 3.0 | python | ok |
+| Environment Matrix Generator | powershell | opus | 5.3min | 38 | 3 | $1.25 | 3.0 | powershell | ok |
+| Environment Matrix Generator | typescript-bun | sonnet | 8.5min | 48 | 3 | $1.22 | 3.0 | typescript | ok |
+| Artifact Cleanup Script | bash | opus | 5.7min | 50 | 2 | $1.50 | 3.0 | bash | ok |
+| Artifact Cleanup Script | default | sonnet | 6.3min | 31 | 2 | $0.83 | 3.0 | python | ok |
+| Artifact Cleanup Script | powershell | sonnet | 12.0min | 15 | 0 | $0.99 | 3.0 | powershell | ok |
+| Secret Rotation Validator | bash | opus | 7.8min | 38 | 1 | $1.78 | 3.0 | bash | ok |
+| Secret Rotation Validator | bash | sonnet | 15.6min | 78 | 8 | $2.60 | 3.0 | bash | ok |
+| Secret Rotation Validator | default | opus | 7.3min | 38 | 1 | $1.51 | 3.0 | python | ok |
+| Secret Rotation Validator | default | sonnet | 7.1min | 47 | 4 | $1.25 | 3.0 | python | ok |
+| Secret Rotation Validator | powershell | opus | 12.4min | 30 | 0 | $1.99 | 3.0 | powershell | ok |
+| Secret Rotation Validator | powershell | sonnet | 10.8min | 40 | 3 | $1.55 | 3.0 | powershell | ok |
+| Secret Rotation Validator | typescript-bun | opus | 8.1min | 56 | 4 | $1.79 | 3.0 | typescript | ok |
+| Semantic Version Bumper | default | opus | 7.1min | 28 | 1 | $1.33 | 2.0 | python | ok |
+| Semantic Version Bumper | powershell | opus | 6.9min | 27 | 0 | $1.04 | 2.0 | powershell | ok |
+| Semantic Version Bumper | typescript-bun | opus | 10.3min | 32 | 1 | $1.54 | 2.0 | typescript | ok |
+| PR Label Assigner | bash | opus | 5.6min | 42 | 2 | $1.16 | 2.0 | bash | ok |
+| Docker Image Tag Generator | typescript-bun | opus | 8.6min | 38 | 1 | $1.53 | 2.0 | typescript | ok |
+| Test Results Aggregator | default | opus | 5.7min | 35 | 3 | $1.27 | 2.0 | python | ok |
+| Test Results Aggregator | powershell | opus | 10.0min | 48 | 2 | $2.45 | 2.0 | powershell | ok |
+| Test Results Aggregator | powershell | sonnet | 11.8min | 29 | 1 | $1.36 | 2.0 | powershell | ok |
+| Environment Matrix Generator | bash | opus | 4.1min | 42 | 1 | $0.98 | 2.0 | bash | ok |
+| Environment Matrix Generator | typescript-bun | opus | 6.0min | 42 | 3 | $1.10 | 2.0 | typescript | ok |
 
 </details>
 
