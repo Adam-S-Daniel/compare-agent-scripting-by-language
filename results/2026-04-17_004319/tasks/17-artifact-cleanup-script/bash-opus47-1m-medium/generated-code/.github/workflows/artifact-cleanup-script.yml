@@ -1,0 +1,43 @@
+name: artifact-cleanup-script
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 3 * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Syntax check
+        run: bash -n cleanup.sh
+
+      - name: Run cleanup script
+        run: |
+          set -e
+          FIXTURE="${FIXTURE:-tests/fixtures/basic.tsv}"
+          NOW="${NOW:-2026-04-17T00:00:00Z}"
+          if [ -f tests/policy.env ]; then
+            # shellcheck disable=SC1091
+            . tests/policy.env
+          fi
+          args=(--input "$FIXTURE" --now "$NOW")
+          if [ -n "${MAX_AGE_DAYS:-}" ]; then
+            args+=(--max-age-days "$MAX_AGE_DAYS")
+          fi
+          if [ -n "${KEEP_LATEST:-}" ]; then
+            args+=(--keep-latest "$KEEP_LATEST")
+          fi
+          if [ -n "${MAX_TOTAL_SIZE:-}" ]; then
+            args+=(--max-total-size "$MAX_TOTAL_SIZE")
+          fi
+          if [ "${DRY_RUN:-true}" = "true" ]; then
+            args+=(--dry-run)
+          fi
+          bash cleanup.sh "${args[@]}"
