@@ -1,6 +1,6 @@
 """Unit tests for runner.select_tasks — --tasks CLI argument resolution."""
 
-from runner import TASKS, select_tasks
+from runner import TASKS, PROMPT_TEMPLATES, select_tasks
 
 
 class TestSelectTasks:
@@ -44,3 +44,13 @@ class TestSelectTasks:
     def test_whitespace_tolerant(self):
         result = select_tasks(" 11 , 12 ")
         assert [t["id"].split("-", 1)[0] for t in result] == ["11", "12"]
+
+
+class TestPromptTemplates:
+    def test_powershell_tool_mode_exists(self):
+        assert "powershell-tool" in PROMPT_TEMPLATES
+
+    def test_powershell_modes_share_prompt_body(self):
+        # The two PS modes must differ only in tool setup, not in user-facing
+        # prompt content — otherwise we'd be comparing two different tasks.
+        assert PROMPT_TEMPLATES["powershell"] == PROMPT_TEMPLATES["powershell-tool"]

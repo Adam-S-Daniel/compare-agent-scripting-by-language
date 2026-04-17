@@ -155,14 +155,14 @@ def _detect_traps(events: list[dict], console: str, metrics: dict) -> list[dict]
             traps.append({"name": name, "time_s": t, "desc": desc})
 
     # 1. Pester CmdletBinding parameter binding spiral
-    if mode == "powershell":
+    if mode in ("powershell", "powershell-tool"):
         diag = [c for c in bash_cmds if re.search(r"/tmp/test_\w+\.(?:ps1|Tests\.ps1)", c)]
         if len(diag) >= 2:
             _add("pester-cmdletbinding-spiral", len(diag) * 25,
                  f"{len(diag)} /tmp/test_*.ps1 diagnostic scripts bisecting Pester parameter binding")
 
     # 2. Wrong Pester assertion names
-    if mode == "powershell":
+    if mode in ("powershell", "powershell-tool"):
         wrong = [n for n, p in [("BeInRange", r"Should\s+-BeInRange"),
                                  ("BeGreaterOrEqualTo", r"Should\s+-BeGreaterOrEqualTo"),
                                  ("BeLessOrEqualTo", r"Should\s+-BeLessOrEqualTo")]
@@ -171,13 +171,13 @@ def _detect_traps(events: list[dict], console: str, metrics: dict) -> list[dict]
             _add("pester-wrong-assertions", 45, f"Used nonexistent assertions: {', '.join(wrong)}")
 
     # 3. Docker PowerShell install exploration
-    if mode == "powershell":
+    if mode in ("powershell", "powershell-tool"):
         dp = [c for c in bash_cmds if re.search(r"docker\s+run.*(?:powershell|pwsh|microsoft-prod)", c, re.I)]
         if len(dp) >= 2:
             _add("docker-pwsh-install", len(dp) * 45, f"{len(dp)} Docker runs exploring pwsh install")
 
     # 4. Module restructure mid-run
-    if mode == "powershell":
+    if mode in ("powershell", "powershell-tool"):
         if (re.search(r"restructur|separate.*into.*module|\.psm1.*fix", all_text, re.I)
                 and any(".psm1" in c for c in bash_cmds)):
             _add("mid-run-module-restructure", 120, "Restructured to .psm1 module mid-run")
@@ -276,7 +276,7 @@ def _detect_traps(events: list[dict], console: str, metrics: dict) -> list[dict]
     # (c) scope/invocation issues requiring diagnostic scripts.
     # shell: pwsh works fine in act containers (act translates to docker exec pwsh),
     # but agents that invoke pwsh from bash waste time on cross-shell debugging.
-    if mode == "powershell":
+    if mode in ("powershell", "powershell-tool"):
         # Signal 1: /tmp/scope_test*.ps1 diagnostic scripts (bisecting pwsh invocation)
         scope_scripts = [c for c in bash_cmds if re.search(
             r"/tmp/scope_test\d*\.ps1|/tmp/pwsh_debug\d*\.ps1", c)]
@@ -499,7 +499,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
             })
 
     # ── Trap & Hook data ──
-    TEST_RUN_COST_S = {"default": 8, "powershell": 35, "bash": 12, "typescript-bun": 8}
+    TEST_RUN_COST_S = {"default": 8, "powershell": 35, "powershell-tool": 35, "bash": 12, "typescript-bun": 8}
     # Compute per-(mode, model) hook overhead from actual Write/Edit durations.
     # Use all_tool_uses when available (full list), fall back to slowest_tool_uses.
     # Subtract 0.05s baseline for the Write operation itself.
@@ -544,7 +544,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         # Trap: PowerShell runtime install overhead (pwsh + Pester pre-installed on
         # real GitHub runners but must be installed in act containers every run).
         # Primary source: act-result.txt step timings.  Fallback: event stream.
-        if mode == "powershell":
+        if mode in ("powershell", "powershell-tool"):
             act_result_path = (run_dir / "tasks" / m["task_id"]
                                / f"{mode}-{model}" / "generated-code" / "act-result.txt")
             act_text = act_result_path.read_text() if act_result_path.exists() else ""
@@ -796,16 +796,21 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
 
     # ── Trap Analysis by Language/Model/Category ──
     if trap_instances:
+        # Each value is a tuple of modes the trap applies to. A trap that can
+        # fire in any PowerShell variant uses the full PS family so its
+        # catch-rate denominator counts runs of both `powershell` and
+        # `powershell-tool` modes.
+        PS_FAMILY = ("powershell", "powershell-tool")
         trap_applicable_mode = {
-            "pester-cmdletbinding-spiral": "powershell",
-            "pester-wrong-assertions": "powershell",
-            "docker-pwsh-install": "powershell",
-            "mid-run-module-restructure": "powershell",
-            "ts-type-error-fix-cycles": "typescript-bun",
-            "bats-setup-issues": "bash",
-            "dotnet-install-loop": "csharp-script",
-            "pwsh-invoked-from-bash": "powershell",
-            "pwsh-runtime-install-overhead": "powershell",
+            "pester-cmdletbinding-spiral": PS_FAMILY,
+            "pester-wrong-assertions": PS_FAMILY,
+            "docker-pwsh-install": PS_FAMILY,
+            "mid-run-module-restructure": PS_FAMILY,
+            "ts-type-error-fix-cycles": ("typescript-bun",),
+            "bats-setup-issues": ("bash",),
+            "dotnet-install-loop": ("csharp-script",),
+            "pwsh-invoked-from-bash": PS_FAMILY,
+            "pwsh-runtime-install-overhead": PS_FAMILY,
         }
         trap_descriptions = {
             "act-push-debug-loops": "Agent ran `act push` more than twice, indicating repeated workflow debugging.",
@@ -836,8 +841,11 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         tlmc_rows = []
         for trap_name in sorted(trap_agg, key=lambda k: -sum(t["time_s"] for t in trap_agg[k])):
             insts = trap_agg[trap_name]
-            tmode = trap_applicable_mode.get(trap_name, "all")
-            n_app = mode_run_totals.get(tmode, completed) if tmode != "all" else completed
+            tmodes = trap_applicable_mode.get(trap_name)  # tuple or None (=all)
+            if tmodes is None:
+                n_app = completed
+            else:
+                n_app = sum(mode_run_totals.get(m, 0) for m in tmodes)
             n_fell = len(insts)
             t_time = sum(t["time_s"] for t in insts)
             t_cost = sum(t["time_s"] / t["dur_s"] * t["cost"] for t in insts if t["dur_s"] > 0 and t["cost"] > 0)

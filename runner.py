@@ -261,6 +261,21 @@ PROMPT_TEMPLATES = {
         "5. Handle errors gracefully with meaningful error messages.\n\n"
         "Create your solution in the current working directory. Start by writing your first failing test."
     ),
+    # Identical prompt to `powershell`; differs only in that the PowerShell tool
+    # is enabled for this run (CLAUDE_CODE_USE_POWERSHELL_TOOL=1), so the agent
+    # can invoke pwsh natively via the PowerShell tool instead of going through
+    # the Bash tool. See https://code.claude.com/docs/en/tools-reference#powershell-tool
+    "powershell-tool": (
+        "You are completing a scripting task. You MUST use PowerShell as your implementation language.\n\n"
+        "TASK: {task_description}\n\n"
+        "REQUIREMENTS:\n"
+        "1. Use red/green TDD methodology: write a failing test FIRST, then write the minimum code to make it pass, then refactor. Repeat for each piece of functionality.\n"
+        "2. Create mocks and test fixtures as necessary for testability. Use Pester as the testing framework.\n"
+        "3. All tests must be runnable with `Invoke-Pester` and must pass at the end.\n"
+        "4. Include clear comments explaining your approach.\n"
+        "5. Handle errors gracefully with meaningful error messages.\n\n"
+        "Create your solution in the current working directory. Start by writing your first failing test."
+    ),
     "bash": (
         "You are completing a scripting task. You MUST use Bash as your implementation language.\n\n"
         "TASK: {task_description}\n\n"
@@ -904,6 +919,16 @@ def run_single_task(
     if dotnet_root.exists():
         env["DOTNET_ROOT"] = str(dotnet_root)
         env["PATH"] = f"{dotnet_root}:{env.get('PATH', '')}"
+
+    # Enable / disable the native PowerShell tool per mode. Without this, the
+    # agent always routes pwsh invocations through the Bash tool on Linux/WSL.
+    # The `powershell-tool` mode opts in to the PowerShell tool; `powershell`
+    # explicitly opts out so both variants have a clean baseline regardless
+    # of the user's ambient settings.
+    if mode == "powershell-tool":
+        env["CLAUDE_CODE_USE_POWERSHELL_TOOL"] = "1"
+    elif mode == "powershell":
+        env["CLAUDE_CODE_USE_POWERSHELL_TOOL"] = "0"
 
     # Execute with real-time line timestamping
     timestamped_lines: list[tuple[int, str]] = []  # (epoch_ms, line)
