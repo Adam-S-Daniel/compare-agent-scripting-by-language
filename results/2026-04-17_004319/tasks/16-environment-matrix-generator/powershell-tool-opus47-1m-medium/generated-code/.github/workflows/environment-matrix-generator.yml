@@ -1,0 +1,60 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      config_path:
+        description: Path to the matrix config JSON
+        required: false
+        default: fixtures/basic.json
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+env:
+  CONFIG_PATH: ${{ github.event.inputs.config_path || 'fixtures/basic.json' }}
+
+jobs:
+  generate-matrix:
+    name: Generate build matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix-json: ${{ steps.gen.outputs.matrix-json }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $result = Invoke-Pester -Path ./MatrixGenerator.Tests.ps1 -Output Detailed -PassThru
+          if ($result.FailedCount -gt 0) { throw "Pester: $($result.FailedCount) failures" }
+
+      - name: Generate matrix
+        id: gen
+        shell: pwsh
+        run: |
+          $cfg = $env:CONFIG_PATH
+          Write-Host "Using config: $cfg"
+          $json = ./Generate-Matrix.ps1 -ConfigPath $cfg
+          Write-Host '----- MATRIX-JSON-BEGIN -----'
+          Write-Host $json
+          Write-Host '----- MATRIX-JSON-END -----'
+          $compact = ($json | ConvertFrom-Json | ConvertTo-Json -Compress -Depth 10)
+          "matrix-json=$compact" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+
+  show-summary:
+    name: Show matrix summary
+    needs: generate-matrix
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print
+        shell: pwsh
+        run: |
+          $m = '${{ needs.generate-matrix.outputs.matrix-json }}' | ConvertFrom-Json
+          $count = @($m.matrix.include).Count
+          Write-Host "MATRIX-COMBO-COUNT=$count"
