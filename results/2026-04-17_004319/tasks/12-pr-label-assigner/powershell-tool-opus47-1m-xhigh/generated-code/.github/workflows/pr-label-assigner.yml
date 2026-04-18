@@ -1,0 +1,69 @@
+name: PR Label Assigner
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: "Path to the fixture JSON file listing changed files"
+        required: false
+        default: "fixtures/case-mixed.json"
+
+permissions:
+  contents: read
+
+env:
+  # Per-case FIXTURE comes from `act --env FIXTURE=...` in the test harness.
+  FIXTURE: ${{ github.event.inputs.fixture || 'fixtures/case-mixed.json' }}
+  CONFIG: fixtures/config.json
+
+jobs:
+  unit-tests:
+    name: Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $result = Invoke-Pester -Path ./tests -Output Detailed -PassThru
+          if ($result.FailedCount -gt 0) {
+            throw "Pester failed: $($result.FailedCount) test(s) failed"
+          }
+
+  label-assigner:
+    name: Run PR label assigner
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Resolve fixture path
+        id: resolve
+        shell: pwsh
+        run: |
+          # FIXTURE may be overridden via env from the act harness or workflow_dispatch.
+          $fixture = if ($env:FIXTURE) { $env:FIXTURE } else { 'fixtures/case-mixed.json' }
+          if (-not (Test-Path -LiteralPath $fixture)) {
+            throw "Fixture file not found: $fixture"
+          }
+          Write-Host "Using fixture: $fixture"
+          "fixture=$fixture" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Assign labels
+        shell: pwsh
+        run: |
+          $fixture = "${{ steps.resolve.outputs.fixture }}"
+          ./Invoke-PRLabeler.ps1 -FilesPath $fixture -ConfigPath $env:CONFIG
+
+      - name: Emit labels as JSON artifact
+        shell: pwsh
+        run: |
+          $fixture = "${{ steps.resolve.outputs.fixture }}"
+          $json = ./Invoke-PRLabeler.ps1 -FilesPath $fixture -ConfigPath $env:CONFIG -OutputFormat json |
+                  Select-Object -Last 1
+          Write-Host "LABELS_JSON: $json"

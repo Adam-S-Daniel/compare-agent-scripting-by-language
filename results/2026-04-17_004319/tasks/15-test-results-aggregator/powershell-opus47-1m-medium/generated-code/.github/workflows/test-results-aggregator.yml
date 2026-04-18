@@ -1,0 +1,59 @@
+name: Test Results Aggregator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+env:
+  FIXTURES_DIR: fixtures
+  SUMMARY_FILE: test-summary.md
+
+jobs:
+  aggregate:
+    name: Aggregate test results
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show environment
+        shell: pwsh
+        run: |
+          $PSVersionTable.PSVersion
+          Get-Module -ListAvailable Pester | Select-Object Name, Version
+
+      - name: Run Pester unit tests
+        shell: pwsh
+        run: |
+          # Run only the aggregator's unit tests. Act.Tests.ps1 drives `act`
+          # itself from the host and would recurse if invoked inside the
+          # container (act is not installed in the runner image).
+          $result = Invoke-Pester -Path ./tests/TestResultsAggregator.Tests.ps1 -Output Detailed -PassThru
+          if ($result.FailedCount -gt 0) {
+            Write-Error "Pester: $($result.FailedCount) tests failed."
+            exit 1
+          }
+
+      - name: Aggregate fixture test results
+        shell: pwsh
+        run: |
+          ./aggregate.ps1 -InputPath $env:FIXTURES_DIR -OutputPath $env:SUMMARY_FILE
+          Write-Host '--- BEGIN SUMMARY ---'
+          Get-Content $env:SUMMARY_FILE | ForEach-Object { Write-Host $_ }
+          Write-Host '--- END SUMMARY ---'
+
+      - name: Emit machine-readable aggregate values
+        shell: pwsh
+        run: |
+          # Prints a single grep-able line the act-based test harness
+          # asserts on. Each fixture set produces different values.
+          Import-Module ./src/TestResultsAggregator.psm1 -Force
+          $a = Invoke-TestResultsAggregation -InputPath $env:FIXTURES_DIR
+          $flakyName = if ($a.Flaky.Count -gt 0) { $a.Flaky[0].Name } else { 'none' }
+          "AGGREGATE_VALUES total=$($a.Total) passed=$($a.Passed) failed=$($a.Failed) skipped=$($a.Skipped) flaky=$($a.Flaky.Count) flaky_name=$flakyName" | Write-Host

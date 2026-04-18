@@ -1,0 +1,11 @@
+{
+  "coverage": 5,
+  "rigor": 3,
+  "design": 4,
+  "overall": 4,
+  "summary": "The test suite covers every public function and all major requirements: CSV creation, active-employee filtering, department aggregates, overall statistics, and report generation. Controlled fixtures with known values (e.g., $90k avg for Eng) enable precise numeric assertions rather than just shape checks, and error paths for missing files and empty inputs are exercised. Rigor has gaps: there is no test for a CSV containing zero active employees (would Get-DepartmentAggregates throw or return empty?), no test for missing/extra columns, no test for duplicate department names, and the Get-OverallStatistics fixture uses string salaries ('100000') while the implementation calls Measure-Object on them\u2014a subtle type-coercion assumption that's untested. Design is clean: $TestDrive is used throughout, BeforeAll scopes are appropriate per Describe block, and each Describe maps clearly to a single function. The main design issue is that several Export-EmployeeReport It-blocks independently re-invoke Export-EmployeeReport instead of sharing one pre-built report from BeforeAll, creating redundant work and a slight brittleness if side effects differ per run. Despite these gaps, the suite would reliably catch most regressions across the core pipeline.",
+  "judge_cost_usd": 0.0493,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 1349,
+  "judge_provider": "claude-cli"
+}

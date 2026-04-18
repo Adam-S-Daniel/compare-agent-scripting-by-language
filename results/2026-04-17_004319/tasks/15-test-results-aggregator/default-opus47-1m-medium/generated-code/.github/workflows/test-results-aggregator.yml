@@ -1,0 +1,50 @@
+name: Test Results Aggregator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  FIXTURE_DIR: fixtures/basic
+
+jobs:
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install pytest
+        run: python3 -m pip install --quiet --break-system-packages pytest
+
+      - name: Run unit tests
+        run: python3 -m pytest tests/test_aggregator.py -v
+
+  aggregate:
+    name: Aggregate Results
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Aggregate fixtures
+        id: agg
+        run: |
+          set -euo pipefail
+          # Each argument = one run (file or directory). We treat each file inside
+          # FIXTURE_DIR as a separate run so flaky detection can compare across them.
+          args=()
+          for f in "${FIXTURE_DIR}"/*; do
+            args+=("$f")
+          done
+          python3 aggregator.py "${args[@]}" | tee summary.md
+          {
+            echo "### Aggregated Test Results"
+            cat summary.md
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,64 @@
+name: semantic-version-bumper
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: "Commit fixture to use (patch|minor|major)"
+        required: false
+        default: "minor"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $r = Invoke-Pester -Path ./SemVerBumper.Tests.ps1 -PassThru -Output Detailed
+          if ($r.FailedCount -gt 0) { throw "Pester failed: $($r.FailedCount) test(s)." }
+
+  bump:
+    name: Compute version bump
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run bump-version against fixture
+        shell: pwsh
+        env:
+          # workflow_dispatch input takes priority; act push uses --env FIXTURE_NAME=... ; otherwise default to 'minor'.
+          FIXTURE_INPUT: ${{ github.event.inputs.fixture }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $fixture = $env:FIXTURE_INPUT
+          if (-not $fixture) { $fixture = $env:FIXTURE_NAME }
+          if (-not $fixture) { $fixture = 'minor' }
+          $commitPath = "./fixtures/commits-$fixture.txt"
+          if (-not (Test-Path $commitPath)) { throw "Missing fixture: $commitPath" }
+
+          # Work on a throwaway copy of package.json so CI stays idempotent.
+          $pkg = Join-Path ([System.IO.Path]::GetTempPath()) "package-$([guid]::NewGuid()).json"
+          '{ "name": "demo", "version": "1.1.0" }' | Set-Content -LiteralPath $pkg
+
+          $changelog = Join-Path ([System.IO.Path]::GetTempPath()) "CHANGELOG-$([guid]::NewGuid()).md"
+
+          $out = & ./bump-version.ps1 -VersionPath $pkg -CommitsPath $commitPath -ChangelogPath $changelog
+          $out | ForEach-Object { Write-Host $_ }
+
+          # Emit machine-checkable markers for the test harness.
+          $newLine = $out | Where-Object { $_ -like 'NEW_VERSION=*' } | Select-Object -First 1
+          $bumpLine = $out | Where-Object { $_ -like 'BUMP=*' } | Select-Object -First 1
+          if (-not $newLine) { throw "bump-version did not emit NEW_VERSION" }
+          Write-Host "RESULT $newLine"
+          Write-Host "RESULT $bumpLine"

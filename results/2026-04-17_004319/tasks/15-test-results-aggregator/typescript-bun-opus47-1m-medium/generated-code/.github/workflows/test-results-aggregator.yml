@@ -1,0 +1,53 @@
+name: Test Results Aggregator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * *'
+
+permissions:
+  contents: read
+
+env:
+  FIXTURES_DIR: fixtures
+
+jobs:
+  aggregate:
+    name: Aggregate test results
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Run unit tests
+        run: bun test tests/
+
+      - name: Aggregate fixtures and write summary
+        run: |
+          bun run src/aggregator.ts \
+            "$FIXTURES_DIR/run1.xml" \
+            "$FIXTURES_DIR/run2.json" \
+            "$FIXTURES_DIR/run3.xml" \
+            > aggregate-output.md || true
+          echo "---BEGIN SUMMARY---"
+          cat aggregate-output.md
+          echo "---END SUMMARY---"
+
+      - name: Assert expected aggregates
+        shell: bash
+        run: |
+          set -e
+          grep -q "| Total | 15 |" aggregate-output.md
+          grep -q "| Passed | 10 |" aggregate-output.md
+          grep -q "| Failed | 2 |" aggregate-output.md
+          grep -q "| Skipped | 3 |" aggregate-output.md
+          grep -q "auth.login_failure" aggregate-output.md
+          grep -q "api.get_users" aggregate-output.md
+          echo "All assertions passed"

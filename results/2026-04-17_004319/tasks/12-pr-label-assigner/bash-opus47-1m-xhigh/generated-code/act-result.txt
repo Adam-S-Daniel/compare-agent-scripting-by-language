@@ -1,0 +1,288 @@
+==================== PRECHECK: shellcheck ====================
+shellcheck: OK
+
+==================== PRECHECK: actionlint ====================
+actionlint: OK
+
+==================== PRECHECK: workflow_structure.bats ====================
+1..10
+ok 1 workflow file exists
+ok 2 actionlint passes on the workflow
+ok 3 workflow declares push, pull_request, and workflow_dispatch triggers
+ok 4 workflow contains the three expected jobs
+ok 5 workflow uses actions/checkout@v4
+ok 6 workflow references label-assigner.sh
+ok 7 workflow references tests directory via bats
+ok 8 workflow declares read-only contents permission
+ok 9 assign-labels job depends on test job
+ok 10 label output is framed with LABELS_START/LABELS_END markers
+
+==================== CASE: default-fixtures ====================
+act exit status: 0
+------- act output -------
+time="2026-04-17T02:39:17-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[PR Label Assigner/Lint script] ⭐ Run Set up job
+[PR Label Assigner/Lint script] 🚀  Start image=act-ubuntu-pwsh:latest
+[PR Label Assigner/Lint script]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[PR Label Assigner/Lint script]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[PR Label Assigner/Lint script]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[PR Label Assigner/Lint script]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[PR Label Assigner/Lint script]   ✅  Success - Set up job
+[PR Label Assigner/Lint script] ⭐ Run Main actions/checkout@v4
+[PR Label Assigner/Lint script]   🐳  docker cp src=/tmp/tmp.P0NsT1RbKK/. dst=/tmp/tmp.P0NsT1RbKK
+[PR Label Assigner/Lint script]   ✅  Success - Main actions/checkout@v4 [106.327658ms]
+[PR Label Assigner/Lint script] ⭐ Run Main Validate bash syntax
+[PR Label Assigner/Lint script]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[PR Label Assigner/Lint script]   ✅  Success - Main Validate bash syntax [366.228535ms]
+[PR Label Assigner/Lint script] ⭐ Run Main Check script is executable bash
+[PR Label Assigner/Lint script]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[PR Label Assigner/Lint script]   ✅  Success - Main Check script is executable bash [316.110551ms]
+[PR Label Assigner/Lint script] ⭐ Run Complete job
+[PR Label Assigner/Lint script] Cleaning up container for job Lint script
+[PR Label Assigner/Lint script]   ✅  Success - Complete job
+[PR Label Assigner/Lint script] 🏁  Job succeeded
+[PR Label Assigner/Bats tests ] ⭐ Run Set up job
+[PR Label Assigner/Bats tests ] 🚀  Start image=act-ubuntu-pwsh:latest
+[PR Label Assigner/Bats tests ]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[PR Label Assigner/Bats tests ]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[PR Label Assigner/Bats tests ]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[PR Label Assigner/Bats tests ]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[PR Label Assigner/Bats tests ]   ✅  Success - Set up job
+[PR Label Assigner/Bats tests ] ⭐ Run Main actions/checkout@v4
+[PR Label Assigner/Bats tests ]   🐳  docker cp src=/tmp/tmp.P0NsT1RbKK/. dst=/tmp/tmp.P0NsT1RbKK
+[PR Label Assigner/Bats tests ]   ✅  Success - Main actions/checkout@v4 [120.06076ms]
+[PR Label Assigner/Bats tests ] ⭐ Run Main Verify vendored bats is present
+[PR Label Assigner/Bats tests ]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[PR Label Assigner/Bats tests ]   ✅  Success - Main Verify vendored bats is present [318.413347ms]
+[PR Label Assigner/Bats tests ] ⭐ Run Main Run bats
+[PR Label Assigner/Bats tests ]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[PR Label Assigner/Bats tests ]   | 1..18
+[PR Label Assigner/Bats tests ]   | ok 1 prints usage and exits nonzero when called with no arguments
+[PR Label Assigner/Bats tests ]   | ok 2 errors when rules file does not exist
+[PR Label Assigner/Bats tests ]   | ok 3 errors when files file does not exist
+[PR Label Assigner/Bats tests ]   | ok 4 single file matches single rule -> one label
+[PR Label Assigner/Bats tests ]   | ok 5 no match emits empty output with exit 0
+[PR Label Assigner/Bats tests ]   | ok 6 globstar matches deep nesting
+[PR Label Assigner/Bats tests ]   | ok 7 wildcard *.test.* matches test files in any directory
+[PR Label Assigner/Bats tests ]   | ok 8 multiple rules produce multiple labels, sorted by priority desc then name
+[PR Label Assigner/Bats tests ]   | ok 9 duplicate label across rules is deduplicated
+[PR Label Assigner/Bats tests ]   | ok 10 priority defaults to 0 when omitted
+[PR Label Assigner/Bats tests ]   | ok 11 comments and blank lines in rules are ignored
+[PR Label Assigner/Bats tests ]   | ok 12 malformed rule line (no label) errors out
+[PR Label Assigner/Bats tests ]   | ok 13 non-numeric priority errors out
+[PR Label Assigner/Bats tests ]   | ok 14 single star does not cross directory boundaries
+[PR Label Assigner/Bats tests ]   | ok 15 exact filename match works
+[PR Label Assigner/Bats tests ]   | ok 16 question mark matches single char
+[PR Label Assigner/Bats tests ]   | ok 17 labels with same priority sort alphabetically
+[PR Label Assigner/Bats tests ]   | ok 18 accepts file list from stdin when files path is -
+[PR Label Assigner/Bats tests ]   ✅  Success - Main Run bats [1.873785115s]
+[PR Label Assigner/Bats tests ] ⭐ Run Complete job
+[PR Label Assigner/Bats tests ] Cleaning up container for job Bats tests
+[PR Label Assigner/Bats tests ]   ✅  Success - Complete job
+[PR Label Assigner/Bats tests ] 🏁  Job succeeded
+[PR Label Assigner/Assign labels from fixtures] ⭐ Run Set up job
+[PR Label Assigner/Assign labels from fixtures] 🚀  Start image=act-ubuntu-pwsh:latest
+[PR Label Assigner/Assign labels from fixtures]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[PR Label Assigner/Assign labels from fixtures]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[PR Label Assigner/Assign labels from fixtures]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[PR Label Assigner/Assign labels from fixtures]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[PR Label Assigner/Assign labels from fixtures]   ✅  Success - Set up job
+[PR Label Assigner/Assign labels from fixtures] ⭐ Run Main actions/checkout@v4
+[PR Label Assigner/Assign labels from fixtures]   🐳  docker cp src=/tmp/tmp.P0NsT1RbKK/. dst=/tmp/tmp.P0NsT1RbKK
+[PR Label Assigner/Assign labels from fixtures]   ✅  Success - Main actions/checkout@v4 [167.77094ms]
+[PR Label Assigner/Assign labels from fixtures] ⭐ Run Main Run label assigner on fixtures
+[PR Label Assigner/Assign labels from fixtures]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/assign] user= workdir=
+[PR Label Assigner/Assign labels from fixtures]   | ===LABELS_START===
+[PR Label Assigner/Assign labels from fixtures]   | api
+[PR Label Assigner/Assign labels from fixtures]   | tests
+[PR Label Assigner/Assign labels from fixtures]   | documentation
+[PR Label Assigner/Assign labels from fixtures]   | ===LABELS_END===
+[PR Label Assigner/Assign labels from fixtures]   ✅  Success - Main Run label assigner on fixtures [375.719906ms]
+[PR Label Assigner/Assign labels from fixtures] ⭐ Run Main Show label summary
+[PR Label Assigner/Assign labels from fixtures]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[PR Label Assigner/Assign labels from fixtures]   | Applied 3 label(s)
+[PR Label Assigner/Assign labels from fixtures]   ✅  Success - Main Show label summary [424.78226ms]
+[PR Label Assigner/Assign labels from fixtures] ⭐ Run Complete job
+[PR Label Assigner/Assign labels from fixtures] Cleaning up container for job Assign labels from fixtures
+[PR Label Assigner/Assign labels from fixtures]   ✅  Success - Complete job
+[PR Label Assigner/Assign labels from fixtures] 🏁  Job succeeded
+------- end act output -------
+
+==================== CASE: infra-only ====================
+act exit status: 0
+------- act output -------
+time="2026-04-17T02:39:31-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[PR Label Assigner/Lint script] ⭐ Run Set up job
+[PR Label Assigner/Lint script] 🚀  Start image=act-ubuntu-pwsh:latest
+[PR Label Assigner/Lint script]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[PR Label Assigner/Lint script]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[PR Label Assigner/Lint script]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[PR Label Assigner/Lint script]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[PR Label Assigner/Lint script]   ✅  Success - Set up job
+[PR Label Assigner/Lint script] ⭐ Run Main actions/checkout@v4
+[PR Label Assigner/Lint script]   🐳  docker cp src=/tmp/tmp.cL7zu5Er8D/. dst=/tmp/tmp.cL7zu5Er8D
+[PR Label Assigner/Lint script]   ✅  Success - Main actions/checkout@v4 [121.998552ms]
+[PR Label Assigner/Lint script] ⭐ Run Main Validate bash syntax
+[PR Label Assigner/Lint script]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[PR Label Assigner/Lint script]   ✅  Success - Main Validate bash syntax [378.959289ms]
+[PR Label Assigner/Lint script] ⭐ Run Main Check script is executable bash
+[PR Label Assigner/Lint script]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[PR Label Assigner/Lint script]   ✅  Success - Main Check script is executable bash [346.982583ms]
+[PR Label Assigner/Lint script] ⭐ Run Complete job
+[PR Label Assigner/Lint script] Cleaning up container for job Lint script
+[PR Label Assigner/Lint script]   ✅  Success - Complete job
+[PR Label Assigner/Lint script] 🏁  Job succeeded
+[PR Label Assigner/Bats tests ] ⭐ Run Set up job
+[PR Label Assigner/Bats tests ] 🚀  Start image=act-ubuntu-pwsh:latest
+[PR Label Assigner/Bats tests ]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[PR Label Assigner/Bats tests ]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[PR Label Assigner/Bats tests ]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[PR Label Assigner/Bats tests ]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[PR Label Assigner/Bats tests ]   ✅  Success - Set up job
+[PR Label Assigner/Bats tests ] ⭐ Run Main actions/checkout@v4
+[PR Label Assigner/Bats tests ]   🐳  docker cp src=/tmp/tmp.cL7zu5Er8D/. dst=/tmp/tmp.cL7zu5Er8D
+[PR Label Assigner/Bats tests ]   ✅  Success - Main actions/checkout@v4 [119.78064ms]
+[PR Label Assigner/Bats tests ] ⭐ Run Main Verify vendored bats is present
+[PR Label Assigner/Bats tests ]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[PR Label Assigner/Bats tests ]   ✅  Success - Main Verify vendored bats is present [354.375566ms]
+[PR Label Assigner/Bats tests ] ⭐ Run Main Run bats
+[PR Label Assigner/Bats tests ]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[PR Label Assigner/Bats tests ]   | 1..18
+[PR Label Assigner/Bats tests ]   | ok 1 prints usage and exits nonzero when called with no arguments
+[PR Label Assigner/Bats tests ]   | ok 2 errors when rules file does not exist
+[PR Label Assigner/Bats tests ]   | ok 3 errors when files file does not exist
+[PR Label Assigner/Bats tests ]   | ok 4 single file matches single rule -> one label
+[PR Label Assigner/Bats tests ]   | ok 5 no match emits empty output with exit 0
+[PR Label Assigner/Bats tests ]   | ok 6 globstar matches deep nesting
+[PR Label Assigner/Bats tests ]   | ok 7 wildcard *.test.* matches test files in any directory
+[PR Label Assigner/Bats tests ]   | ok 8 multiple rules produce multiple labels, sorted by priority desc then name
+[PR Label Assigner/Bats tests ]   | ok 9 duplicate label across rules is deduplicated
+[PR Label Assigner/Bats tests ]   | ok 10 priority defaults to 0 when omitted
+[PR Label Assigner/Bats tests ]   | ok 11 comments and blank lines in rules are ignored
+[PR Label Assigner/Bats tests ]   | ok 12 malformed rule line (no label) errors out
+[PR Label Assigner/Bats tests ]   | ok 13 non-numeric priority errors out
+[PR Label Assigner/Bats tests ]   | ok 14 single star does not cross directory boundaries
+[PR Label Assigner/Bats tests ]   | ok 15 exact filename match works
+[PR Label Assigner/Bats tests ]   | ok 16 question mark matches single char
+[PR Label Assigner/Bats tests ]   | ok 17 labels with same priority sort alphabetically
+[PR Label Assigner/Bats tests ]   | ok 18 accepts file list from stdin when files path is -
+[PR Label Assigner/Bats tests ]   ✅  Success - Main Run bats [2.158920142s]
+[PR Label Assigner/Bats tests ] ⭐ Run Complete job
+[PR Label Assigner/Bats tests ] Cleaning up container for job Bats tests
+[PR Label Assigner/Bats tests ]   ✅  Success - Complete job
+[PR Label Assigner/Bats tests ] 🏁  Job succeeded
+[PR Label Assigner/Assign labels from fixtures] ⭐ Run Set up job
+[PR Label Assigner/Assign labels from fixtures] 🚀  Start image=act-ubuntu-pwsh:latest
+[PR Label Assigner/Assign labels from fixtures]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[PR Label Assigner/Assign labels from fixtures]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[PR Label Assigner/Assign labels from fixtures]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[PR Label Assigner/Assign labels from fixtures]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[PR Label Assigner/Assign labels from fixtures]   ✅  Success - Set up job
+[PR Label Assigner/Assign labels from fixtures] ⭐ Run Main actions/checkout@v4
+[PR Label Assigner/Assign labels from fixtures]   🐳  docker cp src=/tmp/tmp.cL7zu5Er8D/. dst=/tmp/tmp.cL7zu5Er8D
+[PR Label Assigner/Assign labels from fixtures]   ✅  Success - Main actions/checkout@v4 [150.82801ms]
+[PR Label Assigner/Assign labels from fixtures] ⭐ Run Main Run label assigner on fixtures
+[PR Label Assigner/Assign labels from fixtures]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/assign] user= workdir=
+[PR Label Assigner/Assign labels from fixtures]   | ===LABELS_START===
+[PR Label Assigner/Assign labels from fixtures]   | docker
+[PR Label Assigner/Assign labels from fixtures]   | ci
+[PR Label Assigner/Assign labels from fixtures]   | ===LABELS_END===
+[PR Label Assigner/Assign labels from fixtures]   ✅  Success - Main Run label assigner on fixtures [398.05892ms]
+[PR Label Assigner/Assign labels from fixtures] ⭐ Run Main Show label summary
+[PR Label Assigner/Assign labels from fixtures]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[PR Label Assigner/Assign labels from fixtures]   | Applied 2 label(s)
+[PR Label Assigner/Assign labels from fixtures]   ✅  Success - Main Show label summary [379.456012ms]
+[PR Label Assigner/Assign labels from fixtures] ⭐ Run Complete job
+[PR Label Assigner/Assign labels from fixtures] Cleaning up container for job Assign labels from fixtures
+[PR Label Assigner/Assign labels from fixtures]   ✅  Success - Complete job
+[PR Label Assigner/Assign labels from fixtures] 🏁  Job succeeded
+------- end act output -------
+
+==================== CASE: docs-only ====================
+act exit status: 0
+------- act output -------
+time="2026-04-17T02:39:45-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[PR Label Assigner/Lint script] ⭐ Run Set up job
+[PR Label Assigner/Lint script] 🚀  Start image=act-ubuntu-pwsh:latest
+[PR Label Assigner/Lint script]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[PR Label Assigner/Lint script]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[PR Label Assigner/Lint script]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[PR Label Assigner/Lint script]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[PR Label Assigner/Lint script]   ✅  Success - Set up job
+[PR Label Assigner/Lint script] ⭐ Run Main actions/checkout@v4
+[PR Label Assigner/Lint script]   🐳  docker cp src=/tmp/tmp.LJ7o3juqpI/. dst=/tmp/tmp.LJ7o3juqpI
+[PR Label Assigner/Lint script]   ✅  Success - Main actions/checkout@v4 [160.623895ms]
+[PR Label Assigner/Lint script] ⭐ Run Main Validate bash syntax
+[PR Label Assigner/Lint script]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[PR Label Assigner/Lint script]   ✅  Success - Main Validate bash syntax [384.718609ms]
+[PR Label Assigner/Lint script] ⭐ Run Main Check script is executable bash
+[PR Label Assigner/Lint script]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[PR Label Assigner/Lint script]   ✅  Success - Main Check script is executable bash [433.563329ms]
+[PR Label Assigner/Lint script] ⭐ Run Complete job
+[PR Label Assigner/Lint script] Cleaning up container for job Lint script
+[PR Label Assigner/Lint script]   ✅  Success - Complete job
+[PR Label Assigner/Lint script] 🏁  Job succeeded
+[PR Label Assigner/Bats tests ] ⭐ Run Set up job
+[PR Label Assigner/Bats tests ] 🚀  Start image=act-ubuntu-pwsh:latest
+[PR Label Assigner/Bats tests ]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[PR Label Assigner/Bats tests ]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[PR Label Assigner/Bats tests ]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[PR Label Assigner/Bats tests ]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[PR Label Assigner/Bats tests ]   ✅  Success - Set up job
+[PR Label Assigner/Bats tests ] ⭐ Run Main actions/checkout@v4
+[PR Label Assigner/Bats tests ]   🐳  docker cp src=/tmp/tmp.LJ7o3juqpI/. dst=/tmp/tmp.LJ7o3juqpI
+[PR Label Assigner/Bats tests ]   ✅  Success - Main actions/checkout@v4 [135.641544ms]
+[PR Label Assigner/Bats tests ] ⭐ Run Main Verify vendored bats is present
+[PR Label Assigner/Bats tests ]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[PR Label Assigner/Bats tests ]   ✅  Success - Main Verify vendored bats is present [505.679183ms]
+[PR Label Assigner/Bats tests ] ⭐ Run Main Run bats
+[PR Label Assigner/Bats tests ]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[PR Label Assigner/Bats tests ]   | 1..18
+[PR Label Assigner/Bats tests ]   | ok 1 prints usage and exits nonzero when called with no arguments
+[PR Label Assigner/Bats tests ]   | ok 2 errors when rules file does not exist
+[PR Label Assigner/Bats tests ]   | ok 3 errors when files file does not exist
+[PR Label Assigner/Bats tests ]   | ok 4 single file matches single rule -> one label
+[PR Label Assigner/Bats tests ]   | ok 5 no match emits empty output with exit 0
+[PR Label Assigner/Bats tests ]   | ok 6 globstar matches deep nesting
+[PR Label Assigner/Bats tests ]   | ok 7 wildcard *.test.* matches test files in any directory
+[PR Label Assigner/Bats tests ]   | ok 8 multiple rules produce multiple labels, sorted by priority desc then name
+[PR Label Assigner/Bats tests ]   | ok 9 duplicate label across rules is deduplicated
+[PR Label Assigner/Bats tests ]   | ok 10 priority defaults to 0 when omitted
+[PR Label Assigner/Bats tests ]   | ok 11 comments and blank lines in rules are ignored
+[PR Label Assigner/Bats tests ]   | ok 12 malformed rule line (no label) errors out
+[PR Label Assigner/Bats tests ]   | ok 13 non-numeric priority errors out
+[PR Label Assigner/Bats tests ]   | ok 14 single star does not cross directory boundaries
+[PR Label Assigner/Bats tests ]   | ok 15 exact filename match works
+[PR Label Assigner/Bats tests ]   | ok 16 question mark matches single char
+[PR Label Assigner/Bats tests ]   | ok 17 labels with same priority sort alphabetically
+[PR Label Assigner/Bats tests ]   | ok 18 accepts file list from stdin when files path is -
+[PR Label Assigner/Bats tests ]   ✅  Success - Main Run bats [3.064248955s]
+[PR Label Assigner/Bats tests ] ⭐ Run Complete job
+[PR Label Assigner/Bats tests ] Cleaning up container for job Bats tests
+[PR Label Assigner/Bats tests ]   ✅  Success - Complete job
+[PR Label Assigner/Bats tests ] 🏁  Job succeeded
+[PR Label Assigner/Assign labels from fixtures] ⭐ Run Set up job
+[PR Label Assigner/Assign labels from fixtures] 🚀  Start image=act-ubuntu-pwsh:latest
+[PR Label Assigner/Assign labels from fixtures]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[PR Label Assigner/Assign labels from fixtures]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[PR Label Assigner/Assign labels from fixtures]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[PR Label Assigner/Assign labels from fixtures]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[PR Label Assigner/Assign labels from fixtures]   ✅  Success - Set up job
+[PR Label Assigner/Assign labels from fixtures] ⭐ Run Main actions/checkout@v4
+[PR Label Assigner/Assign labels from fixtures]   🐳  docker cp src=/tmp/tmp.LJ7o3juqpI/. dst=/tmp/tmp.LJ7o3juqpI
+[PR Label Assigner/Assign labels from fixtures]   ✅  Success - Main actions/checkout@v4 [193.437808ms]
+[PR Label Assigner/Assign labels from fixtures] ⭐ Run Main Run label assigner on fixtures
+[PR Label Assigner/Assign labels from fixtures]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/assign] user= workdir=
+[PR Label Assigner/Assign labels from fixtures]   | ===LABELS_START===
+[PR Label Assigner/Assign labels from fixtures]   | documentation
+[PR Label Assigner/Assign labels from fixtures]   | ===LABELS_END===
+[PR Label Assigner/Assign labels from fixtures]   ✅  Success - Main Run label assigner on fixtures [548.424397ms]
+[PR Label Assigner/Assign labels from fixtures] ⭐ Run Main Show label summary
+[PR Label Assigner/Assign labels from fixtures]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[PR Label Assigner/Assign labels from fixtures]   | Applied 1 label(s)
+[PR Label Assigner/Assign labels from fixtures]   ✅  Success - Main Show label summary [568.728535ms]
+[PR Label Assigner/Assign labels from fixtures] ⭐ Run Complete job
+[PR Label Assigner/Assign labels from fixtures] Cleaning up container for job Assign labels from fixtures
+[PR Label Assigner/Assign labels from fixtures]   ✅  Success - Complete job
+[PR Label Assigner/Assign labels from fixtures] 🏁  Job succeeded
+------- end act output -------

@@ -1,0 +1,11 @@
+{
+  "coverage": 4,
+  "rigor": 3,
+  "design": 4,
+  "overall": 4,
+  "summary": "The test suite covers all seven public functions and exercises every stated requirement \u2014 max age, max total size, keep-latest-N, deletion plan summary, dry-run flag, and the report formatter. Fixture design is clean: a shared `Get-MockArtifacts` helper in `BeforeAll` with `script:` scope gives each test a fresh, well-commented dataset, and `Describe` blocks map 1-to-1 with production functions. The main weaknesses are in rigor: `New-RetentionPolicy` never validates `MaxTotalSizeBytes <= 0` (the guard exists in the implementation but no test exercises it); there is no test for an empty `[]` artifacts list vs `$null`; no boundary tests at exactly MaxAgeDays (>= vs >); and the size-policy test only asserts `BeGreaterThan 0` rather than verifying the remaining retained size actually falls within the limit. `Format-DeletionPlanReport` gets just three surface checks (string non-empty, label present, artifact names present) with no verification of counts or MB values in the output. The deduplication test confirms no artifact appears in both lists but does not assert a specific deduplicated count, leaving that logic under-verified. These gaps mean some meaningful regression scenarios could slip through, but the suite would reliably catch gross functional breakage.",
+  "judge_cost_usd": 0.0605,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 1503,
+  "judge_provider": "claude-cli"
+}

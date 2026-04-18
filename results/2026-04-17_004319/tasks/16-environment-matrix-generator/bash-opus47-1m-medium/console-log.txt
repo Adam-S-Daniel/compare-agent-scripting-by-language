@@ -1,0 +1,247 @@
+[Tool: Bash] ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/bash-opus47-1m-medium/ && cat /home/passp/repos/compare-agent-scripting-by-language/AGENTS.md 2>/dev/null | head -100
+[Result] total 44
+drwxr-xr-x  4 passp passp  4096 Apr 17 11:12 .
+drwxr-xr-x 11 passp passp  4096 Apr 17 11:12 ..
+-rw-r--r--  1 passp passp    40 Apr 17 11:12 .actrc
+drwxr-xr-x  2 passp passp  4096 Apr 17 11:12 .claude
+drwxr-xr-x  7 passp passp  4096 Apr 17 11:12 .git
+-rw-r--r--  1 passp passp 21843 Apr 17 00:12 benchmark-instructions-v4.md
+# Agent Instructions
+
+All agent-facing instructions live in this file. `CLAUDE.md` contains only a
+reference here. If you are a Claude Code agent, you have already loaded this
+via `CLAUDE.md`. Other agents: read this file directly.
+
+## Build and test
+
+```bash
+# Run unit tests (REQUIRED before every PR)
+pip install pytest  # if not already installed
+python3 -m pytest tests/ -v
+
+# Validate imports
+python3 -c "from runner import main"
+python3 -c "from generate_results import generate_results_md"
+python3 -c "from test_quality import compute_structural_metrics"
+python3 -c "from llm_providers import get_provider"
+
+# Regenerate all reports
+python3 generate_results.p
+[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/bash-opus47-1m-medium/.actrc && which bats actionlint act shellcheck jq
+[Result] -P ubuntu-latest=act-ubuntu-pwsh:latest
+/home/passp/.npm-global/bin/bats
+/home/passp/.local/bin/actionlint
+/home/passp/.local/bin/act
+/home/passp/.local/bin/shellcheck
+/home/passp/.local/bin/jq
+[Tool: Bash] cd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/bash-opus47-1m-medium/ && ls .claude/ && cat .claude/settings*.json 2>/dev/null
+[Result] settings.json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /home/passp/repos/compare-agent-scripting-by-language/hooks/syntax-check.py",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}
+[Assistant] Let me start with the failing test (TDD red phase).
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/bash-opus47-1m-medium/tests/matrix.bats", "content": "#!/usr/bin/env b
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/bash-opus47-1m-medium/tests/matrix.bats (file state is current in your context — no need to Read it back)
+[Tool: Bash] bats tests/matrix.bats 2>&1 | tail -20
+[Result]       (from function `run' in file /home/passp/.npm-global/lib/node_modules/bats/lib/bats-core/test_functions.bash, line 420,
+       in test file tests/matrix.bats, line 56)
+BW01: `run`'s command `/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/bash-opus47-1m-medium/tests/../generate-matrix.sh /tmp/tmp.5CJCReKRvQ/c.json` exited with code 127, indicating 'Command not found'. Use run's return code checks, e.g. `run -127`, to fix this message.
+      (from function `run' in file /home/passp/.npm-global/lib/node_modules/bats/lib/bats-core/test_functions.bash, line 420,
+       in test file tests/matrix.bats, line 67)
+BW01: `run`'s command `/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/bash-opus47-1m-medium/tests/../generate-matrix.sh /tmp/tmp.rhnSVvZd5f/c.json` exited with code 127, indicating 'Command not found'. Use run's return code checks, e.g. `run -127
+[Assistant] Good — red phase confirmed. Now the green phase: implement the script.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/bash-opus47-1m-medium/generate-matrix.sh", "content": "#!/usr/bin/env 
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/bash-opus47-1m-medium/generate-matrix.sh (file state is current in your context — no need to Read it back)
+[Tool: Bash] cd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/bash-opus47-1m-medium/ && chmod +x generate-matrix.sh && shellcheck generate-matrix.sh && bash -n generate-matrix.sh && echo OK
+[Result ERROR] Exit code 1
+
+In generate-matrix.sh line 42:
+JQ_PROG='
+        ^-- SC2016 (info): Expressions don't expand in single quotes, use double quotes for that.
+
+For more information:
+  https://www.shellcheck.net/wiki/SC2016 -- Expressions don't expand in singl...
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/bash-opus47-1m-medium/generate-matrix.sh", "old_
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/bash-opus47-1m-medium/generate-matrix.sh has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] cd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/bash-opus47-1m-medium/ && shellcheck generate-matrix.sh && bats tests/matrix.bats 2>&1 | tail -30
+[Result] 1..13
+ok 1 script file exists and is executable
+ok 2 script passes shellcheck
+ok 3 script passes bash -n syntax check
+ok 4 errors on missing config file
+ok 5 errors on invalid JSON
+ok 6 minimal axes produce cartesian product
+ok 7 exclude removes matching combinations
+ok 8 include adds extra combinations
+not ok 9 max-parallel and fail-fast appear in output
+# (in test file tests/matrix.bats, line 84)
+#   `[ "$ff" = "false" ]' failed
+ok 10 fail-fast defaults to true
+ok 11 max-size validation fails when exceeded
+ok 12 feature flags are included as axis
+ok 13 empty axes produce zero combinations
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/bash-opus47-1m-medium/generate-matrix.sh", "old_
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/bash-opus47-1m-medium/generate-matrix.sh has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] cd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/bash-opus47-1m-medium/ && bats tests/matrix.bats 2>&1 | tail -20
+[Result] 1..13
+ok 1 script file exists and is executable
+ok 2 script passes shellcheck
+ok 3 script passes bash -n syntax check
+ok 4 errors on missing config file
+ok 5 errors on invalid JSON
+ok 6 minimal axes produce cartesian product
+ok 7 exclude removes matching combinations
+ok 8 include adds extra combinations
+ok 9 max-parallel and fail-fast appear in output
+ok 10 fail-fast defaults to true
+ok 11 max-size validation fails when exceeded
+ok 12 feature flags are included as axis
+ok 13 empty axes produce zero combinations
+[Assistant] All 13 tests pass. Now the workflow and act-based test harness.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/bash-opus47-1m-medium/.github/workflows/environment-matrix-generator.y
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/bash-opus47-1m-medium/.github/workflows/environment-matrix-generator.yml (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/bash-opus47-1m-medium/fixtures/default.json", "content": "{\n  \"axes\
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/bash-opus47-1m-medium/fixtures/default.json (file state is current in your context — no need to Read it back)
+[Tool: Bash] cd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/bash-opus47-1m-medium/ && actionlint .github/workflows/environment-matrix-generator.yml && ./generate-matrix.sh fixtures/default.json
+[Result] {
+  "combinations": [
+    {
+      "os": "ubuntu-latest",
+      "node": "18"
+    },
+    {
+      "os": "ubuntu-latest",
+      "node": "20"
+    },
+    {
+      "os": "macos-latest",
+      "node": "20"
+    },
+    {
+      "os": "windows-latest",
+      "node": "20",
+      "experimental": "true"
+    }
+  ],
+  "count": 4,
+  "max-parallel": 4,
+  "fail-fast": false,
+  "strategy": {
+    "matrix": {
+      "os": [
+        "ubuntu-latest",
+        "macos-latest"
+      ],
+      "node": [
+        "18",
+        "20"
+      ],
+      "include": [
+        {
+          "os": "windows-latest",
+          "node": "20",
+          "experimental": "true"
+        }
+      ],
+      "exclude": [
+        {
+          "os": "macos-latest",
+          "node": "18"
+        }
+      ]
+    },
+    "max-parallel": 4,
+    "fail-fast": false
+  }
+}
+[Assistant] Now the act-based test harness. Let me write it to run multiple fixtures through the workflow.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/bash-opus47-1m-medium/fixtures/simple.json", "content": "{\n  \"axes\"
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/bash-opus47-1m-medium/fixtures/simple.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/bash-opus47-1m-medium/tests/workflow.bats", "content": "#!/usr/bin/env
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/bash-opus47-1m-medium/tests/workflow.bats (file state is current in your context — no need to Read it back)
+[Tool: Bash] cd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/bash-opus47-1m-medium/ && bats tests/workflow.bats 2>&1 | tail -60
+[Result] 1..6
+ok 1 workflow YAML parses and has expected structure
+ok 2 workflow references existing script
+ok 3 actionlint passes on workflow
+not ok 4 act: default fixture produces count=4
+# (in test file tests/workflow.bats, line 74)
+#   `[ "$status" -eq 0 ]' failed
+not ok 5 act: simple fixture produces count=2
+# (in test file tests/workflow.bats, line 83)
+#   `[ "$status" -eq 0 ]' failed
+ok 6 act-result.txt exists and contains both cases
+[Tool: Bash] cd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/bash-opus47-1m-medium/ && tail -80 act-result.txt
+[Result] ===== CASE: default (fixture=default.json) rc=1 =====
+time="2026-04-17T11:15:27-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[environment-matrix-generator/Generate matrix] ⭐ Run Set up job
+[environment-matrix-generator/Generate matrix] 🚀  Start image=act-ubuntu-pwsh:latest
+[environment-matrix-generator/Generate matrix]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=true
+[environment-matrix-generator/Generate matrix] using DockerAuthConfig authentication for docker pull
+[environment-matrix-generator/Generate matrix] Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+[environment-matrix-generator/Generate matrix]   ❌  Failure - Set up job
+[environment-matrix-generator/Generate matrix] 🏁  Job failed
+Error: Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/bash-opus47-1m-medium/tests/workflow.bats", "old
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/bash-opus47-1m-medium/tests/workflow.bats has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] docker images | grep -i -E 'act|ubuntu' | head -5
+[Result] WARNING: This output is designed for human readability. For machine-readable output, please use --format.
+act-ubuntu-pwsh:latest                   ba4101fd0f65       2.55GB          639MB        
+catthehacker/ubuntu:act-22.04            754f20d9a184       2.15GB          531MB        
+catthehacker/ubuntu:act-latest           68a2a9700126       2.26GB          559MB        
+ghcr.io/catthehacker/ubuntu:act-latest   ab464a96ff6c       1.99GB          284MB
+[Assistant] Image exists locally. Let me re-run with `--pull=false`. I've already used 2 act runs, so this is #3 — I'll run it once and fix all issues found.
+[Tool: Bash] cd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/bash-opus47-1m-medium/ && bats tests/workflow.bats 2>&1 | tail -40
+[Result] 1..6
+ok 1 workflow YAML parses and has expected structure
+ok 2 workflow references existing script
+ok 3 actionlint passes on workflow
+ok 4 act: default fixture produces count=4
+ok 5 act: simple fixture produces count=2
+ok 6 act-result.txt exists and contains both cases
+[Assistant] All tests pass. Let me verify the full suite and the act-result.txt.
+[Tool: Bash] cd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/bash-opus47-1m-medium/ && bats tests/ 2>&1 | tail -30 && echo "---" && wc -l act-result.txt && grep -c 'Job succeeded' act-result.txt
+[Result] 1..19
+ok 1 script file exists and is executable
+ok 2 script passes shellcheck
+ok 3 script passes bash -n syntax check
+ok 4 errors on missing config file
+ok 5 errors on invalid JSON
+ok 6 minimal axes produce cartesian product
+ok 7 exclude removes matching combinations
+ok 8 include adds extra combinations
+ok 9 max-parallel and fail-fast appear in output
+ok 10 fail-fast defaults to true
+ok 11 max-size validation fails when exceeded
+ok 12 feature flags are included as axis
+ok 13 empty axes produce zero combinations
+ok 14 workflow YAML parses and has expected structure
+ok 15 workflow references existing script
+ok 16 actionlint passes on workflow
+ok 17 act: default fixture produces count=4
+ok 18 act: simple fixture produces count=2
+ok 19 act-result.txt exists and contains both cases
+---
+168 act-result.txt
+2
+[Assistant] All 19 tests pass (13 unit + 6 workflow/act). `act-result.txt` contains both cases with "Job succeeded".
+
+**Summary:**
+- `generate-matrix.sh` — bash + jq, computes cartesian product with include/exclude/max-parallel/fail-fast, enforces max-size
+- `tests/matrix.bats` — 13 unit tests (TDD red→green)
+- `.github/workflows/environment-matrix-generator.yml` — push/PR/dispatch triggers, checkout, jq install, runs script
+- `tests/workflow.bats` — YAML structure, actionlint, and 2 act-push cases asserting exact counts (4 and 2) and "Job succeeded"
+- `act-result.txt` — full act output for both fixture cases

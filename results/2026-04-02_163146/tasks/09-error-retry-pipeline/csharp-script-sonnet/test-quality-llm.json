@@ -1,0 +1,11 @@
+{
+  "coverage": 4,
+  "rigor": 3,
+  "design": 4,
+  "overall": 4,
+  "summary": "The suite covers all major requirements: empty queue, all-success, transient failure, permanent failure/DLQ routing, retry count accuracy, progress-reporter callbacks, mixed-item summaries, ToSummary output, and InMemoryQueue FIFO behaviour. BaseDelayMs=0 across every test correctly prevents slow test runs. Moq is used well \u2014 processor and reporter are properly mocked, while InMemoryQueue is used directly as a deterministic collaborator. The Q() helper reduces boilerplate. Main gaps: (1) The exponential-backoff delay formula (BaseDelayMs \u00d7 2^(N-1)) is never exercised \u2014 setting BaseDelayMs=0 skips all Thread.Sleep paths, so a broken delay calculation would go undetected. (2) MaxRetries=0 (only the initial attempt allowed) is untested. (3) Progress-report field accuracy (ProcessedSoFar and FailedSoFar counters inside emitted events) is not verified \u2014 tests only count how many events of each status were emitted. (4) The internal DLQ code path (no external DLQ injected) has no dedicated test. (5) Test 9 ToSummary uses Assert.Contains(\"2\", summary) which is trivially satisfied by multiple occurrences of the digit '2' and provides weak confidence in formatting correctness.",
+  "judge_cost_usd": 0.068,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 1617,
+  "judge_provider": "claude-cli"
+}

@@ -1,0 +1,99 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      version_file:
+        description: "Path to the version file"
+        default: VERSION
+        required: false
+      commits_file:
+        description: "Path to the conventional-commit log"
+        default: commits.log
+        required: false
+
+permissions:
+  contents: read
+
+env:
+  VERSION_FILE: ${{ github.event.inputs.version_file || 'VERSION' }}
+  COMMITS_FILE: ${{ github.event.inputs.commits_file || 'commits.log' }}
+  CHANGELOG_FILE: CHANGELOG.md
+
+jobs:
+  lint:
+    name: Lint and unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install bats via npm
+        shell: bash
+        run: |
+          set -euo pipefail
+          # bats is a bash-only test runner installable via npm. Using npm
+          # avoids apt, which is frequently rate-limited inside act containers.
+          if ! command -v bats >/dev/null 2>&1; then
+            npm install -g bats@1.11.0
+          fi
+          bats --version
+
+      - name: Bash syntax check
+        shell: bash
+        run: bash -n bump-version.sh
+
+      - name: Run bats unit tests
+        shell: bash
+        run: bats test/bump-version.bats
+
+  bump:
+    name: Bump version from commits
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Show input fixture
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Using version file: ${VERSION_FILE}"
+          echo "Using commits file: ${COMMITS_FILE}"
+          echo "--- current version file ---"
+          cat "${VERSION_FILE}"
+          echo "--- commits ---"
+          cat "${COMMITS_FILE}"
+
+      - name: Bump version
+        id: bump
+        shell: bash
+        run: |
+          set -euo pipefail
+          NEW_VERSION="$(./bump-version.sh run \
+            --version-file "${VERSION_FILE}" \
+            --commits     "${COMMITS_FILE}" \
+            --changelog   "${CHANGELOG_FILE}")"
+          # Emit in a format the test harness greps for.
+          echo "NEW_VERSION=${NEW_VERSION}"
+          echo "new_version=${NEW_VERSION}" >> "${GITHUB_OUTPUT}"
+
+      - name: Show updated files
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "--- updated version file ---"
+          cat "${VERSION_FILE}"
+          echo "--- changelog ---"
+          cat "${CHANGELOG_FILE}" 2>/dev/null || echo "(no changelog written — no bump)"
+
+      - name: Summarise
+        shell: bash
+        env:
+          RESULT_VERSION: ${{ steps.bump.outputs.new_version }}
+        run: |
+          set -euo pipefail
+          echo "RESULT: bumped to ${RESULT_VERSION}"

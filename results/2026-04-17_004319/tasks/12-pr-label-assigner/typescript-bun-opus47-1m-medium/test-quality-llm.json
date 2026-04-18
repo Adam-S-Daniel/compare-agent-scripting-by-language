@@ -1,0 +1,11 @@
+{
+  "coverage": 4,
+  "rigor": 3,
+  "design": 4,
+  "overall": 3,
+  "summary": "The test suite covers the core requirements well: glob matching (**, *, *.test.*), multiple labels per file, priority ordering, deduplication, validation errors, workflow structure, and end-to-end execution via act. Three clearly separated test files (unit, workflow-structure, act-harness) show good architectural thinking. The act harness is sophisticated \u2014 it builds an isolated temp git repo per case, appends delimited output to act-result.txt, and asserts on exact LABELS= values and 'Job succeeded' counts. However, several gaps reduce confidence: the CLI (src/cli.ts) has zero unit tests \u2014 argument parsing errors (missing --rules, missing --files), the --files file-read path, and process.exit paths are entirely untested. The '?' glob pattern is never exercised. Edge cases like empty files array, empty rules array, a rule missing 'label' (the mirror of the missing-pattern test), same-priority tie-breaking, and paths containing regex-special characters are absent. Most critically, the act harness dynamically rewrites the workflow YAML for each test case, meaning the actual checked-in workflow is never executed through act \u2014 a bug in the real workflow file would not be caught by these integration tests, only by the lightweight structural parse. The workflow-structure test's YAML quirk workaround (doc.on ?? doc[true]) is pragmatic but fragile. Overall the labeling core is trustworthy; CLI and workflow integration are not.",
+  "judge_cost_usd": 0.0625,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 1756,
+  "judge_provider": "claude-cli"
+}

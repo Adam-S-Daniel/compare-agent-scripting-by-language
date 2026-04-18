@@ -1,0 +1,81 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+env:
+  FIXTURE_DIR: fixtures
+
+jobs:
+  test:
+    name: Run Pester tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Invoke-Pester
+        shell: pwsh
+        run: |
+          $result = Invoke-Pester -Path ./tests/MatrixGenerator.Tests.ps1 -PassThru -Output Detailed
+          if ($result.FailedCount -gt 0) {
+            Write-Error "Pester reported $($result.FailedCount) failure(s)"
+            exit 1
+          }
+
+  generate:
+    name: Generate matrices for fixtures
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Simple fixture
+        shell: pwsh
+        run: |
+          $json = pwsh -NoProfile -File ./Invoke-Matrix.ps1 -ConfigPath "$env:FIXTURE_DIR/simple.json"
+          Write-Host "=== SIMPLE_START ==="
+          Write-Host $json
+          Write-Host "=== SIMPLE_END ==="
+          $obj = $json | ConvertFrom-Json
+          if ($obj.count -ne 4) { throw "simple: expected count 4, got $($obj.count)" }
+          if ($obj.'fail-fast' -ne $true) { throw "simple: expected fail-fast true" }
+          if ($obj.'max-parallel' -ne 2) { throw "simple: expected max-parallel 2" }
+
+      - name: Include/exclude fixture
+        shell: pwsh
+        run: |
+          $json = pwsh -NoProfile -File ./Invoke-Matrix.ps1 -ConfigPath "$env:FIXTURE_DIR/with-include-exclude.json"
+          Write-Host "=== IE_START ==="
+          Write-Host $json
+          Write-Host "=== IE_END ==="
+          $obj = $json | ConvertFrom-Json
+          # 3 os * 2 node = 6, minus 1 excluded = 5, plus 0 new include (augments existing) = 5
+          if ($obj.count -ne 5) { throw "ie: expected count 5, got $($obj.count)" }
+          if ($obj.'fail-fast' -ne $false) { throw "ie: expected fail-fast false" }
+          $exp = $obj.combinations | Where-Object { $_.os -eq 'ubuntu-latest' -and $_.node -eq '20' }
+          if (-not $exp.experimental) { throw "ie: expected experimental flag on ubuntu/20 combo" }
+
+      - name: Oversize fixture must fail
+        shell: pwsh
+        run: |
+          $output = & pwsh -NoProfile -File ./Invoke-Matrix.ps1 -ConfigPath "$env:FIXTURE_DIR/too-big.json" 2>&1
+          $code = $LASTEXITCODE
+          Write-Host "=== OVERSIZE_START ==="
+          Write-Host ($output -join "`n")
+          Write-Host "exit=$code"
+          Write-Host "=== OVERSIZE_END ==="
+          if ($code -eq 0) { throw "oversize: expected nonzero exit, got 0" }
+          if (($output -join "`n") -notmatch 'exceeds max_size') {
+            throw "oversize: expected error text 'exceeds max_size'"
+          }
+          # Reset LASTEXITCODE so the step itself is considered successful.
+          $global:LASTEXITCODE = 0

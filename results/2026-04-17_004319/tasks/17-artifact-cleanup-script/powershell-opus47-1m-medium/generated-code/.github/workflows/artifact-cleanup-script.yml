@@ -1,0 +1,68 @@
+name: artifact-cleanup-script
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      max_age_days:
+        description: Max artifact age in days
+        required: false
+        default: "30"
+      max_total_size_bytes:
+        description: Max total size in bytes
+        required: false
+        default: "0"
+      keep_latest_per_workflow:
+        description: Keep N latest per workflow
+        required: false
+        default: "0"
+      dry_run:
+        description: Dry run
+        required: false
+        default: "true"
+  schedule:
+    - cron: "0 3 * * *"
+
+permissions:
+  contents: read
+
+env:
+  PESTER_OUTPUT: Detailed
+
+jobs:
+  unit-tests:
+    name: Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Pester
+        shell: pwsh
+        run: |
+          $r = Invoke-Pester -Path ./ArtifactCleanup.Tests.ps1 -Output Detailed -PassThru
+          if ($r.FailedCount -gt 0) { throw "Pester failed: $($r.FailedCount)" }
+
+  cleanup-plan:
+    name: Generate cleanup plan
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    env:
+      FIXTURE_PATH: fixtures/artifacts.json
+      MAX_AGE_DAYS: ${{ github.event.inputs.max_age_days || '30' }}
+      MAX_TOTAL_SIZE_BYTES: ${{ github.event.inputs.max_total_size_bytes || '0' }}
+      KEEP_LATEST_PER_WORKFLOW: ${{ github.event.inputs.keep_latest_per_workflow || '0' }}
+      DRY_RUN: ${{ github.event.inputs.dry_run || 'true' }}
+      NOW_OVERRIDE: "2026-04-17T00:00:00Z"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run cleanup script
+        shell: pwsh
+        run: |
+          $dryRun = [bool]::Parse($env:DRY_RUN)
+          ./Run-Cleanup.ps1 `
+            -FixturePath $env:FIXTURE_PATH `
+            -MaxAgeDays ([int]$env:MAX_AGE_DAYS) `
+            -MaxTotalSizeBytes ([long]$env:MAX_TOTAL_SIZE_BYTES) `
+            -KeepLatestPerWorkflow ([int]$env:KEEP_LATEST_PER_WORKFLOW) `
+            -Now $env:NOW_OVERRIDE `
+            -DryRun:$dryRun

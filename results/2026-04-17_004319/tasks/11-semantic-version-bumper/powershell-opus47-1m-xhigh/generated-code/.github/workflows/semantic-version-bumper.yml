@@ -1,0 +1,86 @@
+---
+name: semantic-version-bumper
+
+# Triggers:
+#   push / pull_request  — run on normal repo activity
+#   workflow_dispatch    — lets operators bump the version manually
+#   schedule             — nightly sanity run, once a day at 03:17 UTC
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  workflow_dispatch:
+    inputs:
+      version_file:
+        description: "Path to version.txt or package.json"
+        required: false
+        default: "version.txt"
+      commit_log:
+        description: "Path to the commit log fixture"
+        required: false
+        default: "commits.txt"
+  schedule:
+    - cron: "17 3 * * *"
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  unit-tests:
+    name: Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Pester unit tests
+        run: |
+          $result = Invoke-Pester -Path ./SemanticVersionBumper.Tests.ps1 -PassThru `
+            -ExcludeTagFilter 'Workflow'
+          if ($result.FailedCount -gt 0) {
+            Write-Error "$($result.FailedCount) Pester test(s) failed"
+            exit 1
+          }
+
+  bump:
+    name: Bump version
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    env:
+      VERSION_FILE: ${{ inputs.version_file || 'version.txt' }}
+      COMMIT_LOG:   ${{ inputs.commit_log   || 'commits.txt' }}
+      CHANGELOG:    CHANGELOG.md
+    outputs:
+      new_version:      ${{ steps.bump.outputs.new_version }}
+      previous_version: ${{ steps.bump.outputs.previous_version }}
+      bump:             ${{ steps.bump.outputs.bump }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Assert script files are present
+        run: |
+          foreach ($p in @('Invoke-VersionBumper.ps1','SemanticVersionBumper.psm1')) {
+            if (-not (Test-Path $p)) { Write-Error "Missing required file: $p"; exit 1 }
+          }
+
+      - name: Run the bumper
+        id: bump
+        run: |
+          ./Invoke-VersionBumper.ps1 `
+            -VersionFile $env:VERSION_FILE `
+            -CommitLog   $env:COMMIT_LOG `
+            -ChangelogFile $env:CHANGELOG `
+            -Date '2026-04-17'
+
+      - name: Print results
+        run: |
+          Write-Host "PREV=${{ steps.bump.outputs.previous_version }}"
+          Write-Host "NEW=${{ steps.bump.outputs.new_version }}"
+          Write-Host "BUMP=${{ steps.bump.outputs.bump }}"
+          if (Test-Path $env:CHANGELOG) {
+            Write-Host '--- CHANGELOG ---'
+            Get-Content -Raw $env:CHANGELOG
+          }

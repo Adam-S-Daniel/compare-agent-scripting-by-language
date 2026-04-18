@@ -1,0 +1,11 @@
+{
+  "coverage": 4,
+  "rigor": 3,
+  "design": 4,
+  "overall": 4,
+  "summary": "The test suite covers the core requirements well: CSV import, active-employee filtering, per-department aggregates (headcount and average salary), overall statistics (min/max/total/average), report generation, and an end-to-end integration test. The one notable gap is Format-Currency, which has no dedicated unit tests \u2014 it is only exercised indirectly through the report-content regex checks. Rigor is adequate but not thorough: there is no test for Get-ActiveEmployees returning an empty result (all-inactive input), no test for malformed or non-numeric salary values, no test for case-insensitive status matching, and no boundary tests for Format-Currency (zero, negative, very large values). The integration test does helpfully exercise fractional averages (103,333.33), which is a good signal. Design is a strength \u2014 $TestDrive is used correctly, $script: scoping is consistent, in-memory PSCustomObject fixtures avoid unnecessary file I/O for unit tests, and the Describe/It hierarchy cleanly separates concerns. The main structural weaknesses are duplicated fixture data across three Describe blocks (ActiveEmployees defined identically three times), and some regex patterns like `(?s)Engineering.*Headcount.*2` could spuriously match across department sections in a differently ordered report. Overall this is a solid, trustworthy suite that would catch the most likely regressions, but the missing edge cases (empty active list, bad data) and the Format-Currency gap prevent a top score.",
+  "judge_cost_usd": 0.0539,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 1276,
+  "judge_provider": "claude-cli"
+}

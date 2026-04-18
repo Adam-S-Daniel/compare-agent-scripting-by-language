@@ -1,0 +1,941 @@
+{
+  "task_id": "12-pr-label-assigner",
+  "task_name": "PR Label Assigner",
+  "task_category": "GitHub Actions / Triage",
+  "language_mode": "bash",
+  "language_chosen": "bash",
+  "language_breakdown": {
+    "bash": 100.0
+  },
+  "interpreter_versions": {},
+  "powershell_version": "",
+  "dotnet_version": "",
+  "model": "claude-opus-4-7[1m]",
+  "model_short": "opus47-1m",
+  "claude_code_version": "2.1.112",
+  "instructions_version": "v4",
+  "timestamp_start": "2026-04-17T06:23:45.032746+00:00",
+  "timestamp_end": "2026-04-17T06:40:25.402000+00:00",
+  "prompt_text": "You are completing a scripting task. You MUST use Bash as your implementation language.\n\nTASK: Given a list of changed file paths (simulating a PR's changed files), apply labels based on configurable path-to-label mapping rules (e.g., docs/** -> documentation, src/api/** -> api, *.test.* -> tests). Support glob patterns, multiple labels per file, and priority ordering when rules conflict. Output the final label set. Mock the file list for testing.\n\nREQUIREMENTS:\n1. Use red/green TDD methodology: write a failing test FIRST, then write the minimum code to make it pass, then refactor. Repeat for each piece of functionality.\n2. Create mocks and test fixtures as necessary for testability. Use bats-core (bats) as the testing framework.\n3. All tests must be runnable with `bats` and must pass at the end.\n4. Include clear comments explaining your approach.\n5. Handle errors gracefully with meaningful error messages.\n6. Use `#!/usr/bin/env bash` shebang. Scripts must pass `shellcheck` and `bash -n` syntax validation.\n\nCreate your solution in the current working directory. Start by writing your first failing test.\n\nGITHUB ACTIONS REQUIREMENT:\nCreate a GitHub Actions workflow file at .github/workflows/pr-label-assigner.yml that uses\nyour script in a real CI/CD pipeline. The workflow must:\n- Use appropriate trigger events (push, pull_request, schedule, workflow_dispatch, etc.)\n- Reference your script correctly\n- Pass actionlint validation (valid YAML, valid action references, correct syntax)\n- Include appropriate permissions, environment variables, and job dependencies\n- Actually run successfully when executed locally with `act` (nektos/act)\n\nDesign your workflow so its steps work in an isolated Docker container \u2014 use\n`actions/checkout@v4`, install dependencies your script needs, and run it.\nAvoid steps requiring external services or secrets without sensible defaults.\n\nIMPORTANT for PowerShell mode: Use `shell: pwsh` on your workflow run: steps instead\nof invoking `pwsh -Command` or `pwsh -File` from bash. This avoids escaping issues\nand works correctly in act containers. pwsh and Pester are pre-installed in the\ncontainer.\n\nWORKFLOW VALIDATION:\nRun `actionlint .github/workflows/pr-label-assigner.yml` and fix any errors. actionlint is\npre-installed. Iterate until it passes cleanly. Validate with actionlint BEFORE\nrunning act \u2014 actionlint is instant, act takes 30-90 seconds per run.\n\nALL TESTS MUST RUN THROUGH ACT:\nEvery single test case must execute through the GitHub Actions workflow via `act`.\nDo NOT test your script directly \u2014 all testing goes through the pipeline.\n\nStructure your workflow to accept test fixture data and produce verifiable output.\nYour test harness must:\n1. For each test case: set up a temp git repo with your project files + that case's\n   fixture data, run `act push --rm`, capture the output\n2. Save all act output to `act-result.txt` in the current working directory (append\n   each test case's output, clearly delimited)\n3. Assert that act exited with code 0 for each case\n4. Parse the act output and assert on EXACT EXPECTED VALUES \u2014 not just that output\n   appeared, but that it matches the known-good result for that test case's input.\n   For example: if your workflow bumps version 1.1.0 with a feat commit, assert\n   the output contains exactly \"1.2.0\", not just \"a version number\"\n5. Assert every job shows \"Job succeeded\"\n\nThe `act-result.txt` file MUST exist when done. It is a required artifact.\n`act` and Docker are pre-installed. Limit yourself to at most 3 `act push` runs \u2014\ndiagnose errors from the output rather than re-running blindly.\n\nWORKFLOW STRUCTURE TESTS (also required):\n- Parse the YAML and check expected structure (triggers, jobs, steps)\n- Verify the workflow references your script files correctly (paths exist)\n- Verify actionlint passes (assert exit code 0)\n",
+  "exit_code": 0,
+  "run_success": true,
+  "failure_reason": null,
+  "session": {
+    "session_id": "f9e9e573-1966-439e-a533-d10b92372aad",
+    "stop_reason": "end_turn",
+    "terminal_reason": "completed",
+    "fast_mode_state": "off",
+    "service_tier": "standard",
+    "speed": "standard",
+    "inference_geo": "",
+    "context_window": 200000,
+    "max_output_tokens": 32000,
+    "permission_mode": "bypassPermissions",
+    "output_style": "default",
+    "tools_available_count": 27,
+    "mcp_servers": [],
+    "permission_denials": []
+  },
+  "model_usage_detail": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 1299,
+      "outputTokens": 19,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.001394,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "claude-opus-4-7[1m]": {
+      "inputTokens": 70,
+      "outputTokens": 35279,
+      "cacheReadInputTokens": 3405642,
+      "cacheCreationInputTokens": 89233,
+      "webSearchRequests": 0,
+      "costUSD": 3.1428522499999993,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000
+    }
+  },
+  "effort_level": "xhigh",
+  "timing": {
+    "grand_total_duration_ms": 1000369,
+    "total_api_duration_ms": 506638,
+    "total_execution_duration_ms": 492582,
+    "num_turns": 61
+  },
+  "tokens": {
+    "input_tokens": 70,
+    "output_tokens": 35279,
+    "cache_read_tokens": 3405642,
+    "cache_creation_tokens": 89233,
+    "total_context_consumed": 3494945,
+    "compaction_count": 0
+  },
+  "cost": {
+    "total_cost_usd": 3.1442462499999992,
+    "assumed_input_cost_per_mtok": 5.0,
+    "assumed_output_cost_per_mtok": 25.0,
+    "assumed_cache_read_cost_per_mtok": 0.5,
+    "assumed_cache_write_cost_per_mtok": 6.25
+  },
+  "code_metrics": {
+    "total_lines": 5460,
+    "total_tokens_estimate": 44668,
+    "file_count": 27,
+    "files": [
+      "act-result.txt",
+      "label-assigner.sh",
+      "run-act-tests.sh",
+      "fixtures/files.txt",
+      "fixtures/rules.conf",
+      ".github/workflows/pr-label-assigner.yml",
+      "tests/label_assigner.bats",
+      "tests/workflow_structure.bats",
+      "vendor/bats-core/lib/bats-core/common.bash",
+      "vendor/bats-core/lib/bats-core/formatter.bash",
+      "vendor/bats-core/lib/bats-core/preprocessing.bash",
+      "vendor/bats-core/lib/bats-core/semaphore.bash",
+      "vendor/bats-core/lib/bats-core/test_functions.bash",
+      "vendor/bats-core/lib/bats-core/tracing.bash",
+      "vendor/bats-core/lib/bats-core/validator.bash",
+      "vendor/bats-core/lib/bats-core/warnings.bash",
+      "vendor/bats-core/libexec/bats-core/bats",
+      "vendor/bats-core/libexec/bats-core/bats-exec-file",
+      "vendor/bats-core/libexec/bats-core/bats-exec-suite",
+      "vendor/bats-core/libexec/bats-core/bats-exec-test",
+      "vendor/bats-core/libexec/bats-core/bats-format-cat",
+      "vendor/bats-core/libexec/bats-core/bats-format-junit",
+      "vendor/bats-core/libexec/bats-core/bats-format-pretty",
+      "vendor/bats-core/libexec/bats-core/bats-format-tap",
+      "vendor/bats-core/libexec/bats-core/bats-format-tap13",
+      "vendor/bats-core/libexec/bats-core/bats-gather-tests",
+      "vendor/bats-core/libexec/bats-core/bats-preprocess"
+    ]
+  },
+  "quality": {
+    "tests_pass": null,
+    "error_count": 2,
+    "error_details": [
+      "Exit code 1\n\nIn label-assigner.sh line 59:\n            '.'|'+'|'('|')'|'|'|'{'|'}'|'['|']'|'^'|'$'|'\\\\')\n                                                          ^-- SC1003 (info): Want to escape a s",
+      "Exit code 1\n.github/workflows/pr-label-assigner.yml:35:8: could not parse as YAML: did not find expected key [syntax-check]\n   |\n35 |         run: test -x \"$BATS_BIN\" || (echo \"missing vendored bats\" "
+    ],
+    "actionlint_pass": true,
+    "actionlint_errors": 0,
+    "actionlint_results": [
+      {
+        "file": ".github/workflows/pr-label-assigner.yml",
+        "passed": true,
+        "errors": ""
+      }
+    ],
+    "act_result_txt_exists": true,
+    "act_result_txt_size": 24113,
+    "areas_of_difficulty": [],
+    "observations": ""
+  },
+  "tool_install": {
+    "tool_install_duration_ms": 0,
+    "tools_installed": [],
+    "install_commands_count": 0
+  },
+  "tool_use_timing": {
+    "total_tool_uses": 60,
+    "total_tool_duration_ms": 500348,
+    "bash_tool_uses": 33,
+    "bash_total_ms": 497774,
+    "slowest_tool_uses": [
+      {
+        "tool_name": "Bash",
+        "command": "./run-act-tests.sh 2>&1 | tail -80",
+        "duration_ms": 429604,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "./run-act-tests.sh 2>&1 | tail -40",
+        "duration_ms": 46156,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bats tests/ 2>&1 | tail -30",
+        "duration_ms": 3344,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "./run-act-tests.sh 2>&1 | tail -80",
+        "duration_ms": 3008,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "actionlint .github/workflows/pr-label-assigner.yml && shellcheck run-act-tests.sh label-assigner.sh && bats tests/ 2>&1 | tail -5 && echo ALL_OK",
+        "duration_ms": 2476,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "docker run --rm -v \"$PWD:/work\" -w /work act-ubuntu-pwsh:latest bash -c 'vendor/bats-core/bin/bats tests/label_assigner.bats 2>&1 | tail -5'",
+        "duration_ms": 1941,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bats tests/ 2>&1 | tail -5",
+        "duration_ms": 1824,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "shellcheck label-assigner.sh && echo SHELLCHECK_OK && bash -n label-assigner.sh && bats tests/ 2>&1 | tail -5",
+        "duration_ms": 1495,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "./run-act-tests.sh 2>&1 | tail -60",
+        "duration_ms": 1289,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "chmod +x label-assigner.sh && bash -n label-assigner.sh && bats tests/ 2>&1 | tail -40",
+        "duration_ms": 1282,
+        "is_error": false,
+        "is_install": false
+      }
+    ],
+    "all_tool_uses": [
+      {
+        "tool_name": "Bash",
+        "command": "pwd && ls -la",
+        "duration_ms": 161,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cat .actrc && which bats shellcheck actionlint act docker",
+        "duration_ms": 55,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cat /home/passp/repos/compare-agent-scripting-by-language/AGENTS.md 2>/dev/null | head -100",
+        "duration_ms": 64,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bats --version && shellcheck --version | head -5 && actionlint -version && act --version && docker images | grep -i act-ubuntu",
+        "duration_ms": 289,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "mkdir -p tests fixtures .github/workflows",
+        "duration_ms": 218,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 109,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bats tests/ 2>&1 | tail -30",
+        "duration_ms": 3344,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 179,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "ToolSearch",
+        "command": "",
+        "duration_ms": 17,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "TodoWrite",
+        "command": "",
+        "duration_ms": 4,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "chmod +x label-assigner.sh && bash -n label-assigner.sh && bats tests/ 2>&1 | tail -40",
+        "duration_ms": 1282,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "shellcheck label-assigner.sh && echo SHELLCHECK_OK",
+        "duration_ms": 164,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 163,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "shellcheck label-assigner.sh && echo SHELLCHECK_OK && bash -n label-assigner.sh && bats tests/ 2>&1 | tail -5",
+        "duration_ms": 1495,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "TodoWrite",
+        "command": "",
+        "duration_ms": 46,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 211,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "actionlint .github/workflows/pr-label-assigner.yml && echo ACTIONLINT_OK",
+        "duration_ms": 164,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 57,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 51,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 161,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "chmod +x run-act-tests.sh label-assigner.sh && ./label-assigner.sh fixtures/rules.conf fixtures/files.txt",
+        "duration_ms": 144,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 75,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bats tests/workflow_structure.bats 2>&1 | tail -15",
+        "duration_ms": 682,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "TodoWrite",
+        "command": "",
+        "duration_ms": 70,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "shellcheck run-act-tests.sh && bash -n run-act-tests.sh && echo OK",
+        "duration_ms": 209,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 148,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 55,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 136,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "shellcheck run-act-tests.sh && bash -n run-act-tests.sh && actionlint .github/workflows/pr-label-assigner.yml && echo ALL_CHECKS_OK",
+        "duration_ms": 223,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "./run-act-tests.sh 2>&1 | tail -60",
+        "duration_ms": 1289,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 145,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bash -n run-act-tests.sh && shellcheck run-act-tests.sh && echo OK",
+        "duration_ms": 156,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "./run-act-tests.sh 2>&1 | tail -80",
+        "duration_ms": 3008,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "wc -l act-result.txt && grep -c 'Job succeeded\\|Job failed\\|fatal\\|ERRO\\|error' act-result.txt",
+        "duration_ms": 82,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 55,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 14,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 161,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "act --help 2>&1 | grep -i pull",
+        "duration_ms": 74,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "./run-act-tests.sh 2>&1 | tail -80",
+        "duration_ms": 429604,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "grep -n 'CASE:\\|Error\\|Failure\\|Job succeeded\\|Job failed\\|FAIL\\|PASS' act-result.txt | head -50",
+        "duration_ms": 104,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 35,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "docker run --rm act-ubuntu-pwsh:latest bash -c 'command -v bats shellcheck git curl wget jq 2>&1; echo \"---\"; ls /usr/local/bin/ 2>&1 | head -20'",
+        "duration_ms": 653,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "which bats && ls -la $(which bats) 2>&1 | head -3 && find /home/passp/.npm-global -name \"bats-core\" -maxdepth 5 2>/dev/null | head -5",
+        "duration_ms": 60,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "ls /home/passp/.npm-global/lib/node_modules/bats/",
+        "duration_ms": 580,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "mkdir -p vendor/bats-core && cp -r /home/passp/.npm-global/lib/node_modules/bats/{bin,lib,libexec} vendor/bats-core/ && ls vendor/bats-core/ && vendor/bats-core/bin/bats --version",
+        "duration_ms": 120,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 69,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 143,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 158,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bash -n run-act-tests.sh && shellcheck run-act-tests.sh && actionlint .github/workflows/pr-label-assigner.yml && bats tests/workflow_structure.bats 2>&1 | tail -15",
+        "duration_ms": 230,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 51,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 139,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "actionlint .github/workflows/pr-label-assigner.yml && shellcheck run-act-tests.sh label-assigner.sh && bats tests/ 2>&1 | tail -5 && echo ALL_OK",
+        "duration_ms": 2476,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bats tests/workflow_structure.bats 2>&1 | grep -E '^(ok|not ok)'",
+        "duration_ms": 649,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 72,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bats tests/ 2>&1 | tail -5",
+        "duration_ms": 1824,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "docker run --rm -v \"$PWD:/work\" -w /work act-ubuntu-pwsh:latest bash -c 'vendor/bats-core/bin/bats tests/label_assigner.bats 2>&1 | tail -5'",
+        "duration_ms": 1941,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "./run-act-tests.sh 2>&1 | tail -40",
+        "duration_ms": 46156,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "ls -la act-result.txt && echo \"---\" && grep -E 'CASE:|PRECHECK:|Job succeeded|Job failed|===LABELS' act-result.txt",
+        "duration_ms": 103,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "TodoWrite",
+        "command": "",
+        "duration_ms": 50,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "ls -la && echo \"---tests---\" && ls -la tests/ fixtures/ .github/workflows/",
+        "duration_ms": 171,
+        "is_error": false,
+        "is_install": false
+      }
+    ],
+    "install_duration_ms": 0,
+    "test_duration_ms": 496469,
+    "act_duration_ms": 0
+  },
+  "hooks": {
+    "hook_fires": 18,
+    "hook_errors_caught": 1,
+    "hook_failures": 0,
+    "hook_events": [
+      {
+        "subtype": "hook_started",
+        "hook_id": "47bbeec9-a016-4c4a-bfbe-fca4b3316dc0",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "47bbeec9-a016-4c4a-bfbe-fca4b3316dc0",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "fa2c1725-f4ec-42cd-b0b8-2721829e0e75",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "fa2c1725-f4ec-42cd-b0b8-2721829e0e75",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "2d06e1b5-cba3-4bca-a006-595b1f28ffd2",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "2d06e1b5-cba3-4bca-a006-595b1f28ffd2",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "3e68ea8d-2295-4cd6-8b6f-c2afa77fb32c",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "3e68ea8d-2295-4cd6-8b6f-c2afa77fb32c",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "86d68b20-482d-498e-8368-e971ef1c0511",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "86d68b20-482d-498e-8368-e971ef1c0511",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "428a7171-519a-40b4-8d84-8e43366e093d",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "428a7171-519a-40b4-8d84-8e43366e093d",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "79992659-08dc-43f2-9cd3-0d985340d693",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "79992659-08dc-43f2-9cd3-0d985340d693",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "b93c8e94-4643-44f8-97a2-6d8eca0541e6",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "b93c8e94-4643-44f8-97a2-6d8eca0541e6",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "96b1272b-c64e-4231-a172-0de48b44d1f8",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "96b1272b-c64e-4231-a172-0de48b44d1f8",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "39777304-e3aa-46c7-b8d2-539f94894d97",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "39777304-e3aa-46c7-b8d2-539f94894d97",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "bf6da626-e283-4b29-969d-9b8033f5aac6",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "bf6da626-e283-4b29-969d-9b8033f5aac6",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "744a3cc5-c993-4d2f-b8fb-a90d4a172f37",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "744a3cc5-c993-4d2f-b8fb-a90d4a172f37",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "88ec1ea8-8f04-4e44-b163-f59bbb0f9ff3",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "88ec1ea8-8f04-4e44-b163-f59bbb0f9ff3",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "14621709-b6c2-45ba-a910-ad1c613a88b9",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "14621709-b6c2-45ba-a910-ad1c613a88b9",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\n.github/workflows/pr-label-assigner.yml:35:8: could not parse as YAML: did not find expected key [syntax-check]\\n   |\\n35 |         run: test -x \\\"$BATS_BIN\\\" || (echo \\\"missing vendored bats\\\" >&2; exit 1)\\n   |        ^\"}",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "fa771aaf-f9ba-4298-9ed6-a0dfc8894341",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "fa771aaf-f9ba-4298-9ed6-a0dfc8894341",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "56bae332-dfe9-4eda-948f-40c74563f405",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "56bae332-dfe9-4eda-948f-40c74563f405",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "7538dfab-c40f-45ef-b3e1-403502b13f25",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "7538dfab-c40f-45ef-b3e1-403502b13f25",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "f929f3d0-7b17-412e-aa49-8288cc67ec7c",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "f929f3d0-7b17-412e-aa49-8288cc67ec7c",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  }
+}

@@ -1,0 +1,339 @@
+[Tool: Bash] ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/bash-opus47-1m/ && echo "---" && which bats shellcheck actionlint act jq
+[Result] total 44
+drwxr-xr-x 4 passp passp  4096 Apr 17 07:34 .
+drwxr-xr-x 6 passp passp  4096 Apr 17 07:34 ..
+-rw-r--r-- 1 passp passp    40 Apr 17 07:34 .actrc
+drwxr-xr-x 2 passp passp  4096 Apr 17 07:34 .claude
+drwxr-xr-x 7 passp passp  4096 Apr 17 07:34 .git
+-rw-r--r-- 1 passp passp 21843 Apr 17 00:12 benchmark-instructions-v4.md
+---
+/home/passp/.npm-global/bin/bats
+/home/passp/.local/bin/shellcheck
+/home/passp/.local/bin/actionlint
+/home/passp/.local/bin/act
+/home/passp/.local/bin/jq
+[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/bash-opus47-1m/.actrc && echo "---" && cat /home/passp/repos/compare-agent-scripting-by-language/AGENTS.md 2>/dev/null | head -100
+[Result] -P ubuntu-latest=act-ubuntu-pwsh:latest
+---
+# Agent Instructions
+
+All agent-facing instructions live in this file. `CLAUDE.md` contains only a
+reference here. If you are a Claude Code agent, you have already loaded this
+via `CLAUDE.md`. Other agents: read this file directly.
+
+## Build and test
+
+```bash
+# Run unit tests (REQUIRED before every PR)
+pip install pytest  # if not already installed
+python3 -m pytest tests/ -v
+
+# Validate imports
+python3 -c "from runner import main"
+python3 -c "from generate_results import generate_results_md"
+python3 -c "from test_quality import compute_structural_metrics"
+python3 -c "from llm_providers import get_provider"
+
+# Regenerate all reports
+python3 generate_results.py --all
+
+# Run a benchmark (v4, all tasks/modes/models)
+python3 runner.py --tasks 11,12,13,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
+
+# Evaluate test quality (structural metrics only)
+python3 test_quality.py results/2026-04-09_152435
+
+# Evaluate test 
+[Tool: Bash] docker images | head -20
+[Result] WARNING: This output is designed for human readability. For machine-readable output, please use --format.
+IMAGE                                    ID             DISK USAGE   CONTENT SIZE   EXTRA
+act-ubuntu-pwsh:latest                   ba4101fd0f65       2.55GB          639MB        
+catthehacker/ubuntu:act-22.04            754f20d9a184       2.15GB          531MB        
+catthehacker/ubuntu:act-latest           68a2a9700126       2.26GB          559MB        
+ghcr.io/catthehacker/ubuntu:act-latest   ab464a96ff6c       1.99GB          284MB        
+hello-world:latest                       452a468a4bf9       25.9kB         9.49kB
+[Assistant] I'll start by planning the task and setting up. Let me create a structured implementation using TDD.
+[Tool: Bash] mkdir -p tests fixtures .github/workflows scripts
+[Result] (Bash completed with no output)
+[Assistant] Let me plan the task before coding. I'll design fixtures with deterministic dates.
+[Tool: Bash] echo "Date calcs:"
+echo "2025-01-01 to 2026-04-17: $(( ( $(date -d 2026-04-17 +%s) - $(date -d 2025-01-01 +%s) ) / 86400 )) days"
+echo "2026-01-01 to 2026-04-17: $(( ( $(date -d 2026-04-17 +%s) - $(date -d 2026-01-01 +%s) ) / 86400 )) days"
+echo "2026-01-25 to 2026-04-17: $(( ( $(date -d 2026-04-17 +%s) - $(date -d 2026-01-25 +%s) ) / 86400 )) days"
+echo "2026-04-01 to 2026-04-17: $(( ( $(date -d 2026-04-17 +%s) - $(date -d 2026-04-01 +%s) ) / 86400 )) days"
+[Result] Date calcs:
+2025-01-01 to 2026-04-17: 470 days
+2026-01-01 to 2026-04-17: 105 days
+2026-01-25 to 2026-04-17: 81 days
+2026-04-01 to 2026-04-17: 16 days
+[Assistant] Calculations confirmed. Now starting TDD - first a failing test for the script.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/bash-opus47-1m/tests/rotate_check.bats", "content": "#!/usr/bin/env bats\
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/bash-opus47-1m/tests/rotate_check.bats (file state is current in your context — no need to Read it back)
+[Assistant] Now the fixture and script:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/bash-opus47-1m/fixtures/mixed.json", "content": "{\n  \"secrets\": [\n   
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/bash-opus47-1m/fixtures/mixed.json (file state is current in your context — no need to Read it back)
+[Tool: ToolSearch] {"query": "select:TodoWrite", "max_results": 1}
+[Result] {'type': 'tool_reference', 'tool_name': 'TodoWrite'}
+[Tool: TodoWrite] {"todos": [{"content": "Write rotate-check.sh script", "activeForm": "Writing rotate-check.sh script", "status": "in_progress"}, {"content": "Write GitHub Actions workflow", "activeForm": "Writing Git
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/bash-opus47-1m/rotate-check.sh", "content": "#!/usr/bin/env bash\n#\n# ro
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/bash-opus47-1m/rotate-check.sh (file state is current in your context — no need to Read it back)
+[Tool: Bash] chmod +x rotate-check.sh && bash -n rotate-check.sh && shellcheck rotate-check.sh && echo "SHELLCHECK OK"
+[Result] SHELLCHECK OK
+[Assistant] Now let's manually test the script (one-time check; actual testing goes via act):
+[Tool: Bash] ./rotate-check.sh --config fixtures/mixed.json --today 2026-04-17 --warning-days 14
+[Result] # Secret Rotation Report
+
+Generated: 2026-04-17
+Warning window: 14 day(s)
+
+## Summary
+
+- Expired: 2
+- Warning: 1
+- OK: 1
+
+## Expired (action required)
+
+| Secret | Last Rotated | Policy (days) | Days Overdue | Required By |
+|--------|--------------|---------------|--------------|-------------|
+| db-password | 2025-01-01 | 90 | 380 | postgres, analytics |
+| api-token | 2026-01-01 | 100 | 5 | api-gateway |
+
+## Warning (rotate soon)
+
+| Secret | Last Rotated | Policy (days) | Days Until Expiry | Required By |
+|--------|--------------|---------------|-------------------|-------------|
+| jwt-secret | 2026-01-25 | 90 | 9 | auth-service |
+
+## OK
+
+| Secret | Last Rotated | Policy (days) | Days Until Expiry | Required By |
+|--------|--------------|---------------|-------------------|-------------|
+| oauth-key | 2026-04-01 | 90 | 74 | oauth-provider |
+[Assistant] Values match test assertions. JSON mode:
+[Tool: Bash] ./rotate-check.sh --config fixtures/mixed.json --today 2026-04-17 --warning-days 14 --format json | jq .
+[Result] {
+  "generated": "2026-04-17",
+  "warning_window_days": 14,
+  "summary": {
+    "expired": 2,
+    "warning": 1,
+    "ok": 1
+  },
+  "expired": [
+    {
+      "name": "db-password",
+      "last_rotated": "2025-01-01",
+      "policy_days": 90,
+      "days_overdue": 380,
+      "required_by": [
+        "postgres",
+        "analytics"
+      ]
+    },
+    {
+      "name": "api-token",
+      "last_rotated": "2026-01-01",
+      "policy_days": 100,
+      "days_overdue": 5,
+      "required_by": [
+        "api-gateway"
+      ]
+    }
+  ],
+  "warning": [
+    {
+      "name": "jwt-secret",
+      "last_rotated": "2026-01-25",
+      "policy_days": 90,
+      "days_until_expiry": 9,
+      "required_by": [
+        "auth-service"
+      ]
+    }
+  ],
+  "ok": [
+    {
+      "name": "oauth-key",
+      "last_rotated": "2026-04-01",
+      "policy_days": 90,
+      "days_until_expiry": 74,
+      "required_by": [
+        "oauth-provider"
+      ]
+    }
+  ]
+}
+[Tool: TodoWrite] {"todos": [{"content": "Write rotate-check.sh script", "activeForm": "Writing rotate-check.sh script", "status": "completed"}, {"content": "Write GitHub Actions workflow", "activeForm": "Writing GitHu
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Assistant] Now the workflow. It must read `rotation.env` written by the test harness so each test case can parameterize the run.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/bash-opus47-1m/.github/workflows/secret-rotation-validator.yml", "content
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/bash-opus47-1m/.github/workflows/secret-rotation-validator.yml (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/secret-rotation-validator.yml && echo "ACTIONLINT OK"
+[Result] ACTIONLINT OK
+[Tool: TodoWrite] {"todos": [{"content": "Write rotate-check.sh script", "activeForm": "Writing rotate-check.sh script", "status": "completed"}, {"content": "Write GitHub Actions workflow", "activeForm": "Writing GitHu
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Assistant] Let me verify bats can parse the tests without running act:
+[Tool: Bash] bats --count tests/rotate_check.bats
+[Result] 25
+[Tool: Bash] bats --filter "workflow file exists|script file|workflow references|workflow triggers|workflow declares|workflow uses|actionlint passes|script passes shellcheck|script passes bash -n" tests/rotate_check.bats
+[Result] 1..9
+ok 1 workflow file exists at expected path
+ok 2 script file exists and is executable
+ok 3 workflow references rotate-check.sh
+ok 4 workflow triggers include push, pull_request, workflow_dispatch, schedule
+ok 5 workflow declares explicit contents: read permission
+ok 6 workflow uses actions/checkout@v4
+ok 7 actionlint passes on the workflow
+ok 8 script passes shellcheck
+ok 9 script passes bash -n syntax check
+[Assistant] Let me tweak the test's act invocation (remove --quiet to ensure we see job status):
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/bash-opus47-1m/tests/rotate_check.bats", "old_strin
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/bash-opus47-1m/tests/rotate_check.bats has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Let me run just the first act-based test to validate the integration works:
+[Tool: Bash] bats --filter "act run 1 of 2" tests/rotate_check.bats 2>&1 | tail -80
+[Result] 1..1
+not ok 1 act run 1 of 2 (markdown, mixed fixture) — job succeeds
+# (in test file tests/rotate_check.bats, line 123)
+#   `grep -q '__ACT_EXIT__=0' "$ACT_MARKDOWN_SECTION"' failed
+[Tool: Bash] tail -60 .act-markdown.out
+[Result] time="2026-04-17T07:39:45-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Secret Rotation Validator/Validate Secret Rotation] ⭐ Run Set up job
+[Secret Rotation Validator/Validate Secret Rotation] 🚀  Start image=act-ubuntu-pwsh:latest
+[Secret Rotation Validator/Validate Secret Rotation]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=true
+[Secret Rotation Validator/Validate Secret Rotation] using DockerAuthConfig authentication for docker pull
+[Secret Rotation Validator/Validate Secret Rotation] Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+[Secret Rotation Validator/Validate Secret Rotation]   ❌  Failure - Set up job
+[Secret Rotation Validator/Validate Secret Rotation] 🏁  Job failed
+Error: Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker logi
+[Assistant] The image is local-only. Need to disable pull:
+[Tool: Bash] cat .actrc
+[Result] -P ubuntu-latest=act-ubuntu-pwsh:latest
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/bash-opus47-1m/.actrc", "content": "-P ubuntu-latest=act-ubuntu-pwsh:late
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/bash-opus47-1m/.actrc has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] bats --filter "act run 1 of 2" tests/rotate_check.bats 2>&1 | tail -80
+[Result] 1..1
+ok 1 act run 1 of 2 (markdown, mixed fixture) — job succeeds
+[Assistant] First act run succeeded. Now run the full suite (which will do the second act run):
+[Tool: Bash] bats tests/rotate_check.bats 2>&1 | tail -80
+[Result] 1..25
+ok 1 workflow file exists at expected path
+ok 2 script file exists and is executable
+ok 3 workflow references rotate-check.sh
+ok 4 workflow triggers include push, pull_request, workflow_dispatch, schedule
+ok 5 workflow declares explicit contents: read permission
+ok 6 workflow uses actions/checkout@v4
+ok 7 actionlint passes on the workflow
+ok 8 script passes shellcheck
+ok 9 script passes bash -n syntax check
+ok 10 act run 1 of 2 (markdown, mixed fixture) — job succeeds
+not ok 11 markdown output contains expected header and summary counts
+# (in test file tests/rotate_check.bats, line 130)
+#   `grep -q '- Expired: 2' "$ACT_MARKDOWN_SECTION"' failed with status 2
+# grep: invalid option -- ' '
+# Usage: grep [OPTION]... PATTERNS [FILE]...
+# Try 'grep --help' for more information.
+not ok 12 markdown output lists db-password as expired with exact days_overdue
+# (in test file tests/rotate_check.bats, line 136)
+#   `grep -qE '\| db-password \| 2025-01-01 \| 90 \| 380 \| postgres, analytics
+[Assistant] Let me inspect the actual act output:
+[Tool: Bash] cat .act-markdown.out
+[Result] time="2026-04-17T07:40:10-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Secret Rotation Validator/Validate Secret Rotation] ⭐ Run Set up job
+[Secret Rotation Validator/Validate Secret Rotation] 🚀  Start image=act-ubuntu-pwsh:latest
+[Secret Rotation Validator/Validate Secret Rotation]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Secret Rotation Validator/Validate Secret Rotation]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/Validate Secret Rotation]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/Validate Secret Rotation]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Secret Rotation Validator/Validate Secret Rotation]   ✅  Success - Set up jo
+[Assistant] I see multiple issues. Root cause: timezone differences (local=EST with DST vs container=UTC). Container values (381, 6, 8, 74) are correct; I'll make the script deterministic with TZ=UTC, and fix test expectations + grep escaping + JSON extraction.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/bash-opus47-1m/rotate-check.sh", "old_string": "com
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/bash-opus47-1m/rotate-check.sh has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Now fix the bats test with correct expectations, grep escapes, and JSON extraction:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/bash-opus47-1m/tests/rotate_check.bats", "content": "#!/usr/bin/env bats\
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/bash-opus47-1m/tests/rotate_check.bats has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Let me verify my bats fixes against the cached act output without re-running act:
+[Tool: Bash] bats --filter-tags '' --filter 'markdown output|JSON output|JSON summary|JSON expired|JSON warning|JSON ok|JSON required_by|act-result.txt exists|workflow|script|actionlint' tests/rotate_check.bats 2>&1 | tail -60
+[Result] 1..23
+ok 1 workflow file exists at expected path
+ok 2 script file exists and is executable
+ok 3 workflow references rotate-check.sh
+ok 4 workflow triggers include push, pull_request, workflow_dispatch, schedule
+ok 5 workflow declares explicit contents: read permission
+ok 6 workflow uses actions/checkout@v4
+ok 7 actionlint passes on the workflow
+ok 8 script passes shellcheck
+ok 9 script passes bash -n syntax check
+ok 10 markdown output contains expected header and summary counts
+ok 11 markdown output lists db-password as expired with exact days_overdue 381
+ok 12 markdown output lists api-token as expired with exact days_overdue 6
+ok 13 markdown output lists jwt-secret as warning with exact days_until_expiry 8
+ok 14 markdown output lists oauth-key as ok with exact days_until_expiry 74
+ok 15 markdown output has the three urgency sections in correct order
+ok 16 JSON output parses cleanly and has expected top-level keys
+ok 17 JSON summary contains exact urgency counts
+ok 18 JSON expired lis
+[Assistant] All 23 non-act-invoking tests pass. Let me verify script is still clean after TZ=UTC edit, and inspect the cached act-result.txt:
+[Tool: Bash] shellcheck rotate-check.sh && bash -n rotate-check.sh && echo "--- act-result.txt size ---" && wc -l act-result.txt && echo "--- delimiters ---" && grep -n '===== CASE' act-result.txt
+[Result] --- act-result.txt size ---
+149 act-result.txt
+--- delimiters ---
+1:===== CASE: markdown, fixture=mixed.json =====
+63:===== CASE: json, fixture=mixed.json =====
+[Assistant] Let me run the full bats suite one final time to verify end-to-end correctness:
+[Tool: Bash] rm -f .act-markdown.out .act-json.out act-result.txt
+bats tests/rotate_check.bats 2>&1 | tail -40
+[Result] 1..25
+ok 1 workflow file exists at expected path
+ok 2 script file exists and is executable
+ok 3 workflow references rotate-check.sh
+ok 4 workflow triggers include push, pull_request, workflow_dispatch, schedule
+ok 5 workflow declares explicit contents: read permission
+ok 6 workflow uses actions/checkout@v4
+ok 7 actionlint passes on the workflow
+ok 8 script passes shellcheck
+ok 9 script passes bash -n syntax check
+ok 10 act run 1 of 2 (markdown, mixed fixture) — job succeeds
+ok 11 markdown output contains expected header and summary counts
+ok 12 markdown output lists db-password as expired with exact days_overdue 381
+ok 13 markdown output lists api-token as expired with exact days_overdue 6
+ok 14 markdown output lists jwt-secret as warning with exact days_until_expiry 8
+ok 15 markdown output lists oauth-key as ok with exact days_until_expiry 74
+ok 16 markdown output has the three urgency sections in correct order
+ok 17 act run 2 of 2 (JSON, mixed fixture) — job succeeds
+ok 18 JSON outpu
+[Assistant] All 25 tests pass end-to-end with fresh act runs.
+[Tool: TodoWrite] {"todos": [{"content": "Write rotate-check.sh script", "activeForm": "Writing rotate-check.sh script", "status": "completed"}, {"content": "Write GitHub Actions workflow", "activeForm": "Writing GitHu
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Bash] ls -la && echo "---" && wc -l act-result.txt rotate-check.sh tests/rotate_check.bats .github/workflows/secret-rotation-validator.yml
+[Result] total 104
+drwxr-xr-x 8 passp passp  4096 Apr 17 07:43 .
+drwxr-xr-x 6 passp passp  4096 Apr 17 07:34 ..
+-rw-r--r-- 1 passp passp  7508 Apr 17 07:44 .act-json.out
+-rw-r--r-- 1 passp passp  5960 Apr 17 07:43 .act-markdown.out
+-rw-r--r-- 1 passp passp    53 Apr 17 07:39 .actrc
+drwxr-xr-x 2 passp passp  4096 Apr 17 07:34 .claude
+drwxr-xr-x 7 passp passp  4096 Apr 17 07:34 .git
+drwxr-xr-x 3 passp passp  4096 Apr 17 07:35 .github
+-rw-r--r-- 1 passp passp 13560 Apr 17 07:44 act-result.txt
+-rw-r--r-- 1 passp passp 21843 Apr 17 00:12 benchmark-instructions-v4.md
+drwxr-xr-x 2 passp passp  4096 Apr 17 07:37 fixtures
+-rwxr-xr-x 1 passp passp  9928 Apr 17 07:42 rotate-check.sh
+drwxr-xr-x 2 passp passp  4096 Apr 17 07:35 scripts
+drwxr-xr-x 2 passp passp  4096 Apr 17 07:43 tests
+---
+  149 act-result.txt
+  280 rotate-check.sh
+  258 tests/rotate_check.bats
+  123 .github/workflows/secret-rotation-validator.yml
+  810 total
+[Assistant] All 25 tests pass. Final deliverables:
+
+- **`rotate-check.sh`** — Bash script classifying secrets into `expired | warning | ok` with markdown/JSON output; uses `TZ=UTC` for deterministic date math.
+- **`.github/workflows/secret-rotation-validator.yml`** — triggers on push/pull_request/schedule/workflow_dispatch, checks out, installs `jq`, reads `rotation.env` overrides, runs the script.
+- **`tests/rotate_check.bats`** — 25 bats tests: 9 structural (file/workflow/actionlint/shellcheck), 2 `act push --rm` job-success checks, 14 exact-value assertions against parsed act output.
+- **`fixtures/mixed.json`** — 4 secrets covering all three urgency buckets.
+- **`act-result.txt`** — delimited capture of both act runs (markdown + JSON cases), both showing `Job succeeded` with exit 0.
+
+Exact values verified: `db-password` 381 days overdue, `api-token` 6, `jwt-secret` 8 until expiry, `oauth-key` 74; summary counts 2/1/1.

@@ -1,0 +1,65 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      version_file:
+        description: "Path to package.json or VERSION file"
+        required: false
+        default: "package.json"
+      commits_file:
+        description: "Path to conventional commits log"
+        required: false
+        default: "fixtures/commits_feat.txt"
+
+permissions:
+  contents: read
+
+env:
+  VERSION_FILE: ${{ github.event.inputs.version_file || 'package.json' }}
+  COMMITS_FILE: ${{ github.event.inputs.commits_file || 'fixtures/commits_feat.txt' }}
+
+jobs:
+  bump:
+    name: Bump version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        run: |
+          python3 --version
+          python3 -c "import json, re, sys; print('stdlib OK')"
+
+      - name: Show inputs
+        run: |
+          echo "version file: ${VERSION_FILE}"
+          echo "commits file: ${COMMITS_FILE}"
+          cat "${VERSION_FILE}"
+          echo "----"
+          cat "${COMMITS_FILE}"
+
+      - name: Run semantic version bumper
+        id: bump
+        run: |
+          NEW_VERSION=$(python3 bumper.py \
+            --version-file "${VERSION_FILE}" \
+            --commits-file "${COMMITS_FILE}" \
+            --changelog CHANGELOG.md)
+          echo "NEW_VERSION=${NEW_VERSION}"
+          echo "new_version=${NEW_VERSION}" >> "${GITHUB_OUTPUT}"
+
+      - name: Show updated version file
+        run: |
+          echo "--- updated ${VERSION_FILE} ---"
+          cat "${VERSION_FILE}"
+          echo "--- CHANGELOG.md ---"
+          cat CHANGELOG.md
+
+      - name: Verify result
+        run: |
+          echo "Bumped to: ${{ steps.bump.outputs.new_version }}"
+          test -n "${{ steps.bump.outputs.new_version }}"

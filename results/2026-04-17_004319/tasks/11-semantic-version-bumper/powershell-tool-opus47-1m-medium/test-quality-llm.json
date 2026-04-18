@@ -1,0 +1,11 @@
+{
+  "coverage": 5,
+  "rigor": 4,
+  "design": 3,
+  "overall": 4,
+  "summary": "The test suite covers all stated requirements comprehensively: version parsing from both plain VERSION files and package.json, all three bump types (patch/minor/major), BREAKING CHANGE detection via both `!` syntax and footer, mixed-commit resolution, scoped conventional commit types, changelog section grouping, end-to-end Invoke-VersionBump scenarios, fixture-file-based commits, GitHub Actions workflow structure checks (triggers, jobs, script references, actionlint), and act-based pipeline execution with exact version output assertions. Rigor is good \u2014 missing file/invalid semver errors, invalid Step-Version input, the 'none' bump case, package.json field preservation, and fixture-driven integration are all exercised. However, several edge cases are absent: an empty commits array, a pre-existing CHANGELOG.md (prepend vs. overwrite), malformed package.json, and 0.x version semantics. Design has meaningful weaknesses: temp file cleanup in the Get-CurrentVersion describe is done inline after assertions rather than in AfterEach, so a failing assertion leaks temp files; `[System.IO.Path]::ChangeExtension((New-TemporaryFile), '.json')` returns a path string pointing to a nonexistent `.json` file while leaving an orphaned `.tmp` file on disk (Set-Content will create the .json file, so assertions pass, but the .tmp file is never removed); and the act integration tests are structurally complex and environment-sensitive, making them brittle if the .actrc or Docker environment isn't perfectly configured. Despite these issues the suite would reliably catch regressions across the main logic paths.",
+  "judge_cost_usd": 0.0658,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 2123,
+  "judge_provider": "claude-cli"
+}

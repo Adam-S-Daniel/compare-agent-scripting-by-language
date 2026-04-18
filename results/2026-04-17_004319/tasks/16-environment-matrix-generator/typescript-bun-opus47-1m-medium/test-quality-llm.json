@@ -1,0 +1,11 @@
+{
+  "coverage": 4,
+  "rigor": 3,
+  "design": 3,
+  "overall": 3,
+  "summary": "The unit test suite in matrix.test.ts covers the core requirements well: cartesian product, include/exclude rules, max-parallel, fail-fast, maxSize validation, empty-axis errors, feature flag merging, and deduplication. The workflow.test.ts adds actionlint validation, YAML structure assertions, file-existence checks, and ambitious E2E testing via act. However, several gaps lower the scores. Rigor: missing boundary conditions (maxSize exactly equal to combo count, zero/negative maxParallel, numeric/boolean axis values, multi-key exclude rules, self-duplicate includes), and the CLI (stdin path, invalid JSON, process exit codes) is never directly unit-tested. Design: the 'too-big' E2E case is self-contradictory \u2014 it asserts both `code === 0` and `'Job succeeded'` while also expecting error text; if the CLI exits 1 the workflow step fails and act returns non-zero, making this case always fail in practice. The extractBlock helper is fragile against act output format changes, and fixture files are referenced but not shown, making the expected-value assertions impossible to independently verify. The act test loop also conflates general assertions (code, 'Job succeeded') with per-case assertions, so a failure in the shared block obscures which expectation was violated. Overall a solid starting structure that would catch regressions in the happy path but has meaningful reliability gaps under edge conditions and tooling variance.",
+  "judge_cost_usd": 0.0587,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 1754,
+  "judge_provider": "claude-cli"
+}

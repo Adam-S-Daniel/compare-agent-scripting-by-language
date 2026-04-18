@@ -1,0 +1,11 @@
+{
+  "coverage": 4,
+  "rigor": 3,
+  "design": 4,
+  "overall": 4,
+  "summary": "The test suite covers most task requirements well: secret status classification (ok/warning/expired), config loading with error paths, report grouping and sorting, both output formats (JSON and markdown), empty-input handling, and end-to-end CLI invocation. Workflow structure tests (YAML existence, actionlint, triggers, job graph, file references) and three distinct act-based integration cases add real depth. Weaknesses: the CLI script's exit-code logic (the -FailOn parameter \u2014 exits 2 for expired, 1 for warning, 0 for ok, 3 for error) is never directly asserted, which is a key behavioral contract left untested. The DaysUntilExpiry=0 boundary (secret expires exactly today) is not covered, nor are zero/negative rotationDays values, empty requiredBy arrays, or the -FailOn none and -FailOn warning code paths. The BeforeDiscovery block and BeforeAll block both re-declare $script:HarnessRoot and $script:ActResultPath, creating mild redundancy and potential confusion about which scope wins. The act-based tests are inherently environment-coupled (Docker, git, act binary) and share a global act-result.txt file, making individual test isolation incomplete. Despite these gaps, the suite is well-named, uses Pester v5 idioms correctly (BeforeDiscovery for ForEach expansion, finally blocks for cleanup, script: scope), and would reliably catch core regressions.",
+  "judge_cost_usd": 0.0751,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 1747,
+  "judge_provider": "claude-cli"
+}

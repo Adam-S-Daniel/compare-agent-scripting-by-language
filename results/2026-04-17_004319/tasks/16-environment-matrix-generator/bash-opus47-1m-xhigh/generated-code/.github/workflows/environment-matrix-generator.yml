@@ -1,0 +1,113 @@
+name: environment-matrix-generator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: Which fixture file under fixtures/ to run against
+        required: false
+        default: basic-multi-dim.json
+
+permissions:
+  contents: read
+
+env:
+  # The harness drops the selected fixture at this path before invoking act.
+  # When absent, the workflow falls back to a default shipped fixture so
+  # direct local / workflow_dispatch runs still produce meaningful output.
+  ACTIVE_FIXTURE: active-fixture.json
+
+jobs:
+  matrix-gen:
+    name: Generate and validate matrix
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify required tools (jq, bash)
+        shell: bash
+        run: |
+          command -v jq >/dev/null || { echo "jq missing"; exit 1; }
+          command -v bash >/dev/null || { echo "bash missing"; exit 1; }
+          bash --version | head -1
+          jq --version
+
+      - name: Syntax-check matrix-gen.sh
+        shell: bash
+        run: bash -n matrix-gen.sh
+
+      - name: Resolve active fixture
+        id: resolve
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Harness-driven runs drop a fixture at ./active-fixture.json.
+          # workflow_dispatch/default runs fall back to a canonical fixture.
+          if [[ -f "${ACTIVE_FIXTURE}" ]]; then
+            echo "path=${ACTIVE_FIXTURE}" >> "$GITHUB_OUTPUT"
+          else
+            fallback="fixtures/${{ github.event.inputs.fixture || 'basic-multi-dim.json' }}"
+            echo "path=${fallback}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run matrix-gen.sh and emit delimited results
+        shell: bash
+        run: |
+          set -uo pipefail
+          FIXTURE="${{ steps.resolve.outputs.path }}"
+          echo "===FIXTURE_PATH===${FIXTURE}==="
+
+          # The expected-mode file is written by the act test harness. In its
+          # absence (workflow_dispatch, CI-level push), default to "success".
+          expected_mode="success"
+          if [[ -f expected-mode.txt ]]; then
+            expected_mode="$(tr -d '[:space:]' < expected-mode.txt)"
+          fi
+          echo "===EXPECTED_MODE===${expected_mode}==="
+
+          # Capture the script's stdout, stderr, and exit code without aborting
+          # the job — we want to record negative cases too.
+          out_file="$(mktemp)"
+          err_file="$(mktemp)"
+          set +e
+          ./matrix-gen.sh "${FIXTURE}" >"${out_file}" 2>"${err_file}"
+          rc=$?
+          set -e
+
+          echo "===EXIT_CODE===${rc}==="
+          echo "===STDERR_BEGIN==="
+          cat "${err_file}"
+          echo "===STDERR_END==="
+          echo "===MATRIX_JSON_BEGIN==="
+          cat "${out_file}"
+          echo "===MATRIX_JSON_END==="
+
+          # Decide whether the observed outcome matches expectation.
+          # "success" = rc must be 0 and stdout must parse as JSON.
+          # "fail"    = rc must be non-zero (we expect a validation error).
+          case "${expected_mode}" in
+            success)
+              if [[ "${rc}" -ne 0 ]]; then
+                echo "EXPECTED success but script exited ${rc}" >&2
+                exit 1
+              fi
+              jq -e 'type == "object"' "${out_file}" >/dev/null || {
+                echo "stdout was not valid JSON" >&2
+                exit 1
+              }
+              ;;
+            fail)
+              if [[ "${rc}" -eq 0 ]]; then
+                echo "EXPECTED failure but script exited 0" >&2
+                exit 1
+              fi
+              ;;
+            *)
+              echo "Unknown expected mode: ${expected_mode}" >&2
+              exit 1
+              ;;
+          esac
+          echo "===RESULT===ok==="

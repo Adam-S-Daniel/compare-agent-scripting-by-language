@@ -1,0 +1,101 @@
+name: PR Label Assigner
+
+# Fired on PR events (open/sync/reopen) and on pushes for manual testing.
+# Also supports workflow_dispatch so the job can be triggered with a custom
+# fixture path, and push so local `act push` runs the same logic.
+on:
+  push:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: "Path (relative to repo root) to a newline-delimited file list to evaluate."
+        required: false
+        default: "fixtures/mixed.txt"
+
+# Only read access is needed for computing labels; no PR mutation here.
+permissions:
+  contents: read
+
+env:
+  # Which fixture to run by default when the event is push / pull_request.
+  # Override by setting PR_LABELER_FIXTURE in the environment (the harness uses this).
+  DEFAULT_FIXTURE: "fixtures/mixed.txt"
+  LABEL_CONFIG: "labels.config.json"
+
+jobs:
+  assign-labels:
+    name: Assign labels
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        shell: bash
+        run: |
+          # Install Bun via the official installer. Avoids relying on third-party
+          # setup actions inside the act container (where network pulls of actions
+          # can be flaky). After install, add Bun to PATH for later steps.
+          set -euo pipefail
+          if ! command -v bun >/dev/null 2>&1; then
+            curl -fsSL https://bun.sh/install | bash
+          fi
+          echo "${HOME}/.bun/bin" >> "${GITHUB_PATH}"
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          export PATH="${HOME}/.bun/bin:${PATH}"
+          bun install --frozen-lockfile
+
+      - name: Run unit tests
+        shell: bash
+        run: |
+          export PATH="${HOME}/.bun/bin:${PATH}"
+          # Run ONLY the unit tests here. workflow.test.ts is an outer harness
+          # that spawns `act` itself — running it from inside the act container
+          # would recursively nest Docker-in-Docker and fail.
+          bun test labeler.test.ts cli.test.ts
+
+      - name: Resolve fixture path
+        id: fixture
+        shell: bash
+        run: |
+          if [ -n "${{ github.event.inputs.fixture }}" ]; then
+            path="${{ github.event.inputs.fixture }}"
+          elif [ -n "${PR_LABELER_FIXTURE:-}" ]; then
+            path="${PR_LABELER_FIXTURE}"
+          else
+            path="${DEFAULT_FIXTURE}"
+          fi
+          echo "path=${path}" >> "${GITHUB_OUTPUT}"
+          echo "Resolved fixture: ${path}"
+
+      - name: Assign labels from fixture
+        id: assign
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="${HOME}/.bun/bin:${PATH}"
+          fixture="${{ steps.fixture.outputs.path }}"
+          if [ ! -f "${fixture}" ]; then
+            echo "ERROR: fixture not found: ${fixture}" >&2
+            exit 1
+          fi
+          echo "=== Fixture contents (${fixture}) ==="
+          cat "${fixture}"
+          echo "=== End fixture ==="
+          output=$(bun run cli.ts --config "${LABEL_CONFIG}" --files "${fixture}")
+          echo "LABELS_JSON: ${output}"
+          # Normalize for downstream grep assertions (comma-separated label list).
+          labels=$(echo "${output}" | bun -e 'const d=JSON.parse(await Bun.stdin.text()); console.log(d.labels.join(","))')
+          echo "LABELS_CSV: ${labels}"
+          echo "labels_json=${output}" >> "${GITHUB_OUTPUT}"
+          echo "labels_csv=${labels}" >> "${GITHUB_OUTPUT}"
+
+      - name: Print summary
+        shell: bash
+        run: |
+          echo "Final labels: ${{ steps.assign.outputs.labels_csv }}"

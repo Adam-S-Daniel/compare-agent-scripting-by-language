@@ -1,0 +1,51 @@
+name: Dependency License Checker
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  license-check:
+    runs-on: ubuntu-latest
+    env:
+      MANIFEST_PATH: test-case/package.json
+      POLICY_PATH: test-case/policy.json
+      LICENSES_PATH: test-case/licenses.json
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: "1.3.11"
+
+      - name: Show Bun version
+        run: bun --version
+
+      - name: Run license checker
+        id: check
+        run: |
+          set +e
+          bun run src/cli.ts "$MANIFEST_PATH" "$POLICY_PATH" "$LICENSES_PATH" > report.json
+          echo "exit_code=$?" >> "$GITHUB_OUTPUT"
+          echo "----- REPORT -----"
+          cat report.json
+          echo "----- END REPORT -----"
+
+      - name: Summarize
+        run: |
+          APPROVED=$(bun --print 'JSON.parse(await Bun.file("report.json").text()).summary.approved')
+          DENIED=$(bun --print 'JSON.parse(await Bun.file("report.json").text()).summary.denied')
+          UNKNOWN=$(bun --print 'JSON.parse(await Bun.file("report.json").text()).summary.unknown')
+          TOTAL=$(bun --print 'JSON.parse(await Bun.file("report.json").text()).summary.total')
+          echo "LICENSE_SUMMARY total=$TOTAL approved=$APPROVED denied=$DENIED unknown=$UNKNOWN"
+
+      - name: Run unit tests
+        run: bun test tests/checker.test.ts

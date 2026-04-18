@@ -155,14 +155,14 @@ def _detect_traps(events: list[dict], console: str, metrics: dict) -> list[dict]
             traps.append({"name": name, "time_s": t, "desc": desc})
 
     # 1. Pester CmdletBinding parameter binding spiral
-    if mode == "powershell":
+    if mode in ("powershell", "powershell-tool"):
         diag = [c for c in bash_cmds if re.search(r"/tmp/test_\w+\.(?:ps1|Tests\.ps1)", c)]
         if len(diag) >= 2:
             _add("pester-cmdletbinding-spiral", len(diag) * 25,
                  f"{len(diag)} /tmp/test_*.ps1 diagnostic scripts bisecting Pester parameter binding")
 
     # 2. Wrong Pester assertion names
-    if mode == "powershell":
+    if mode in ("powershell", "powershell-tool"):
         wrong = [n for n, p in [("BeInRange", r"Should\s+-BeInRange"),
                                  ("BeGreaterOrEqualTo", r"Should\s+-BeGreaterOrEqualTo"),
                                  ("BeLessOrEqualTo", r"Should\s+-BeLessOrEqualTo")]
@@ -171,13 +171,13 @@ def _detect_traps(events: list[dict], console: str, metrics: dict) -> list[dict]
             _add("pester-wrong-assertions", 45, f"Used nonexistent assertions: {', '.join(wrong)}")
 
     # 3. Docker PowerShell install exploration
-    if mode == "powershell":
+    if mode in ("powershell", "powershell-tool"):
         dp = [c for c in bash_cmds if re.search(r"docker\s+run.*(?:powershell|pwsh|microsoft-prod)", c, re.I)]
         if len(dp) >= 2:
             _add("docker-pwsh-install", len(dp) * 45, f"{len(dp)} Docker runs exploring pwsh install")
 
     # 4. Module restructure mid-run
-    if mode == "powershell":
+    if mode in ("powershell", "powershell-tool"):
         if (re.search(r"restructur|separate.*into.*module|\.psm1.*fix", all_text, re.I)
                 and any(".psm1" in c for c in bash_cmds)):
             _add("mid-run-module-restructure", 120, "Restructured to .psm1 module mid-run")
@@ -276,7 +276,7 @@ def _detect_traps(events: list[dict], console: str, metrics: dict) -> list[dict]
     # (c) scope/invocation issues requiring diagnostic scripts.
     # shell: pwsh works fine in act containers (act translates to docker exec pwsh),
     # but agents that invoke pwsh from bash waste time on cross-shell debugging.
-    if mode == "powershell":
+    if mode in ("powershell", "powershell-tool"):
         # Signal 1: /tmp/scope_test*.ps1 diagnostic scripts (bisecting pwsh invocation)
         scope_scripts = [c for c in bash_cmds if re.search(
             r"/tmp/scope_test\d*\.ps1|/tmp/pwsh_debug\d*\.ps1", c)]
@@ -419,19 +419,57 @@ def _spearman(xs, ys):
 
 
 def _emit_sorted_variants(header: str, separator: str, data_rows: list[dict],
-                           sort_specs: list[tuple[str, str, bool]],
+                           sort_specs: list[tuple[str, object, bool]],
                            row_formatter) -> list[str]:
     """Emit multiple collapsed copies of a table, each sorted differently.
 
-    sort_specs: list of (summary_label, sort_key, reverse).
+    sort_specs: list of (summary_label, sort_key, reverse). `sort_key` is
+    either a dict-key string (lookup + numeric/string fallback) or a
+    callable(row_dict)->sort_key for compound / computed orderings.
     row_formatter: callable(row_dict) -> markdown row string.
     """
     out: list[str] = []
     for label, key, reverse in sort_specs:
-        sorted_rows = sorted(data_rows, key=lambda r: (r.get(key, 0) if isinstance(r.get(key, 0), (int, float)) else str(r.get(key, ""))), reverse=reverse)
+        if callable(key):
+            sorted_rows = sorted(data_rows, key=key, reverse=reverse)
+        else:
+            sorted_rows = sorted(data_rows, key=lambda r: (r.get(key, 0) if isinstance(r.get(key, 0), (int, float)) else str(r.get(key, ""))), reverse=reverse)
         row_strs = [row_formatter(r) for r in sorted_rows]
         out.extend(_collapsible_table(label, header, separator, row_strs))
     return out
+
+
+# Tier letters mapped to numeric positions for compound sort keys.
+# "—" (em-dash, no data) gets the highest value so no-data rows sink
+# to the bottom when sorting ascending/A-first.
+_TIER_RANK = {"A": 1, "B": 2, "C": 3, "D": 4, "E": 5, "—": 6}
+
+
+def _tier_num(tier: str) -> int:
+    """Return the numeric position of a tier letter (A=1 ... E=5; —=6)."""
+    return _TIER_RANK.get(tier, 6)
+
+
+# ── Tier binning: groups close values into bands so tables can answer
+# "is 1st tightly clustered with the rest, or a runaway?" at a glance.
+# Ratio-based for lower-is-better axes (duration, cost); absolute-band
+# for LLM score since its 1-5 scale makes ratios meaningless.
+def _ratio_tier(ratio: float) -> str:
+    """Return tier letter A-E for a ratio where 1.0 is best."""
+    if ratio <= 1.15: return "A"
+    if ratio <= 1.40: return "B"
+    if ratio <= 1.80: return "C"
+    if ratio <= 2.50: return "D"
+    return "E"
+
+
+def _llm_tier(score: float) -> str:
+    """Return tier letter A-E for an LLM judge Overall score (1-5 scale)."""
+    if score >= 4.5: return "A"
+    if score >= 3.5: return "B"
+    if score >= 2.5: return "C"
+    if score >= 1.5: return "D"
+    return "E"
 
 
 
@@ -446,13 +484,16 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     now_et = datetime.now(et).strftime("%Y-%m-%d %I:%M:%S %p ET")
 
     completed = len(all_metrics)
-    remaining = total_runs - run_count
+    # Remaining is derived from cumulative completion vs the declared total so
+    # the line stays self-consistent even when a resumed run inherits prior
+    # metrics (which make `completed` exceed the per-invocation `run_count`).
+    remaining = max(0, total_runs - completed)
 
     total_cost = sum(m["cost"]["total_cost_usd"] for m in all_metrics)
     total_duration = sum(m["timing"]["grand_total_duration_ms"] for m in all_metrics) / 1000
 
     lines = []
-    lines.append("# Benchmark Results: Language Mode Comparison")
+    lines.append("# Benchmark Results: Language Comparison")
     lines.append("")
     lines.append(f"**Last updated:** {now_et}")
     lines.append("")
@@ -469,8 +510,33 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     # Separate successful and failed runs
     successful = [m for m in all_metrics if m.get("run_success", m.get("exit_code", 0) == 0 and m.get("timing", {}).get("num_turns", 0) > 0)]
     failed = [m for m in all_metrics if m not in successful]
+
+    # Pre-effort-flag runs (v1-v4) used `opus`/`sonnet` as short names in
+    # the CLI, which today resolve to different models across providers.
+    # Rename them in DISPLAY so readers of the merged report know which
+    # concrete version was tested (Opus 4.6 / Sonnet 4.6 on this repo's
+    # history). Filesystem subdirs keep their original plain name.
+    _DISPLAY_RENAME = {"opus": "opus46", "sonnet": "sonnet46"}
+
+    def _path_label(m):
+        """On-disk subdir label: exactly matches directories already on
+        the filesystem. No rename here — breaking this breaks file I/O."""
+        eff = m.get("effort_level")
+        return f"{m['model_short']}-{eff}" if eff else m["model_short"]
+
+    def _label(m):
+        """Display label used for grouping and the Model column in tables.
+        Applies _DISPLAY_RENAME so legacy `opus`/`sonnet` rows read as
+        `opus46`/`sonnet46`. Do NOT use for paths — use _path_label."""
+        eff = m.get("effort_level")
+        short = _DISPLAY_RENAME.get(m["model_short"], m["model_short"])
+        return f"{short}-{eff}" if eff else short
+
     modes_seen = sorted(set(m["language_mode"] for m in all_metrics))
-    models_seen = sorted(set(m["model_short"] for m in all_metrics))
+    models_seen = sorted(set(_label(m) for m in all_metrics))
+    # Map variant label -> plain model_short for pricing lookups (keyed by
+    # COST_PER_MTOK, which indexes on model_short only).
+    _label_to_model_short = {_label(m): m["model_short"] for m in all_metrics}
 
     # ── Helper: format duration as minutes ──
     def _dur(seconds):
@@ -480,14 +546,40 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     # COLLECT ALL ANALYSIS DATA UP FRONT
     # ==================================================================
 
-    # ── Comparison by Language/Model ──
+    # ── LLM-as-judge score cache ──
+    # Hoisted here so the aggregate Comparison table and the Per-Run table
+    # can both read scores without re-doing I/O later. Keyed by
+    # (task_id, language_mode, variant_label); value is the full judge dict
+    # (overall/coverage/rigor/design/summary/judge_cost). Runs without a
+    # cached judge result are simply absent from the map.
+    from test_quality import LLM_JUDGE_CACHE_FILE
+    llm_data_by_key: dict[tuple, dict] = {}
+    for m in all_metrics:
+        cache_path = (run_dir / "tasks" / m["task_id"]
+                      / f"{m['language_mode']}-{_path_label(m)}" / LLM_JUDGE_CACHE_FILE)
+        if not cache_path.exists():
+            continue
+        try:
+            llm_data_by_key[(m["task_id"], m["language_mode"], _label(m))] = json.loads(cache_path.read_text())
+        except Exception:
+            pass
+
+    # ── Comparison by Language/Model/Effort ──
     cmp_rows = []
     for mode in modes_seen:
         for model in models_seen:
-            mm = [m for m in successful if m["language_mode"] == mode and m["model_short"] == model]
+            mm = [m for m in successful if m["language_mode"] == mode and _label(m) == model]
             n = len(mm)
             if n == 0:
                 continue
+            # Average LLM-judge Overall across this combo's runs that have a
+            # cached score. Stored as 0.0 for sort purposes + a separate
+            # display string so missing data doesn't sort above zero scores.
+            llm_scores = [llm_data_by_key[(m["task_id"], mode, model)].get("overall")
+                          for m in mm
+                          if (m["task_id"], mode, model) in llm_data_by_key]
+            llm_scores = [s for s in llm_scores if isinstance(s, (int, float))]
+            avg_llm = sum(llm_scores) / len(llm_scores) if llm_scores else None
             cmp_rows.append({
                 "mode": mode, "model": model, "n": n,
                 "avg_dur": sum(m["timing"]["grand_total_duration_ms"] for m in mm) / n / 1000,
@@ -496,16 +588,19 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
                 "avg_turns": sum(m["timing"]["num_turns"] for m in mm) / n,
                 "avg_cost": sum(m["cost"]["total_cost_usd"] for m in mm) / n,
                 "total_cost": sum(m["cost"]["total_cost_usd"] for m in mm),
+                "avg_llm": avg_llm if avg_llm is not None else 0.0,
+                "avg_llm_disp": f"{avg_llm:.1f}" if avg_llm is not None else "—",
+                "avg_llm_n": len(llm_scores),
             })
 
     # ── Trap & Hook data ──
-    TEST_RUN_COST_S = {"default": 8, "powershell": 35, "bash": 12, "typescript-bun": 8}
+    TEST_RUN_COST_S = {"default": 8, "powershell": 35, "powershell-tool": 35, "bash": 12, "typescript-bun": 8}
     # Compute per-(mode, model) hook overhead from actual Write/Edit durations.
     # Use all_tool_uses when available (full list), fall back to slowest_tool_uses.
     # Subtract 0.05s baseline for the Write operation itself.
     _write_durs_by_combo: dict[tuple, list] = {}
     for m in all_metrics:
-        combo = (m["language_mode"], m["model_short"])
+        combo = (m["language_mode"], _label(m))
         source = m.get("tool_use_timing", {}).get("all_tool_uses") or m.get("tool_use_timing", {}).get("slowest_tool_uses", [])
         for t in source:
             if t["tool_name"] in ("Write", "Edit"):
@@ -520,12 +615,13 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     combo_run_counts = {}
 
     for m in all_metrics:
-        mode, model = m["language_mode"], m["model_short"]
+        mode, model = m["language_mode"], _label(m)
+        path_subdir = f"{mode}-{_path_label(m)}"
         combo = (mode, model)
         combo_run_counts[combo] = combo_run_counts.get(combo, 0) + 1
 
-        cli_path = run_dir / "tasks" / m["task_id"] / f"{mode}-{model}" / "cli-output.json"
-        console_path = run_dir / "tasks" / m["task_id"] / f"{mode}-{model}" / "console-log.txt"
+        cli_path = run_dir / "tasks" / m["task_id"] / path_subdir / "cli-output.json"
+        console_path = run_dir / "tasks" / m["task_id"] / path_subdir / "console-log.txt"
         try:
             evts = json.loads(cli_path.read_text())
         except Exception:
@@ -544,9 +640,9 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         # Trap: PowerShell runtime install overhead (pwsh + Pester pre-installed on
         # real GitHub runners but must be installed in act containers every run).
         # Primary source: act-result.txt step timings.  Fallback: event stream.
-        if mode == "powershell":
+        if mode in ("powershell", "powershell-tool"):
             act_result_path = (run_dir / "tasks" / m["task_id"]
-                               / f"{mode}-{model}" / "generated-code" / "act-result.txt")
+                               / path_subdir / "generated-code" / "act-result.txt")
             act_text = act_result_path.read_text() if act_result_path.exists() else ""
             # Primary: parse exact step durations from act output
             pwsh_times = [float(x) for x in re.findall(
@@ -627,7 +723,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     cache_read_rates = {s: COST_PER_MTOK[mid]["cache_read"] for s, mid in MODELS.items() if mid in COST_PER_MTOK}
     cache_create_rates = {s: COST_PER_MTOK[mid]["cache_write"] for s, mid in MODELS.items() if mid in COST_PER_MTOK}
     for m in all_metrics:
-        cli_path = run_dir / "tasks" / m["task_id"] / f"{m['language_mode']}-{m['model_short']}" / "cli-output.json"
+        cli_path = run_dir / "tasks" / m["task_id"] / f"{m['language_mode']}-{_path_label(m)}" / "cli-output.json"
         if not cli_path.exists():
             continue
         try:
@@ -639,32 +735,106 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
                 usage = e.get("message", {}).get("usage", {})
                 cr = usage.get("cache_read_input_tokens", 0)
                 cc = usage.get("cache_creation_input_tokens", 0)
-                ms = m["model_short"]
-                saved = cr * (cache_create_rates.get(ms, 0) - cache_read_rates.get(ms, 0)) / 1_000_000 if cr else 0
+                # Pricing lookup uses plain model_short; display label includes effort.
+                ms_price = m["model_short"]
+                ms_label = _label(m)
+                saved = cr * (cache_create_rates.get(ms_price, 0) - cache_read_rates.get(ms_price, 0)) / 1_000_000 if cr else 0
                 status = "full_hit" if cr > 0 and cc == 0 else "partial" if cr > 0 else "miss"
-                cache_data.append({"mode": m["language_mode"], "model": ms, "saved": saved, "status": status})
+                cache_data.append({"mode": m["language_mode"], "model": ms_label, "saved": saved, "status": status})
                 break
 
     # ==================================================================
     # OBSERVATIONS (at top of document)
     # ==================================================================
     if len(successful) >= 2 and len(cmp_rows) >= 2:
-        lines.append("## Observations")
+        # Compute rank + tier once; the two sections below reuse these
+        # per-row fields.
+        for i, r in enumerate(sorted(cmp_rows, key=lambda r: r["avg_dur"]), start=1):
+            r["dur_rank"] = i
+        for i, r in enumerate(sorted(cmp_rows, key=lambda r: r["avg_cost"]), start=1):
+            r["cost_rank"] = i
+        llm_scored = [r for r in cmp_rows if r["avg_llm_n"] > 0]
+        for i, r in enumerate(sorted(llm_scored, key=lambda r: -r["avg_llm"]), start=1):
+            r["llm_rank"] = i
+        _llm_sentinel = len(cmp_rows) + 1
+        for r in cmp_rows:
+            r.setdefault("llm_rank", _llm_sentinel)
+            r["llm_rank_disp"] = str(r["llm_rank"]) if r["llm_rank"] != _llm_sentinel else "—"
+        best_dur = min(r["avg_dur"] for r in cmp_rows)
+        best_cost = min(r["avg_cost"] for r in cmp_rows)
+        for r in cmp_rows:
+            r["dur_tier"] = _ratio_tier(r["avg_dur"] / best_dur)
+            r["cost_tier"] = _ratio_tier(r["avg_cost"] / best_cost)
+            r["llm_tier"] = _llm_tier(r["avg_llm"]) if r["avg_llm_n"] > 0 else "—"
+
+        # ── Tiers (bin by value so gap-vs-cluster is visible at a glance) ──
+        # Ranks alone don't reveal whether 1st and 5th are close or miles
+        # apart. Tiers bin each axis into A-E bands so a reader can see
+        # `all A` (tight cluster) vs a mix (spread). This section comes
+        # before Rankings because the "at a glance" shape is usually the
+        # most useful starting question; rankings below supply the detail.
+        lines.append("## Tiers by Language/Model/Effort")
+        lines.append("")
+        lines.append("*Duration / Cost tier = ratio of this combo's average to the best combo's "
+                     "average on that axis (lower ratio = better). Bands: "
+                     "**A** ≤1.15×, **B** ≤1.40×, **C** ≤1.80×, **D** ≤2.50×, **E** >2.50×.*")
+        lines.append("*LLM Score tier = absolute Overall score band. "
+                     "**A** ≥4.5, **B** ≥3.5, **C** ≥2.5, **D** ≥1.5, **E** <1.5, `—` = no data.*")
+        lines.append("*If every row in a column is tier A, those combos are effectively tied on that axis.*")
+        lines.append("")
+        tr_hdr = "| Language | Model | Duration | Cost | LLM Score |"
+        tr_sep = "|----------|-------|----------|------|-----------|"
+        def _fmt_tr(r):
+            return (f"| {r['mode']} | {r['model']} "
+                    f"| {r['dur_tier']} ({_dur(r['avg_dur'])}) "
+                    f"| {r['cost_tier']} (${r['avg_cost']:.2f}) "
+                    f"| {r['llm_tier']}"
+                    + (f" ({r['avg_llm']:.1f})" if r['avg_llm_n'] > 0 else "")
+                    + " |")
+        lines.append(tr_hdr)
+        lines.append(tr_sep)
+        for r in sorted(cmp_rows, key=lambda r: (r['mode'], r['model'])):
+            lines.append(_fmt_tr(r))
+        lines.append("")
+        # Sort variants for Tiers. Primary key is the sorted-on axis's
+        # tier; secondary is the average numeric tier of the OTHER two
+        # axes, so ties on the primary axis break toward the combo that
+        # is stronger overall. A-first / ascending on both.
+        lines.extend(_emit_sorted_variants(tr_hdr, tr_sep, cmp_rows, [
+            ("Sorted by Duration tier (A-first), then avg of Cost/LLM tiers",
+             lambda r: (_tier_num(r["dur_tier"]),
+                        (_tier_num(r["cost_tier"]) + _tier_num(r["llm_tier"])) / 2),
+             False),
+            ("Sorted by Cost tier (A-first), then avg of Duration/LLM tiers",
+             lambda r: (_tier_num(r["cost_tier"]),
+                        (_tier_num(r["dur_tier"]) + _tier_num(r["llm_tier"])) / 2),
+             False),
+            ("Sorted by LLM Score tier (A-first; no-data last), then avg of Duration/Cost tiers",
+             lambda r: (_tier_num(r["llm_tier"]),
+                        (_tier_num(r["dur_tier"]) + _tier_num(r["cost_tier"])) / 2),
+             False),
+        ], _fmt_tr))
         lines.append("")
 
-        def _fmt_combo(r, field, fmt="dur"):
-            label = f"{r['mode']}/{r['model']}"
-            if fmt == "dur":
-                return f"{label} — {_dur(r[field])}"
-            return f"{label} — ${r[field]:.2f}"
-
-        by_dur = sorted(cmp_rows, key=lambda r: r["avg_dur"])
-        by_cost = sorted(cmp_rows, key=lambda r: r["avg_cost"])
-
-        lines.append(f"- **Fastest (avg):** {_fmt_combo(by_dur[0], 'avg_dur')}, then {_fmt_combo(by_dur[1], 'avg_dur')}")
-        lines.append(f"- **Slowest (avg):** {_fmt_combo(by_dur[-1], 'avg_dur')}, then {_fmt_combo(by_dur[-2], 'avg_dur')}")
-        lines.append(f"- **Cheapest (avg):** {_fmt_combo(by_cost[0], 'avg_cost', 'cost')}, then {_fmt_combo(by_cost[1], 'avg_cost', 'cost')}")
-        lines.append(f"- **Most expensive (avg):** {_fmt_combo(by_cost[-1], 'avg_cost', 'cost')}, then {_fmt_combo(by_cost[-2], 'avg_cost', 'cost')}")
+        lines.append("## Rankings by Language/Model/Effort")
+        lines.append("")
+        lines.append("*Lower rank = better on that axis (1 = fastest / cheapest / highest LLM score).*")
+        lines.append("*LLM Score = Overall (1-5) from LLM-as-judge of generated test code (dimensions: coverage, rigor, design). `—` = no judge data.*")
+        lines.append("")
+        rk_hdr = "| Language | Model | Duration | Cost | LLM Score |"
+        rk_sep = "|----------|-------|----------|------|-----------|"
+        def _fmt_rk(r):
+            return f"| {r['mode']} | {r['model']} | {r['dur_rank']} | {r['cost_rank']} | {r['llm_rank_disp']} |"
+        lines.append(rk_hdr)
+        lines.append(rk_sep)
+        for r in sorted(cmp_rows, key=lambda r: (r['mode'], r['model'])):
+            lines.append(_fmt_rk(r))
+        lines.append("")
+        lines.extend(_emit_sorted_variants(rk_hdr, rk_sep, cmp_rows, [
+            ("Sorted by Duration rank (fastest first)", "dur_rank", False),
+            ("Sorted by Cost rank (cheapest first)", "cost_rank", False),
+            ("Sorted by LLM Score rank (best first; no-data last)", "llm_rank", False),
+        ], _fmt_rk))
         lines.append("")
 
         if completed < total_runs and total_duration > 0 and completed > 0:
@@ -678,7 +848,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     if failed:
         lines.append("## Failed / Timed-Out Runs")
         lines.append("")
-        lines.append("| Task | Mode | Model | Duration | Reason | Lines | actionlint | act-result.txt |")
+        lines.append("| Task | Language | Model | Duration | Reason | Lines | actionlint | act-result.txt |")
         lines.append("|------|------|-------|----------|--------|-------|------------|----------------|")
         for m in failed:
             dur = m["timing"]["grand_total_duration_ms"] / 1000
@@ -687,7 +857,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
             alint = "pass" if alint_val else ("fail" if alint_val is False else "n/a")
             act = "yes" if m.get("quality", {}).get("act_result_txt_exists") else "no"
             lines.append(
-                f"| {m['task_name'][:30]} | {m['language_mode']} | {m['model_short']} "
+                f"| {m['task_name'][:30]} | {m['language_mode']} | {_label(m)} "
                 f"| {_dur(dur)} | {reason} | {m['code_metrics']['total_lines']} | {alint} | {act} |")
         lines.append("")
         lines.append(f"*{len(failed)} run(s) excluded from averages below.*")
@@ -697,15 +867,17 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     # COMPARISON BY LANGUAGE/MODEL
     # ==================================================================
     if cmp_rows:
-        lines.append("## Comparison by Language/Model")
+        lines.append("## Comparison by Language/Model/Effort")
         if failed:
             lines.append("*(averages exclude failed/timed-out runs)*")
+        lines.append("*Avg LLM Score = Overall (1-5) from LLM-as-judge of generated test code (dimensions: coverage, rigor, design). `—` = no judge data.*")
         lines.append("")
-        cmp_hdr = "| Mode | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost |"
-        cmp_sep = "|------|-------|------|-------------|--------------------------|------------|-----------|----------|------------|"
+        cmp_hdr = "| Language | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost | Avg LLM Score |"
+        cmp_sep = "|----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|"
         def _fmt_cmp(r):
             return (f"| {r['mode']} | {r['model']} | {r['n']} | {_dur(r['avg_dur'])} | {_dur(r['avg_dur_net'])} "
-                    f"| {r['avg_errors']:.1f} | {r['avg_turns']:.0f} | ${r['avg_cost']:.2f} | ${r['total_cost']:.2f} |")
+                    f"| {r['avg_errors']:.1f} | {r['avg_turns']:.0f} | ${r['avg_cost']:.2f} | ${r['total_cost']:.2f} "
+                    f"| {r['avg_llm_disp']} |")
         lines.append(cmp_hdr)
         lines.append(cmp_sep)
         for r in cmp_rows:
@@ -717,6 +889,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
             ("Sorted by avg duration net of traps (fastest first)", "avg_dur_net", False),
             ("Sorted by avg errors (fewest first)", "avg_errors", False),
             ("Sorted by avg turns (fewest first)", "avg_turns", False),
+            ("Sorted by LLM-as-judge score (best first)", "avg_llm", True),
         ], _fmt_cmp))
         lines.append("")
 
@@ -726,8 +899,8 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     lines.append("## Savings Analysis")
     lines.append("")
 
-    # ── Hook Savings by Language/Model ──
-    lines.append("### Hook Savings by Language/Model")
+    # ── Hook Savings by Language/Model/Effort ──
+    lines.append("### Hook Savings by Language/Model/Effort")
     lines.append("")
     lines.append("Each hook-caught error avoids one test run that would otherwise have been needed to discover it.")
     lines.append("Every hook fire (hit or miss) costs execution time for the syntax/type checker.")
@@ -737,14 +910,14 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     has_test_time = all(hs.get("has_real_test_time", False) for hs in hook_by_combo.values() if hs.get("fires", 0) > 0)
 
     if has_test_time:
-        hook_hdr = ("| Mode | Model | Fires | Caught | Rate "
+        hook_hdr = ("| Language | Model | Fires | Caught | Rate "
                     "| Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time "
                     "| Test Run Time | % of Test Time Saved |")
         hook_sep = ("|------|-------|-------|--------|------"
                     "|------------|-----------|----------|-----------|-----------|-----------|"
                     "---------------|----------------------|")
     else:
-        hook_hdr = ("| Mode | Model | Fires | Caught | Rate "
+        hook_hdr = ("| Language | Model | Fires | Caught | Rate "
                     "| Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time |")
         hook_sep = ("|------|-------|-------|--------|------"
                     "|------------|-----------|----------|-----------|-----------|-----------|")
@@ -794,18 +967,23 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     lines.extend(_emit_sorted_variants(hook_hdr, hook_sep, hook_rows, sort_specs, _fmt_hook))
     lines.append("")
 
-    # ── Trap Analysis by Language/Model/Category ──
+    # ── Trap Analysis by Language/Model/Effort/Category ──
     if trap_instances:
+        # Each value is a tuple of modes the trap applies to. A trap that can
+        # fire in any PowerShell variant uses the full PS family so its
+        # catch-rate denominator counts runs of both `powershell` and
+        # `powershell-tool` modes.
+        PS_FAMILY = ("powershell", "powershell-tool")
         trap_applicable_mode = {
-            "pester-cmdletbinding-spiral": "powershell",
-            "pester-wrong-assertions": "powershell",
-            "docker-pwsh-install": "powershell",
-            "mid-run-module-restructure": "powershell",
-            "ts-type-error-fix-cycles": "typescript-bun",
-            "bats-setup-issues": "bash",
-            "dotnet-install-loop": "csharp-script",
-            "pwsh-invoked-from-bash": "powershell",
-            "pwsh-runtime-install-overhead": "powershell",
+            "pester-cmdletbinding-spiral": PS_FAMILY,
+            "pester-wrong-assertions": PS_FAMILY,
+            "docker-pwsh-install": PS_FAMILY,
+            "mid-run-module-restructure": PS_FAMILY,
+            "ts-type-error-fix-cycles": ("typescript-bun",),
+            "bats-setup-issues": ("bash",),
+            "dotnet-install-loop": ("csharp-script",),
+            "pwsh-invoked-from-bash": PS_FAMILY,
+            "pwsh-runtime-install-overhead": PS_FAMILY,
         }
         trap_descriptions = {
             "act-push-debug-loops": "Agent ran `act push` more than twice, indicating repeated workflow debugging.",
@@ -836,8 +1014,11 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         tlmc_rows = []
         for trap_name in sorted(trap_agg, key=lambda k: -sum(t["time_s"] for t in trap_agg[k])):
             insts = trap_agg[trap_name]
-            tmode = trap_applicable_mode.get(trap_name, "all")
-            n_app = mode_run_totals.get(tmode, completed) if tmode != "all" else completed
+            tmodes = trap_applicable_mode.get(trap_name)  # tuple or None (=all)
+            if tmodes is None:
+                n_app = completed
+            else:
+                n_app = sum(mode_run_totals.get(m, 0) for m in tmodes)
             n_fell = len(insts)
             t_time = sum(t["time_s"] for t in insts)
             t_cost = sum(t["time_s"] / t["dur_s"] * t["cost"] for t in insts if t["dur_s"] > 0 and t["cost"] > 0)
@@ -860,9 +1041,9 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
                     "cost_pct": combo_cost / total_cost * 100 if total_cost else 0,
                 })
 
-        lines.append("### Trap Analysis by Language/Model/Category")
+        lines.append("### Trap Analysis by Language/Model/Effort/Category")
         lines.append("")
-        tlmc_hdr = "| Trap | Mode | Model | Fell In | Time Lost | % of Time | $ Lost | % of $ |"
+        tlmc_hdr = "| Trap | Language | Model | Fell In | Time Lost | % of Time | $ Lost | % of $ |"
         tlmc_sep = "|------|------|-------|---------|-----------|-----------|--------|--------|"
         def _fmt_tlmc(r):
             return (f"| {r['trap']} | {r['mode']} | {r['model']} | {r['fell_in']} "
@@ -891,7 +1072,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         lines.append("")
         lines.append("#### Column Definitions")
         lines.append("")
-        lines.append("- **Fell In**: Number of runs (within that mode/model) where this trap was detected.")
+        lines.append("- **Fell In**: Number of runs (within that language/model) where this trap was detected.")
         lines.append("- **Time Lost**: Estimated wall-clock seconds wasted on the trap, based on the number of")
         lines.append("  wasted commands multiplied by a per-command cost (15\u201325s for typical Bash, 45s for Docker runs, 50s for act push).")
         lines.append("- **% of Time**: Time Lost as a percentage of total benchmark duration.")
@@ -899,11 +1080,11 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         lines.append("- **% of $**: $ Lost as a percentage of total benchmark cost.")
         lines.append("")
 
-    # ── Traps by Language/Model ──
+    # ── Traps by Language/Model/Effort ──
     if trap_instances:
-        lines.append("### Traps by Language/Model")
+        lines.append("### Traps by Language/Model/Effort")
         lines.append("")
-        tlm_hdr = "| Mode | Model | Runs | Traps | Time Lost | % of Time | $ Lost | % of $ |"
+        tlm_hdr = "| Language | Model | Runs | Traps | Time Lost | % of Time | $ Lost | % of $ |"
         tlm_sep = "|------|-------|------|-------|-----------|-----------|--------|--------|"
         trapped_runs_by_combo = {}
         trap_count_by_combo = {}
@@ -974,12 +1155,12 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     llm_rows = []
     has_llm = False
     for m in all_metrics:
-        variant_dir = run_dir / "tasks" / m["task_id"] / f"{m['language_mode']}-{m['model_short']}"
+        variant_dir = run_dir / "tasks" / m["task_id"] / f"{m['language_mode']}-{_path_label(m)}"
         gen_dir = variant_dir / "generated-code"
         sq = compute_structural_metrics(gen_dir)
 
         tq_rows.append({
-            "task": m["task_name"][:30], "mode": m["language_mode"], "model": m["model_short"],
+            "task": m["task_name"][:30], "mode": m["language_mode"], "model": _label(m),
             "tests": sq["test_count"], "asserts": sq["assertion_count"],
             "apt": sq["assertions_per_test"],
             "t_lines": sq["test_lines"], "i_lines": sq["impl_lines"],
@@ -987,27 +1168,23 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
             "lang": sq["language"],
         })
 
-        # LLM-as-judge scores (from cache if available)
-        llm_cache = variant_dir / LLM_JUDGE_CACHE_FILE
-        if llm_cache.exists():
-            try:
-                lj = json.loads(llm_cache.read_text())
-                has_llm = True
-                llm_rows.append({
-                    "task": m["task_name"][:30], "mode": m["language_mode"], "model": m["model_short"],
-                    "coverage": lj.get("coverage", 0), "rigor": lj.get("rigor", 0),
-                    "design": lj.get("design", 0), "overall": lj.get("overall", 0),
-                    "summary": lj.get("summary", ""),
-                    "judge_cost": lj.get("judge_cost_usd", 0),
-                })
-            except Exception:
-                pass
+        # LLM-as-judge scores — read from the hoisted cache loaded earlier.
+        lj = llm_data_by_key.get((m["task_id"], m["language_mode"], _label(m)))
+        if lj:
+            has_llm = True
+            llm_rows.append({
+                "task": m["task_name"][:30], "mode": m["language_mode"], "model": _label(m),
+                "coverage": lj.get("coverage", 0), "rigor": lj.get("rigor", 0),
+                "design": lj.get("design", 0), "overall": lj.get("overall", 0),
+                "summary": lj.get("summary", ""),
+                "judge_cost": lj.get("judge_cost_usd", 0),
+            })
 
     lines.append("## Test Quality Evaluation")
     lines.append("")
 
-    # ── Structural Metrics by Language/Model ──
-    lines.append("### Structural Metrics by Language/Model")
+    # ── Structural Metrics by Language/Model/Effort ──
+    lines.append("### Structural Metrics by Language/Model/Effort")
     lines.append("")
     lines.append("Automated analysis of test files: test count, assertion count, and test-to-code line ratio.")
     lines.append("")
@@ -1022,7 +1199,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         sq_agg[key]["asserts"].append(r["asserts"])
         sq_agg[key]["ratios"].append(r["ratio"])
 
-    sq_hdr = "| Mode | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |"
+    sq_hdr = "| Language | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |"
     sq_sep = "|------|-------|-----------|----------------|-----------------|---------------------|"
     sq_summary_rows = []
     for key in sorted(sq_agg):
@@ -1055,7 +1232,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     lines.append("")
 
     # ── Per-Run Structural Metrics ──
-    tq_hdr = "| Task | Mode | Model | Tests | Assertions | Assert/Test | Test Lines | Impl Lines | Test:Code |"
+    tq_hdr = "| Task | Language | Model | Tests | Assertions | Assert/Test | Test Lines | Impl Lines | Test:Code |"
     tq_sep = "|------|------|-------|-------|------------|-------------|------------|------------|-----------|"
     def _fmt_tq(r):
         return (f"| {r['task']} | {r['mode']} | {r['model']} "
@@ -1090,7 +1267,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
             lj_agg[key]["ovr"].append(r["overall"])
             lj_agg[key]["cost"].append(r["judge_cost"])
 
-        lj_hdr = "| Mode | Model | Avg Overall | Avg Coverage | Avg Rigor | Avg Design | Judge Cost |"
+        lj_hdr = "| Language | Model | Avg Overall | Avg Coverage | Avg Rigor | Avg Design | Judge Cost |"
         lj_sep = "|------|-------|-------------|-------------|-----------|------------|------------|"
         lj_summary_rows = []
         for key in sorted(lj_agg):
@@ -1124,7 +1301,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         lines.append("")
 
         # Per-run LLM scores
-        lj_pr_hdr = "| Task | Mode | Model | Cov | Rig | Des | Ovr | Summary |"
+        lj_pr_hdr = "| Task | Language | Model | Cov | Rig | Des | Ovr | Summary |"
         lj_pr_sep = "|------|------|-------|-----|-----|-----|-----|---------|"
         def _fmt_lj_pr(r):
             return (f"| {r['task']} | {r['mode']} | {r['model']} "
@@ -1195,7 +1372,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
                 lines.append("**Probable counter gaps** — structural counters may be missing "
                              "a test pattern. Investigate and fix `test_quality.py`.")
                 lines.append("")
-                lines.append("| Task | Mode | Model | Tests | Asserts | Cov | Rig | Des | Ovr | Flag |")
+                lines.append("| Task | Language | Model | Tests | Asserts | Cov | Rig | Des | Ovr | Flag |")
                 lines.append("|------|------|-------|-------|---------|-----|-----|-----|-----|------|")
                 for d in counter_gaps:
                     lines.append(
@@ -1209,7 +1386,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
                 lines.append("**Qualitative disagreements** — structural metrics look reasonable; "
                              "the LLM judge is weighing factors the counters can't measure.")
                 lines.append("")
-                lines.append("| Task | Mode | Model | Tests | Asserts | Cov | Rig | Des | Ovr | Flag | Justification |")
+                lines.append("| Task | Language | Model | Tests | Asserts | Cov | Rig | Des | Ovr | Flag | Justification |")
                 lines.append("|------|------|-------|-------|---------|-----|-----|-----|-----|------|---------------|")
                 for d in qualitative:
                     # Truncate justification to keep table readable
@@ -1230,27 +1407,37 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     # ==================================================================
     lines.append("## Per-Run Results")
     lines.append("")
-    pr_hdr = "| Task | Mode | Model | Duration | Turns | Errors | Cost | Language | Status |"
-    pr_sep = "|------|------|-------|----------|-------|--------|------|----------|--------|"
+    lines.append("*LLM Score = Overall (1-5) from LLM-as-judge of generated test code (dimensions: coverage, rigor, design). `—` = no judge data.*")
+    lines.append("")
+    pr_hdr = "| Task | Language | Model | Duration | Turns | Errors | Cost | LLM Score | Chosen | Status |"
+    pr_sep = "|------|----------|-------|----------|-------|--------|------|-----------|--------|--------|"
     pr_rows = []
     for m in all_metrics:
         dur = m["timing"]["grand_total_duration_ms"] / 1000
         status = "ok" if m in successful else m.get("failure_reason", "failed")
+        lj = llm_data_by_key.get((m["task_id"], m["language_mode"], _label(m)))
+        llm_overall = lj.get("overall") if lj else None
         pr_rows.append({
-            "task": m["task_name"][:30], "mode": m["language_mode"], "model": m["model_short"],
+            "task": m["task_name"][:30], "mode": m["language_mode"], "model": _label(m),
             "dur": dur, "turns": m["timing"]["num_turns"],
             "errors": m["quality"]["error_count"],
             "cost": m["cost"]["total_cost_usd"],
             "lang": m["language_chosen"], "status": status,
+            "llm": float(llm_overall) if isinstance(llm_overall, (int, float)) else 0.0,
+            "llm_disp": f"{llm_overall:.1f}" if isinstance(llm_overall, (int, float)) else "—",
         })
     def _fmt_pr(r):
         return (f"| {r['task']} | {r['mode']} | {r['model']} "
                 f"| {_dur(r['dur'])} | {r['turns']} "
                 f"| {r['errors']} | ${r['cost']:.2f} "
+                f"| {r['llm_disp']} "
                 f"| {r['lang']} | {r['status']} |")
     lines.append(pr_hdr)
     lines.append(pr_sep)
-    for r in pr_rows:
+    # Default table sorts by (task, language, model) so it reads as a
+    # stable reference regardless of iteration order; sorted-detail
+    # variants below offer other sorts.
+    for r in sorted(pr_rows, key=lambda r: (r['task'], r['mode'], r['model'])):
         lines.append(_fmt_pr(r))
     lines.append("")
     lines.extend(_emit_sorted_variants(pr_hdr, pr_sep, pr_rows, [
@@ -1258,6 +1445,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         ("Sorted by duration (fastest first)", "dur", False),
         ("Sorted by errors (fewest first)", "errors", False),
         ("Sorted by turns (fewest first)", "turns", False),
+        ("Sorted by LLM-as-judge score (best first)", "llm", True),
     ], _fmt_pr))
     lines.append("")
 
@@ -1374,12 +1562,16 @@ def _regenerate_run(run_dir: Path) -> None:
             all_metrics.append(json.loads(f.read_text()))
         except Exception:
             pass
-    # Determine total_runs from manifest or count
+    # Determine total_runs from manifest or metric count, whichever is larger.
+    # The manifest reflects the most recent invocation's plan only; a resumed
+    # run that fills in a new effort variant may add metrics beyond the
+    # manifest's claim. Using the max keeps the Status line honest.
     manifest_path = run_dir / "run-manifest.json"
     total_runs = len(all_metrics)
     if manifest_path.exists():
         try:
-            total_runs = json.loads(manifest_path.read_text()).get("total_runs", total_runs)
+            manifest_total = json.loads(manifest_path.read_text()).get("total_runs", total_runs)
+            total_runs = max(total_runs, manifest_total)
         except Exception:
             pass
     generate_results_md(run_dir, all_metrics, total_runs, total_runs)

@@ -1,0 +1,1011 @@
+{
+  "task_id": "15-test-results-aggregator",
+  "task_name": "Test Results Aggregator",
+  "task_category": "GitHub Actions / CI Reporting",
+  "language_mode": "powershell-tool",
+  "language_chosen": "powershell",
+  "language_breakdown": {
+    "powershell": 100.0
+  },
+  "interpreter_versions": {},
+  "powershell_version": "",
+  "dotnet_version": "",
+  "model": "claude-opus-4-7[1m]",
+  "model_short": "opus47-1m",
+  "claude_code_version": "2.1.112",
+  "instructions_version": "v4",
+  "timestamp_start": "2026-04-17T08:37:55.595488+00:00",
+  "timestamp_end": "2026-04-17T08:53:05.794879+00:00",
+  "prompt_text": "You are completing a scripting task. You MUST use PowerShell as your implementation language.\n\nTASK: Parse test result files in multiple formats (JUnit XML, and JSON), aggregate results across multiple files (simulating a matrix build), compute totals (passed, failed, skipped, duration), identify flaky tests (passed in some runs, failed in others), and generate a markdown summary suitable for a GitHub Actions job summary. Create sample test result files as fixtures.\n\nREQUIREMENTS:\n1. Use red/green TDD methodology: write a failing test FIRST, then write the minimum code to make it pass, then refactor. Repeat for each piece of functionality.\n2. Create mocks and test fixtures as necessary for testability. Use Pester as the testing framework.\n3. All tests must be runnable with `Invoke-Pester` and must pass at the end.\n4. Include clear comments explaining your approach.\n5. Handle errors gracefully with meaningful error messages.\n\nCreate your solution in the current working directory. Start by writing your first failing test.\n\nGITHUB ACTIONS REQUIREMENT:\nCreate a GitHub Actions workflow file at .github/workflows/test-results-aggregator.yml that uses\nyour script in a real CI/CD pipeline. The workflow must:\n- Use appropriate trigger events (push, pull_request, schedule, workflow_dispatch, etc.)\n- Reference your script correctly\n- Pass actionlint validation (valid YAML, valid action references, correct syntax)\n- Include appropriate permissions, environment variables, and job dependencies\n- Actually run successfully when executed locally with `act` (nektos/act)\n\nDesign your workflow so its steps work in an isolated Docker container \u2014 use\n`actions/checkout@v4`, install dependencies your script needs, and run it.\nAvoid steps requiring external services or secrets without sensible defaults.\n\nIMPORTANT for PowerShell mode: Use `shell: pwsh` on your workflow run: steps instead\nof invoking `pwsh -Command` or `pwsh -File` from bash. This avoids escaping issues\nand works correctly in act containers. pwsh and Pester are pre-installed in the\ncontainer.\n\nWORKFLOW VALIDATION:\nRun `actionlint .github/workflows/test-results-aggregator.yml` and fix any errors. actionlint is\npre-installed. Iterate until it passes cleanly. Validate with actionlint BEFORE\nrunning act \u2014 actionlint is instant, act takes 30-90 seconds per run.\n\nALL TESTS MUST RUN THROUGH ACT:\nEvery single test case must execute through the GitHub Actions workflow via `act`.\nDo NOT test your script directly \u2014 all testing goes through the pipeline.\n\nStructure your workflow to accept test fixture data and produce verifiable output.\nYour test harness must:\n1. For each test case: set up a temp git repo with your project files + that case's\n   fixture data, run `act push --rm`, capture the output\n2. Save all act output to `act-result.txt` in the current working directory (append\n   each test case's output, clearly delimited)\n3. Assert that act exited with code 0 for each case\n4. Parse the act output and assert on EXACT EXPECTED VALUES \u2014 not just that output\n   appeared, but that it matches the known-good result for that test case's input.\n   For example: if your workflow bumps version 1.1.0 with a feat commit, assert\n   the output contains exactly \"1.2.0\", not just \"a version number\"\n5. Assert every job shows \"Job succeeded\"\n\nThe `act-result.txt` file MUST exist when done. It is a required artifact.\n`act` and Docker are pre-installed. Limit yourself to at most 3 `act push` runs \u2014\ndiagnose errors from the output rather than re-running blindly.\n\nWORKFLOW STRUCTURE TESTS (also required):\n- Parse the YAML and check expected structure (triggers, jobs, steps)\n- Verify the workflow references your script files correctly (paths exist)\n- Verify actionlint passes (assert exit code 0)\n",
+  "exit_code": 0,
+  "run_success": true,
+  "failure_reason": null,
+  "session": {
+    "session_id": "0fd66607-d2a9-49a9-b0cc-0fe8a1f73e0c",
+    "stop_reason": "end_turn",
+    "terminal_reason": "completed",
+    "fast_mode_state": "off",
+    "service_tier": "standard",
+    "speed": "standard",
+    "inference_geo": "",
+    "context_window": 200000,
+    "max_output_tokens": 32000,
+    "permission_mode": "bypassPermissions",
+    "output_style": "default",
+    "tools_available_count": 28,
+    "mcp_servers": [],
+    "permission_denials": []
+  },
+  "model_usage_detail": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 1258,
+      "outputTokens": 20,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.001358,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "claude-opus-4-7[1m]": {
+      "inputTokens": 69,
+      "outputTokens": 68064,
+      "cacheReadInputTokens": 5265669,
+      "cacheCreationInputTokens": 181387,
+      "webSearchRequests": 0,
+      "costUSD": 5.468448250000001,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000
+    }
+  },
+  "effort_level": "xhigh",
+  "timing": {
+    "grand_total_duration_ms": 910199,
+    "total_api_duration_ms": 806020,
+    "total_execution_duration_ms": 101895,
+    "num_turns": 63
+  },
+  "tokens": {
+    "input_tokens": 69,
+    "output_tokens": 68064,
+    "cache_read_tokens": 5265669,
+    "cache_creation_tokens": 181387,
+    "total_context_consumed": 5447125,
+    "compaction_count": 0
+  },
+  "cost": {
+    "total_cost_usd": 5.469806250000001,
+    "assumed_input_cost_per_mtok": 5.0,
+    "assumed_output_cost_per_mtok": 25.0,
+    "assumed_cache_read_cost_per_mtok": 0.5,
+    "assumed_cache_write_cost_per_mtok": 6.25
+  },
+  "code_metrics": {
+    "total_lines": 1392,
+    "total_tokens_estimate": 18437,
+    "file_count": 22,
+    "files": [
+      "act-result.txt",
+      "run-act-tests.ps1",
+      "fixtures/run1-linux-junit.xml",
+      "fixtures/run2-windows-junit.xml",
+      "fixtures/run3-macos.json",
+      "src/Invoke-Aggregator.ps1",
+      "src/TestResultsAggregator.psm1",
+      ".github/workflows/test-results-aggregator.yml",
+      "tests/TestResultsAggregator.Tests.ps1",
+      "tests/Workflow.Tests.ps1",
+      "tests/fixtures/bad-status.json",
+      "tests/fixtures/bad.xml",
+      "tests/fixtures/flaky-a.xml",
+      "tests/fixtures/flaky-b.json",
+      "tests/fixtures/no-tests.json",
+      "tests/fixtures/simple.json",
+      "tests/fixtures/simple.xml",
+      "tests/fixtures/stable.xml",
+      "tests/fixtures/mixed/one.xml",
+      "tests/fixtures/mixed/two.json",
+      "alt-fixtures/all-pass-junit.xml",
+      "alt-fixtures/all-pass.json"
+    ]
+  },
+  "quality": {
+    "tests_pass": null,
+    "error_count": 0,
+    "error_details": [],
+    "actionlint_pass": true,
+    "actionlint_errors": 0,
+    "actionlint_results": [
+      {
+        "file": ".github/workflows/test-results-aggregator.yml",
+        "passed": true,
+        "errors": ""
+      }
+    ],
+    "act_result_txt_exists": true,
+    "act_result_txt_size": 34116,
+    "areas_of_difficulty": [],
+    "observations": ""
+  },
+  "tool_install": {
+    "tool_install_duration_ms": 0,
+    "tools_installed": [],
+    "install_commands_count": 0
+  },
+  "tool_use_timing": {
+    "total_tool_uses": 62,
+    "total_tool_duration_ms": 105892,
+    "bash_tool_uses": 30,
+    "bash_total_ms": 95670,
+    "slowest_tool_uses": [
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -NoProfile -File ./run-act-tests.ps1 2>&1 | tail -100",
+        "duration_ms": 28647,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -NoProfile -Command \"Import-Module Pester -Force; Invoke-Pester -Path tests/TestResultsAggregator.Tests.ps1 -Output Detailed\" 2>&1 | tail -30",
+        "duration_ms": 11475,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "rm -rf /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m/tests/fixtures /home/passp/repos/compare-agent-scripting-",
+        "duration_ms": 4733,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -NoProfile -Command \"Import-Module Pester -Force; \\$c = New-PesterConfiguration; \\$c.Run.Path='tests/TestResultsAggregator.Tests.ps1'; \\$c.Output.Verbosity='Detailed'; Invoke-Pester -Configuratio",
+        "duration_ms": 4600,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -NoProfile -Command \"\nImport-Module Pester -Force\n\\$c = New-PesterConfiguration\n\\$c.Run.Path='tests/TestResultsAggregator.Tests.ps1'\n\\$c.Filter.FullName = '*empty array when no flakes*'\n\\$c.Outpu",
+        "duration_ms": 4568,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "rm -rf /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m/tests/fixtures\npwsh -NoProfile -Command \"Import-Module Pe",
+        "duration_ms": 4318,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "rm -rf /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m/tests/fixtures\npwsh -NoProfile -Command \"Import-Module Pe",
+        "duration_ms": 4309,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "rm -rf /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m/tests/fixtures /home/passp/repos/compare-agent-scripting-",
+        "duration_ms": 4148,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -NoProfile -Command \"Import-Module Pester -Force; \\$c = New-PesterConfiguration; \\$c.Run.Path='tests/TestResultsAggregator.Tests.ps1'; \\$c.Filter.FullName='*empty array*'; \\$c.Output.Verbosity='D",
+        "duration_ms": 4130,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -NoProfile -Command \"Import-Module Pester -Force; Invoke-Pester -Path tests/_debug.Tests.ps1 -Output Detailed\" 2>&1 | tail -25",
+        "duration_ms": 3746,
+        "is_error": false,
+        "is_install": false
+      }
+    ],
+    "all_tool_uses": [
+      {
+        "tool_name": "Bash",
+        "command": "ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m/",
+        "duration_ms": 363,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cat /home/passp/repos/compare-agent-scripting-by-language/AGENTS.md 2>/dev/null | head -200",
+        "duration_ms": 119,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m/.actrc",
+        "duration_ms": 381,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "which pwsh; pwsh --version; which act; act --version; which actionlint; actionlint --version",
+        "duration_ms": 732,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -NoProfile -Command \"Get-Module -ListAvailable Pester | Select-Object -First 1 Name,Version\"",
+        "duration_ms": 1875,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "ls /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m/.claude/",
+        "duration_ms": 98,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 53,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 686,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "ToolSearch",
+        "command": "",
+        "duration_ms": 50,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "TodoWrite",
+        "command": "",
+        "duration_ms": 42,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -NoProfile -Command \"Import-Module Pester -Force; Invoke-Pester -Path tests/TestResultsAggregator.Tests.ps1 -Output Detailed\" 2>&1 | tail -30",
+        "duration_ms": 11475,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 672,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -NoProfile -Command \"Import-Module Pester -Force; \\$c = New-PesterConfiguration; \\$c.Run.Path='tests/TestResultsAggregator.Tests.ps1'; \\$c.Output.Verbosity='Detailed'; Invoke-Pester -Configuratio",
+        "duration_ms": 4600,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -NoProfile -Command \"\nImport-Module ./src/TestResultsAggregator.psm1 -Force\n\\$xml = '/tmp/stable-debug.xml'\n@'\n<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?>\n<testsuite name=\\\"S\\\" tests=\\\"1\\\" failure",
+        "duration_ms": 2264,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -NoProfile -Command \"\nImport-Module Pester -Force\n\\$c = New-PesterConfiguration\n\\$c.Run.Path='tests/TestResultsAggregator.Tests.ps1'\n\\$c.Filter.FullName = '*empty array when no flakes*'\n\\$c.Outpu",
+        "duration_ms": 4568,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -NoProfile -Command \"\nImport-Module Pester -Force\n# inline duplicate of the failing test for debugging\nDescribe 'debug' {\n    BeforeAll {\n        \\$script:Mod = Join-Path \\$PSScriptRoot 'src/Test",
+        "duration_ms": 2125,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 565,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -NoProfile -Command \"Import-Module Pester -Force; Invoke-Pester -Path tests/_debug.Tests.ps1 -Output Detailed\" 2>&1 | tail -25",
+        "duration_ms": 3458,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "rm -rf /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m/tests/fixtures\npwsh -NoProfile -Command \"Import-Module Pe",
+        "duration_ms": 3597,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 17,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 662,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -NoProfile -Command \"Import-Module Pester -Force; \\$c = New-PesterConfiguration; \\$c.Run.Path='tests/TestResultsAggregator.Tests.ps1'; \\$c.Filter.FullName='*empty array*'; \\$c.Output.Verbosity='D",
+        "duration_ms": 4130,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 576,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 633,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 584,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "rm -rf /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m/tests/fixtures /home/passp/repos/compare-agent-scripting-",
+        "duration_ms": 4148,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 614,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -NoProfile -Command \"Import-Module Pester -Force; Invoke-Pester -Path tests/_debug.Tests.ps1 -Output Detailed\" 2>&1 | tail -25",
+        "duration_ms": 3746,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 10,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "ls /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m/tests/fixtures/",
+        "duration_ms": 82,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "rm -rf /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m/tests/fixtures /home/passp/repos/compare-agent-scripting-",
+        "duration_ms": 4733,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 589,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 589,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "rm -rf /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m/tests/fixtures\npwsh -NoProfile -Command \"Import-Module Pe",
+        "duration_ms": 4309,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "TodoWrite",
+        "command": "",
+        "duration_ms": 11,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 65,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 53,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 52,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 51,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 55,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -NoProfile -Command \"\nImport-Module ./src/TestResultsAggregator.psm1 -Force\n\\$s = Import-TestResults -Path fixtures\n\\$a = Get-AggregatedResults -ResultSets \\$s\n\\$f = @(Get-FlakyTest -ResultSets \\",
+        "duration_ms": 1607,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 763,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 160,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "actionlint .github/workflows/test-results-aggregator.yml && echo OK",
+        "duration_ms": 134,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "TodoWrite",
+        "command": "",
+        "duration_ms": 22,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 615,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "rm -rf /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m/tests/fixtures\npwsh -NoProfile -Command \"Import-Module Pe",
+        "duration_ms": 4318,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 697,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 603,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 606,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "TodoWrite",
+        "command": "",
+        "duration_ms": 10,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "docker --version && docker ps --format '{{.Image}}' 2>&1 | head -5; docker images act-ubuntu-pwsh 2>&1 | head -5",
+        "duration_ms": 205,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -NoProfile -File ./run-act-tests.ps1 2>&1 | tail -120",
+        "duration_ms": 886,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "grep -n '\\$CaseName:' /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m/run-act-tests.ps1",
+        "duration_ms": 61,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "sed -i 's/\\$CaseName:/${CaseName}:/g' /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m/run-act-tests.ps1\ngrep -n ",
+        "duration_ms": 114,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -NoProfile -File ./run-act-tests.ps1 2>&1 | tail -80",
+        "duration_ms": 2700,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "tail -80 /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m/act-result.txt",
+        "duration_ms": 76,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 42,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 57,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -NoProfile -File ./run-act-tests.ps1 2>&1 | tail -100",
+        "duration_ms": 28647,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "wc -l /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m/act-result.txt\necho \"---- Job succeeded lines ----\"\ngrep -",
+        "duration_ms": 119,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "TodoWrite",
+        "command": "",
+        "duration_ms": 18,
+        "is_error": false,
+        "is_install": false
+      }
+    ],
+    "install_duration_ms": 0,
+    "test_duration_ms": 59817,
+    "act_duration_ms": 0
+  },
+  "hooks": {
+    "hook_fires": 22,
+    "hook_errors_caught": 0,
+    "hook_failures": 0,
+    "hook_events": [
+      {
+        "subtype": "hook_started",
+        "hook_id": "f4b2ed37-622b-49ee-a307-678ab4c077a6",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "f4b2ed37-622b-49ee-a307-678ab4c077a6",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "5a3ce6b3-a595-42fe-b015-772e7ea4a2d2",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "5a3ce6b3-a595-42fe-b015-772e7ea4a2d2",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "5259c654-0034-4f1c-8cb1-d609d4c8438a",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "5259c654-0034-4f1c-8cb1-d609d4c8438a",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "50b43ab5-0b9c-4fba-8d9b-4d1070e10073",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "50b43ab5-0b9c-4fba-8d9b-4d1070e10073",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "3140a487-3eb2-4791-bd7e-a874e21273ab",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "3140a487-3eb2-4791-bd7e-a874e21273ab",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "876a9a07-17b9-460f-b3b5-6c22c9597fda",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "876a9a07-17b9-460f-b3b5-6c22c9597fda",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "ace1d109-79eb-4ebc-8c45-d08f66ca41ee",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "ace1d109-79eb-4ebc-8c45-d08f66ca41ee",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "58172210-f3e3-4996-a350-e99c000717ca",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "58172210-f3e3-4996-a350-e99c000717ca",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "000e4788-8713-475f-a8f8-1e7c0917c161",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "000e4788-8713-475f-a8f8-1e7c0917c161",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "5fb31a6c-1ceb-4d89-bf6f-04da8c1bb15a",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "5fb31a6c-1ceb-4d89-bf6f-04da8c1bb15a",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "21811cdc-df39-4aaa-8d56-cae9a338bc8c",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "21811cdc-df39-4aaa-8d56-cae9a338bc8c",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "a236fa79-4f7f-470b-b242-dba9b646cc33",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "a236fa79-4f7f-470b-b242-dba9b646cc33",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "90c6abdb-2522-44f1-80e3-7ae68d04d9f1",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "90c6abdb-2522-44f1-80e3-7ae68d04d9f1",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "0f1ed9c7-a58f-45be-9f4e-e2d903155f11",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "0f1ed9c7-a58f-45be-9f4e-e2d903155f11",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "cdadff52-fc6c-471c-98f9-c6291018ea95",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "cdadff52-fc6c-471c-98f9-c6291018ea95",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "b07d31cc-c3e0-44f9-b9ac-149aeddadc9b",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "b07d31cc-c3e0-44f9-b9ac-149aeddadc9b",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "35d405db-8f44-4b7b-bb13-705a79dcc02d",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "35d405db-8f44-4b7b-bb13-705a79dcc02d",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "797bf1c4-31fe-4d94-a550-6ec7a8544910",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "797bf1c4-31fe-4d94-a550-6ec7a8544910",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "c22a6956-2aed-4a7d-a22d-fa65a495b108",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "c22a6956-2aed-4a7d-a22d-fa65a495b108",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "27b50c8e-cc8c-44fa-b3ed-aae00deccf2e",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "27b50c8e-cc8c-44fa-b3ed-aae00deccf2e",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "3f95fb78-3d27-45e7-985c-603f0838847a",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "3f95fb78-3d27-45e7-985c-603f0838847a",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "55143f72-d576-426f-96f1-dec23feab910",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "55143f72-d576-426f-96f1-dec23feab910",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  }
+}

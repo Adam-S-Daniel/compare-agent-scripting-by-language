@@ -1,0 +1,52 @@
+name: Semantic Version Bumper
+
+# Run on pushes and PRs so we always know the next version, and allow
+# manual triggering for release preparation.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bump:
+    name: Bump version from conventional commits
+    runs-on: ubuntu-latest
+    env:
+      VERSION_FILE: VERSION
+      COMMITS_FILE: commits.txt
+      CHANGELOG_FILE: CHANGELOG.md
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Show inputs
+        shell: bash
+        run: |
+          echo "Current version file:"
+          cat "${VERSION_FILE}" || true
+          echo "Commits fixture:"
+          cat "${COMMITS_FILE}" || true
+
+      - name: Run semantic version bumper
+        id: bump
+        shell: bash
+        run: |
+          chmod +x ./bump-version.sh
+          ./bump-version.sh | tee bump-output.txt
+          # Re-export for downstream steps/jobs.
+          grep '^NEW_VERSION=' bump-output.txt >> "$GITHUB_OUTPUT"
+
+      - name: Show changelog
+        shell: bash
+        run: |
+          echo "----- CHANGELOG.md -----"
+          cat CHANGELOG.md
+          echo "----- VERSION -----"
+          cat "${VERSION_FILE}"
+
+      - name: Report bumped version
+        shell: bash
+        run: echo "Bumped to ${{ steps.bump.outputs.NEW_VERSION }}"

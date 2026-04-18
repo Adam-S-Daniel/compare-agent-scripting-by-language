@@ -1,0 +1,290 @@
+[Tool: Bash] ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/default-opus47-1m/
+[Result] total 44
+drwxr-xr-x 4 passp passp  4096 Apr 17 06:18 .
+drwxr-xr-x 3 passp passp  4096 Apr 17 06:18 ..
+-rw-r--r-- 1 passp passp    40 Apr 17 06:18 .actrc
+drwxr-xr-x 2 passp passp  4096 Apr 17 06:18 .claude
+drwxr-xr-x 7 passp passp  4096 Apr 17 06:18 .git
+-rw-r--r-- 1 passp passp 21843 Apr 17 00:12 benchmark-instructions-v4.md
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/AGENTS.md"}
+[Result] 1	# Agent Instructions
+2	
+3	All agent-facing instructions live in this file. `CLAUDE.md` contains only a
+4	reference here. If you are a Claude Code agent, you have already loaded this
+5	via `CLAUDE.md`. Other agents: read this file directly.
+6	
+7	## Build and test
+8	
+9	```bash
+10	# Run unit tests (REQUIRED before every PR)
+11	pip install pytest  # if not already installed
+12	python3 -m pytest tests/ -v
+13	
+14	# Validate imports
+15	python3 -c "from runner import main"
+16	python3 -c "from generate_results import generate_results_md"
+17	python3 -c "from test_quality import compute_structural_metrics"
+18	python3 -c "from llm_providers import get_provider"
+19	
+20	# Regenerate all reports
+21	python3 generate_results.py --all
+22	
+23	# Run a benchmark (v4, all tasks/modes/models)
+24	python3 runner.py --tasks 11,12,13,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
+25	
+26	# Evaluate test quality (structural metrics only)
+27	python3 test_quality.py results/2026-04
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/default-opus47-1m/.actrc"}
+[Result] 1	-P ubuntu-latest=act-ubuntu-pwsh:latest
+2	
+[Tool: Bash] which act actionlint pytest python3 docker
+[Result] /home/passp/.local/bin/act
+/home/passp/.local/bin/actionlint
+/home/passp/.local/bin/pytest
+/usr/bin/python3
+/usr/bin/docker
+[Assistant] I'll use Python with pytest for TDD. Let me start by writing the first failing test.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/default-opus47-1m/test_artifact_cleanup.py", "content": "\"\"\"\nTests for 
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/default-opus47-1m/test_artifact_cleanup.py (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 -m pytest test_artifact_cleanup.py -v 2>&1 | head -30
+[Result] ============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/passp/repos/compare-agent-scripting-by-language
+configfile: pyproject.toml
+plugins: anyio-4.13.0
+collecting ... collected 0 items / 1 error
+
+==================================== ERRORS ====================================
+_ ERROR collecting workspaces/2026-04-17_004319/17-artifact-cleanup-script/default-opus47-1m/test_artifact_cleanup.py _
+ImportError while importing test module '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/default-opus47-1m/test_artifact_cleanup.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[Assistant] Red phase confirmed. Now green: implement the module.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/default-opus47-1m/artifact_cleanup.py", "content": "\"\"\"\nartifact_cleanu
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/default-opus47-1m/artifact_cleanup.py (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 -m pytest test_artifact_cleanup.py -v 2>&1 | tail -40
+[Result] tmp_path = PosixPath('/tmp/pytest-of-passp/pytest-19/test_cli_produces_deletion_pla0')
+sample_artifacts = [{'created_at': '2026-04-16T12:00:00+00:00', 'id': 9151263, 'name': 'build-logs', 'size_bytes': 1000000, ...}, {'creat...500000, ...}, {'created_at': '2026-04-02T12:00:00+00:00', 'id': 620737, 'name': 'coverage', 'size_bytes': 600000, ...}]
+
+    def test_cli_produces_deletion_plan_json(tmp_path, sample_artifacts):
+        """End-to-end: feed the CLI a JSON file and parse its structured output."""
+        script = Path(__file__).parent / "artifact_cleanup.py"
+        fixture = tmp_path / "artifacts.json"
+        fixture.write_text(json.dumps(sample_artifacts))
+    
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(script),
+                "--input",
+                str(fixture),
+                "--max-age-days",
+                "30",
+                "--dry-run",
+                "--now",
+                NOW.isoformat(),
+               
+[Assistant] The test fixture creates duplicate IDs because `hash(name)` is the same for all of a name. Let me fix the fixture.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/default-opus47-1m/test_artifact_cleanup.py", "old_str
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/default-opus47-1m/test_artifact_cleanup.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 -m pytest test_artifact_cleanup.py -v 2>&1 | tail -25
+[Result] ============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/passp/repos/compare-agent-scripting-by-language
+configfile: pyproject.toml
+plugins: anyio-4.13.0
+collecting ... collected 12 items
+
+test_artifact_cleanup.py::test_default_policy_has_no_limits PASSED       [  8%]
+test_artifact_cleanup.py::test_max_age_marks_old_artifacts_for_deletion PASSED [ 16%]
+test_artifact_cleanup.py::test_max_age_zero_deletes_everything PASSED    [ 25%]
+test_artifact_cleanup.py::test_keep_latest_n_per_workflow_groups_by_name PASSED [ 33%]
+test_artifact_cleanup.py::test_max_total_size_evicts_oldest_first PASSED [ 41%]
+test_artifact_cleanup.py::test_combined_policies_union_of_deletions PASSED [ 50%]
+test_artifact_cleanup.py::test_summary_reports_counts_and_reclaimed_bytes PASSED [ 58%]
+test_artifact_cleanup.py::test_dry_run_does_not_call_deleter PASSED      [ 66%]
+test_
+[Assistant] All 12 unit tests pass. Now create the fixture data, GitHub Actions workflow, and the act-based test harness.
+[Tool: Bash] mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/default-opus47-1m/.github/workflows /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/default-opus47-1m/fixtures
+[Result] (Bash completed with no output)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/default-opus47-1m/fixtures/mixed.json", "content": "[\n  {\"id\": 1, \"name
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/default-opus47-1m/fixtures/mixed.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/default-opus47-1m/fixtures/all-fresh.json", "content": "[\n  {\"id\": 10, \
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/default-opus47-1m/fixtures/all-fresh.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/default-opus47-1m/fixtures/oversized.json", "content": "[\n  {\"id\": 20, \
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/default-opus47-1m/fixtures/oversized.json (file state is current in your context — no need to Read it back)
+[Assistant] Now the workflow. I'll design it to take fixture+policy params via `workflow_dispatch` inputs (also used by `act`'s `eventJSON`), run the script, run pytest, and print a verifiable JSON summary.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/default-opus47-1m/.github/workflows/artifact-cleanup-script.yml", "content"
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/default-opus47-1m/.github/workflows/artifact-cleanup-script.yml (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/artifact-cleanup-script.yml
+[Result ERROR] Exit code 1
+.github/workflows/artifact-cleanup-script.yml:79:9: shellcheck reported issue in this script: SC2129:style:1:1: Consider using { cmd1; cmd2; } >> file instead of individual redirects [shellcheck]
+   |
+79 |         run: |
+   |         ^~~~
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/default-opus47-1m/.github/workflows/artifact-cleanup-
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/default-opus47-1m/.github/workflows/artifact-cleanup-script.yml has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/artifact-cleanup-script.yml && echo "OK"
+[Result] OK
+[Assistant] Now the test harness that runs every case through `act` and writes `act-result.txt`.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/default-opus47-1m/test_workflow.py", "content": "\"\"\"\nWorkflow integrati
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/default-opus47-1m/test_workflow.py (file state is current in your context — no need to Read it back)
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/default-opus47-1m/benchmark-instructions-v4.md", "offset": 1, "limit": 100}
+[Result] 1	# Benchmark Instructions v4 — GitHub Actions
+2	
+3	**Version**: v4
+4	**Date**: 2026-04-09
+5	**Purpose**: Measure how well Claude Code agents perform GitHub Actions workflow authoring tasks across different language constraints, with trap-awareness guidance from v3 findings.
+6	
+7	**Changes from v3**:
+8	- Added "Common Pitfalls" section with guidance derived from v3 trap analysis (115min, 15.8% of v3 time lost to traps)
+9	- Act container now has pwsh and Pester pre-installed (matching real GitHub runners). Agents still need an install step for workflows that will run on vanilla act, but the benchmarking container already has them.
+10	- GHA workflow addendum expanded with `shell: pwsh` guidance for PowerShell mode
+11	- All other methodology, tasks, modes, and models are unchanged from v3
+12	
+13	## Methodology
+14	
+15	### Overview
+16	
+17	Each task is executed by a Claude Code agent under 4 different language constraints ("modes") and with 2 different models, yielding **8 runs per task**. A
+[Assistant] I need to rethink input passing. For `act push`, the `inputs` context isn't populated — I should use env vars via `act --env`. Let me refactor the workflow.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/default-opus47-1m/.github/workflows/artifact-cleanup-script.yml", "content"
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/default-opus47-1m/.github/workflows/artifact-cleanup-script.yml has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/artifact-cleanup-script.yml && echo OK
+[Result] OK
+[Assistant] Now update the harness to pass env vars via `act --env` and ditch the event inputs.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/default-opus47-1m/test_workflow.py", "old_string": "d
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/default-opus47-1m/test_workflow.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/default-opus47-1m/test_workflow.py", "old_string": "d
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/default-opus47-1m/test_workflow.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/default-opus47-1m/test_workflow.py", "old_string": " 
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/default-opus47-1m/test_workflow.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Let me first do a smoke test with a single act run to verify the workflow works end-to-end, before running the full test suite.
+[Tool: Bash] cd /tmp && rm -rf act-smoke && mkdir -p act-smoke && cp -r /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/default-opus47-1m/{artifact_cleanup.py,test_artifact_cleanup.py,.actrc,fixtures,.github} act-smoke/ && cd act-smoke && git init -q -b main && git add -A && git -c user.email=t@t -c user.name=t commit -q -m init && act push --rm --pull=false --env FIXTURE=fixtures/mixed.json --env MAX_AGE_DAYS=30 --env KEEP_LATEST_N= --env MAX_TOTAL_SIZE= --env NOW=2026-04-17T12:00:00+00:00 -W .github/workflows/artifact-cleanup-script.yml 2>&1 | tail -60
+[Result] time="2026-04-17T06:24:03-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Artifact Cleanup/Run unit tests] ⭐ Run Set up job
+[Artifact Cleanup/Run unit tests] 🚀  Start image=act-ubuntu-pwsh:latest
+[Artifact Cleanup/Run unit tests]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Artifact Cleanup/Run unit tests]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup/Run unit tests]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup/Run unit tests]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Artifact Cleanup/Run unit tests]   ✅  Success - Set up job
+[Artifact Cleanup/Run unit tests] ⭐ Run Main Check out repository
+[Artifact Cleanup/Run unit tests]   🐳  docker cp src=/tmp/act-smo
+[Assistant] Smoke test caught a real issue: PEP 668 prevents `pip install` into system Python in the container. Let me use `--break-system-packages`.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/default-opus47-1m/.github/workflows/artifact-cleanup-
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/default-opus47-1m/.github/workflows/artifact-cleanup-script.yml has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/artifact-cleanup-script.yml && echo OK
+[Result] OK
+[Assistant] Now let me run the full harness. This uses act once per scenario (4 runs). I'll also check PyYAML is available.
+[Tool: Bash] python3 -c "import yaml; print(yaml.__version__)" 2>&1
+[Result] 6.0.1
+[Tool: Bash] cp -r .github /tmp/act-smoke/ && cd /tmp/act-smoke && git add -A && git -c user.email=t@t -c user.name=t commit -q -m update && act push --rm --pull=false --env FIXTURE=fixtures/mixed.json --env MAX_AGE_DAYS=30 --env KEEP_LATEST_N= --env MAX_TOTAL_SIZE= --env NOW=2026-04-17T12:00:00+00:00 -W .github/workflows/artifact-cleanup-script.yml 2>&1 | tail -50
+[Result] [Artifact Cleanup/Build cleanup plan]   |       "size_bytes": 3000000,
+[Artifact Cleanup/Build cleanup plan]   |       "created_at": "2026-03-08T12:00:00+00:00",
+[Artifact Cleanup/Build cleanup plan]   |       "workflow_run_id": 102
+[Artifact Cleanup/Build cleanup plan]   |     }
+[Artifact Cleanup/Build cleanup plan]   |   ],
+[Artifact Cleanup/Build cleanup plan]   |   "to_retain": [
+[Artifact Cleanup/Build cleanup plan]   |     {
+[Artifact Cleanup/Build cleanup plan]   |       "id": 1,
+[Artifact Cleanup/Build cleanup plan]   |       "name": "build-logs",
+[Artifact Cleanup/Build cleanup plan]   |       "size_bytes": 1000000,
+[Artifact Cleanup/Build cleanup plan]   |       "created_at": "2026-04-16T12:00:00+00:00",
+[Artifact Cleanup/Build cleanup plan]   |       "workflow_run_id": 100
+[Artifact Cleanup/Build cleanup plan]   |     },
+[Artifact Cleanup/Build cleanup plan]   |     {
+[Artifact Cleanup/Build cleanup plan]   |       "id": 2,
+[Artifact Cleanup/Build cleanup plan]   |       "na
+[Assistant] End-to-end works. The smoke counts as 2 act runs. Now one final run of the full harness (4 scenarios in one pytest invocation).
+[Tool: Bash] rm -rf /tmp/act-smoke; python3 -m pytest test_workflow.py -v 2>&1 | tail -80
+[Result] ============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/passp/repos/compare-agent-scripting-by-language
+configfile: pyproject.toml
+plugins: anyio-4.13.0
+collecting ... collected 9 items
+
+test_workflow.py::test_workflow_file_exists PASSED                       [ 11%]
+test_workflow.py::test_workflow_has_expected_shape PASSED                [ 22%]
+test_workflow.py::test_workflow_references_existing_script_files PASSED  [ 33%]
+test_workflow.py::test_actionlint_passes PASSED                          [ 44%]
+test_workflow.py::test_act_scenario[mixed_max_age_30d] PASSED            [ 55%]
+test_workflow.py::test_act_scenario[all_fresh_no_deletions] PASSED       [ 66%]
+test_workflow.py::test_act_scenario[keep_latest_1_per_workflow] PASSED   [ 77%]
+test_workflow.py::test_act_scenario[oversized_size_cap] PASSED           [ 88%]
+test_workflow.py::test_act_re
+[Assistant] All 9 workflow tests pass. Let me verify `act-result.txt` is present and has the expected content, then run the full test suite one more time.
+[Tool: Bash] ls -la act-result.txt && echo "---" && grep -c "CLEANUP_RESULT\|Job succeeded\|===== CASE" act-result.txt && echo "---" && grep "CLEANUP_RESULT" act-result.txt
+[Result] -rw-r--r-- 1 passp passp 46169 Apr 17 06:25 act-result.txt
+---
+16
+---
+[Artifact Cleanup/Build cleanup plan]   | CLEANUP_RESULT total=5 retained=4 deleted=1 reclaimed=3000000 dry_run=true
+[Artifact Cleanup/Build cleanup plan]   | CLEANUP_RESULT total=2 retained=2 deleted=0 reclaimed=0 dry_run=true
+[Artifact Cleanup/Build cleanup plan]   | CLEANUP_RESULT total=5 retained=2 deleted=3 reclaimed=5600000 dry_run=true
+[Artifact Cleanup/Build cleanup plan]   | CLEANUP_RESULT total=3 retained=2 deleted=1 reclaimed=5000000 dry_run=true
+[Assistant] All 4 scenarios produce exactly the expected `CLEANUP_RESULT` values. Let me run the full combined test suite one last time.
+[Tool: Bash] python3 -m pytest test_artifact_cleanup.py -v 2>&1 | tail -20
+[Result] cachedir: .pytest_cache
+rootdir: /home/passp/repos/compare-agent-scripting-by-language
+configfile: pyproject.toml
+plugins: anyio-4.13.0
+collecting ... collected 12 items
+
+test_artifact_cleanup.py::test_default_policy_has_no_limits PASSED       [  8%]
+test_artifact_cleanup.py::test_max_age_marks_old_artifacts_for_deletion PASSED [ 16%]
+test_artifact_cleanup.py::test_max_age_zero_deletes_everything PASSED    [ 25%]
+test_artifact_cleanup.py::test_keep_latest_n_per_workflow_groups_by_name PASSED [ 33%]
+test_artifact_cleanup.py::test_max_total_size_evicts_oldest_first PASSED [ 41%]
+test_artifact_cleanup.py::test_combined_policies_union_of_deletions PASSED [ 50%]
+test_artifact_cleanup.py::test_summary_reports_counts_and_reclaimed_bytes PASSED [ 58%]
+test_artifact_cleanup.py::test_dry_run_does_not_call_deleter PASSED      [ 66%]
+test_artifact_cleanup.py::test_non_dry_run_invokes_deleter_per_artifact PASSED [ 75%]
+test_artifact_cleanup.py::test_invalid_artifact_raises_clear_error PASSED [ 83%]
+[Tool: Bash] ls -la && echo '---' && ls -la .github/workflows/ fixtures/
+[Result] total 140
+drwxr-xr-x 7 passp passp  4096 Apr 17 06:24 .
+drwxr-xr-x 3 passp passp  4096 Apr 17 06:18 ..
+-rw-r--r-- 1 passp passp    40 Apr 17 06:18 .actrc
+drwxr-xr-x 2 passp passp  4096 Apr 17 06:18 .claude
+drwxr-xr-x 7 passp passp  4096 Apr 17 06:18 .git
+drwxr-xr-x 3 passp passp  4096 Apr 17 06:20 .github
+drwxr-xr-x 2 passp passp  4096 Apr 17 06:24 __pycache__
+-rw-r--r-- 1 passp passp 46169 Apr 17 06:25 act-result.txt
+-rw-r--r-- 1 passp passp 12276 Apr 17 06:20 artifact_cleanup.py
+-rw-r--r-- 1 passp passp 21843 Apr 17 00:12 benchmark-instructions-v4.md
+drwxr-xr-x 2 passp passp  4096 Apr 17 06:21 fixtures
+-rw-r--r-- 1 passp passp  8468 Apr 17 06:20 test_artifact_cleanup.py
+-rw-r--r-- 1 passp passp 10243 Apr 17 06:23 test_workflow.py
+---
+.github/workflows/:
+total 16
+drwxr-xr-x 2 passp passp 4096 Apr 17 06:24 .
+drwxr-xr-x 3 passp passp 4096 Apr 17 06:20 ..
+-rw-r--r-- 1 passp passp 5318 Apr 17 06:24 artifact-cleanup-script.yml
+
+fixtures/:
+total 20
+drwxr-xr-x 2 passp passp 4096 Apr 17 06:21
+[Assistant] All deliverables are in place:
+
+**Files delivered:**
+- `artifact_cleanup.py` — the module (RetentionPolicy, DeletionPlan, build_deletion_plan, CLI)
+- `test_artifact_cleanup.py` — 12 unit tests (TDD-driven)
+- `test_workflow.py` — 9 workflow tests that invoke `act push` per scenario
+- `.github/workflows/artifact-cleanup-script.yml` — push/PR/schedule/dispatch triggers, actionlint-clean
+- `fixtures/{mixed,all-fresh,oversized}.json` — scenario inputs
+- `act-result.txt` — delimited output from all 4 `act push` runs (46KB)
+
+**Results:**
+- Unit tests: 12/12 pass
+- Workflow tests: 9/9 pass (4 act scenarios + 5 structural/lint)
+- actionlint: clean
+- All 4 scenarios hit exact expected `CLEANUP_RESULT` lines and "Job succeeded" for both jobs

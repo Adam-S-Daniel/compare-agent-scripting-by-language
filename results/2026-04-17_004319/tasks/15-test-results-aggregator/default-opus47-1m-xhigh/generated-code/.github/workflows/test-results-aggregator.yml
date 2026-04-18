@@ -1,0 +1,83 @@
+name: Test Results Aggregator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      fixture_case:
+        description: "Name of fixture case to aggregate (dir under test-results/)."
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  unit-tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install pytest
+        shell: bash
+        # --break-system-packages is needed because the container's Python 3.12
+        # is marked externally-managed (PEP 668). We're in a throwaway CI
+        # container, so it's safe and the right choice here.
+        run: |
+          python3 -m pip install --quiet --break-system-packages pytest
+
+      - name: Run unit tests
+        shell: bash
+        # Only the aggregator unit tests — test_workflow.py is a meta-test
+        # intended to drive `act` from the host side, not to run inside it.
+        run: python3 -m pytest tests/test_aggregator.py -v
+
+  aggregate:
+    name: Aggregate test results
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Report fixture files found
+        shell: bash
+        run: |
+          echo "Fixture files in ./test-results:"
+          ls -la test-results/ || echo "(no test-results directory)"
+
+      - name: Run aggregator
+        id: agg
+        shell: bash
+        env:
+          GITHUB_STEP_SUMMARY: ${{ github.workspace }}/step-summary.md
+        run: |
+          # Collect every xml/json under test-results/. nullglob turns a
+          # non-matching pattern into an empty expansion (instead of leaving
+          # the literal string) so `has-failures` with only JSON still works.
+          shopt -s nullglob
+          files=(test-results/*.xml test-results/*.json)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "error: no test result files found under test-results/" >&2
+            exit 1
+          fi
+          echo "Aggregating ${#files[@]} file(s): ${files[*]}"
+          # Aggregator exits non-zero when any test failed — that's informational,
+          # not a workflow failure, so capture the exit code without failing.
+          set +e
+          python3 aggregator.py "${files[@]}" --output summary.md | tee aggregator.log
+          code=$?
+          set -e
+          echo "AGG_EXIT=${code}" | tee -a "$GITHUB_OUTPUT"
+          # Re-emit the marker line prominently so the harness can grep it.
+          grep '^AGGREGATOR_RESULT ' aggregator.log || true
+
+      - name: Display markdown summary
+        shell: bash
+        run: |
+          echo "----- summary.md -----"
+          cat summary.md
+          echo "----------------------"

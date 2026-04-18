@@ -1,0 +1,59 @@
+name: Test Results Aggregator
+
+# Triggers: CI on push + PR, on-demand via workflow_dispatch, and a nightly
+# schedule so we keep noticing if the aggregator ever breaks silently.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 4 * * *'
+
+permissions:
+  contents: read
+
+env:
+  FIXTURES_DIR: fixtures
+
+jobs:
+  pester:
+    name: Pester unit and workflow tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Import-Module Pester -Force
+          $cfg = New-PesterConfiguration
+          $cfg.Run.Path = 'tests'
+          $cfg.Run.Throw = $true
+          $cfg.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $cfg
+
+  aggregate:
+    name: Aggregate test results and publish summary
+    runs-on: ubuntu-latest
+    needs: pester
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify aggregator script exists
+        shell: pwsh
+        run: |
+          foreach ($f in 'src/TestResultsAggregator.psm1', 'src/Invoke-Aggregator.ps1') {
+            if (-not (Test-Path $f)) { throw "missing required file: $f" }
+          }
+          Write-Host "aggregator files present."
+
+      - name: Aggregate fixtures and emit job summary
+        shell: pwsh
+        env:
+          INPUT_DIR: ${{ env.FIXTURES_DIR }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          ./src/Invoke-Aggregator.ps1 -InputPath $env:INPUT_DIR -EmitAssertions

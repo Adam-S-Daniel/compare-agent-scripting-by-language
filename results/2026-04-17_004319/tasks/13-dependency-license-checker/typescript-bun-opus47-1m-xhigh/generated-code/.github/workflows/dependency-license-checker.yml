@@ -1,0 +1,85 @@
+name: dependency-license-checker
+
+# Runs on pushes, PRs, a weekly schedule (to catch license changes
+# introduced by upstream dep bumps), and on-demand.
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  schedule:
+    - cron: "0 6 * * 1" # Mondays, 06:00 UTC
+  workflow_dispatch:
+
+# Read-only — the job only reads committed manifest and config files.
+permissions:
+  contents: read
+
+jobs:
+  check-licenses:
+    name: Check dependency licenses
+    runs-on: ubuntu-latest
+    env:
+      # Fixture paths — the test harness rewrites these files per case.
+      MANIFEST_PATH: fixtures/package.json
+      POLICY_PATH: fixtures/policy.json
+      LICENSES_PATH: fixtures/licenses.json
+      # Let the Bun installer know where to drop the binary.
+      BUN_INSTALL: /home/runner/.bun
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        shell: bash
+        # The install script's first positional arg is parsed as a
+        # version string, so we pass no args — BUN_INSTALL controls
+        # the destination and PATH modification is handled below by
+        # appending to $GITHUB_PATH, which subsequent steps pick up.
+        run: |
+          set -euo pipefail
+          if ! command -v bun >/dev/null 2>&1; then
+            curl -fsSL https://bun.sh/install | bash
+          fi
+          echo "$BUN_INSTALL/bin" >> "$GITHUB_PATH"
+
+      - name: Show Bun version
+        shell: bash
+        run: bun --version
+
+      - name: Run unit tests
+        shell: bash
+        run: bun test
+
+      - name: Run license checker against fixtures
+        id: check
+        shell: bash
+        # Capture stdout + exit code without failing the step so we can
+        # emit ASSERT lines even when denied licenses trigger exit 2.
+        run: |
+          set +e
+          output="$(bun run src/cli.ts \
+            --manifest "$MANIFEST_PATH" \
+            --policy   "$POLICY_PATH" \
+            --licenses "$LICENSES_PATH" \
+            --format json)"
+          rc=$?
+          set -e
+          echo "---BEGIN-REPORT---"
+          echo "$output"
+          echo "---END-REPORT---"
+          echo "$output" | bun run src/summaryAsserts.ts
+          echo "ASSERT:exit=$rc"
+
+      - name: Print human-readable report
+        shell: bash
+        run: |
+          set +e
+          bun run src/cli.ts \
+            --manifest "$MANIFEST_PATH" \
+            --policy   "$POLICY_PATH" \
+            --licenses "$LICENSES_PATH" \
+            --format text
+          # The dedicated check step already recorded the exit code;
+          # this step is for human-readable output only, so never fail.
+          exit 0

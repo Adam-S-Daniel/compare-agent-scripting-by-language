@@ -1,0 +1,93 @@
+name: Artifact Cleanup Script
+
+on:
+  push:
+  pull_request:
+  schedule:
+    # Weekly run — Mondays at 03:00 UTC. Keeps the main branch's artifact
+    # store tidy without needing a human to trigger it.
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: 'Fixture filename under ./fixtures/ to apply'
+        required: false
+        default: 'combined-policies.json'
+      dry_run:
+        description: 'Dry-run mode (true/false)'
+        required: false
+        default: 'true'
+
+permissions:
+  contents: read
+  actions: read
+
+# Test harness passes fixture / dry-run via `act --env` which sets the
+# runner env. Workflow_dispatch inputs flow in via a step-level env
+# below. Defaults are resolved inside the pwsh step so act's env vars
+# are never shadowed by a workflow-level env block.
+
+jobs:
+  unit-tests:
+    name: Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify Pester is available
+        shell: pwsh
+        run: |
+          $p = Get-Module -ListAvailable Pester | Sort-Object Version -Descending | Select-Object -First 1
+          if (-not $p) { throw 'Pester is not installed on this runner.' }
+          Write-Host "Using Pester $($p.Version)"
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          Import-Module Pester -MinimumVersion 5.0 -Force
+          $result = Invoke-Pester -Path ./tests -Output Detailed -PassThru
+          if ($result.FailedCount -gt 0) {
+            Write-Error "$($result.FailedCount) Pester test(s) failed"
+            exit 1
+          }
+
+  cleanup-plan:
+    name: Run cleanup plan
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show job context
+        shell: pwsh
+        env:
+          FIXTURE_INPUT: ${{ github.event.inputs.fixture }}
+          DRY_RUN_INPUT: ${{ github.event.inputs.dry_run }}
+        run: |
+          # Resolve effective FIXTURE/DRY_RUN: workflow_dispatch input wins,
+          # else harness-supplied env, else default.
+          $fixture = if ($env:FIXTURE_INPUT) { $env:FIXTURE_INPUT }
+                     elseif ($env:FIXTURE)   { $env:FIXTURE }
+                     else                    { 'combined-policies.json' }
+          $dry     = if ($env:DRY_RUN_INPUT) { $env:DRY_RUN_INPUT }
+                     elseif ($env:DRY_RUN)   { $env:DRY_RUN }
+                     else                    { 'true' }
+          Write-Host "FIXTURE=$fixture"
+          Write-Host "DRY_RUN=$dry"
+          Write-Host "PWD=$PWD"
+          # Propagate via GITHUB_ENV so the next step reads the resolved values.
+          "FIXTURE=$fixture"   | Out-File -FilePath $env:GITHUB_ENV -Append
+          "DRY_RUN=$dry"       | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Run artifact cleanup
+        shell: pwsh
+        run: |
+          $fixturePath = Join-Path './fixtures' $env:FIXTURE
+          if (-not (Test-Path -LiteralPath $fixturePath)) {
+              Write-Error "Fixture not found: $fixturePath"
+              exit 2
+          }
+          $dry = [bool]::Parse($env:DRY_RUN)
+          ./Invoke-Cleanup.ps1 -FixturePath $fixturePath -DryRun:$dry

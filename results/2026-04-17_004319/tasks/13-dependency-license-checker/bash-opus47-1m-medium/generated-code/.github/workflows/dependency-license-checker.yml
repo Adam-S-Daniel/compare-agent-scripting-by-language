@@ -1,0 +1,62 @@
+name: Dependency License Check
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: Manifest fixture path
+        default: fixtures/package.json
+      allow:
+        description: Comma-separated allow-list
+        default: MIT,Apache-2.0,BSD-3-Clause
+      deny:
+        description: Comma-separated deny-list
+        default: GPL-3.0,AGPL-3.0
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  license-check:
+    name: Run dependency license compliance check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify required tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v bash
+          command -v python3
+          bash --version | head -n1
+
+      - name: Run license compliance checker
+        shell: bash
+        env:
+          # Surface workflow_dispatch inputs as env vars. Push/pull_request
+          # runs supply values through the runner's environment (act --env).
+          FIXTURE_INPUT: ${{ inputs.fixture }}
+          ALLOW_INPUT: ${{ inputs.allow }}
+          DENY_INPUT: ${{ inputs.deny }}
+        run: |
+          set -uo pipefail
+          fixture="${FIXTURE:-${FIXTURE_INPUT:-fixtures/package.json}}"
+          allow="${ALLOW:-${ALLOW_INPUT:-MIT,Apache-2.0,BSD-3-Clause}}"
+          deny="${DENY:-${DENY_INPUT:-GPL-3.0,AGPL-3.0}}"
+          chmod +x license-checker.sh
+          set +e
+          ./license-checker.sh \
+            --manifest "$fixture" \
+            --allow "$allow" \
+            --deny "$deny" \
+            --db fixtures/license-db.csv | tee report.txt
+          rc=${PIPESTATUS[0]}
+          set -e
+          echo "CHECKER_EXIT=$rc"
+          exit 0

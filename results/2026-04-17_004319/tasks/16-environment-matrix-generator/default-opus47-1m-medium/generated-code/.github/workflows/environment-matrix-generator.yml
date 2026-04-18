@@ -1,0 +1,82 @@
+name: environment-matrix-generator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: "Fixture file (relative to fixtures/)"
+        required: false
+        default: "basic.json"
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+
+env:
+  FIXTURE_FILE: ${{ github.event.inputs.fixture || 'basic.json' }}
+
+jobs:
+  unit-tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pytest
+        run: python3 -m pip install --quiet --break-system-packages pytest || python3 -m pip install --quiet pytest
+
+      - name: Run pytest
+        run: python3 -m pytest test_matrix_generator.py -v
+
+  generate-matrix:
+    name: Generate matrix
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve fixture
+        id: fixture
+        run: |
+          FIX="fixtures/${FIXTURE_FILE}"
+          if [ ! -f "$FIX" ]; then
+            echo "Fixture not found: $FIX" >&2
+            exit 1
+          fi
+          echo "path=$FIX" >> "$GITHUB_OUTPUT"
+
+      - name: Generate matrix JSON
+        id: gen
+        run: |
+          OUT="$(python3 matrix_generator.py < "${{ steps.fixture.outputs.path }}")"
+          echo "===MATRIX-BEGIN==="
+          echo "$OUT"
+          echo "===MATRIX-END==="
+
+      - name: Summarize combo count and strategy
+        env:
+          FIX_PATH: ${{ steps.fixture.outputs.path }}
+        run: |
+          python3 - <<'PY'
+          import json, os
+          from itertools import product
+          from matrix_generator import generate_matrix
+          with open(os.environ["FIX_PATH"]) as f:
+              cfg = json.load(f)
+          strat = generate_matrix(cfg)
+          m = strat["matrix"]
+          axes = {k: v for k, v in m.items() if k not in ("include", "exclude")}
+          keys = list(axes.keys())
+          def match(combo, rule):
+              return all(combo.get(k) == v for k, v in rule.items())
+          base = [dict(zip(keys, c)) for c in product(*[axes[k] for k in keys])] if axes else []
+          kept = [c for c in base if not any(match(c, r) for r in m.get("exclude", []))]
+          total = len(kept) + len(m.get("include", []))
+          print(f"===COMBO-COUNT==={total}===")
+          print(f"===FAIL-FAST==={str(strat['fail-fast']).lower()}===")
+          if "max-parallel" in strat:
+              print(f"===MAX-PARALLEL==={strat['max-parallel']}===")
+          PY

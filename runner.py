@@ -261,6 +261,21 @@ PROMPT_TEMPLATES = {
         "5. Handle errors gracefully with meaningful error messages.\n\n"
         "Create your solution in the current working directory. Start by writing your first failing test."
     ),
+    # Identical prompt to `powershell`; differs only in that the PowerShell tool
+    # is enabled for this run (CLAUDE_CODE_USE_POWERSHELL_TOOL=1), so the agent
+    # can invoke pwsh natively via the PowerShell tool instead of going through
+    # the Bash tool. See https://code.claude.com/docs/en/tools-reference#powershell-tool
+    "powershell-tool": (
+        "You are completing a scripting task. You MUST use PowerShell as your implementation language.\n\n"
+        "TASK: {task_description}\n\n"
+        "REQUIREMENTS:\n"
+        "1. Use red/green TDD methodology: write a failing test FIRST, then write the minimum code to make it pass, then refactor. Repeat for each piece of functionality.\n"
+        "2. Create mocks and test fixtures as necessary for testability. Use Pester as the testing framework.\n"
+        "3. All tests must be runnable with `Invoke-Pester` and must pass at the end.\n"
+        "4. Include clear comments explaining your approach.\n"
+        "5. Handle errors gracefully with meaningful error messages.\n\n"
+        "Create your solution in the current working directory. Start by writing your first failing test."
+    ),
     "bash": (
         "You are completing a scripting task. You MUST use Bash as your implementation language.\n\n"
         "TASK: {task_description}\n\n"
@@ -815,8 +830,15 @@ def run_single_task(
         task_slug = task_id.split("-", 1)[1] if "-" in task_id else task_id
         prompt += "\n" + GHA_WORKFLOW_ADDENDUM.format(task_slug=task_slug)
 
+    # The "variant" qualifies model_short with effort when effort is set. This
+    # lets a single results dir hold runs of the same (task, mode, model) at
+    # different effort levels without collision — e.g. `default-opus47-1m-xhigh`
+    # vs `default-opus47-1m-medium`. When effort is None (the historical default)
+    # we omit the suffix so v1-v4 results keep their existing layout.
+    variant = f"{model_short}-{effort}" if effort else model_short
+
     # Create workspace
-    workspace = repo_root / "workspaces" / run_dir.name / task_id / f"{mode}-{model_short}"
+    workspace = repo_root / "workspaces" / run_dir.name / task_id / f"{mode}-{variant}"
     workspace.mkdir(parents=True, exist_ok=True)
 
     # Initialize workspace as a git repo (act requires one)
@@ -866,7 +888,7 @@ def run_single_task(
         (claude_dir / "settings.json").write_text(json.dumps(hook_config, indent=2))
 
     # Create results directory
-    result_dir = run_dir / "tasks" / task_id / f"{mode}-{model_short}"
+    result_dir = run_dir / "tasks" / task_id / f"{mode}-{variant}"
     result_dir.mkdir(parents=True, exist_ok=True)
 
     # Capture workspace before
@@ -904,6 +926,16 @@ def run_single_task(
     if dotnet_root.exists():
         env["DOTNET_ROOT"] = str(dotnet_root)
         env["PATH"] = f"{dotnet_root}:{env.get('PATH', '')}"
+
+    # Enable / disable the native PowerShell tool per mode. Without this, the
+    # agent always routes pwsh invocations through the Bash tool on Linux/WSL.
+    # The `powershell-tool` mode opts in to the PowerShell tool; `powershell`
+    # explicitly opts out so both variants have a clean baseline regardless
+    # of the user's ambient settings.
+    if mode == "powershell-tool":
+        env["CLAUDE_CODE_USE_POWERSHELL_TOOL"] = "1"
+    elif mode == "powershell":
+        env["CLAUDE_CODE_USE_POWERSHELL_TOOL"] = "0"
 
     # Execute with real-time line timestamping
     timestamped_lines: list[tuple[int, str]] = []  # (epoch_ms, line)
@@ -1031,6 +1063,7 @@ def run_single_task(
         "dotnet_version": dotnet_version,
         "model": model_id,
         "model_short": model_short,
+        "variant": variant,
         "claude_code_version": parsed["claude_code_version"],
         "instructions_version": INSTRUCTIONS_VERSION,
         "timestamp_start": timestamp_start,
@@ -1145,6 +1178,21 @@ def run_single_task(
 # ---------------------------------------------------------------------------
 # CLI & Main
 # ---------------------------------------------------------------------------
+
+
+def select_tasks(task_arg: str) -> list[dict]:
+    """Resolve the --tasks argument to a list of task dicts.
+
+    Numbers are interpreted as task IDs (the "NN-..." prefix), not positions
+    in TASKS. This keeps IDs stable across archival (e.g. task 14 archived;
+    `--tasks 15` must still pick id "15-test-results-aggregator"). Unknown IDs
+    are silently skipped.
+    """
+    if task_arg == "all":
+        return list(TASKS)
+    task_by_id = {int(t["id"].split("-", 1)[0]): t for t in TASKS}
+    task_nums = [int(t.strip()) for t in task_arg.split(",") if t.strip()]
+    return [task_by_id[n] for n in task_nums if n in task_by_id]
 
 def print_summary_table(all_metrics: list[dict]) -> None:
     """Print a summary table of all runs."""
@@ -1277,7 +1325,8 @@ def main():
     parser = argparse.ArgumentParser(description="Benchmark Claude Code agents on scripting tasks")
     parser.add_argument(
         "--tasks", default="all",
-        help="Comma-separated task numbers (1-18) or 'all' (default: all)"
+        help="Comma-separated task IDs (e.g. 11,12,13,15,16,17,18) or 'all' (default: all). "
+             "Unknown IDs are silently skipped."
     )
     parser.add_argument(
         "--models", default="opus,sonnet",
@@ -1292,7 +1341,7 @@ def main():
         help="Resume a previous run by providing its timestamp directory name (e.g., 2026-04-02_181500). Skips runs that already have metrics.json."
     )
     parser.add_argument(
-        "--effort", default=None, choices=["low", "medium", "high", "max"],
+        "--effort", default=None, choices=["low", "medium", "high", "xhigh", "max"],
         help="Reasoning effort level passed to claude CLI (default: not set, uses CLI default)"
     )
     parser.add_argument(
@@ -1301,12 +1350,7 @@ def main():
     )
     args = parser.parse_args()
 
-    # Parse tasks
-    if args.tasks == "all":
-        selected_tasks = TASKS
-    else:
-        task_nums = [int(t.strip()) for t in args.tasks.split(",")]
-        selected_tasks = [TASKS[n - 1] for n in task_nums if 1 <= n <= len(TASKS)]
+    selected_tasks = select_tasks(args.tasks)
 
     # Parse models
     selected_models = [(short, MODELS[short]) for short in args.models.split(",") if short in MODELS]
@@ -1388,18 +1432,20 @@ def main():
                 pass
         if all_metrics:
             log(f"Loaded {len(all_metrics)} previously completed run(s) from {run_dir}")
-        # Derive total from the run manifest if available, otherwise from loaded metrics
-        manifest_path = run_dir / "run-manifest.json"
-        if manifest_path.exists():
-            try:
-                manifest = json.loads(manifest_path.read_text())
-                total_runs_for_report = manifest.get("total_runs", total_runs)
-            except Exception:
-                pass
-        if total_runs_for_report == total_runs:
-            # Fallback: count distinct (task, mode, model) combos in loaded metrics
-            combos = set((m["task_id"], m["language_mode"], m["model_short"]) for m in all_metrics)
-            total_runs_for_report = max(len(combos), total_runs)
+        # Cumulative total = already-completed metrics + runs this invocation
+        # will actually execute (i.e. combos whose variant subdir doesn't yet
+        # have a metrics.json). Prior logic read total_runs from the old
+        # manifest, which undercounts when this invocation adds a new effort
+        # variant that won't be skipped, producing "36/35 completed".
+        runs_to_do = 0
+        for task in selected_tasks:
+            for model_short, _ in selected_models:
+                for mode in selected_modes:
+                    variant = f"{model_short}-{args.effort}" if args.effort else model_short
+                    existing = run_dir / "tasks" / task["id"] / f"{mode}-{variant}" / "metrics.json"
+                    if not existing.exists():
+                        runs_to_do += 1
+        total_runs_for_report = len(all_metrics) + runs_to_do
 
     # Detect git branch for periodic pushing
     try:
@@ -1421,8 +1467,10 @@ def main():
         for model_short, model_id in selected_models:
             for mode in selected_modes:
                 run_count += 1
-                # Check if already completed (for --resume)
-                existing_metrics = run_dir / "tasks" / task["id"] / f"{mode}-{model_short}" / "metrics.json"
+                # Check if already completed (for --resume) — same variant logic
+                # as run_single_task's result_dir construction.
+                variant = f"{model_short}-{args.effort}" if args.effort else model_short
+                existing_metrics = run_dir / "tasks" / task["id"] / f"{mode}-{variant}" / "metrics.json"
                 if existing_metrics.exists():
                     log(f"Run {run_count}/{total_runs} — SKIPPED (already completed): {task['id']} | {mode} | {model_short}")
                     pusher.update(run_count, all_metrics)

@@ -1,0 +1,83 @@
+name: Artifact cleanup
+
+# Triggers:
+#   push, pull_request: validate on every change
+#   schedule: daily dry-run to surface what *would* be cleaned
+#   workflow_dispatch: manual invocation, optionally opting in to real deletion
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    inputs:
+      execute:
+        description: 'Actually delete artifacts (default: dry-run)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  tests:
+    name: Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $result = Invoke-Pester -Path ./ArtifactCleanup.Tests.ps1 -PassThru -Output Detailed
+          if ($result.FailedCount -gt 0) {
+            throw "Pester reported $($result.FailedCount) failing test(s)."
+          }
+          Write-Host "All $($result.PassedCount) Pester tests passed."
+
+  cleanup:
+    name: Run cleanup plan
+    runs-on: ubuntu-latest
+    needs: tests
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show fixture files
+        shell: pwsh
+        run: |
+          Write-Host 'Policy config:'
+          Get-Content ./fixtures/policy.json
+          Write-Host ''
+          Write-Host 'Artifact count:'
+          (Get-Content ./fixtures/artifacts.json | ConvertFrom-Json).Count
+
+      - name: Execute cleanup plan (dry-run by default)
+        shell: pwsh
+        env:
+          EXECUTE_FLAG: ${{ github.event.inputs.execute }}
+        run: |
+          $cfg = Get-Content ./fixtures/policy.json -Raw | ConvertFrom-Json
+
+          # Extract policy parameters with sensible defaults. Missing keys in
+          # the fixture JSON fall back to 0 (meaning "no cap" / "no floor").
+          $maxAge  = [int]$cfg.maxAgeDays
+          $maxSize = if ($cfg.PSObject.Properties.Name -contains 'maxTotalSizeBytes') { [long]$cfg.maxTotalSizeBytes } else { 0 }
+          $keepN   = if ($cfg.PSObject.Properties.Name -contains 'keepLatestNPerWorkflow') { [int]$cfg.keepLatestNPerWorkflow } else { 0 }
+          $now     = if ($cfg.PSObject.Properties.Name -contains 'now') { [datetime]$cfg.now } else { (Get-Date).ToUniversalTime() }
+
+          # Default to dry-run. Only the workflow_dispatch "execute" input can
+          # flip this, and even then only after explicit user action.
+          $execute = ($env:EXECUTE_FLAG -eq 'true')
+
+          $params = @{
+            ArtifactsPath          = './fixtures/artifacts.json'
+            MaxAgeDays             = $maxAge
+            MaxTotalSizeBytes      = $maxSize
+            KeepLatestNPerWorkflow = $keepN
+            Now                    = $now
+            EmitJson               = $true
+          }
+          if ($execute) { $params['Execute'] = $true }
+
+          & ./Invoke-Cleanup.ps1 @params

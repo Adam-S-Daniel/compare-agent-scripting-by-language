@@ -1,0 +1,55 @@
+name: environment-matrix-generator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      config:
+        description: "Path to matrix config JSON"
+        required: false
+        default: "fixtures/default.json"
+
+permissions:
+  contents: read
+
+env:
+  CONFIG_PATH: ${{ github.event.inputs.config || 'fixtures/default.json' }}
+
+jobs:
+  generate:
+    name: Generate matrix
+    runs-on: ubuntu-latest
+    outputs:
+      count: ${{ steps.gen.outputs.count }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v jq >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y jq
+          fi
+          jq --version
+
+      - name: Run generator
+        id: gen
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x ./generate-matrix.sh
+          RESULT="$(./generate-matrix.sh "$CONFIG_PATH")"
+          echo "$RESULT"
+          echo "$RESULT" > matrix.json
+          COUNT=$(jq -r '.count' matrix.json)
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+          echo "MATRIX_COUNT=$COUNT"
+
+      - name: Summarize
+        shell: bash
+        run: |
+          echo "Matrix combinations: ${{ steps.gen.outputs.count }}"
+          jq '.combinations' matrix.json

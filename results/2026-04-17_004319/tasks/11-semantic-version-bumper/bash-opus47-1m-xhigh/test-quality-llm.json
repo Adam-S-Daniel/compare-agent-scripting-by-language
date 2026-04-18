@@ -1,0 +1,11 @@
+{
+  "coverage": 4,
+  "rigor": 3,
+  "design": 3,
+  "overall": 3,
+  "summary": "The suite covers all major functional areas well: every public subcommand (bump_type, bump_version, read_version, write_version, changelog, run) has at least one positive-path test, error paths are exercised for missing files and invalid semver, the workflow structure is verified with actionlint and act end-to-end cases, and fixture commit logs represent the three bump classes plus a no-op. Coverage only loses a point because scoped-commit syntax (fix(auth):, feat(ui):) is never exercised, there is no test for an empty or whitespace-only commit log, write_version's own error path (bad semver arg, missing file) is not directly tested, and the changelog prepend-to-existing-file branch is exercised only implicitly through run. Rigor suffers because several natural edge cases are absent: zero commits, commits with both ! and BREAKING CHANGE footer, package.json without a version field, and version strings at boundary values like 0.0.1. Design is functional but has rough spots: setup_file and setup in workflow.bats are almost identical and both export the same vars (redundant); _run_act_case modifies STAGE_OUT/STAGE_STATUS as global bats-visible state rather than returning values cleanly; the highest-precedence multi-stdin test bypasses bats run and directly assigns to the bats output variable, losing failure diagnostics; and fixture files are referenced but their existence is never asserted independently. The two-file split (unit vs workflow) is a good structural choice, and the _run_act_case helper appropriately centralises act orchestration, but its complexity and the reliance on Docker/act for the E2E tier mean the suite is environment-sensitive and harder to run in isolation.",
+  "judge_cost_usd": 0.0794,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 2001,
+  "judge_provider": "claude-cli"
+}

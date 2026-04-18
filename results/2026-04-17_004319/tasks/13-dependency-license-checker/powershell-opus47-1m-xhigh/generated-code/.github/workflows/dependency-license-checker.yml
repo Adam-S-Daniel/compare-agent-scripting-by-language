@@ -1,0 +1,110 @@
+name: Dependency License Checker
+
+# Compliance gate — fail the build if any dependency ships a denied license.
+# The script parses a manifest at $MANIFEST, looks each name up in the mock
+# license DB at $LICENSE_DB, and classifies against the allow/deny config at
+# $LICENSE_CONFIG. Defaults point at the repo's fixtures so the workflow runs
+# unattended under `act push` as well as in real GitHub Actions.
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  schedule:
+    # Weekly sweep — catches licenses that changed upstream since the last PR.
+    - cron: "0 6 * * 1"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+# Intentional: we do NOT set workflow-level `env:` defaults for MANIFEST /
+# LICENSE_CONFIG / LICENSE_DB. The script step resolves defaults at runtime so
+# that values injected via `act --env KEY=VALUE` override the built-in
+# fixtures. Workflow-level `env:` entries would win over the container env
+# and break per-case overrides in the integration harness.
+
+jobs:
+  license-check:
+    name: Check dependency licenses
+    runs-on: ubuntu-latest
+    env:
+      REPORT_PATH: license-report.json
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show environment
+        shell: pwsh
+        run: |
+          $manifest = if ($env:MANIFEST) { $env:MANIFEST } else { 'fixtures/all-approved-package.json' }
+          $config   = if ($env:LICENSE_CONFIG) { $env:LICENSE_CONFIG } else { 'fixtures/licenses-config.json' }
+          $db       = if ($env:LICENSE_DB) { $env:LICENSE_DB } else { 'fixtures/mock-license-db.json' }
+          Write-Output "pwsh version: $($PSVersionTable.PSVersion)"
+          Write-Output "Manifest:      $manifest"
+          Write-Output "Config:        $config"
+          Write-Output "License DB:    $db"
+
+      - name: Run dependency license checker
+        id: check
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          # Resolve inputs with fixture defaults so the job works on bare push.
+          $manifest = if ($env:MANIFEST) { $env:MANIFEST } else { 'fixtures/all-approved-package.json' }
+          $config   = if ($env:LICENSE_CONFIG) { $env:LICENSE_CONFIG } else { 'fixtures/licenses-config.json' }
+          $db       = if ($env:LICENSE_DB) { $env:LICENSE_DB } else { 'fixtures/mock-license-db.json' }
+          $failOnDenied = ($env:FAIL_ON_DENIED -ne 'false')
+
+          $scriptArgs = @{
+            ManifestPath  = $manifest
+            ConfigPath    = $config
+            LicenseDbPath = $db
+            OutputJson    = $env:REPORT_PATH
+          }
+          if ($failOnDenied) { $scriptArgs['FailOnDenied'] = $true }
+
+          & ./DependencyLicenseChecker.ps1 @scriptArgs
+          $rc = $LASTEXITCODE
+          Write-Output "script exit code: $rc"
+          "script_rc=$rc" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          if ($rc -ne 0) { exit $rc }
+
+      - name: Publish step summary
+        if: always()
+        shell: pwsh
+        run: |
+          if (Test-Path $env:REPORT_PATH) {
+            $report = Get-Content -Raw $env:REPORT_PATH | ConvertFrom-Json
+            $lines = @()
+            $lines += "## Dependency License Report"
+            $lines += ""
+            $lines += "| Name | Version | License | Status |"
+            $lines += "| --- | --- | --- | --- |"
+            foreach ($row in $report.Results) {
+              $lines += "| $($row.Name) | $($row.Version) | $($row.License) | $($row.Status) |"
+            }
+            $lines += ""
+            $lines += "**Summary:** approved=$($report.Summary.Approved), denied=$($report.Summary.Denied), unknown=$($report.Summary.Unknown), total=$($report.Summary.Total)"
+            $summaryPath = $env:GITHUB_STEP_SUMMARY
+            if ($summaryPath) { $lines -join "`n" | Out-File -FilePath $summaryPath -Append }
+            $lines -join "`n" | Write-Output
+          } else {
+            Write-Output "no report produced"
+          }
+
+      - name: Upload report
+        # Skipped under `act` because nektos/act does not provide the runtime
+        # artifact service — the action would fail on a missing
+        # ACTIONS_RUNTIME_TOKEN. Real GHA runs both halves of the conditional.
+        if: always() && env.ACT != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: license-report
+          path: ${{ env.REPORT_PATH }}
+          if-no-files-found: warn

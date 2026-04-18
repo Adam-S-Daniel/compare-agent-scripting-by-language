@@ -1,0 +1,50 @@
+name: Test Results Aggregator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+env:
+  FIXTURE_DIR: fixtures
+
+jobs:
+  unit-tests:
+    name: Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Pester
+        shell: pwsh
+        run: |
+          Import-Module Pester -MinimumVersion 5.0
+          $cfg = New-PesterConfiguration
+          $cfg.Run.Path = './tests'
+          $cfg.Run.Exit = $true
+          $cfg.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $cfg
+
+  aggregate:
+    name: Aggregate fixtures and build summary
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Aggregate results
+        shell: pwsh
+        run: |
+          ./src/Aggregate-TestResults.ps1 -InputDir $env:FIXTURE_DIR -OutputPath test-summary.md
+
+      - name: Show summary
+        shell: pwsh
+        run: |
+          Get-Content test-summary.md

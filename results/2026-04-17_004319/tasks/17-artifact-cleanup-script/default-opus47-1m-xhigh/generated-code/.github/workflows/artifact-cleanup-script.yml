@@ -1,0 +1,150 @@
+name: Artifact Cleanup
+
+# Triggers:
+#  - push / pull_request: run the unit tests and then build a cleanup plan
+#    using whatever fixture/policy env vars the caller sets (the test
+#    harness injects these via `act --env ...`). Sensible defaults ensure
+#    the workflow is still green on an ordinary push with no overrides.
+#  - schedule: nightly sweep with defaults.
+#  - workflow_dispatch: same, with UI-provided inputs forwarded to the
+#    same env vars the other triggers use, so the job body stays uniform.
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: 'Path to the fixture JSON file relative to repo root'
+        required: false
+        default: 'fixtures/mixed.json'
+        type: string
+      max_age_days:
+        description: 'Max age policy in days (empty to disable)'
+        required: false
+        default: '30'
+        type: string
+      keep_latest_n:
+        description: 'Keep latest N per workflow (empty to disable)'
+        required: false
+        default: ''
+        type: string
+      max_total_size_bytes:
+        description: 'Max total size in bytes (empty to disable)'
+        required: false
+        default: ''
+        type: string
+      now:
+        description: 'ISO-8601 timestamp to treat as now (deterministic)'
+        required: false
+        default: '2026-04-17T12:00:00+00:00'
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  PYTHONUNBUFFERED: '1'
+
+jobs:
+  unit-tests:
+    name: Run unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install pytest
+        # --break-system-packages is needed because the act image uses
+        # Debian-style PEP 668 managed Python; we're in an ephemeral
+        # container so there's nothing system-wide to break.
+        run: python3 -m pip install --quiet --break-system-packages pytest
+
+      - name: Run pytest
+        run: python3 -m pytest test_artifact_cleanup.py -v
+
+  cleanup-plan:
+    name: Build cleanup plan
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      # Workflow params come either from workflow_dispatch inputs or from
+      # env vars (set by the test harness via `act --env ...`). Env vars
+      # win if both are set. Sensible defaults keep the workflow green on
+      # an ordinary push with no overrides.
+      - name: Resolve parameters
+        id: params
+        env:
+          INPUT_FIXTURE: ${{ inputs.fixture }}
+          INPUT_MAX_AGE_DAYS: ${{ inputs.max_age_days }}
+          INPUT_KEEP_LATEST_N: ${{ inputs.keep_latest_n }}
+          INPUT_MAX_TOTAL_SIZE: ${{ inputs.max_total_size_bytes }}
+          INPUT_NOW: ${{ inputs.now }}
+        run: |
+          FIXTURE="${FIXTURE:-${INPUT_FIXTURE:-fixtures/mixed.json}}"
+          MAX_AGE_DAYS="${MAX_AGE_DAYS-${INPUT_MAX_AGE_DAYS-30}}"
+          KEEP_LATEST_N="${KEEP_LATEST_N-${INPUT_KEEP_LATEST_N-}}"
+          MAX_TOTAL_SIZE="${MAX_TOTAL_SIZE-${INPUT_MAX_TOTAL_SIZE-}}"
+          NOW="${NOW:-${INPUT_NOW:-2026-04-17T12:00:00+00:00}}"
+          {
+            echo "fixture=${FIXTURE}"
+            echo "max_age_days=${MAX_AGE_DAYS}"
+            echo "keep_latest_n=${KEEP_LATEST_N}"
+            echo "max_total_size=${MAX_TOTAL_SIZE}"
+            echo "now=${NOW}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Show fixture
+        env:
+          FIXTURE: ${{ steps.params.outputs.fixture }}
+        run: |
+          echo "=== Fixture: ${FIXTURE} ==="
+          cat "${FIXTURE}"
+
+      - name: Run cleanup (dry run)
+        env:
+          FIXTURE: ${{ steps.params.outputs.fixture }}
+          MAX_AGE_DAYS: ${{ steps.params.outputs.max_age_days }}
+          KEEP_LATEST_N: ${{ steps.params.outputs.keep_latest_n }}
+          MAX_TOTAL_SIZE: ${{ steps.params.outputs.max_total_size }}
+          NOW: ${{ steps.params.outputs.now }}
+        run: |
+          set -euo pipefail
+          ARGS=(--input "${FIXTURE}" --dry-run --json --now "${NOW}")
+          if [ -n "${MAX_AGE_DAYS}" ]; then
+            ARGS+=(--max-age-days "${MAX_AGE_DAYS}")
+          fi
+          if [ -n "${KEEP_LATEST_N}" ]; then
+            ARGS+=(--keep-latest-n "${KEEP_LATEST_N}")
+          fi
+          if [ -n "${MAX_TOTAL_SIZE}" ]; then
+            ARGS+=(--max-total-size-bytes "${MAX_TOTAL_SIZE}")
+          fi
+          echo "=== Invocation: python3 artifact_cleanup.py ${ARGS[*]} ==="
+          python3 artifact_cleanup.py "${ARGS[@]}" > plan.json
+          echo "=== Plan (JSON) ==="
+          cat plan.json
+
+      - name: Emit machine-parseable summary
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, pathlib
+          plan = json.loads(pathlib.Path("plan.json").read_text())
+          s = plan["summary"]
+          # A single, easy-to-grep line for the harness assertions.
+          print(
+              "CLEANUP_RESULT "
+              f"total={s['artifacts_total']} "
+              f"retained={s['artifacts_retained']} "
+              f"deleted={s['artifacts_deleted']} "
+              f"reclaimed={s['bytes_reclaimed']} "
+              f"dry_run={str(plan['dry_run']).lower()}"
+          )
+          PY

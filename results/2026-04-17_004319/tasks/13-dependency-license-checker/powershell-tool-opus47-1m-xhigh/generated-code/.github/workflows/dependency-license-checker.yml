@@ -1,0 +1,92 @@
+# Runs Pester unit tests for the LicenseChecker module and then executes
+# the checker against a fixture manifest. The test harness in ../test-harness.ps1
+# swaps different package.json fixtures in before invoking act so the same
+# workflow covers multiple compliance scenarios.
+name: dependency-license-checker
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    # Weekly re-scan so new advisories in the mock DB get flagged.
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+env:
+  MANIFEST_PATH: fixtures/package.json
+  POLICY_PATH: config/policy.json
+  LICENSE_DB_PATH: config/mock-licenses.json
+
+jobs:
+  test:
+    name: Run Pester tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $cfg = New-PesterConfiguration
+          $cfg.Run.Path = 'tests'
+          $cfg.Run.Exit = $true
+          $cfg.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $cfg
+
+  check:
+    name: Run license compliance check
+    runs-on: ubuntu-latest
+    needs: test
+    # Don't abort the job on a non-zero exit from the checker; we want the
+    # summary line and report body in the log either way, and the harness
+    # asserts on exact output strings.
+    continue-on-error: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify inputs exist
+        shell: pwsh
+        run: |
+          foreach ($p in $env:MANIFEST_PATH, $env:POLICY_PATH, $env:LICENSE_DB_PATH) {
+            if (-not (Test-Path -LiteralPath $p)) {
+              throw "Missing required input: $p"
+            }
+          }
+          Write-Host "All inputs present."
+
+      - name: Invoke license checker
+        id: check
+        shell: pwsh
+        run: |
+          # Invoke as a child pwsh so the script's own `exit N` does not
+          # terminate this step's shell. We surface the report either way
+          # and treat exit=1 (non-compliance) as an informational outcome.
+          # Only operational errors (exit 2) should fail the job.
+          pwsh -NoProfile -File ./Invoke-LicenseCheck.ps1 `
+            -ManifestPath $env:MANIFEST_PATH `
+            -PolicyPath $env:POLICY_PATH `
+            -LicenseDbPath $env:LICENSE_DB_PATH `
+            -OutPath report.json
+          $code = $LASTEXITCODE
+          Write-Host "checker exit code: $code"
+          if ($code -eq 2) {
+            Write-Error "License checker hit an operational error."
+            exit 2
+          }
+          "report_exit=$code" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          # Surface the report file path for downstream steps/users.
+          if (Test-Path report.json) {
+            Write-Host "Report written to report.json"
+          }
+          # Explicitly clear $LASTEXITCODE and exit 0 so non-compliance
+          # (exit=1) from the checker doesn't fail the step. The report
+          # and SUMMARY line already reflect the outcome; downstream
+          # jobs that want to gate on compliance can read the
+          # `report_exit` step output.
+          $global:LASTEXITCODE = 0
+          exit 0

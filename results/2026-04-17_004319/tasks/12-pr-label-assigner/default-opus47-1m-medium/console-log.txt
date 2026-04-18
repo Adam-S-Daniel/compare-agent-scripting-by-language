@@ -1,0 +1,121 @@
+[Tool: Bash] ls /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/
+[Result] benchmark-instructions-v4.md
+[Tool: Bash] which python3 act actionlint docker && python3 --version
+[Result] /usr/bin/python3
+/home/passp/.local/bin/act
+/home/passp/.local/bin/actionlint
+/usr/bin/docker
+Python 3.12.3
+[Assistant] I'll build this in Python (stdlib only — no YAML dep needed, using JSON). Approach: TDD with a harness that drives act per test case. Let me create everything now.
+[Tool: Bash] ls /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/.actrc 2>/dev/null && cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/.actrc
+[Result] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/.actrc
+-P ubuntu-latest=act-ubuntu-pwsh:latest
+[Tool: Bash] docker run --rm act-ubuntu-pwsh:latest bash -c "which python3 python bash; python3 --version 2>&1"
+[Result] /usr/bin/python3
+/usr/local/bin/python
+/usr/bin/bash
+Python 3.12.3
+[Assistant] Python 3.12 available in the image. Let me build everything now.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/label_assigner.py", "content": "#!/usr/bin/env python3\n
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/label_assigner.py (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/.github/workflows/pr-label-assigner.yml", "content": "na
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/.github/workflows/pr-label-assigner.yml (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/pr-label-assigner.yml && echo OK
+[Result] OK
+[Assistant] Now let me create test fixtures and the harness.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/basic/rules.json", "content": "{\n  \"rules\": 
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/basic/rules.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/basic/files.txt", "content": "src/api/users.py\
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/basic/files.txt (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/basic/expected.txt", "content": "api\nbackend\n
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/basic/expected.txt (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/tests_and_docs/rules.json", "content": "{\n  \"
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/tests_and_docs/rules.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/tests_and_docs/files.txt", "content": "README.m
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/tests_and_docs/files.txt (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/tests_and_docs/expected.txt", "content": "docum
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/tests_and_docs/expected.txt (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/no_matches/rules.json", "content": "{\n  \"rule
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/no_matches/rules.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/no_matches/files.txt", "content": "README\nMake
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/no_matches/files.txt (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/no_matches/expected.txt", "content": ""}
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/no_matches/expected.txt (file state is current in your context — no need to Read it back)
+[Assistant] Now the test harness. It needs to: for each fixture, build a temp git repo with the code + fixture copied into `fixture/`, run `act push --rm`, capture output, parse LABELS block, assert.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/test_harness.py", "content": "#!/usr/bin/env python3\n\"
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/test_harness.py (file state is current in your context — no need to Read it back)
+[Assistant] Let me sanity-check the glob logic with a quick direct call before running act (since act is slow).
+[Tool: Bash] for c in basic tests_and_docs no_matches; do echo "=== $c ==="; python3 label_assigner.py fixtures/$c/rules.json fixtures/$c/files.txt; echo "--- expected ---"; cat fixtures/$c/expected.txt; done
+[Result] === basic ===
+LABELS_BEGIN
+api
+backend
+documentation
+LABELS_END
+--- expected ---
+api
+backend
+documentation
+=== tests_and_docs ===
+LABELS_BEGIN
+documentation
+tests
+LABELS_END
+--- expected ---
+documentation
+tests
+=== no_matches ===
+LABELS_BEGIN
+LABELS_END
+--- expected ---
+[Assistant] Logic verified. Now let me run the harness (3 act invocations, but budget says 3 max). Let me run it.
+[Tool: Bash] timeout 540 python3 test_harness.py 2>&1 | tail -80
+[Result] workflow structure: OK
+
+--- case: basic ---
+FAIL: act exited 1
+[PR Label Assigner/Assign labels] ⭐ Run Set up job
+[PR Label Assigner/Assign labels] 🚀  Start image=act-ubuntu-pwsh:latest
+[PR Label Assigner/Assign labels]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=true
+[PR Label Assigner/Assign labels] using DockerAuthConfig authentication for docker pull
+[PR Label Assigner/Assign labels] Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+[PR Label Assigner/Assign labels]   ❌  Failure - Set up job
+[PR Label Assigner/Assign labels] 🏁  Job failed
+
+time="2026-04-17T09:06:05-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+Error: Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+
+
+--- case: no_matches ---
+FAIL: act exited 1
+[PR Label Assigner/A
+[Assistant] Act is force-pulling the local-only image. I need `--pull=false`.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/test_harness.py", "old_string": " 
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/test_harness.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] timeout 540 python3 test_harness.py 2>&1 | tail -40
+[Result] workflow structure: OK
+
+--- case: basic ---
+PASS: labels=['api', 'backend', 'documentation']
+
+--- case: no_matches ---
+PASS: labels=[]
+
+--- case: tests_and_docs ---
+PASS: labels=['documentation', 'tests']
+
+3/3 cases passed
+[Assistant] All 3 cases pass via act. Let me verify `act-result.txt` exists.
+[Tool: Bash] ls -la act-result.txt && wc -l act-result.txt && grep -c "Job succeeded" act-result.txt && grep -c "LABELS_BEGIN" act-result.txt
+[Result] -rw-r--r-- 1 passp passp 7256 Apr 17 09:06 act-result.txt
+104 act-result.txt
+3
+3
+[Assistant] All 3 cases captured in `act-result.txt`, each shows "Job succeeded" and a LABELS block.
+
+Summary:
+- `label_assigner.py` — glob-based PR label assigner (supports `**`, `*`, `?`, multi-label rules, priority-sorted output, graceful error handling)
+- `.github/workflows/pr-label-assigner.yml` — push/PR/workflow_dispatch triggers, passes actionlint
+- `fixtures/{basic,tests_and_docs,no_matches}/` — 3 test cases with rules, files, expected labels
+- `test_harness.py` — validates workflow structure + actionlint, runs each case through `act push --rm`, appends output to `act-result.txt`, parses LABELS_BEGIN/END block and asserts exact match against `expected.txt`
+- `act-result.txt` — 3 cases, all exit 0, all "Job succeeded", all labels match

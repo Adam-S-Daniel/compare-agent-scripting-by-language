@@ -1,0 +1,147 @@
+name: semantic-version-bumper
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      start_version:
+        description: "Starting version (overrides test-case/start_version)"
+        required: false
+        default: ""
+      commits_file:
+        description: "Path to a commit log fixture (overrides test-case/commits.log)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+env:
+  NODE_ENV: test
+
+jobs:
+  unit-tests:
+    name: Unit tests (bun test)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.11"
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile || bun install
+
+      - name: Run tests
+        run: bun test
+
+  bumper:
+    name: Run version bumper against test-case fixture
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    outputs:
+      new_version: ${{ steps.bump.outputs.new_version }}
+      bump_type: ${{ steps.bump.outputs.bump_type }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.11"
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile || bun install
+
+      - name: Validate fixture presence
+        run: |
+          set -euo pipefail
+          START_VERSION_INPUT="${{ github.event.inputs.start_version }}"
+          COMMITS_INPUT="${{ github.event.inputs.commits_file }}"
+          START_FILE="test-case/start_version"
+          COMMITS_FILE="test-case/commits.log"
+          if [ -n "${START_VERSION_INPUT}" ]; then
+            echo "using workflow_dispatch start_version: ${START_VERSION_INPUT}"
+          elif [ -f "${START_FILE}" ]; then
+            echo "using fixture start_version from ${START_FILE}"
+          else
+            echo "error: neither workflow_dispatch input nor ${START_FILE} is set" >&2
+            exit 1
+          fi
+          if [ -n "${COMMITS_INPUT}" ]; then
+            echo "using workflow_dispatch commits file: ${COMMITS_INPUT}"
+          elif [ -f "${COMMITS_FILE}" ]; then
+            echo "using fixture commits log from ${COMMITS_FILE}"
+          else
+            echo "error: neither workflow_dispatch input nor ${COMMITS_FILE} is set" >&2
+            exit 1
+          fi
+
+      - name: Prepare workspace
+        run: |
+          set -euo pipefail
+          mkdir -p run-dir
+          START_VERSION_INPUT="${{ github.event.inputs.start_version }}"
+          COMMITS_INPUT="${{ github.event.inputs.commits_file }}"
+          if [ -n "${START_VERSION_INPUT}" ]; then
+            START_VERSION="${START_VERSION_INPUT}"
+          else
+            START_VERSION="$(tr -d '[:space:]' < test-case/start_version)"
+          fi
+          if [ -n "${COMMITS_INPUT}" ]; then
+            cp "${COMMITS_INPUT}" run-dir/commits.log
+          else
+            cp test-case/commits.log run-dir/commits.log
+          fi
+          printf '{\n  "name": "target",\n  "version": "%s"\n}\n' "${START_VERSION}" > run-dir/package.json
+          echo "prepared starting version ${START_VERSION}"
+
+      - name: Run bumper
+        id: bump
+        run: |
+          set -euo pipefail
+          OLD_VERSION="$(bun -e 'console.log(JSON.parse(await Bun.file("run-dir/package.json").text()).version)')"
+          NEW_VERSION="$(bun run src/cli.ts \
+            --version-file run-dir/package.json \
+            --changelog run-dir/CHANGELOG.md \
+            --commits run-dir/commits.log \
+            --date 2026-04-17)"
+          # Derive bump type by comparing the old and new major.minor.patch parts.
+          IFS=. read -r OM ON OP <<<"${OLD_VERSION}"
+          IFS=. read -r NM NN NP <<<"${NEW_VERSION}"
+          if [ "${NM}" != "${OM}" ]; then BUMP="major"
+          elif [ "${NN}" != "${ON}" ]; then BUMP="minor"
+          elif [ "${NP}" != "${OP}" ]; then BUMP="patch"
+          else BUMP="none"; fi
+          echo "OLD_VERSION=${OLD_VERSION}"
+          echo "NEW_VERSION=${NEW_VERSION}"
+          echo "BUMP_TYPE=${BUMP}"
+          echo "new_version=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "bump_type=${BUMP}" >> "$GITHUB_OUTPUT"
+
+      - name: Show updated files
+        run: |
+          echo "--- package.json ---"
+          cat run-dir/package.json
+          echo "--- CHANGELOG.md (if present) ---"
+          if [ -f run-dir/CHANGELOG.md ]; then
+            cat run-dir/CHANGELOG.md
+          else
+            echo "(no changelog written)"
+          fi
+
+  summary:
+    name: Summary
+    needs: bumper
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print result
+        run: |
+          echo "NEW_VERSION=${{ needs.bumper.outputs.new_version }}"
+          echo "BUMP_TYPE=${{ needs.bumper.outputs.bump_type }}"
