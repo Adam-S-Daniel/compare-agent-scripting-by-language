@@ -1,6 +1,6 @@
 # Benchmark Results: Language Comparison
 
-**Last updated:** 2026-04-17 06:39:56 PM ET
+**Last updated:** 2026-04-18 07:12:52 AM ET
 
 **Status:** 144/144 runs completed, 0 remaining
 **Total cost so far:** $436.67
@@ -79,14 +79,14 @@
 
 | Language | Model | Duration | Cost | LLM Score |
 |----------|-------|----------|------|-----------|
-| csharp-script | opus46 | 7 | 8 | 3 |
-| csharp-script | sonnet46 | 6 | 4 | 8 |
-| default | opus46 | 4 | 6 | 1 |
-| default | sonnet46 | 1 | 1 | 4 |
-| powershell | opus46 | 3 | 5 | 2 |
-| powershell | sonnet46 | 5 | 3 | 6 |
-| powershell-strict | opus46 | 8 | 7 | 5 |
-| powershell-strict | sonnet46 | 2 | 2 | 7 |
+| csharp-script | opus46 | 7 (40.2min) | 8 ($5.59) | 3 (4.1) |
+| csharp-script | sonnet46 | 6 (33.1min) | 4 ($2.77) | 8 (3.5) |
+| default | opus46 | 4 (30.8min) | 6 ($3.99) | 1 (4.4) |
+| default | sonnet46 | 1 (16.7min) | 1 ($1.23) | 4 (4.1) |
+| powershell | opus46 | 3 (30.1min) | 5 ($3.65) | 2 (4.2) |
+| powershell | sonnet46 | 5 (31.1min) | 3 ($1.63) | 6 (4.0) |
+| powershell-strict | opus46 | 8 (52.8min) | 7 ($4.92) | 5 (4.1) |
+| powershell-strict | sonnet46 | 2 (21.9min) | 2 ($1.55) | 7 (3.8) |
 
 
 <details>
@@ -94,14 +94,14 @@
 
 | Language | Model | Duration | Cost | LLM Score |
 |----------|-------|----------|------|-----------|
-| default | sonnet46 | 1 | 1 | 4 |
-| powershell-strict | sonnet46 | 2 | 2 | 7 |
-| powershell | opus46 | 3 | 5 | 2 |
-| default | opus46 | 4 | 6 | 1 |
-| powershell | sonnet46 | 5 | 3 | 6 |
-| csharp-script | sonnet46 | 6 | 4 | 8 |
-| csharp-script | opus46 | 7 | 8 | 3 |
-| powershell-strict | opus46 | 8 | 7 | 5 |
+| default | sonnet46 | 1 (16.7min) | 1 ($1.23) | 4 (4.1) |
+| powershell-strict | sonnet46 | 2 (21.9min) | 2 ($1.55) | 7 (3.8) |
+| powershell | opus46 | 3 (30.1min) | 5 ($3.65) | 2 (4.2) |
+| default | opus46 | 4 (30.8min) | 6 ($3.99) | 1 (4.4) |
+| powershell | sonnet46 | 5 (31.1min) | 3 ($1.63) | 6 (4.0) |
+| csharp-script | sonnet46 | 6 (33.1min) | 4 ($2.77) | 8 (3.5) |
+| csharp-script | opus46 | 7 (40.2min) | 8 ($5.59) | 3 (4.1) |
+| powershell-strict | opus46 | 8 (52.8min) | 7 ($4.92) | 5 (4.1) |
 
 </details>
 
@@ -110,14 +110,14 @@
 
 | Language | Model | Duration | Cost | LLM Score |
 |----------|-------|----------|------|-----------|
-| default | sonnet46 | 1 | 1 | 4 |
-| powershell-strict | sonnet46 | 2 | 2 | 7 |
-| powershell | sonnet46 | 5 | 3 | 6 |
-| csharp-script | sonnet46 | 6 | 4 | 8 |
-| powershell | opus46 | 3 | 5 | 2 |
-| default | opus46 | 4 | 6 | 1 |
-| powershell-strict | opus46 | 8 | 7 | 5 |
-| csharp-script | opus46 | 7 | 8 | 3 |
+| default | sonnet46 | 1 (16.7min) | 1 ($1.23) | 4 (4.1) |
+| powershell-strict | sonnet46 | 2 (21.9min) | 2 ($1.55) | 7 (3.8) |
+| powershell | sonnet46 | 5 (31.1min) | 3 ($1.63) | 6 (4.0) |
+| csharp-script | sonnet46 | 6 (33.1min) | 4 ($2.77) | 8 (3.5) |
+| powershell | opus46 | 3 (30.1min) | 5 ($3.65) | 2 (4.2) |
+| default | opus46 | 4 (30.8min) | 6 ($3.99) | 1 (4.4) |
+| powershell-strict | opus46 | 8 (52.8min) | 7 ($4.92) | 5 (4.1) |
+| csharp-script | opus46 | 7 (40.2min) | 8 ($5.59) | 3 (4.1) |
 
 </details>
 
@@ -126,14 +126,14 @@
 
 | Language | Model | Duration | Cost | LLM Score |
 |----------|-------|----------|------|-----------|
-| default | opus46 | 4 | 6 | 1 |
-| powershell | opus46 | 3 | 5 | 2 |
-| csharp-script | opus46 | 7 | 8 | 3 |
-| default | sonnet46 | 1 | 1 | 4 |
-| powershell-strict | opus46 | 8 | 7 | 5 |
-| powershell | sonnet46 | 5 | 3 | 6 |
-| powershell-strict | sonnet46 | 2 | 2 | 7 |
-| csharp-script | sonnet46 | 6 | 4 | 8 |
+| default | opus46 | 4 (30.8min) | 6 ($3.99) | 1 (4.4) |
+| powershell | opus46 | 3 (30.1min) | 5 ($3.65) | 2 (4.2) |
+| csharp-script | opus46 | 7 (40.2min) | 8 ($5.59) | 3 (4.1) |
+| default | sonnet46 | 1 (16.7min) | 1 ($1.23) | 4 (4.1) |
+| powershell-strict | opus46 | 8 (52.8min) | 7 ($4.92) | 5 (4.1) |
+| powershell | sonnet46 | 5 (31.1min) | 3 ($1.63) | 6 (4.0) |
+| powershell-strict | sonnet46 | 2 (21.9min) | 2 ($1.55) | 7 (3.8) |
+| csharp-script | sonnet46 | 6 (33.1min) | 4 ($2.77) | 8 (3.5) |
 
 </details>
 

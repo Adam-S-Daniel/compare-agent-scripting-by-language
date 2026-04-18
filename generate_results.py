@@ -824,7 +824,12 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         rk_hdr = "| Language | Model | Duration | Cost | LLM Score |"
         rk_sep = "|----------|-------|----------|------|-----------|"
         def _fmt_rk(r):
-            return f"| {r['mode']} | {r['model']} | {r['dur_rank']} | {r['cost_rank']} | {r['llm_rank_disp']} |"
+            llm_cell = (f"{r['llm_rank_disp']} ({r['avg_llm']:.1f})"
+                        if r['avg_llm_n'] > 0 else r['llm_rank_disp'])
+            return (f"| {r['mode']} | {r['model']} "
+                    f"| {r['dur_rank']} ({_dur(r['avg_dur'])}) "
+                    f"| {r['cost_rank']} (${r['avg_cost']:.2f}) "
+                    f"| {llm_cell} |")
         lines.append(rk_hdr)
         lines.append(rk_sep)
         for r in sorted(cmp_rows, key=lambda r: (r['mode'], r['model'])):

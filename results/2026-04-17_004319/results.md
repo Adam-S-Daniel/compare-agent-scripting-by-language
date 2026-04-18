@@ -1,6 +1,6 @@
 # Benchmark Results: Language Comparison
 
-**Last updated:** 2026-04-17 06:40:37 PM ET
+**Last updated:** 2026-04-18 07:13:27 AM ET
 
 **Status:** 70/70 runs completed, 0 remaining
 **Total cost so far:** $150.04
@@ -87,16 +87,16 @@
 
 | Language | Model | Duration | Cost | LLM Score |
 |----------|-------|----------|------|-----------|
-| bash | opus47-1m-medium | 1 | 2 | 10 |
-| bash | opus47-1m-xhigh | 10 | 7 | 5 |
-| default | opus47-1m-medium | 2 | 1 | 9 |
-| default | opus47-1m-xhigh | 4 | 6 | 2 |
-| powershell | opus47-1m-medium | 6 | 5 | 6 |
-| powershell | opus47-1m-xhigh | 8 | 9 | 3 |
-| powershell-tool | opus47-1m-medium | 5 | 4 | 7 |
-| powershell-tool | opus47-1m-xhigh | 7 | 8 | 4 |
-| typescript-bun | opus47-1m-medium | 3 | 3 | 8 |
-| typescript-bun | opus47-1m-xhigh | 9 | 10 | 1 |
+| bash | opus47-1m-medium | 1 (4.9min) | 2 ($1.11) | 10 (2.6) |
+| bash | opus47-1m-xhigh | 10 (16.5min) | 7 ($2.87) | 5 (3.6) |
+| default | opus47-1m-medium | 2 (5.4min) | 1 ($1.03) | 9 (3.3) |
+| default | opus47-1m-xhigh | 4 (7.8min) | 6 ($2.29) | 2 (3.9) |
+| powershell | opus47-1m-medium | 6 (10.2min) | 5 ($1.52) | 6 (3.6) |
+| powershell | opus47-1m-xhigh | 8 (11.5min) | 9 ($3.21) | 3 (3.9) |
+| powershell-tool | opus47-1m-medium | 5 (8.0min) | 4 ($1.43) | 7 (3.4) |
+| powershell-tool | opus47-1m-xhigh | 7 (10.6min) | 8 ($3.16) | 4 (3.9) |
+| typescript-bun | opus47-1m-medium | 3 (7.6min) | 3 ($1.29) | 8 (3.4) |
+| typescript-bun | opus47-1m-xhigh | 9 (12.0min) | 10 ($3.54) | 1 (4.0) |
 
 
 <details>
@@ -104,16 +104,16 @@
 
 | Language | Model | Duration | Cost | LLM Score |
 |----------|-------|----------|------|-----------|
-| bash | opus47-1m-medium | 1 | 2 | 10 |
-| default | opus47-1m-medium | 2 | 1 | 9 |
-| typescript-bun | opus47-1m-medium | 3 | 3 | 8 |
-| default | opus47-1m-xhigh | 4 | 6 | 2 |
-| powershell-tool | opus47-1m-medium | 5 | 4 | 7 |
-| powershell | opus47-1m-medium | 6 | 5 | 6 |
-| powershell-tool | opus47-1m-xhigh | 7 | 8 | 4 |
-| powershell | opus47-1m-xhigh | 8 | 9 | 3 |
-| typescript-bun | opus47-1m-xhigh | 9 | 10 | 1 |
-| bash | opus47-1m-xhigh | 10 | 7 | 5 |
+| bash | opus47-1m-medium | 1 (4.9min) | 2 ($1.11) | 10 (2.6) |
+| default | opus47-1m-medium | 2 (5.4min) | 1 ($1.03) | 9 (3.3) |
+| typescript-bun | opus47-1m-medium | 3 (7.6min) | 3 ($1.29) | 8 (3.4) |
+| default | opus47-1m-xhigh | 4 (7.8min) | 6 ($2.29) | 2 (3.9) |
+| powershell-tool | opus47-1m-medium | 5 (8.0min) | 4 ($1.43) | 7 (3.4) |
+| powershell | opus47-1m-medium | 6 (10.2min) | 5 ($1.52) | 6 (3.6) |
+| powershell-tool | opus47-1m-xhigh | 7 (10.6min) | 8 ($3.16) | 4 (3.9) |
+| powershell | opus47-1m-xhigh | 8 (11.5min) | 9 ($3.21) | 3 (3.9) |
+| typescript-bun | opus47-1m-xhigh | 9 (12.0min) | 10 ($3.54) | 1 (4.0) |
+| bash | opus47-1m-xhigh | 10 (16.5min) | 7 ($2.87) | 5 (3.6) |
 
 </details>
 
@@ -122,16 +122,16 @@
 
 | Language | Model | Duration | Cost | LLM Score |
 |----------|-------|----------|------|-----------|
-| default | opus47-1m-medium | 2 | 1 | 9 |
-| bash | opus47-1m-medium | 1 | 2 | 10 |
-| typescript-bun | opus47-1m-medium | 3 | 3 | 8 |
-| powershell-tool | opus47-1m-medium | 5 | 4 | 7 |
-| powershell | opus47-1m-medium | 6 | 5 | 6 |
-| default | opus47-1m-xhigh | 4 | 6 | 2 |
-| bash | opus47-1m-xhigh | 10 | 7 | 5 |
-| powershell-tool | opus47-1m-xhigh | 7 | 8 | 4 |
-| powershell | opus47-1m-xhigh | 8 | 9 | 3 |
-| typescript-bun | opus47-1m-xhigh | 9 | 10 | 1 |
+| default | opus47-1m-medium | 2 (5.4min) | 1 ($1.03) | 9 (3.3) |
+| bash | opus47-1m-medium | 1 (4.9min) | 2 ($1.11) | 10 (2.6) |
+| typescript-bun | opus47-1m-medium | 3 (7.6min) | 3 ($1.29) | 8 (3.4) |
+| powershell-tool | opus47-1m-medium | 5 (8.0min) | 4 ($1.43) | 7 (3.4) |
+| powershell | opus47-1m-medium | 6 (10.2min) | 5 ($1.52) | 6 (3.6) |
+| default | opus47-1m-xhigh | 4 (7.8min) | 6 ($2.29) | 2 (3.9) |
+| bash | opus47-1m-xhigh | 10 (16.5min) | 7 ($2.87) | 5 (3.6) |
+| powershell-tool | opus47-1m-xhigh | 7 (10.6min) | 8 ($3.16) | 4 (3.9) |
+| powershell | opus47-1m-xhigh | 8 (11.5min) | 9 ($3.21) | 3 (3.9) |
+| typescript-bun | opus47-1m-xhigh | 9 (12.0min) | 10 ($3.54) | 1 (4.0) |
 
 </details>
 
@@ -140,16 +140,16 @@
 
 | Language | Model | Duration | Cost | LLM Score |
 |----------|-------|----------|------|-----------|
-| typescript-bun | opus47-1m-xhigh | 9 | 10 | 1 |
-| default | opus47-1m-xhigh | 4 | 6 | 2 |
-| powershell | opus47-1m-xhigh | 8 | 9 | 3 |
-| powershell-tool | opus47-1m-xhigh | 7 | 8 | 4 |
-| bash | opus47-1m-xhigh | 10 | 7 | 5 |
-| powershell | opus47-1m-medium | 6 | 5 | 6 |
-| powershell-tool | opus47-1m-medium | 5 | 4 | 7 |
-| typescript-bun | opus47-1m-medium | 3 | 3 | 8 |
-| default | opus47-1m-medium | 2 | 1 | 9 |
-| bash | opus47-1m-medium | 1 | 2 | 10 |
+| typescript-bun | opus47-1m-xhigh | 9 (12.0min) | 10 ($3.54) | 1 (4.0) |
+| default | opus47-1m-xhigh | 4 (7.8min) | 6 ($2.29) | 2 (3.9) |
+| powershell | opus47-1m-xhigh | 8 (11.5min) | 9 ($3.21) | 3 (3.9) |
+| powershell-tool | opus47-1m-xhigh | 7 (10.6min) | 8 ($3.16) | 4 (3.9) |
+| bash | opus47-1m-xhigh | 10 (16.5min) | 7 ($2.87) | 5 (3.6) |
+| powershell | opus47-1m-medium | 6 (10.2min) | 5 ($1.52) | 6 (3.6) |
+| powershell-tool | opus47-1m-medium | 5 (8.0min) | 4 ($1.43) | 7 (3.4) |
+| typescript-bun | opus47-1m-medium | 3 (7.6min) | 3 ($1.29) | 8 (3.4) |
+| default | opus47-1m-medium | 2 (5.4min) | 1 ($1.03) | 9 (3.3) |
+| bash | opus47-1m-medium | 1 (4.9min) | 2 ($1.11) | 10 (2.6) |
 
 </details>
 
