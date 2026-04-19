@@ -7,6 +7,7 @@ import pytest
 from generate_results import (
     _categorize_tool_time,
     _collapsible_table,
+    _compute_ratio_bands,
     _detect_traps,
     _emit_sorted_variants,
     _find_discrepancies,
@@ -336,29 +337,70 @@ class TestRatioTier:
     def test_best_itself_is_A(self):
         assert _ratio_tier(1.0) == "A"
 
-    def test_boundary_of_A_band_inclusive(self):
-        assert _ratio_tier(1.15) == "A"
-        assert _ratio_tier(1.150001) == "B"
-
-    def test_boundary_of_B_band(self):
-        assert _ratio_tier(1.40) == "B"
-        assert _ratio_tier(1.40001) == "C"
-
-    def test_boundary_of_C_band(self):
-        assert _ratio_tier(1.80) == "C"
-        assert _ratio_tier(1.80001) == "D"
-
-    def test_boundary_of_D_band(self):
-        assert _ratio_tier(2.50) == "D"
-        assert _ratio_tier(2.50001) == "E"
-
-    def test_far_out_is_E(self):
+    def test_fallback_bands_when_none_passed(self):
+        # No bands argument → fixed fallback (1.50, 2.50, 4.00, 6.00).
+        assert _ratio_tier(1.0) == "A"
+        assert _ratio_tier(1.50) == "A"
+        assert _ratio_tier(2.50) == "B"
+        assert _ratio_tier(4.00) == "C"
+        assert _ratio_tier(6.00) == "D"
         assert _ratio_tier(10.0) == "E"
 
-    def test_mid_band_examples(self):
-        assert _ratio_tier(1.30) == "B"
-        assert _ratio_tier(1.60) == "C"
-        assert _ratio_tier(2.00) == "D"
+    def test_custom_bands_change_tiers(self):
+        # Narrow bands (tight cluster): a 1.1x ratio is now C, not A.
+        bands = (1.05, 1.10, 1.15, 1.20)
+        assert _ratio_tier(1.0, bands) == "A"
+        assert _ratio_tier(1.10, bands) == "B"
+        assert _ratio_tier(1.15, bands) == "C"
+        assert _ratio_tier(1.20, bands) == "D"
+        assert _ratio_tier(1.25, bands) == "E"
+
+
+# =========================================================================
+# _compute_ratio_bands — log-equal division of the best-to-worst spread
+# =========================================================================
+
+class TestComputeRatioBands:
+    def test_empty_returns_unit_bands(self):
+        # No data → degenerate but harmless; everything would classify as A.
+        assert _compute_ratio_bands([]) == (1.0, 1.0, 1.0, 1.0)
+
+    def test_all_equal_bands_collapse_to_one(self):
+        # Every combo identical → no gradation possible; all A.
+        b = _compute_ratio_bands([1.0, 1.0, 1.0])
+        assert b == (1.0, 1.0, 1.0, 1.0)
+
+    def test_wide_spread_distributes_across_A_to_E(self):
+        # Data matching the real campaign's cost spread: 1x -> ~7.2x.
+        # Log-equal bands should give roughly 1.49, 2.21, 3.29, 4.89.
+        b = _compute_ratio_bands([1.0, 2.1, 3.1, 4.7, 7.22])
+        # Apply to the actual values and confirm a full A-E spread.
+        tiers = [_ratio_tier(r, b) for r in [1.0, 2.1, 3.1, 4.7, 7.22]]
+        assert set(tiers) == {"A", "B", "C", "D", "E"}
+        assert tiers[0] == "A"
+        assert tiers[-1] == "E"
+
+    def test_tight_cluster_keeps_narrow_bands(self):
+        # Data where everything is within 2x of the best. Bands should
+        # narrow proportionally so tier differences still surface.
+        b = _compute_ratio_bands([1.0, 1.2, 1.5, 1.8, 2.0])
+        # The 1.0 combo is A; the 2.0 (worst) is E.
+        assert _ratio_tier(1.0, b) == "A"
+        assert _ratio_tier(2.0, b) == "E"
+
+    def test_ordering_is_monotonic(self):
+        # For any spread, b1 < b2 < b3 < b4 so the ratio tiers form a
+        # proper ordering.
+        b = _compute_ratio_bands([1.0, 3.0, 5.0])
+        assert b[0] < b[1] < b[2] < b[3]
+
+    def test_formula_matches_log_equal(self):
+        # boundary_i = max_ratio^(i/5) for i in 1..4.
+        max_r = 32.0
+        b = _compute_ratio_bands([1.0, max_r])
+        expected = tuple(max_r ** (i / 5) for i in range(1, 5))
+        for actual, exp in zip(b, expected):
+            assert abs(actual - exp) < 1e-9
 
 
 # =========================================================================

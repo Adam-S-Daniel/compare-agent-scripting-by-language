@@ -121,6 +121,36 @@ class TestAggregateRows:
     def test_handles_empty(self):
         assert aggregate_rows([]) == []
 
+    def test_failed_runs_excluded_from_averages_and_flagged(self):
+        # A successful + a failed run on the same combo: the failed one's
+        # cost/duration must NOT pollute the average, and `excluded`
+        # tracks the count + variant_disp appends an asterisk for display.
+        good = _mk_metric("11", mode="bash", model="haiku45", cost=0.5,
+                          duration_ms=60_000)
+        bad = dict(_mk_metric("16", mode="bash", model="haiku45", cost=0.75,
+                              duration_ms=19_369_500))
+        bad["run_success"] = False
+        bad["exit_code"] = -9
+        rows = aggregate_rows([good, bad])
+        assert len(rows) == 1
+        r = rows[0]
+        assert r["n"] == 1
+        assert r["excluded"] == 1
+        # Average covers ONLY the good run, not polluted by the 322-min outlier.
+        assert r["avg_cost"] == pytest.approx(0.5)
+        assert r["avg_dur"] == pytest.approx(60.0)
+        # Model label in display form carries the asterisk.
+        assert r["variant_disp"].endswith("*")
+        assert r["variant_disp"].rstrip("*") == r["variant"]
+
+    def test_clean_combo_has_no_asterisk(self):
+        good = _mk_metric("11", mode="default", model="opus47-1m",
+                          effort="xhigh", cost=2.0)
+        rows = aggregate_rows([good])
+        assert rows[0]["excluded"] == 0
+        assert rows[0]["variant_disp"] == rows[0]["variant"]
+        assert "*" not in rows[0]["variant_disp"]
+
 
 class TestCombineIntegration:
     def _write_run_dir(self, root: Path, name: str, metrics: list[dict]) -> Path:
