@@ -1,0 +1,101 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      config_file:
+        description: 'Configuration file to use'
+        required: false
+        default: 'config.json'
+
+permissions:
+  contents: read
+
+jobs:
+  generate-matrix:
+    name: Generate Matrix
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install pytest
+
+      - name: Run tests
+        run: |
+          python -m pytest tests/test_matrix_generator.py -v
+
+      - name: Generate matrix from config
+        run: |
+          python3 generate_matrix.py config.json --output matrix.json
+
+      - name: Display generated matrix
+        run: |
+          echo "Generated matrix:"
+          cat matrix.json
+          echo ""
+          echo "Matrix structure valid"
+
+      - name: Validate matrix JSON
+        run: |
+          python3 -c "
+          import json
+          with open('matrix.json') as f:
+              matrix = json.load(f)
+          assert 'include' in matrix, 'Missing include key'
+          assert isinstance(matrix['include'], list), 'include must be a list'
+          assert 'fail-fast' in matrix, 'Missing fail-fast key'
+          print(f'✓ Matrix is valid with {len(matrix[\"include\"])} combinations')
+          "
+
+      - name: Test with exclude rules
+        run: |
+          python3 generate_matrix.py config-with-exclude.json --output matrix-exclude.json
+          python3 -c "
+          import json
+          with open('matrix-exclude.json') as f:
+              matrix = json.load(f)
+          assert 'exclude' in matrix, 'Missing exclude key'
+          assert len(matrix['include']) == 7, f'Expected 7 combinations, got {len(matrix[\"include\"])}'
+          assert matrix['fail-fast'] is False, 'fail-fast should be False'
+          print(f'✓ Exclude rules work correctly: {len(matrix[\"include\"])} combinations, {len(matrix[\"exclude\"])} exclusions')
+          "
+
+      - name: Test error handling
+        run: |
+          python3 -c "
+          import json
+          from matrix_generator import MatrixConfig, MatrixGenerator, MatrixValidationError
+
+          # Test empty OS versions
+          try:
+              config = MatrixConfig(os_versions=[], language_versions=['3.9'])
+              generator = MatrixGenerator(config)
+              generator.generate()
+              print('✗ Should have raised error for empty os_versions')
+              exit(1)
+          except MatrixValidationError as e:
+              print(f'✓ Correctly rejected empty os_versions: {e}')
+
+          # Test max size validation
+          try:
+              config = MatrixConfig(os_versions=['ubuntu'] * 100, language_versions=['3.9'], max_size=50)
+              generator = MatrixGenerator(config)
+              generator.generate()
+              print('✗ Should have raised error for exceeding max_size')
+              exit(1)
+          except MatrixValidationError as e:
+              print(f'✓ Correctly rejected oversized matrix: {e}')
+          "
