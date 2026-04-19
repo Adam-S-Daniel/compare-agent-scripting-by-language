@@ -1,0 +1,66 @@
+name: Test Results Aggregator
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Run Tests
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          # Run all tests in the repository
+          $testResults = Invoke-Pester -Path "test-results-aggregator.Tests.ps1" -PassThru
+
+          if ($testResults.FailedCount -gt 0) {
+            Write-Host "::error::$($testResults.FailedCount) test(s) failed"
+            exit 1
+          }
+
+          Write-Host "✓ All $($testResults.PassedCount) tests passed successfully"
+
+      - name: Aggregate test results
+        shell: pwsh
+        run: |
+          . ./test-results-aggregator.ps1
+
+          # Parse test result files
+          $xml1 = Get-JunitXmlTestResults -FilePath "./fixtures/junit-run1.xml"
+          $xml2 = Get-JunitXmlTestResults -FilePath "./fixtures/junit-run2.xml"
+          $json1 = Get-JsonTestResults -FilePath "./fixtures/results-run1.json"
+          $json2 = Get-JsonTestResults -FilePath "./fixtures/results-run2.json"
+
+          # Aggregate all results
+          $allResults = Aggregate-TestResults -TestResults @($xml1, $xml2, $json1, $json2)
+
+          # Generate markdown summary
+          $markdown = ConvertTo-MarkdownSummary -AggregatedResults $allResults
+
+          # Detect flaky tests
+          $flaky = Find-FlakyTests -MultipleRuns @($xml1, $xml2, $json1, $json2)
+          if ($flaky) {
+            $markdown += "`n## Flaky Tests`n`n"
+            foreach ($test in $flaky) {
+              $markdown += "- **$($test.Name)**: Inconsistent across runs`n"
+            }
+          }
+
+          # Output summary
+          $markdown | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8
+          Write-Host $markdown
