@@ -1,0 +1,784 @@
+{
+  "task_id": "17-artifact-cleanup-script",
+  "task_name": "Artifact Cleanup Script",
+  "task_category": "GitHub Actions / Maintenance",
+  "language_mode": "default",
+  "language_chosen": "python",
+  "language_breakdown": {
+    "python": 100.0
+  },
+  "interpreter_versions": {},
+  "powershell_version": "",
+  "dotnet_version": "",
+  "model": "claude-haiku-4-5",
+  "model_short": "haiku45",
+  "variant": "haiku45",
+  "claude_code_version": "2.1.114",
+  "instructions_version": "v4",
+  "timestamp_start": "2026-04-19T12:04:47.144566+00:00",
+  "timestamp_end": "2026-04-19T12:09:34.808185+00:00",
+  "prompt_text": "You are completing a scripting task. Choose whatever programming language you think is best for this task.\n\nTASK: Given a list of artifacts with metadata (name, size, creation date, workflow run ID \u2014 provided as mock data), apply retention policies (max age, max total size, keep-latest-N per workflow), determine which artifacts to delete, and generate a deletion plan with a summary (total space reclaimed, artifacts retained vs deleted). Support dry-run mode.\n\nREQUIREMENTS:\n1. Use red/green TDD methodology: write a failing test FIRST, then write the minimum code to make it pass, then refactor. Repeat for each piece of functionality.\n2. Create mocks and test fixtures as necessary for testability.\n3. All tests must be runnable and must pass at the end.\n4. Include clear comments explaining your approach.\n5. Handle errors gracefully with meaningful error messages.\n\nCreate your solution in the current working directory. Start by writing your first failing test.\n\nGITHUB ACTIONS REQUIREMENT:\nCreate a GitHub Actions workflow file at .github/workflows/artifact-cleanup-script.yml that uses\nyour script in a real CI/CD pipeline. The workflow must:\n- Use appropriate trigger events (push, pull_request, schedule, workflow_dispatch, etc.)\n- Reference your script correctly\n- Pass actionlint validation (valid YAML, valid action references, correct syntax)\n- Include appropriate permissions, environment variables, and job dependencies\n- Actually run successfully when executed locally with `act` (nektos/act)\n\nDesign your workflow so its steps work in an isolated Docker container \u2014 use\n`actions/checkout@v4`, install dependencies your script needs, and run it.\nAvoid steps requiring external services or secrets without sensible defaults.\n\nIMPORTANT for PowerShell mode: Use `shell: pwsh` on your workflow run: steps instead\nof invoking `pwsh -Command` or `pwsh -File` from bash. This avoids escaping issues\nand works correctly in act containers. pwsh and Pester are pre-installed in the\ncontainer.\n\nWORKFLOW VALIDATION:\nRun `actionlint .github/workflows/artifact-cleanup-script.yml` and fix any errors. actionlint is\npre-installed. Iterate until it passes cleanly. Validate with actionlint BEFORE\nrunning act \u2014 actionlint is instant, act takes 30-90 seconds per run.\n\nALL TESTS MUST RUN THROUGH ACT:\nEvery single test case must execute through the GitHub Actions workflow via `act`.\nDo NOT test your script directly \u2014 all testing goes through the pipeline.\n\nStructure your workflow to accept test fixture data and produce verifiable output.\nYour test harness must:\n1. For each test case: set up a temp git repo with your project files + that case's\n   fixture data, run `act push --rm`, capture the output\n2. Save all act output to `act-result.txt` in the current working directory (append\n   each test case's output, clearly delimited)\n3. Assert that act exited with code 0 for each case\n4. Parse the act output and assert on EXACT EXPECTED VALUES \u2014 not just that output\n   appeared, but that it matches the known-good result for that test case's input.\n   For example: if your workflow bumps version 1.1.0 with a feat commit, assert\n   the output contains exactly \"1.2.0\", not just \"a version number\"\n5. Assert every job shows \"Job succeeded\"\n\nThe `act-result.txt` file MUST exist when done. It is a required artifact.\n`act` and Docker are pre-installed. Limit yourself to at most 3 `act push` runs \u2014\ndiagnose errors from the output rather than re-running blindly.\n\nWORKFLOW STRUCTURE TESTS (also required):\n- Parse the YAML and check expected structure (triggers, jobs, steps)\n- Verify the workflow references your script files correctly (paths exist)\n- Verify actionlint passes (assert exit code 0)\n",
+  "exit_code": 0,
+  "run_success": true,
+  "failure_reason": null,
+  "session": {
+    "session_id": "007198c0-e15f-439d-b36d-ee8aadf83dc8",
+    "stop_reason": "end_turn",
+    "terminal_reason": "completed",
+    "fast_mode_state": "off",
+    "service_tier": "standard",
+    "speed": "standard",
+    "inference_geo": "",
+    "context_window": 200000,
+    "max_output_tokens": 32000,
+    "permission_mode": "bypassPermissions",
+    "output_style": "default",
+    "tools_available_count": 27,
+    "mcp_servers": [],
+    "permission_denials": []
+  },
+  "model_usage_detail": {
+    "claude-haiku-4-5": {
+      "inputTokens": 317,
+      "outputTokens": 27163,
+      "cacheReadInputTokens": 2474136,
+      "cacheCreationInputTokens": 60595,
+      "webSearchRequests": 0,
+      "costUSD": 0.45928935,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 1237,
+      "outputTokens": 18,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.001327,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "effort_level": null,
+  "timing": {
+    "grand_total_duration_ms": 287663,
+    "total_api_duration_ms": 250014,
+    "total_execution_duration_ms": 35983,
+    "num_turns": 45
+  },
+  "tokens": {
+    "input_tokens": 317,
+    "output_tokens": 27163,
+    "cache_read_tokens": 2474136,
+    "cache_creation_tokens": 60595,
+    "total_context_consumed": 2535048,
+    "compaction_count": 0
+  },
+  "cost": {
+    "total_cost_usd": 0.46061634999999995,
+    "assumed_input_cost_per_mtok": 1.0,
+    "assumed_output_cost_per_mtok": 5.0,
+    "assumed_cache_read_cost_per_mtok": 0.1,
+    "assumed_cache_write_cost_per_mtok": 1.25
+  },
+  "code_metrics": {
+    "total_lines": 1422,
+    "total_tokens_estimate": 10443,
+    "file_count": 11,
+    "files": [
+      "README.md",
+      "SOLUTION_SUMMARY.md",
+      "artifact_cleanup.py",
+      "cleanup.py",
+      "fixtures.py",
+      "test_artifact_cleanup.py",
+      "validate_workflow.py",
+      "fixtures/test_case_1_basic_age.json",
+      "fixtures/test_case_2_multiple_workflows.json",
+      "fixtures/test_case_3_size_exceeded.json",
+      ".github/workflows/artifact-cleanup-script.yml"
+    ]
+  },
+  "quality": {
+    "tests_pass": null,
+    "error_count": 4,
+    "error_details": [
+      "Exit code 1\n============================= test session starts ==============================\nplatform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3\ncachedir: .pytest_cache\nroo",
+      "Exit code 1\n/home/passp/.local/bin/actionlint\n.github/workflows/artifact-cleanup-script.yml:40:25: could not parse as YAML: mapping values are not allowed in this context [syntax-check]\n   |\n40 |     ",
+      "Exit code 1\n.github/workflows/artifact-cleanup-script.yml:23:15: the runner of \"actions/setup-python@v4\" action is too old to run on GitHub Actions. update the action's version to fix this issue [acti",
+      "Exit code 1\nWorkflow Structure Validation\n==================================================\n\u2713 Workflow name correct\n\u274c Trigger 'push' missing\n\u274c Trigger 'pull_request' missing\n\u274c Trigger 'workflow_dispa"
+    ],
+    "actionlint_pass": true,
+    "actionlint_errors": 0,
+    "actionlint_results": [
+      {
+        "file": ".github/workflows/artifact-cleanup-script.yml",
+        "passed": true,
+        "errors": ""
+      }
+    ],
+    "act_result_txt_exists": false,
+    "act_result_txt_size": 0,
+    "areas_of_difficulty": [],
+    "observations": ""
+  },
+  "tool_install": {
+    "tool_install_duration_ms": 0,
+    "tools_installed": [],
+    "install_commands_count": 0
+  },
+  "tool_use_timing": {
+    "total_tool_uses": 44,
+    "total_tool_duration_ms": 43437,
+    "bash_tool_uses": 24,
+    "bash_total_ms": 40889,
+    "slowest_tool_uses": [
+      {
+        "tool_name": "Bash",
+        "command": "rm .actrc && act push --rm -j test 2>&1 | tee ../../act-result.txt",
+        "duration_ms": 16846,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "act push --rm -j test 2>&1 | tee ../../act-result.txt | grep -E \"(\u2705|\u274c|PASSED|FAILED|Test case|Job|Summary)\" | head -50",
+        "duration_ms": 16824,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "python3 -m pytest test_artifact_cleanup.py -v 2>&1 | head -50",
+        "duration_ms": 1664,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "python3 -m pytest test_artifact_cleanup.py -v",
+        "duration_ms": 729,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "act push --rm -j test 2>&1 | tee ../../act-result.txt",
+        "duration_ms": 676,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "python3 -m pytest test_artifact_cleanup.py -v",
+        "duration_ms": 555,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "python3 -m pytest test_artifact_cleanup.py -v 2>&1 | tail -20",
+        "duration_ms": 534,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "\\\npython3 -m pytest test_artifact_cleanup.py -v --tb=short 2>&1 | tail -30",
+        "duration_ms": 524,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "ls -la .actrc 2>/dev/null || echo \"No .actrc file\"",
+        "duration_ms": 380,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 314,
+        "is_error": false,
+        "is_install": false
+      }
+    ],
+    "all_tool_uses": [
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 38,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 230,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "python3 -m pytest test_artifact_cleanup.py -v 2>&1 | head -50",
+        "duration_ms": 1664,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 198,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "python3 -m pytest test_artifact_cleanup.py -v",
+        "duration_ms": 729,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 121,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "python3 -m pytest test_artifact_cleanup.py -v",
+        "duration_ms": 555,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 126,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "python3 -m pytest test_artifact_cleanup.py -v 2>&1 | tail -20",
+        "duration_ms": 534,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 103,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 112,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "mkdir -p .github/workflows",
+        "duration_ms": 72,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 115,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "python3 fixtures.py",
+        "duration_ms": 97,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "which actionlint && actionlint .github/workflows/artifact-cleanup-script.yml",
+        "duration_ms": 108,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 70,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 59,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 146,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "actionlint .github/workflows/artifact-cleanup-script.yml",
+        "duration_ms": 188,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 191,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 172,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "actionlint .github/workflows/artifact-cleanup-script.yml",
+        "duration_ms": 142,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "act push --rm -j test 2>&1 | tee ../../act-result.txt",
+        "duration_ms": 676,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "ls -la .actrc 2>/dev/null || echo \"No .actrc file\"",
+        "duration_ms": 380,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 21,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "rm .actrc && act push --rm -j test 2>&1 | tee ../../act-result.txt",
+        "duration_ms": 16846,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 28,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "tail -100 ../../act-result.txt",
+        "duration_ms": 88,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "python3 -c \"\nimport json\nfrom datetime import datetime, timedelta\n\n# Load the test fixture\nwith open('fixtures/test_case_2_multiple_workflows.json') as f:\n    data = json.load(f)\n\n# Count artifacts\nwf",
+        "duration_ms": 132,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 140,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "act push --rm -j test 2>&1 | tee ../../act-result.txt | grep -E \"(\u2705|\u274c|PASSED|FAILED|Test case|Job|Summary)\" | head -50",
+        "duration_ms": 16824,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "ls -lh ../../act-result.txt && wc -l ../../act-result.txt",
+        "duration_ms": 162,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 240,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "python3 validate_workflow.py",
+        "duration_ms": 262,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "python3 -c \"\nimport yaml\nwith open('.github/workflows/artifact-cleanup-script.yml') as f:\n    w = yaml.safe_load(f)\nprint('Triggers:', w.get('on'))\n\"\n",
+        "duration_ms": 245,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 24,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 314,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "python3 validate_workflow.py",
+        "duration_ms": 288,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 100,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "\\\npython3 -m pytest test_artifact_cleanup.py -v --tb=short 2>&1 | tail -30",
+        "duration_ms": 524,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "echo \"=== Files Created ===\" && ls -lh *.py .github/workflows/*.yml && \\\necho -e \"\\n=== Test Results ===\" && \\\ngrep -c \"PASSED\\|passed\" ../../act-result.txt && \\\necho \"test runs completed\" && \\\necho -",
+        "duration_ms": 105,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cat > SOLUTION_SUMMARY.md << 'EOF'\n# Artifact Cleanup Script \u2014 Solution Summary\n\n## \u2705 Completed Requirements\n\n### 1. Red/Green TDD Methodology\n- \u2705 Started with failing tests (11 test cases)\n- \u2705 Implem",
+        "duration_ms": 111,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "ls -lh ../../act-result.txt && echo -e \"\\n=== act-result.txt exists \u2713 ===\" && \\\necho \"File size: $(wc -c < ../../act-result.txt) bytes\" && \\\necho \"Lines: $(wc -l < ../../act-result.txt)\" && \\\necho -e ",
+        "duration_ms": 93,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cat << 'EOF'\n\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551                    ARTIFACT CLEANUP SCRIPT - COMPLETE                   \u2551\n\u255a\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550",
+        "duration_ms": 64,
+        "is_error": false,
+        "is_install": false
+      }
+    ],
+    "install_duration_ms": 0,
+    "test_duration_ms": 4006,
+    "act_duration_ms": 34346
+  },
+  "hooks": {
+    "hook_fires": 16,
+    "hook_errors_caught": 5,
+    "hook_failures": 0,
+    "hook_events": [
+      {
+        "subtype": "hook_started",
+        "hook_id": "233b6471-981b-41f5-ab47-62c42f7fb3c4",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "233b6471-981b-41f5-ab47-62c42f7fb3c4",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "cbb7d2c2-06ba-443f-8991-5a334bb934ec",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "cbb7d2c2-06ba-443f-8991-5a334bb934ec",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "52ba1800-ba78-4517-adaa-3c047149c867",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "52ba1800-ba78-4517-adaa-3c047149c867",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "e8a37ee6-7271-4347-a0a5-0827e74a76d0",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "e8a37ee6-7271-4347-a0a5-0827e74a76d0",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "d82bdc8d-7752-41ae-9958-9773796bff47",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "d82bdc8d-7752-41ae-9958-9773796bff47",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "9523774d-5220-4bb5-b741-cc0ed649aa8e",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "9523774d-5220-4bb5-b741-cc0ed649aa8e",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "eceaa48a-f741-4092-9558-d539f125ef3f",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "eceaa48a-f741-4092-9558-d539f125ef3f",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\n.github/workflows/artifact-cleanup-script.yml:40:25: could not parse as YAML: mapping values are not allowed in this context [syntax-check]\\n   |\\n40 |       - name: Test case 1: Basic age cleanup\\n   |                         ^~\"}",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "23d59764-3042-43c0-858e-5d7fc265df60",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "23d59764-3042-43c0-858e-5d7fc265df60",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\n.github/workflows/artifact-cleanup-script.yml:60:25: could not parse as YAML: mapping values are not allowed in this context [syntax-check]\\n   |\\n60 |       - name: Test case 2: Multiple workflows\\n   |                         ^~\"}",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "cf39c17e-cf4d-4220-ab78-6b003d8d699f",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "cf39c17e-cf4d-4220-ab78-6b003d8d699f",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\n.github/workflows/artifact-cleanup-script.yml:79:25: could not parse as YAML: mapping values are not allowed in this context [syntax-check]\\n   |\\n79 |       - name: Test case 3: Total size exceeded\\n   |                         ^~\"}",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "afae3cf6-9ffa-42f5-85c0-371c1c404fc9",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "afae3cf6-9ffa-42f5-85c0-371c1c404fc9",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\n.github/workflows/artifact-cleanup-script.yml:23:15: the runner of \\\"actions/setup-python@v4\\\" action is too old to run on GitHub Actions. update the action's version to fix this issue [action]\\n   |\\n23 |         uses: actions/setup-python@v4\\n   |               ^~~~~~~~~~~~~~~~~~~~~~~\\n.github/workflows/artifact-cleanup-script.yml:121:9: shellcheck reported issue in this scrip",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "f1f74bce-b70a-4343-8b91-f783a6bd1430",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "f1f74bce-b70a-4343-8b91-f783a6bd1430",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\n.github/workflows/artifact-cleanup-script.yml:121:9: shellcheck reported issue in this script: SC2086:info:1:44: Double quote to prevent globbing and word splitting [shellcheck]\\n    |\\n121 |         run: |\\n    |         ^~~~\\n.github/workflows/artifact-cleanup-script.yml:121:9: shellcheck reported issue in this script: SC2086:info:2:12: Double quote to prevent globbing and wor",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "f118323b-7d88-41a2-9757-2064f67e9b5d",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "f118323b-7d88-41a2-9757-2064f67e9b5d",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "4d244d50-b5c3-4e3b-a9bc-dd4a507027a1",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "4d244d50-b5c3-4e3b-a9bc-dd4a507027a1",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "62519553-e6b8-4d8d-b2c6-6f8aa9acd1fb",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "62519553-e6b8-4d8d-b2c6-6f8aa9acd1fb",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "e3eb2cf2-b83d-47ba-9d34-334e82694e16",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "e3eb2cf2-b83d-47ba-9d34-334e82694e16",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "c80b3f5c-ea33-47dd-9828-13029400716b",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "c80b3f5c-ea33-47dd-9828-13029400716b",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  }
+}

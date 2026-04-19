@@ -1,0 +1,11 @@
+{
+  "coverage": 3,
+  "rigor": 2,
+  "design": 3,
+  "overall": 2,
+  "summary": "The suite covers the core matrix-generation contract reasonably well \u2014 cartesian product, include/exclude rules, fail-fast, max-parallel, and size validation are all exercised. However, the task's most prominent requirement \u2014 that every test must run through `act` and verify the GitHub Actions workflow \u2014 is completely absent. The required workflow-structure tests (YAML triggers, job graph, actionlint exit code, path references) are also missing, as are tests for invalid JSON input, zero-argument invocation, and edge conditions like an exclude rule that empties the matrix or partial-field exclude matching. Assertions vary in quality: some use jq correctly, but Test 5 falls back to a raw `grep -q 'windows'`, and the size-validation check accepts either 'exceeds maximum' or 'too large', making it pass regardless of which message is emitted. The `run` builtin is used only for the error tests while success tests invoke the script directly \u2014 an inconsistency that also means bats `$status` and `$output` semantics are unavailable for positive cases. `TEMP_DIR` is allocated in every setup but never used, and the numbered comments (Test 1\u2013Test 11) misalign with the actual @test blocks. The suite would catch naive regressions in the generator logic but would miss any breakage in the CI/workflow layer, which is half the stated deliverable.",
+  "judge_cost_usd": 0.0532,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 1740,
+  "judge_provider": "claude-cli"
+}

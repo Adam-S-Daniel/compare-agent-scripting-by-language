@@ -1,0 +1,699 @@
+{
+  "task_id": "18-secret-rotation-validator",
+  "task_name": "Secret Rotation Validator",
+  "task_category": "GitHub Actions / Security",
+  "language_mode": "powershell-tool",
+  "language_chosen": "powershell",
+  "language_breakdown": {
+    "powershell": 100.0
+  },
+  "interpreter_versions": {
+    "powershell": "\u001b[0m7.6.0"
+  },
+  "powershell_version": "\u001b[0m7.6.0",
+  "dotnet_version": "",
+  "model": "claude-haiku-4-5",
+  "model_short": "haiku45",
+  "variant": "haiku45",
+  "claude_code_version": "2.1.114",
+  "instructions_version": "v4",
+  "timestamp_start": "2026-04-19T12:42:08.621161+00:00",
+  "timestamp_end": "2026-04-19T12:53:32.991016+00:00",
+  "prompt_text": "You are completing a scripting task. You MUST use PowerShell as your implementation language.\n\nTASK: Given a configuration of secrets with metadata (name, last-rotated date, rotation policy in days, required-by services \u2014 all mock data), identify secrets that are expired or expiring within a configurable warning window, generate a rotation report, and output notifications grouped by urgency (expired, warning, ok). Support multiple output formats (markdown table, JSON).\n\nREQUIREMENTS:\n1. Use red/green TDD methodology: write a failing test FIRST, then write the minimum code to make it pass, then refactor. Repeat for each piece of functionality.\n2. Create mocks and test fixtures as necessary for testability. Use Pester as the testing framework.\n3. All tests must be runnable with `Invoke-Pester` and must pass at the end.\n4. Include clear comments explaining your approach.\n5. Handle errors gracefully with meaningful error messages.\n\nCreate your solution in the current working directory. Start by writing your first failing test.\n\nGITHUB ACTIONS REQUIREMENT:\nCreate a GitHub Actions workflow file at .github/workflows/secret-rotation-validator.yml that uses\nyour script in a real CI/CD pipeline. The workflow must:\n- Use appropriate trigger events (push, pull_request, schedule, workflow_dispatch, etc.)\n- Reference your script correctly\n- Pass actionlint validation (valid YAML, valid action references, correct syntax)\n- Include appropriate permissions, environment variables, and job dependencies\n- Actually run successfully when executed locally with `act` (nektos/act)\n\nDesign your workflow so its steps work in an isolated Docker container \u2014 use\n`actions/checkout@v4`, install dependencies your script needs, and run it.\nAvoid steps requiring external services or secrets without sensible defaults.\n\nIMPORTANT for PowerShell mode: Use `shell: pwsh` on your workflow run: steps instead\nof invoking `pwsh -Command` or `pwsh -File` from bash. This avoids escaping issues\nand works correctly in act containers. pwsh and Pester are pre-installed in the\ncontainer.\n\nWORKFLOW VALIDATION:\nRun `actionlint .github/workflows/secret-rotation-validator.yml` and fix any errors. actionlint is\npre-installed. Iterate until it passes cleanly. Validate with actionlint BEFORE\nrunning act \u2014 actionlint is instant, act takes 30-90 seconds per run.\n\nALL TESTS MUST RUN THROUGH ACT:\nEvery single test case must execute through the GitHub Actions workflow via `act`.\nDo NOT test your script directly \u2014 all testing goes through the pipeline.\n\nStructure your workflow to accept test fixture data and produce verifiable output.\nYour test harness must:\n1. For each test case: set up a temp git repo with your project files + that case's\n   fixture data, run `act push --rm`, capture the output\n2. Save all act output to `act-result.txt` in the current working directory (append\n   each test case's output, clearly delimited)\n3. Assert that act exited with code 0 for each case\n4. Parse the act output and assert on EXACT EXPECTED VALUES \u2014 not just that output\n   appeared, but that it matches the known-good result for that test case's input.\n   For example: if your workflow bumps version 1.1.0 with a feat commit, assert\n   the output contains exactly \"1.2.0\", not just \"a version number\"\n5. Assert every job shows \"Job succeeded\"\n\nThe `act-result.txt` file MUST exist when done. It is a required artifact.\n`act` and Docker are pre-installed. Limit yourself to at most 3 `act push` runs \u2014\ndiagnose errors from the output rather than re-running blindly.\n\nWORKFLOW STRUCTURE TESTS (also required):\n- Parse the YAML and check expected structure (triggers, jobs, steps)\n- Verify the workflow references your script files correctly (paths exist)\n- Verify actionlint passes (assert exit code 0)\n",
+  "exit_code": 0,
+  "run_success": true,
+  "failure_reason": null,
+  "session": {
+    "session_id": "0e059356-efa2-41fd-a1f5-c7be2dbca192",
+    "stop_reason": "end_turn",
+    "terminal_reason": "completed",
+    "fast_mode_state": "off",
+    "service_tier": "standard",
+    "speed": "standard",
+    "inference_geo": "",
+    "context_window": 200000,
+    "max_output_tokens": 32000,
+    "permission_mode": "bypassPermissions",
+    "output_style": "default",
+    "tools_available_count": 28,
+    "mcp_servers": [],
+    "permission_denials": []
+  },
+  "model_usage_detail": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 1255,
+      "outputTokens": 15,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.00133,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "claude-haiku-4-5": {
+      "inputTokens": 282,
+      "outputTokens": 23908,
+      "cacheReadInputTokens": 2069080,
+      "cacheCreationInputTokens": 50381,
+      "webSearchRequests": 0,
+      "costUSD": 0.38970625,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "effort_level": null,
+  "timing": {
+    "grand_total_duration_ms": 684369,
+    "total_api_duration_ms": 234254,
+    "total_execution_duration_ms": 448775,
+    "num_turns": 40
+  },
+  "tokens": {
+    "input_tokens": 282,
+    "output_tokens": 23908,
+    "cache_read_tokens": 2069080,
+    "cache_creation_tokens": 50381,
+    "total_context_consumed": 2119743,
+    "compaction_count": 0
+  },
+  "cost": {
+    "total_cost_usd": 0.39103625,
+    "assumed_input_cost_per_mtok": 1.0,
+    "assumed_output_cost_per_mtok": 5.0,
+    "assumed_cache_read_cost_per_mtok": 0.1,
+    "assumed_cache_write_cost_per_mtok": 1.25
+  },
+  "code_metrics": {
+    "total_lines": 1325,
+    "total_tokens_estimate": 12624,
+    "file_count": 8,
+    "files": [
+      "IMPLEMENTATION_SUMMARY.md",
+      "Invoke-SecretRotationValidator.Tests.ps1",
+      "Invoke-SecretRotationValidator.ps1",
+      "README.md",
+      "act-result.txt",
+      "run-act-tests.ps1",
+      "run-all-tests.ps1",
+      ".github/workflows/secret-rotation-validator.yml"
+    ]
+  },
+  "quality": {
+    "tests_pass": null,
+    "error_count": 3,
+    "error_details": [
+      "EISDIR: illegal operation on a directory, read '/home/passp/repos/compare-agent-scripting-by-language'",
+      "<tool_use_error>Found 3 matches of the string to replace, but replace_all is false. To replace all occurrences, set replace_all to true. To replace only one occurrence, please provide more context to ",
+      "Exit code 1\n.github/workflows/secret-rotation-validator.yml:26:9: shellcheck reported issue in this script: SC2046:warning:3:54: Quote this to prevent word splitting [shellcheck]\n   |\n26 |         run"
+    ],
+    "actionlint_pass": true,
+    "actionlint_errors": 0,
+    "actionlint_results": [
+      {
+        "file": ".github/workflows/secret-rotation-validator.yml",
+        "passed": true,
+        "errors": ""
+      }
+    ],
+    "act_result_txt_exists": true,
+    "act_result_txt_size": 19323,
+    "areas_of_difficulty": [],
+    "observations": ""
+  },
+  "tool_install": {
+    "tool_install_duration_ms": 0,
+    "tools_installed": [],
+    "install_commands_count": 0
+  },
+  "tool_use_timing": {
+    "total_tool_uses": 39,
+    "total_tool_duration_ms": 450717,
+    "bash_tool_uses": 17,
+    "bash_total_ms": 312909,
+    "slowest_tool_uses": [
+      {
+        "tool_name": "PowerShell",
+        "command": "",
+        "duration_ms": 108449,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /tmp && rm -rf act-final && mkdir act-final && cd act-final && git init -q && git config user.email \"test@example.com\" && git config user.name \"Test\" && cp /home/passp/repos/compare-agent-scripting",
+        "duration_ms": 76717,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /tmp && rm -rf act-test-v2 && mkdir act-test-v2 && cd act-test-v2 && git init -q && git config user.email \"test@example.com\" && git config user.name \"Test\" && cp /home/passp/repos/compare-agent-scr",
+        "duration_ms": 75438,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /tmp && rm -rf act-test-quick3 && mkdir act-test-quick3 && cd act-test-quick3 && git init -q && git config user.email \"test@example.com\" && git config user.name \"Test\" && cp /home/passp/repos/compa",
+        "duration_ms": 71217,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /tmp && rm -rf act-debug && mkdir act-debug && cd act-debug && git init -q && git config user.email \"test@example.com\" && git config user.name \"Test\" && cp /home/passp/repos/compare-agent-scripting",
+        "duration_ms": 30668,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /tmp/act-final && timeout 300 act push --rm -j test-json-output 2>&1 | tail -50",
+        "duration_ms": 28911,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /tmp && rm -rf act-test-quick2 && mkdir act-test-quick2 && cd act-test-quick2 && git init -q && git config user.email \"test@example.com\" && git config user.name \"Test\" && cp /home/passp/repos/compa",
+        "duration_ms": 24808,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "PowerShell",
+        "command": "",
+        "duration_ms": 6338,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "PowerShell",
+        "command": "",
+        "duration_ms": 6175,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "PowerShell",
+        "command": "",
+        "duration_ms": 5675,
+        "is_error": false,
+        "is_install": false
+      }
+    ],
+    "all_tool_uses": [
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 21,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 152,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 621,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 726,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "PowerShell",
+        "command": "",
+        "duration_ms": 5322,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 721,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "PowerShell",
+        "command": "",
+        "duration_ms": 6175,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/powershell-tool-haiku45/.github/workflows",
+        "duration_ms": 202,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 212,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "which actionlint && actionlint /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/powershell-tool-haiku45/.github/workflows/secret-rotation",
+        "duration_ms": 159,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 789,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "PowerShell",
+        "command": "",
+        "duration_ms": 6338,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "which act && act --version",
+        "duration_ms": 120,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /tmp && mkdir -p act-test-quick && cd act-test-quick && git init -q && git config user.email \"test@example.com\" && git config user.name \"Test\" && cp /home/passp/repos/compare-agent-scripting-by-lan",
+        "duration_ms": 3794,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 162,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "actionlint /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/powershell-tool-haiku45/.github/workflows/secret-rotation-validator.yml && ec",
+        "duration_ms": 150,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /tmp && rm -rf act-test-quick2 && mkdir act-test-quick2 && cd act-test-quick2 && git init -q && git config user.email \"test@example.com\" && git config user.name \"Test\" && cp /home/passp/repos/compa",
+        "duration_ms": 24808,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 28,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 186,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "actionlint /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/powershell-tool-haiku45/.github/workflows/secret-rotation-validator.yml && ec",
+        "duration_ms": 170,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 129,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "actionlint /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/powershell-tool-haiku45/.github/workflows/secret-rotation-validator.yml && ec",
+        "duration_ms": 145,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /tmp && rm -rf act-test-quick3 && mkdir act-test-quick3 && cd act-test-quick3 && git init -q && git config user.email \"test@example.com\" && git config user.name \"Test\" && cp /home/passp/repos/compa",
+        "duration_ms": 71217,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /tmp && rm -rf act-debug && mkdir act-debug && cd act-debug && git init -q && git config user.email \"test@example.com\" && git config user.name \"Test\" && cp /home/passp/repos/compare-agent-scripting",
+        "duration_ms": 30668,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 138,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "actionlint /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/powershell-tool-haiku45/.github/workflows/secret-rotation-validator.yml && ec",
+        "duration_ms": 127,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /tmp && rm -rf act-final && mkdir act-final && cd act-final && git init -q && git config user.email \"test@example.com\" && git config user.name \"Test\" && cp /home/passp/repos/compare-agent-scripting",
+        "duration_ms": 76717,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /tmp/act-final && timeout 300 act push --rm -j test-json-output 2>&1 | tail -50",
+        "duration_ms": 28911,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 129,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /tmp && rm -rf act-test-v2 && mkdir act-test-v2 && cd act-test-v2 && git init -q && git config user.email \"test@example.com\" && git config user.name \"Test\" && cp /home/passp/repos/compare-agent-scr",
+        "duration_ms": 75438,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 1661,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "PowerShell",
+        "command": "",
+        "duration_ms": 108449,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 22,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "tail -50 /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/powershell-tool-haiku45/act-result.txt",
+        "duration_ms": 67,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "find . -type f \\( -name \"*.ps1\" -o -name \"*.yml\" -o -name \"*.txt\" \\) | sort",
+        "duration_ms": 76,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 75,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "PowerShell",
+        "command": "",
+        "duration_ms": 5675,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "actionlint .github/workflows/secret-rotation-validator.yml && echo \"\u2713 Workflow validation successful\" && wc -l .github/workflows/secret-rotation-validator.yml Invoke-SecretRotationValidator.ps1 Invoke",
+        "duration_ms": 140,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 77,
+        "is_error": false,
+        "is_install": false
+      }
+    ],
+    "install_duration_ms": 0,
+    "test_duration_ms": 0,
+    "act_duration_ms": 28911
+  },
+  "hooks": {
+    "hook_fires": 13,
+    "hook_errors_caught": 1,
+    "hook_failures": 0,
+    "hook_events": [
+      {
+        "subtype": "hook_started",
+        "hook_id": "c8739556-96bf-4000-a60f-5da3cf04596b",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "c8739556-96bf-4000-a60f-5da3cf04596b",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "35366f23-dbb1-436f-b4b3-ffa64812a943",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "35366f23-dbb1-436f-b4b3-ffa64812a943",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "6441aa97-ce4e-4734-b379-ab43564db1a7",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "6441aa97-ce4e-4734-b379-ab43564db1a7",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "8defef02-f4b5-4821-b307-01018b1197f7",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "8defef02-f4b5-4821-b307-01018b1197f7",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "ff4702e5-6432-4c1c-a2bb-8e189498c188",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "ff4702e5-6432-4c1c-a2bb-8e189498c188",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "c0362455-9304-4b58-bc6b-96a21c6253a2",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "c0362455-9304-4b58-bc6b-96a21c6253a2",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "055b3a26-a74d-4ec8-831f-46db9c31533c",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "055b3a26-a74d-4ec8-831f-46db9c31533c",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\n.github/workflows/secret-rotation-validator.yml:26:9: shellcheck reported issue in this script: SC2046:warning:3:54: Quote this to prevent word splitting [shellcheck]\\n   |\\n26 |         run: |\\n   |         ^~~~\\n.github/workflows/secret-rotation-validator.yml:55:9: shellcheck reported issue in this script: SC2046:warning:3:54: Quote this to prevent word splitting [shellcheck]\\",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "afedbde6-4701-4900-b748-b8171409a6fe",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "afedbde6-4701-4900-b748-b8171409a6fe",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "4e3f0695-6634-4f19-a6bc-6157c914d37b",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "4e3f0695-6634-4f19-a6bc-6157c914d37b",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "086c3e86-58b7-4075-93fe-e15857715cf9",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "086c3e86-58b7-4075-93fe-e15857715cf9",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "c8474d8c-1f0e-4ddf-873d-daecc3c195b1",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "c8474d8c-1f0e-4ddf-873d-daecc3c195b1",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "cb6304ba-37a1-43e9-ac4a-8af329743db8",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "cb6304ba-37a1-43e9-ac4a-8af329743db8",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "d74acdba-7239-4239-a216-694918bf678d",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "d74acdba-7239-4239-a216-694918bf678d",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  }
+}

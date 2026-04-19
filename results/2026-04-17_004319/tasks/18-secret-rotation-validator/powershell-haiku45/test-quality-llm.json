@@ -1,0 +1,11 @@
+{
+  "coverage": 3,
+  "rigor": 2,
+  "design": 3,
+  "overall": 3,
+  "summary": "The test suite covers the core happy-path functionality well: validator creation, secret status classification (expired/warning/OK), report generation, both output formats, and a handful of edge cases (empty services, short/long policies). However, several important areas are left untested. Error-handling paths are entirely absent \u2014 no tests for a missing config file, malformed JSON, or unparseable date strings, even though the implementation throws on all of these. Boundary conditions are incomplete: there is no test for a secret that expires exactly today (daysUntilExpiry == 0), exactly at the warning threshold, or the Math::Max(0) clamping of negative DaysUntilExpiry for expired secrets. The 'Should parse secret metadata correctly' test in Suite 2 constructs a raw hashtable and asserts on its own literal values, so it does not exercise Import-SecretsFromJson at all. The main entry point (Invoke-SecretRotationValidator.ps1) and its exit-code logic are completely untested. The GitHub Actions workflow structure tests required by the task description are absent. The external test-secrets.json fixture is referenced but not created inside the test file, making Suite 2's first test fragile in isolation. On the positive side, using relative date arithmetic (AddDays) keeps tests time-independent, the Describe/Context/It hierarchy is clear, and individual tests are mostly independent.",
+  "judge_cost_usd": 0.0522,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 1350,
+  "judge_provider": "claude-cli"
+}

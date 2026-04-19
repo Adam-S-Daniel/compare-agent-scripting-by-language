@@ -1,0 +1,794 @@
+{
+  "task_id": "16-environment-matrix-generator",
+  "task_name": "Environment Matrix Generator",
+  "task_category": "GitHub Actions / CI Configuration",
+  "language_mode": "powershell-tool",
+  "language_chosen": "powershell",
+  "language_breakdown": {
+    "powershell": 100.0
+  },
+  "interpreter_versions": {},
+  "powershell_version": "",
+  "dotnet_version": "",
+  "model": "claude-haiku-4-5",
+  "model_short": "haiku45",
+  "variant": "haiku45",
+  "claude_code_version": "2.1.114",
+  "instructions_version": "v4",
+  "timestamp_start": "2026-04-19T06:27:39.716001+00:00",
+  "timestamp_end": "2026-04-19T06:33:43.471490+00:00",
+  "prompt_text": "You are completing a scripting task. You MUST use PowerShell as your implementation language.\n\nTASK: Given a configuration describing OS options, language versions, and feature flags, generate a build matrix (as JSON) suitable for GitHub Actions strategy.matrix. Support include/exclude rules, max-parallel limits, and fail-fast configuration. Validate that the matrix doesn't exceed a maximum size. Output the complete matrix JSON.\n\nREQUIREMENTS:\n1. Use red/green TDD methodology: write a failing test FIRST, then write the minimum code to make it pass, then refactor. Repeat for each piece of functionality.\n2. Create mocks and test fixtures as necessary for testability. Use Pester as the testing framework.\n3. All tests must be runnable with `Invoke-Pester` and must pass at the end.\n4. Include clear comments explaining your approach.\n5. Handle errors gracefully with meaningful error messages.\n\nCreate your solution in the current working directory. Start by writing your first failing test.\n\nGITHUB ACTIONS REQUIREMENT:\nCreate a GitHub Actions workflow file at .github/workflows/environment-matrix-generator.yml that uses\nyour script in a real CI/CD pipeline. The workflow must:\n- Use appropriate trigger events (push, pull_request, schedule, workflow_dispatch, etc.)\n- Reference your script correctly\n- Pass actionlint validation (valid YAML, valid action references, correct syntax)\n- Include appropriate permissions, environment variables, and job dependencies\n- Actually run successfully when executed locally with `act` (nektos/act)\n\nDesign your workflow so its steps work in an isolated Docker container \u2014 use\n`actions/checkout@v4`, install dependencies your script needs, and run it.\nAvoid steps requiring external services or secrets without sensible defaults.\n\nIMPORTANT for PowerShell mode: Use `shell: pwsh` on your workflow run: steps instead\nof invoking `pwsh -Command` or `pwsh -File` from bash. This avoids escaping issues\nand works correctly in act containers. pwsh and Pester are pre-installed in the\ncontainer.\n\nWORKFLOW VALIDATION:\nRun `actionlint .github/workflows/environment-matrix-generator.yml` and fix any errors. actionlint is\npre-installed. Iterate until it passes cleanly. Validate with actionlint BEFORE\nrunning act \u2014 actionlint is instant, act takes 30-90 seconds per run.\n\nALL TESTS MUST RUN THROUGH ACT:\nEvery single test case must execute through the GitHub Actions workflow via `act`.\nDo NOT test your script directly \u2014 all testing goes through the pipeline.\n\nStructure your workflow to accept test fixture data and produce verifiable output.\nYour test harness must:\n1. For each test case: set up a temp git repo with your project files + that case's\n   fixture data, run `act push --rm`, capture the output\n2. Save all act output to `act-result.txt` in the current working directory (append\n   each test case's output, clearly delimited)\n3. Assert that act exited with code 0 for each case\n4. Parse the act output and assert on EXACT EXPECTED VALUES \u2014 not just that output\n   appeared, but that it matches the known-good result for that test case's input.\n   For example: if your workflow bumps version 1.1.0 with a feat commit, assert\n   the output contains exactly \"1.2.0\", not just \"a version number\"\n5. Assert every job shows \"Job succeeded\"\n\nThe `act-result.txt` file MUST exist when done. It is a required artifact.\n`act` and Docker are pre-installed. Limit yourself to at most 3 `act push` runs \u2014\ndiagnose errors from the output rather than re-running blindly.\n\nWORKFLOW STRUCTURE TESTS (also required):\n- Parse the YAML and check expected structure (triggers, jobs, steps)\n- Verify the workflow references your script files correctly (paths exist)\n- Verify actionlint passes (assert exit code 0)\n",
+  "exit_code": 0,
+  "run_success": true,
+  "failure_reason": null,
+  "session": {
+    "session_id": "bb46c044-e20c-419a-86be-1eaf1d14ca5c",
+    "stop_reason": "end_turn",
+    "terminal_reason": "completed",
+    "fast_mode_state": "off",
+    "service_tier": "standard",
+    "speed": "standard",
+    "inference_geo": "",
+    "context_window": 200000,
+    "max_output_tokens": 32000,
+    "permission_mode": "bypassPermissions",
+    "output_style": "default",
+    "tools_available_count": 28,
+    "mcp_servers": [],
+    "permission_denials": []
+  },
+  "model_usage_detail": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 1246,
+      "outputTokens": 17,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.001331,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "claude-haiku-4-5": {
+      "inputTokens": 345,
+      "outputTokens": 29607,
+      "cacheReadInputTokens": 3151425,
+      "cacheCreationInputTokens": 72651,
+      "webSearchRequests": 0,
+      "costUSD": 0.5543362500000001,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "effort_level": null,
+  "timing": {
+    "grand_total_duration_ms": 363755,
+    "total_api_duration_ms": 289616,
+    "total_execution_duration_ms": 73210,
+    "num_turns": 49
+  },
+  "tokens": {
+    "input_tokens": 345,
+    "output_tokens": 29607,
+    "cache_read_tokens": 3151425,
+    "cache_creation_tokens": 72651,
+    "total_context_consumed": 3224421,
+    "compaction_count": 0
+  },
+  "cost": {
+    "total_cost_usd": 0.5556672500000001,
+    "assumed_input_cost_per_mtok": 1.0,
+    "assumed_output_cost_per_mtok": 5.0,
+    "assumed_cache_read_cost_per_mtok": 0.1,
+    "assumed_cache_write_cost_per_mtok": 1.25
+  },
+  "code_metrics": {
+    "total_lines": 1101,
+    "total_tokens_estimate": 8445,
+    "file_count": 7,
+    "files": [
+      "Environment-Matrix-Generator.Tests.ps1",
+      "Environment-Matrix-Generator.ps1",
+      "README.md",
+      "act-result.txt",
+      "sample-config.json",
+      "test-harness.ps1",
+      ".github/workflows/environment-matrix-generator.yml"
+    ]
+  },
+  "quality": {
+    "tests_pass": null,
+    "error_count": 6,
+    "error_details": [
+      "EISDIR: illegal operation on a directory, read '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator'",
+      "Exit code 1\n.github/workflows/environment-matrix-generator.yml:27:9: shellcheck reported issue in this script: SC2046:warning:3:54: Quote this to prevent word splitting [shellcheck]\n   |\n27 |         ",
+      "<tool_use_error>Found 3 matches of the string to replace, but replace_all is false. To replace all occurrences, set replace_all to true. To replace only one occurrence, please provide more context to ",
+      "<tool_use_error>Blocked: sleep 60 followed by: ls -lh act-result.txt echo \"---\" grep -A 5 \"All Test Harness Tests Completed\" act-result.txt echo \"Tests still running\". To wait for a condition, use Mon",
+      "Exit code 1\n\u001b[31;1mInvoke-Pester: \u001b[31;1mCannot validate argument on parameter 'Output'. The argument \"Summary\" does not belong to the set \"Diagnostic,Detailed,Normal,Minimal,None\" specified by the Va",
+      "<tool_use_error>File has not been read yet. Read it first before writing to it.</tool_use_error>"
+    ],
+    "actionlint_pass": true,
+    "actionlint_errors": 0,
+    "actionlint_results": [
+      {
+        "file": ".github/workflows/environment-matrix-generator.yml",
+        "passed": true,
+        "errors": ""
+      }
+    ],
+    "act_result_txt_exists": true,
+    "act_result_txt_size": 11400,
+    "areas_of_difficulty": [],
+    "observations": ""
+  },
+  "tool_install": {
+    "tool_install_duration_ms": 0,
+    "tools_installed": [],
+    "install_commands_count": 0
+  },
+  "tool_use_timing": {
+    "total_tool_uses": 48,
+    "total_tool_duration_ms": 75333,
+    "bash_tool_uses": 27,
+    "bash_total_ms": 71551,
+    "slowest_tool_uses": [
+      {
+        "tool_name": "Bash",
+        "command": "rm -f act-result.txt && timeout 300 pwsh -File test-harness.ps1 2>&1 | tail -100",
+        "duration_ms": 45578,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -File test-harness.ps1 2>&1 | tee -a /tmp/harness-output.txt",
+        "duration_ms": 3406,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "rm -f act-result.txt && pwsh -File test-harness.ps1 2>&1 | head -200",
+        "duration_ms": 3311,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path ./Environment-Matrix-Generator.Tests.ps1 -Output Minimal\"",
+        "duration_ms": 2802,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path ./Environment-Matrix-Generator.Tests.ps1 -Output Detailed\"",
+        "duration_ms": 2788,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path ./Environment-Matrix-Generator.Tests.ps1 -PassThru | Select-Object -Property Passed, Failed, Skipped, @{Name='Result';Expression={if($_.FailedCount -eq 0) {'\u2713 ALL TE",
+        "duration_ms": 2618,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path ./Environment-Matrix-Generator.Tests.ps1 -Output Detailed\"",
+        "duration_ms": 2590,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path ./Environment-Matrix-Generator.Tests.ps1 -Output Detailed\"",
+        "duration_ms": 2514,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path ./Environment-Matrix-Generator.Tests.ps1 -Output Detailed\"",
+        "duration_ms": 2129,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path ./Environment-Matrix-Generator.Tests.ps1 -Output Summary\"",
+        "duration_ms": 1809,
+        "is_error": true,
+        "is_install": false
+      }
+    ],
+    "all_tool_uses": [
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 11,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Glob",
+        "command": "",
+        "duration_ms": 55,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwd && ls -la",
+        "duration_ms": 116,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 472,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 483,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path ./Environment-Matrix-Generator.Tests.ps1 -Output Detailed\"",
+        "duration_ms": 2129,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 466,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path ./Environment-Matrix-Generator.Tests.ps1 -Output Detailed\"",
+        "duration_ms": 2514,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 463,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path ./Environment-Matrix-Generator.Tests.ps1 -Output Detailed\"",
+        "duration_ms": 2590,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 494,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path ./Environment-Matrix-Generator.Tests.ps1 -Output Detailed\"",
+        "duration_ms": 2788,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "mkdir -p .github/workflows",
+        "duration_ms": 53,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 103,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "which actionlint && actionlint .github/workflows/environment-matrix-generator.yml",
+        "duration_ms": 91,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 493,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -File test-harness.ps1 2>&1 | tee -a /tmp/harness-output.txt",
+        "duration_ms": 3406,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 99,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 93,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 99,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "actionlint .github/workflows/environment-matrix-generator.yml",
+        "duration_ms": 117,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 11,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 108,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "actionlint .github/workflows/environment-matrix-generator.yml",
+        "duration_ms": 99,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "rm -f act-result.txt && pwsh -File test-harness.ps1 2>&1 | head -200",
+        "duration_ms": 3311,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 46,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 84,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "rm -f act-result.txt && timeout 300 pwsh -File test-harness.ps1 2>&1 | tail -100",
+        "duration_ms": 45578,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "tail -150 act-result.txt 2>/dev/null || echo \"File not ready yet\"",
+        "duration_ms": 71,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "sleep 60 && ls -lh act-result.txt && echo \"---\" && grep -A 5 \"All Test Harness Tests Completed\" act-result.txt || echo \"Tests still running\"",
+        "duration_ms": 2,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Monitor",
+        "command": "",
+        "duration_ms": 25,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 46,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "tail -200 act-result.txt 2>/dev/null | head -100",
+        "duration_ms": 98,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "wc -l act-result.txt && echo \"---SUMMARY---\" && grep \"\u2713 PASSED\\|\u2717 FAILED\" act-result.txt | head -20",
+        "duration_ms": 77,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "grep \"error\\|Error\\|ERROR\\|failed\\|Failed\\|FAILED\" act-result.txt 2>/dev/null | head -30",
+        "duration_ms": 70,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path ./Environment-Matrix-Generator.Tests.ps1 -Output Summary\"",
+        "duration_ms": 1809,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path ./Environment-Matrix-Generator.Tests.ps1 -Output Minimal\"",
+        "duration_ms": 2802,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 35,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "rm -f act-result.txt",
+        "duration_ms": 62,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 52,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 44,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "ls -lah *.ps1 *.json *.txt *.md .github/workflows/*.yml 2>/dev/null | grep -v \"^total\"",
+        "duration_ms": 55,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path ./Environment-Matrix-Generator.Tests.ps1 -PassThru | Select-Object -Property Passed, Failed, Skipped, @{Name='Result';Expression={if($_.FailedCount -eq 0) {'\u2713 ALL TE",
+        "duration_ms": 2618,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "actionlint .github/workflows/environment-matrix-generator.yml && echo \"\u2713 Workflow validation passed\"",
+        "duration_ms": 103,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "head -50 act-result.txt && echo \"\" && echo \"... (full report available in act-result.txt)\" && wc -l act-result.txt",
+        "duration_ms": 63,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh << 'EOF'\n. ./Environment-Matrix-Generator.ps1\n\n# Example 1: Simple matrix\nWrite-Host \"=== Example 1: Simple Matrix ===\" -ForegroundColor Cyan\n$config = @{\n    os = @('ubuntu', 'windows')\n    lang",
+        "duration_ms": 810,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cat << 'EOF'\n================================================================================\nENVIRONMENT MATRIX GENERATOR - PROJECT COMPLETION SUMMARY\n================================================",
+        "duration_ms": 64,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "git status",
+        "duration_ms": 55,
+        "is_error": false,
+        "is_install": false
+      }
+    ],
+    "install_duration_ms": 0,
+    "test_duration_ms": 17250,
+    "act_duration_ms": 0
+  },
+  "hooks": {
+    "hook_fires": 15,
+    "hook_errors_caught": 3,
+    "hook_failures": 0,
+    "hook_events": [
+      {
+        "subtype": "hook_started",
+        "hook_id": "76e1d23c-94c9-4cca-9918-005140122f7b",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "76e1d23c-94c9-4cca-9918-005140122f7b",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "1a8e5012-77fd-43b2-a9e7-f95512012fd5",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "1a8e5012-77fd-43b2-a9e7-f95512012fd5",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "b28216e8-83c7-4872-a057-30b13b0df091",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "b28216e8-83c7-4872-a057-30b13b0df091",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "6a31862d-b8a5-4d37-a7fa-7c48c861c2c7",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "6a31862d-b8a5-4d37-a7fa-7c48c861c2c7",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "3d35002b-c748-4d95-86bf-6abbee7518ea",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "3d35002b-c748-4d95-86bf-6abbee7518ea",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "e3ebd141-ea1a-42fc-a038-65db5ed8468b",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "e3ebd141-ea1a-42fc-a038-65db5ed8468b",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "7854a0ff-5e35-49ae-a666-e78fbfaa5637",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "7854a0ff-5e35-49ae-a666-e78fbfaa5637",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "4002b36c-11e3-4230-9e5c-da3f79f94dfa",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "4002b36c-11e3-4230-9e5c-da3f79f94dfa",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\n.github/workflows/environment-matrix-generator.yml:27:9: shellcheck reported issue in this script: SC2046:warning:3:54: Quote this to prevent word splitting [shellcheck]\\n   |\\n27 |         run: |\\n   |         ^~~~\"}",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "ac7358a5-4e10-4c5c-9c8d-15e9fcba9046",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "ac7358a5-4e10-4c5c-9c8d-15e9fcba9046",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\n.github/workflows/environment-matrix-generator.yml:27:9: shellcheck reported issue in this script: SC2046:warning:3:54: Quote this to prevent word splitting [shellcheck]\\n   |\\n27 |         run: |\\n   |         ^~~~\\n.github/workflows/environment-matrix-generator.yml:67:9: shellcheck reported issue in this script: SC2046:warning:3:54: Quote this to prevent word splitting [shellc",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "be6b1f23-15db-482d-abe6-13e90829cfe7",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "be6b1f23-15db-482d-abe6-13e90829cfe7",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\n.github/workflows/environment-matrix-generator.yml:27:9: shellcheck reported issue in this script: SC2046:warning:3:54: Quote this to prevent word splitting [shellcheck]\\n   |\\n27 |         run: |\\n   |         ^~~~\\n.github/workflows/environment-matrix-generator.yml:67:9: shellcheck reported issue in this script: SC2046:warning:3:54: Quote this to prevent word splitting [shellc",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "1aed0233-3b32-40af-82cf-d153fc1d5a64",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "1aed0233-3b32-40af-82cf-d153fc1d5a64",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "611db694-aed1-4f10-99b6-4bc30e97a446",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "611db694-aed1-4f10-99b6-4bc30e97a446",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "dd0ac323-196f-4baa-9f83-f0494602c4aa",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "dd0ac323-196f-4baa-9f83-f0494602c4aa",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "3be279f5-a857-41b3-8dc0-44442fd9b050",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "3be279f5-a857-41b3-8dc0-44442fd9b050",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "6bedfb34-ab23-4669-b846-30d16427bc89",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "6bedfb34-ab23-4669-b846-30d16427bc89",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  }
+}

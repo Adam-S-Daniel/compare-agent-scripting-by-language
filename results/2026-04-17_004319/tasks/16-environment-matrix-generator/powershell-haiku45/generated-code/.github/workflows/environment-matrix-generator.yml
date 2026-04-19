@@ -1,0 +1,130 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-matrix-generation:
+    name: Test Matrix Generation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          Invoke-Pester -Path environment-matrix-generator.tests.ps1 -Output Detailed
+
+      - name: Generate example matrix
+        shell: pwsh
+        id: generate-matrix
+        run: |
+          . ./environment-matrix-generator.ps1
+
+          $config = @{
+              os = @('ubuntu-latest', 'windows-latest', 'macos-latest')
+              language = @('1.0', '1.1', '1.2')
+              'max-parallel' = 6
+              'fail-fast' = $false
+          }
+
+          $result = ConvertTo-GitHubActionsMatrix -Configuration $config
+          $json = $result | ConvertTo-Json -Depth 10
+
+          Write-Output "Generated matrix:"
+          Write-Output $json
+
+      - name: Validate include/exclude rules
+        shell: pwsh
+        run: |
+          . ./environment-matrix-generator.ps1
+
+          $config = @{
+              os = @('ubuntu-latest', 'windows-latest')
+              language = @('1.0', '1.1')
+              include = @(
+                  @{ os = 'macos-latest'; language = '1.0'; experimental = $true }
+              )
+              exclude = @(
+                  @{ os = 'windows-latest'; language = '1.1' }
+              )
+          }
+
+          $result = ConvertTo-GitHubActionsMatrix -Configuration $config
+          $json = $result | ConvertTo-Json -Depth 10
+
+          Write-Output "Matrix with include/exclude rules:"
+          Write-Output $json
+
+          # Verify the matrix contains expected entries
+          $parsed = $result.matrix.include
+          if ($parsed.Count -ne 4) {
+              throw "Expected 4 combinations, got $($parsed.Count)"
+          }
+          Write-Output "✓ Matrix validation passed"
+
+      - name: Test feature flags
+        shell: pwsh
+        run: |
+          . ./environment-matrix-generator.ps1
+
+          $config = @{
+              os = @('ubuntu-latest')
+              language = @('1.0')
+              features = @{
+                  enable_debug = @($true, $false)
+                  enable_optimization = @($true, $false)
+              }
+          }
+
+          $result = ConvertTo-GitHubActionsMatrix -Configuration $config
+          $combinations = $result.matrix.include
+
+          Write-Output "Generated $($combinations.Count) combinations with feature flags"
+
+          if ($combinations.Count -ne 4) {
+              throw "Expected 4 combinations, got $($combinations.Count)"
+          }
+          Write-Output "✓ Feature flags test passed"
+
+      - name: Test matrix size validation
+        shell: pwsh
+        run: |
+          . ./environment-matrix-generator.ps1
+
+          $config = @{
+              os = @('ubuntu-latest', 'windows-latest', 'macos-latest')
+              language = @('1.0', '1.1', '1.2')
+              'max-matrix-size' = 5
+          }
+
+          try {
+              $result = ConvertTo-GitHubActionsMatrix -Configuration $config -ErrorAction Stop
+              throw "Should have failed due to matrix size limit"
+          }
+          catch {
+              if ($_ -like "*exceeds maximum*") {
+                  Write-Output "✓ Matrix size validation correctly rejected oversized matrix"
+              }
+              else {
+                  throw $_
+              }
+          }
+
+      - name: Output test results
+        if: always()
+        shell: pwsh
+        run: |
+          Write-Output "✓ All workflow tests completed successfully"

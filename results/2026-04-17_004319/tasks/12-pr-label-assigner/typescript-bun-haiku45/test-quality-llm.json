@@ -1,0 +1,11 @@
+{
+  "coverage": 2,
+  "rigor": 2,
+  "design": 3,
+  "overall": 2,
+  "summary": "The test suite covers basic happy-path scenarios reasonably well (glob matching, deduplication, empty input, mixed files) but has significant gaps. The exported `assignLabelsDetailed` function is never imported or tested despite being a core API. Priority ordering \u2014 a named requirement \u2014 is only nominally tested in test 7/2 without actually asserting conflict-resolution behavior; the implementation doesn't implement priority at all and the tests don't catch this regression. A critical glob bug goes undetected: `*.test.*` uses a bare `*` (which should not match `/`), meaning `src/api/routes.test.ts` would silently fail to match \u2014 the tests pass only because `src/api/**` matches first. Test 4 checks only that the return type is an array rather than asserting it is empty. There are no tests for error paths (invalid rules, malformed patterns, missing required fields), no boundary tests (empty pattern, empty labels array on a rule, null/undefined inputs), and no tests for the CLI argument parsing or rules-file loading. The `test-workflow.ts` harness checks for label presence loosely via string search in act output and never parses or asserts the exact JSON-formatted label array. Design is decent: fixtures are cleanly declared up top, `describe`/`it` blocks are clear, tests are independent, and comments explain intent \u2014 but test 7 is misleadingly named 'should respect priority' while doing nothing of the sort.",
+  "judge_cost_usd": 0.0636,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 1757,
+  "judge_provider": "claude-cli"
+}

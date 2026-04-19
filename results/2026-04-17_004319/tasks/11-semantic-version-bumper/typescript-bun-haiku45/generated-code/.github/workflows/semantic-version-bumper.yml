@@ -1,0 +1,102 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+    inputs:
+      commits:
+        description: 'Commits to process (comma-separated)'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run unit tests
+        run: bun test
+
+  bump-version:
+    name: Bump Version
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    needs: test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Get commits since last tag
+        id: commits
+        shell: bash
+        run: |
+          # Get commits since last tag or all commits if no tag
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -n "$LAST_TAG" ]; then
+            git log "${LAST_TAG}..HEAD" --oneline --format=%s > commits.txt
+          else
+            git log --oneline --format=%s > commits.txt
+          fi
+
+      - name: Run semantic version bumper
+        id: bump
+        shell: bash
+        run: |
+          # Read package.json version
+          CURRENT_VERSION=$(jq -r '.version' package.json)
+          echo "current_version=$CURRENT_VERSION" >> "$GITHUB_OUTPUT"
+
+          # Run the bumper with commits from file
+          if [ -f commits.txt ] && [ -s commits.txt ]; then
+            # shellcheck disable=SC2046
+            OUTPUT=$(bun run ./src/index.ts ./package.json $(cat commits.txt) 2>&1)
+            echo "$OUTPUT"
+
+            # Extract new version from output
+            NEW_VERSION=$(echo "$OUTPUT" | grep "Bumped version" | sed 's/.*to //' | tr -d ' ')
+            if [ -z "$NEW_VERSION" ]; then
+              NEW_VERSION="$CURRENT_VERSION"
+            fi
+            echo "new_version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+          else
+            echo "new_version=$CURRENT_VERSION" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Display results
+        run: |
+          echo "Current version: ${{ steps.bump.outputs.current_version }}"
+          echo "New version: ${{ steps.bump.outputs.new_version }}"
+          jq '.version' package.json

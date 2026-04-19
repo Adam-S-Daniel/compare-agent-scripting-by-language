@@ -941,6 +941,14 @@ def run_single_task(
     timestamped_lines: list[tuple[int, str]] = []  # (epoch_ms, line)
     raw_stderr = ""
     exit_code = -1
+    # A threading.Timer enforces the timeout independently of whether the
+    # subprocess is producing output. The older inline deadline check only
+    # ran between stdout lines — a truly silent subprocess (e.g. claude CLI
+    # hung waiting on a stalled `act push`) bypassed it entirely, letting
+    # runs burn hours of wall clock. The timer fires once, kills the
+    # process group, and lets the read loop exit when stdout closes.
+    timeout_fired = threading.Event()
+    timer: threading.Timer | None = None
     try:
         proc = subprocess.Popen(
             cmd,
@@ -950,19 +958,32 @@ def run_single_task(
             text=True,
             env=env,
         )
-        # Read stdout line-by-line, stamping each with current time
-        deadline = wall_start + timeout_minutes * 60 if timeout_minutes > 0 else float('inf')
+
+        def _on_timeout():
+            if proc.poll() is None:
+                try:
+                    proc.kill()
+                    timeout_fired.set()
+                except Exception:
+                    pass
+
+        if timeout_minutes > 0:
+            timer = threading.Timer(timeout_minutes * 60, _on_timeout)
+            timer.daemon = True
+            timer.start()
+
+        # Read stdout line-by-line, stamping each with current time.
+        # No inline deadline check — the Timer above enforces the bound.
         for line in proc.stdout:
             ts_ms = int(time.time() * 1000)
             timestamped_lines.append((ts_ms, line.rstrip("\n")))
-            if time.time() > deadline:
-                proc.kill()
-                raw_stderr = f"TIMEOUT: Process exceeded {timeout_minutes} minute limit"
-                log(f"  TIMEOUT: {task_id} | {mode} | {model_short}")
-                break
         proc.wait(timeout=30)
         exit_code = proc.returncode
-        raw_stderr = proc.stderr.read() if proc.stderr else ""
+        if timeout_fired.is_set():
+            raw_stderr = f"TIMEOUT: Process exceeded {timeout_minutes} minute limit"
+            log(f"  TIMEOUT: {task_id} | {mode} | {model_short}")
+        else:
+            raw_stderr = proc.stderr.read() if proc.stderr else ""
     except Exception as e:
         raw_stderr = f"ERROR: {str(e)}"
         exit_code = -2
@@ -971,6 +992,9 @@ def run_single_task(
             proc.kill()
         except Exception:
             pass
+    finally:
+        if timer is not None:
+            timer.cancel()
 
     wall_end = time.time()
     timestamp_end = datetime.now(timezone.utc).isoformat()

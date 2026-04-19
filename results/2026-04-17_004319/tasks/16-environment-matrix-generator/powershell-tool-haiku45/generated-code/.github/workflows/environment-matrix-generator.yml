@@ -1,0 +1,218 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+    paths:
+      - Environment-Matrix-Generator.ps1
+      - Environment-Matrix-Generator.Tests.ps1
+      - .github/workflows/environment-matrix-generator.yml
+  pull_request:
+    paths:
+      - Environment-Matrix-Generator.ps1
+      - Environment-Matrix-Generator.Tests.ps1
+      - .github/workflows/environment-matrix-generator.yml
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 0'
+
+jobs:
+  test:
+    name: Run Pester Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install PowerShell
+        run: |
+          apt-get update
+          apt-get install -y wget gpg apt-transport-https software-properties-common
+          UBUNTU_VERSION="$(lsb_release -rs)"
+          wget -q "https://packages.microsoft.com/config/ubuntu/${UBUNTU_VERSION}/packages-microsoft-prod.deb"
+          dpkg -i packages-microsoft-prod.deb
+          apt-get update
+          apt-get install -y powershell
+        shell: bash
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          # Import test configuration
+          $testOutput = Invoke-Pester -Path ./Environment-Matrix-Generator.Tests.ps1 -Output Detailed -PassThru
+
+          # Display results
+          Write-Host "::group::Test Results Summary"
+          Write-Host "Tests Passed: $($testOutput.Result.PassedCount)"
+          Write-Host "Tests Failed: $($testOutput.Result.FailedCount)"
+          Write-Host "Tests Skipped: $($testOutput.Result.SkippedCount)"
+          Write-Host "::endgroup::"
+
+          # Exit with test results
+          exit $($testOutput.Result.FailedCount)
+
+  demo-matrix-generation:
+    name: Demo Matrix Generation
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - test_name: basic
+            config_file: basic.json
+          - test_name: complex
+            config_file: complex.json
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install PowerShell
+        run: |
+          apt-get update
+          apt-get install -y wget gpg apt-transport-https software-properties-common
+          UBUNTU_VERSION="$(lsb_release -rs)"
+          wget -q "https://packages.microsoft.com/config/ubuntu/${UBUNTU_VERSION}/packages-microsoft-prod.deb"
+          dpkg -i packages-microsoft-prod.deb
+          apt-get update
+          apt-get install -y powershell
+        shell: bash
+
+      - name: Create test fixtures
+        shell: pwsh
+        run: |
+          $basePath = "${{ github.workspace }}"
+
+          # Basic matrix configuration
+          @{
+            os = @('ubuntu-latest', 'windows-latest')
+            language = @('node-16', 'node-18')
+            failFast = $true
+            maxParallel = 4
+          } | ConvertTo-Json | Out-File -Path "$basePath/basic.json" -Encoding UTF8
+
+          # Complex configuration with all features
+          @{
+            os = @('ubuntu-latest', 'windows-latest', 'macos-latest')
+            language = @('python-3.9', 'python-3.10', 'python-3.11')
+            features = @('debug', 'release')
+            include = @(
+              @{ os = 'macos-latest'; language = 'python-3.11'; experimental = 'true' }
+            )
+            exclude = @(
+              @{ os = 'windows-latest'; language = 'python-3.9' }
+              @{ os = 'macos-latest'; language = 'python-3.9' }
+            )
+            maxParallel = 6
+            failFast = $false
+            maxSize = 30
+          } | ConvertTo-Json | Out-File -Path "$basePath/complex.json" -Encoding UTF8
+
+          Write-Host "Created test fixture: ${{ matrix.config_file }}"
+
+      - name: Generate and validate matrix
+        shell: pwsh
+        run: |
+          . ./Environment-Matrix-Generator.ps1
+
+          $configPath = "${{ github.workspace }}/${{ matrix.config_file }}"
+          $config = Get-Content -Raw -Path $configPath | ConvertFrom-Json -AsHashtable
+
+          try {
+            $matrix = New-EnvironmentMatrix -Config $config
+            $json = $matrix | ConvertTo-Json
+
+            Write-Host "::group::Generated Matrix for ${{ matrix.test_name }}"
+            Write-Host $json
+            Write-Host "::endgroup::"
+
+            # Validate key properties exist
+            $parsed = $json | ConvertFrom-Json
+            Write-Host "Matrix entries: $($parsed.include.Count)"
+
+            if ($config.maxParallel) {
+              Write-Host "Max parallel: $($parsed.'max-parallel')"
+            }
+
+            if ($null -ne $config.failFast) {
+              Write-Host "Fail-fast: $($parsed.'fail-fast')"
+            }
+
+            # Save matrix output for verification
+            $outputPath = "${{ github.workspace }}/matrix-${{ matrix.test_name }}-output.json"
+            $matrix | ConvertTo-Json | Out-File -Path $outputPath -Encoding UTF8
+            Write-Host "::notice::Matrix output saved to $outputPath"
+
+          } catch {
+            Write-Host "::error::Failed to generate matrix: $_"
+            exit 1
+          }
+
+      - name: Upload matrix output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: matrix-output-${{ matrix.test_name }}
+          path: matrix-${{ matrix.test_name }}-output.json
+          if-no-files-found: warn
+
+  validate-json-output:
+    name: Validate JSON Output
+    runs-on: ubuntu-latest
+    needs: demo-matrix-generation
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install PowerShell
+        run: |
+          apt-get update
+          apt-get install -y wget gpg apt-transport-https software-properties-common
+          UBUNTU_VERSION="$(lsb_release -rs)"
+          wget -q "https://packages.microsoft.com/config/ubuntu/${UBUNTU_VERSION}/packages-microsoft-prod.deb"
+          dpkg -i packages-microsoft-prod.deb
+          apt-get update
+          apt-get install -y powershell
+        shell: bash
+
+      - name: Validate matrices are valid JSON
+        shell: pwsh
+        run: |
+          . ./Environment-Matrix-Generator.ps1
+
+          # Test basic matrix
+          $basicConfig = @{
+            os = @('ubuntu-latest', 'windows-latest')
+            language = @('node-18')
+          }
+
+          $basicMatrix = New-EnvironmentMatrix -Config $basicConfig
+          $basicJson = $basicMatrix | ConvertTo-Json
+
+          try {
+            $parsed = $basicJson | ConvertFrom-Json
+            Write-Host "✓ Basic matrix JSON is valid"
+            Write-Host "  Entries: $($parsed.include.Count)"
+          } catch {
+            Write-Host "✗ Basic matrix JSON is invalid: $_"
+            exit 1
+          }
+
+          # Test that matrix size validation works
+          $oversizeConfig = @{
+            os = @('a', 'b', 'c', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l')
+            language = @('x', 'y')
+            maxSize = 10
+          }
+
+          try {
+            New-EnvironmentMatrix -Config $oversizeConfig
+            Write-Host "✗ Should have thrown for oversized matrix"
+            exit 1
+          } catch {
+            if ($_ -like "*exceeds maximum*") {
+              Write-Host "✓ Correctly rejected oversized matrix"
+            } else {
+              Write-Host "✗ Wrong error: $_"
+              exit 1
+            }
+          }
+
+          Write-Host "`n✓ All JSON output validations passed"

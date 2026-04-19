@@ -26,8 +26,8 @@ from zoneinfo import ZoneInfo
 # rankings/comparison tables here share the same look-and-feel (single
 # source of truth for how <details> blocks render).
 from generate_results import (  # noqa: E402
-    _collapsible_table, _emit_sorted_variants, _ratio_tier, _llm_tier,
-    _tier_num,
+    _collapsible_table, _compute_ratio_bands, _emit_sorted_variants,
+    _llm_tier, _ratio_tier, _tier_num,
 )
 
 
@@ -86,23 +86,43 @@ def _label(m: dict) -> str:
     return f"{short}-{eff}" if eff else short
 
 
+def _is_successful(m: dict) -> bool:
+    """Mirror generate_results.py's definition — a run counts as successful
+    if the CLI exited 0 and at least one turn was executed."""
+    return m.get("run_success", m.get("exit_code", 0) == 0
+                 and m.get("timing", {}).get("num_turns", 0) > 0)
+
+
 def aggregate_rows(metrics: list[dict]) -> list[dict]:
     """Group by (language_mode, model_short, effort_level) and average the
-    per-run values. Each row captures one (language, model, effort) combo."""
+    per-run values, excluding failed/timed-out runs from the averages. Each
+    row records how many runs it excluded under `excluded` so callers can
+    flag that in the Model column with an asterisk."""
     by_key: dict[tuple, list[dict]] = defaultdict(list)
+    excluded_by_key: dict[tuple, int] = defaultdict(int)
     for m in metrics:
-        by_key[(m["language_mode"], m["model_short"], m.get("effort_level"))].append(m)
+        key = (m["language_mode"], m["model_short"], m.get("effort_level"))
+        if _is_successful(m):
+            by_key[key].append(m)
+        else:
+            excluded_by_key[key] += 1
     rows = []
-    for (mode, model, effort), mm in sorted(by_key.items()):
+    for key in sorted(set(by_key) | set(excluded_by_key)):
+        mode, model, effort = key
+        mm = by_key.get(key, [])
         n = len(mm)
         if n == 0:
             continue
         display_model = _DISPLAY_RENAME.get(model, model)
+        variant = f"{display_model}-{effort}" if effort else display_model
+        excl = excluded_by_key.get(key, 0)
         rows.append({
             "mode": mode,
             "model": display_model,
             "effort": effort,
-            "variant": f"{display_model}-{effort}" if effort else display_model,
+            "variant": variant,
+            "variant_disp": f"{variant}*" if excl else variant,
+            "excluded": excl,
             "n": n,
             "avg_dur": sum(m["timing"]["grand_total_duration_ms"] for m in mm) / n / 1000,
             "avg_errors": sum(m["quality"]["error_count"] for m in mm) / n,
@@ -213,25 +233,36 @@ def _build_markdown(
         r["llm_rank_disp"] = str(r["llm_rank"]) if r["llm_rank"] != _llm_sentinel else "—"
     best_dur = min(r["avg_dur"] for r in rows)
     best_cost = min(r["avg_cost"] for r in rows)
+    # Auto-calibrate bands per dataset — see generate_results._compute_ratio_bands.
+    dur_bands = _compute_ratio_bands([r["avg_dur"] / best_dur for r in rows])
+    cost_bands = _compute_ratio_bands([r["avg_cost"] / best_cost for r in rows])
     for r in rows:
-        r["dur_tier"] = _ratio_tier(r["avg_dur"] / best_dur)
-        r["cost_tier"] = _ratio_tier(r["avg_cost"] / best_cost)
+        r["dur_tier"] = _ratio_tier(r["avg_dur"] / best_dur, dur_bands)
+        r["cost_tier"] = _ratio_tier(r["avg_cost"] / best_cost, cost_bands)
         r["llm_tier"] = _llm_tier(r["avg_llm"]) if r["avg_llm_n"] > 0 else "—"
+
+    def _fmt_bands(bands):
+        b1, b2, b3, b4 = bands
+        return (f"**A** ≤{b1:.2f}×, **B** ≤{b2:.2f}×, "
+                f"**C** ≤{b3:.2f}×, **D** ≤{b4:.2f}×, **E** >{b4:.2f}×")
 
     # ── Tiers (bin by value so gap-vs-cluster is visible at a glance) ──
     lines.append("## Tiers by Language/Model/Effort")
     lines.append("")
     lines.append("*Duration / Cost tier = ratio of this combo's average to the best combo's "
-                 "average on that axis (lower ratio = better). Bands: "
-                 "**A** ≤1.15×, **B** ≤1.40×, **C** ≤1.80×, **D** ≤2.50×, **E** >2.50×.*")
+                 "average on that axis (lower ratio = better). Bands are auto-calibrated to "
+                 "the data's best-to-worst spread via log-equal division (`boundary_i = max_ratio^(i/5)`).*")
+    lines.append(f"*Duration bands: {_fmt_bands(dur_bands)}.*")
+    lines.append(f"*Cost bands: {_fmt_bands(cost_bands)}.*")
     lines.append("*LLM Score tier = absolute Overall score band. "
                  "**A** ≥4.5, **B** ≥3.5, **C** ≥2.5, **D** ≥1.5, **E** <1.5, `—` = no data.*")
-    lines.append("*If every row in a column is tier A, those combos are effectively tied on that axis.*")
+    if any(r.get("excluded", 0) for r in rows):
+        lines.append("*`*` after a Model label = this combo's aggregates exclude one or more failed/timed-out runs.*")
     lines.append("")
     tr_hdr = "| Language | Model | Duration | Cost | LLM Score |"
     tr_sep = "|----------|-------|----------|------|-----------|"
     def _fmt_tr(r):
-        return (f"| {r['mode']} | {r['variant']} "
+        return (f"| {r['mode']} | {r['variant_disp']} "
                 f"| {r['dur_tier']} ({_dur(r['avg_dur'])}) "
                 f"| {r['cost_tier']} (${r['avg_cost']:.2f}) "
                 f"| {r['llm_tier']}"
@@ -270,7 +301,12 @@ def _build_markdown(
     rk_hdr = "| Language | Model | Duration | Cost | LLM Score |"
     rk_sep = "|----------|-------|----------|------|-----------|"
     def _fmt_rk(r):
-        return f"| {r['mode']} | {r['variant']} | {r['dur_rank']} | {r['cost_rank']} | {r['llm_rank_disp']} |"
+        llm_cell = (f"{r['llm_rank_disp']} ({r['avg_llm']:.1f})"
+                    if r['avg_llm_n'] > 0 else r['llm_rank_disp'])
+        return (f"| {r['mode']} | {r['variant_disp']} "
+                f"| {r['dur_rank']} ({_dur(r['avg_dur'])}) "
+                f"| {r['cost_rank']} (${r['avg_cost']:.2f}) "
+                f"| {llm_cell} |")
     lines.append(rk_hdr)
     lines.append(rk_sep)
     for r in sorted(rows, key=lambda r: (r["mode"], r["variant"])):
@@ -292,7 +328,7 @@ def _build_markdown(
     lines.append("|----------|-------|------|--------------|------------|-----------|----------|------------|---------------|")
     for r in sorted(rows, key=lambda r: (r["mode"], r["variant"])):
         lines.append(
-            f"| {r['mode']} | {r['variant']} | {r['n']} | {_dur(r['avg_dur'])} "
+            f"| {r['mode']} | {r['variant_disp']} | {r['n']} | {_dur(r['avg_dur'])} "
             f"| {r['avg_errors']:.1f} | {r['avg_turns']:.0f} "
             f"| ${r['avg_cost']:.2f} | ${r['total_cost']:.2f} | {r['avg_llm_disp']} |"
         )

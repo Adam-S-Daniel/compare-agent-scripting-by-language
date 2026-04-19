@@ -1,0 +1,61 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      test_fixture:
+        description: 'Test fixture to use (feature-commit, breaking-change, patch-only)'
+        required: false
+        default: 'feature-commit'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Test & Bump Semantic Version
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run unit tests
+        run: npm test
+
+      - name: Determine test fixture
+        id: fixture
+        run: |
+          FIXTURE="${{ github.event.inputs.test_fixture || 'feature-commit' }}"
+          echo "fixture=${FIXTURE}" >> "$GITHUB_OUTPUT"
+          echo "Using fixture: ${FIXTURE}"
+
+      - name: Bump version
+        run: |
+          FIXTURE="${{ steps.fixture.outputs.fixture }}"
+          FIXTURE_FILE="tests/fixtures/${FIXTURE}.txt"
+          node src/cli.js package.json "${FIXTURE_FILE}" | tee bump.log
+          echo "---"
+          jq '.version' package.json
+
+      - name: Display bumped version
+        run: |
+          echo "Version bump complete:"
+          cat bump.log || echo "No version change"
+          echo "---"
+          grep "version" package.json | head -1

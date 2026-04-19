@@ -1,0 +1,800 @@
+{
+  "task_id": "11-semantic-version-bumper",
+  "task_name": "Semantic Version Bumper",
+  "task_category": "GitHub Actions / Release Automation",
+  "language_mode": "bash",
+  "language_chosen": "bash",
+  "language_breakdown": {
+    "bash": 100.0
+  },
+  "interpreter_versions": {},
+  "powershell_version": "",
+  "dotnet_version": "",
+  "model": "claude-haiku-4-5",
+  "model_short": "haiku45",
+  "variant": "haiku45",
+  "claude_code_version": "2.1.114",
+  "instructions_version": "v4",
+  "timestamp_start": "2026-04-19T04:33:30.521023+00:00",
+  "timestamp_end": "2026-04-19T04:39:50.316956+00:00",
+  "prompt_text": "You are completing a scripting task. You MUST use Bash as your implementation language.\n\nTASK: Parse a version file (or package.json) containing a semantic version string, determine the next version based on conventional commit messages (feat -> minor, fix -> patch, breaking -> major), update the version file, generate a changelog entry from the commits, and output the new version. Create mock commit logs as test fixtures.\n\nREQUIREMENTS:\n1. Use red/green TDD methodology: write a failing test FIRST, then write the minimum code to make it pass, then refactor. Repeat for each piece of functionality.\n2. Create mocks and test fixtures as necessary for testability. Use bats-core (bats) as the testing framework.\n3. All tests must be runnable with `bats` and must pass at the end.\n4. Include clear comments explaining your approach.\n5. Handle errors gracefully with meaningful error messages.\n6. Use `#!/usr/bin/env bash` shebang. Scripts must pass `shellcheck` and `bash -n` syntax validation.\n\nCreate your solution in the current working directory. Start by writing your first failing test.\n\nGITHUB ACTIONS REQUIREMENT:\nCreate a GitHub Actions workflow file at .github/workflows/semantic-version-bumper.yml that uses\nyour script in a real CI/CD pipeline. The workflow must:\n- Use appropriate trigger events (push, pull_request, schedule, workflow_dispatch, etc.)\n- Reference your script correctly\n- Pass actionlint validation (valid YAML, valid action references, correct syntax)\n- Include appropriate permissions, environment variables, and job dependencies\n- Actually run successfully when executed locally with `act` (nektos/act)\n\nDesign your workflow so its steps work in an isolated Docker container \u2014 use\n`actions/checkout@v4`, install dependencies your script needs, and run it.\nAvoid steps requiring external services or secrets without sensible defaults.\n\nIMPORTANT for PowerShell mode: Use `shell: pwsh` on your workflow run: steps instead\nof invoking `pwsh -Command` or `pwsh -File` from bash. This avoids escaping issues\nand works correctly in act containers. pwsh and Pester are pre-installed in the\ncontainer.\n\nWORKFLOW VALIDATION:\nRun `actionlint .github/workflows/semantic-version-bumper.yml` and fix any errors. actionlint is\npre-installed. Iterate until it passes cleanly. Validate with actionlint BEFORE\nrunning act \u2014 actionlint is instant, act takes 30-90 seconds per run.\n\nALL TESTS MUST RUN THROUGH ACT:\nEvery single test case must execute through the GitHub Actions workflow via `act`.\nDo NOT test your script directly \u2014 all testing goes through the pipeline.\n\nStructure your workflow to accept test fixture data and produce verifiable output.\nYour test harness must:\n1. For each test case: set up a temp git repo with your project files + that case's\n   fixture data, run `act push --rm`, capture the output\n2. Save all act output to `act-result.txt` in the current working directory (append\n   each test case's output, clearly delimited)\n3. Assert that act exited with code 0 for each case\n4. Parse the act output and assert on EXACT EXPECTED VALUES \u2014 not just that output\n   appeared, but that it matches the known-good result for that test case's input.\n   For example: if your workflow bumps version 1.1.0 with a feat commit, assert\n   the output contains exactly \"1.2.0\", not just \"a version number\"\n5. Assert every job shows \"Job succeeded\"\n\nThe `act-result.txt` file MUST exist when done. It is a required artifact.\n`act` and Docker are pre-installed. Limit yourself to at most 3 `act push` runs \u2014\ndiagnose errors from the output rather than re-running blindly.\n\nWORKFLOW STRUCTURE TESTS (also required):\n- Parse the YAML and check expected structure (triggers, jobs, steps)\n- Verify the workflow references your script files correctly (paths exist)\n- Verify actionlint passes (assert exit code 0)\n",
+  "exit_code": 0,
+  "run_success": true,
+  "failure_reason": null,
+  "session": {
+    "session_id": "32670524-c07f-4b71-8d5c-84236e8c579c",
+    "stop_reason": "end_turn",
+    "terminal_reason": "completed",
+    "fast_mode_state": "off",
+    "service_tier": "standard",
+    "speed": "standard",
+    "inference_geo": "",
+    "context_window": 200000,
+    "max_output_tokens": 32000,
+    "permission_mode": "bypassPermissions",
+    "output_style": "default",
+    "tools_available_count": 27,
+    "mcp_servers": [],
+    "permission_denials": []
+  },
+  "model_usage_detail": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 1281,
+      "outputTokens": 20,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.001381,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "claude-haiku-4-5": {
+      "inputTokens": 338,
+      "outputTokens": 25472,
+      "cacheReadInputTokens": 2435297,
+      "cacheCreationInputTokens": 60770,
+      "webSearchRequests": 0,
+      "costUSD": 0.4471902000000001,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "effort_level": null,
+  "timing": {
+    "grand_total_duration_ms": 379795,
+    "total_api_duration_ms": 230052,
+    "total_execution_duration_ms": 148607,
+    "num_turns": 48
+  },
+  "tokens": {
+    "input_tokens": 338,
+    "output_tokens": 25472,
+    "cache_read_tokens": 2435297,
+    "cache_creation_tokens": 60770,
+    "total_context_consumed": 2496405,
+    "compaction_count": 0
+  },
+  "cost": {
+    "total_cost_usd": 0.4485712000000001,
+    "assumed_input_cost_per_mtok": 1.0,
+    "assumed_output_cost_per_mtok": 5.0,
+    "assumed_cache_read_cost_per_mtok": 0.1,
+    "assumed_cache_write_cost_per_mtok": 1.25
+  },
+  "code_metrics": {
+    "total_lines": 1683,
+    "total_tokens_estimate": 15375,
+    "file_count": 9,
+    "files": [
+      "EXECUTION_SUMMARY.md",
+      "PROJECT_CHECKLIST.md",
+      "README.md",
+      "act-result.txt",
+      "semver-bumper.sh",
+      "test-workflow.sh",
+      ".github/workflows/semantic-version-bumper.yml",
+      "tests/fixtures.sh",
+      "tests/test_semver.bats"
+    ]
+  },
+  "quality": {
+    "tests_pass": null,
+    "error_count": 1,
+    "error_details": [
+      "Exit code 1\n.github/workflows/semantic-version-bumper.yml:29:9: shellcheck reported issue in this script: SC2086:info:1:4: Double quote to prevent globbing and word splitting [shellcheck]\n   |\n29 |   "
+    ],
+    "actionlint_pass": true,
+    "actionlint_errors": 0,
+    "actionlint_results": [
+      {
+        "file": ".github/workflows/semantic-version-bumper.yml",
+        "passed": true,
+        "errors": ""
+      }
+    ],
+    "act_result_txt_exists": true,
+    "act_result_txt_size": 26880,
+    "areas_of_difficulty": [],
+    "observations": ""
+  },
+  "tool_install": {
+    "tool_install_duration_ms": 0,
+    "tools_installed": [],
+    "install_commands_count": 0
+  },
+  "tool_use_timing": {
+    "total_tool_uses": 47,
+    "total_tool_duration_ms": 150363,
+    "bash_tool_uses": 25,
+    "bash_total_ms": 150051,
+    "slowest_tool_uses": [
+      {
+        "tool_name": "Bash",
+        "command": "> act-result.txt && bash test-workflow.sh 2>&1 | tail -100",
+        "duration_ms": 71088,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bash test-workflow.sh 2>&1 | tail -80",
+        "duration_ms": 40865,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "\n# Clean result file and run one final act test\n> act-result.txt\n\n# Create a simple test to verify act execution\ntmpdir=$(mktemp -d)\ncd \"$tmpdir\"\n\n# Copy workflow and scripts\ncp -r /home/passp/repos/c",
+        "duration_ms": 32942,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bats tests/test_semver.bats 2>&1 | head -100",
+        "duration_ms": 858,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "\necho \"=== FINAL VERIFICATION ===\"\necho \"\"\necho \"\u2713 Files created:\"\nls -lh semver-bumper.sh tests/test_semver.bats tests/fixtures.sh .github/workflows/semantic-version-bumper.yml\necho \"\"\necho \"\u2713 Script",
+        "duration_ms": 846,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bats tests/test_semver.bats",
+        "duration_ms": 731,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bats tests/test_semver.bats",
+        "duration_ms": 720,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "\necho \"=== SEMANTIC VERSION BUMPER - FINAL DELIVERABLES ===\" \necho \"\"\necho \"\ud83d\udcc1 Directory structure:\"\ntree -L 3 -I '__pycache__|*.pyc' 2>/dev/null || find . -type f -name \"*.sh\" -o -name \"*.bats\" -o -na",
+        "duration_ms": 307,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 225,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 206,
+        "is_error": false,
+        "is_install": false
+      }
+    ],
+    "all_tool_uses": [
+      {
+        "tool_name": "Bash",
+        "command": "find . -type f -name \"*.sh\" -o -name \"*.md\" -o -name \"*.json\" | head -20",
+        "duration_ms": 135,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "ls -la /home/passp/repos/compare-agent-scripting-by-language/ | head -20",
+        "duration_ms": 54,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 16,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": -552,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 115,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "which bats || echo \"bats not found\"",
+        "duration_ms": 148,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bats tests/test_semver.bats 2>&1 | head -100",
+        "duration_ms": 858,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "\ncat > /tmp/test_json_update.sh << 'EOF'\n#!/bin/bash\necho '{\"version\":\"1.0.0\",\"name\":\"test\"}' > /tmp/test.json\necho \"Before:\"\ncat /tmp/test.json\n\nsed -i 's/\"version\": *\"[^\"]*\"/\"version\": \"1.1.0\"/' /tm",
+        "duration_ms": 76,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 101,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bats tests/test_semver.bats",
+        "duration_ms": 731,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "shellcheck semver-bumper.sh && echo \"\u2713 shellcheck passed\" || echo \"\u2717 shellcheck failed\"",
+        "duration_ms": 107,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 100,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "shellcheck semver-bumper.sh && bash -n semver-bumper.sh && echo \"\u2713 All validations passed\"",
+        "duration_ms": 109,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 146,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 176,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "which actionlint || echo \"actionlint not found, checking if we need to install\"",
+        "duration_ms": 51,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "actionlint .github/workflows/semantic-version-bumper.yml",
+        "duration_ms": 148,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 146,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 147,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 158,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "actionlint .github/workflows/semantic-version-bumper.yml && echo \"\u2713 Workflow validation passed\"",
+        "duration_ms": 150,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 140,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "chmod +x test-workflow.sh && bash -n test-workflow.sh && echo \"\u2713 Test harness syntax validated\"",
+        "duration_ms": 58,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bash test-workflow.sh 2>&1 | tail -80",
+        "duration_ms": 40865,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 27,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 225,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 206,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "actionlint .github/workflows/semantic-version-bumper.yml && echo \"\u2713 Workflow validation passed\"",
+        "duration_ms": 162,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "> act-result.txt && bash test-workflow.sh 2>&1 | tail -100",
+        "duration_ms": 71088,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 7,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 30,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 50,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 24,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": -1211,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 104,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 106,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "\n# Test the updated grep pattern\necho '{\"version\":\"1.0.0\"}' > /tmp/test.json\ngrep -oE '\"version\"\\s*:\\s*\"[^\"]*\"' /tmp/test.json | cut -d'\"' -f4\n\necho '{\"version\": \"1.0.0\"}' > /tmp/test.json\ngrep -oE '\"",
+        "duration_ms": 60,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bats tests/test_semver.bats",
+        "duration_ms": 720,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "\n# Clean result file and run one final act test\n> act-result.txt\n\n# Create a simple test to verify act execution\ntmpdir=$(mktemp -d)\ncd \"$tmpdir\"\n\n# Copy workflow and scripts\ncp -r /home/passp/repos/c",
+        "duration_ms": 32942,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "tail -50 act-result.txt | grep -E \"(Job succeeded|Job failed|\u2713|\u2717|passed|failed)\"",
+        "duration_ms": 78,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "grep \"\ud83c\udfc1  Job\" act-result.txt",
+        "duration_ms": 108,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "\necho \"=== FINAL VERIFICATION ===\"\necho \"\"\necho \"\u2713 Files created:\"\nls -lh semver-bumper.sh tests/test_semver.bats tests/fixtures.sh .github/workflows/semantic-version-bumper.yml\necho \"\"\necho \"\u2713 Script",
+        "duration_ms": 846,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 51,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "\necho \"=== SEMANTIC VERSION BUMPER - FINAL DELIVERABLES ===\" \necho \"\"\necho \"\ud83d\udcc1 Directory structure:\"\ntree -L 3 -I '__pycache__|*.pyc' 2>/dev/null || find . -type f -name \"*.sh\" -o -name \"*.bats\" -o -na",
+        "duration_ms": 307,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "\n# Extract key results from act-result.txt for summary\ncat > EXECUTION_SUMMARY.md << 'EOF'\n# Semantic Version Bumper - Execution Summary\n\n## Test Execution via Act\n\nAll tests executed successfully thr",
+        "duration_ms": 61,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "\ncat > PROJECT_CHECKLIST.md << 'EOF'\n# Semantic Version Bumper - Project Completion Checklist\n\n## Core Requirements\n\n### \u2705 TDD Methodology\n- [x] Write failing test first (test_semver.bats)\n- [x] Write",
+        "duration_ms": 67,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "\necho \"=== SEMANTIC VERSION BUMPER - COMPLETE PROJECT SUMMARY ===\" \necho \"\"\necho \"\ud83d\udce6 DELIVERABLES:\"\necho \"\"\necho \"Core Implementation:\"\nls -lh semver-bumper.sh | awk '{print \"  \u2713 \" $9 \" (\" $5 \")\"}'\nech",
+        "duration_ms": 122,
+        "is_error": false,
+        "is_install": false
+      }
+    ],
+    "install_duration_ms": 0,
+    "test_duration_ms": 115630,
+    "act_duration_ms": 0
+  },
+  "hooks": {
+    "hook_fires": 16,
+    "hook_errors_caught": 5,
+    "hook_failures": 0,
+    "hook_events": [
+      {
+        "subtype": "hook_started",
+        "hook_id": "82fb2cad-2102-480c-add6-e133a6d4801c",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "82fb2cad-2102-480c-add6-e133a6d4801c",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "ee0464ec-89fa-4f5b-b638-30c95d20dd34",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "ee0464ec-89fa-4f5b-b638-30c95d20dd34",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "500f044a-874f-47bd-8eb1-a681f533cc0f",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "500f044a-874f-47bd-8eb1-a681f533cc0f",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "5d653e6f-6150-4f2a-a852-4d3a2b04d37c",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "5d653e6f-6150-4f2a-a852-4d3a2b04d37c",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "40b8d9de-169c-4e2d-b60c-4930c773c01e",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "40b8d9de-169c-4e2d-b60c-4930c773c01e",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\n/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/bash-haiku45/tests/fixtures.sh: line 106: unexpected EOF while looking for matching `\\\"'\"}",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "3ff0db26-1e6c-49ba-bcbb-2d9cbe41ac0e",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "3ff0db26-1e6c-49ba-bcbb-2d9cbe41ac0e",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\n.github/workflows/semantic-version-bumper.yml:29:9: shellcheck reported issue in this script: SC2086:info:1:4: Double quote to prevent globbing and word splitting [shellcheck]\\n   |\\n29 |         run: |\\n   |         ^~~~\\n.github/workflows/semantic-version-bumper.yml:80:9: shellcheck reported issue in this script: SC2086:info:11:32: Double quote to prevent globbing and word spl",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "2c8f477b-2ef7-455b-802d-257e9fbd65f9",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "2c8f477b-2ef7-455b-802d-257e9fbd65f9",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\n.github/workflows/semantic-version-bumper.yml:80:9: shellcheck reported issue in this script: SC2086:info:11:32: Double quote to prevent globbing and word splitting [shellcheck]\\n   |\\n80 |         run: |\\n   |         ^~~~\\n.github/workflows/semantic-version-bumper.yml:80:9: shellcheck reported issue in this script: SC2086:info:4:8: Double quote to prevent globbing and word spl",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "30a58336-c8b5-4f02-b115-6f4db9b6f2d7",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "30a58336-c8b5-4f02-b115-6f4db9b6f2d7",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\n.github/workflows/semantic-version-bumper.yml:80:9: shellcheck reported issue in this script: SC2086:info:11:32: Double quote to prevent globbing and word splitting [shellcheck]\\n   |\\n80 |         run: |\\n   |         ^~~~\"}",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "39b44923-ddbf-4bd0-b130-809ac7a54f02",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "39b44923-ddbf-4bd0-b130-809ac7a54f02",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "1b19fb84-800f-425b-9f92-073a28e54b41",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "1b19fb84-800f-425b-9f92-073a28e54b41",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\n/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/bash-haiku45/test-workflow.sh:16:1: warning: This redirection doesn't have a command. Move to its command (or use 'true' as no-op). [SC2188]\"}",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "f96487b1-309a-4a96-b4ec-cd0db9c6017f",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "f96487b1-309a-4a96-b4ec-cd0db9c6017f",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "c2a930f8-864c-486c-8ba4-2ee50f02a349",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "c2a930f8-864c-486c-8ba4-2ee50f02a349",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "dc935906-e761-4c13-8baa-4d4f01c55173",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "dc935906-e761-4c13-8baa-4d4f01c55173",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "85c9c938-f027-44a2-85a6-699f07797268",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "85c9c938-f027-44a2-85a6-699f07797268",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "fed5d1ab-dd6f-418f-9a3e-2853accf3e4f",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "fed5d1ab-dd6f-418f-9a3e-2853accf3e4f",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "d1859254-9a93-4217-a3e0-b28dc817cb48",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "d1859254-9a93-4217-a3e0-b28dc817cb48",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  }
+}

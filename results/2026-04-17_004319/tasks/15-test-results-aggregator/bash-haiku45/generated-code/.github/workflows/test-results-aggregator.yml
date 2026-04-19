@@ -1,0 +1,82 @@
+name: Test Results Aggregator
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Aggregate Test Results
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y jq bc shellcheck npm
+          npm install -g bats
+
+      - name: Create test fixtures
+        run: |
+          mkdir -p test-results
+          # Sample JUnit XML
+          cat > test-results/junit-example.xml <<'JUNIT'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <testsuites>
+            <testsuite name="unit-tests" tests="3" failures="0" skipped="0" time="1.5">
+              <testcase name="test_parse" classname="parser" time="0.5"/>
+              <testcase name="test_aggregate" classname="aggregator" time="0.6"/>
+              <testcase name="test_summary" classname="summary" time="0.4"/>
+            </testsuite>
+          </testsuites>
+          JUNIT
+
+          # Sample JSON results
+          cat > test-results/json-example.json <<'JSON'
+          {
+            "passed": 5,
+            "failed": 1,
+            "skipped": 0,
+            "duration": 2.3,
+            "testcases": [
+              {"name": "e2e_login", "status": "passed", "time": 0.8},
+              {"name": "e2e_logout", "status": "passed", "time": 0.7},
+              {"name": "e2e_api_call", "status": "failed", "time": 0.6},
+              {"name": "e2e_cache", "status": "passed", "time": 0.8},
+              {"name": "e2e_retry", "status": "passed", "time": 0.4}
+            ]
+          }
+          JSON
+
+      - name: Run unit tests
+        run: |
+          bats tests/test_aggregator.bats
+
+      - name: Aggregate test results
+        run: |
+          ./aggregate-results.sh \
+            test-results/junit-example.xml \
+            test-results/json-example.json \
+            -o test-summary.md
+
+      - name: Display summary
+        if: always()
+        run: |
+          if [ -f test-summary.md ]; then
+            echo "## Test Aggregation Summary"
+            cat test-summary.md
+          fi
+
+      - name: Verify aggregation output
+        run: |
+          [ -f test-summary.md ] || exit 1
+          grep -q "Passed" test-summary.md || exit 1
+          grep -q "Failed" test-summary.md || exit 1

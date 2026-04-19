@@ -1,0 +1,111 @@
+name: PR Label Assigner
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - '.github/workflows/pr-label-assigner.yml'
+  pull_request:
+    branches:
+      - main
+      - master
+    paths:
+      - 'src/**'
+      - 'tests/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Run PR Label Assigner Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install PowerShell
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y powershell
+
+      - name: Setup PowerShell environment
+        shell: pwsh
+        run: |
+          Write-Host "PowerShell version: $($PSVersionTable.PSVersion)"
+          Write-Host "Pester version:"
+          Get-Module Pester -ListAvailable | Select-Object -Property Name, Version
+
+      - name: Run unit tests with Pester
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference = "Stop"
+
+          # Run all tests
+          $testResults = Invoke-Pester -Path tests/ -PassThru -Output Detailed
+
+          # Check results
+          if ($testResults.FailedCount -gt 0) {
+            Write-Host "::error::$($testResults.FailedCount) test(s) failed"
+            exit 1
+          }
+
+          Write-Host "::notice::All $($testResults.PassedCount) test(s) passed"
+
+      - name: Validate script structure
+        shell: pwsh
+        run: |
+          # Check that source script exists and is readable
+          if (-not (Test-Path src/Assign-Labels.ps1)) {
+            Write-Host "::error::Source script not found: src/Assign-Labels.ps1"
+            exit 1
+          }
+
+          # Basic syntax check
+          $ast = $null
+          $parseErrors = @()
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            "src/Assign-Labels.ps1",
+            [ref]$ast,
+            [ref]$parseErrors
+          )
+
+          if ($parseErrors.Count -gt 0) {
+            Write-Host "::error::Syntax errors found in source script:"
+            $parseErrors | ForEach-Object { Write-Host "  $_" }
+            exit 1
+          }
+
+          Write-Host "::notice::Source script structure validated"
+
+  verify-files:
+    name: Verify Required Files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check required files exist
+        shell: pwsh
+        run: |
+          $requiredFiles = @(
+            'src/Assign-Labels.ps1',
+            'tests/Assign-Labels.Tests.ps1'
+          )
+
+          $missingFiles = $requiredFiles | Where-Object { -not (Test-Path $_) }
+
+          if ($missingFiles.Count -gt 0) {
+            Write-Host "::error::Missing required files:"
+            $missingFiles | ForEach-Object { Write-Host "  $_" }
+            exit 1
+          }
+
+          Write-Host "::notice::All required files present"

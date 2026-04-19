@@ -1,0 +1,144 @@
+name: Dependency License Checker
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 0'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Run Pester Tests
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $PesterParams = @{
+            Path = "DependencyLicenseChecker.Tests.ps1"
+            Output = "Detailed"
+            PassThru = $true
+          }
+          $result = Invoke-Pester @PesterParams
+
+          if ($result.FailedCount -gt 0) {
+            Write-Error "Tests failed: $($result.FailedCount) test(s) failed"
+            exit 1
+          }
+
+  compliance-check:
+    runs-on: ubuntu-latest
+    name: Check Test Fixtures for License Compliance
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create test fixtures
+        shell: pwsh
+        run: |
+          # Create package.json test fixture
+          $packageJson = @{
+            name = "test-app"
+            version = "1.0.0"
+            dependencies = @{
+              lodash = "^4.17.21"
+              express = "~4.18.2"
+              axios = "^0.27.2"
+            }
+          } | ConvertTo-Json
+
+          New-Item -Path "." -Name "test-package.json" -Value $packageJson -Force | Out-Null
+
+          # Create requirements.txt test fixture
+          $requirements = @"
+          requests==2.28.1
+          flask>=2.0.0,<3.0.0
+          django==4.1.0
+          "@
+
+          New-Item -Path "." -Name "test-requirements.txt" -Value $requirements -Force | Out-Null
+
+          Write-Host "Test fixtures created"
+
+      - name: Run license checker on test fixtures
+        shell: pwsh
+        run: |
+          # Mock license lookup for testing
+          $licenseLookup = {
+              param($packageName)
+              $licenses = @{
+                  "lodash" = "MIT"
+                  "express" = "MIT"
+                  "axios" = "MIT"
+                  "requests" = "Apache-2.0"
+                  "flask" = "BSD-3-Clause"
+                  "django" = "BSD-3-Clause"
+              }
+              return $licenses[$packageName]
+          }
+
+          # Define allowed and denied licenses
+          $allowed = @{
+              "MIT" = $true
+              "Apache-2.0" = $true
+              "BSD-3-Clause" = $true
+          }
+
+          $denied = @{
+              "GPL" = $true
+              "AGPL" = $true
+          }
+
+          # Check package.json
+          Write-Host "=== Checking test-package.json ==="
+          $packageResult = & ./DependencyLicenseChecker.ps1 `
+              -ManifestPath "test-package.json" `
+              -AllowedLicenses $allowed `
+              -DeniedLicenses $denied `
+              -LicenseLookup $licenseLookup
+
+          $packageResult | ForEach-Object {
+              Write-Host "$($_.Name)@$($_.Version) - License: $($_.License) - Status: $($_.Status)"
+          }
+
+          # Check requirements.txt
+          Write-Host "=== Checking test-requirements.txt ==="
+          $reqResult = & ./DependencyLicenseChecker.ps1 `
+              -ManifestPath "test-requirements.txt" `
+              -AllowedLicenses $allowed `
+              -DeniedLicenses $denied `
+              -LicenseLookup $licenseLookup
+
+          $reqResult | ForEach-Object {
+              Write-Host "$($_.Name) - License: $($_.License) - Status: $($_.Status)"
+          }
+
+          # Verify no denied licenses
+          $allResults = @($packageResult) + @($reqResult)
+          $deniedCount = ($allResults | Where-Object { $_.Status -eq "denied" }).Count
+
+          if ($deniedCount -gt 0) {
+              Write-Error "Found $deniedCount denied licenses"
+              exit 1
+          }
+
+          Write-Host "All dependencies have approved or unknown licenses"
+
+      - name: Clean up test fixtures
+        shell: pwsh
+        if: always()
+        run: |
+          Remove-Item -Path "test-package.json", "test-requirements.txt" -Force -ErrorAction SilentlyContinue
+          Write-Host "Cleaned up test fixtures"

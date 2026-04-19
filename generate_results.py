@@ -454,12 +454,38 @@ def _tier_num(tier: str) -> int:
 # "is 1st tightly clustered with the rest, or a runaway?" at a glance.
 # Ratio-based for lower-is-better axes (duration, cost); absolute-band
 # for LLM score since its 1-5 scale makes ratios meaningless.
-def _ratio_tier(ratio: float) -> str:
-    """Return tier letter A-E for a ratio where 1.0 is best."""
-    if ratio <= 1.15: return "A"
-    if ratio <= 1.40: return "B"
-    if ratio <= 1.80: return "C"
-    if ratio <= 2.50: return "D"
+def _compute_ratio_bands(ratios: list[float]) -> tuple[float, float, float, float]:
+    """Return the four band boundaries (b1, b2, b3, b4) such that
+    A=ratio≤b1, B=≤b2, C=≤b3, D=≤b4, E=>b4.
+
+    Bands are log-equal divisions of the best-to-worst spread so they
+    auto-calibrate to the data: tight clusters get narrow bands (every
+    combo ~A); wide spreads get wide bands (full A-E distribution). For
+    a best ratio of 1.0 and max ratio M, boundary i is M^(i/5).
+    """
+    if not ratios:
+        return (1.0, 1.0, 1.0, 1.0)
+    max_r = max(ratios)
+    if max_r <= 1.0:
+        return (1.0, 1.0, 1.0, 1.0)
+    return tuple(max_r ** (i / 5) for i in range(1, 5))  # type: ignore[return-value]
+
+
+def _ratio_tier(ratio: float, bands: tuple[float, float, float, float] | None = None) -> str:
+    """Return tier letter A-E for a ratio where 1.0 is best.
+
+    When `bands` is None, falls back to fixed broad bands suitable for
+    the agent-benchmark spreads seen here (Haiku to Opus-xhigh is ~7x).
+    Callers with a full row set should compute data-driven bands via
+    `_compute_ratio_bands` and pass them in for auto-calibration.
+    """
+    if bands is None:
+        bands = (1.50, 2.50, 4.00, 6.00)
+    b1, b2, b3, b4 = bands
+    if ratio <= b1: return "A"
+    if ratio <= b2: return "B"
+    if ratio <= b3: return "C"
+    if ratio <= b4: return "D"
     return "E"
 
 
@@ -565,6 +591,14 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
             pass
 
     # ── Comparison by Language/Model/Effort ──
+    # Track how many failed runs each (mode, model) combo excluded from
+    # aggregates. An asterisk on the row's Model cell + a footnote makes
+    # that exclusion visible at every table that renders the aggregates.
+    excluded_by_combo: dict[tuple, int] = {}
+    for m in failed:
+        excluded_by_combo[(m["language_mode"], _label(m))] = (
+            excluded_by_combo.get((m["language_mode"], _label(m)), 0) + 1
+        )
     cmp_rows = []
     for mode in modes_seen:
         for model in models_seen:
@@ -580,8 +614,14 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
                           if (m["task_id"], mode, model) in llm_data_by_key]
             llm_scores = [s for s in llm_scores if isinstance(s, (int, float))]
             avg_llm = sum(llm_scores) / len(llm_scores) if llm_scores else None
+            excl = excluded_by_combo.get((mode, model), 0)
             cmp_rows.append({
-                "mode": mode, "model": model, "n": n,
+                "mode": mode, "model": model,
+                # Plain model string; Model column display appends an
+                # asterisk in the row formatters when excluded > 0.
+                "excluded": excl,
+                "model_disp": f"{model}*" if excl else model,
+                "n": n,
                 "avg_dur": sum(m["timing"]["grand_total_duration_ms"] for m in mm) / n / 1000,
                 "avg_lines": sum(m["code_metrics"]["total_lines"] for m in mm) / n,
                 "avg_errors": sum(m["quality"]["error_count"] for m in mm) / n,
@@ -762,10 +802,24 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
             r["llm_rank_disp"] = str(r["llm_rank"]) if r["llm_rank"] != _llm_sentinel else "—"
         best_dur = min(r["avg_dur"] for r in cmp_rows)
         best_cost = min(r["avg_cost"] for r in cmp_rows)
+        # Auto-calibrate ratio bands to this dataset's best-to-worst spread.
+        # A tight cluster gets narrow bands (so meaningful gaps still show
+        # as distinct tiers); a wide spread gets proportionally wide bands
+        # (so the full A-E range is populated instead of everything pinned
+        # to D/E). Formula: log-equal divisions — boundary i = max^(i/5).
+        dur_ratios = [r["avg_dur"] / best_dur for r in cmp_rows]
+        cost_ratios = [r["avg_cost"] / best_cost for r in cmp_rows]
+        dur_bands = _compute_ratio_bands(dur_ratios)
+        cost_bands = _compute_ratio_bands(cost_ratios)
         for r in cmp_rows:
-            r["dur_tier"] = _ratio_tier(r["avg_dur"] / best_dur)
-            r["cost_tier"] = _ratio_tier(r["avg_cost"] / best_cost)
+            r["dur_tier"] = _ratio_tier(r["avg_dur"] / best_dur, dur_bands)
+            r["cost_tier"] = _ratio_tier(r["avg_cost"] / best_cost, cost_bands)
             r["llm_tier"] = _llm_tier(r["avg_llm"]) if r["avg_llm_n"] > 0 else "—"
+
+        def _fmt_bands(bands):
+            b1, b2, b3, b4 = bands
+            return (f"**A** ≤{b1:.2f}×, **B** ≤{b2:.2f}×, "
+                    f"**C** ≤{b3:.2f}×, **D** ≤{b4:.2f}×, **E** >{b4:.2f}×")
 
         # ── Tiers (bin by value so gap-vs-cluster is visible at a glance) ──
         # Ranks alone don't reveal whether 1st and 5th are close or miles
@@ -776,16 +830,20 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         lines.append("## Tiers by Language/Model/Effort")
         lines.append("")
         lines.append("*Duration / Cost tier = ratio of this combo's average to the best combo's "
-                     "average on that axis (lower ratio = better). Bands: "
-                     "**A** ≤1.15×, **B** ≤1.40×, **C** ≤1.80×, **D** ≤2.50×, **E** >2.50×.*")
+                     "average on that axis (lower ratio = better). Bands are auto-calibrated to "
+                     "the data's best-to-worst spread via log-equal division (`boundary_i = max_ratio^(i/5)`).*")
+        lines.append(f"*Duration bands: {_fmt_bands(dur_bands)}.*")
+        lines.append(f"*Cost bands: {_fmt_bands(cost_bands)}.*")
         lines.append("*LLM Score tier = absolute Overall score band. "
                      "**A** ≥4.5, **B** ≥3.5, **C** ≥2.5, **D** ≥1.5, **E** <1.5, `—` = no data.*")
-        lines.append("*If every row in a column is tier A, those combos are effectively tied on that axis.*")
+        any_excluded = sum(r["excluded"] for r in cmp_rows) > 0
+        if any_excluded:
+            lines.append("*`*` after a Model label = this combo's aggregates exclude one or more failed/timed-out runs (see the Failed / Timed-Out Runs table).*")
         lines.append("")
         tr_hdr = "| Language | Model | Duration | Cost | LLM Score |"
         tr_sep = "|----------|-------|----------|------|-----------|"
         def _fmt_tr(r):
-            return (f"| {r['mode']} | {r['model']} "
+            return (f"| {r['mode']} | {r['model_disp']} "
                     f"| {r['dur_tier']} ({_dur(r['avg_dur'])}) "
                     f"| {r['cost_tier']} (${r['avg_cost']:.2f}) "
                     f"| {r['llm_tier']}"
@@ -824,7 +882,12 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         rk_hdr = "| Language | Model | Duration | Cost | LLM Score |"
         rk_sep = "|----------|-------|----------|------|-----------|"
         def _fmt_rk(r):
-            return f"| {r['mode']} | {r['model']} | {r['dur_rank']} | {r['cost_rank']} | {r['llm_rank_disp']} |"
+            llm_cell = (f"{r['llm_rank_disp']} ({r['avg_llm']:.1f})"
+                        if r['avg_llm_n'] > 0 else r['llm_rank_disp'])
+            return (f"| {r['mode']} | {r['model_disp']} "
+                    f"| {r['dur_rank']} ({_dur(r['avg_dur'])}) "
+                    f"| {r['cost_rank']} (${r['avg_cost']:.2f}) "
+                    f"| {llm_cell} |")
         lines.append(rk_hdr)
         lines.append(rk_sep)
         for r in sorted(cmp_rows, key=lambda r: (r['mode'], r['model'])):
@@ -875,7 +938,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         cmp_hdr = "| Language | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost | Avg LLM Score |"
         cmp_sep = "|----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|"
         def _fmt_cmp(r):
-            return (f"| {r['mode']} | {r['model']} | {r['n']} | {_dur(r['avg_dur'])} | {_dur(r['avg_dur_net'])} "
+            return (f"| {r['mode']} | {r['model_disp']} | {r['n']} | {_dur(r['avg_dur'])} | {_dur(r['avg_dur_net'])} "
                     f"| {r['avg_errors']:.1f} | {r['avg_turns']:.0f} | ${r['avg_cost']:.2f} | ${r['total_cost']:.2f} "
                     f"| {r['avg_llm_disp']} |")
         lines.append(cmp_hdr)
@@ -904,6 +967,8 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     lines.append("")
     lines.append("Each hook-caught error avoids one test run that would otherwise have been needed to discover it.")
     lines.append("Every hook fire (hit or miss) costs execution time for the syntax/type checker.")
+    lines.append("")
+    lines.append("*`% of Test Time Saved` = `net / (net + test_time) × 100` — the share of total (would-have-been + actually-spent) test time that hooks eliminated. Bounded in (-∞, 100%) without an artificial cap; near 100% means hooks substituted for almost all of the hypothetical test work.*")
     lines.append("")
 
     # Determine if we have real test time data (all_tool_uses with durations)
@@ -940,7 +1005,12 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
                 "gross": gross, "gross_pct": gross / total_duration * 100 if total_duration else 0,
                 "overhead": overhead, "overhead_pct": overhead / total_duration * 100 if total_duration else 0,
                 "net": net, "net_pct": net / total_duration * 100 if total_duration else 0,
-                "test_time": test_t, "test_time_pct": net / test_t * 100 if test_t else 0,
+                "test_time": test_t,
+                # Denominator = net + test_t so the metric reads as "share
+                # of total (would-have-been + actually-spent) test time that
+                # hooks saved." Naturally bounded above by 100% without a
+                # cap, even when gross_saved far exceeds actual test time.
+                "test_time_pct": (net / (net + test_t) * 100) if (net + test_t) else 0,
             })
 
     def _fmt_hook(r):

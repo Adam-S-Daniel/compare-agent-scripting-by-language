@@ -1,0 +1,1372 @@
+{
+  "task_id": "11-semantic-version-bumper",
+  "task_name": "Semantic Version Bumper",
+  "task_category": "GitHub Actions / Release Automation",
+  "language_mode": "powershell-tool",
+  "language_chosen": "powershell",
+  "language_breakdown": {
+    "powershell": 100.0
+  },
+  "interpreter_versions": {
+    "powershell": "\u001b[0m7.6.0"
+  },
+  "powershell_version": "\u001b[0m7.6.0",
+  "dotnet_version": "",
+  "model": "claude-haiku-4-5",
+  "model_short": "haiku45",
+  "variant": "haiku45",
+  "claude_code_version": "2.1.114",
+  "instructions_version": "v4",
+  "timestamp_start": "2026-04-19T04:18:24.841894+00:00",
+  "timestamp_end": "2026-04-19T04:33:30.318281+00:00",
+  "prompt_text": "You are completing a scripting task. You MUST use PowerShell as your implementation language.\n\nTASK: Parse a version file (or package.json) containing a semantic version string, determine the next version based on conventional commit messages (feat -> minor, fix -> patch, breaking -> major), update the version file, generate a changelog entry from the commits, and output the new version. Create mock commit logs as test fixtures.\n\nREQUIREMENTS:\n1. Use red/green TDD methodology: write a failing test FIRST, then write the minimum code to make it pass, then refactor. Repeat for each piece of functionality.\n2. Create mocks and test fixtures as necessary for testability. Use Pester as the testing framework.\n3. All tests must be runnable with `Invoke-Pester` and must pass at the end.\n4. Include clear comments explaining your approach.\n5. Handle errors gracefully with meaningful error messages.\n\nCreate your solution in the current working directory. Start by writing your first failing test.\n\nGITHUB ACTIONS REQUIREMENT:\nCreate a GitHub Actions workflow file at .github/workflows/semantic-version-bumper.yml that uses\nyour script in a real CI/CD pipeline. The workflow must:\n- Use appropriate trigger events (push, pull_request, schedule, workflow_dispatch, etc.)\n- Reference your script correctly\n- Pass actionlint validation (valid YAML, valid action references, correct syntax)\n- Include appropriate permissions, environment variables, and job dependencies\n- Actually run successfully when executed locally with `act` (nektos/act)\n\nDesign your workflow so its steps work in an isolated Docker container \u2014 use\n`actions/checkout@v4`, install dependencies your script needs, and run it.\nAvoid steps requiring external services or secrets without sensible defaults.\n\nIMPORTANT for PowerShell mode: Use `shell: pwsh` on your workflow run: steps instead\nof invoking `pwsh -Command` or `pwsh -File` from bash. This avoids escaping issues\nand works correctly in act containers. pwsh and Pester are pre-installed in the\ncontainer.\n\nWORKFLOW VALIDATION:\nRun `actionlint .github/workflows/semantic-version-bumper.yml` and fix any errors. actionlint is\npre-installed. Iterate until it passes cleanly. Validate with actionlint BEFORE\nrunning act \u2014 actionlint is instant, act takes 30-90 seconds per run.\n\nALL TESTS MUST RUN THROUGH ACT:\nEvery single test case must execute through the GitHub Actions workflow via `act`.\nDo NOT test your script directly \u2014 all testing goes through the pipeline.\n\nStructure your workflow to accept test fixture data and produce verifiable output.\nYour test harness must:\n1. For each test case: set up a temp git repo with your project files + that case's\n   fixture data, run `act push --rm`, capture the output\n2. Save all act output to `act-result.txt` in the current working directory (append\n   each test case's output, clearly delimited)\n3. Assert that act exited with code 0 for each case\n4. Parse the act output and assert on EXACT EXPECTED VALUES \u2014 not just that output\n   appeared, but that it matches the known-good result for that test case's input.\n   For example: if your workflow bumps version 1.1.0 with a feat commit, assert\n   the output contains exactly \"1.2.0\", not just \"a version number\"\n5. Assert every job shows \"Job succeeded\"\n\nThe `act-result.txt` file MUST exist when done. It is a required artifact.\n`act` and Docker are pre-installed. Limit yourself to at most 3 `act push` runs \u2014\ndiagnose errors from the output rather than re-running blindly.\n\nWORKFLOW STRUCTURE TESTS (also required):\n- Parse the YAML and check expected structure (triggers, jobs, steps)\n- Verify the workflow references your script files correctly (paths exist)\n- Verify actionlint passes (assert exit code 0)\n",
+  "exit_code": 0,
+  "run_success": true,
+  "failure_reason": null,
+  "session": {
+    "session_id": "fa47a87e-8316-487e-b7a6-f9aa6142f631",
+    "stop_reason": "end_turn",
+    "terminal_reason": "completed",
+    "fast_mode_state": "off",
+    "service_tier": "standard",
+    "speed": "standard",
+    "inference_geo": "",
+    "context_window": 200000,
+    "max_output_tokens": 32000,
+    "permission_mode": "bypassPermissions",
+    "output_style": "default",
+    "tools_available_count": 28,
+    "mcp_servers": [],
+    "permission_denials": []
+  },
+  "model_usage_detail": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 1248,
+      "outputTokens": 20,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.001348,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "claude-haiku-4-5": {
+      "inputTokens": 646,
+      "outputTokens": 36219,
+      "cacheReadInputTokens": 6039050,
+      "cacheCreationInputTokens": 111936,
+      "webSearchRequests": 0,
+      "costUSD": 0.9255659999999999,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "effort_level": null,
+  "timing": {
+    "grand_total_duration_ms": 905476,
+    "total_api_duration_ms": 403815,
+    "total_execution_duration_ms": 500613,
+    "num_turns": 92
+  },
+  "tokens": {
+    "input_tokens": 646,
+    "output_tokens": 36219,
+    "cache_read_tokens": 6039050,
+    "cache_creation_tokens": 111936,
+    "total_context_consumed": 6151632,
+    "compaction_count": 0
+  },
+  "cost": {
+    "total_cost_usd": 0.9269139999999999,
+    "assumed_input_cost_per_mtok": 1.0,
+    "assumed_output_cost_per_mtok": 5.0,
+    "assumed_cache_read_cost_per_mtok": 0.1,
+    "assumed_cache_write_cost_per_mtok": 1.25
+  },
+  "code_metrics": {
+    "total_lines": 1376,
+    "total_tokens_estimate": 18299,
+    "file_count": 9,
+    "files": [
+      "README.md",
+      "act-result.txt",
+      "bump-version.ps1",
+      "run-integration-tests.ps1",
+      "semantic-version-bumper.ps1",
+      "semantic-version-bumper.tests.ps1",
+      "test-fixtures.ps1",
+      "validate-workflow.ps1",
+      ".github/workflows/semantic-version-bumper.yml"
+    ]
+  },
+  "quality": {
+    "tests_pass": null,
+    "error_count": 7,
+    "error_details": [
+      "EISDIR: illegal operation on a directory, read '/home/passp/repos/compare-agent-scripting-by-language'",
+      "Exit code 1\n\u001b[31;1mJoin-Path: \u001b[0m\n\u001b[31;1m\u001b[36;1mLine |\u001b[0m\n\u001b[31;1m\u001b[36;1m\u001b[36;1m   4 | \u001b[0m $testDir = Join-Path \u001b[36;1m$env:TEMP\u001b[0m 'svb-test-'(Get-Random)\u001b[0m\n\u001b[31;1m\u001b[36;1m\u001b[36;1m\u001b[0m\u001b[36;1m\u001b[0m\u001b",
+      "Exit code 1\n.github/workflows/semantic-version-bumper.yml:64:15: the runner of \"actions/upload-artifact@v3\" action is too old to run on GitHub Actions. update the action's version to fix this issue [a",
+      "Exit code 1\n=== GitHub Actions Workflow Validation ===\n\nTest 1: Workflow file exists\n  \u2713 PASS - .github/workflows/semantic-version-bumper.yml found\n\nTest 2: Parse YAML and validate structure\n  \u2713 Has '",
+      "<tool_use_error>InputValidationError: Edit failed due to the following issues:\nThe required parameter `old_string` is missing\nAn unexpected parameter `old_str ing` was provided</tool_use_error>",
+      "Exit code 1\n.github/workflows/semantic-version-bumper.yml:37:9: shellcheck reported issue in this script: SC2015:info:1:12: Note that A && B || C is not if-then-else. C may run when A is true [shellch",
+      "<tool_use_error>Blocked: sleep 120 followed by: ls -lh /tmp/act-result.txt echo \"Still waiting for test to complete...\". To wait for a condition, use Monitor with an until-loop (e.g. `until <check>; d"
+    ],
+    "actionlint_pass": true,
+    "actionlint_errors": 0,
+    "actionlint_results": [
+      {
+        "file": ".github/workflows/semantic-version-bumper.yml",
+        "passed": true,
+        "errors": ""
+      }
+    ],
+    "act_result_txt_exists": true,
+    "act_result_txt_size": 48149,
+    "areas_of_difficulty": [],
+    "observations": ""
+  },
+  "tool_install": {
+    "tool_install_duration_ms": 0,
+    "tools_installed": [],
+    "install_commands_count": 0
+  },
+  "tool_use_timing": {
+    "total_tool_uses": 91,
+    "total_tool_duration_ms": 503470,
+    "bash_tool_uses": 52,
+    "bash_total_ms": 488860,
+    "slowest_tool_uses": [
+      {
+        "tool_name": "Bash",
+        "command": "\ncd /tmp && rm -f act-result.txt\ntimeout 450 pwsh -File /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-haiku45/run-integr",
+        "duration_ms": 120383,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /tmp && timeout 150 pwsh -File /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-haiku45/run-integration-tests.ps1 2>&1 |",
+        "duration_ms": 94847,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "rm -f /tmp/act-result.txt && cd /tmp && timeout 300 pwsh -File /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-haiku45/run",
+        "duration_ms": 87336,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "\ntestDir=\"/tmp/svb-test-pester\"\ncd $testDir\ntimeout 180 act push 2>&1 | tail -60\n",
+        "duration_ms": 46308,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "\ntestDir=\"/tmp/svb-test-pester\"\nrm -rf $testDir\nmkdir -p $testDir/.github/workflows\ncd $testDir\n\ncp /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-versi",
+        "duration_ms": 35728,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "\n# Create a quick test directory\ntestDir=\"/tmp/svb-quick-test\"\nrm -rf $testDir\nmkdir -p $testDir/.github/workflows\ncd $testDir\n\n# Copy the files needed\ncp /home/passp/repos/compare-agent-scripting-by-",
+        "duration_ms": 26780,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -File semantic-version-bumper.tests.ps1 2>&1 | head -50",
+        "duration_ms": 19286,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path ./semantic-version-bumper.tests.ps1 -Verbose\" 2>&1 | tail -40",
+        "duration_ms": 3407,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path ./semantic-version-bumper.tests.ps1\" 2>&1 | grep \"Passed\\|Failed\"",
+        "duration_ms": 3174,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path ./semantic-version-bumper.tests.ps1 -Verbose\" 2>&1 | grep -A 5 \"BeforeAll\"",
+        "duration_ms": 3008,
+        "is_error": false,
+        "is_install": false
+      }
+    ],
+    "all_tool_uses": [
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 36,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Glob",
+        "command": "",
+        "duration_ms": 1422,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 29,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "ls -la",
+        "duration_ms": 163,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 6,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 530,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 501,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -File semantic-version-bumper.tests.ps1 2>&1 | head -50",
+        "duration_ms": 19286,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 561,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "timeout 10 pwsh -Command \"Invoke-Pester -Path ./semantic-version-bumper.tests.ps1 -PassThru\" 2>&1 | tail -30",
+        "duration_ms": 2173,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 501,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path ./semantic-version-bumper.tests.ps1 -PassThru\" 2>&1 | grep -A 5 \"Passed\\|Failed\"",
+        "duration_ms": 2347,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path ./semantic-version-bumper.tests.ps1 -Verbose\" 2>&1 | grep -A 10 \"should parse\"",
+        "duration_ms": 2104,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 508,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path ./semantic-version-bumper.tests.ps1 -Verbose\" 2>&1 | grep -A 2 \"Passed\\|Failed\"",
+        "duration_ms": 2078,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path ./semantic-version-bumper.tests.ps1 -Verbose\" 2>&1 | grep -B 2 -A 5 \"should parse\"",
+        "duration_ms": 2469,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 494,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path ./semantic-version-bumper.tests.ps1 -Verbose\" 2>&1 | grep -B 1 -A 1 \"Passed\\|Failed\"",
+        "duration_ms": 2077,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path ./semantic-version-bumper.tests.ps1 -Verbose\" 2>&1 | grep -A 5 \"BeforeAll\"",
+        "duration_ms": 3008,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"\nTry {\n    & (Join-Path (Split-Path -Parent (Get-Item './semantic-version-bumper.tests.ps1').FullName) 'semantic-version-bumper.ps1')\n    Write-Host 'Sourced successfully'\n} Catch {\n   ",
+        "duration_ms": 1719,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 525,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path ./semantic-version-bumper.tests.ps1\" 2>&1 | grep -A 2 \"Passed\\|Failed\"",
+        "duration_ms": 2873,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path ./semantic-version-bumper.tests.ps1 -Verbose\" 2>&1 | tail -40",
+        "duration_ms": 3407,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 8,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"\n. ./semantic-version-bumper.ps1\n\n\\$testDir = Join-Path \\$env:TEMP 'svb-test-'(Get-Random)\nNew-Item -ItemType Directory -Path \\$testDir -Force | Out-Null\n\n\\$packageJson = @{\n    version",
+        "duration_ms": 1107,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 483,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path ./semantic-version-bumper.tests.ps1\" 2>&1 | grep \"Passed\\|Failed\"",
+        "duration_ms": 2445,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path ./semantic-version-bumper.tests.ps1 -Verbose\" 2>&1 | grep -B 3 -A 5 \"should parse\"",
+        "duration_ms": 2968,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 522,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path ./semantic-version-bumper.tests.ps1\" 2>&1 | grep \"Passed\\|Failed\"",
+        "duration_ms": 2521,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 567,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path ./semantic-version-bumper.tests.ps1\" 2>&1 | grep \"Passed\\|Failed\"",
+        "duration_ms": 3174,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 530,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path ./semantic-version-bumper.tests.ps1\" 2>&1 | grep \"Passed\\|Failed\"",
+        "duration_ms": 2368,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 498,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path ./semantic-version-bumper.tests.ps1\" 2>&1 | grep \"Passed\\|Failed\"",
+        "duration_ms": 2937,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 487,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path ./semantic-version-bumper.tests.ps1\" 2>&1 | grep \"Passed\\|Failed\"",
+        "duration_ms": 2425,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 507,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 488,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "mkdir -p .github/workflows",
+        "duration_ms": 79,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 92,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "actionlint .github/workflows/semantic-version-bumper.yml",
+        "duration_ms": 85,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 100,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "actionlint .github/workflows/semantic-version-bumper.yml",
+        "duration_ms": 124,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 505,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 477,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -File validate-workflow.ps1",
+        "duration_ms": 1327,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 0,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 492,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -File validate-workflow.ps1",
+        "duration_ms": 821,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path ./semantic-version-bumper.tests.ps1 -PassThru\" 2>&1 | tail -30",
+        "duration_ms": 2336,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"Invoke-Pester -Path ./semantic-version-bumper.tests.ps1\" 2>&1 | grep \"Tests Passed\"",
+        "duration_ms": 2506,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "which act && act --version",
+        "duration_ms": 58,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 532,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 473,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 92,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "actionlint .github/workflows/semantic-version-bumper.yml && echo \"\u2713 Workflow is valid\"",
+        "duration_ms": 100,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -Command \"\n. ./test-fixtures.ps1\nforeach (\\$test in \\$fixtures.Keys | Select-Object -First 1) {\n    \\$fixture = \\$fixtures[\\$test]\n    Write-Host \\\"Test: \\$test\\\"\n    Write-Host \\\"  Version: \\$(\\",
+        "duration_ms": 810,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 494,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /tmp && pwsh -File /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-haiku45/run-integration-tests.ps1 2>&1 | head -80",
+        "duration_ms": 1304,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 490,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 451,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /tmp && timeout 150 pwsh -File /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-haiku45/run-integration-tests.ps1 2>&1 |",
+        "duration_ms": 94847,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 179,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cat /tmp/act-result.txt | head -100",
+        "duration_ms": 55,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 105,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "actionlint .github/workflows/semantic-version-bumper.yml && echo \"\u2713 Workflow is valid\"",
+        "duration_ms": 110,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "rm -f /tmp/act-result.txt && cd /tmp && timeout 300 pwsh -File /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-haiku45/run",
+        "duration_ms": 87336,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "tail -200 /tmp/act-result.txt | grep -A 10 \"FAIL\\|Pass\\|PowerShell\\|pwsh\" | head -80",
+        "duration_ms": 75,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 165,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "\n# Create a quick test directory\ntestDir=\"/tmp/svb-quick-test\"\nrm -rf $testDir\nmkdir -p $testDir/.github/workflows\ncd $testDir\n\n# Copy the files needed\ncp /home/passp/repos/compare-agent-scripting-by-",
+        "duration_ms": 26780,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 106,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "actionlint .github/workflows/semantic-version-bumper.yml && echo \"\u2713 Workflow is valid\"",
+        "duration_ms": 115,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 106,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "actionlint .github/workflows/semantic-version-bumper.yml && echo \"\u2713 Workflow is valid\"",
+        "duration_ms": 87,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "\ntestDir=\"/tmp/svb-test-pester\"\nrm -rf $testDir\nmkdir -p $testDir/.github/workflows\ncd $testDir\n\ncp /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-versi",
+        "duration_ms": 35728,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "\ntestDir=\"/tmp/svb-test-pester\"\ncd $testDir\ntimeout 180 act push 2>&1 | tail -60\n",
+        "duration_ms": 46308,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "\ncd /tmp && rm -f act-result.txt\ntimeout 450 pwsh -File /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-haiku45/run-integr",
+        "duration_ms": 120383,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "sleep 120 && ls -lh /tmp/act-result.txt 2>/dev/null || echo \"Still waiting for test to complete...\"",
+        "duration_ms": 3,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Monitor",
+        "command": "",
+        "duration_ms": 43,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-haiku45/ | grep -E \"\\.ps1|\\.yml|\\.md\"",
+        "duration_ms": 118,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "tail -150 /tmp/act-result.txt",
+        "duration_ms": 63,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "head -100 /tmp/act-result.txt",
+        "duration_ms": 52,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 505,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cp /tmp/act-result.txt /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-haiku45/ && echo \"\u2713 act-result.txt copied\"",
+        "duration_ms": 67,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "ls -lh *.ps1 .github/workflows/*.yml act-result.txt 2>/dev/null | tail -20",
+        "duration_ms": 61,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "grep -E \"Job succeeded|Tests Passed|Version updated\" act-result.txt",
+        "duration_ms": 42,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "pwsh -File validate-workflow.ps1",
+        "duration_ms": 848,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cat > README.md << 'EOF'\n# Semantic Version Bumper - PowerShell Implementation\n\nA PowerShell solution for semantic version bumping based on conventional commit messages, with full GitHub Actions workf",
+        "duration_ms": 77,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "\necho \"=== Final Checklist ===\" && echo\necho \"\u2713 Core Scripts:\" && \nls -1 *.ps1 2>/dev/null | head -5 && echo\n\necho \"\u2713 GitHub Actions Workflow:\" && \nls -1 .github/workflows/*.yml && echo\n\necho \"\u2713 Requi",
+        "duration_ms": 2506,
+        "is_error": false,
+        "is_install": false
+      }
+    ],
+    "install_duration_ms": 0,
+    "test_duration_ms": 161653,
+    "act_duration_ms": 46308
+  },
+  "hooks": {
+    "hook_fires": 32,
+    "hook_errors_caught": 3,
+    "hook_failures": 0,
+    "hook_events": [
+      {
+        "subtype": "hook_started",
+        "hook_id": "5bf6eaa4-f241-4638-8335-6e348c59a70e",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "5bf6eaa4-f241-4638-8335-6e348c59a70e",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "ed61c6fb-8062-40df-b5cf-e0616f80acac",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "ed61c6fb-8062-40df-b5cf-e0616f80acac",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "eb2f3375-293f-411b-a5c5-ae4fa661f579",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "eb2f3375-293f-411b-a5c5-ae4fa661f579",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "2e402838-cbab-46fe-80c2-cddeee2d9300",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "2e402838-cbab-46fe-80c2-cddeee2d9300",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "c0ee552d-e551-424d-b7cf-e53afa9147db",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "c0ee552d-e551-424d-b7cf-e53afa9147db",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "d37487ea-b2bd-414e-b0a9-72f3f9b6c671",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "d37487ea-b2bd-414e-b0a9-72f3f9b6c671",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "3beb2d72-a6a3-4184-8bc7-2e4e9db9b676",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "3beb2d72-a6a3-4184-8bc7-2e4e9db9b676",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "22e54a87-d842-4097-ae71-d616583f32af",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "22e54a87-d842-4097-ae71-d616583f32af",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "2a66cdd3-a9d7-4244-a550-f87ec18a0ec3",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "2a66cdd3-a9d7-4244-a550-f87ec18a0ec3",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "4cc52601-dc64-4ba9-85ea-488f5f69bf61",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "4cc52601-dc64-4ba9-85ea-488f5f69bf61",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "8be03c36-5b92-4cea-8aa5-2cfd8d91b30a",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "8be03c36-5b92-4cea-8aa5-2cfd8d91b30a",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "7233b93d-f4d5-43c4-aadb-605e8615d16d",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "7233b93d-f4d5-43c4-aadb-605e8615d16d",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "bf1dac42-83c4-4148-96b7-eab4522b2c53",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "bf1dac42-83c4-4148-96b7-eab4522b2c53",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "7d844149-11ca-4122-b2e6-a46268148496",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "7d844149-11ca-4122-b2e6-a46268148496",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "56e9198d-90a2-4d5e-bdec-8480f2002f31",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "56e9198d-90a2-4d5e-bdec-8480f2002f31",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "f0b603e0-c63b-4abc-8805-67a0342782a0",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "f0b603e0-c63b-4abc-8805-67a0342782a0",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\n.github/workflows/semantic-version-bumper.yml:64:15: the runner of \\\"actions/upload-artifact@v3\\\" action is too old to run on GitHub Actions. update the action's version to fix this issue [action]\\n   |\\n64 |         uses: actions/upload-artifact@v3\\n   |               ^~~~~~~~~~~~~~~~~~~~~~~~~~\"}",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "993760d7-9185-4b85-8eb7-40a6fdac3268",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "993760d7-9185-4b85-8eb7-40a6fdac3268",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "9ac9f0fd-fb41-4773-97fb-2e1ebd00f908",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "9ac9f0fd-fb41-4773-97fb-2e1ebd00f908",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "546b7467-7a57-4dde-8ef8-95e0bafffd42",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "546b7467-7a57-4dde-8ef8-95e0bafffd42",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "e9b50562-fd89-462d-b65e-8adac40017e6",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "e9b50562-fd89-462d-b65e-8adac40017e6",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "bbc7ab9a-0c9e-4bf5-b393-f26c3b758928",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "bbc7ab9a-0c9e-4bf5-b393-f26c3b758928",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "3ff7ec0d-c5ce-4555-847f-70ef89d91aec",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "3ff7ec0d-c5ce-4555-847f-70ef89d91aec",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "7f07c9ec-5151-4695-aaf9-f1ee81655d29",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "7f07c9ec-5151-4695-aaf9-f1ee81655d29",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "90f79d23-7d3a-4416-a519-d909a94346c0",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "90f79d23-7d3a-4416-a519-d909a94346c0",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "683a3f28-d0ee-436d-a864-4b72cd6926cd",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "683a3f28-d0ee-436d-a864-4b72cd6926cd",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "e461e60a-645e-4a7d-af71-fb02a3921b9a",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "e461e60a-645e-4a7d-af71-fb02a3921b9a",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "b0ed1653-42cb-4149-af3f-0176cef92633",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "b0ed1653-42cb-4149-af3f-0176cef92633",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "e5d2516c-9d99-4694-8177-08d329ae1dba",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "e5d2516c-9d99-4694-8177-08d329ae1dba",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "bf3c44c6-3901-4397-9138-758dd20849d2",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "bf3c44c6-3901-4397-9138-758dd20849d2",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\n.github/workflows/semantic-version-bumper.yml:37:9: shellcheck reported issue in this script: SC2015:info:1:12: Note that A && B || C is not if-then-else. C may run when A is true [shellcheck]\\n   |\\n37 |         run: |\\n   |         ^~~~\"}",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "bd058f94-6120-4484-ae1d-1b7e811e74ac",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "bd058f94-6120-4484-ae1d-1b7e811e74ac",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\n.github/workflows/semantic-version-bumper.yml:37:9: shellcheck reported issue in this script: SC2015:info:1:12: Note that A && B || C is not if-then-else. C may run when A is true [shellcheck]\\n   |\\n37 |         run: |\\n   |         ^~~~\"}",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "b348f819-6fef-4cf2-bdb9-bb44d3488064",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "b348f819-6fef-4cf2-bdb9-bb44d3488064",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "b7bf5a84-3ca1-471f-85a9-969319d4bbf9",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "b7bf5a84-3ca1-471f-85a9-969319d4bbf9",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  }
+}

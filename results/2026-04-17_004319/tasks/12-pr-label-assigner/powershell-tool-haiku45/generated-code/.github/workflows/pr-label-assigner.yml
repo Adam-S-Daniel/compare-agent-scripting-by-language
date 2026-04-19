@@ -1,0 +1,184 @@
+name: PR Label Assigner
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'Assign-PRLabels.ps1'
+      - 'Assign-PRLabels.Tests.ps1'
+      - '.github/workflows/pr-label-assigner.yml'
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+  schedule:
+    - cron: '0 */6 * * *'
+
+jobs:
+  test:
+    name: Run PR Label Assigner Tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install PowerShell and Pester
+        shell: bash
+        run: |
+          # Install PowerShell
+          apt-get update
+          apt-get install -y powershell
+
+          # Verify Pester installation
+          pwsh -Command 'if (-not (Get-Module Pester -ListAvailable)) { Install-Module Pester -Force -SkipPublisherCheck }'
+
+      - name: Verify PowerShell is available
+        shell: pwsh
+        run: |
+          Write-Host "PowerShell version: $($PSVersionTable.PSVersion)"
+          Write-Host "Pester modules available:"
+          Get-Module -Name Pester -ListAvailable | ForEach-Object { Write-Host "  $_" }
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          Set-Location ${{ github.workspace }}
+          $result = Invoke-Pester -Path ./Assign-PRLabels.Tests.ps1 -PassThru
+          if ($result.FailedCount -gt 0) {
+              exit 1
+          }
+
+      - name: Test PR label assignment
+        shell: pwsh
+        run: |
+          Set-Location ${{ github.workspace }}
+          . ./Assign-PRLabels.ps1
+
+          # Test with mock data
+          $rules = @{
+              'docs/**' = @('documentation')
+              'src/api/**' = @('api', 'backend')
+              'src/**' = @('backend')
+              '**.test.ps1' = @('tests')
+              '**.md' = @('documentation')
+          }
+
+          $files = @(
+              'docs/API.md'
+              'src/api/endpoints.ps1'
+              'src/utils.ps1'
+              'tests/unit.test.ps1'
+          )
+
+          $labels = Get-PRLabels -Files $files -Rules $rules
+          Write-Host "Assigned labels: $($labels -join ', ')"
+
+          # Verify expected labels
+          $expected = @('api', 'backend', 'documentation', 'tests')
+          foreach ($expected_label in $expected) {
+              if ($labels -notcontains $expected_label) {
+                  throw "Missing expected label: $expected_label"
+              }
+          }
+          Write-Host "Label assignment validation passed!"
+
+      - name: Test priority ordering
+        shell: pwsh
+        run: |
+          Set-Location ${{ github.workspace }}
+          . ./Assign-PRLabels.ps1
+
+          $rules = @(
+              @{ pattern = 'src/api/**'; labels = @('api'); priority = 1 }
+              @{ pattern = 'src/**'; labels = @('backend'); priority = 2 }
+          )
+
+          $files = @('src/api/user.ps1')
+          $labels = Get-PRLabels -Files $files -Rules $rules -UsePriority $true
+
+          Write-Host "Labels with priority: $($labels -join ', ')"
+          if ($labels -contains 'api') {
+              Write-Host "Priority ordering test passed!"
+          } else {
+              throw "Priority ordering test failed"
+          }
+
+      - name: Test glob pattern variations
+        shell: pwsh
+        run: |
+          Set-Location ${{ github.workspace }}
+          . ./Assign-PRLabels.ps1
+
+          # Test ** pattern
+          $result = Test-GlobMatch -FilePath 'docs/guide.md' -Pattern 'docs/**'
+          if (-not $result) { throw "Failed: docs/** should match docs/guide.md" }
+          Write-Host "✓ Double-asterisk pattern matching works"
+
+          # Test * pattern
+          $result = Test-GlobMatch -FilePath 'src/app.js' -Pattern 'src/**.js'
+          if (-not $result) { throw "Failed: src/**.js should match src/app.js" }
+          Write-Host "✓ Single-asterisk pattern matching works"
+
+          # Test case-insensitive
+          $result = Test-GlobMatch -FilePath 'DOCS/README.MD' -Pattern 'docs/**'
+          if (-not $result) { throw "Failed: case-insensitive matching failed" }
+          Write-Host "✓ Case-insensitive pattern matching works"
+
+          Write-Host "All glob pattern tests passed!"
+
+  validate-workflow:
+    name: Validate Workflow Structure
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Verify script files exist
+        shell: pwsh
+        run: |
+          $scriptFiles = @(
+              './Assign-PRLabels.ps1',
+              './Assign-PRLabels.Tests.ps1'
+          )
+
+          foreach ($file in $scriptFiles) {
+              if (Test-Path $file) {
+                  Write-Host "✓ Found $file"
+              } else {
+                  throw "Missing required file: $file"
+              }
+          }
+
+      - name: Verify workflow configuration
+        shell: pwsh
+        run: |
+          # Load YAML parser
+          $workflowPath = '.github/workflows/pr-label-assigner.yml'
+
+          if (Test-Path $workflowPath) {
+              Write-Host "✓ Workflow file exists"
+              $content = Get-Content $workflowPath -Raw
+
+              # Basic validation checks
+              if ($content -match 'on:') {
+                  Write-Host "✓ Workflow has trigger configuration"
+              }
+
+              if ($content -match 'shell: pwsh') {
+                  Write-Host "✓ Workflow uses PowerShell shell"
+              }
+
+              if ($content -match 'actions/checkout@v4') {
+                  Write-Host "✓ Workflow references checkout action"
+              }
+          } else {
+              throw "Workflow file not found: $workflowPath"
+          }

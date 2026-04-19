@@ -1,0 +1,163 @@
+name: Artifact Cleanup Script Tests
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'Clean-Artifacts.ps1'
+      - 'Clean-Artifacts.Tests.ps1'
+      - '.github/workflows/artifact-cleanup-script.yml'
+  pull_request:
+    branches: [main, master]
+    paths:
+      - 'Clean-Artifacts.ps1'
+      - 'Clean-Artifacts.Tests.ps1'
+      - '.github/workflows/artifact-cleanup-script.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Run Pester Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Verify test file exists
+        run: |
+          if [ ! -f "Clean-Artifacts.Tests.ps1" ]; then
+            echo "Test file not found!"
+            exit 1
+          fi
+          echo "Test file found: Clean-Artifacts.Tests.ps1"
+        shell: bash
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $testResults = Invoke-Pester -Path "Clean-Artifacts.Tests.ps1" -Output Detailed -PassThru
+
+          # Exit with error if any tests failed
+          if ($testResults.FailedCount -gt 0) {
+            Write-Host "Tests failed: $($testResults.FailedCount) failures"
+            exit 1
+          }
+
+          Write-Host "All tests passed: $($testResults.PassedCount) tests"
+          exit 0
+
+      - name: Test artifact cleanup functionality
+        shell: pwsh
+        run: |
+          # Source the script
+          . ./Clean-Artifacts.ps1
+
+          # Create mock artifact data
+          $artifacts = @(
+            @{
+              Name = "old-artifact";
+              Size = 100MB;
+              CreatedAt = (Get-Date).AddDays(-15);
+              WorkflowId = "workflow-1"
+            },
+            @{
+              Name = "recent-artifact";
+              Size = 50MB;
+              CreatedAt = (Get-Date).AddDays(-2);
+              WorkflowId = "workflow-1"
+            }
+          )
+
+          # Test cleanup plan generation
+          $plan = Invoke-CleanupPlan `
+            -Artifacts $artifacts `
+            -MaxAgeDays 7 `
+            -MaxTotalSizeMB 500 `
+            -KeepLatestPerWorkflow 3
+
+          Write-Host "Plan generated:"
+          Write-Host "  To delete: $($plan.DeleteCount)"
+          Write-Host "  To keep: $($plan.KeepCount)"
+          Write-Host "  Space reclaimed: $($plan.TotalSpaceReclaimed)"
+
+          # Validate plan
+          if ($plan.DeleteCount -ne 1) {
+            Write-Error "Expected 1 artifact to delete, got $($plan.DeleteCount)"
+            exit 1
+          }
+
+          if ($plan.KeepCount -ne 1) {
+            Write-Error "Expected 1 artifact to keep, got $($plan.KeepCount)"
+            exit 1
+          }
+
+          if ($plan.TotalSpaceReclaimed -ne 100MB) {
+            Write-Error "Expected 100MB reclaimed, got $($plan.TotalSpaceReclaimed)"
+            exit 1
+          }
+
+          Write-Host "Cleanup plan validation: SUCCESS"
+
+      - name: Test dry-run mode
+        shell: pwsh
+        run: |
+          . ./Clean-Artifacts.ps1
+
+          $artifacts = @(
+            @{
+              Name = "test-artifact";
+              Size = 50MB;
+              CreatedAt = (Get-Date).AddDays(-30);
+              WorkflowId = "workflow-test"
+            }
+          )
+
+          $plan = Invoke-CleanupPlan `
+            -Artifacts $artifacts `
+            -MaxAgeDays 7 `
+            -MaxTotalSizeMB 500
+
+          # Test dry-run mode (default is dry-run)
+          $result = Invoke-Cleanup -Plan $plan -DryRun $true
+
+          if ($result -ne $true) {
+            Write-Error "Dry-run mode not properly indicated"
+            exit 1
+          }
+
+          Write-Host "Dry-run mode validation: SUCCESS"
+
+      - name: Test summary generation
+        shell: pwsh
+        run: |
+          . ./Clean-Artifacts.ps1
+
+          $plan = @{
+            ToDelete = @(
+              @{ Name = "a1"; Size = 100MB },
+              @{ Name = "a2"; Size = 50MB }
+            )
+            ToKeep = @(
+              @{ Name = "k1"; Size = 100MB }
+            )
+            TotalSpaceReclaimed = 150MB
+          }
+
+          $summary = Format-CleanupSummary -Plan $plan
+
+          if ($summary -notmatch "Artifacts to delete: 2") {
+            Write-Error "Summary missing delete count"
+            exit 1
+          }
+
+          if ($summary -notmatch "Artifacts to retain: 1") {
+            Write-Error "Summary missing retain count"
+            exit 1
+          }
+
+          Write-Host "Summary generation validation: SUCCESS"
+          Write-Host "Generated summary:"
+          Write-Host $summary

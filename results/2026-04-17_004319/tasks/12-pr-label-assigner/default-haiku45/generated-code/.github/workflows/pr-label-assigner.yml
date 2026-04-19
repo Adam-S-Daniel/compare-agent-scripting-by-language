@@ -1,0 +1,59 @@
+name: PR Label Assigner
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test PR Label Assigner
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install pytest
+
+      - name: Run unit tests
+        run: |
+          python3 -m pytest test_pr_label_assigner.py -v --tb=short
+
+      - name: Test label assignment with mock data
+        run: |
+          echo "=== Testing with mock PR data ==="
+          python3 pr_label_assigner.py
+
+      - name: Generate test results file
+        run: |
+          {
+            echo "=== PR Label Assigner Test Results ==="
+            echo "Timestamp: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+            echo ""
+            echo "=== Test Execution ==="
+            python3 -m pytest test_pr_label_assigner.py -v --tb=short
+            echo ""
+            echo "=== Mock Test Output ==="
+            python3 pr_label_assigner.py
+            echo ""
+            echo "=== Job Status ==="
+            echo "Job succeeded"
+          } > act-result.txt
+          cat act-result.txt

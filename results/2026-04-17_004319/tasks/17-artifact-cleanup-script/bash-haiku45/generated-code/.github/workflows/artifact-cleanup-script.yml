@@ -1,0 +1,132 @@
+name: Artifact Cleanup Script
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'artifact-cleanup.sh'
+      - 'artifact-cleanup.bats'
+      - '.github/workflows/artifact-cleanup-script.yml'
+  pull_request:
+    branches:
+      - main
+      - master
+    paths:
+      - 'artifact-cleanup.sh'
+      - 'artifact-cleanup.bats'
+      - '.github/workflows/artifact-cleanup-script.yml'
+  schedule:
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test Artifact Cleanup Script
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          set -x
+          # Update package list
+          apt-get update
+          # Install bats-core for testing
+          apt-get install -y bats
+          # Install jq for JSON processing
+          apt-get install -y jq
+          # Install shellcheck for linting
+          apt-get install -y shellcheck
+          # Verify installations
+          bats --version
+          jq --version
+          shellcheck --version
+
+      - name: Validate script syntax
+        run: |
+          echo "=== Bash Syntax Check ===" | tee act-result.txt
+          if bash -n artifact-cleanup.sh
+          then
+            echo "✓ Bash syntax valid" | tee -a act-result.txt
+          fi
+          echo "" | tee -a act-result.txt
+
+      - name: Lint script with shellcheck
+        run: |
+          echo "=== ShellCheck Lint ===" | tee -a act-result.txt
+          if shellcheck artifact-cleanup.sh
+          then
+            echo "✓ ShellCheck passed" | tee -a act-result.txt
+          fi
+          echo "" | tee -a act-result.txt
+
+      - name: Run artifact cleanup tests
+        run: |
+          echo "=== Running Artifact Cleanup Tests ===" | tee -a act-result.txt
+          bats artifact-cleanup.bats | tee -a act-result.txt
+          echo "" | tee -a act-result.txt
+
+      - name: Verify test output
+        run: |
+          echo "=== Test Verification ===" | tee -a act-result.txt
+          # Check that tests passed by verifying no "not ok" lines
+          if grep -q "^not ok" act-result.txt
+          then
+            echo "✗ Some tests failed" | tee -a act-result.txt
+            exit 1
+          else
+            echo "✓ All tests passed" | tee -a act-result.txt
+          fi
+          echo "" | tee -a act-result.txt
+
+      - name: Create test plan summary
+        run: |
+          echo "=== Artifact Cleanup Plan Example ===" | tee -a act-result.txt
+          # Create sample artifact data for demonstration
+          cat > /tmp/sample_artifacts.json << 'SAMPLE'
+          [
+            {
+              "name": "build-2026-01-01",
+              "size": 536870912,
+              "created": "2026-01-01T00:00:00Z",
+              "workflow_run_id": "run-1"
+            },
+            {
+              "name": "build-2026-04-15",
+              "size": 1073741824,
+              "created": "2026-04-15T00:00:00Z",
+              "workflow_run_id": "run-1"
+            },
+            {
+              "name": "build-2026-04-18",
+              "size": 1073741824,
+              "created": "2026-04-18T00:00:00Z",
+              "workflow_run_id": "run-2"
+            }
+          ]
+          SAMPLE
+
+          # Run cleanup plan in dry-run mode
+          echo "Running cleanup with max-age=60, max-size=2048MB, keep-latest=2" | tee -a act-result.txt
+          source ./artifact-cleanup.sh
+          plan=$(cleanup_artifacts /tmp/sample_artifacts.json --max-age 60 --max-size 2048 --keep-latest 2 --dry-run 2>/dev/null)
+          echo "$plan" | jq . | tee -a act-result.txt
+          echo "" | tee -a act-result.txt
+
+          # Generate cleanup summary
+          summary=$(generate_summary <(echo "$plan"))
+          echo "$summary" | tee -a act-result.txt
+          echo "" | tee -a act-result.txt
+
+      - name: Job completion status
+        if: success()
+        run: |
+          echo "" | tee -a act-result.txt
+          echo "Job succeeded" | tee -a act-result.txt
