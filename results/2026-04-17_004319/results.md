@@ -1,8 +1,8 @@
 # Benchmark Results: Language Comparison
 
-**Last updated:** 2026-04-18 07:13:27 AM ET
+**Last updated:** 2026-04-18 11:13:57 PM ET
 
-**Status:** 70/70 runs completed, 0 remaining
+**Status:** 70/105 runs completed, 35 remaining
 **Total cost so far:** $150.04
 **Total agent time so far:** 660.6 min
 
@@ -152,6 +152,9 @@
 | bash | opus47-1m-medium | 1 (4.9min) | 2 ($1.11) | 10 (2.6) |
 
 </details>
+
+- **Estimated time remaining:** 330.3min
+- **Estimated total cost:** $225.06
 
 ## Comparison by Language/Model/Effort
 *Avg LLM Score = Overall (1-5) from LLM-as-judge of generated test code (dimensions: coverage, rigor, design). `—` = no judge data.*
