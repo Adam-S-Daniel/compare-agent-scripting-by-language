@@ -1,0 +1,11 @@
+{
+  "coverage": 3,
+  "rigor": 2,
+  "design": 3,
+  "overall": 2,
+  "summary": "The test suite exercises the three core retention policy rules (maxAgeDays, maxTotalSizeMB, keepLatestNPerWorkflow) and the dry-run flag individually, which covers the happy path for each requirement. However, significant gaps remain: parseArtifacts never asserts that createdAt is actually converted to a Date object (the one non-trivial transformation it performs); there is no test for policy interaction (an artifact simultaneously violating age and size limits could be double-counted or missed); keepLatestNPerWorkflow is only tested for a single workflow, so a bug in multi-workflow grouping would go undetected; no boundary conditions are exercised (artifact exactly at maxAgeDays, total size exactly at the limit, empty input lists, all-delete, none-delete); and the spaceSavedMB assertion uses a very loose closeTo tolerance rather than an exact value. The describe nesting and named now injection are good design choices that keep tests deterministic, but there are no shared fixtures to reduce duplication across the three applyRetentionPolicies suites. The suite would catch gross regressions but would miss subtle off-by-one, ordering, or interaction bugs.",
+  "judge_cost_usd": 0.0535,
+  "judge_input_tokens": 3,
+  "judge_output_tokens": 1253,
+  "judge_provider": "claude-cli"
+}
