@@ -1,0 +1,1254 @@
+{
+  "task_id": "11-semantic-version-bumper",
+  "task_name": "Semantic Version Bumper",
+  "task_category": "GitHub Actions / Release Automation",
+  "language_mode": "typescript-bun",
+  "language_chosen": "typescript",
+  "language_breakdown": {
+    "typescript": 88.0,
+    "bash": 12.0
+  },
+  "interpreter_versions": {},
+  "powershell_version": "",
+  "dotnet_version": "",
+  "model": "claude-haiku-4-5",
+  "model_short": "haiku45",
+  "variant": "haiku45",
+  "claude_code_version": "2.1.114",
+  "instructions_version": "v4",
+  "timestamp_start": "2026-04-19T04:39:50.471452+00:00",
+  "timestamp_end": "2026-04-19T04:47:24.652111+00:00",
+  "prompt_text": "You are completing a scripting task. You MUST use TypeScript with Bun as your implementation language and runtime.\n\nTASK: Parse a version file (or package.json) containing a semantic version string, determine the next version based on conventional commit messages (feat -> minor, fix -> patch, breaking -> major), update the version file, generate a changelog entry from the commits, and output the new version. Create mock commit logs as test fixtures.\n\nREQUIREMENTS:\n1. Use red/green TDD methodology: write a failing test FIRST, then write the minimum code to make it pass, then refactor. Repeat for each piece of functionality.\n2. Create mocks and test fixtures as necessary for testability. Use Bun's built-in test runner (`bun test`).\n3. All tests must be runnable with `bun test` and must pass at the end.\n4. Include clear comments explaining your approach.\n5. Handle errors gracefully with meaningful error messages.\n6. Use TypeScript features: explicit types, interfaces, and type annotations. Run scripts with `bun run <file>.ts`.\n\nCreate your solution in the current working directory. Start by writing your first failing test.\n\nGITHUB ACTIONS REQUIREMENT:\nCreate a GitHub Actions workflow file at .github/workflows/semantic-version-bumper.yml that uses\nyour script in a real CI/CD pipeline. The workflow must:\n- Use appropriate trigger events (push, pull_request, schedule, workflow_dispatch, etc.)\n- Reference your script correctly\n- Pass actionlint validation (valid YAML, valid action references, correct syntax)\n- Include appropriate permissions, environment variables, and job dependencies\n- Actually run successfully when executed locally with `act` (nektos/act)\n\nDesign your workflow so its steps work in an isolated Docker container \u2014 use\n`actions/checkout@v4`, install dependencies your script needs, and run it.\nAvoid steps requiring external services or secrets without sensible defaults.\n\nIMPORTANT for PowerShell mode: Use `shell: pwsh` on your workflow run: steps instead\nof invoking `pwsh -Command` or `pwsh -File` from bash. This avoids escaping issues\nand works correctly in act containers. pwsh and Pester are pre-installed in the\ncontainer.\n\nWORKFLOW VALIDATION:\nRun `actionlint .github/workflows/semantic-version-bumper.yml` and fix any errors. actionlint is\npre-installed. Iterate until it passes cleanly. Validate with actionlint BEFORE\nrunning act \u2014 actionlint is instant, act takes 30-90 seconds per run.\n\nALL TESTS MUST RUN THROUGH ACT:\nEvery single test case must execute through the GitHub Actions workflow via `act`.\nDo NOT test your script directly \u2014 all testing goes through the pipeline.\n\nStructure your workflow to accept test fixture data and produce verifiable output.\nYour test harness must:\n1. For each test case: set up a temp git repo with your project files + that case's\n   fixture data, run `act push --rm`, capture the output\n2. Save all act output to `act-result.txt` in the current working directory (append\n   each test case's output, clearly delimited)\n3. Assert that act exited with code 0 for each case\n4. Parse the act output and assert on EXACT EXPECTED VALUES \u2014 not just that output\n   appeared, but that it matches the known-good result for that test case's input.\n   For example: if your workflow bumps version 1.1.0 with a feat commit, assert\n   the output contains exactly \"1.2.0\", not just \"a version number\"\n5. Assert every job shows \"Job succeeded\"\n\nThe `act-result.txt` file MUST exist when done. It is a required artifact.\n`act` and Docker are pre-installed. Limit yourself to at most 3 `act push` runs \u2014\ndiagnose errors from the output rather than re-running blindly.\n\nWORKFLOW STRUCTURE TESTS (also required):\n- Parse the YAML and check expected structure (triggers, jobs, steps)\n- Verify the workflow references your script files correctly (paths exist)\n- Verify actionlint passes (assert exit code 0)\n",
+  "exit_code": 0,
+  "run_success": true,
+  "failure_reason": null,
+  "session": {
+    "session_id": "fcf0565f-f493-4328-bf87-5e321b26029c",
+    "stop_reason": "end_turn",
+    "terminal_reason": "completed",
+    "fast_mode_state": "off",
+    "service_tier": "standard",
+    "speed": "standard",
+    "inference_geo": "",
+    "context_window": 200000,
+    "max_output_tokens": 32000,
+    "permission_mode": "bypassPermissions",
+    "output_style": "default",
+    "tools_available_count": 27,
+    "mcp_servers": [],
+    "permission_denials": []
+  },
+  "model_usage_detail": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 1286,
+      "outputTokens": 16,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.001366,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "claude-haiku-4-5": {
+      "inputTokens": 520,
+      "outputTokens": 31701,
+      "cacheReadInputTokens": 3793553,
+      "cacheCreationInputTokens": 65139,
+      "webSearchRequests": 0,
+      "costUSD": 0.61980405,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "effort_level": null,
+  "timing": {
+    "grand_total_duration_ms": 454180,
+    "total_api_duration_ms": 283667,
+    "total_execution_duration_ms": 169625,
+    "num_turns": 74
+  },
+  "tokens": {
+    "input_tokens": 520,
+    "output_tokens": 31701,
+    "cache_read_tokens": 3793553,
+    "cache_creation_tokens": 65139,
+    "total_context_consumed": 3859212,
+    "compaction_count": 0
+  },
+  "cost": {
+    "total_cost_usd": 0.62117005,
+    "assumed_input_cost_per_mtok": 1.0,
+    "assumed_output_cost_per_mtok": 5.0,
+    "assumed_cache_read_cost_per_mtok": 0.1,
+    "assumed_cache_write_cost_per_mtok": 1.25
+  },
+  "code_metrics": {
+    "total_lines": 2434,
+    "total_tokens_estimate": 25605,
+    "file_count": 31,
+    "files": [
+      "CLAUDE.md",
+      "IMPLEMENTATION.md",
+      "QUICK_START.md",
+      "README.md",
+      "VERIFICATION.md",
+      "act-result.txt",
+      "act-test-runner.ts",
+      "bumper.test.ts",
+      "bun.lock",
+      "changelog.test.ts",
+      "commits.test.ts",
+      "files.test.ts",
+      "index.ts",
+      "integration-test.sh",
+      "package.json",
+      "tsconfig.json",
+      "validate-act.ts",
+      "version.test.ts",
+      "workflow.test.ts",
+      "fixtures/commits-major.txt",
+      "fixtures/commits-minor.txt",
+      "fixtures/commits-patch.txt",
+      "fixtures/package-1.0.0.json",
+      "src/bumper.ts",
+      "src/changelog.ts",
+      "src/commits.ts",
+      "src/files.ts",
+      "src/git.ts",
+      "src/index.ts",
+      "src/version.ts",
+      ".github/workflows/semantic-version-bumper.yml"
+    ]
+  },
+  "quality": {
+    "tests_pass": null,
+    "error_count": 10,
+    "error_details": [
+      "Exit code 1\nbun test v1.3.11 (af24e281)\nThe following filters did not match any test files in --cwd=\"/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-vers",
+      "Exit code 1\nbun test v1.3.11 (af24e281)\n\nversion.test.ts:\n\n# Unhandled error between tests\n-------------------------------\nerror: Cannot find module './src/version' from '/home/passp/repos/compare-age",
+      "Exit code 1\nbun test v1.3.11 (af24e281)\n\nbumper.test.ts:\n\n# Unhandled error between tests\n-------------------------------\nerror: Cannot find module './src/bumper' from '/home/passp/repos/compare-agent",
+      "Exit code 1\nbun test v1.3.11 (af24e281)\n\ncommits.test.ts:\n\n# Unhandled error between tests\n-------------------------------\nerror: Cannot find module './src/commits' from '/home/passp/repos/compare-age",
+      "Exit code 1\nbun test v1.3.11 (af24e281)\n\nfiles.test.ts:\n\n# Unhandled error between tests\n-------------------------------\nerror: Cannot find module './src/files' from '/home/passp/repos/compare-agent-s",
+      "Exit code 1\nbun test v1.3.11 (af24e281)\n\nchangelog.test.ts:\n\n# Unhandled error between tests\n-------------------------------\nerror: Cannot find module './src/changelog' from '/home/passp/repos/compare",
+      "Exit code 1\n.github/workflows/semantic-version-bumper.yml:65:9: shellcheck reported issue in this script: SC2086:info:10:15: Double quote to prevent globbing and word splitting [shellcheck]\n   |\n65 | ",
+      "Exit code 1\nValidating GitHub Actions workflow with act...\n\nTesting: Patch version bump (fix commits)\n  Running workflow...\n  \u2717 FAIL\n\n    - Workflow job did not succeed\n    - Expected version \"1.0.1\" ",
+      "Exit code 1\nValidating GitHub Actions workflow with act...\n\nTesting: Patch version bump (fix commits)\n  Running workflow...\n  \u2717 FAIL\n\n    - Expected version \"1.0.1\" not found in output\nTesting: Minor ",
+      "Exit code 1\n.github/workflows/semantic-version-bumper.yml:77:9: shellcheck reported issue in this script: SC2046:warning:7:50: Quote this to prevent word splitting [shellcheck]\n   |\n77 |         run: "
+    ],
+    "actionlint_pass": true,
+    "actionlint_errors": 0,
+    "actionlint_results": [
+      {
+        "file": ".github/workflows/semantic-version-bumper.yml",
+        "passed": true,
+        "errors": ""
+      }
+    ],
+    "act_result_txt_exists": true,
+    "act_result_txt_size": 50649,
+    "areas_of_difficulty": [],
+    "observations": ""
+  },
+  "tool_install": {
+    "tool_install_duration_ms": 0,
+    "tools_installed": [],
+    "install_commands_count": 0
+  },
+  "tool_use_timing": {
+    "total_tool_uses": 73,
+    "total_tool_duration_ms": 172185,
+    "bash_tool_uses": 37,
+    "bash_total_ms": 120809,
+    "slowest_tool_uses": [
+      {
+        "tool_name": "Bash",
+        "command": "bun validate-act.ts 2>&1",
+        "duration_ms": 75437,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun validate-act.ts 2>&1",
+        "duration_ms": 32787,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /tmp && rm -rf act-test-semantic-version && mkdir -p act-test-semantic-version && cd act-test-semantic-version && git init -q && git config user.email \"test@example.com\" && git config user.name \"Te",
+        "duration_ms": 7014,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 3362,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 3295,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 3281,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 3200,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 3167,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 3140,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 3140,
+        "is_error": false,
+        "is_install": false
+      }
+    ],
+    "all_tool_uses": [
+      {
+        "tool_name": "Bash",
+        "command": "ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-haiku45",
+        "duration_ms": 112,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 31,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun init -y",
+        "duration_ms": 437,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 3200,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test test.version.ts 2>&1",
+        "duration_ms": 129,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "mv /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-haiku45/test.version.ts /home/passp/repos/compare-agent-scripting-by-lan",
+        "duration_ms": 52,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test version.test.ts 2>&1",
+        "duration_ms": 81,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 3078,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test version.test.ts 2>&1",
+        "duration_ms": 69,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 2939,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test bumper.test.ts 2>&1",
+        "duration_ms": 63,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 3027,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test bumper.test.ts 2>&1",
+        "duration_ms": 63,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 2961,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test commits.test.ts 2>&1",
+        "duration_ms": 54,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 3019,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test commits.test.ts 2>&1",
+        "duration_ms": 65,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 3000,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test files.test.ts 2>&1",
+        "duration_ms": 65,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 3094,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test files.test.ts 2>&1",
+        "duration_ms": 84,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 3362,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test changelog.test.ts 2>&1",
+        "duration_ms": 92,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 3042,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test changelog.test.ts 2>&1",
+        "duration_ms": 77,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test 2>&1",
+        "duration_ms": 73,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 3140,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 3167,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 50,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 43,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 51,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 40,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-haiku45/.github/workflows",
+        "duration_ms": 48,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 144,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "which actionlint || echo \"actionlint not found, installing...\"",
+        "duration_ms": 64,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "actionlint .github/workflows/semantic-version-bumper.yml 2>&1",
+        "duration_ms": 119,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 103,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 153,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 110,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "actionlint .github/workflows/semantic-version-bumper.yml 2>&1",
+        "duration_ms": 100,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 6,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 67,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test 2>&1",
+        "duration_ms": 81,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 3295,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 3140,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun add -d yaml 2>&1 | tail -5",
+        "duration_ms": 210,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test workflow.test.ts 2>&1",
+        "duration_ms": 165,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test 2>&1",
+        "duration_ms": 155,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "which act && act --version 2>&1 || echo \"act not installed\"",
+        "duration_ms": 58,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 112,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "chmod +x /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-haiku45/integration-test.sh",
+        "duration_ms": 63,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /tmp && mkdir -p act-simple-test && cd act-simple-test && git init -q && git config user.email \"test@example.com\" && git config user.name \"Test\" && mkdir -p .github/workflows && cat > .github/workf",
+        "duration_ms": 2084,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /tmp && rm -rf act-test-semantic-version && mkdir -p act-test-semantic-version && cd act-test-semantic-version && git init -q && git config user.email \"test@example.com\" && git config user.name \"Te",
+        "duration_ms": 7014,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 3281,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun validate-act.ts 2>&1",
+        "duration_ms": 32787,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 27,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 3077,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun validate-act.ts 2>&1",
+        "duration_ms": 75437,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "grep -A 50 \"Run semantic version bumper\" act-result.txt | head -60",
+        "duration_ms": 72,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 51,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 178,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "actionlint .github/workflows/semantic-version-bumper.yml 2>&1",
+        "duration_ms": 134,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 141,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "actionlint .github/workflows/semantic-version-bumper.yml 2>&1",
+        "duration_ms": 134,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 114,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "actionlint .github/workflows/semantic-version-bumper.yml 2>&1",
+        "duration_ms": 94,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test 2>&1",
+        "duration_ms": 159,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 18,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 60,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "find /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-haiku45 -type f \\( -name \"*.ts\" -o -name \"*.json\" -o -name \"*.md\" -o -",
+        "duration_ms": 65,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "echo \"=== Test Results ===\" && bun test 2>&1 && echo \"\" && echo \"=== File Structure ===\" && ls -la src/ && ls -la fixtures/ && echo \"\" && echo \"=== Workflow ===\" && ls -la .github/workflows/ && echo \"",
+        "duration_ms": 170,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 55,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cat > /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-haiku45/QUICK_START.md << 'EOF'\n# Quick Start Guide\n\n## Installation\n",
+        "duration_ms": 80,
+        "is_error": false,
+        "is_install": false
+      }
+    ],
+    "install_duration_ms": 0,
+    "test_duration_ms": 1645,
+    "act_duration_ms": 0
+  },
+  "hooks": {
+    "hook_fires": 31,
+    "hook_errors_caught": 12,
+    "hook_failures": 0,
+    "hook_events": [
+      {
+        "subtype": "hook_started",
+        "hook_id": "b55c2c52-25c8-4bfe-8138-305b8750dfd6",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "b55c2c52-25c8-4bfe-8138-305b8750dfd6",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\ntest.version.ts(2,30): error TS2307: Cannot find module './src/version' or its corresponding type declarations.\"}",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "004d6164-d4fa-4198-b681-11e304d63e28",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "004d6164-d4fa-4198-b681-11e304d63e28",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "e3003063-ff84-4bb2-938f-5eb4dcd1b6d0",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "e3003063-ff84-4bb2-938f-5eb4dcd1b6d0",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\nbumper.test.ts(2,50): error TS2307: Cannot find module './src/bumper' or its corresponding type declarations.\"}",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "4514762a-da47-43bd-87da-afb1623aab42",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "4514762a-da47-43bd-87da-afb1623aab42",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "2df92948-19e5-4b6f-858f-e93a83d40f4e",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "2df92948-19e5-4b6f-858f-e93a83d40f4e",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\ncommits.test.ts(2,52): error TS2307: Cannot find module './src/commits' or its corresponding type declarations.\"}",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "90fb2148-96e8-494a-8632-bb50d841f738",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "90fb2148-96e8-494a-8632-bb50d841f738",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "750a352c-2b95-4183-8b36-ecec85786f8f",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "750a352c-2b95-4183-8b36-ecec85786f8f",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\nfiles.test.ts(5,8): error TS2307: Cannot find module './src/files' or its corresponding type declarations.\"}",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "aee2b0ec-3129-4139-8f38-69e0ab16dac0",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "aee2b0ec-3129-4139-8f38-69e0ab16dac0",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "d27d8262-8afe-4f0b-8388-99a984eb7bb9",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "d27d8262-8afe-4f0b-8388-99a984eb7bb9",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\nchangelog.test.ts(2,40): error TS2307: Cannot find module './src/changelog' or its corresponding type declarations.\"}",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "f42ce19a-6a4f-4a13-85e0-c88c53ab379e",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "f42ce19a-6a4f-4a13-85e0-c88c53ab379e",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "13053f77-65ba-40c3-ad51-8b47f502e528",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "13053f77-65ba-40c3-ad51-8b47f502e528",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\nsrc/index.ts(40,5): error TS1343: The 'import.meta' meta-property is only allowed when the '--module' option is 'es2020', 'es2022', 'esnext', 'system', 'node16', 'node18', 'node20', or 'nodenext'.\"}",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "30328cb8-9280-4cf7-be56-abc3a71f7292",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "30328cb8-9280-4cf7-be56-abc3a71f7292",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "64af0d05-e767-4432-9d32-0a2ce5409e66",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "64af0d05-e767-4432-9d32-0a2ce5409e66",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "19726705-7110-4525-8ccb-df3e765d3cdb",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "19726705-7110-4525-8ccb-df3e765d3cdb",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "94f8cf5c-157b-4d0c-ae78-19963110586e",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "94f8cf5c-157b-4d0c-ae78-19963110586e",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "4fdf44fb-c25e-4885-84fc-d0555e1f2fcd",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "4fdf44fb-c25e-4885-84fc-d0555e1f2fcd",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "6aa63419-1ad2-4807-a797-b197e362fa50",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "6aa63419-1ad2-4807-a797-b197e362fa50",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\n.github/workflows/semantic-version-bumper.yml:65:9: shellcheck reported issue in this script: SC2086:info:10:15: Double quote to prevent globbing and word splitting [shellcheck]\\n   |\\n65 |         run: |\\n   |         ^~~~\\n.github/workflows/semantic-version-bumper.yml:65:9: shellcheck reported issue in this script: SC2086:info:6:21: Double quote to prevent globbing and word sp",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "6931c3be-d038-4e5d-979d-10e34121f3b3",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "6931c3be-d038-4e5d-979d-10e34121f3b3",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\n.github/workflows/semantic-version-bumper.yml:82:9: shellcheck reported issue in this script: SC2086:info:15:38: Double quote to prevent globbing and word splitting [shellcheck]\\n   |\\n82 |         run: |\\n   |         ^~~~\\n.github/workflows/semantic-version-bumper.yml:82:9: shellcheck reported issue in this script: SC2086:info:17:42: Double quote to prevent globbing and word s",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "4c504430-2af4-4a12-a0a1-2f068caf5356",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "4c504430-2af4-4a12-a0a1-2f068caf5356",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\n.github/workflows/semantic-version-bumper.yml:103:9: shellcheck reported issue in this script: SC2002:style:3:5: Useless cat. Consider 'cmd < file | ..' or 'cmd file | ..' instead [shellcheck]\\n    |\\n103 |         run: |\\n    |         ^~~~\"}",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "339a9978-af2c-4a2e-902c-ea790f9e9173",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "339a9978-af2c-4a2e-902c-ea790f9e9173",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "f2d93820-c1eb-46d3-9338-350290e1e238",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "f2d93820-c1eb-46d3-9338-350290e1e238",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "ecaadf89-2f13-4544-a978-018582727499",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "ecaadf89-2f13-4544-a978-018582727499",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "7490d23a-3458-49b1-98c0-63a5be6fe06c",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "7490d23a-3458-49b1-98c0-63a5be6fe06c",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\nworkflow.test.ts(3,36): error TS2307: Cannot find module 'yaml' or its corresponding type declarations.\"}",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "4808639c-a50d-48b1-aaa8-2583a8d39827",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "4808639c-a50d-48b1-aaa8-2583a8d39827",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\n/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-haiku45/integration-test.sh:29:11: warning: Declare and assign separately to avoid masking return values. [SC2155]\\n/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-haiku45/integra",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "7bd5a11e-8350-41c9-bf7d-491efb23adc3",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "7bd5a11e-8350-41c9-bf7d-491efb23adc3",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "e2ef9b59-97db-4207-8017-8d34bdbcac7b",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "e2ef9b59-97db-4207-8017-8d34bdbcac7b",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "3f438323-6ba9-4248-810f-0facfbdbeda9",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "3f438323-6ba9-4248-810f-0facfbdbeda9",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "b45ff476-eecf-4b6f-ae55-a006d91ae3cd",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "b45ff476-eecf-4b6f-ae55-a006d91ae3cd",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\n.github/workflows/semantic-version-bumper.yml:77:9: shellcheck reported issue in this script: SC2046:warning:7:50: Quote this to prevent word splitting [shellcheck]\\n   |\\n77 |         run: |\\n   |         ^~~~\"}",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "f727568a-2ef5-415f-b25f-7f7920d76193",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "f727568a-2ef5-415f-b25f-7f7920d76193",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "74ed39e4-dd1f-4634-ac0d-bb7d151c21dc",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "74ed39e4-dd1f-4634-ac0d-bb7d151c21dc",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "72432d5f-8c2a-48c2-a1c8-aede84cc6ad4",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "72432d5f-8c2a-48c2-a1c8-aede84cc6ad4",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  }
+}
