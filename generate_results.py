@@ -909,7 +909,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     lines.append("Each hook-caught error avoids one test run that would otherwise have been needed to discover it.")
     lines.append("Every hook fire (hit or miss) costs execution time for the syntax/type checker.")
     lines.append("")
-    lines.append("*`% of Test Time Saved` is capped at 100% — the gross-savings estimate (`caught × per-run cost`) is a heuristic upper bound that can exceed the actual test-time spent when many errors are caught in a single cycle; in that regime the cap reads as \"hooks substituted for all test time\".*")
+    lines.append("*`% of Test Time Saved` = `net / (net + test_time) × 100` — the share of total (would-have-been + actually-spent) test time that hooks eliminated. Bounded in (-∞, 100%) without an artificial cap; near 100% means hooks substituted for almost all of the hypothetical test work.*")
     lines.append("")
 
     # Determine if we have real test time data (all_tool_uses with durations)
@@ -947,12 +947,11 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
                 "overhead": overhead, "overhead_pct": overhead / total_duration * 100 if total_duration else 0,
                 "net": net, "net_pct": net / total_duration * 100 if total_duration else 0,
                 "test_time": test_t,
-                # Capped at 100% — gross_saved = caught * per-run-cost is a
-                # heuristic upper bound and can exceed actual test_t when
-                # many errors are caught in a single cycle. Uncapped values
-                # would read as ">100% of test time saved," which is
-                # logically fine but misleading at a glance.
-                "test_time_pct": min(100.0, net / test_t * 100) if test_t else 0,
+                # Denominator = net + test_t so the metric reads as "share
+                # of total (would-have-been + actually-spent) test time that
+                # hooks saved." Naturally bounded above by 100% without a
+                # cap, even when gross_saved far exceeds actual test time.
+                "test_time_pct": (net / (net + test_t) * 100) if (net + test_t) else 0,
             })
 
     def _fmt_hook(r):
