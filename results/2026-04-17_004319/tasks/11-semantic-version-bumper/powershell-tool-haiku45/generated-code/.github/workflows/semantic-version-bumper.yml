@@ -1,0 +1,97 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+    inputs:
+      commits_file:
+        description: Path to file containing commit messages
+        required: false
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.bump.outputs.version }}
+      previous-version: ${{ steps.bump.outputs.previous-version }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install PowerShell
+        run: |
+          apt-get update
+          apt-get install -y curl gnupg apt-transport-https
+          curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
+          echo "deb [arch=amd64] https://packages.microsoft.com/ubuntu/$(lsb_release -rs)/prod $(lsb_release -cs) main" > /etc/apt/sources.list.d/microsoft.list
+          apt-get update
+          apt-get install -y powershell
+
+      - name: Verify PowerShell installation
+        run: |
+          if which pwsh > /dev/null; then pwsh --version; fi
+
+      - name: Install and verify Pester
+        shell: pwsh
+        run: |
+          $pesterModule = Get-Module -ListAvailable -Name Pester
+          if (-not $pesterModule) {
+              Write-Host "Installing Pester..."
+              Install-Module -Name Pester -Force -SkipPublisherCheck | Out-Null
+          }
+          Write-Host "Pester version: $((Get-Module -ListAvailable -Name Pester | Select-Object -First 1).Version)"
+          Import-Module Pester
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          Import-Module Pester
+          $testResults = Invoke-Pester -Path ./semantic-version-bumper.tests.ps1 -PassThru
+          if ($testResults.FailedCount -gt 0) {
+              Write-Error "Tests failed: $($testResults.FailedCount) failures"
+              exit 1
+          }
+
+      - name: Bump semantic version
+        id: bump
+        shell: pwsh
+        run: |
+          $commitFile = "${{ github.event.inputs.commits_file }}"
+          if (-not $commitFile -or $commitFile -eq "") {
+              $commitFile = "commits.txt"
+              if (-not (Test-Path $commitFile)) {
+                  $commitFile = $null
+              }
+          }
+          Write-Host "Using commits file: $commitFile"
+          & ./bump-version.ps1 -PackagePath package.json -ChangelogPath CHANGELOG.md -CommitsFile $commitFile
+
+      - name: Verify files were updated
+        shell: pwsh
+        run: |
+          if (Test-Path CHANGELOG.md) {
+              Write-Host "✓ CHANGELOG.md created/updated"
+          } else {
+              Write-Warning "CHANGELOG.md not found"
+          }
+          $pkg = Get-Content package.json | ConvertFrom-Json
+          Write-Host "✓ package.json version: $($pkg.version)"
+
+      - name: Upload test results
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test-results.xml
+
+      - name: Output version
+        shell: pwsh
+        run: |
+          Write-Host "New version: ${{ steps.bump.outputs.version }}"
