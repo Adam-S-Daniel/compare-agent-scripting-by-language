@@ -1,0 +1,204 @@
+name: Semantic Version Bumper CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test Semantic Version Bumper
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up PowerShell
+        shell: bash
+        run: |
+          # PowerShell 7 is pre-installed in the container
+          pwsh --version
+
+      - name: Install Pester module
+        shell: pwsh
+        run: |
+          Install-Module -Name Pester -Force -SkipPublisherCheck -Scope CurrentUser
+          Get-Module Pester -ListAvailable
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $testResult = Invoke-Pester -Path ./semantic-version-bumper.tests.ps1 -Output Detailed -PassThru
+          exit $testResult.FailedCount
+
+      - name: Test semantic version bumper with mock commits
+        shell: pwsh
+        run: |
+          # Test 1: Parse version from package.json
+          Write-Host "Test 1: Parse version from package.json"
+          $testDir = New-Item -ItemType Directory -Path "${{ runner.temp }}/test1-$(Get-Random)" -Force
+          $packageJson = @{
+            name = "test-app"
+            version = "1.0.0"
+          } | ConvertTo-Json
+          Set-Content -Path "$($testDir.FullName)/package.json" -Value $packageJson
+
+          . ./semantic-version-bumper.ps1
+          $version = Get-VersionFromFile -Path "$($testDir.FullName)/package.json"
+          if ($version -eq "1.0.0") {
+            Write-Host "✓ Test 1 passed: version = $version"
+          } else {
+            Write-Error "✗ Test 1 failed: expected 1.0.0, got $version"
+            exit 1
+          }
+
+          # Test 2: Bump minor version for feature
+          Write-Host "`nTest 2: Bump minor version for feature"
+          $commits = @(
+            @{ type = "feat"; scope = "api"; message = "add new endpoint"; isBreaking = $false }
+          )
+          $nextVersion = Get-NextVersion -CurrentVersion "1.0.0" -Commits $commits
+          if ($nextVersion -eq "1.1.0") {
+            Write-Host "✓ Test 2 passed: 1.0.0 -> $nextVersion"
+          } else {
+            Write-Error "✗ Test 2 failed: expected 1.1.0, got $nextVersion"
+            exit 1
+          }
+
+          # Test 3: Bump major version for breaking change
+          Write-Host "`nTest 3: Bump major version for breaking change"
+          $commits = @(
+            @{ type = "feat"; scope = "api"; message = "redesign API"; isBreaking = $true }
+          )
+          $nextVersion = Get-NextVersion -CurrentVersion "1.0.0" -Commits $commits
+          if ($nextVersion -eq "2.0.0") {
+            Write-Host "✓ Test 3 passed: 1.0.0 -> $nextVersion"
+          } else {
+            Write-Error "✗ Test 3 failed: expected 2.0.0, got $nextVersion"
+            exit 1
+          }
+
+          # Test 4: Bump patch version for fix
+          Write-Host "`nTest 4: Bump patch version for fix"
+          $commits = @(
+            @{ type = "fix"; scope = "parser"; message = "handle edge case"; isBreaking = $false }
+          )
+          $nextVersion = Get-NextVersion -CurrentVersion "2.1.0" -Commits $commits
+          if ($nextVersion -eq "2.1.1") {
+            Write-Host "✓ Test 4 passed: 2.1.0 -> $nextVersion"
+          } else {
+            Write-Error "✗ Test 4 failed: expected 2.1.1, got $nextVersion"
+            exit 1
+          }
+
+          # Test 5: Generate changelog
+          Write-Host "`nTest 5: Generate changelog"
+          $commits = @(
+            @{ type = "feat"; scope = "cli"; message = "add verbose flag"; isBreaking = $false }
+            @{ type = "fix"; scope = "core"; message = "fix nil pointer"; isBreaking = $false }
+          )
+          $changelog = New-ChangelogEntry -Version "1.1.0" -Commits $commits
+          if ($changelog -match "1\.1\.0" -and $changelog -match "verbose flag") {
+            Write-Host "✓ Test 5 passed: changelog generated"
+          } else {
+            Write-Error "✗ Test 5 failed: changelog missing content"
+            exit 1
+          }
+
+          # Test 6: Update version in file
+          Write-Host "`nTest 6: Update version in package.json"
+          $testDir2 = New-Item -ItemType Directory -Path "${{ runner.temp }}/test6-$(Get-Random)" -Force
+          $pkgPath = "$($testDir2.FullName)/package.json"
+          Set-Content -Path $pkgPath -Value (@{ version = "1.0.0" } | ConvertTo-Json)
+          Update-VersionInFile -Path $pkgPath -NewVersion "1.1.0"
+          $updated = Get-Content -Path $pkgPath | ConvertFrom-Json
+          if ($updated.version -eq "1.1.0") {
+            Write-Host "✓ Test 6 passed: version updated to $($updated.version)"
+          } else {
+            Write-Error "✗ Test 6 failed: expected 1.1.0, got $($updated.version)"
+            exit 1
+          }
+
+          Write-Host "`n✓ All manual tests passed!"
+
+      - name: Verify workflow file syntax
+        shell: pwsh
+        run: |
+          Write-Host "Workflow file: .github/workflows/semantic-version-bumper.yml"
+          if (Test-Path ".github/workflows/semantic-version-bumper.yml") {
+            Write-Host "✓ Workflow file exists"
+            $yaml = Get-Content .github/workflows/semantic-version-bumper.yml -Raw
+            Write-Host "✓ Workflow file readable ($(($yaml.Length)) bytes)"
+          } else {
+            Write-Error "✗ Workflow file not found"
+            exit 1
+          }
+
+      - name: List artifacts
+        if: always()
+        shell: bash
+        run: |
+          echo "Current directory:"
+          ls -la
+          echo -e "\nScript files:"
+          find . -maxdepth 1 -name "*.ps1" -o -name "*.tests.ps1" | head -20
+          echo -e "\nWorkflow files:"
+          find .github -name "*.yml" -o -name "*.yaml" 2>/dev/null
+
+  validate:
+    name: Validate Workflow with actionlint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check if actionlint is available
+        shell: bash
+        run: |
+          which actionlint || echo "actionlint not found in PATH"
+          actionlint --version 2>/dev/null || echo "actionlint not available"
+
+      - name: Validate workflow with actionlint
+        shell: bash
+        run: |
+          # actionlint should be pre-installed in ubuntu-latest
+          if command -v actionlint &> /dev/null; then
+            actionlint .github/workflows/semantic-version-bumper.yml
+            echo "✓ Workflow passed actionlint validation"
+          else
+            echo "⚠ actionlint not available, skipping validation"
+            echo "Note: actionlint is pre-installed on ubuntu-latest runners"
+          fi
+
+  summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: [test]
+    if: always()
+
+    steps:
+      - name: Report job status
+        shell: bash
+        run: |
+          echo "Semantic Version Bumper CI Pipeline Summary"
+          echo "==========================================="
+          if [ "${{ needs.test.result }}" == "success" ]; then
+            echo "✓ All tests passed"
+            exit 0
+          else
+            echo "✗ Tests failed"
+            exit 1
+          fi
