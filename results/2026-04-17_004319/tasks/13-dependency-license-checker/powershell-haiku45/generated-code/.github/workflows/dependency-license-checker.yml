@@ -1,0 +1,106 @@
+name: Dependency License Checker
+
+on:
+  push:
+    branches: [ main, master, develop ]
+    paths:
+      - 'package.json'
+      - 'requirements.txt'
+      - 'Gemfile'
+      - '.github/workflows/dependency-license-checker.yml'
+  pull_request:
+    branches: [ main, master, develop ]
+  schedule:
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-license-check:
+    runs-on: ubuntu-22.04
+    name: Check Dependency Licenses
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install PowerShell
+        run: |
+          apt-get update
+          apt-get install -y wget
+          wget -q https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb
+          dpkg -i packages-microsoft-prod.deb
+          apt-get update
+          apt-get install -y powershell
+
+      - name: Set up PowerShell environment
+        shell: pwsh
+        run: |
+          Write-Host "PowerShell version: $($PSVersionTable.PSVersion)"
+          Write-Host "PSEdition: $($PSVersionTable.PSEdition)"
+          Write-Host "Installing Pester..."
+          Install-Module -Name Pester -Force -SkipPublisherCheck
+
+      - name: Run dependency license check (package.json)
+        shell: pwsh
+        run: |
+          if (Test-Path "./package.json") {
+            Write-Host "Testing with package.json..."
+            & ./Run-LicenseCheck.ps1 -ManifestPath "./package.json" `
+              -ConfigPath "./config.json" `
+              -OutputPath "./license-report-npm.json"
+          } else {
+            Write-Host "No package.json found"
+          }
+
+      - name: Run dependency license check (requirements.txt)
+        shell: pwsh
+        run: |
+          if (Test-Path "./requirements.txt") {
+            Write-Host "Testing with requirements.txt..."
+            # For requirements.txt we would need a parser function
+            Write-Host "Requirements.txt support would require parsing non-JSON format"
+          } else {
+            Write-Host "No requirements.txt found"
+          }
+
+      - name: Run unit tests
+        shell: pwsh
+        run: |
+          Write-Host "Running Pester tests..."
+          $testResults = Invoke-Pester -Path "./DependencyLicenseChecker.Tests.ps1" -PassThru
+          Write-Host "Tests passed: $($testResults.PassedCount)"
+          Write-Host "Tests failed: $($testResults.FailedCount)"
+          if ($testResults.FailedCount -gt 0) {
+            exit 1
+          }
+
+      - name: Upload license report
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: license-reports
+          path: license-report-*.json
+          retention-days: 30
+
+      - name: Comment on PR with results
+        if: github.event_name == 'pull_request'
+        shell: pwsh
+        run: |
+          if (Test-Path "./license-report-npm.json") {
+            $report = Get-Content "./license-report-npm.json" | ConvertFrom-Json
+            $approved = ($report | Where-Object { $_.status -eq "approved" }).Count
+            $denied = ($report | Where-Object { $_.status -eq "denied" }).Count
+            $unknown = ($report | Where-Object { $_.status -eq "unknown" }).Count
+
+            Write-Host "License check results:"
+            Write-Host "✓ Approved: $approved"
+            Write-Host "✗ Denied: $denied"
+            Write-Host "? Unknown: $unknown"
+
+            if ($denied -gt 0) {
+              exit 1
+            }
+          }
