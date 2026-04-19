@@ -1,0 +1,58 @@
+name: Test Results Aggregator
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  test-aggregator:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run unit tests
+        run: |
+          python3 -m pytest tests/test_aggregator.py -v
+          echo "Unit tests completed successfully"
+
+      - name: Run aggregator on fixture data
+        run: |
+          python3 test_results_aggregator.py \
+            tests/fixtures/junit_pass.xml \
+            tests/fixtures/junit_mixed.xml > aggregator_output.txt
+          cat aggregator_output.txt
+
+      - name: Parse and validate output
+        run: |
+          output=$(cat aggregator_output.txt)
+          if echo "$output" | grep -q "Test Results Summary"; then
+            echo "✓ Output contains Test Results Summary"
+          else
+            echo "✗ Output missing Test Results Summary"
+            exit 1
+          fi
+
+          if echo "$output" | grep -q "Passed"; then
+            echo "✓ Output contains Passed metric"
+          else
+            echo "✗ Output missing Passed metric"
+            exit 1
+          fi
+
+      - name: Generate GitHub Actions summary
+        if: always()
+        run: |
+          python3 test_results_aggregator.py \
+            tests/fixtures/junit_pass.xml \
+            tests/fixtures/junit_mixed.xml >> "$GITHUB_STEP_SUMMARY"
+          echo "✓ Summary added to job summary" >> "$GITHUB_STEP_SUMMARY"
