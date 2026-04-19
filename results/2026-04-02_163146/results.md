@@ -1,6 +1,6 @@
 # Benchmark Results: Language Comparison
 
-**Last updated:** 2026-04-19 08:13:32 AM ET
+**Last updated:** 2026-04-19 08:39:07 AM ET
 
 **Status:** 144/144 runs completed, 0 remaining
 **Total cost so far:** $436.67
@@ -8,19 +8,22 @@
 
 ## Tiers by Language/Model/Effort
 
-*Duration / Cost tier = ratio of this combo's average to the best combo's average on that axis (lower ratio = better). Bands: **A** ≤1.15×, **B** ≤1.40×, **C** ≤1.80×, **D** ≤2.50×, **E** >2.50×.*
+*Duration / Cost tier = ratio of this combo's average to the best combo's average on that axis (lower ratio = better). Bands are auto-calibrated to the data's best-to-worst spread via log-equal division (`boundary_i = max_ratio^(i/5)`).*
+*Duration bands: **A** ≤1.26×, **B** ≤1.58×, **C** ≤1.99×, **D** ≤2.51×, **E** >2.51×.*
+*Cost bands: **A** ≤1.35×, **B** ≤1.83×, **C** ≤2.48×, **D** ≤3.36×, **E** >3.36×.*
 *LLM Score tier = absolute Overall score band. **A** ≥4.5, **B** ≥3.5, **C** ≥2.5, **D** ≥1.5, **E** <1.5, `—` = no data.*
+*`*` after a Model label = this combo's aggregates exclude one or more failed/timed-out runs (see the Failed / Timed-Out Runs table).*
 
 | Language | Model | Duration | Cost | LLM Score |
 |----------|-------|----------|------|-----------|
-| csharp-script | opus46 | D (40.2min) | E ($5.59) | B (4.1) |
-| csharp-script | sonnet46 | D (33.1min) | D ($2.77) | B (3.5) |
-| default | opus46 | D (30.8min) | E ($3.99) | B (4.4) |
+| csharp-script | opus46* | D (40.2min) | E ($5.59) | B (4.1) |
+| csharp-script | sonnet46* | C (33.1min) | C ($2.77) | B (3.5) |
+| default | opus46 | C (30.8min) | D ($3.99) | B (4.4) |
 | default | sonnet46 | A (16.7min) | A ($1.23) | B (4.1) |
-| powershell | opus46 | C (30.1min) | E ($3.65) | B (4.2) |
-| powershell | sonnet46 | D (31.1min) | B ($1.63) | B (4.0) |
+| powershell | opus46* | C (30.1min) | D ($3.65) | B (4.2) |
+| powershell | sonnet46 | C (31.1min) | A ($1.63) | B (4.0) |
 | powershell-strict | opus46 | E (52.8min) | E ($4.92) | B (4.1) |
-| powershell-strict | sonnet46 | B (21.9min) | B ($1.55) | B (3.8) |
+| powershell-strict | sonnet46* | B (21.9min) | A ($1.55) | B (3.8) |
 
 
 <details>
@@ -29,12 +32,12 @@
 | Language | Model | Duration | Cost | LLM Score |
 |----------|-------|----------|------|-----------|
 | default | sonnet46 | A (16.7min) | A ($1.23) | B (4.1) |
-| powershell-strict | sonnet46 | B (21.9min) | B ($1.55) | B (3.8) |
-| powershell | opus46 | C (30.1min) | E ($3.65) | B (4.2) |
-| powershell | sonnet46 | D (31.1min) | B ($1.63) | B (4.0) |
-| csharp-script | sonnet46 | D (33.1min) | D ($2.77) | B (3.5) |
-| csharp-script | opus46 | D (40.2min) | E ($5.59) | B (4.1) |
-| default | opus46 | D (30.8min) | E ($3.99) | B (4.4) |
+| powershell-strict | sonnet46* | B (21.9min) | A ($1.55) | B (3.8) |
+| powershell | sonnet46 | C (31.1min) | A ($1.63) | B (4.0) |
+| csharp-script | sonnet46* | C (33.1min) | C ($2.77) | B (3.5) |
+| default | opus46 | C (30.8min) | D ($3.99) | B (4.4) |
+| powershell | opus46* | C (30.1min) | D ($3.65) | B (4.2) |
+| csharp-script | opus46* | D (40.2min) | E ($5.59) | B (4.1) |
 | powershell-strict | opus46 | E (52.8min) | E ($4.92) | B (4.1) |
 
 </details>
@@ -45,12 +48,12 @@
 | Language | Model | Duration | Cost | LLM Score |
 |----------|-------|----------|------|-----------|
 | default | sonnet46 | A (16.7min) | A ($1.23) | B (4.1) |
-| powershell-strict | sonnet46 | B (21.9min) | B ($1.55) | B (3.8) |
-| powershell | sonnet46 | D (31.1min) | B ($1.63) | B (4.0) |
-| csharp-script | sonnet46 | D (33.1min) | D ($2.77) | B (3.5) |
-| powershell | opus46 | C (30.1min) | E ($3.65) | B (4.2) |
-| csharp-script | opus46 | D (40.2min) | E ($5.59) | B (4.1) |
-| default | opus46 | D (30.8min) | E ($3.99) | B (4.4) |
+| powershell-strict | sonnet46* | B (21.9min) | A ($1.55) | B (3.8) |
+| powershell | sonnet46 | C (31.1min) | A ($1.63) | B (4.0) |
+| csharp-script | sonnet46* | C (33.1min) | C ($2.77) | B (3.5) |
+| default | opus46 | C (30.8min) | D ($3.99) | B (4.4) |
+| powershell | opus46* | C (30.1min) | D ($3.65) | B (4.2) |
+| csharp-script | opus46* | D (40.2min) | E ($5.59) | B (4.1) |
 | powershell-strict | opus46 | E (52.8min) | E ($4.92) | B (4.1) |
 
 </details>
@@ -61,12 +64,12 @@
 | Language | Model | Duration | Cost | LLM Score |
 |----------|-------|----------|------|-----------|
 | default | sonnet46 | A (16.7min) | A ($1.23) | B (4.1) |
-| powershell-strict | sonnet46 | B (21.9min) | B ($1.55) | B (3.8) |
-| powershell | sonnet46 | D (31.1min) | B ($1.63) | B (4.0) |
-| csharp-script | sonnet46 | D (33.1min) | D ($2.77) | B (3.5) |
-| powershell | opus46 | C (30.1min) | E ($3.65) | B (4.2) |
-| csharp-script | opus46 | D (40.2min) | E ($5.59) | B (4.1) |
-| default | opus46 | D (30.8min) | E ($3.99) | B (4.4) |
+| powershell-strict | sonnet46* | B (21.9min) | A ($1.55) | B (3.8) |
+| powershell | sonnet46 | C (31.1min) | A ($1.63) | B (4.0) |
+| csharp-script | sonnet46* | C (33.1min) | C ($2.77) | B (3.5) |
+| default | opus46 | C (30.8min) | D ($3.99) | B (4.4) |
+| powershell | opus46* | C (30.1min) | D ($3.65) | B (4.2) |
+| csharp-script | opus46* | D (40.2min) | E ($5.59) | B (4.1) |
 | powershell-strict | opus46 | E (52.8min) | E ($4.92) | B (4.1) |
 
 </details>
@@ -78,14 +81,14 @@
 
 | Language | Model | Duration | Cost | LLM Score |
 |----------|-------|----------|------|-----------|
-| csharp-script | opus46 | 7 (40.2min) | 8 ($5.59) | 3 (4.1) |
-| csharp-script | sonnet46 | 6 (33.1min) | 4 ($2.77) | 8 (3.5) |
+| csharp-script | opus46* | 7 (40.2min) | 8 ($5.59) | 3 (4.1) |
+| csharp-script | sonnet46* | 6 (33.1min) | 4 ($2.77) | 8 (3.5) |
 | default | opus46 | 4 (30.8min) | 6 ($3.99) | 1 (4.4) |
 | default | sonnet46 | 1 (16.7min) | 1 ($1.23) | 4 (4.1) |
-| powershell | opus46 | 3 (30.1min) | 5 ($3.65) | 2 (4.2) |
+| powershell | opus46* | 3 (30.1min) | 5 ($3.65) | 2 (4.2) |
 | powershell | sonnet46 | 5 (31.1min) | 3 ($1.63) | 6 (4.0) |
 | powershell-strict | opus46 | 8 (52.8min) | 7 ($4.92) | 5 (4.1) |
-| powershell-strict | sonnet46 | 2 (21.9min) | 2 ($1.55) | 7 (3.8) |
+| powershell-strict | sonnet46* | 2 (21.9min) | 2 ($1.55) | 7 (3.8) |
 
 
 <details>
@@ -94,12 +97,12 @@
 | Language | Model | Duration | Cost | LLM Score |
 |----------|-------|----------|------|-----------|
 | default | sonnet46 | 1 (16.7min) | 1 ($1.23) | 4 (4.1) |
-| powershell-strict | sonnet46 | 2 (21.9min) | 2 ($1.55) | 7 (3.8) |
-| powershell | opus46 | 3 (30.1min) | 5 ($3.65) | 2 (4.2) |
+| powershell-strict | sonnet46* | 2 (21.9min) | 2 ($1.55) | 7 (3.8) |
+| powershell | opus46* | 3 (30.1min) | 5 ($3.65) | 2 (4.2) |
 | default | opus46 | 4 (30.8min) | 6 ($3.99) | 1 (4.4) |
 | powershell | sonnet46 | 5 (31.1min) | 3 ($1.63) | 6 (4.0) |
-| csharp-script | sonnet46 | 6 (33.1min) | 4 ($2.77) | 8 (3.5) |
-| csharp-script | opus46 | 7 (40.2min) | 8 ($5.59) | 3 (4.1) |
+| csharp-script | sonnet46* | 6 (33.1min) | 4 ($2.77) | 8 (3.5) |
+| csharp-script | opus46* | 7 (40.2min) | 8 ($5.59) | 3 (4.1) |
 | powershell-strict | opus46 | 8 (52.8min) | 7 ($4.92) | 5 (4.1) |
 
 </details>
@@ -110,13 +113,13 @@
 | Language | Model | Duration | Cost | LLM Score |
 |----------|-------|----------|------|-----------|
 | default | sonnet46 | 1 (16.7min) | 1 ($1.23) | 4 (4.1) |
-| powershell-strict | sonnet46 | 2 (21.9min) | 2 ($1.55) | 7 (3.8) |
+| powershell-strict | sonnet46* | 2 (21.9min) | 2 ($1.55) | 7 (3.8) |
 | powershell | sonnet46 | 5 (31.1min) | 3 ($1.63) | 6 (4.0) |
-| csharp-script | sonnet46 | 6 (33.1min) | 4 ($2.77) | 8 (3.5) |
-| powershell | opus46 | 3 (30.1min) | 5 ($3.65) | 2 (4.2) |
+| csharp-script | sonnet46* | 6 (33.1min) | 4 ($2.77) | 8 (3.5) |
+| powershell | opus46* | 3 (30.1min) | 5 ($3.65) | 2 (4.2) |
 | default | opus46 | 4 (30.8min) | 6 ($3.99) | 1 (4.4) |
 | powershell-strict | opus46 | 8 (52.8min) | 7 ($4.92) | 5 (4.1) |
-| csharp-script | opus46 | 7 (40.2min) | 8 ($5.59) | 3 (4.1) |
+| csharp-script | opus46* | 7 (40.2min) | 8 ($5.59) | 3 (4.1) |
 
 </details>
 
@@ -126,13 +129,13 @@
 | Language | Model | Duration | Cost | LLM Score |
 |----------|-------|----------|------|-----------|
 | default | opus46 | 4 (30.8min) | 6 ($3.99) | 1 (4.4) |
-| powershell | opus46 | 3 (30.1min) | 5 ($3.65) | 2 (4.2) |
-| csharp-script | opus46 | 7 (40.2min) | 8 ($5.59) | 3 (4.1) |
+| powershell | opus46* | 3 (30.1min) | 5 ($3.65) | 2 (4.2) |
+| csharp-script | opus46* | 7 (40.2min) | 8 ($5.59) | 3 (4.1) |
 | default | sonnet46 | 1 (16.7min) | 1 ($1.23) | 4 (4.1) |
 | powershell-strict | opus46 | 8 (52.8min) | 7 ($4.92) | 5 (4.1) |
 | powershell | sonnet46 | 5 (31.1min) | 3 ($1.63) | 6 (4.0) |
-| powershell-strict | sonnet46 | 2 (21.9min) | 2 ($1.55) | 7 (3.8) |
-| csharp-script | sonnet46 | 6 (33.1min) | 4 ($2.77) | 8 (3.5) |
+| powershell-strict | sonnet46* | 2 (21.9min) | 2 ($1.55) | 7 (3.8) |
+| csharp-script | sonnet46* | 6 (33.1min) | 4 ($2.77) | 8 (3.5) |
 
 </details>
 
@@ -154,14 +157,14 @@
 
 | Language | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost | Avg LLM Score |
 |----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|
-| csharp-script | opus46 | 16 | 40.2min | 3.8min | 154.0 | 163 | $5.59 | $89.38 | 4.1 |
-| csharp-script | sonnet46 | 17 | 33.1min | 21.3min | 59.9 | 86 | $2.77 | $47.12 | 3.5 |
+| csharp-script | opus46* | 16 | 40.2min | 3.8min | 154.0 | 163 | $5.59 | $89.38 | 4.1 |
+| csharp-script | sonnet46* | 17 | 33.1min | 21.3min | 59.9 | 86 | $2.77 | $47.12 | 3.5 |
 | default | opus46 | 18 | 30.8min | -18.0min | 149.4 | 148 | $3.99 | $71.84 | 4.4 |
 | default | sonnet46 | 18 | 16.7min | 10.0min | 35.5 | 51 | $1.23 | $22.08 | 4.1 |
-| powershell | opus46 | 17 | 30.1min | 0.9min | 101.4 | 112 | $3.65 | $61.98 | 4.2 |
+| powershell | opus46* | 17 | 30.1min | 0.9min | 101.4 | 112 | $3.65 | $61.98 | 4.2 |
 | powershell | sonnet46 | 18 | 31.1min | 22.5min | 46.9 | 63 | $1.63 | $29.38 | 4.0 |
 | powershell-strict | opus46 | 18 | 52.8min | 14.3min | 134.1 | 145 | $4.92 | $88.48 | 4.1 |
-| powershell-strict | sonnet46 | 17 | 21.9min | 16.7min | 32.5 | 48 | $1.55 | $26.42 | 3.8 |
+| powershell-strict | sonnet46* | 17 | 21.9min | 16.7min | 32.5 | 48 | $1.55 | $26.42 | 3.8 |
 
 
 <details>
@@ -170,13 +173,13 @@
 | Language | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost | Avg LLM Score |
 |----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|
 | default | sonnet46 | 18 | 16.7min | 10.0min | 35.5 | 51 | $1.23 | $22.08 | 4.1 |
-| powershell-strict | sonnet46 | 17 | 21.9min | 16.7min | 32.5 | 48 | $1.55 | $26.42 | 3.8 |
+| powershell-strict | sonnet46* | 17 | 21.9min | 16.7min | 32.5 | 48 | $1.55 | $26.42 | 3.8 |
 | powershell | sonnet46 | 18 | 31.1min | 22.5min | 46.9 | 63 | $1.63 | $29.38 | 4.0 |
-| csharp-script | sonnet46 | 17 | 33.1min | 21.3min | 59.9 | 86 | $2.77 | $47.12 | 3.5 |
-| powershell | opus46 | 17 | 30.1min | 0.9min | 101.4 | 112 | $3.65 | $61.98 | 4.2 |
+| csharp-script | sonnet46* | 17 | 33.1min | 21.3min | 59.9 | 86 | $2.77 | $47.12 | 3.5 |
+| powershell | opus46* | 17 | 30.1min | 0.9min | 101.4 | 112 | $3.65 | $61.98 | 4.2 |
 | default | opus46 | 18 | 30.8min | -18.0min | 149.4 | 148 | $3.99 | $71.84 | 4.4 |
 | powershell-strict | opus46 | 18 | 52.8min | 14.3min | 134.1 | 145 | $4.92 | $88.48 | 4.1 |
-| csharp-script | opus46 | 16 | 40.2min | 3.8min | 154.0 | 163 | $5.59 | $89.38 | 4.1 |
+| csharp-script | opus46* | 16 | 40.2min | 3.8min | 154.0 | 163 | $5.59 | $89.38 | 4.1 |
 
 </details>
 
@@ -186,12 +189,12 @@
 | Language | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost | Avg LLM Score |
 |----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|
 | default | sonnet46 | 18 | 16.7min | 10.0min | 35.5 | 51 | $1.23 | $22.08 | 4.1 |
-| powershell-strict | sonnet46 | 17 | 21.9min | 16.7min | 32.5 | 48 | $1.55 | $26.42 | 3.8 |
-| powershell | opus46 | 17 | 30.1min | 0.9min | 101.4 | 112 | $3.65 | $61.98 | 4.2 |
+| powershell-strict | sonnet46* | 17 | 21.9min | 16.7min | 32.5 | 48 | $1.55 | $26.42 | 3.8 |
+| powershell | opus46* | 17 | 30.1min | 0.9min | 101.4 | 112 | $3.65 | $61.98 | 4.2 |
 | default | opus46 | 18 | 30.8min | -18.0min | 149.4 | 148 | $3.99 | $71.84 | 4.4 |
 | powershell | sonnet46 | 18 | 31.1min | 22.5min | 46.9 | 63 | $1.63 | $29.38 | 4.0 |
-| csharp-script | sonnet46 | 17 | 33.1min | 21.3min | 59.9 | 86 | $2.77 | $47.12 | 3.5 |
-| csharp-script | opus46 | 16 | 40.2min | 3.8min | 154.0 | 163 | $5.59 | $89.38 | 4.1 |
+| csharp-script | sonnet46* | 17 | 33.1min | 21.3min | 59.9 | 86 | $2.77 | $47.12 | 3.5 |
+| csharp-script | opus46* | 16 | 40.2min | 3.8min | 154.0 | 163 | $5.59 | $89.38 | 4.1 |
 | powershell-strict | opus46 | 18 | 52.8min | 14.3min | 134.1 | 145 | $4.92 | $88.48 | 4.1 |
 
 </details>
@@ -202,12 +205,12 @@
 | Language | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost | Avg LLM Score |
 |----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|
 | default | opus46 | 18 | 30.8min | -18.0min | 149.4 | 148 | $3.99 | $71.84 | 4.4 |
-| powershell | opus46 | 17 | 30.1min | 0.9min | 101.4 | 112 | $3.65 | $61.98 | 4.2 |
-| csharp-script | opus46 | 16 | 40.2min | 3.8min | 154.0 | 163 | $5.59 | $89.38 | 4.1 |
+| powershell | opus46* | 17 | 30.1min | 0.9min | 101.4 | 112 | $3.65 | $61.98 | 4.2 |
+| csharp-script | opus46* | 16 | 40.2min | 3.8min | 154.0 | 163 | $5.59 | $89.38 | 4.1 |
 | default | sonnet46 | 18 | 16.7min | 10.0min | 35.5 | 51 | $1.23 | $22.08 | 4.1 |
 | powershell-strict | opus46 | 18 | 52.8min | 14.3min | 134.1 | 145 | $4.92 | $88.48 | 4.1 |
-| powershell-strict | sonnet46 | 17 | 21.9min | 16.7min | 32.5 | 48 | $1.55 | $26.42 | 3.8 |
-| csharp-script | sonnet46 | 17 | 33.1min | 21.3min | 59.9 | 86 | $2.77 | $47.12 | 3.5 |
+| powershell-strict | sonnet46* | 17 | 21.9min | 16.7min | 32.5 | 48 | $1.55 | $26.42 | 3.8 |
+| csharp-script | sonnet46* | 17 | 33.1min | 21.3min | 59.9 | 86 | $2.77 | $47.12 | 3.5 |
 | powershell | sonnet46 | 18 | 31.1min | 22.5min | 46.9 | 63 | $1.63 | $29.38 | 4.0 |
 
 </details>
@@ -217,14 +220,14 @@
 
 | Language | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost | Avg LLM Score |
 |----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|
-| powershell-strict | sonnet46 | 17 | 21.9min | 16.7min | 32.5 | 48 | $1.55 | $26.42 | 3.8 |
+| powershell-strict | sonnet46* | 17 | 21.9min | 16.7min | 32.5 | 48 | $1.55 | $26.42 | 3.8 |
 | default | sonnet46 | 18 | 16.7min | 10.0min | 35.5 | 51 | $1.23 | $22.08 | 4.1 |
 | powershell | sonnet46 | 18 | 31.1min | 22.5min | 46.9 | 63 | $1.63 | $29.38 | 4.0 |
-| csharp-script | sonnet46 | 17 | 33.1min | 21.3min | 59.9 | 86 | $2.77 | $47.12 | 3.5 |
-| powershell | opus46 | 17 | 30.1min | 0.9min | 101.4 | 112 | $3.65 | $61.98 | 4.2 |
+| csharp-script | sonnet46* | 17 | 33.1min | 21.3min | 59.9 | 86 | $2.77 | $47.12 | 3.5 |
+| powershell | opus46* | 17 | 30.1min | 0.9min | 101.4 | 112 | $3.65 | $61.98 | 4.2 |
 | powershell-strict | opus46 | 18 | 52.8min | 14.3min | 134.1 | 145 | $4.92 | $88.48 | 4.1 |
 | default | opus46 | 18 | 30.8min | -18.0min | 149.4 | 148 | $3.99 | $71.84 | 4.4 |
-| csharp-script | opus46 | 16 | 40.2min | 3.8min | 154.0 | 163 | $5.59 | $89.38 | 4.1 |
+| csharp-script | opus46* | 16 | 40.2min | 3.8min | 154.0 | 163 | $5.59 | $89.38 | 4.1 |
 
 </details>
 
@@ -233,14 +236,14 @@
 
 | Language | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost | Avg LLM Score |
 |----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|
-| powershell-strict | sonnet46 | 17 | 21.9min | 16.7min | 32.5 | 48 | $1.55 | $26.42 | 3.8 |
+| powershell-strict | sonnet46* | 17 | 21.9min | 16.7min | 32.5 | 48 | $1.55 | $26.42 | 3.8 |
 | default | sonnet46 | 18 | 16.7min | 10.0min | 35.5 | 51 | $1.23 | $22.08 | 4.1 |
 | powershell | sonnet46 | 18 | 31.1min | 22.5min | 46.9 | 63 | $1.63 | $29.38 | 4.0 |
-| csharp-script | sonnet46 | 17 | 33.1min | 21.3min | 59.9 | 86 | $2.77 | $47.12 | 3.5 |
-| powershell | opus46 | 17 | 30.1min | 0.9min | 101.4 | 112 | $3.65 | $61.98 | 4.2 |
+| csharp-script | sonnet46* | 17 | 33.1min | 21.3min | 59.9 | 86 | $2.77 | $47.12 | 3.5 |
+| powershell | opus46* | 17 | 30.1min | 0.9min | 101.4 | 112 | $3.65 | $61.98 | 4.2 |
 | powershell-strict | opus46 | 18 | 52.8min | 14.3min | 134.1 | 145 | $4.92 | $88.48 | 4.1 |
 | default | opus46 | 18 | 30.8min | -18.0min | 149.4 | 148 | $3.99 | $71.84 | 4.4 |
-| csharp-script | opus46 | 16 | 40.2min | 3.8min | 154.0 | 163 | $5.59 | $89.38 | 4.1 |
+| csharp-script | opus46* | 16 | 40.2min | 3.8min | 154.0 | 163 | $5.59 | $89.38 | 4.1 |
 
 </details>
 
@@ -250,13 +253,13 @@
 | Language | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost | Avg LLM Score |
 |----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|
 | default | opus46 | 18 | 30.8min | -18.0min | 149.4 | 148 | $3.99 | $71.84 | 4.4 |
-| powershell | opus46 | 17 | 30.1min | 0.9min | 101.4 | 112 | $3.65 | $61.98 | 4.2 |
-| csharp-script | opus46 | 16 | 40.2min | 3.8min | 154.0 | 163 | $5.59 | $89.38 | 4.1 |
+| powershell | opus46* | 17 | 30.1min | 0.9min | 101.4 | 112 | $3.65 | $61.98 | 4.2 |
+| csharp-script | opus46* | 16 | 40.2min | 3.8min | 154.0 | 163 | $5.59 | $89.38 | 4.1 |
 | default | sonnet46 | 18 | 16.7min | 10.0min | 35.5 | 51 | $1.23 | $22.08 | 4.1 |
 | powershell-strict | opus46 | 18 | 52.8min | 14.3min | 134.1 | 145 | $4.92 | $88.48 | 4.1 |
 | powershell | sonnet46 | 18 | 31.1min | 22.5min | 46.9 | 63 | $1.63 | $29.38 | 4.0 |
-| powershell-strict | sonnet46 | 17 | 21.9min | 16.7min | 32.5 | 48 | $1.55 | $26.42 | 3.8 |
-| csharp-script | sonnet46 | 17 | 33.1min | 21.3min | 59.9 | 86 | $2.77 | $47.12 | 3.5 |
+| powershell-strict | sonnet46* | 17 | 21.9min | 16.7min | 32.5 | 48 | $1.55 | $26.42 | 3.8 |
+| csharp-script | sonnet46* | 17 | 33.1min | 21.3min | 59.9 | 86 | $2.77 | $47.12 | 3.5 |
 
 </details>
 

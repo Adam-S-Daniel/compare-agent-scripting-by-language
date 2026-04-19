@@ -1,6 +1,6 @@
 # Benchmark Results: Language Comparison
 
-**Last updated:** 2026-04-19 08:13:38 AM ET
+**Last updated:** 2026-04-19 08:39:17 AM ET
 
 **Status:** 64/64 runs completed, 0 remaining
 **Total cost so far:** $86.90
@@ -8,19 +8,21 @@
 
 ## Tiers by Language/Model/Effort
 
-*Duration / Cost tier = ratio of this combo's average to the best combo's average on that axis (lower ratio = better). Bands: **A** ≤1.15×, **B** ≤1.40×, **C** ≤1.80×, **D** ≤2.50×, **E** >2.50×.*
+*Duration / Cost tier = ratio of this combo's average to the best combo's average on that axis (lower ratio = better). Bands are auto-calibrated to the data's best-to-worst spread via log-equal division (`boundary_i = max_ratio^(i/5)`).*
+*Duration bands: **A** ≤1.10×, **B** ≤1.21×, **C** ≤1.33×, **D** ≤1.46×, **E** >1.46×.*
+*Cost bands: **A** ≤1.06×, **B** ≤1.13×, **C** ≤1.20×, **D** ≤1.27×, **E** >1.27×.*
 *LLM Score tier = absolute Overall score band. **A** ≥4.5, **B** ≥3.5, **C** ≥2.5, **D** ≥1.5, **E** <1.5, `—` = no data.*
 
 | Language | Model | Duration | Cost | LLM Score |
 |----------|-------|----------|------|-----------|
-| bash | opus46 | A (7.7min) | B ($1.52) | C (3.0) |
-| bash | sonnet46 | C (10.4min) | B ($1.40) | B (3.9) |
-| default | opus46 | A (6.9min) | B ($1.45) | C (3.1) |
-| default | sonnet46 | B (8.3min) | A ($1.14) | B (3.8) |
-| powershell | opus46 | B (8.2min) | B ($1.55) | C (3.1) |
-| powershell | sonnet46 | C (11.0min) | A ($1.30) | B (3.5) |
-| typescript-bun | opus46 | A (6.9min) | B ($1.32) | C (2.9) |
-| typescript-bun | sonnet46 | B (9.5min) | A ($1.17) | B (3.9) |
+| bash | opus46 | B (7.7min) | E ($1.52) | C (3.0) |
+| bash | sonnet46 | E (10.4min) | D ($1.40) | B (3.9) |
+| default | opus46 | A (6.9min) | D ($1.45) | C (3.1) |
+| default | sonnet46 | C (8.3min) | A ($1.14) | B (3.8) |
+| powershell | opus46 | B (8.2min) | E ($1.55) | C (3.1) |
+| powershell | sonnet46 | E (11.0min) | C ($1.30) | B (3.5) |
+| typescript-bun | opus46 | A (6.9min) | C ($1.32) | C (2.9) |
+| typescript-bun | sonnet46 | D (9.5min) | A ($1.17) | B (3.9) |
 
 
 <details>
@@ -28,14 +30,14 @@
 
 | Language | Model | Duration | Cost | LLM Score |
 |----------|-------|----------|------|-----------|
-| bash | opus46 | A (7.7min) | B ($1.52) | C (3.0) |
-| default | opus46 | A (6.9min) | B ($1.45) | C (3.1) |
-| typescript-bun | opus46 | A (6.9min) | B ($1.32) | C (2.9) |
-| default | sonnet46 | B (8.3min) | A ($1.14) | B (3.8) |
-| typescript-bun | sonnet46 | B (9.5min) | A ($1.17) | B (3.9) |
-| powershell | opus46 | B (8.2min) | B ($1.55) | C (3.1) |
-| powershell | sonnet46 | C (11.0min) | A ($1.30) | B (3.5) |
-| bash | sonnet46 | C (10.4min) | B ($1.40) | B (3.9) |
+| typescript-bun | opus46 | A (6.9min) | C ($1.32) | C (2.9) |
+| default | opus46 | A (6.9min) | D ($1.45) | C (3.1) |
+| bash | opus46 | B (7.7min) | E ($1.52) | C (3.0) |
+| powershell | opus46 | B (8.2min) | E ($1.55) | C (3.1) |
+| default | sonnet46 | C (8.3min) | A ($1.14) | B (3.8) |
+| typescript-bun | sonnet46 | D (9.5min) | A ($1.17) | B (3.9) |
+| powershell | sonnet46 | E (11.0min) | C ($1.30) | B (3.5) |
+| bash | sonnet46 | E (10.4min) | D ($1.40) | B (3.9) |
 
 </details>
 
@@ -44,14 +46,14 @@
 
 | Language | Model | Duration | Cost | LLM Score |
 |----------|-------|----------|------|-----------|
-| default | sonnet46 | B (8.3min) | A ($1.14) | B (3.8) |
-| typescript-bun | sonnet46 | B (9.5min) | A ($1.17) | B (3.9) |
-| powershell | sonnet46 | C (11.0min) | A ($1.30) | B (3.5) |
-| bash | opus46 | A (7.7min) | B ($1.52) | C (3.0) |
-| default | opus46 | A (6.9min) | B ($1.45) | C (3.1) |
-| typescript-bun | opus46 | A (6.9min) | B ($1.32) | C (2.9) |
-| bash | sonnet46 | C (10.4min) | B ($1.40) | B (3.9) |
-| powershell | opus46 | B (8.2min) | B ($1.55) | C (3.1) |
+| default | sonnet46 | C (8.3min) | A ($1.14) | B (3.8) |
+| typescript-bun | sonnet46 | D (9.5min) | A ($1.17) | B (3.9) |
+| typescript-bun | opus46 | A (6.9min) | C ($1.32) | C (2.9) |
+| powershell | sonnet46 | E (11.0min) | C ($1.30) | B (3.5) |
+| default | opus46 | A (6.9min) | D ($1.45) | C (3.1) |
+| bash | sonnet46 | E (10.4min) | D ($1.40) | B (3.9) |
+| bash | opus46 | B (7.7min) | E ($1.52) | C (3.0) |
+| powershell | opus46 | B (8.2min) | E ($1.55) | C (3.1) |
 
 </details>
 
@@ -60,14 +62,14 @@
 
 | Language | Model | Duration | Cost | LLM Score |
 |----------|-------|----------|------|-----------|
-| default | sonnet46 | B (8.3min) | A ($1.14) | B (3.8) |
-| typescript-bun | sonnet46 | B (9.5min) | A ($1.17) | B (3.9) |
-| powershell | sonnet46 | C (11.0min) | A ($1.30) | B (3.5) |
-| bash | sonnet46 | C (10.4min) | B ($1.40) | B (3.9) |
-| bash | opus46 | A (7.7min) | B ($1.52) | C (3.0) |
-| default | opus46 | A (6.9min) | B ($1.45) | C (3.1) |
-| typescript-bun | opus46 | A (6.9min) | B ($1.32) | C (2.9) |
-| powershell | opus46 | B (8.2min) | B ($1.55) | C (3.1) |
+| default | sonnet46 | C (8.3min) | A ($1.14) | B (3.8) |
+| typescript-bun | sonnet46 | D (9.5min) | A ($1.17) | B (3.9) |
+| powershell | sonnet46 | E (11.0min) | C ($1.30) | B (3.5) |
+| bash | sonnet46 | E (10.4min) | D ($1.40) | B (3.9) |
+| typescript-bun | opus46 | A (6.9min) | C ($1.32) | C (2.9) |
+| default | opus46 | A (6.9min) | D ($1.45) | C (3.1) |
+| bash | opus46 | B (7.7min) | E ($1.52) | C (3.0) |
+| powershell | opus46 | B (8.2min) | E ($1.55) | C (3.1) |
 
 </details>
 
