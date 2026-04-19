@@ -1,6 +1,6 @@
 # Benchmark Results: Language Comparison
 
-**Last updated:** 2026-04-19 08:00:09 AM ET
+**Last updated:** 2026-04-19 08:05:14 AM ET
 
 **Status:** 111/144 runs completed, 33 remaining
 **Total cost so far:** $76.34
@@ -275,6 +275,8 @@
 
 Each hook-caught error avoids one test run that would otherwise have been needed to discover it.
 Every hook fire (hit or miss) costs execution time for the syntax/type checker.
+
+*`% of Test Time Saved` is capped at 100% — the gross-savings estimate (`caught × per-run cost`) is a heuristic upper bound that can exceed the actual test-time spent when many errors are caught in a single cycle; in that regime the cap reads as "hooks substituted for all test time".*
 
 | Language | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time | Test Run Time | % of Test Time Saved |
 |------|-------|-------|--------|------|------------|-----------|----------|-----------|-----------|-----------|---------------|----------------------|

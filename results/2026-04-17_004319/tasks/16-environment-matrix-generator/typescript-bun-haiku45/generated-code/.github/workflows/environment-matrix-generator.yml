@@ -1,0 +1,67 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  generate-matrix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          export PATH="${HOME}/.bun/bin:$PATH"
+          echo "${HOME}/.bun/bin" >> "$GITHUB_PATH"
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run matrix generator tests
+        run: bun test matrix-generator.test.ts integration.test.ts
+
+      - name: Generate matrix from simple config
+        run: |
+          {
+            echo "=== Matrix from simple config ==="
+            bun run index.ts fixtures/simple-config.json 2>&1
+            echo ""
+          } >> matrix-output.txt
+
+      - name: Generate matrix with excludes
+        run: |
+          {
+            echo "=== Matrix with excludes ==="
+            bun run index.ts fixtures/with-excludes.json 2>&1
+            echo ""
+          } >> matrix-output.txt
+
+      - name: Generate matrix with features
+        run: |
+          {
+            echo "=== Matrix with features ==="
+            bun run index.ts fixtures/with-features.json 2>&1
+            echo ""
+          } >> matrix-output.txt
+
+      - name: Use generated matrix in strategy
+        run: |
+          echo "=== Using generated matrix ===" >> matrix-output.txt
+          MATRIX=$(bun run index.ts fixtures/simple-config.json)
+          echo "Matrix JSON: $MATRIX" >> matrix-output.txt
+
+      - name: Display results
+        if: always()
+        run: |
+          if [ -f matrix-output.txt ]; then
+            cat matrix-output.txt
+          else
+            echo "No matrix output file found"
+          fi
+
