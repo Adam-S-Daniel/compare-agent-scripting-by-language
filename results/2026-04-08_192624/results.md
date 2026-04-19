@@ -1,6 +1,6 @@
 # Benchmark Results: Language Comparison
 
-**Last updated:** 2026-04-18 07:13:12 AM ET
+**Last updated:** 2026-04-19 08:00:18 AM ET
 
 **Status:** 64/64 runs completed, 0 remaining
 **Total cost so far:** $84.25
@@ -10,7 +10,6 @@
 
 *Duration / Cost tier = ratio of this combo's average to the best combo's average on that axis (lower ratio = better). Bands: **A** ≤1.15×, **B** ≤1.40×, **C** ≤1.80×, **D** ≤2.50×, **E** >2.50×.*
 *LLM Score tier = absolute Overall score band. **A** ≥4.5, **B** ≥3.5, **C** ≥2.5, **D** ≥1.5, **E** <1.5, `—` = no data.*
-*If every row in a column is tier A, those combos are effectively tied on that axis.*
 
 | Language | Model | Duration | Cost | LLM Score |
 |----------|-------|----------|------|-----------|

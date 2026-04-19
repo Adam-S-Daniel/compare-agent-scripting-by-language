@@ -780,7 +780,6 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
                      "**A** ≤1.15×, **B** ≤1.40×, **C** ≤1.80×, **D** ≤2.50×, **E** >2.50×.*")
         lines.append("*LLM Score tier = absolute Overall score band. "
                      "**A** ≥4.5, **B** ≥3.5, **C** ≥2.5, **D** ≥1.5, **E** <1.5, `—` = no data.*")
-        lines.append("*If every row in a column is tier A, those combos are effectively tied on that axis.*")
         lines.append("")
         tr_hdr = "| Language | Model | Duration | Cost | LLM Score |"
         tr_sep = "|----------|-------|----------|------|-----------|"

@@ -1,5 +1,10 @@
 """Unit tests for runner.select_tasks — --tasks CLI argument resolution."""
 
+import subprocess
+import sys
+import threading
+import time
+
 from runner import TASKS, PROMPT_TEMPLATES, select_tasks
 
 
@@ -54,3 +59,73 @@ class TestPromptTemplates:
         # The two PS modes must differ only in tool setup, not in user-facing
         # prompt content — otherwise we'd be comparing two different tasks.
         assert PROMPT_TEMPLATES["powershell"] == PROMPT_TEMPLATES["powershell-tool"]
+
+
+class TestWatchdogTimeout:
+    """Regression tests for the threading.Timer watchdog that bounds each
+    run_single_task subprocess. The older code checked a deadline inside
+    the stdout-read loop; a subprocess producing no output (e.g. the
+    claude CLI hung on a stalled `act push`) bypassed the check entirely.
+    The watchdog must kill such processes regardless of whether they are
+    reading/writing."""
+
+    def test_timer_kills_silent_process(self):
+        # Subprocess that sleeps without emitting anything to stdout.
+        # Pre-fix: the read loop would block forever. Post-fix: the timer
+        # fires after ~0.3s, kills the process, the read loop returns EOF.
+        proc = subprocess.Popen(
+            [sys.executable, "-c", "import time; time.sleep(60)"],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+        )
+        timeout_fired = threading.Event()
+
+        def _on_timeout():
+            if proc.poll() is None:
+                proc.kill()
+                timeout_fired.set()
+
+        timer = threading.Timer(0.3, _on_timeout)
+        timer.daemon = True
+        timer.start()
+        start = time.time()
+        try:
+            # Mirror the real read loop: iterate proc.stdout.
+            for _line in proc.stdout:
+                pass
+            proc.wait(timeout=5)
+        finally:
+            timer.cancel()
+        elapsed = time.time() - start
+
+        assert timeout_fired.is_set()
+        assert proc.returncode != 0  # killed, not normal exit
+        # Must have completed promptly after the timer fired (give
+        # generous 3s margin to avoid flakes on loaded CI runners).
+        assert elapsed < 3.0, f"watchdog did not unblock read loop (took {elapsed:.1f}s)"
+
+    def test_timer_cancels_when_process_exits_naturally(self):
+        # When the subprocess finishes fast, the cancelled timer must not
+        # fire nor kill anything — we preserve clean exit codes.
+        proc = subprocess.Popen(
+            [sys.executable, "-c", "print('ok')"],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+        )
+        timeout_fired = threading.Event()
+
+        def _on_timeout():
+            if proc.poll() is None:
+                proc.kill()
+                timeout_fired.set()
+
+        timer = threading.Timer(5.0, _on_timeout)
+        timer.daemon = True
+        timer.start()
+        try:
+            for _line in proc.stdout:
+                pass
+            proc.wait(timeout=5)
+        finally:
+            timer.cancel()
+
+        assert not timeout_fired.is_set()
+        assert proc.returncode == 0
