@@ -1,0 +1,125 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+  workflow_dispatch:
+    inputs:
+      version_file:
+        description: 'Version file path (package.json or VERSION)'
+        required: false
+        default: 'package.json'
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y bats
+
+      - name: Run bats tests
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          bats tests/test_semver.bats
+        shell: bash
+
+  demo:
+    name: Demo Version Bumping
+    runs-on: ubuntu-latest
+    needs: test
+    if: always()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y bats
+
+      - name: Create demo fixture
+        run: |
+          # Set up a test repository
+          mkdir -p demo-repo
+          cd demo-repo
+
+          git init
+          git config user.email "demo@example.com"
+          git config user.name "Demo User"
+
+          # Create initial version file (compact JSON for parsing)
+          echo '{"name":"demo-app","version":"1.0.0","description":"Demo application"}' > package.json
+
+          git add package.json
+          git commit -m "initial: setup project" --allow-empty
+
+          # Add feature commit
+          echo "// new feature" >> app.js
+          git add app.js 2>/dev/null || true
+          git add . 2>/dev/null || true
+          git commit -m "feat: add awesome feature" --allow-empty
+
+          echo "Demo repository created with commits"
+        shell: bash
+
+      - name: Run semantic version bumper
+        id: bumper
+        run: |
+          cd demo-repo
+
+          # Source the script
+          source "$GITHUB_WORKSPACE/semver-bumper.sh"
+
+          # Run the main flow
+          NEW_VERSION=$(main_flow "package.json" "HEAD~1" "HEAD")
+
+          echo "Old version: 1.0.0"
+          echo "New version: $NEW_VERSION"
+          echo "version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+
+          # Display changelog
+          if [ -f CHANGELOG_ENTRY.md ]; then
+            echo "=== Changelog ==="
+            cat CHANGELOG_ENTRY.md
+          fi
+        shell: bash
+
+      - name: Verify version update
+        run: |
+          cd demo-repo
+          VERSION=$(grep -o '"version":"[^"]*"' package.json | cut -d'"' -f4)
+          echo "Updated version in package.json: $VERSION"
+
+          if [ "$VERSION" != "1.1.0" ]; then
+            echo "ERROR: Version was not updated correctly"
+            exit 1
+          fi
+          echo "✓ Version correctly bumped to 1.1.0"
+        shell: bash
+
+  validate:
+    name: Validate Script
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate with shellcheck
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y shellcheck
+          shellcheck semver-bumper.sh
+        shell: bash
+
+      - name: Validate with bash -n
+        run: |
+          bash -n semver-bumper.sh
+        shell: bash
