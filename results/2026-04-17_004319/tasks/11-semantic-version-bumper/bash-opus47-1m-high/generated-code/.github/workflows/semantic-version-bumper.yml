@@ -1,0 +1,105 @@
+name: Semantic Version Bumper
+
+# Triggered on push, PR, manual dispatch, and a nightly schedule. The
+# benchmark harness drives this via `act push` with a temp repo containing
+# fixture data already at the expected paths (VERSION/package.json + commits).
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      version_file:
+        description: "Path to the version file"
+        required: false
+        default: "VERSION"
+      commits_file:
+        description: "Path to the commits log"
+        required: false
+        default: "commits.txt"
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+
+env:
+  # Default file names; the "Compute next version" step auto-detects
+  # package.json when VERSION is absent, so plain pushes work too.
+  VERSION_FILE_INPUT: ${{ github.event.inputs.version_file }}
+  COMMITS_FILE_INPUT: ${{ github.event.inputs.commits_file }}
+
+jobs:
+  bump:
+    name: Bump and changelog
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install bats and shellcheck
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v bats >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y --no-install-recommends bats shellcheck
+          fi
+          bats --version
+          shellcheck --version | head -n2
+
+      - name: Lint script with shellcheck
+        shell: bash
+        run: shellcheck bump-version.sh
+
+      - name: Run unit tests
+        shell: bash
+        run: bats tests/bump.bats
+
+      - name: Compute next version
+        id: bump
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x ./bump-version.sh
+
+          # Resolve the version file: explicit input wins, then package.json,
+          # then VERSION. Same logic for the commits file with a sane default.
+          version_file="${VERSION_FILE_INPUT:-}"
+          if [[ -z "$version_file" ]]; then
+            if   [[ -f package.json ]]; then version_file=package.json
+            elif [[ -f VERSION      ]]; then version_file=VERSION
+            fi
+          fi
+          commits_file="${COMMITS_FILE_INPUT:-commits.txt}"
+
+          if [[ -z "$version_file" || ! -f "$version_file" ]]; then
+            echo "No version file detected — skipping bump." >&2
+            echo "next_version=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [[ ! -f "$commits_file" ]]; then
+            echo "Commits file '$commits_file' missing — skipping bump." >&2
+            echo "next_version=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "Using version file: $version_file"
+          echo "Using commits file: $commits_file"
+          NEW_VERSION=$(./bump-version.sh --run "$version_file" "$commits_file")
+          echo "Computed new version: $NEW_VERSION"
+          echo "NEXT_VERSION=$NEW_VERSION"
+          echo "next_version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+          echo "version_file=$version_file" >> "$GITHUB_OUTPUT"
+
+      - name: Show resulting files
+        if: steps.bump.outputs.next_version != ''
+        shell: bash
+        env:
+          VERSION_FILE: ${{ steps.bump.outputs.version_file }}
+        run: |
+          echo "----- $VERSION_FILE -----"
+          cat "$VERSION_FILE"
+          if [[ -f CHANGELOG.md ]]; then
+            echo "----- CHANGELOG.md -----"
+            cat CHANGELOG.md
+          fi

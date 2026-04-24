@@ -1,0 +1,99 @@
+name: Test Results Aggregator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DEBIAN_FRONTEND: noninteractive
+
+jobs:
+  lint:
+    name: Lint aggregate.sh
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install shellcheck
+        run: |
+          if ! command -v shellcheck >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y shellcheck
+          fi
+
+      - name: Syntax check (bash -n)
+        run: bash -n aggregate.sh
+
+      - name: Shellcheck
+        run: shellcheck aggregate.sh
+
+  test:
+    name: Run bats tests
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bats jq
+
+      - name: Run bats tests
+        run: |
+          chmod +x aggregate.sh
+          bats --tap tests/aggregate.bats | tee bats-output.txt
+
+      - name: Assert all bats tests passed
+        run: |
+          if grep -E '^not ok' bats-output.txt; then
+            echo "Some bats tests failed" >&2
+            exit 1
+          fi
+          echo "BATS_PASS_COUNT=$(grep -cE '^ok ' bats-output.txt)" | tee -a "$GITHUB_ENV"
+
+  aggregate:
+    name: Aggregate fixtures and emit summary
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+
+      - name: Aggregate (text format)
+        id: agg_text
+        run: |
+          chmod +x aggregate.sh
+          # Collect every file from the workflow input directory (xml + json).
+          # Using `input/` (not `fixtures/`) so the bats-test fixture set and
+          # the workflow's aggregation input can vary independently.
+          shopt -s nullglob
+          FILES=(input/*.xml input/*.json)
+          if [ ${#FILES[@]} -eq 0 ]; then
+            echo "No input files found in input/" >&2
+            exit 1
+          fi
+          echo "Files: ${FILES[*]}"
+          ./aggregate.sh --format text "${FILES[@]}" | tee aggregate-text.out
+          echo "SUMMARY_LINE=$(head -n1 aggregate-text.out)" >> "$GITHUB_OUTPUT"
+
+      - name: Aggregate (markdown format, write job summary)
+        run: |
+          shopt -s nullglob
+          FILES=(input/*.xml input/*.json)
+          ./aggregate.sh --format markdown "${FILES[@]}" | tee aggregate-markdown.md
+
+      - name: Emit assertable markers
+        run: |
+          # Deterministic markers the test harness parses out of act's output.
+          echo "AGGREGATE_RESULT: $(head -n1 aggregate-text.out)"
+          echo "AGGREGATE_MARKDOWN_LINES: $(wc -l < aggregate-markdown.md)"
+          echo "AGGREGATE_HAS_SUMMARY_HEADER: $(grep -c '^# Test Results Summary' aggregate-markdown.md)"

@@ -1,0 +1,516 @@
+
+============================================================
+TEST CASE: patch-bump-fix-commits
+Initial: 1.2.3 -> Expected: 1.2.4 (patch)
+============================================================
+[Semantic Version Bumper/Run Tests] ⭐ Run Set up job
+[Semantic Version Bumper/Run Tests] 🚀  Start image=act-ubuntu-pwsh:latest
+[Semantic Version Bumper/Run Tests]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Semantic Version Bumper/Run Tests]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Semantic Version Bumper/Run Tests]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Semantic Version Bumper/Run Tests]   ✅  Success - Set up job
+[Semantic Version Bumper/Run Tests]   ☁  git clone 'https://github.com/oven-sh/setup-bun' # ref=v2
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Checkout
+[Semantic Version Bumper/Run Tests]   🐳  docker cp src=/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/tmp-act-patch-bump-fix-commits/. dst=/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/tmp-act-patch-bump-fix-commits
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Checkout [114.532337ms]
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Setup Bun
+[Semantic Version Bumper/Run Tests]   🐳  docker cp src=/home/passp/.cache/act/oven-sh-setup-bun@v2/ dst=/var/run/act/actions/oven-sh-setup-bun@v2/
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[/opt/acttoolcache/node/24.14.1/x64/bin/node /var/run/act/actions/oven-sh-setup-bun@v2/dist/setup/index.js] user= workdir=
+[Semantic Version Bumper/Run Tests]   | Downloading a new version of Bun: https://github.com/oven-sh/bun/releases/download/bun-v1.3.12/bun-linux-x64.zip
+[Semantic Version Bumper/Run Tests]   | [command]/usr/bin/unzip -o -q /tmp/68840e8b-3c9e-446c-9163-b5595ac92a62.zip
+[Semantic Version Bumper/Run Tests]   | [command]/root/.bun/bin/bun --revision
+[Semantic Version Bumper/Run Tests]   | 1.3.12+700fc117a
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Setup Bun [9.513911908s]
+[Semantic Version Bumper/Run Tests]   ⚙  ::set-output:: bun-revision=1.3.12+700fc117a
+[Semantic Version Bumper/Run Tests]   ⚙  ::set-output:: bun-path=/root/.bun/bin/bun
+[Semantic Version Bumper/Run Tests]   ⚙  ::set-output:: bun-download-url=https://github.com/oven-sh/bun/releases/download/bun-v1.3.12/bun-linux-x64.zip
+[Semantic Version Bumper/Run Tests]   ⚙  ::set-output:: cache-hit=false
+[Semantic Version Bumper/Run Tests]   ⚙  ::set-output:: bun-version=1.3.12
+[Semantic Version Bumper/Run Tests]   ⚙  ::add-path:: /root/.bun/bin
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Install dependencies
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Semantic Version Bumper/Run Tests]   | bun install v1.3.12 (700fc117)
+[Semantic Version Bumper/Run Tests]   | Resolving dependencies
+[Semantic Version Bumper/Run Tests]   | Resolved, downloaded and extracted [20]
+[Semantic Version Bumper/Run Tests]   | Saved lockfile
+[Semantic Version Bumper/Run Tests]   | 
+[Semantic Version Bumper/Run Tests]   | + @types/bun@1.3.12
+[Semantic Version Bumper/Run Tests]   | + typescript@5.9.3 (v6.0.3 available)
+[Semantic Version Bumper/Run Tests]   | 
+[Semantic Version Bumper/Run Tests]   | 5 packages installed [2.11s]
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Install dependencies [2.574290321s]
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Run unit tests
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/3] user= workdir=
+[Semantic Version Bumper/Run Tests]   | bun test v1.3.12 (700fc117)
+[Semantic Version Bumper/Run Tests]   | 
+[Semantic Version Bumper/Run Tests]   ❓  ::group::src/version-bumper.test.ts:
+[Semantic Version Bumper/Run Tests]   | (pass) parseVersion > parses version from package.json content [0.41ms]
+[Semantic Version Bumper/Run Tests]   | (pass) parseVersion > parses version from version.txt content [0.07ms]
+[Semantic Version Bumper/Run Tests]   | (pass) parseVersion > parses version.txt with trailing newline [0.05ms]
+[Semantic Version Bumper/Run Tests]   | (pass) parseVersion > throws on missing version in package.json [0.21ms]
+[Semantic Version Bumper/Run Tests]   | (pass) parseVersion > throws on invalid semver [0.07ms]
+[Semantic Version Bumper/Run Tests]   | (pass) parseCommits > parses fix commits as patch type [1.17ms]
+[Semantic Version Bumper/Run Tests]   | (pass) parseCommits > parses feat commits as minor type [0.19ms]
+[Semantic Version Bumper/Run Tests]   | (pass) parseCommits > parses feat! as breaking change [0.20ms]
+[Semantic Version Bumper/Run Tests]   | (pass) parseCommits > parses chore/docs commits as non-release types [0.22ms]
+[Semantic Version Bumper/Run Tests]   | (pass) parseCommits > returns empty array for empty log [0.07ms]
+[Semantic Version Bumper/Run Tests]   | (pass) parseCommits > extracts commit hash correctly [0.09ms]
+[Semantic Version Bumper/Run Tests]   | (pass) determineVersionBump > returns 'patch' for fix-only commits [0.17ms]
+[Semantic Version Bumper/Run Tests]   | (pass) determineVersionBump > returns 'minor' for feat commits without breaking changes [0.06ms]
+[Semantic Version Bumper/Run Tests]   | (pass) determineVersionBump > returns 'major' for breaking change commits (feat!) [0.04ms]
+[Semantic Version Bumper/Run Tests]   | (pass) determineVersionBump > returns 'major' for BREAKING CHANGE footer commits [0.05ms]
+[Semantic Version Bumper/Run Tests]   | (pass) determineVersionBump > returns 'none' for chore/docs-only commits [0.06ms]
+[Semantic Version Bumper/Run Tests]   | (pass) determineVersionBump > returns 'none' for empty commit list [0.04ms]
+[Semantic Version Bumper/Run Tests]   | (pass) bumpVersion > bumps patch version [0.30ms]
+[Semantic Version Bumper/Run Tests]   | (pass) bumpVersion > bumps minor version and resets patch [0.09ms]
+[Semantic Version Bumper/Run Tests]   | (pass) bumpVersion > bumps major version and resets minor+patch [0.07ms]
+[Semantic Version Bumper/Run Tests]   | (pass) bumpVersion > returns same version for 'none' [0.06ms]
+[Semantic Version Bumper/Run Tests]   | (pass) bumpVersion > handles 0.x.y minor bump correctly [0.06ms]
+[Semantic Version Bumper/Run Tests]   | (pass) bumpVersion > handles 1.0.0 patch bump [0.06ms]
+[Semantic Version Bumper/Run Tests]   | (pass) generateChangelog > includes new version header [0.49ms]
+[Semantic Version Bumper/Run Tests]   | (pass) generateChangelog > lists features section when feat commits present [0.12ms]
+[Semantic Version Bumper/Run Tests]   | (pass) generateChangelog > lists bug fixes section when fix commits present [0.06ms]
+[Semantic Version Bumper/Run Tests]   | (pass) generateChangelog > lists breaking changes section for breaking commits [0.10ms]
+[Semantic Version Bumper/Run Tests]   | (pass) generateChangelog > includes commit messages in output [0.05ms]
+[Semantic Version Bumper/Run Tests]   | (pass) generateChangelog > includes date in changelog header [0.11ms]
+[Semantic Version Bumper/Run Tests]   | (pass) integration: version file update > updates package.json version for minor bump [3.37ms]
+[Semantic Version Bumper/Run Tests]   | (pass) integration: version file update > updates version.txt for patch bump [1.30ms]
+[Semantic Version Bumper/Run Tests]   | (pass) integration: version file update > does not update file when no release commits [1.88ms]
+[Semantic Version Bumper/Run Tests]   | 
+[Semantic Version Bumper/Run Tests]   ❓  ::endgroup::
+[Semantic Version Bumper/Run Tests]   | 
+[Semantic Version Bumper/Run Tests]   |  32 pass
+[Semantic Version Bumper/Run Tests]   |  0 fail
+[Semantic Version Bumper/Run Tests]   |  43 expect() calls
+[Semantic Version Bumper/Run Tests]   | Ran 32 tests across 1 file. [77.00ms]
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Run unit tests [575.876411ms]
+[Semantic Version Bumper/Run Tests] ⭐ Run Post Setup Bun
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[/opt/acttoolcache/node/24.14.1/x64/bin/node /var/run/act/actions/oven-sh-setup-bun@v2/dist/cache-save/index.js] user= workdir=
+[Semantic Version Bumper/Run Tests]   ✅  Success - Post Setup Bun [1.024294047s]
+[Semantic Version Bumper/Run Tests] ⭐ Run Complete job
+[Semantic Version Bumper/Run Tests] Cleaning up container for job Run Tests
+[Semantic Version Bumper/Run Tests]   ✅  Success - Complete job
+[Semantic Version Bumper/Run Tests] 🏁  Job succeeded
+[Semantic Version Bumper/Bump Version] ⭐ Run Set up job
+[Semantic Version Bumper/Bump Version] 🚀  Start image=act-ubuntu-pwsh:latest
+[Semantic Version Bumper/Bump Version]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Semantic Version Bumper/Bump Version]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Semantic Version Bumper/Bump Version]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Semantic Version Bumper/Bump Version]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Semantic Version Bumper/Bump Version]   ✅  Success - Set up job
+[Semantic Version Bumper/Bump Version]   ☁  git clone 'https://github.com/oven-sh/setup-bun' # ref=v2
+[Semantic Version Bumper/Bump Version] ⭐ Run Main Checkout
+[Semantic Version Bumper/Bump Version]   🐳  docker cp src=/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/tmp-act-patch-bump-fix-commits/. dst=/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/tmp-act-patch-bump-fix-commits
+[Semantic Version Bumper/Bump Version]   ✅  Success - Main Checkout [119.047065ms]
+[Semantic Version Bumper/Bump Version] ⭐ Run Main Setup Bun
+[Semantic Version Bumper/Bump Version]   🐳  docker cp src=/home/passp/.cache/act/oven-sh-setup-bun@v2/ dst=/var/run/act/actions/oven-sh-setup-bun@v2/
+[Semantic Version Bumper/Bump Version]   🐳  docker exec cmd=[/opt/acttoolcache/node/24.14.1/x64/bin/node /var/run/act/actions/oven-sh-setup-bun@v2/dist/setup/index.js] user= workdir=
+[Semantic Version Bumper/Bump Version]   | Downloading a new version of Bun: https://github.com/oven-sh/bun/releases/download/bun-v1.3.12/bun-linux-x64.zip
+[Semantic Version Bumper/Bump Version]   | [command]/usr/bin/unzip -o -q /tmp/ef02c1ad-d0c0-4a69-a5d7-666054342f52.zip
+[Semantic Version Bumper/Bump Version]   | [command]/root/.bun/bin/bun --revision
+[Semantic Version Bumper/Bump Version]   | 1.3.12+700fc117a
+[Semantic Version Bumper/Bump Version]   ✅  Success - Main Setup Bun [7.068753001s]
+[Semantic Version Bumper/Bump Version]   ⚙  ::set-output:: bun-revision=1.3.12+700fc117a
+[Semantic Version Bumper/Bump Version]   ⚙  ::set-output:: bun-path=/root/.bun/bin/bun
+[Semantic Version Bumper/Bump Version]   ⚙  ::set-output:: bun-download-url=https://github.com/oven-sh/bun/releases/download/bun-v1.3.12/bun-linux-x64.zip
+[Semantic Version Bumper/Bump Version]   ⚙  ::set-output:: cache-hit=false
+[Semantic Version Bumper/Bump Version]   ⚙  ::set-output:: bun-version=1.3.12
+[Semantic Version Bumper/Bump Version]   ⚙  ::add-path:: /root/.bun/bin
+[Semantic Version Bumper/Bump Version] ⭐ Run Main Install dependencies
+[Semantic Version Bumper/Bump Version]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Semantic Version Bumper/Bump Version]   | bun install v1.3.12 (700fc117)
+[Semantic Version Bumper/Bump Version]   | Resolving dependencies
+[Semantic Version Bumper/Bump Version]   | Resolved, downloaded and extracted [20]
+[Semantic Version Bumper/Bump Version]   | Saved lockfile
+[Semantic Version Bumper/Bump Version]   | 
+[Semantic Version Bumper/Bump Version]   | + @types/bun@1.3.12
+[Semantic Version Bumper/Bump Version]   | + typescript@5.9.3 (v6.0.3 available)
+[Semantic Version Bumper/Bump Version]   | 
+[Semantic Version Bumper/Bump Version]   | 5 packages installed [2.15s]
+[Semantic Version Bumper/Bump Version]   ✅  Success - Main Install dependencies [2.659819932s]
+[Semantic Version Bumper/Bump Version] ⭐ Run Main Run semantic version bump
+[Semantic Version Bumper/Bump Version]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/bump] user= workdir=
+[Semantic Version Bumper/Bump Version]   | Previous version: 1.2.3
+[Semantic Version Bumper/Bump Version]   | New version: 1.2.4
+[Semantic Version Bumper/Bump Version]   | Bump type: patch
+[Semantic Version Bumper/Bump Version]   | Commits processed: 2
+[Semantic Version Bumper/Bump Version]   | 
+[Semantic Version Bumper/Bump Version]   | === CHANGELOG ===
+[Semantic Version Bumper/Bump Version]   | ## [1.2.4] - 2026-04-19
+[Semantic Version Bumper/Bump Version]   | 
+[Semantic Version Bumper/Bump Version]   | ### Bug Fixes
+[Semantic Version Bumper/Bump Version]   | 
+[Semantic Version Bumper/Bump Version]   | - fix: resolve null pointer in parser
+[Semantic Version Bumper/Bump Version]   | - fix: handle empty string input
+[Semantic Version Bumper/Bump Version]   | 
+[Semantic Version Bumper/Bump Version]   | **Full Changelog**: 1.2.3...1.2.4
+[Semantic Version Bumper/Bump Version]   | 
+[Semantic Version Bumper/Bump Version]   | Updated version.txt to 1.2.4
+[Semantic Version Bumper/Bump Version]   | Updated CHANGELOG.md
+[Semantic Version Bumper/Bump Version]   ✅  Success - Main Run semantic version bump [581.984804ms]
+[Semantic Version Bumper/Bump Version]   ⚙  ::set-output:: new_version=1.2.4
+[Semantic Version Bumper/Bump Version]   ⚙  ::set-output:: bump_type=patch
+[Semantic Version Bumper/Bump Version] ⭐ Run Main Print new version
+[Semantic Version Bumper/Bump Version]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/4] user= workdir=
+[Semantic Version Bumper/Bump Version]   | Version bump complete
+[Semantic Version Bumper/Bump Version]   | New version: 1.2.4
+[Semantic Version Bumper/Bump Version]   | Bump type: patch
+[Semantic Version Bumper/Bump Version]   ✅  Success - Main Print new version [494.675041ms]
+[Semantic Version Bumper/Bump Version] ⭐ Run Post Setup Bun
+[Semantic Version Bumper/Bump Version]   🐳  docker exec cmd=[/opt/acttoolcache/node/24.14.1/x64/bin/node /var/run/act/actions/oven-sh-setup-bun@v2/dist/cache-save/index.js] user= workdir=
+[Semantic Version Bumper/Bump Version]   ✅  Success - Post Setup Bun [785.765514ms]
+[Semantic Version Bumper/Bump Version] ⭐ Run Complete job
+[Semantic Version Bumper/Bump Version] Cleaning up container for job Bump Version
+[Semantic Version Bumper/Bump Version]   ✅  Success - Complete job
+[Semantic Version Bumper/Bump Version] 🏁  Job succeeded
+time="2026-04-19T12:11:18-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+
+PASS: version=1.2.4, bump=patch, Job succeeded
+
+============================================================
+TEST CASE: minor-bump-feat-commits
+Initial: 1.1.0 -> Expected: 1.2.0 (minor)
+============================================================
+[Semantic Version Bumper/Run Tests] ⭐ Run Set up job
+[Semantic Version Bumper/Run Tests] 🚀  Start image=act-ubuntu-pwsh:latest
+[Semantic Version Bumper/Run Tests]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Semantic Version Bumper/Run Tests]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Semantic Version Bumper/Run Tests]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Semantic Version Bumper/Run Tests]   ✅  Success - Set up job
+[Semantic Version Bumper/Run Tests]   ☁  git clone 'https://github.com/oven-sh/setup-bun' # ref=v2
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Checkout
+[Semantic Version Bumper/Run Tests]   🐳  docker cp src=/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/tmp-act-minor-bump-feat-commits/. dst=/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/tmp-act-minor-bump-feat-commits
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Checkout [228.728937ms]
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Setup Bun
+[Semantic Version Bumper/Run Tests]   🐳  docker cp src=/home/passp/.cache/act/oven-sh-setup-bun@v2/ dst=/var/run/act/actions/oven-sh-setup-bun@v2/
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[/opt/acttoolcache/node/24.14.1/x64/bin/node /var/run/act/actions/oven-sh-setup-bun@v2/dist/setup/index.js] user= workdir=
+[Semantic Version Bumper/Run Tests]   | Downloading a new version of Bun: https://github.com/oven-sh/bun/releases/download/bun-v1.3.12/bun-linux-x64.zip
+[Semantic Version Bumper/Run Tests]   | [command]/usr/bin/unzip -o -q /tmp/7d8f3525-4324-4cbf-8103-b9f7a984d6d3.zip
+[Semantic Version Bumper/Run Tests]   | [command]/root/.bun/bin/bun --revision
+[Semantic Version Bumper/Run Tests]   | 1.3.12+700fc117a
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Setup Bun [7.940902805s]
+[Semantic Version Bumper/Run Tests]   ⚙  ::set-output:: bun-version=1.3.12
+[Semantic Version Bumper/Run Tests]   ⚙  ::set-output:: bun-revision=1.3.12+700fc117a
+[Semantic Version Bumper/Run Tests]   ⚙  ::set-output:: bun-path=/root/.bun/bin/bun
+[Semantic Version Bumper/Run Tests]   ⚙  ::set-output:: bun-download-url=https://github.com/oven-sh/bun/releases/download/bun-v1.3.12/bun-linux-x64.zip
+[Semantic Version Bumper/Run Tests]   ⚙  ::set-output:: cache-hit=false
+[Semantic Version Bumper/Run Tests]   ⚙  ::add-path:: /root/.bun/bin
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Install dependencies
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Semantic Version Bumper/Run Tests]   | bun install v1.3.12 (700fc117)
+[Semantic Version Bumper/Run Tests]   | Resolving dependencies
+[Semantic Version Bumper/Run Tests]   | Resolved, downloaded and extracted [20]
+[Semantic Version Bumper/Run Tests]   | 
+[Semantic Version Bumper/Run Tests]   | + @types/bun@1.3.12
+[Semantic Version Bumper/Run Tests]   | + typescript@5.9.3 (v6.0.3 available)
+[Semantic Version Bumper/Run Tests]   | 
+[Semantic Version Bumper/Run Tests]   | 5 packages installed [2.85s]
+[Semantic Version Bumper/Run Tests]   | Saved lockfile
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Install dependencies [3.4861918s]
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Run unit tests
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/3] user= workdir=
+[Semantic Version Bumper/Run Tests]   | bun test v1.3.12 (700fc117)
+[Semantic Version Bumper/Run Tests]   | 
+[Semantic Version Bumper/Run Tests]   ❓  ::group::src/version-bumper.test.ts:
+[Semantic Version Bumper/Run Tests]   | (pass) parseVersion > parses version from package.json content [0.67ms]
+[Semantic Version Bumper/Run Tests]   | (pass) parseVersion > parses version from version.txt content [0.13ms]
+[Semantic Version Bumper/Run Tests]   | (pass) parseVersion > parses version.txt with trailing newline [0.07ms]
+[Semantic Version Bumper/Run Tests]   | (pass) parseVersion > throws on missing version in package.json [0.23ms]
+[Semantic Version Bumper/Run Tests]   | (pass) parseVersion > throws on invalid semver [0.15ms]
+[Semantic Version Bumper/Run Tests]   | (pass) parseCommits > parses fix commits as patch type [1.84ms]
+[Semantic Version Bumper/Run Tests]   | (pass) parseCommits > parses feat commits as minor type [0.48ms]
+[Semantic Version Bumper/Run Tests]   | (pass) parseCommits > parses feat! as breaking change [0.35ms]
+[Semantic Version Bumper/Run Tests]   | (pass) parseCommits > parses chore/docs commits as non-release types [0.25ms]
+[Semantic Version Bumper/Run Tests]   | (pass) parseCommits > returns empty array for empty log [0.09ms]
+[Semantic Version Bumper/Run Tests]   | (pass) parseCommits > extracts commit hash correctly [0.10ms]
+[Semantic Version Bumper/Run Tests]   | (pass) determineVersionBump > returns 'patch' for fix-only commits [0.25ms]
+[Semantic Version Bumper/Run Tests]   | (pass) determineVersionBump > returns 'minor' for feat commits without breaking changes [0.08ms]
+[Semantic Version Bumper/Run Tests]   | (pass) determineVersionBump > returns 'major' for breaking change commits (feat!) [0.07ms]
+[Semantic Version Bumper/Run Tests]   | (pass) determineVersionBump > returns 'major' for BREAKING CHANGE footer commits [0.06ms]
+[Semantic Version Bumper/Run Tests]   | (pass) determineVersionBump > returns 'none' for chore/docs-only commits [0.10ms]
+[Semantic Version Bumper/Run Tests]   | (pass) determineVersionBump > returns 'none' for empty commit list [0.07ms]
+[Semantic Version Bumper/Run Tests]   | (pass) bumpVersion > bumps patch version [0.53ms]
+[Semantic Version Bumper/Run Tests]   | (pass) bumpVersion > bumps minor version and resets patch [0.12ms]
+[Semantic Version Bumper/Run Tests]   | (pass) bumpVersion > bumps major version and resets minor+patch [0.08ms]
+[Semantic Version Bumper/Run Tests]   | (pass) bumpVersion > returns same version for 'none' [0.06ms]
+[Semantic Version Bumper/Run Tests]   | (pass) bumpVersion > handles 0.x.y minor bump correctly [0.06ms]
+[Semantic Version Bumper/Run Tests]   | (pass) bumpVersion > handles 1.0.0 patch bump [0.08ms]
+[Semantic Version Bumper/Run Tests]   | (pass) generateChangelog > includes new version header [0.82ms]
+[Semantic Version Bumper/Run Tests]   | (pass) generateChangelog > lists features section when feat commits present [0.23ms]
+[Semantic Version Bumper/Run Tests]   | (pass) generateChangelog > lists bug fixes section when fix commits present [0.14ms]
+[Semantic Version Bumper/Run Tests]   | (pass) generateChangelog > lists breaking changes section for breaking commits [0.17ms]
+[Semantic Version Bumper/Run Tests]   | (pass) generateChangelog > includes commit messages in output [0.10ms]
+[Semantic Version Bumper/Run Tests]   | (pass) generateChangelog > includes date in changelog header [0.25ms]
+[Semantic Version Bumper/Run Tests]   | (pass) integration: version file update > updates package.json version for minor bump [3.94ms]
+[Semantic Version Bumper/Run Tests]   | (pass) integration: version file update > updates version.txt for patch bump [3.79ms]
+[Semantic Version Bumper/Run Tests]   | (pass) integration: version file update > does not update file when no release commits [2.35ms]
+[Semantic Version Bumper/Run Tests]   | 
+[Semantic Version Bumper/Run Tests]   ❓  ::endgroup::
+[Semantic Version Bumper/Run Tests]   | 
+[Semantic Version Bumper/Run Tests]   |  32 pass
+[Semantic Version Bumper/Run Tests]   |  0 fail
+[Semantic Version Bumper/Run Tests]   |  43 expect() calls
+[Semantic Version Bumper/Run Tests]   | Ran 32 tests across 1 file. [233.00ms]
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Run unit tests [1.367046127s]
+[Semantic Version Bumper/Run Tests] ⭐ Run Post Setup Bun
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[/opt/acttoolcache/node/24.14.1/x64/bin/node /var/run/act/actions/oven-sh-setup-bun@v2/dist/cache-save/index.js] user= workdir=
+[Semantic Version Bumper/Run Tests]   ✅  Success - Post Setup Bun [1.101372583s]
+[Semantic Version Bumper/Run Tests] ⭐ Run Complete job
+[Semantic Version Bumper/Run Tests] Cleaning up container for job Run Tests
+[Semantic Version Bumper/Run Tests]   ✅  Success - Complete job
+[Semantic Version Bumper/Run Tests] 🏁  Job succeeded
+[Semantic Version Bumper/Bump Version] ⭐ Run Set up job
+[Semantic Version Bumper/Bump Version] 🚀  Start image=act-ubuntu-pwsh:latest
+[Semantic Version Bumper/Bump Version]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Semantic Version Bumper/Bump Version]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Semantic Version Bumper/Bump Version]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Semantic Version Bumper/Bump Version]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Semantic Version Bumper/Bump Version]   ✅  Success - Set up job
+[Semantic Version Bumper/Bump Version]   ☁  git clone 'https://github.com/oven-sh/setup-bun' # ref=v2
+[Semantic Version Bumper/Bump Version] ⭐ Run Main Checkout
+[Semantic Version Bumper/Bump Version]   🐳  docker cp src=/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/tmp-act-minor-bump-feat-commits/. dst=/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/tmp-act-minor-bump-feat-commits
+[Semantic Version Bumper/Bump Version]   ✅  Success - Main Checkout [188.768771ms]
+[Semantic Version Bumper/Bump Version] ⭐ Run Main Setup Bun
+[Semantic Version Bumper/Bump Version]   🐳  docker cp src=/home/passp/.cache/act/oven-sh-setup-bun@v2/ dst=/var/run/act/actions/oven-sh-setup-bun@v2/
+[Semantic Version Bumper/Bump Version]   🐳  docker exec cmd=[/opt/acttoolcache/node/24.14.1/x64/bin/node /var/run/act/actions/oven-sh-setup-bun@v2/dist/setup/index.js] user= workdir=
+[Semantic Version Bumper/Bump Version]   | Downloading a new version of Bun: https://github.com/oven-sh/bun/releases/download/bun-v1.3.12/bun-linux-x64.zip
+[Semantic Version Bumper/Bump Version]   | [command]/usr/bin/unzip -o -q /tmp/53435237-169f-4ef1-89bc-a2c5b8c024e3.zip
+[Semantic Version Bumper/Bump Version]   | [command]/root/.bun/bin/bun --revision
+[Semantic Version Bumper/Bump Version]   | 1.3.12+700fc117a
+[Semantic Version Bumper/Bump Version]   ✅  Success - Main Setup Bun [7.727927928s]
+[Semantic Version Bumper/Bump Version]   ⚙  ::set-output:: bun-version=1.3.12
+[Semantic Version Bumper/Bump Version]   ⚙  ::set-output:: bun-revision=1.3.12+700fc117a
+[Semantic Version Bumper/Bump Version]   ⚙  ::set-output:: bun-path=/root/.bun/bin/bun
+[Semantic Version Bumper/Bump Version]   ⚙  ::set-output:: bun-download-url=https://github.com/oven-sh/bun/releases/download/bun-v1.3.12/bun-linux-x64.zip
+[Semantic Version Bumper/Bump Version]   ⚙  ::set-output:: cache-hit=false
+[Semantic Version Bumper/Bump Version]   ⚙  ::add-path:: /root/.bun/bin
+[Semantic Version Bumper/Bump Version] ⭐ Run Main Install dependencies
+[Semantic Version Bumper/Bump Version]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Semantic Version Bumper/Bump Version]   | bun install v1.3.12 (700fc117)
+[Semantic Version Bumper/Bump Version]   | Resolving dependencies
+[Semantic Version Bumper/Bump Version]   | Resolved, downloaded and extracted [20]
+[Semantic Version Bumper/Bump Version]   | 
+[Semantic Version Bumper/Bump Version]   | + @types/bun@1.3.12
+[Semantic Version Bumper/Bump Version]   | + typescript@5.9.3 (v6.0.3 available)
+[Semantic Version Bumper/Bump Version]   | 
+[Semantic Version Bumper/Bump Version]   | 5 packages installed [2.21s]
+[Semantic Version Bumper/Bump Version]   | Saved lockfile
+[Semantic Version Bumper/Bump Version]   ✅  Success - Main Install dependencies [2.705157827s]
+[Semantic Version Bumper/Bump Version] ⭐ Run Main Run semantic version bump
+[Semantic Version Bumper/Bump Version]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/bump] user= workdir=
+[Semantic Version Bumper/Bump Version]   | Previous version: 1.1.0
+[Semantic Version Bumper/Bump Version]   | New version: 1.2.0
+[Semantic Version Bumper/Bump Version]   | Bump type: minor
+[Semantic Version Bumper/Bump Version]   | Commits processed: 2
+[Semantic Version Bumper/Bump Version]   | 
+[Semantic Version Bumper/Bump Version]   | === CHANGELOG ===
+[Semantic Version Bumper/Bump Version]   | ## [1.2.0] - 2026-04-19
+[Semantic Version Bumper/Bump Version]   | 
+[Semantic Version Bumper/Bump Version]   | ### Features
+[Semantic Version Bumper/Bump Version]   | 
+[Semantic Version Bumper/Bump Version]   | - feat: add support for pre-release versions
+[Semantic Version Bumper/Bump Version]   | 
+[Semantic Version Bumper/Bump Version]   | ### Bug Fixes
+[Semantic Version Bumper/Bump Version]   | 
+[Semantic Version Bumper/Bump Version]   | - fix: correct semver comparison
+[Semantic Version Bumper/Bump Version]   | 
+[Semantic Version Bumper/Bump Version]   | **Full Changelog**: 1.1.0...1.2.0
+[Semantic Version Bumper/Bump Version]   | 
+[Semantic Version Bumper/Bump Version]   | Updated version.txt to 1.2.0
+[Semantic Version Bumper/Bump Version]   | Updated CHANGELOG.md
+[Semantic Version Bumper/Bump Version]   ✅  Success - Main Run semantic version bump [551.431776ms]
+[Semantic Version Bumper/Bump Version]   ⚙  ::set-output:: new_version=1.2.0
+[Semantic Version Bumper/Bump Version]   ⚙  ::set-output:: bump_type=minor
+[Semantic Version Bumper/Bump Version] ⭐ Run Main Print new version
+[Semantic Version Bumper/Bump Version]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/4] user= workdir=
+[Semantic Version Bumper/Bump Version]   | Version bump complete
+[Semantic Version Bumper/Bump Version]   | New version: 1.2.0
+[Semantic Version Bumper/Bump Version]   | Bump type: minor
+[Semantic Version Bumper/Bump Version]   ✅  Success - Main Print new version [482.993282ms]
+[Semantic Version Bumper/Bump Version] ⭐ Run Post Setup Bun
+[Semantic Version Bumper/Bump Version]   🐳  docker exec cmd=[/opt/acttoolcache/node/24.14.1/x64/bin/node /var/run/act/actions/oven-sh-setup-bun@v2/dist/cache-save/index.js] user= workdir=
+[Semantic Version Bumper/Bump Version]   ✅  Success - Post Setup Bun [670.296103ms]
+[Semantic Version Bumper/Bump Version] ⭐ Run Complete job
+[Semantic Version Bumper/Bump Version] Cleaning up container for job Bump Version
+[Semantic Version Bumper/Bump Version]   ✅  Success - Complete job
+[Semantic Version Bumper/Bump Version] 🏁  Job succeeded
+time="2026-04-19T12:11:51-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+
+PASS: version=1.2.0, bump=minor, Job succeeded
+
+============================================================
+TEST CASE: major-bump-breaking-change
+Initial: 2.3.1 -> Expected: 3.0.0 (major)
+============================================================
+[Semantic Version Bumper/Run Tests] ⭐ Run Set up job
+[Semantic Version Bumper/Run Tests] 🚀  Start image=act-ubuntu-pwsh:latest
+[Semantic Version Bumper/Run Tests]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Semantic Version Bumper/Run Tests]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Semantic Version Bumper/Run Tests]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Semantic Version Bumper/Run Tests]   ✅  Success - Set up job
+[Semantic Version Bumper/Run Tests]   ☁  git clone 'https://github.com/oven-sh/setup-bun' # ref=v2
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Checkout
+[Semantic Version Bumper/Run Tests]   🐳  docker cp src=/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/tmp-act-major-bump-breaking-change/. dst=/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/tmp-act-major-bump-breaking-change
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Checkout [120.523199ms]
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Setup Bun
+[Semantic Version Bumper/Run Tests]   🐳  docker cp src=/home/passp/.cache/act/oven-sh-setup-bun@v2/ dst=/var/run/act/actions/oven-sh-setup-bun@v2/
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[/opt/acttoolcache/node/24.14.1/x64/bin/node /var/run/act/actions/oven-sh-setup-bun@v2/dist/setup/index.js] user= workdir=
+[Semantic Version Bumper/Run Tests]   | Downloading a new version of Bun: https://github.com/oven-sh/bun/releases/download/bun-v1.3.12/bun-linux-x64.zip
+[Semantic Version Bumper/Run Tests]   | [command]/usr/bin/unzip -o -q /tmp/24656128-ee5b-409a-a931-667daaabfc58.zip
+[Semantic Version Bumper/Run Tests]   | [command]/root/.bun/bin/bun --revision
+[Semantic Version Bumper/Run Tests]   | 1.3.12+700fc117a
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Setup Bun [6.556656609s]
+[Semantic Version Bumper/Run Tests]   ⚙  ::set-output:: bun-version=1.3.12
+[Semantic Version Bumper/Run Tests]   ⚙  ::set-output:: bun-revision=1.3.12+700fc117a
+[Semantic Version Bumper/Run Tests]   ⚙  ::set-output:: bun-path=/root/.bun/bin/bun
+[Semantic Version Bumper/Run Tests]   ⚙  ::set-output:: bun-download-url=https://github.com/oven-sh/bun/releases/download/bun-v1.3.12/bun-linux-x64.zip
+[Semantic Version Bumper/Run Tests]   ⚙  ::set-output:: cache-hit=false
+[Semantic Version Bumper/Run Tests]   ⚙  ::add-path:: /root/.bun/bin
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Install dependencies
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Semantic Version Bumper/Run Tests]   | bun install v1.3.12 (700fc117)
+[Semantic Version Bumper/Run Tests]   | Resolving dependencies
+[Semantic Version Bumper/Run Tests]   | Resolved, downloaded and extracted [20]
+[Semantic Version Bumper/Run Tests]   | 
+[Semantic Version Bumper/Run Tests]   | + @types/bun@1.3.12
+[Semantic Version Bumper/Run Tests]   | + typescript@5.9.3 (v6.0.3 available)
+[Semantic Version Bumper/Run Tests]   | 
+[Semantic Version Bumper/Run Tests]   | 5 packages installed [-0.09s]
+[Semantic Version Bumper/Run Tests]   | Saved lockfile
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Install dependencies [2.236795434s]
+[Semantic Version Bumper/Run Tests] ⭐ Run Main Run unit tests
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/3] user= workdir=
+[Semantic Version Bumper/Run Tests]   | bun test v1.3.12 (700fc117)
+[Semantic Version Bumper/Run Tests]   | 
+[Semantic Version Bumper/Run Tests]   ❓  ::group::src/version-bumper.test.ts:
+[Semantic Version Bumper/Run Tests]   | (pass) parseVersion > parses version from package.json content [0.59ms]
+[Semantic Version Bumper/Run Tests]   | (pass) parseVersion > parses version from version.txt content [0.08ms]
+[Semantic Version Bumper/Run Tests]   | (pass) parseVersion > parses version.txt with trailing newline [0.04ms]
+[Semantic Version Bumper/Run Tests]   | (pass) parseVersion > throws on missing version in package.json [0.16ms]
+[Semantic Version Bumper/Run Tests]   | (pass) parseVersion > throws on invalid semver [0.09ms]
+[Semantic Version Bumper/Run Tests]   | (pass) parseCommits > parses fix commits as patch type [1.09ms]
+[Semantic Version Bumper/Run Tests]   | (pass) parseCommits > parses feat commits as minor type [0.22ms]
+[Semantic Version Bumper/Run Tests]   | (pass) parseCommits > parses feat! as breaking change [0.21ms]
+[Semantic Version Bumper/Run Tests]   | (pass) parseCommits > parses chore/docs commits as non-release types [0.17ms]
+[Semantic Version Bumper/Run Tests]   | (pass) parseCommits > returns empty array for empty log [0.06ms]
+[Semantic Version Bumper/Run Tests]   | (pass) parseCommits > extracts commit hash correctly [0.08ms]
+[Semantic Version Bumper/Run Tests]   | (pass) determineVersionBump > returns 'patch' for fix-only commits [0.19ms]
+[Semantic Version Bumper/Run Tests]   | (pass) determineVersionBump > returns 'minor' for feat commits without breaking changes [0.05ms]
+[Semantic Version Bumper/Run Tests]   | (pass) determineVersionBump > returns 'major' for breaking change commits (feat!) [0.04ms]
+[Semantic Version Bumper/Run Tests]   | (pass) determineVersionBump > returns 'major' for BREAKING CHANGE footer commits [0.05ms]
+[Semantic Version Bumper/Run Tests]   | (pass) determineVersionBump > returns 'none' for chore/docs-only commits [0.04ms]
+[Semantic Version Bumper/Run Tests]   | (pass) determineVersionBump > returns 'none' for empty commit list [0.03ms]
+[Semantic Version Bumper/Run Tests]   | (pass) bumpVersion > bumps patch version [0.27ms]
+[Semantic Version Bumper/Run Tests]   | (pass) bumpVersion > bumps minor version and resets patch [0.06ms]
+[Semantic Version Bumper/Run Tests]   | (pass) bumpVersion > bumps major version and resets minor+patch [0.06ms]
+[Semantic Version Bumper/Run Tests]   | (pass) bumpVersion > returns same version for 'none' [0.03ms]
+[Semantic Version Bumper/Run Tests]   | (pass) bumpVersion > handles 0.x.y minor bump correctly [0.04ms]
+[Semantic Version Bumper/Run Tests]   | (pass) bumpVersion > handles 1.0.0 patch bump [0.07ms]
+[Semantic Version Bumper/Run Tests]   | (pass) generateChangelog > includes new version header [0.52ms]
+[Semantic Version Bumper/Run Tests]   | (pass) generateChangelog > lists features section when feat commits present [0.11ms]
+[Semantic Version Bumper/Run Tests]   | (pass) generateChangelog > lists bug fixes section when fix commits present [0.07ms]
+[Semantic Version Bumper/Run Tests]   | (pass) generateChangelog > lists breaking changes section for breaking commits [0.12ms]
+[Semantic Version Bumper/Run Tests]   | (pass) generateChangelog > includes commit messages in output [0.06ms]
+[Semantic Version Bumper/Run Tests]   | (pass) generateChangelog > includes date in changelog header [0.11ms]
+[Semantic Version Bumper/Run Tests]   | (pass) integration: version file update > updates package.json version for minor bump [4.62ms]
+[Semantic Version Bumper/Run Tests]   | (pass) integration: version file update > updates version.txt for patch bump [1.20ms]
+[Semantic Version Bumper/Run Tests]   | (pass) integration: version file update > does not update file when no release commits [1.09ms]
+[Semantic Version Bumper/Run Tests]   | 
+[Semantic Version Bumper/Run Tests]   ❓  ::endgroup::
+[Semantic Version Bumper/Run Tests]   | 
+[Semantic Version Bumper/Run Tests]   |  32 pass
+[Semantic Version Bumper/Run Tests]   |  0 fail
+[Semantic Version Bumper/Run Tests]   |  43 expect() calls
+[Semantic Version Bumper/Run Tests]   | Ran 32 tests across 1 file. [71.00ms]
+[Semantic Version Bumper/Run Tests]   ✅  Success - Main Run unit tests [545.476447ms]
+[Semantic Version Bumper/Run Tests] ⭐ Run Post Setup Bun
+[Semantic Version Bumper/Run Tests]   🐳  docker exec cmd=[/opt/acttoolcache/node/24.14.1/x64/bin/node /var/run/act/actions/oven-sh-setup-bun@v2/dist/cache-save/index.js] user= workdir=
+[Semantic Version Bumper/Run Tests]   ✅  Success - Post Setup Bun [826.116279ms]
+[Semantic Version Bumper/Run Tests] ⭐ Run Complete job
+[Semantic Version Bumper/Run Tests] Cleaning up container for job Run Tests
+[Semantic Version Bumper/Run Tests]   ✅  Success - Complete job
+[Semantic Version Bumper/Run Tests] 🏁  Job succeeded
+[Semantic Version Bumper/Bump Version] ⭐ Run Set up job
+[Semantic Version Bumper/Bump Version] 🚀  Start image=act-ubuntu-pwsh:latest
+[Semantic Version Bumper/Bump Version]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Semantic Version Bumper/Bump Version]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Semantic Version Bumper/Bump Version]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Semantic Version Bumper/Bump Version]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Semantic Version Bumper/Bump Version]   ✅  Success - Set up job
+[Semantic Version Bumper/Bump Version]   ☁  git clone 'https://github.com/oven-sh/setup-bun' # ref=v2
+[Semantic Version Bumper/Bump Version] ⭐ Run Main Checkout
+[Semantic Version Bumper/Bump Version]   🐳  docker cp src=/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/tmp-act-major-bump-breaking-change/. dst=/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/tmp-act-major-bump-breaking-change
+[Semantic Version Bumper/Bump Version]   ✅  Success - Main Checkout [117.444098ms]
+[Semantic Version Bumper/Bump Version] ⭐ Run Main Setup Bun
+[Semantic Version Bumper/Bump Version]   🐳  docker cp src=/home/passp/.cache/act/oven-sh-setup-bun@v2/ dst=/var/run/act/actions/oven-sh-setup-bun@v2/
+[Semantic Version Bumper/Bump Version]   🐳  docker exec cmd=[/opt/acttoolcache/node/24.14.1/x64/bin/node /var/run/act/actions/oven-sh-setup-bun@v2/dist/setup/index.js] user= workdir=
+[Semantic Version Bumper/Bump Version]   | Downloading a new version of Bun: https://github.com/oven-sh/bun/releases/download/bun-v1.3.12/bun-linux-x64.zip
+[Semantic Version Bumper/Bump Version]   | [command]/usr/bin/unzip -o -q /tmp/6d0522a2-931d-4fb3-86c3-31398fbab78a.zip
+[Semantic Version Bumper/Bump Version]   | [command]/root/.bun/bin/bun --revision
+[Semantic Version Bumper/Bump Version]   | 1.3.12+700fc117a
+[Semantic Version Bumper/Bump Version]   ✅  Success - Main Setup Bun [7.159922734s]
+[Semantic Version Bumper/Bump Version]   ⚙  ::set-output:: bun-version=1.3.12
+[Semantic Version Bumper/Bump Version]   ⚙  ::set-output:: bun-revision=1.3.12+700fc117a
+[Semantic Version Bumper/Bump Version]   ⚙  ::set-output:: bun-path=/root/.bun/bin/bun
+[Semantic Version Bumper/Bump Version]   ⚙  ::set-output:: bun-download-url=https://github.com/oven-sh/bun/releases/download/bun-v1.3.12/bun-linux-x64.zip
+[Semantic Version Bumper/Bump Version]   ⚙  ::set-output:: cache-hit=false
+[Semantic Version Bumper/Bump Version]   ⚙  ::add-path:: /root/.bun/bin
+[Semantic Version Bumper/Bump Version] ⭐ Run Main Install dependencies
+[Semantic Version Bumper/Bump Version]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Semantic Version Bumper/Bump Version]   | bun install v1.3.12 (700fc117)
+[Semantic Version Bumper/Bump Version]   | Resolving dependencies
+[Semantic Version Bumper/Bump Version]   | Resolved, downloaded and extracted [20]
+[Semantic Version Bumper/Bump Version]   | Saved lockfile
+[Semantic Version Bumper/Bump Version]   | 
+[Semantic Version Bumper/Bump Version]   | + @types/bun@1.3.12
+[Semantic Version Bumper/Bump Version]   | + typescript@5.9.3 (v6.0.3 available)
+[Semantic Version Bumper/Bump Version]   | 
+[Semantic Version Bumper/Bump Version]   | 5 packages installed [1.98s]
+[Semantic Version Bumper/Bump Version]   ✅  Success - Main Install dependencies [2.437268752s]
+[Semantic Version Bumper/Bump Version] ⭐ Run Main Run semantic version bump
+[Semantic Version Bumper/Bump Version]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/bump] user= workdir=
+[Semantic Version Bumper/Bump Version]   | Previous version: 2.3.1
+[Semantic Version Bumper/Bump Version]   | New version: 3.0.0
+[Semantic Version Bumper/Bump Version]   | Bump type: major
+[Semantic Version Bumper/Bump Version]   | Commits processed: 2
+[Semantic Version Bumper/Bump Version]   | 
+[Semantic Version Bumper/Bump Version]   | === CHANGELOG ===
+[Semantic Version Bumper/Bump Version]   | ## [3.0.0] - 2026-04-19
+[Semantic Version Bumper/Bump Version]   | 
+[Semantic Version Bumper/Bump Version]   | ### Breaking Changes
+[Semantic Version Bumper/Bump Version]   | 
+[Semantic Version Bumper/Bump Version]   | - feat!: redesign API surface
+[Semantic Version Bumper/Bump Version]   | 
+[Semantic Version Bumper/Bump Version]   | ### Features
+[Semantic Version Bumper/Bump Version]   | 
+[Semantic Version Bumper/Bump Version]   | - feat: add new flags
+[Semantic Version Bumper/Bump Version]   | 
+[Semantic Version Bumper/Bump Version]   | **Full Changelog**: 2.3.1...3.0.0
+[Semantic Version Bumper/Bump Version]   | 
+[Semantic Version Bumper/Bump Version]   | Updated version.txt to 3.0.0
+[Semantic Version Bumper/Bump Version]   | Updated CHANGELOG.md
+[Semantic Version Bumper/Bump Version]   ✅  Success - Main Run semantic version bump [514.073249ms]
+[Semantic Version Bumper/Bump Version]   ⚙  ::set-output:: new_version=3.0.0
+[Semantic Version Bumper/Bump Version]   ⚙  ::set-output:: bump_type=major
+[Semantic Version Bumper/Bump Version] ⭐ Run Main Print new version
+[Semantic Version Bumper/Bump Version]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/4] user= workdir=
+[Semantic Version Bumper/Bump Version]   | Version bump complete
+[Semantic Version Bumper/Bump Version]   | New version: 3.0.0
+[Semantic Version Bumper/Bump Version]   | Bump type: major
+[Semantic Version Bumper/Bump Version]   ✅  Success - Main Print new version [423.647248ms]
+[Semantic Version Bumper/Bump Version] ⭐ Run Post Setup Bun
+[Semantic Version Bumper/Bump Version]   🐳  docker exec cmd=[/opt/acttoolcache/node/24.14.1/x64/bin/node /var/run/act/actions/oven-sh-setup-bun@v2/dist/cache-save/index.js] user= workdir=
+[Semantic Version Bumper/Bump Version]   ✅  Success - Post Setup Bun [703.179265ms]
+[Semantic Version Bumper/Bump Version] ⭐ Run Complete job
+[Semantic Version Bumper/Bump Version] Cleaning up container for job Bump Version
+[Semantic Version Bumper/Bump Version]   ✅  Success - Complete job
+[Semantic Version Bumper/Bump Version] 🏁  Job succeeded
+time="2026-04-19T12:12:28-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+
+PASS: version=3.0.0, bump=major, Job succeeded
+
+============================================================
+ALL TEST CASES PASSED

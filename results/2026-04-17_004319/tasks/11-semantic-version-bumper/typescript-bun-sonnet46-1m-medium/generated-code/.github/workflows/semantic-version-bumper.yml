@@ -1,0 +1,83 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run unit tests
+        run: bun test src/version-bumper.test.ts
+
+  bump-version:
+    name: Bump Version
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Get commits since last tag
+        id: get-commits
+        run: |
+          # Get the last tag, or fall back to first commit if no tags exist
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD)
+          echo "last_tag=${LAST_TAG}" >> "$GITHUB_OUTPUT"
+          git log "${LAST_TAG}"..HEAD --oneline > /tmp/commits.txt || git log --oneline > /tmp/commits.txt
+          echo "Commits since ${LAST_TAG}:"
+          cat /tmp/commits.txt
+
+      - name: Create version file if missing
+        run: |
+          if [ ! -f version.txt ]; then
+            echo "0.1.0" > version.txt
+            echo "Created version.txt with initial version 0.1.0"
+          fi
+
+      - name: Run semantic version bump
+        id: bump
+        run: |
+          OUTPUT=$(bun run src/main.ts version.txt /tmp/commits.txt)
+          echo "$OUTPUT"
+          NEW_VERSION=$(echo "$OUTPUT" | grep "^New version:" | awk '{print $NF}')
+          BUMP_TYPE=$(echo "$OUTPUT" | grep "^Bump type:" | awk '{print $NF}')
+          echo "new_version=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "bump_type=${BUMP_TYPE}" >> "$GITHUB_OUTPUT"
+
+      - name: Print new version
+        run: |
+          echo "Version bump complete"
+          echo "New version: ${{ steps.bump.outputs.new_version }}"
+          echo "Bump type: ${{ steps.bump.outputs.bump_type }}"

@@ -1,0 +1,69 @@
+name: Test Results Aggregator
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      input_dir:
+        description: Directory containing .xml / .json test result files to aggregate
+        required: false
+        default: input
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+env:
+  INPUT_DIR: ${{ github.event.inputs.input_dir || 'input' }}
+
+jobs:
+  pester-unit-tests:
+    name: Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $result = Invoke-Pester -Path ./TestResultsAggregator.Tests.ps1 -PassThru -Output Detailed
+          if ($result.FailedCount -gt 0) {
+            Write-Error "Pester: $($result.FailedCount) test(s) failed"
+            exit 1
+          }
+          Write-Host "PESTER_RESULT passed=$($result.PassedCount) failed=$($result.FailedCount) skipped=$($result.SkippedCount)"
+
+      - name: Run workflow structure tests
+        shell: pwsh
+        run: |
+          $result = Invoke-Pester -Path ./WorkflowStructure.Tests.ps1 -PassThru -Output Detailed
+          if ($result.FailedCount -gt 0) {
+            Write-Error "Workflow structure: $($result.FailedCount) test(s) failed"
+            exit 1
+          }
+          Write-Host "STRUCTURE_RESULT passed=$($result.PassedCount) failed=$($result.FailedCount)"
+
+  aggregate:
+    name: Aggregate test results
+    runs-on: ubuntu-latest
+    needs: pester-unit-tests
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Aggregate matrix test results and emit markdown summary
+        shell: pwsh
+        run: |
+          ./Invoke-Aggregator.ps1 -InputDir "$env:INPUT_DIR" -OutputPath ./summary.md
+
+      - name: Show generated summary
+        shell: pwsh
+        run: |
+          Write-Host '--- summary.md ---'
+          Get-Content ./summary.md | ForEach-Object { Write-Host $_ }
+          Write-Host '--- end summary ---'

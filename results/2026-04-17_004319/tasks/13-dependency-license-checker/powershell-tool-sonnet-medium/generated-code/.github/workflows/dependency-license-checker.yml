@@ -1,0 +1,40 @@
+name: Dependency License Checker
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  license-check:
+    name: Check Dependency Licenses
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check package.json licenses
+        shell: pwsh
+        run: |
+          $params = @{
+            ManifestPath = "fixtures/package.json"
+            ConfigPath   = "fixtures/license-config.json"
+            LicenseDbPath = "fixtures/mock-license-db.json"
+          }
+          ./Invoke-LicenseChecker.ps1 @params
+
+      - name: Check requirements.txt licenses
+        shell: pwsh
+        run: |
+          $params = @{
+            ManifestPath  = "fixtures/requirements.txt"
+            ConfigPath    = "fixtures/license-config.json"
+            LicenseDbPath = "fixtures/mock-license-db.json"
+          }
+          ./Invoke-LicenseChecker.ps1 @params

@@ -1,0 +1,75 @@
+name: Artifact Cleanup Script
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Run Pester Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = './ArtifactCleanup.Tests.ps1'
+          $config.Output.Verbosity = 'Detailed'
+          $config.Run.Exit = $true
+          Invoke-Pester -Configuration $config
+
+  demo:
+    name: Demo Dry-Run Cleanup
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run demo dry-run cleanup
+        shell: pwsh
+        run: |
+          . ./ArtifactCleanup.ps1
+
+          $now = [DateTime]::UtcNow
+          $artifacts = @(
+            [PSCustomObject]@{ Name="build-v1.0"; SizeMB=120; CreatedAt=$now.AddDays(-45); WorkflowRunId="ci-run-101" }
+            [PSCustomObject]@{ Name="build-v1.1"; SizeMB=130; CreatedAt=$now.AddDays(-20); WorkflowRunId="ci-run-102" }
+            [PSCustomObject]@{ Name="build-v1.2"; SizeMB=140; CreatedAt=$now.AddDays(-10); WorkflowRunId="ci-run-102" }
+            [PSCustomObject]@{ Name="build-v1.3"; SizeMB=150; CreatedAt=$now.AddDays(-2);  WorkflowRunId="ci-run-103" }
+            [PSCustomObject]@{ Name="test-logs";  SizeMB=200; CreatedAt=$now.AddDays(-35); WorkflowRunId="ci-run-101" }
+          )
+
+          $policy = @{
+            MaxAgeDays     = 30
+            MaxTotalSizeMB = 400
+            KeepLatestN    = 2
+          }
+
+          $result = Invoke-ArtifactCleanup -Artifacts $artifacts -Policy $policy -DryRun
+
+          Write-Output "=== DRY-RUN DELETION PLAN ==="
+          Write-Output "Artifacts to delete ($($result.Plan.Summary.ArtifactsDeleted)):"
+          foreach ($a in $result.Plan.ToDelete) {
+            Write-Output "  - $($a.Name) [$($a.SizeMB) MB, created $($a.CreatedAt.ToString('yyyy-MM-dd'))]"
+          }
+          Write-Output ""
+          Write-Output "Artifacts to keep ($($result.Plan.Summary.ArtifactsRetained)):"
+          foreach ($a in $result.Plan.ToKeep) {
+            Write-Output "  + $($a.Name) [$($a.SizeMB) MB]"
+          }
+          Write-Output ""
+          Write-Output "=== SUMMARY ==="
+          Write-Output "Space reclaimed: $($result.Plan.Summary.SpaceReclaimedMB) MB"
+          Write-Output "Deleted: $($result.Plan.Summary.ArtifactsDeleted)"
+          Write-Output "Retained: $($result.Plan.Summary.ArtifactsRetained)"
+          Write-Output "DryRun: $($result.DryRun)"

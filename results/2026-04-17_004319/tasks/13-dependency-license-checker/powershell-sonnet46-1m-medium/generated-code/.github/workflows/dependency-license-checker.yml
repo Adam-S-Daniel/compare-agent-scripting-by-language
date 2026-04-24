@@ -1,0 +1,60 @@
+name: Dependency License Checker
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  schedule:
+    - cron: "0 8 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-licenses:
+    name: Check Dependency Licenses
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install PowerShell and Pester
+        shell: bash
+        run: |
+          # pwsh and Pester are pre-installed in the act-ubuntu-pwsh image; this is a no-op there.
+          pwsh --version
+          pwsh -Command "if (-not (Get-Module -ListAvailable -Name Pester)) { Install-Module -Name Pester -Force -Scope CurrentUser }"
+
+      - name: Run license checker on npm fixture
+        shell: pwsh
+        run: |
+          ./Invoke-LicenseChecker.ps1 `
+            -ManifestPath      fixtures/package.json `
+            -LicenseConfigPath fixtures/license-config.json `
+            -MockLicensesPath  fixtures/mock-licenses.json
+
+      - name: Run license checker on Python fixture
+        shell: pwsh
+        run: |
+          ./Invoke-LicenseChecker.ps1 `
+            -ManifestPath      fixtures/requirements.txt `
+            -LicenseConfigPath fixtures/license-config.json `
+            -MockLicensesPath  fixtures/mock-licenses.json
+
+      - name: Run Pester unit tests
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = "LicenseChecker.Tests.ps1"
+          # Exclude the Act Execution describe block (circular — act runs inside act)
+          $config.Filter.ExcludeTag = @("ActExecution")
+          $config.Output.Verbosity = "Detailed"
+          $config.TestResult.Enabled = $false
+          $result = Invoke-Pester -Configuration $config
+          if ($result.FailedCount -gt 0) {
+            Write-Error "Pester: $($result.FailedCount) test(s) failed"
+            exit 1
+          }

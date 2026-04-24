@@ -1,0 +1,389 @@
+[Assistant] I'll start by reading the project instructions and setting up the workspace.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/AGENTS.md"}
+[Result] 1	# Agent Instructions
+2	
+3	All agent-facing instructions live in this file. `CLAUDE.md` contains only a
+4	reference here. If you are a Claude Code agent, you have already loaded this
+5	via `CLAUDE.md`. Other agents: read this file directly.
+6	
+7	## Build and test
+8	
+9	```bash
+10	# Run unit tests (REQUIRED before every PR)
+11	pip install pytest  # if not already installed
+12	python3 -m pytest tests/ -v
+13	
+14	# Validate imports
+15	python3 -c "from runner import main"
+16	python3 -c "from generate_results import generate_results_md"
+17	python3 -c "from test_quality import compute_structural_metrics"
+18	python3 -c "from llm_providers import get_provider"
+19	
+20	# Regenerate all reports
+21	python3 generate_results.py --all
+22	
+23	# Run a benchmark (v4, all tasks/modes/models)
+24	python3 runner.py --tasks 11,12,13,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
+25	
+26	# Evaluate test quality (structural metrics only)
+27	python3 test_quality.py results/2026-04
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium"}
+[Result ERROR] EISDIR: illegal operation on a directory, read '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium'
+[Tool: Bash] ls /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium && cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/benchmark-instructions-v4.md 2>/dev/null | head -50
+[Result] benchmark-instructions-v4.md
+# Benchmark Instructions v4 — GitHub Actions
+
+**Version**: v4
+**Date**: 2026-04-09
+**Purpose**: Measure how well Claude Code agents perform GitHub Actions workflow authoring tasks across different language constraints, with trap-awareness guidance from v3 findings.
+
+**Changes from v3**:
+- Added "Common Pitfalls" section with guidance derived from v3 trap analysis (115min, 15.8% of v3 time lost to traps)
+- Act container now has pwsh and Pester pre-installed (matching real GitHub runners). Agents still need an install step for workflows that will run on vanilla act, but the benchmarking container already has them.
+- GHA workflow addendum expanded with `shell: pwsh` guidance for PowerShell mode
+- All other methodology, tasks, modes, and models are unchanged from v3
+
+## Methodology
+
+### Overview
+
+Each task is executed by a Claude Code agent under 4 different language constraints ("modes") and with 2 different models, yielding **8 runs per task**. Agents receive
+[Assistant] Now I understand the task. Let me build the semantic version bumper using TypeScript/Bun with TDD methodology.
+[Tool: Bash] which bun && bun --version && which actionlint && actionlint --version
+[Result] /home/passp/.bun/bin/bun
+1.3.11
+/home/passp/.local/bin/actionlint
+1.7.12
+installed by downloading from release page
+built with go1.26.1 compiler for linux/amd64
+[Tool: ToolSearch] {"query": "select:TodoWrite", "max_results": 1}
+[Result] {'type': 'tool_reference', 'tool_name': 'TodoWrite'}
+[Tool: TodoWrite] {"todos": [{"content": "Initialize project with package.json and bun setup", "status": "in_progress", "activeForm": "Initializing project"}, {"content": "Write failing tests for version parsing and bu
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Bash] bun init -y 2>&1
+[Result]  + .gitignore
+ + CLAUDE.md
+ + index.ts
+ + tsconfig.json (for editor autocomplete)
+ + README.md
+
+To get started, run:
+
+    bun run index.ts
+
+bun install v1.3.11 (af24e281)
+Resolving dependencies
+Resolved, downloaded and extracted [4]
+Saved lockfile
+
++ @types/bun@1.3.12
++ typescript@5.9.3 (v6.0.3 available)
+
+5 packages installed [468.00ms]
+[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/package.json
+[Result] {
+  "name": "typescript-bun-sonnet46-1m-medium",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}
+[Tool: TodoWrite] {"todos": [{"content": "Initialize project with package.json and bun setup", "status": "completed", "activeForm": "Initializing project"}, {"content": "Write failing tests for version parsing and bump
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Assistant] Now I'll write the failing tests first (TDD red phase):
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/src/types.ts", "content": "// Core types 
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/src/types.ts (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/src/fixtures.ts", "content": "// Mock com
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/src/fixtures.ts (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/src/version-bumper.test.ts", "content": "
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/src/version-bumper.test.ts (file state is current in your context — no need to Read it back)
+[Tool: Bash] bun test src/version-bumper.test.ts 2>&1 | head -30
+[Result] bun test v1.3.11 (af24e281)
+
+src/version-bumper.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module './version-bumper' from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/src/version-bumper.test.ts'
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [269.00ms]
+[Assistant] Tests fail as expected (red phase). Now I'll implement the version bumper (green phase):
+[Tool: TodoWrite] {"todos": [{"content": "Initialize project with package.json and bun setup", "status": "completed", "activeForm": "Initializing project"}, {"content": "Write failing tests for version parsing and bump
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/src/version-bumper.ts", "content": "// Se
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/src/version-bumper.ts (file state is current in your context — no need to Read it back)
+[Tool: Bash] bun test src/version-bumper.test.ts 2>&1
+[Result] bun test v1.3.11 (af24e281)
+
+ 32 pass
+ 0 fail
+ 43 expect() calls
+Ran 32 tests across 1 file. [213.00ms]
+[Assistant] All 32 tests pass. Now I'll create the main CLI entry point and the GitHub Actions workflow:
+[Tool: TodoWrite] {"todos": [{"content": "Initialize project with package.json and bun setup", "status": "completed", "activeForm": "Initializing project"}, {"content": "Write failing tests for version parsing and bump
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/src/main.ts", "content": "// CLI entry po
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/src/main.ts (file state is current in your context — no need to Read it back)
+[Assistant] Now create the workflow structure tests and the GitHub Actions workflow:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/src/workflow.test.ts", "content": "// Tes
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/src/workflow.test.ts (file state is current in your context — no need to Read it back)
+[Tool: Bash] mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/.github/workflows
+[Result] (Bash completed with no output)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/.github/workflows/semantic-version-bumper
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/.github/workflows/semantic-version-bumper.yml (file state is current in your context — no need to Read it back)
+[Tool: TodoWrite] {"todos": [{"content": "Initialize project with package.json and bun setup", "status": "completed", "activeForm": "Initializing project"}, {"content": "Write failing tests for version parsing and bump
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Bash] actionlint /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/.github/workflows/semantic-version-bumper.yml 2>&1
+[Result] (Bash completed with no output)
+[Assistant] Actionlint passes cleanly. Now run the workflow tests:
+[Tool: Bash] bun test src/workflow.test.ts 2>&1
+[Result] bun test v1.3.11 (af24e281)
+
+ 10 pass
+ 0 fail
+ 10 expect() calls
+Ran 10 tests across 1 file. [239.00ms]
+[Tool: TodoWrite] {"todos": [{"content": "Initialize project with package.json and bun setup", "status": "completed", "activeForm": "Initializing project"}, {"content": "Write failing tests for version parsing and bump
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Assistant] Now I'll set up the act test harness. I need to create a test script that runs all test cases through act:
+[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/.actrc 2>/dev/null; ls /home/passp/repos/compare-agent-scripting-by-language/.actrc 2>/dev/null && cat /home/passp/repos/compare-agent-scripting-by-language/.actrc 2>/dev/null
+[Result ERROR] Exit code 2
+-P ubuntu-latest=act-ubuntu-pwsh:latest
+[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/.actrc
+[Result] -P ubuntu-latest=act-ubuntu-pwsh:latest
+[Tool: Bash] docker image inspect act-ubuntu-pwsh:latest --format "{{.Id}}" 2>&1 | head -3
+[Result] sha256:ba4101fd0f65c6215ee59ea3160db57dcfcd893f25d9c4752894f9344edf93f0
+[Assistant] Good, the custom act image is available. Now I'll write the act test harness script:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/run-act-tests.ts", "content": "// Act tes
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/run-act-tests.ts (file state is current in your context — no need to Read it back)
+[Assistant] Now let me run the act test harness. This will take time (3 runs):
+[Tool: Bash] bun run run-act-tests.ts 2>&1
+[Result ERROR] Exit code 1
+
+============================================================
+Running test case: patch-bump-fix-commits
+  Initial version: 1.2.3
+  Expected new version: 1.2.4
+  Expected bump type: patch
+  FAIL: act exited non-zero for patch-bump-fix-commits
+
+============================================================
+Running test case: minor-bump-feat-commits
+  Initial version: 1.1.0
+  Expected new version: 1.2.0
+  Expected bump type: minor
+  FAIL: act exited non-zero for minor-bump-feat-commits
+
+============================================================
+Running test case: major-bump-breaking-change
+  Initial version: 2.3.1
+  Expected new version: 3.0.0
+  Expected bump type: major
+  FAIL: act exited non-zero for major-bump-breaking-change
+
+============================================================
+SOME TEST CASES FAILED — see act-result.txt for details
+[Tool: Bash] head -150 /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/act-result.txt
+[Result] ============================================================
+TEST CASE: patch-bump-fix-commits
+Initial: 1.2.3 -> Expected: 1.2.4 (patch)
+============================================================
+time="2026-04-19T12:09:41-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+Error: workflow is not valid. 'semantic-version-bumper.yml': yaml: line 53: could not find expected ':'
+
+FAIL: act exited non-zero
+
+============================================================
+TEST CASE: minor-bump-feat-commits
+Initial: 1.1.0 -> Expected: 1.2.0 (minor)
+============================================================
+time="2026-04-19T12:09:42-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+Error: workflow is not valid. 'semantic-version-bumper.yml': yaml: line 53: could not find expected ':'
+
+FAIL: act exited non-zero
+
+=============================================
+[Assistant] The issue is YAML indentation in the dynamically generated heredoc. I'll fix the harness to write the fixture file to the repo instead of embedding it in YAML:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/run-act-tests.ts", "content": "// Act tes
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/run-act-tests.ts has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Also verify the test workflow passes actionlint before running act:
+[Tool: Bash] echo "$TEST_WORKFLOW" | actionlint - 2>&1 || true; actionlint .github/workflows/semantic-version-bumper.yml 2>&1
+[Result] <stdin>:1:1: workflow is empty [syntax-check]
+  |
+1 | 
+  | ^
+[Tool: Bash] cat > /tmp/test-workflow-check.yml << 'EOF'
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run unit tests
+        run: bun test src/version-bumper.test.ts
+
+  bump-version:
+    name: Bump Version
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run semantic version bump
+        id: bump
+        run: |
+          OUTPUT=$(bun run src/main.ts version.txt commits.txt)
+          echo "$OUTPUT"
+          NEW_VERSION=$(echo "$OUTPUT" | grep "^New version:" | awk '{print $NF}')
+          BUMP_TYPE=$(echo "$OUTPUT" | grep "^Bump type:" | awk '{print $NF}')
+          echo "new_version=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "bump_type=${BUMP_TYPE}" >> "$GITHUB_OUTPUT"
+
+      - name: Print new version
+        run: |
+          echo "Version bump complete"
+          echo "New version: ${{ steps.bump.outputs.new_version }}"
+          echo "Bump type: ${{ steps.bump.outputs.bump_type }}"
+EOF
+actionlint /tmp/test-workflow-check.yml 2>&1
+[Result] (Bash completed with no output)
+[Assistant] Good. Now run act:
+[Tool: Bash] bun run run-act-tests.ts 2>&1
+[Result ERROR] Exit code 1
+
+============================================================
+Running test case: patch-bump-fix-commits
+  Initial version: 1.2.3
+  Expected new version: 1.2.4
+  Expected bump type: patch
+  FAIL: act exited non-zero for patch-bump-fix-commits
+
+============================================================
+Running test case: minor-bump-feat-commits
+  Initial version: 1.1.0
+  Expected new version: 1.2.0
+  Expected bump type: minor
+  FAIL: act exited non-zero for minor-bump-feat-commits
+
+============================================================
+Running test case: major-bump-breaking-change
+  Initial version: 2.3.1
+  Expected new version: 3.0.0
+  Expected bump type: major
+  FAIL: act exited non-zero for major-bump-breaking-change
+
+============================================================
+SOME TEST CASES FAILED — see act-result.txt for details
+[Tool: Bash] grep -A 30 "TEST CASE: patch" /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/act-result.txt | head -40
+[Result] TEST CASE: patch-bump-fix-commits
+Initial: 1.2.3 -> Expected: 1.2.4 (patch)
+============================================================
+[Semantic Version Bumper/Run Tests] ⭐ Run Set up job
+[Semantic Version Bumper/Run Tests] 🚀  Start image=act-ubuntu-pwsh:latest
+[Semantic Version Bumper/Run Tests]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=true
+[Semantic Version Bumper/Run Tests] using DockerAuthConfig authentication for docker pull
+[Semantic Version Bumper/Run Tests] Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+[Semantic Version Bumper/Run Tests]   ❌  Failure - Set up job
+[Semantic Version Bumper/Run Tests] 🏁  Job failed
+time="2026-04-19T12:10:58-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+Error: Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may re
+[Assistant] Act tries to pull the local image from Docker Hub. Need to add `--pull=false`:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/run-act-tests.ts", 
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/run-act-tests.ts has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] bun run run-act-tests.ts 2>&1
+[Result] ============================================================
+Running test case: patch-bump-fix-commits
+  Initial version: 1.2.3
+  Expected new version: 1.2.4
+  Expected bump type: patch
+  PASS: version=1.2.4, bump=patch, Job succeeded
+
+============================================================
+Running test case: minor-bump-feat-commits
+  Initial version: 1.1.0
+  Expected new version: 1.2.0
+  Expected bump type: minor
+  PASS: version=1.2.0, bump=minor, Job succeeded
+
+============================================================
+Running test case: major-bump-breaking-change
+  Initial version: 2.3.1
+  Expected new version: 3.0.0
+  Expected bump type: major
+  PASS: version=3.0.0, bump=major, Job succeeded
+
+============================================================
+ALL TEST CASES PASSED
+[Assistant] All 3 test cases pass through act. Let me run the full local test suite to confirm everything is good:
+[Tool: Bash] bun test 2>&1
+[Result] bun test v1.3.11 (af24e281)
+
+ 42 pass
+ 0 fail
+ 53 expect() calls
+Ran 42 tests across 2 files. [161.00ms]
+[Tool: Bash] ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/act-result.txt && wc -l /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/act-result.txt
+[Result] -rw-r--r-- 1 passp passp 46742 Apr 19 12:12 /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/act-result.txt
+516 /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/typescript-bun-sonnet46-1m-medium/act-result.txt
+[Tool: TodoWrite] {"todos": [{"content": "Initialize project with package.json and bun setup", "status": "completed", "activeForm": "Initializing project"}, {"content": "Write failing tests for version parsing and bump
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Assistant] All tasks complete. Here's a summary:
+
+**42 tests pass** (`bun test`) across 2 test files. **3 act runs succeed** with exact version assertions.
+
+**Files created:**
+- `src/types.ts` — TypeScript interfaces (`Commit`, `BumpResult`, `VersionFile`)
+- `src/fixtures.ts` — Mock commit log fixtures for all bump scenarios
+- `src/version-bumper.ts` — Core logic: `parseVersion`, `parseCommits`, `determineVersionBump`, `bumpVersion`, `generateChangelog`, `bumpVersionFile`
+- `src/version-bumper.test.ts` — 32 unit tests (TDD: written before implementation)
+- `src/workflow.test.ts` — 10 workflow structure tests including actionlint validation
+- `src/main.ts` — CLI entry point
+- `.github/workflows/semantic-version-bumper.yml` — GitHub Actions workflow (passes actionlint)
+- `run-act-tests.ts` — Act harness with 3 test cases asserting exact versions
+- `act-result.txt` — 516 lines of act output confirming all 3 cases passed
+
+**Conventional commit → bump mapping:**
+- `fix:` → patch (1.2.3 → 1.2.4)
+- `feat:` → minor (1.1.0 → 1.2.0)
+- `feat!:` / `BREAKING CHANGE:` → major (2.3.1 → 3.0.0)

@@ -1,0 +1,325 @@
+[Assistant] Let me start by reading the project instructions.
+[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/AGENTS.md
+[Result] # Agent Instructions
+
+All agent-facing instructions live in this file. `CLAUDE.md` contains only a
+reference here. If you are a Claude Code agent, you have already loaded this
+via `CLAUDE.md`. Other agents: read this file directly.
+
+## Build and test
+
+```bash
+# Run unit tests (REQUIRED before every PR)
+pip install pytest  # if not already installed
+python3 -m pytest tests/ -v
+
+# Validate imports
+python3 -c "from runner import main"
+python3 -c "from generate_results import generate_results_md"
+python3 -c "from test_quality import compute_structural_metrics"
+python3 -c "from llm_providers import get_provider"
+
+# Regenerate all reports
+python3 generate_results.py --all
+
+# Run a benchmark (v4, all tasks/modes/models)
+python3 runner.py --tasks 11,12,13,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
+
+# Evaluate test quality (structural metrics only)
+python3 test_quality.py results/2026-04-09_152435
+
+# Evaluate test quality with LLM-as-judge (requires a provid
+[Tool: Bash] ls /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-sonnet-medium/
+[Result] benchmark-instructions-v4.md
+[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-sonnet-medium/benchmark-instructions-v4.md | head -50
+[Result] # Benchmark Instructions v4 — GitHub Actions
+
+**Version**: v4
+**Date**: 2026-04-09
+**Purpose**: Measure how well Claude Code agents perform GitHub Actions workflow authoring tasks across different language constraints, with trap-awareness guidance from v3 findings.
+
+**Changes from v3**:
+- Added "Common Pitfalls" section with guidance derived from v3 trap analysis (115min, 15.8% of v3 time lost to traps)
+- Act container now has pwsh and Pester pre-installed (matching real GitHub runners). Agents still need an install step for workflows that will run on vanilla act, but the benchmarking container already has them.
+- GHA workflow addendum expanded with `shell: pwsh` guidance for PowerShell mode
+- All other methodology, tasks, modes, and models are unchanged from v3
+
+## Methodology
+
+### Overview
+
+Each task is executed by a Claude Code agent under 4 different language constraints ("modes") and with 2 different models, yielding **8 runs per task**. Agents receive only the prompt -- no conver
+[Tool: Bash] which actionlint && which act && which bun
+[Result] /home/passp/.local/bin/actionlint
+/home/passp/.local/bin/act
+/home/passp/.bun/bin/bun
+[Assistant] Now I'll implement the solution using TDD. Starting with the first failing test.
+[Tool: ToolSearch] {"query": "select:TodoWrite", "max_results": 1}
+[Result] {'type': 'tool_reference', 'tool_name': 'TodoWrite'}
+[Tool: TodoWrite] {"todos": [{"content": "Write first failing test for label assigner", "status": "in_progress", "activeForm": "Writing first failing test"}, {"content": "Implement label-assigner.ts to pass tests", "st
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-sonnet-medium/label-assigner.test.ts", "content": "// TDD tests fo
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-sonnet-medium/label-assigner.test.ts (file state is current in your context — no need to Read it back)
+[Tool: Bash] bun test 2>&1 | head -30
+[Result] bun test v1.3.11 (af24e281)
+
+label-assigner.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module './label-assigner' from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-sonnet-medium/label-assigner.test.ts'
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [23.00ms]
+[Assistant] Tests fail as expected. Now implementing the module.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-sonnet-medium/label-assigner.ts", "content": "// PR Label Assigner
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-sonnet-medium/label-assigner.ts (file state is current in your context — no need to Read it back)
+[Tool: Bash] bun test 2>&1
+[Result ERROR] Exit code 1
+bun test v1.3.11 (af24e281)
+
+label-assigner.test.ts:
+ 9 |     const config: LabelConfig = {
+10 |       rules: [{ pattern: "docs/**", label: "documentation", priority: 1 }],
+11 |     };
+12 |     const files = ["docs/README.md", "docs/api/guide.md"];
+13 |     const result = assignLabels(files, config);
+14 |     expect(result).toContain("documentation");
+                        ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "documentation"
+Received: []
+
+      at <anonymous> (/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-sonnet-medium/label-assigner.test.ts:14:20)
+(fail) assignLabels - basic glob matching > matches docs/** pattern to documentation label [3.78ms]
+27 |     const config: LabelConfig = {
+28 |       rules: [{ pattern: "src/api/**", label: "api", priority: 1 }],
+29 |     };
+30 |     const files = ["src/api/routes.ts", "src/api/handlers/auth.ts"];
+31 |     const result = assi
+[Assistant] The `**` glob matching is broken. Let me fix it:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-sonnet-medium/label-assigner.ts", "old_strin
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-sonnet-medium/label-assigner.ts has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] bun test 2>&1
+[Result] bun test v1.3.11 (af24e281)
+
+ 15 pass
+ 0 fail
+ 26 expect() calls
+Ran 15 tests across 1 file. [25.00ms]
+[Assistant] All 15 tests pass. Now creating the GitHub Actions workflow.
+[Tool: TodoWrite] {"todos": [{"content": "Write first failing test for label assigner", "status": "completed", "activeForm": "Writing first failing test"}, {"content": "Implement label-assigner.ts to pass tests", "stat
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Bash] mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-sonnet-medium/.github/workflows
+[Result] (Bash completed with no output)
+[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-sonnet-medium/.actrc 2>/dev/null || echo "no .actrc"
+[Result] -P ubuntu-latest=act-ubuntu-pwsh:latest
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-sonnet-medium/.github/workflows/pr-label-assigner.yml", "content":
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-sonnet-medium/.github/workflows/pr-label-assigner.yml (file state is current in your context — no need to Read it back)
+[Tool: TodoWrite] {"todos": [{"content": "Write first failing test for label assigner", "status": "completed", "activeForm": "Writing first failing test"}, {"content": "Implement label-assigner.ts to pass tests", "stat
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Bash] actionlint .github/workflows/pr-label-assigner.yml 2>&1
+[Result] (Bash completed with no output)
+[Assistant] actionlint passes cleanly. Now creating the act test harness.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-sonnet-medium/act-harness.test.ts", "content": "// Act test harnes
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-sonnet-medium/act-harness.test.ts (file state is current in your context — no need to Read it back)
+[Tool: Bash] bun add js-yaml @types/js-yaml 2>&1
+[Result] bun add v1.3.11 (af24e281)
+Resolving dependencies
+Resolved, downloaded and extracted [3]
+Saved lockfile
+
+installed js-yaml@4.1.1 with binaries:
+ - js-yaml
+installed @types/js-yaml@4.0.9
+
+3 packages installed [161.00ms]
+[Tool: Bash] bun test act-harness.test.ts --timeout 10000 2>&1 | head -30
+[Result] bun test v1.3.11 (af24e281)
+
+act-harness.test.ts:
+=== ACT OUTPUT (last 3000 chars) ===
+[PR Label Assigner/Run label assigner tests] ⭐ Run Set up job
+[PR Label Assigner/Run label assigner tests] 🚀  Start image=act-ubuntu-pwsh:latest
+[PR Label Assigner/Run label assigner tests]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=true
+[PR Label Assigner/Run label assigner tests] using DockerAuthConfig authentication for docker pull
+[PR Label Assigner/Run label assigner tests] Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+[PR Label Assigner/Run label assigner tests]   ❌  Failure - Set up job
+[PR Label Assigner/Run label assigner tests] 🏁  Job failed
+time="2026-04-19T16:16:19-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+time="2026-04-19T16:16:19-04:00" level=warning msg="unable to get git ref: reference not found"
+t
+[Assistant] The `act-ubuntu-pwsh:latest` image doesn't exist. Let me check available Docker images.
+[Tool: Bash] docker images 2>&1 | head -20
+[Result] WARNING: This output is designed for human readability. For machine-readable output, please use --format.
+IMAGE                                     ID             DISK USAGE   CONTENT SIZE   EXTRA
+act-ubuntu-pwsh:latest                    ba4101fd0f65       2.55GB          639MB        
+catthehacker/ubuntu:act-22.04             754f20d9a184       2.15GB          531MB        
+catthehacker/ubuntu:act-latest            f58445a786d6       2.26GB          559MB        
+catthehacker/ubuntu:full-latest           9327301aea27       67.7GB         16.8GB   U    
+ghcr.io/catthehacker/ubuntu:act-latest    bd77095e8123       1.99GB          284MB        
+ghcr.io/catthehacker/ubuntu:full-latest   9327301aea27       67.7GB         16.8GB   U    
+ghcr.io/catthehacker/ubuntu:pwsh-latest   5c3a44a9d687       2.59GB          384MB        
+hello-world:latest                        452a468a4bf9       25.9kB         9.49kB        
+node:16-bullseye-slim                     503446c15c62        282MB        
+[Assistant] The image exists locally but act tries to pull it. I need to add `--pull=false`.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-sonnet-medium/act-harness.test.ts", "old_str
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-sonnet-medium/act-harness.test.ts has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: TodoWrite] {"todos": [{"content": "Write first failing test for label assigner", "status": "completed", "activeForm": "Writing first failing test"}, {"content": "Implement label-assigner.ts to pass tests", "stat
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Bash] act push --rm --no-cache-server --pull=false 2>&1 | tail -60
+[Result] [PR Label Assigner/Assign PR labels        ] unable to get git ref: reference not found
+[PR Label Assigner/Assign PR labels        ] unable to get git revision: reference not found
+[PR Label Assigner/Assign PR labels        ] unable to get git ref: reference not found
+[PR Label Assigner/Assign PR labels        ] unable to get git revision: reference not found
+[PR Label Assigner/Assign PR labels        ] unable to get git ref: reference not found
+[PR Label Assigner/Assign PR labels        ] unable to get git revision: reference not found
+[PR Label Assigner/Assign PR labels        ]   🐳  docker cp src=/home/passp/.cache/act/oven-sh-setup-bun@v2/ dst=/var/run/act/actions/oven-sh-setup-bun@v2/
+[PR Label Assigner/Assign PR labels        ]   🐳  docker exec cmd=[/opt/acttoolcache/node/24.14.1/x64/bin/node /var/run/act/actions/oven-sh-setup-bun@v2/dist/setup/index.js] user= workdir=
+[PR Label Assigner/Assign PR labels        ]   | Downloading a new version of Bun: https://github.com/oven-sh/bu
+[Assistant] The JSON escaping in the workflow is broken. Let me fix it to use a config file.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-sonnet-medium/.github/workflows/pr-label-ass
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-sonnet-medium/.github/workflows/pr-label-assigner.yml has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/pr-label-assigner.yml 2>&1
+[Result] (Bash completed with no output)
+[Tool: Bash] act push --rm --no-cache-server --pull=false 2>&1 | tail -40
+[Result] [PR Label Assigner/Assign PR labels        ] unable to get git revision: reference not found
+[PR Label Assigner/Assign PR labels        ] unable to get git ref: reference not found
+[PR Label Assigner/Assign PR labels        ] unable to get git revision: reference not found
+[PR Label Assigner/Assign PR labels        ]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[PR Label Assigner/Assign PR labels        ]   | Running label assigner on files: docs/api-guide.md src/api/users.ts src/api/users.test.ts src/utils.ts
+[PR Label Assigner/Assign PR labels        ]   | Changed files:
+[PR Label Assigner/Assign PR labels        ]   |   docs/api-guide.md
+[PR Label Assigner/Assign PR labels        ]   |   src/api/users.ts
+[PR Label Assigner/Assign PR labels        ]   |   src/api/users.test.ts
+[PR Label Assigner/Assign PR labels        ]   |   src/utils.ts
+[PR Label Assigner/Assign PR labels        ]   | 
+[PR Label Assigner/Assign PR labels        ]   | Assigned labels:
+[PR L
+[Assistant] Both jobs succeed and the label output is correct: `["api","tests","documentation","source"]`. Now running the full act harness tests.
+[Tool: Bash] bun test act-harness.test.ts --timeout 300000 2>&1
+[Result] bun test v1.3.11 (af24e281)
+
+ 14 pass
+ 0 fail
+ 29 expect() calls
+Ran 14 tests across 1 file. [28.37s]
+[Assistant] All 14 harness tests pass. Let me verify `act-result.txt` was created.
+[Tool: Bash] head -20 act-result.txt && echo "..." && tail -10 act-result.txt && echo "File size: $(wc -c < act-result.txt) bytes"
+[Result] PR Label Assigner - act test run
+Date: 2026-04-19T20:17:51.752Z
+
+============================================================
+TEST CASE: act push (full workflow)
+============================================================
+[PR Label Assigner/Run label assigner tests] ⭐ Run Set up job
+[PR Label Assigner/Run label assigner tests] 🚀  Start image=act-ubuntu-pwsh:latest
+[PR Label Assigner/Run label assigner tests]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[PR Label Assigner/Run label assigner tests]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[PR Label Assigner/Run label assigner tests]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[PR Label Assigner/Run label assigner tests]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[PR Label Assigner/Run label assigner tests]   ✅ 
+[Tool: Bash] bun test 2>&1
+[Result ERROR] Exit code 1
+bun test v1.3.11 (af24e281)
+
+act-harness.test.ts:
+(fail) act integration > (unnamed) [24922.02ms]
+  ^ a beforeEach/afterEach hook timed out for this test.
+
+ 23 pass
+ 1 fail
+ 39 expect() calls
+Ran 24 tests across 2 files. [24.99s]
+[Assistant] The `beforeAll` times out with the default test timeout. I need to set a timeout for it.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-sonnet-medium/act-harness.test.ts", "old_str
+[Result ERROR] <tool_use_error>No changes to make: old_string and new_string are exactly the same.</tool_use_error>
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-sonnet-medium/act-harness.test.ts", "offset": 82, "limit": 10}
+[Result] 82	    const result = spawnSync("actionlint", [WORKFLOW_PATH], { encoding: "utf8" });
+83	    if (result.stdout || result.stderr) {
+84	      console.log("actionlint stdout:", result.stdout);
+85	      console.log("actionlint stderr:", result.stderr);
+86	    }
+87	    expect(result.status).toBe(0);
+88	  });
+89	});
+90	
+91	// ─── Act integration test ────────────────────────────────────────────────────
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-sonnet-medium/act-harness.test.ts", "offset": 92, "limit": 20}
+[Result] 92	
+93	describe("act integration", () => {
+94	  let actOutput = "";
+95	  let actExitCode = -1;
+96	
+97	  beforeAll(() => {
+98	    // Initialize act-result.txt fresh for this run
+99	    writeFileSync(ACT_RESULT_PATH, `PR Label Assigner - act test run\nDate: ${new Date().toISOString()}\n`);
+100	
+101	    // Run act push --rm; capture combined stdout+stderr
+102	    const result = spawnSync(
+103	      "act",
+104	      ["push", "--rm", "--no-cache-server", "--pull=false"],
+105	      {
+106	        cwd: WORKSPACE,
+107	        encoding: "utf8",
+108	        timeout: 300_000, // 5 minutes
+109	        maxBuffer: 20 * 1024 * 1024,
+110	      }
+111	    );
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-sonnet-medium/act-harness.test.ts", "old_str
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-sonnet-medium/act-harness.test.ts has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-sonnet-medium/act-harness.test.ts", "offset": 113, "limit": 7}
+[Result] 113	    actOutput = (result.stdout ?? "") + (result.stderr ?? "");
+114	    actExitCode = result.status ?? 1;
+115	
+116	    appendActResult("act push (full workflow)", actOutput);
+117	  });
+118	
+119	  test("act exits with code 0", () => {
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-sonnet-medium/act-harness.test.ts", "old_str
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-sonnet-medium/act-harness.test.ts has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] bun test --timeout 300000 2>&1
+[Result] bun test v1.3.11 (af24e281)
+
+ 29 pass
+ 0 fail
+ 55 expect() calls
+Ran 29 tests across 2 files. [29.12s]
+[Assistant] All 29 tests pass. Let me confirm the final state.
+[Tool: Bash] ls -la && echo "---" && ls .github/workflows/ && echo "---" && wc -c act-result.txt
+[Result] total 112
+drwxr-xr-x  6 passp passp  4096 Apr 19 16:19 .
+drwxr-xr-x 32 passp passp  4096 Apr 19 16:13 ..
+-rw-r--r--  1 passp passp    40 Apr 19 16:13 .actrc
+drwxr-xr-x  2 passp passp  4096 Apr 19 16:13 .claude
+drwxr-xr-x  7 passp passp  4096 Apr 19 16:13 .git
+drwxr-xr-x  3 passp passp  4096 Apr 19 16:15 .github
+-rw-r--r--  1 passp passp  6835 Apr 19 16:19 act-harness.test.ts
+-rw-r--r--  1 passp passp 27216 Apr 19 16:19 act-result.txt
+-rw-r--r--  1 passp passp 21843 Apr 17 00:12 benchmark-instructions-v4.md
+-rw-r--r--  1 passp passp   731 Apr 19 16:16 bun.lock
+-rw-r--r--  1 passp passp  6797 Apr 19 16:13 label-assigner.test.ts
+-rw-r--r--  1 passp passp  4415 Apr 19 16:15 label-assigner.ts
+drwxr-xr-x  6 passp passp  4096 Apr 19 16:16 node_modules
+-rw-r--r--  1 passp passp    83 Apr 19 16:16 package.json
+---
+pr-label-assigner.yml
+---
+27216 act-result.txt
+[Tool: TodoWrite] {"todos": [{"content": "Write first failing test for label assigner", "status": "completed", "activeForm": "Writing first failing test"}, {"content": "Implement label-assigner.ts to pass tests", "stat
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Assistant] All done. Here's a summary of what was built:
+
+**Files created:**
+- `label-assigner.ts` — core implementation with custom glob matcher supporting `**`, `*`, `?`; assigns labels by priority, deduplicates
+- `label-assigner.test.ts` — 15 unit tests covering glob matching, multiple labels, priority ordering, edge cases, and full PR fixture scenarios
+- `.github/workflows/pr-label-assigner.yml` — two-job workflow (`test` → `assign-labels`) using `oven-sh/setup-bun@v2`
+- `act-harness.test.ts` — integration tests that run `act push --rm --pull=false`, assert exit code 0, verify "Job succeeded", and assert exact label output `["api","tests","documentation","source"]`
+- `act-result.txt` — captured act output (27KB)
+
+**Test results:** 29/29 tests pass (`bun test --timeout 300000`), actionlint passes cleanly, act exits 0 with both jobs succeeding.

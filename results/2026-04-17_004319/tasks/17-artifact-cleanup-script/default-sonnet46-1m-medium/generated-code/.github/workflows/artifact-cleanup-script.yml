@@ -1,0 +1,74 @@
+name: Artifact Cleanup Script
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 2 * * 0"
+
+permissions:
+  contents: read
+
+jobs:
+  unit-tests:
+    name: Unit Tests (pytest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Python dependencies
+        run: pip install --break-system-packages pytest
+
+      - name: Run unit tests
+        run: pytest test_artifact_cleanup.py -v
+
+  fixture-tests:
+    name: Fixture Integration Tests
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: TC1 - Age-based retention policy
+        run: |
+          python3 artifact_cleanup.py --fixture fixtures/tc1_age_policy.json
+          python3 artifact_cleanup.py --fixture fixtures/tc1_age_policy.json | grep -F "Artifacts to delete: 2"
+          python3 artifact_cleanup.py --fixture fixtures/tc1_age_policy.json | grep -F "Artifacts to retain: 2"
+          python3 artifact_cleanup.py --fixture fixtures/tc1_age_policy.json | grep -F "Space reclaimed: 150.0 MB"
+          python3 artifact_cleanup.py --fixture fixtures/tc1_age_policy.json | grep -F "VALIDATION: ALL ASSERTIONS PASSED"
+          python3 artifact_cleanup.py --fixture fixtures/tc1_age_policy.json | grep -F "DRY RUN"
+
+      - name: TC2 - Size-based retention policy
+        run: |
+          python3 artifact_cleanup.py --fixture fixtures/tc2_size_policy.json
+          python3 artifact_cleanup.py --fixture fixtures/tc2_size_policy.json | grep -F "Artifacts to delete: 2"
+          python3 artifact_cleanup.py --fixture fixtures/tc2_size_policy.json | grep -F "Artifacts to retain: 1"
+          python3 artifact_cleanup.py --fixture fixtures/tc2_size_policy.json | grep -F "Space reclaimed: 140.0 MB"
+          python3 artifact_cleanup.py --fixture fixtures/tc2_size_policy.json | grep -F "VALIDATION: ALL ASSERTIONS PASSED"
+
+      - name: TC3 - Keep-latest-N per workflow
+        run: |
+          python3 artifact_cleanup.py --fixture fixtures/tc3_keep_latest.json
+          python3 artifact_cleanup.py --fixture fixtures/tc3_keep_latest.json | grep -F "Artifacts to delete: 1"
+          python3 artifact_cleanup.py --fixture fixtures/tc3_keep_latest.json | grep -F "Artifacts to retain: 4"
+          python3 artifact_cleanup.py --fixture fixtures/tc3_keep_latest.json | grep -F "Space reclaimed: 10.0 MB"
+          python3 artifact_cleanup.py --fixture fixtures/tc3_keep_latest.json | grep -F "VALIDATION: ALL ASSERTIONS PASSED"
+
+      - name: TC4 - Combined age + keep-latest-N policies
+        run: |
+          python3 artifact_cleanup.py --fixture fixtures/tc4_combined.json
+          python3 artifact_cleanup.py --fixture fixtures/tc4_combined.json | grep -F "Artifacts to delete: 4"
+          python3 artifact_cleanup.py --fixture fixtures/tc4_combined.json | grep -F "Artifacts to retain: 4"
+          python3 artifact_cleanup.py --fixture fixtures/tc4_combined.json | grep -F "Space reclaimed: 115.0 MB"
+          python3 artifact_cleanup.py --fixture fixtures/tc4_combined.json | grep -F "VALIDATION: ALL ASSERTIONS PASSED"
+          python3 artifact_cleanup.py --fixture fixtures/tc4_combined.json | grep -F "EXECUTING"
+
+      - name: TC5 - Dry-run mode
+        run: |
+          python3 artifact_cleanup.py --fixture fixtures/tc5_dry_run.json
+          python3 artifact_cleanup.py --fixture fixtures/tc5_dry_run.json | grep -F "Artifacts to delete: 1"
+          python3 artifact_cleanup.py --fixture fixtures/tc5_dry_run.json | grep -F "Artifacts to retain: 1"
+          python3 artifact_cleanup.py --fixture fixtures/tc5_dry_run.json | grep -F "Space reclaimed: 50.0 MB"
+          python3 artifact_cleanup.py --fixture fixtures/tc5_dry_run.json | grep -F "VALIDATION: ALL ASSERTIONS PASSED"
+          python3 artifact_cleanup.py --fixture fixtures/tc5_dry_run.json | grep -F "DRY RUN"

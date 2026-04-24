@@ -1,0 +1,47 @@
+name: PR Label Assigner
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      rules:
+        description: "Path to rules JSON"
+        required: false
+        default: "fixtures/rules.json"
+      files:
+        description: "Path to newline-separated changed files list"
+        required: false
+        default: "fixtures/changed_files.txt"
+
+permissions:
+  contents: read
+
+env:
+  RULES_FILE: ${{ github.event.inputs.rules || 'fixtures/rules.json' }}
+  FILES_FILE: ${{ github.event.inputs.files || 'fixtures/changed_files.txt' }}
+
+jobs:
+  assign-labels:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pytest
+        run: pip install pytest
+
+      - name: Run unit tests
+        run: python -m pytest tests/ -v
+
+      - name: Run label assigner
+        id: assign
+        run: |
+          echo "----- BEGIN LABELS -----"
+          python label_assigner.py --rules "$RULES_FILE" --files "$FILES_FILE"
+          echo "----- END LABELS -----"

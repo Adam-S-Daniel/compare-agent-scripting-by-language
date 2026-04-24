@@ -1,0 +1,57 @@
+name: Dependency License Checker
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 8 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  check-licenses:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies (jq, shellcheck, bats-core)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq jq shellcheck
+          npm install -g bats
+
+      - name: Validate shell scripts
+        run: |
+          bash -n license-checker.sh
+          shellcheck license-checker.sh
+
+      - name: Run unit tests
+        run: bats tests/license-checker.bats
+
+      - name: Check licenses – package.json (full demo with denied packages)
+        run: |
+          echo "--- package.json license check ---"
+          bash license-checker.sh \
+            --manifest fixtures/package.json \
+            --config   fixtures/license-config.json \
+            --mock-db  fixtures/mock-licenses.json
+
+      - name: Check licenses – approved-only.json (strict mode, must pass)
+        run: |
+          echo "--- approved-only.json license check (strict) ---"
+          bash license-checker.sh \
+            --manifest fixtures/approved-only.json \
+            --config   fixtures/license-config.json \
+            --mock-db  fixtures/mock-licenses.json \
+            --strict
+
+      - name: Check licenses – requirements.txt (full demo)
+        run: |
+          echo "--- requirements.txt license check ---"
+          bash license-checker.sh \
+            --manifest fixtures/requirements.txt \
+            --config   fixtures/license-config.json \
+            --mock-db  fixtures/mock-licenses.json

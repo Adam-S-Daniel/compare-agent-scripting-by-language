@@ -1,0 +1,44 @@
+name: artifact-cleanup-script
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 3 * * 0'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Run Pester tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Pester
+        shell: pwsh
+        run: |
+          $result = Invoke-Pester -Path ./ArtifactCleanup.Tests.ps1 -PassThru -Output Detailed
+          if ($result.FailedCount -gt 0) {
+            Write-Error "Pester failed: $($result.FailedCount) test(s)"
+            exit 1
+          }
+          Write-Host "PESTER_PASSED=$($result.PassedCount)"
+
+  cleanup-plan:
+    name: Generate cleanup plan (dry-run)
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run cleanup planner
+        shell: pwsh
+        run: |
+          # Test harness injects FIXTURE/MAX_AGE_DAYS/KEEP_LATEST/NOW_UTC via env;
+          # defaults make the workflow self-runnable on any push.
+          $fixture = if ($env:FIXTURE) { "fixtures/$($env:FIXTURE)" } else { 'fixtures/artifacts-basic.json' }
+          $maxAge  = if ($env:MAX_AGE_DAYS) { [int]$env:MAX_AGE_DAYS } else { 30 }
+          $keep    = if ($env:KEEP_LATEST)  { [int]$env:KEEP_LATEST }  else { 2 }
+          $now     = if ($env:NOW_UTC)      { [datetime]$env:NOW_UTC } else { [datetime]'2026-04-20T00:00:00Z' }
+          ./Invoke-Cleanup.ps1 -FixturePath $fixture -MaxAgeDays $maxAge -KeepLatestPerWorkflow $keep -Now $now

@@ -1,0 +1,284 @@
+[Assistant] I'll read the project instructions first, then start implementing the solution with TDD.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/AGENTS.md"}
+[Result] 1	# Agent Instructions
+2	
+3	All agent-facing instructions live in this file. `CLAUDE.md` contains only a
+4	reference here. If you are a Claude Code agent, you have already loaded this
+5	via `CLAUDE.md`. Other agents: read this file directly.
+6	
+7	## Build and test
+8	
+9	```bash
+10	# Run unit tests (REQUIRED before every PR)
+11	pip install pytest  # if not already installed
+12	python3 -m pytest tests/ -v
+13	
+14	# Validate imports
+15	python3 -c "from runner import main"
+16	python3 -c "from generate_results import generate_results_md"
+17	python3 -c "from test_quality import compute_structural_metrics"
+18	python3 -c "from llm_providers import get_provider"
+19	
+20	# Regenerate all reports
+21	python3 generate_results.py --all
+22	
+23	# Run a benchmark (v4, all tasks/modes/models)
+24	python3 runner.py --tasks 11,12,13,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
+25	
+26	# Evaluate test quality (structural metrics only)
+27	python3 test_quality.py results/2026-04
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/default-sonnet-medium/benchmark-instructions-v4.md"}
+[Result] 1	# Benchmark Instructions v4 — GitHub Actions
+2	
+3	**Version**: v4
+4	**Date**: 2026-04-09
+5	**Purpose**: Measure how well Claude Code agents perform GitHub Actions workflow authoring tasks across different language constraints, with trap-awareness guidance from v3 findings.
+6	
+7	**Changes from v3**:
+8	- Added "Common Pitfalls" section with guidance derived from v3 trap analysis (115min, 15.8% of v3 time lost to traps)
+9	- Act container now has pwsh and Pester pre-installed (matching real GitHub runners). Agents still need an install step for workflows that will run on vanilla act, but the benchmarking container already has them.
+10	- GHA workflow addendum expanded with `shell: pwsh` guidance for PowerShell mode
+11	- All other methodology, tasks, modes, and models are unchanged from v3
+12	
+13	## Methodology
+14	
+15	### Overview
+16	
+17	Each task is executed by a Claude Code agent under 4 different language constraints ("modes") and with 2 different models, yielding **8 runs per task**. A
+[Assistant] Let me check the current workspace and the `.actrc` file.
+[Tool: Bash] ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/default-sonnet-medium/ && cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/default-sonnet-medium/.actrc 2>/dev/null || echo "no .actrc"
+[Result] total 44
+drwxr-xr-x  4 passp passp  4096 Apr 19 18:40 .
+drwxr-xr-x 18 passp passp  4096 Apr 19 18:40 ..
+-rw-r--r--  1 passp passp    40 Apr 19 18:40 .actrc
+drwxr-xr-x  2 passp passp  4096 Apr 19 18:40 .claude
+drwxr-xr-x  7 passp passp  4096 Apr 19 18:40 .git
+-rw-r--r--  1 passp passp 21843 Apr 17 00:12 benchmark-instructions-v4.md
+-P ubuntu-latest=act-ubuntu-pwsh:latest
+[Tool: Bash] docker images act-ubuntu-pwsh:latest 2>/dev/null | head -5
+[Result] IMAGE                    ID             DISK USAGE   CONTENT SIZE   EXTRA
+act-ubuntu-pwsh:latest   d49636934768       2.55GB          640MB
+[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/Dockerfile.act 2>/dev/null | head -60
+[Tool: Bash] docker run --rm act-ubuntu-pwsh:latest which actionlint 2>/dev/null && echo "actionlint found" || echo "actionlint not found"
+[Result] # Custom act container image with PowerShell and Pester pre-installed.
+# Matches what real GitHub-hosted ubuntu-latest runners provide.
+#
+# Build:  docker build -t act-ubuntu-pwsh:latest -f Dockerfile.act .
+# Use:    act push -P ubuntu-latest=act-ubuntu-pwsh:latest
+# Or:     echo '-P ubuntu-latest=act-ubuntu-pwsh:latest' > .actrc
+
+FROM catthehacker/ubuntu:act-latest
+
+# Install PowerShell from Microsoft's APT repo
+RUN apt-get update -qq \
+    && apt-get install -y -qq wget apt-transport-https software-properties-common \
+    && wget -q "https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb" \
+    && dpkg -i packages-microsoft-prod.deb \
+    && apt-get update -qq \
+    && apt-get install -y -qq powershell \
+    && rm -f packages-microsoft-prod.deb \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Pester 5 (PowerShell testing framework, pre-installed on GitHub runners)
+RUN pwsh -NoProfile -Command " \
+    Set-PSRepository -Name PSGallery -Inst
+[Result] actionlint not found
+[Tool: Bash] docker run --rm act-ubuntu-pwsh:latest bash -c "python3 --version && pip3 --version && which curl" 2>/dev/null
+[Tool: Bash] docker run --rm act-ubuntu-pwsh:latest bash -c "dpkg --print-architecture" 2>/dev/null
+[Result] Python 3.12.3
+pip 24.0 from /usr/lib/python3/dist-packages/pip (python 3.12)
+/usr/bin/curl
+[Result] amd64
+[Tool: Bash] actionlint --version 2>/dev/null && which actionlint
+[Result] 1.7.12
+installed by downloading from release page
+built with go1.26.1 compiler for linux/amd64
+/home/passp/.local/bin/actionlint
+[Tool: ToolSearch] {"query": "select:TodoWrite", "max_results": 1}
+[Result] {'type': 'tool_reference', 'tool_name': 'TodoWrite'}
+[Tool: TodoWrite] {"todos": [{"content": "Write failing unit tests (TDD red phase)", "status": "in_progress", "activeForm": "Writing failing unit tests"}, {"content": "Write secret_rotation_validator.py implementation"
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Assistant] Now writing the first failing test (TDD red phase):
+[Tool: Bash] mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/default-sonnet-medium/fixtures
+mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/default-sonnet-medium/.github/workflows
+[Result] (Bash completed with no output)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/default-sonnet-medium/test_secret_rotation_validator.py", "content": "\"\
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/default-sonnet-medium/test_secret_rotation_validator.py (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 -m pytest test_secret_rotation_validator.py -x --tb=short 2>&1 | head -30
+[Result] ============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0
+rootdir: /home/passp/repos/compare-agent-scripting-by-language
+configfile: pyproject.toml
+plugins: anyio-4.13.0
+collected 0 items / 1 error
+
+==================================== ERRORS ====================================
+_ ERROR collecting workspaces/2026-04-17_004319/18-secret-rotation-validator/default-sonnet-medium/test_secret_rotation_validator.py _
+ImportError while importing test module '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/default-sonnet-medium/test_secret_rotation_validator.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test_secret_rotation_
+[Assistant] Tests failing as expected (RED phase). Now writing the implementation:
+[Tool: TodoWrite] {"todos": [{"content": "Write failing unit tests (TDD red phase)", "status": "completed", "activeForm": "Writing failing unit tests"}, {"content": "Write secret_rotation_validator.py implementation", 
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/default-sonnet-medium/secret_rotation_validator.py", "content": "#!/usr/b
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/default-sonnet-medium/secret_rotation_validator.py (file state is current in your context — no need to Read it back)
+[Assistant] Now run the tests to check GREEN state (excluding workflow structure tests that need fixtures/workflow):
+[Tool: Bash] python3 -m pytest test_secret_rotation_validator.py -v --ignore-glob="*run_tests*" 2>&1 | tail -40
+[Result]     def test_actionlint_passes():
+        """Workflow must pass actionlint validation with exit code 0."""
+        result = subprocess.run(
+            ["actionlint", str(WORKFLOW_FILE)],
+            capture_output=True,
+            text=True,
+        )
+>       assert result.returncode == 0, (
+            f"actionlint failed:\nstdout: {result.stdout}\nstderr: {result.stderr}"
+        )
+E       AssertionError: actionlint failed:
+E         stdout: 
+E         stderr: could not read "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/default-sonnet-medium/.github/workflows/secret-rotation-validator.yml": open /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/default-sonnet-medium/.github/workflows/secret-rotation-validator.yml: no such file or directory
+E         
+E       assert 3 == 0
+E        +  where 3 = CompletedProcess(args=['actionlint', '/home/passp/repos/compar
+[Assistant] 20 logic tests passing. Now creating fixtures and workflow:
+[Tool: TodoWrite] {"todos": [{"content": "Write failing unit tests (TDD red phase)", "status": "completed", "activeForm": "Writing failing unit tests"}, {"content": "Write secret_rotation_validator.py implementation", 
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/default-sonnet-medium/fixtures/default_config.json", "content": "{\n  \"d
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/default-sonnet-medium/fixtures/default_config.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/default-sonnet-medium/fixtures/all_ok_config.json", "content": "{\n  \"de
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/default-sonnet-medium/fixtures/all_ok_config.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/default-sonnet-medium/fixtures/all_expired_config.json", "content": "{\n 
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/default-sonnet-medium/fixtures/all_expired_config.json (file state is current in your context — no need to Read it back)
+[Tool: TodoWrite] {"todos": [{"content": "Write failing unit tests (TDD red phase)", "status": "completed", "activeForm": "Writing failing unit tests"}, {"content": "Write secret_rotation_validator.py implementation", 
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/default-sonnet-medium/.github/workflows/secret-rotation-validator.yml", "
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/default-sonnet-medium/.github/workflows/secret-rotation-validator.yml (file state is current in your context — no need to Read it back)
+[Tool: TodoWrite] {"todos": [{"content": "Write failing unit tests (TDD red phase)", "status": "completed", "activeForm": "Writing failing unit tests"}, {"content": "Write secret_rotation_validator.py implementation", 
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Bash] actionlint .github/workflows/secret-rotation-validator.yml
+[Result] (Bash completed with no output)
+[Assistant] actionlint passes cleanly. Now run all unit tests to confirm GREEN:
+[Tool: Bash] python3 -m pytest test_secret_rotation_validator.py -v 2>&1 | tail -40
+[Result] test_secret_rotation_validator.py::test_one_day_past_boundary_is_ok PASSED [ 18%]
+test_secret_rotation_validator.py::test_expired_zero_days PASSED         [ 22%]
+test_secret_rotation_validator.py::test_custom_warning_window PASSED     [ 25%]
+test_secret_rotation_validator.py::test_load_config PASSED               [ 29%]
+test_secret_rotation_validator.py::test_load_config_missing_file PASSED  [ 33%]
+test_secret_rotation_validator.py::test_load_config_invalid_json PASSED  [ 37%]
+test_secret_rotation_validator.py::test_load_config_missing_required_field PASSED [ 40%]
+test_secret_rotation_validator.py::test_generate_report_json PASSED      [ 44%]
+test_secret_rotation_validator.py::test_generate_report_json_expired_has_days_overdue PASSED [ 48%]
+test_secret_rotation_validator.py::test_generate_report_json_warning_has_days_remaining PASSED [ 51%]
+test_secret_rotation_validator.py::test_generate_report_json_includes_required_by PASSED [ 55%]
+test_secret_rotation_validator.py::test_generate_re
+[Assistant] The `on:` key in YAML is parsed as boolean `True` by PyYAML (YAML 1.1 quirk). Fix the test:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/default-sonnet-medium/test_secret_rotation_validato
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/default-sonnet-medium/test_secret_rotation_validator.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 -m pytest test_secret_rotation_validator.py -v 2>&1 | tail -10
+[Result] test_secret_rotation_validator.py::test_workflow_file_exists PASSED      [ 74%]
+test_secret_rotation_validator.py::test_workflow_has_expected_triggers PASSED [ 77%]
+test_secret_rotation_validator.py::test_workflow_has_validate_job PASSED [ 81%]
+test_secret_rotation_validator.py::test_workflow_references_script PASSED [ 85%]
+test_secret_rotation_validator.py::test_workflow_uses_checkout PASSED    [ 88%]
+test_secret_rotation_validator.py::test_actionlint_passes PASSED         [ 92%]
+test_secret_rotation_validator.py::test_script_file_exists PASSED        [ 96%]
+test_secret_rotation_validator.py::test_default_fixture_exists PASSED    [100%]
+
+============================== 27 passed in 0.23s ==============================
+[Assistant] All 27 tests pass. Now writing the act test harness:
+[Tool: TodoWrite] {"todos": [{"content": "Write failing unit tests (TDD red phase)", "status": "completed", "activeForm": "Writing failing unit tests"}, {"content": "Write secret_rotation_validator.py implementation", 
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/default-sonnet-medium/run_tests.py", "content": "#!/usr/bin/env python3\n
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/default-sonnet-medium/run_tests.py (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 -m py_compile run_tests.py && echo "syntax ok"
+[Result] syntax ok
+[Tool: TodoWrite] {"todos": [{"content": "Write failing unit tests (TDD red phase)", "status": "completed", "activeForm": "Writing failing unit tests"}, {"content": "Write secret_rotation_validator.py implementation", 
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Assistant] Now running the act harness (all 3 test cases):
+[Tool: Bash] python3 run_tests.py 2>&1
+[Result ERROR] Exit code 1
+
+--- Running: test_case_1_mixed ---
+    FAILED: test_case_1_mixed
+    [test_case_1_mixed] act exited with code 1
+Last 80 lines:
+[Secret Rotation Validator/validate-secrets] ⭐ Run Set up job
+[Secret Rotation Validator/validate-secrets] 🚀  Start image=act-ubuntu-pwsh:latest
+[Secret Rotation Validator/validate-secrets]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=true
+[Secret Rotation Validator/validate-secrets] using DockerAuthConfig authentication for docker pull
+[Secret Rotation Validator/validate-secrets] Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+[Secret Rotation Validator/validate-secrets]   ❌  Failure - Set up job
+[Secret Rotation Validator/validate-secrets] 🏁  Job failed
+time="2026-04-19T18:47:10-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+Error: Error response from daemon: pull acce
+[Assistant] The local Docker image isn't being used because act tries to force-pull. Need to add `--pull=false`:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/default-sonnet-medium/run_tests.py", "old_string": 
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/default-sonnet-medium/run_tests.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 run_tests.py 2>&1
+[Result ERROR] Exit code 1
+
+--- Running: test_case_1_mixed ---
+    FAILED: test_case_1_mixed
+    [test_case_1_mixed] act exited with code 1
+Last 80 lines:
+[Secret Rotation Validator/validate-secrets] ⭐ Run Set up job
+[Secret Rotation Validator/validate-secrets] 🚀  Start image=act-ubuntu-pwsh:latest
+[Secret Rotation Validator/validate-secrets]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Secret Rotation Validator/validate-secrets]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/validate-secrets]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/validate-secrets]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Secret Rotation Validator/validate-secrets]   ✅  Success - Set up job
+[Secret Rotation Validator/validate-secrets] ⭐ Run Main Check
+[Assistant] PEP 668 restriction in Ubuntu container. Fix the `pip install` to use `--break-system-packages`:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/default-sonnet-medium/.github/workflows/secret-rota
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/default-sonnet-medium/.github/workflows/secret-rotation-validator.yml has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/secret-rotation-validator.yml && echo "actionlint OK"
+[Result] actionlint OK
+[Tool: Bash] python3 run_tests.py 2>&1
+[Result] --- Running: test_case_1_mixed ---
+    PASSED: test_case_1_mixed
+
+--- Running: test_case_2_all_ok ---
+    PASSED: test_case_2_all_ok
+
+--- Running: test_case_3_all_expired ---
+    PASSED: test_case_3_all_expired
+
+==================================================
+Results: 3/3 passed
+All act test cases passed!
+[Assistant] All 3 act test cases passed. Let me verify the `act-result.txt` was created and confirm all unit tests still pass:
+[Tool: Bash] ls -lh act-result.txt && wc -l act-result.txt
+[Result] -rw-r--r-- 1 passp passp 52K Apr 19 18:48 act-result.txt
+583 act-result.txt
+[Tool: Bash] python3 -m pytest test_secret_rotation_validator.py -v 2>&1 | tail -10
+[Result] test_secret_rotation_validator.py::test_workflow_file_exists PASSED      [ 74%]
+test_secret_rotation_validator.py::test_workflow_has_expected_triggers PASSED [ 77%]
+test_secret_rotation_validator.py::test_workflow_has_validate_job PASSED [ 81%]
+test_secret_rotation_validator.py::test_workflow_references_script PASSED [ 85%]
+test_secret_rotation_validator.py::test_workflow_uses_checkout PASSED    [ 88%]
+test_secret_rotation_validator.py::test_actionlint_passes PASSED         [ 92%]
+test_secret_rotation_validator.py::test_script_file_exists PASSED        [ 96%]
+test_secret_rotation_validator.py::test_default_fixture_exists PASSED    [100%]
+
+============================== 27 passed in 0.27s ==============================
+[Tool: TodoWrite] {"todos": [{"content": "Write failing unit tests (TDD red phase)", "status": "completed", "activeForm": "Writing failing unit tests"}, {"content": "Write secret_rotation_validator.py implementation", 
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Assistant] All tasks complete. Here's a summary:
+
+**Files created:**
+- `secret_rotation_validator.py` — core script with `check_secret()`, `load_config()`, `generate_report()` (JSON/Markdown), and a CLI (`--config`, `--format`, `--warning-window`, `--reference-date`)
+- `test_secret_rotation_validator.py` — 27 pytest tests covering all logic + workflow structure + actionlint validation
+- `fixtures/default_config.json` — mixed expired/warning/ok secrets (reference: 2026-04-19)
+- `fixtures/all_ok_config.json` — all-ok fixture
+- `fixtures/all_expired_config.json` — all-expired fixture
+- `.github/workflows/secret-rotation-validator.yml` — workflow with push/PR/schedule/dispatch triggers, runs pytest + validator in 4 output steps
+- `run_tests.py` — act harness: 3 test cases each in isolated temp repos, exact value assertions
+- `act-result.txt` — 52KB, 583 lines of captured act output
+
+**Results:** 27/27 unit tests pass, 3/3 act test cases pass (all jobs show "Job succeeded"), actionlint passes cleanly.

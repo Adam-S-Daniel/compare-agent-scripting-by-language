@@ -1,0 +1,61 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      commits_file:
+        description: "Path to commits fixture"
+        required: false
+        default: "fixtures/commits-feat.txt"
+
+permissions:
+  contents: read
+
+env:
+  COMMITS_FILE: ${{ github.event.inputs.commits_file || 'fixtures/commits-feat.txt' }}
+
+jobs:
+  bump:
+    name: Bump version from commits
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Lint the bumper script
+        shell: bash
+        run: |
+          bash -n bump-version.sh
+          if command -v shellcheck >/dev/null 2>&1; then
+            shellcheck bump-version.sh
+          fi
+
+      - name: Run version bumper
+        id: bump
+        shell: bash
+        run: |
+          set -euo pipefail
+          commits_file="${COMMITS_FILE}"
+          echo "Using commits fixture: ${commits_file}"
+          if [[ ! -f VERSION ]]; then
+            echo "0.1.0" > VERSION
+          fi
+          current="$(bash bump-version.sh --read-version VERSION)"
+          echo "Current version: ${current}"
+          new="$(bash bump-version.sh --run VERSION "${commits_file}" CHANGELOG.md)"
+          echo "New version: ${new}"
+          echo "new_version=${new}" >> "${GITHUB_OUTPUT}"
+          echo "RESULT_VERSION=${new}"
+
+      - name: Show changelog
+        shell: bash
+        run: |
+          echo "---- CHANGELOG ----"
+          if [[ -f CHANGELOG.md ]]; then
+            cat CHANGELOG.md
+          else
+            echo "(no changelog entry this run)"
+          fi
+          echo "---- END ----"

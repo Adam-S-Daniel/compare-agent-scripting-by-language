@@ -1,0 +1,50 @@
+name: Artifact Cleanup Script
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 2 * * 0"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Run in dry-run mode (show what would be deleted without deleting)"
+        required: false
+        default: "true"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  artifact-cleanup:
+    name: Run Artifact Cleanup
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+
+      - name: Verify Bun installation
+        run: bun --version
+
+      - name: Run unit tests
+        run: bun test artifact-cleanup.test.ts
+
+      - name: Run cleanup script (dry-run with fixture data)
+        run: |
+          bun run artifact-cleanup.ts \
+            --fixtures fixtures/workflow-test-artifacts.json \
+            --policy fixtures/workflow-test-policy.json \
+            --dry-run
+
+      - name: Run cleanup script (live mode with fixture data)
+        run: |
+          bun run artifact-cleanup.ts \
+            --fixtures fixtures/workflow-test-artifacts.json \
+            --policy fixtures/workflow-test-policy.json

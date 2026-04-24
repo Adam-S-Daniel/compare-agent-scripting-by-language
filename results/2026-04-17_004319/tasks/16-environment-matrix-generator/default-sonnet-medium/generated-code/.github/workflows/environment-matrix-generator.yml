@@ -1,0 +1,142 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  schedule:
+    - cron: "0 0 * * 1"
+  workflow_dispatch:
+    inputs:
+      config_json:
+        description: "JSON config for matrix generation (optional override)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Run Matrix Generator Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install pytest
+
+      - name: Run unit tests
+        run: python3 -m pytest tests/test_matrix_generator.py -v
+
+  generate-example-matrix:
+    name: Generate Example Build Matrix
+    runs-on: ubuntu-latest
+    needs: test
+    outputs:
+      matrix: ${{ steps.generate.outputs.matrix }}
+      fail-fast: ${{ steps.generate.outputs.fail-fast }}
+      max-parallel: ${{ steps.generate.outputs.max-parallel }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Write example config
+        run: |
+          cat > /tmp/matrix-config.json << 'EOF'
+          {
+            "os": ["ubuntu-latest", "windows-latest", "macos-latest"],
+            "python-version": ["3.10", "3.11", "3.12"],
+            "exclude": [
+              {"os": "windows-latest", "python-version": "3.10"}
+            ],
+            "include": [
+              {"os": "ubuntu-latest", "python-version": "3.13", "experimental": true}
+            ],
+            "fail-fast": false,
+            "max-parallel": 4
+          }
+          EOF
+
+      - name: Generate matrix
+        id: generate
+        run: |
+          OUTPUT=$(python3 matrix_generator.py /tmp/matrix-config.json)
+          echo "Generated matrix JSON:"
+          echo "$OUTPUT" | python3 -m json.tool
+          MATRIX=$(echo "$OUTPUT" | python3 -c "import json,sys; d=json.load(sys.stdin); print(json.dumps(d['matrix']))")
+          FAIL_FAST=$(echo "$OUTPUT" | python3 -c "import json,sys; d=json.load(sys.stdin); print(str(d.get('fail-fast', 'true')).lower())")
+          MAX_PARALLEL=$(echo "$OUTPUT" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('max-parallel', ''))")
+          {
+            echo "matrix=$MATRIX"
+            echo "fail-fast=$FAIL_FAST"
+            echo "max-parallel=$MAX_PARALLEL"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Validate output
+        run: |
+          OUTPUT=$(python3 matrix_generator.py /tmp/matrix-config.json)
+          COUNT=$(echo "$OUTPUT" | python3 -c "import json,sys; d=json.load(sys.stdin); print(len(d['matrix']['include']))")
+          echo "Matrix has $COUNT entries"
+          # 3*3=9 base, minus 1 excluded (windows+3.10), plus 1 explicit include = 9
+          if [ "$COUNT" -ne 9 ]; then
+            echo "ERROR: expected 9 entries, got $COUNT"
+            exit 1
+          fi
+          echo "Matrix size validation passed"
+
+  validate-max-size:
+    name: Validate Max Size Enforcement
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Test max-size rejection
+        run: |
+          # This config would produce 320 combos (4*4*4*5), exceeding 256 default
+          cat > /tmp/large-config.json << 'EOF'
+          {
+            "a": ["1", "2", "3", "4"],
+            "b": ["1", "2", "3", "4"],
+            "c": ["1", "2", "3", "4"],
+            "d": ["1", "2", "3", "4", "5"]
+          }
+          EOF
+          if python3 matrix_generator.py /tmp/large-config.json; then
+            echo "ERROR: expected non-zero exit for oversized matrix"
+            exit 1
+          fi
+          echo "Max-size enforcement works correctly"
+
+      - name: Test custom max-size
+        run: |
+          # Same config but with --max-size 400 should succeed
+          cat > /tmp/large-config.json << 'EOF'
+          {
+            "a": ["1", "2", "3", "4"],
+            "b": ["1", "2", "3", "4"],
+            "c": ["1", "2", "3", "4"],
+            "d": ["1", "2", "3", "4", "5"]
+          }
+          EOF
+          python3 matrix_generator.py /tmp/large-config.json --max-size 400
+          echo "Custom max-size works correctly"

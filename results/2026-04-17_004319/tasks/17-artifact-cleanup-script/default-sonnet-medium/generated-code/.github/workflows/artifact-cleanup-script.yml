@@ -1,0 +1,37 @@
+name: Artifact Cleanup Script
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  artifact-cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Python dependencies
+        run: python3 -m pip install --quiet --break-system-packages pytest pyyaml
+
+      - name: Install actionlint
+        run: |
+          bash <(curl -sL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+          sudo mv ./actionlint /usr/local/bin/actionlint
+
+      - name: Run unit and workflow-structure tests
+        run: python3 -m pytest test_artifact_cleanup.py -v
+
+      - name: Run artifact cleanup dry-run (known fixture data)
+        run: |
+          python3 artifact_cleanup.py \
+            --fixtures fixtures.json \
+            --max-age-days 30 \
+            --reference-date 2026-04-19 \
+            --dry-run

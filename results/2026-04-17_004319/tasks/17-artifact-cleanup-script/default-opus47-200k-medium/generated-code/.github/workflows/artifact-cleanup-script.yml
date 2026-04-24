@@ -1,0 +1,75 @@
+name: artifact-cleanup-script
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+    inputs:
+      max-age-days:
+        description: Max artifact age in days
+        required: false
+        default: "30"
+      keep-latest-n:
+        description: Keep N most recent artifacts per workflow
+        required: false
+        default: ""
+      max-total-bytes:
+        description: Max total storage budget in bytes
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    name: Plan artifact cleanup
+    runs-on: ubuntu-latest
+    env:
+      FIXTURE: fixtures/case.json
+      POLICY: fixtures/policy.json
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Verify artifacts inputs exist
+        run: |
+          test -f "$FIXTURE" || { echo "missing fixture $FIXTURE"; exit 1; }
+          test -f "$POLICY"  || { echo "missing policy $POLICY"; exit 1; }
+          echo "--- fixture ---"
+          cat "$FIXTURE"
+          echo "--- policy ---"
+          cat "$POLICY"
+
+      - name: Run cleanup planner
+        id: plan
+        run: |
+          set -euo pipefail
+          args=(--input "$FIXTURE" --output plan.json --dry-run)
+          MAX_AGE=$(jq -r '.max_age_days // empty' "$POLICY")
+          KEEP_N=$(jq -r  '.keep_latest_n // empty' "$POLICY")
+          MAX_SIZE=$(jq -r '.max_total_bytes // empty' "$POLICY")
+          NOW=$(jq -r     '.now // empty'            "$POLICY")
+          [ -n "$MAX_AGE"  ] && args+=(--max-age-days  "$MAX_AGE")
+          [ -n "$KEEP_N"   ] && args+=(--keep-latest-n "$KEEP_N")
+          [ -n "$MAX_SIZE" ] && args+=(--max-total-bytes "$MAX_SIZE")
+          [ -n "$NOW"      ] && args+=(--now "$NOW")
+          python3 cleanup.py "${args[@]}"
+
+      - name: Emit machine-readable summary
+        run: |
+          set -euo pipefail
+          echo "=== CLEANUP PLAN SUMMARY ==="
+          jq -c '.summary' plan.json
+          echo "=== DELETE NAMES ==="
+          jq -r '[.delete[].name] | sort | join(",")' plan.json
+          echo "=== KEEP NAMES ==="
+          jq -r '[.keep[].name] | sort | join(",")' plan.json
+          echo "=== END ==="

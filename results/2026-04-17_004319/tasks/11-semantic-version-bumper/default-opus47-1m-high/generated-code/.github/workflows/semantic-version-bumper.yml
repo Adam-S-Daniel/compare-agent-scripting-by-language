@@ -1,0 +1,87 @@
+name: Semantic Version Bumper
+
+# Triggers cover normal CI use and harness-driven local runs via `act push`.
+# `workflow_dispatch` lets a maintainer trigger a bump manually.
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: "Fixture file under fixtures/ to use as commit log"
+        required: false
+        default: "feat-only.log"
+
+# The job only writes to a temporary copy of the project, so no broad write
+# permissions are needed. Read-only contents is enough.
+permissions:
+  contents: read
+
+jobs:
+  bump:
+    name: Compute next version
+    runs-on: ubuntu-latest
+    env:
+      # Fixed date so changelog output is deterministic in tests.
+      RELEASE_DATE: "2026-04-19"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Run unit tests
+        run: node --test test/bumper.test.js
+
+      # Defaults are applied via shell parameter expansion so the harness can
+      # override FIXTURE / INITIAL_VERSION through `act --env` without the
+      # workflow's job-level env block shadowing them.
+      - name: Prepare scratch project
+        run: |
+          set -eu
+          FIXTURE="${FIXTURE:-feat-only.log}"
+          INITIAL_VERSION="${INITIAL_VERSION:-1.0.0}"
+          mkdir -p /tmp/scratch
+          cp -r src /tmp/scratch/
+          cp package.json /tmp/scratch/
+          INITIAL_VERSION="${INITIAL_VERSION}" node -e "const fs=require('fs');const p='/tmp/scratch/package.json';const j=JSON.parse(fs.readFileSync(p));j.version=process.env.INITIAL_VERSION;fs.writeFileSync(p,JSON.stringify(j,null,2));"
+          if [ ! -f "fixtures/${FIXTURE}" ]; then
+            echo "fixture not found: fixtures/${FIXTURE}" >&2
+            exit 1
+          fi
+          cp "fixtures/${FIXTURE}" /tmp/scratch/commits.log
+          echo "Initial version: ${INITIAL_VERSION}"
+          echo "Fixture: ${FIXTURE}"
+          cat /tmp/scratch/commits.log
+
+      - name: Bump version
+        id: bump
+        run: |
+          set -eu
+          cd /tmp/scratch
+          node src/cli.js \
+            --version-file package.json \
+            --commits-file commits.log \
+            --changelog CHANGELOG.md \
+            --date "${RELEASE_DATE}" | tee bump-output.txt
+          NEW_VERSION=$(grep -E '^version=' bump-output.txt | tail -n1 | cut -d= -f2)
+          echo "new_version=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Resolved new version: ${NEW_VERSION}"
+
+      - name: Show changelog
+        run: |
+          if [ -f /tmp/scratch/CHANGELOG.md ]; then
+            echo "----- CHANGELOG.md -----"
+            cat /tmp/scratch/CHANGELOG.md
+            echo "----- END CHANGELOG -----"
+          else
+            echo "no changelog produced (no release)"
+          fi
+
+      - name: Emit machine-readable result
+        run: |
+          echo "RESULT_VERSION=${{ steps.bump.outputs.new_version }}"

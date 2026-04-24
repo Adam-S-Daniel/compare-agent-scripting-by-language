@@ -1,0 +1,33 @@
+name: PR Label Assigner
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  label-assigner:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Run unit tests
+        run: bun test src/labeler.test.ts
+
+      - name: Run labeler - default fixture (docs + api + tests)
+        run: bun run src/main.ts --files fixtures/changed-files.txt --config fixtures/config.json
+
+      - name: Run labeler - api-only fixture
+        run: bun run src/main.ts --files fixtures/test-case-api-only.txt --config fixtures/config.json
+
+      - name: Run labeler - docs-only fixture
+        run: bun run src/main.ts --files fixtures/test-case-docs-only.txt --config fixtures/config.json

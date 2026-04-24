@@ -1,0 +1,46 @@
+name: Test Results Aggregator
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install actionlint
+        run: |
+          curl -sLO https://github.com/rhysd/actionlint/releases/download/v1.7.4/actionlint_1.7.4_linux_amd64.tar.gz
+          tar -xzf actionlint_1.7.4_linux_amd64.tar.gz actionlint
+          sudo mv actionlint /usr/local/bin/actionlint
+
+      - name: Run Pester Tests
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = './Tests'
+          $config.Output.Verbosity = 'Detailed'
+          $config.Run.PassThru = $true
+          $result = Invoke-Pester -Configuration $config
+          if ($result.FailedCount -gt 0) {
+            Write-Error "$($result.FailedCount) Pester test(s) failed"
+            exit 1
+          }
+
+      - name: Run Test Aggregator on Fixtures
+        shell: pwsh
+        run: |
+          ./Invoke-TestAggregator.ps1 -ResultsPath ./fixtures -OutputPath ./summary.md
+
+      - name: Display Summary
+        shell: pwsh
+        run: |
+          Get-Content ./summary.md

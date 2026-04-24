@@ -1,0 +1,83 @@
+name: Artifact Cleanup Script
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 2 * * 0"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  artifact-cleanup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # pwsh and Pester are pre-installed in the act-ubuntu-pwsh image.
+      # This step is a near-instant no-op in that environment but keeps
+      # the workflow portable for vanilla ubuntu runners.
+      - name: Ensure PowerShell is available
+        shell: pwsh
+        run: |
+          Write-Host "PowerShell version: $($PSVersionTable.PSVersion)"
+
+      # Create dynamic test fixture: 3 artifacts, one older than the 30-day limit.
+      # Sizes are fixed so the integration test can assert exact byte counts.
+      - name: Create test fixtures
+        shell: pwsh
+        run: |
+          $today = Get-Date
+          $artifacts = @(
+            [PSCustomObject]@{
+              Name          = "artifact-fresh"
+              SizeBytes     = 104857600   # 100 MB
+              CreatedAt     = ($today.AddDays(-5)).ToString("o")
+              WorkflowRunId = "wf-1"
+            },
+            [PSCustomObject]@{
+              Name          = "artifact-medium"
+              SizeBytes     = 209715200   # 200 MB
+              CreatedAt     = ($today.AddDays(-20)).ToString("o")
+              WorkflowRunId = "wf-1"
+            },
+            [PSCustomObject]@{
+              Name          = "artifact-old"
+              SizeBytes     = 314572800   # 300 MB — older than 30-day limit
+              CreatedAt     = ($today.AddDays(-40)).ToString("o")
+              WorkflowRunId = "wf-2"
+            }
+          )
+          $artifacts | ConvertTo-Json -Depth 5 | Out-File -FilePath artifacts.json -Encoding UTF8
+
+          @{
+            MaxAgeDays       = 30
+            MaxTotalSizeBytes = 0
+            KeepLatestN      = 0
+          } | ConvertTo-Json | Out-File -FilePath policy.json -Encoding UTF8
+
+          Write-Host "Fixtures written: artifacts.json, policy.json"
+
+      - name: Run artifact cleanup in dry-run mode
+        shell: pwsh
+        run: |
+          ./ArtifactCleanup.ps1 -ArtifactsFile artifacts.json -PolicyFile policy.json -DryRun
+
+      - name: Run unit tests with Pester
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path         = "./ArtifactCleanup.Tests.ps1"
+          $config.Filter.Tag       = "Unit"
+          $config.Output.Verbosity = "Normal"
+          $config.TestResult.Enabled = $false
+
+          $result = Invoke-Pester -Configuration $config
+          if ($result.FailedCount -gt 0) {
+            throw "Pester unit tests failed: $($result.FailedCount) failure(s)"
+          }
+          Write-Host "All $($result.PassedCount) unit tests passed."

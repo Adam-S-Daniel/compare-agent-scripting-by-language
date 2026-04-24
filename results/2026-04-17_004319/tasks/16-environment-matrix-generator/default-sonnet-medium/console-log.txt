@@ -1,0 +1,188 @@
+[Assistant] Let me start by reading the project instructions.
+[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/AGENTS.md
+[Result] # Agent Instructions
+
+All agent-facing instructions live in this file. `CLAUDE.md` contains only a
+reference here. If you are a Claude Code agent, you have already loaded this
+via `CLAUDE.md`. Other agents: read this file directly.
+
+## Build and test
+
+```bash
+# Run unit tests (REQUIRED before every PR)
+pip install pytest  # if not already installed
+python3 -m pytest tests/ -v
+
+# Validate imports
+python3 -c "from runner import main"
+python3 -c "from generate_results import generate_results_md"
+python3 -c "from test_quality import compute_structural_metrics"
+python3 -c "from llm_providers import get_provider"
+
+# Regenerate all reports
+python3 generate_results.py --all
+
+# Run a benchmark (v4, all tasks/modes/models)
+python3 runner.py --tasks 11,12,13,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
+
+# Evaluate test quality (structural metrics only)
+python3 test_quality.py results/2026-04-09_152435
+
+# Evaluate test quality with LLM-as-judge (requires a provid
+[Tool: Bash] ls /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/default-sonnet-medium/
+[Result] benchmark-instructions-v4.md
+[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/default-sonnet-medium/benchmark-instructions-v4.md 2>/dev/null | head -50
+[Result] # Benchmark Instructions v4 — GitHub Actions
+
+**Version**: v4
+**Date**: 2026-04-09
+**Purpose**: Measure how well Claude Code agents perform GitHub Actions workflow authoring tasks across different language constraints, with trap-awareness guidance from v3 findings.
+
+**Changes from v3**:
+- Added "Common Pitfalls" section with guidance derived from v3 trap analysis (115min, 15.8% of v3 time lost to traps)
+- Act container now has pwsh and Pester pre-installed (matching real GitHub runners). Agents still need an install step for workflows that will run on vanilla act, but the benchmarking container already has them.
+- GHA workflow addendum expanded with `shell: pwsh` guidance for PowerShell mode
+- All other methodology, tasks, modes, and models are unchanged from v3
+
+## Methodology
+
+### Overview
+
+Each task is executed by a Claude Code agent under 4 different language constraints ("modes") and with 2 different models, yielding **8 runs per task**. Agents receive only the prompt -- no conver
+[Tool: Bash] which python3 && python3 --version && which node && node --version 2>/dev/null; which actionlint && actionlint --version 2>/dev/null
+[Result] /usr/bin/python3
+Python 3.12.3
+/usr/bin/node
+v20.20.2
+/home/passp/.local/bin/actionlint
+1.7.12
+installed by downloading from release page
+built with go1.26.1 compiler for linux/amd64
+[Assistant] Now I'll implement the solution using Python with TDD. Let me start with the first failing test.
+[Tool: Bash] mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/default-sonnet-medium/tests && mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/default-sonnet-medium/.github/workflows
+[Result] (Bash completed with no output)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/default-sonnet-medium/tests/test_matrix_generator.py", "content": "\"\
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/default-sonnet-medium/tests/test_matrix_generator.py (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 -m pytest tests/test_matrix_generator.py -v 2>&1 | head -30
+[Result] ============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/passp/repos/compare-agent-scripting-by-language
+configfile: pyproject.toml
+plugins: anyio-4.13.0
+collecting ... collected 14 items
+
+tests/test_matrix_generator.py::test_basic_matrix_generation FAILED      [  7%]
+tests/test_matrix_generator.py::test_matrix_with_feature_flags FAILED    [ 14%]
+tests/test_matrix_generator.py::test_exclude_rules FAILED                [ 21%]
+tests/test_matrix_generator.py::test_include_rules FAILED                [ 28%]
+tests/test_matrix_generator.py::test_strategy_options FAILED             [ 35%]
+tests/test_matrix_generator.py::test_max_size_exceeded_raises FAILED     [ 42%]
+tests/test_matrix_generator.py::test_max_size_default_256 FAILED         [ 50%]
+tests/test_matrix_generator.py::test_max_size_257_raises FAILED          [ 57%]
+tests/test_matrix_generator.
+[Assistant] Tests are failing (red phase). Now I'll write the implementation.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/default-sonnet-medium/matrix_generator.py", "content": "\"\"\"\nEnviro
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/default-sonnet-medium/matrix_generator.py (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 -m pytest tests/test_matrix_generator.py -v 2>&1
+[Result] ============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/passp/repos/compare-agent-scripting-by-language
+configfile: pyproject.toml
+plugins: anyio-4.13.0
+collecting ... collected 14 items
+
+tests/test_matrix_generator.py::test_basic_matrix_generation PASSED      [  7%]
+tests/test_matrix_generator.py::test_matrix_with_feature_flags PASSED    [ 14%]
+tests/test_matrix_generator.py::test_exclude_rules PASSED                [ 21%]
+tests/test_matrix_generator.py::test_include_rules PASSED                [ 28%]
+tests/test_matrix_generator.py::test_strategy_options PASSED             [ 35%]
+tests/test_matrix_generator.py::test_max_size_exceeded_raises PASSED     [ 42%]
+tests/test_matrix_generator.py::test_max_size_default_256 PASSED         [ 50%]
+tests/test_matrix_generator.py::test_max_size_257_raises PASSED          [ 57%]
+tests/test_matrix_generator.
+[Assistant] All 14 tests pass. Now let me create the GitHub Actions workflow.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/default-sonnet-medium/.github/workflows/environment-matrix-generator.y
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/default-sonnet-medium/.github/workflows/environment-matrix-generator.yml (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/environment-matrix-generator.yml 2>&1
+[Result ERROR] Exit code 1
+.github/workflows/environment-matrix-generator.yml:75:9: shellcheck reported issue in this script: SC2129:style:7:1: Consider using { cmd1; cmd2; } >> file instead of individual redirects [shellcheck]
+   |
+75 |         run: |
+   |         ^~~~
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/default-sonnet-medium/.github/workflows/environm
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/default-sonnet-medium/.github/workflows/environment-matrix-generator.yml has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/environment-matrix-generator.yml 2>&1
+[Result] (Bash completed with no output)
+[Assistant] Actionlint passes. Now let me run the tests through `act`.
+[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/default-sonnet-medium/.actrc 2>/dev/null || cat /home/passp/repos/compare-agent-scripting-by-language/.actrc 2>/dev/null
+[Result] -P ubuntu-latest=act-ubuntu-pwsh:latest
+[Tool: Bash] cp /home/passp/repos/compare-agent-scripting-by-language/.actrc /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/default-sonnet-medium/.actrc
+[Result ERROR] Exit code 1
+cp: cannot stat '/home/passp/repos/compare-agent-scripting-by-language/.actrc': No such file or directory
+[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/default-sonnet-medium/.actrc
+[Result] -P ubuntu-latest=act-ubuntu-pwsh:latest
+[Assistant] Good, the `.actrc` is already there. Now let me run `act push` and capture the output.
+[Tool: Bash] act push --rm 2>&1 | tee act-result.txt; echo "ACT_EXIT_CODE=$?"
+[Result] time="2026-04-19T17:48:26-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+time="2026-04-19T17:48:26-04:00" level=warning msg="unable to get git ref: reference not found"
+time="2026-04-19T17:48:26-04:00" level=warning msg="unable to get git revision: reference not found"
+[Environment Matrix Generator/Run Matrix Generator Tests] ⭐ Run Set up job
+[Environment Matrix Generator/Run Matrix Generator Tests] 🚀  Start image=act-ubuntu-pwsh:latest
+[Environment Matrix Generator/Run Matrix Generator Tests]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=true
+[Environment Matrix Generator/Run Matrix Generator Tests] using DockerAuthConfig authentication for docker pull
+[Environment Matrix Generator/Run Matrix Generator Tests] Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+[Environment Matrix Generator/Run Matrix Generator T
+[Assistant] The custom image isn't available. Let me use a standard act image instead.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/default-sonnet-medium/.actrc", "content": "-P ubuntu-latest=catthehack
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/default-sonnet-medium/.actrc has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] act push --rm 2>&1 | tee act-result.txt; echo "ACT_EXIT_CODE=$?"
+[Result] <persisted-output>
+Output too large (208.1KB). Full output saved to: /home/passp/.claude/projects/-home-passp-repos-compare-agent-scripting-by-language-workspaces-2026-04-17-004319-16-environment-matrix-generator-default-sonnet-medium/24374508-6e84-4ff4-81fa-9f148c3d3cb8/tool-results/beyd2n0do.txt
+
+Preview (first 2KB):
+time="2026-04-19T17:48:38-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+time="2026-04-19T17:48:38-04:00" level=warning msg="unable to get git ref: reference not found"
+time="2026-04-19T17:48:38-04:00" level=warning msg="unable to get git revision: reference not found"
+[Environment Matrix Generator/Run Matrix Generator Tests] ⭐ Run Set up job
+[Environment Matrix Generator/Run Matrix Generator Tests] 🚀  Start image=catthehacker/ubuntu:act-latest
+[Environment Matrix Generator/Run Matrix Generator Tests]   🐳  docker pull image=catthehacker/ubuntu:act-latest platform= username= forcePull=true
+[Environm
+[Tool: Bash] tail -50 act-result.txt
+[Result] [Environment Matrix Generator/Validate Max Size Enforcement]   | (Use `node --trace-deprecation ...` to show where the warning was created)
+[Environment Matrix Generator/Generate Example Build Matrix] unable to get git ref: reference not found
+[Environment Matrix Generator/Generate Example Build Matrix] unable to get git revision: reference not found
+[Environment Matrix Generator/Validate Max Size Enforcement]   ✅  Success - Post Set up Python [807.52063ms]
+[Environment Matrix Generator/Generate Example Build Matrix] unable to get git ref: reference not found
+[Environment Matrix Generator/Generate Example Build Matrix] unable to get git revision: reference not found
+[Environment Matrix Generator/Generate Example Build Matrix] unable to get git ref: reference not found
+[Environment Matrix Generator/Generate Example Build Matrix] unable to get git revision: reference not found
+[Environment Matrix Generator/Generate Example Build Matrix] ⭐ Run Main Validate output
+[Environment Matrix Gene
+[Assistant] All jobs succeeded. Let me verify the test job also passed:
+[Tool: Bash] grep -E "(Job succeeded|Job failed|PASSED|FAILED|passed|failed)" act-result.txt | head -30
+[Result] [Environment Matrix Generator/Run Matrix Generator Tests]   | tests/test_matrix_generator.py::test_basic_matrix_generation PASSED      [  7%]
+[Environment Matrix Generator/Run Matrix Generator Tests]   | tests/test_matrix_generator.py::test_matrix_with_feature_flags PASSED    [ 14%]
+[Environment Matrix Generator/Run Matrix Generator Tests]   | tests/test_matrix_generator.py::test_exclude_rules PASSED                [ 21%]
+[Environment Matrix Generator/Run Matrix Generator Tests]   | tests/test_matrix_generator.py::test_include_rules PASSED                [ 28%]
+[Environment Matrix Generator/Run Matrix Generator Tests]   | tests/test_matrix_generator.py::test_strategy_options PASSED             [ 35%]
+[Environment Matrix Generator/Run Matrix Generator Tests]   | tests/test_matrix_generator.py::test_max_size_exceeded_raises PASSED     [ 42%]
+[Environment Matrix Generator/Run Matrix Generator Tests]   | tests/test_matrix_generator.py::test_max_size_default_256 PASSED         [ 50%]
+[Envir
+[Assistant] All 3 jobs succeeded with 14/14 tests passing. Let me verify the `act-result.txt` exists and do a final check:
+[Tool: Bash] ls -la act-result.txt && wc -l act-result.txt
+[Result] -rw-r--r-- 1 passp passp 213081 Apr 19 17:48 act-result.txt
+2444 act-result.txt
+[Assistant] Everything is complete and passing. Here's a summary:
+
+**Implementation:**
+- `matrix_generator.py` — Python script that generates GitHub Actions build matrices from a JSON config. Supports Cartesian product of all dimension keys, include/exclude rules (subset matching), fail-fast/max-parallel strategy options, and max-size validation (default 256, GitHub's limit). CLI reads a config file and writes JSON to stdout.
+- `tests/test_matrix_generator.py` — 14 tests written TDD-style (red first, then green), covering all features.
+- `.github/workflows/environment-matrix-generator.yml` — 3-job workflow: runs unit tests, generates an example matrix with include/exclude rules and validates the count is exactly 9, and validates that oversized matrices are rejected.
+
+**Results:**
+- `actionlint` passes cleanly
+- `act push --rm` exits 0 with all 3 jobs showing "Job succeeded"
+- All 14 tests pass: 14 passed in 0.21s inside the container
+- `act-result.txt` saved (213KB, 2444 lines)

@@ -1,0 +1,126 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Run Pester Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Pester (if not present)
+        shell: pwsh
+        run: |
+          if (-not (Get-Module -ListAvailable -Name Pester)) {
+            Install-Module -Name Pester -Force -Scope CurrentUser
+          }
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $result = Invoke-Pester -Path './New-BuildMatrix.Tests.ps1' -PassThru -Output Detailed
+          if ($result.FailedCount -gt 0) {
+            Write-Error "Pester: $($result.FailedCount) test(s) failed"
+            exit 1
+          }
+
+  generate-matrix:
+    name: Generate Matrix
+    runs-on: ubuntu-latest
+    needs: test
+    outputs:
+      matrix-json: ${{ steps.gen.outputs.matrix_json }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Pester (if not present)
+        shell: pwsh
+        run: |
+          if (-not (Get-Module -ListAvailable -Name Pester)) {
+            Install-Module -Name Pester -Force -Scope CurrentUser
+          }
+
+      - name: Generate matrix JSON
+        id: gen
+        shell: pwsh
+        run: |
+          . ./New-BuildMatrix.ps1
+
+          $config = @'
+          {
+            "os": ["ubuntu-22.04", "windows-2022"],
+            "language": ["3.10", "3.11", "3.12"],
+            "failFast": false,
+            "maxParallel": 4,
+            "include": [{"os": "macos-latest", "language": "3.12", "extra": "mac-bonus"}],
+            "exclude": [{"os": "windows-2022", "language": "3.10"}]
+          }
+          '@
+
+          $json = Invoke-MatrixGenerator -JsonConfig $config
+          Write-Output "Generated matrix:"
+          $json | ConvertFrom-Json | ConvertTo-Json -Depth 10
+
+          # Emit as a step output (single line, no newlines)
+          "matrix_json=$json" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+
+      - name: Validate output
+        shell: pwsh
+        run: |
+          . ./New-BuildMatrix.ps1
+
+          $config = @'
+          {
+            "os": ["ubuntu-22.04", "windows-2022"],
+            "language": ["3.10", "3.11", "3.12"],
+            "failFast": false,
+            "maxParallel": 4,
+            "include": [{"os": "macos-latest", "language": "3.12", "extra": "mac-bonus"}],
+            "exclude": [{"os": "windows-2022", "language": "3.10"}]
+          }
+          '@
+
+          $json = Invoke-MatrixGenerator -JsonConfig $config
+          $parsed = $json | ConvertFrom-Json
+
+          # Assert exact expected values
+          if ($parsed.matrix.os.Count -ne 2) {
+            Write-Error "Expected 2 OS entries, got $($parsed.matrix.os.Count)"
+            exit 1
+          }
+          if ($parsed.matrix.language.Count -ne 3) {
+            Write-Error "Expected 3 language entries, got $($parsed.matrix.language.Count)"
+            exit 1
+          }
+          if ($parsed.'fail-fast' -ne $false) {
+            Write-Error "Expected fail-fast=false"
+            exit 1
+          }
+          if ($parsed.'max-parallel' -ne 4) {
+            Write-Error "Expected max-parallel=4"
+            exit 1
+          }
+          if ($parsed.matrix.include.Count -ne 1) {
+            Write-Error "Expected 1 include entry, got $($parsed.matrix.include.Count)"
+            exit 1
+          }
+          if ($parsed.matrix.include[0].os -ne 'macos-latest') {
+            Write-Error "Expected include[0].os=macos-latest"
+            exit 1
+          }
+          if ($parsed.matrix.exclude.Count -ne 1) {
+            Write-Error "Expected 1 exclude entry, got $($parsed.matrix.exclude.Count)"
+            exit 1
+          }
+          Write-Output "All assertions passed."

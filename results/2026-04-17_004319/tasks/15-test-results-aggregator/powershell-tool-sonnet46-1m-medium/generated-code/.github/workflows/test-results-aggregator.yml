@@ -1,0 +1,54 @@
+name: Test Results Aggregator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-aggregate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Pester (no-op if already present)
+        shell: pwsh
+        run: |
+          $existing = Get-Module -ListAvailable -Name Pester | Where-Object { $_.Version -ge '5.0.0' }
+          if (-not $existing) {
+            Install-Module -Name Pester -Force -SkipPublisherCheck -MinimumVersion 5.0.0
+          }
+          Import-Module Pester -MinimumVersion 5.0.0
+
+      - name: Run Pester unit tests
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = './TestResultsAggregator.Tests.ps1'
+          $config.Output.Verbosity = 'Normal'
+          $result = Invoke-Pester -Configuration $config
+          if ($result.FailedCount -gt 0) {
+            Write-Error "Pester tests failed: $($result.FailedCount) failure(s)"
+            exit 1
+          }
+          Write-Host "All Pester tests passed: $($result.PassedCount) passed"
+
+      - name: Aggregate test results from fixtures
+        shell: pwsh
+        run: |
+          ./Invoke-TestResultsAggregator.ps1 -InputPath ./fixtures -OutputFile ./summary.md -Verbose
+
+      - name: Display markdown summary
+        shell: pwsh
+        run: |
+          $content = Get-Content ./summary.md -Raw
+          Write-Host $content
+          if ($env:GITHUB_STEP_SUMMARY) {
+            Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value $content -Encoding UTF8
+          }

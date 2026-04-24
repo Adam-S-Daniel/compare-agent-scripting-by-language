@@ -1,0 +1,77 @@
+name: Artifact Cleanup
+
+# Trigger on push/PR for CI feedback, on a daily schedule for actual cleanup
+# of stale artifacts, and via workflow_dispatch for manual runs. The fixture
+# input lets the act test harness drive different scenarios through the same
+# workflow without code changes.
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: 'Fixture file under fixtures/ to evaluate'
+        required: false
+        default: 'case-combined.json'
+      apply:
+        description: 'If true, apply deletions (otherwise dry-run)'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: read
+
+env:
+  # Drives which fixture the cleanup script reads. Defaults are wired so the
+  # workflow has a sensible run when triggered without inputs (e.g. push).
+  FIXTURE: ${{ github.event.inputs.fixture || 'case-combined.json' }}
+  APPLY:   ${{ github.event.inputs.apply   || 'false' }}
+
+jobs:
+  test:
+    name: Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          # Only the unit tests run in CI -- Harness.Tests.ps1 is a host-side
+          # harness that itself shells out to `act` and `actionlint`, which
+          # are not available inside the runner container.
+          $cfg = New-PesterConfiguration
+          $cfg.Run.Path = './tests/ArtifactCleanup.Tests.ps1'
+          $cfg.Run.Exit = $true
+          $cfg.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $cfg
+
+  cleanup:
+    name: Run cleanup plan
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show selected fixture
+        shell: pwsh
+        run: |
+          Write-Host "Using fixture: $env:FIXTURE"
+          Write-Host "Apply mode:    $env:APPLY"
+
+      - name: Generate cleanup plan
+        shell: pwsh
+        run: |
+          $fixturePath = Join-Path 'fixtures' $env:FIXTURE
+          if (-not (Test-Path -LiteralPath $fixturePath)) {
+            throw "Fixture file not found: $fixturePath"
+          }
+          # Hashtable splat (not array) so the [switch] parameter binds.
+          $params = @{ InputJson = $fixturePath }
+          if ($env:APPLY -eq 'true') { $params['Apply'] = $true }
+          & ./src/Invoke-Cleanup.ps1 @params

@@ -1,0 +1,104 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Run Matrix Generator Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies (bats, jq, actionlint)
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q bats jq
+          # Install actionlint for workflow validation tests
+          ACTIONLINT_VER="1.7.3"
+          curl -fsSL "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VER}/actionlint_${ACTIONLINT_VER}_linux_amd64.tar.gz" \
+            | sudo tar xz -C /usr/local/bin actionlint
+
+      - name: Validate script syntax
+        run: |
+          bash -n generate_matrix.sh
+          echo "Syntax OK"
+
+      - name: Run bats tests
+        run: bats tests/matrix.bats
+
+      - name: Generate basic matrix and verify exact values
+        run: |
+          echo "=== BASIC MATRIX OUTPUT ==="
+          ./generate_matrix.sh fixtures/basic-config.json
+          echo "=== END BASIC MATRIX ==="
+
+          MATRIX=$(./generate_matrix.sh fixtures/basic-config.json)
+          OS_COUNT=$(echo "$MATRIX" | jq '.matrix.os | length')
+          NODE_COUNT=$(echo "$MATRIX" | jq '.matrix["node-version"] | length')
+          FAIL_FAST=$(echo "$MATRIX" | jq '."fail-fast"')
+
+          echo "VERIFIED_OS_COUNT=$OS_COUNT"
+          echo "VERIFIED_NODE_COUNT=$NODE_COUNT"
+          echo "VERIFIED_FAIL_FAST=$FAIL_FAST"
+
+          [ "$OS_COUNT" -eq 2 ] || (echo "FAIL: expected OS_COUNT=2, got $OS_COUNT" && exit 1)
+          [ "$NODE_COUNT" -eq 2 ] || (echo "FAIL: expected NODE_COUNT=2, got $NODE_COUNT" && exit 1)
+          [ "$FAIL_FAST" = "false" ] || (echo "FAIL: expected fail-fast=false, got $FAIL_FAST" && exit 1)
+
+      - name: Verify max-parallel output
+        run: |
+          MATRIX=$(./generate_matrix.sh fixtures/max-parallel.json)
+          MAX_PAR=$(echo "$MATRIX" | jq '."max-parallel"')
+          FAIL_FAST=$(echo "$MATRIX" | jq '."fail-fast"')
+
+          echo "VERIFIED_MAX_PARALLEL=$MAX_PAR"
+          echo "VERIFIED_FAIL_FAST_TRUE=$FAIL_FAST"
+
+          [ "$MAX_PAR" -eq 2 ] || (echo "FAIL: expected max-parallel=2, got $MAX_PAR" && exit 1)
+          [ "$FAIL_FAST" = "true" ] || (echo "FAIL: expected fail-fast=true, got $FAIL_FAST" && exit 1)
+
+      - name: Verify include rules
+        run: |
+          MATRIX=$(./generate_matrix.sh fixtures/with-includes.json)
+          INC_COUNT=$(echo "$MATRIX" | jq '.matrix.include | length')
+          INC_NODE=$(echo "$MATRIX" | jq -r '.matrix.include[0]["node-version"]')
+
+          echo "VERIFIED_INCLUDE_COUNT=$INC_COUNT"
+          echo "VERIFIED_INCLUDE_NODE=$INC_NODE"
+
+          [ "$INC_COUNT" -eq 1 ] || (echo "FAIL: expected include count=1, got $INC_COUNT" && exit 1)
+          [ "$INC_NODE" = "22" ] || (echo "FAIL: expected include node=22, got $INC_NODE" && exit 1)
+
+      - name: Verify exclude rules
+        run: |
+          MATRIX=$(./generate_matrix.sh fixtures/with-excludes.json)
+          EXC_COUNT=$(echo "$MATRIX" | jq '.matrix.exclude | length')
+          EXC_OS=$(echo "$MATRIX" | jq -r '.matrix.exclude[0].os')
+
+          echo "VERIFIED_EXCLUDE_COUNT=$EXC_COUNT"
+          echo "VERIFIED_EXCLUDE_OS=$EXC_OS"
+
+          [ "$EXC_COUNT" -eq 1 ] || (echo "FAIL: expected exclude count=1, got $EXC_COUNT" && exit 1)
+          [ "$EXC_OS" = "windows-latest" ] || (echo "FAIL: expected exclude os=windows-latest, got $EXC_OS" && exit 1)
+
+      - name: Verify oversized matrix is rejected
+        run: |
+          if ./generate_matrix.sh fixtures/oversized.json 2>&1; then
+            echo "FAIL: expected non-zero exit for oversized matrix"
+            exit 1
+          fi
+          echo "VERIFIED_OVERSIZED_REJECTED=true"
+
+      - name: Show final matrix summary
+        run: |
+          echo "=== ALL VERIFICATIONS PASSED ==="
+          echo "Matrix generator is working correctly."
+          ./generate_matrix.sh fixtures/with-flags.json | jq '.matrix | keys'

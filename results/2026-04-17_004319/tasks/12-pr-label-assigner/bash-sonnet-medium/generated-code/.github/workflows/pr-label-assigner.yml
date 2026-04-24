@@ -1,0 +1,173 @@
+name: PR Label Assigner
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-structure:
+    name: Validate Workflow Structure
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify script exists
+        run: |
+          test -f pr_label_assigner.sh || { echo "Error: pr_label_assigner.sh not found"; exit 1; }
+          test -x pr_label_assigner.sh || chmod +x pr_label_assigner.sh
+          echo "Script found and executable"
+
+      - name: Validate script syntax
+        run: |
+          bash -n pr_label_assigner.sh
+          echo "Syntax OK"
+
+      - name: Install shellcheck
+        run: |
+          if ! command -v shellcheck >/dev/null 2>&1; then
+            apt-get install -y shellcheck 2>/dev/null || \
+              (curl -sL "https://github.com/koalaman/shellcheck/releases/download/stable/shellcheck-stable.linux.x86_64.tar.xz" \
+                | tar -xJ -C /tmp && cp /tmp/shellcheck-stable/shellcheck /usr/local/bin/) || true
+          fi
+          shellcheck --version || echo "shellcheck not available, skipping"
+
+      - name: Run shellcheck
+        run: |
+          if command -v shellcheck >/dev/null 2>&1; then
+            shellcheck pr_label_assigner.sh
+            echo "shellcheck passed"
+          else
+            bash -n pr_label_assigner.sh
+            echo "shellcheck not available; bash -n syntax check passed"
+          fi
+
+  run-tests:
+    name: Run Bats Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install bats-core
+        run: |
+          apt-get update -qq
+          apt-get install -y bats
+          bats --version
+
+      - name: Make script executable
+        run: chmod +x pr_label_assigner.sh
+
+      - name: Run all bats tests
+        run: bats tests/test_pr_label_assigner.bats
+
+  integration-test:
+    name: Integration Test with Mock Files
+    runs-on: ubuntu-latest
+    needs: run-tests
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Make script executable
+        run: chmod +x pr_label_assigner.sh
+
+      - name: Create test rules config
+        run: |
+          cat > /tmp/rules.conf <<'EOF'
+          docs/**:documentation
+          src/api/**:api
+          *.test.*:tests
+          src/**:source
+          .github/**:ci
+          EOF
+
+      - name: Test with mock file list
+        run: |
+          output=$(./pr_label_assigner.sh --config /tmp/rules.conf --mock)
+          echo "Mock output: $output"
+          echo "$output" | grep -q "documentation" || { echo "FAIL: missing documentation label"; exit 1; }
+          echo "$output" | grep -q "api" || { echo "FAIL: missing api label"; exit 1; }
+          echo "$output" | grep -q "tests" || { echo "FAIL: missing tests label"; exit 1; }
+          echo "All expected labels found in mock output"
+
+      - name: Test with explicit file list
+        run: |
+          cat > /tmp/changed_files.txt <<'EOF'
+          docs/README.md
+          src/api/routes.sh
+          src/util.test.sh
+          EOF
+          output=$(./pr_label_assigner.sh --config /tmp/rules.conf --files /tmp/changed_files.txt)
+          echo "Explicit file list output: $output"
+          echo "$output" | grep -q "documentation" || { echo "FAIL: missing documentation"; exit 1; }
+          echo "$output" | grep -q "api" || { echo "FAIL: missing api"; exit 1; }
+          echo "$output" | grep -q "tests" || { echo "FAIL: missing tests"; exit 1; }
+          echo "Integration test passed"
+
+      - name: Test no-match scenario
+        run: |
+          cat > /tmp/rules_limited.conf <<'EOF'
+          docs/**:documentation
+          EOF
+          cat > /tmp/no_match_files.txt <<'EOF'
+          src/main.sh
+          EOF
+          output=$(./pr_label_assigner.sh --config /tmp/rules_limited.conf --files /tmp/no_match_files.txt)
+          if [ -n "$(echo "$output" | tr -d '[:space:]')" ]; then
+            echo "FAIL: expected empty output, got: $output"
+            exit 1
+          fi
+          echo "No-match scenario passed"
+
+      - name: Test priority ordering
+        run: |
+          cat > /tmp/priority_rules.conf <<'EOF'
+          src/api/**:api
+          src/**:source
+          EOF
+          cat > /tmp/priority_files.txt <<'EOF'
+          src/api/routes.sh
+          EOF
+          output=$(./pr_label_assigner.sh --config /tmp/priority_rules.conf --files /tmp/priority_files.txt --priority)
+          echo "Priority output: $output"
+          first_label=$(echo "$output" | cut -d',' -f1 | tr -d ' ')
+          if [ "$first_label" != "api" ]; then
+            echo "FAIL: expected first label to be 'api', got: $first_label"
+            exit 1
+          fi
+          echo "Priority ordering test passed"
+
+      - name: Test error handling - missing config
+        run: |
+          if ./pr_label_assigner.sh --config /nonexistent/rules.conf --files /tmp/changed_files.txt 2>/dev/null; then
+            echo "FAIL: should have exited with error"
+            exit 1
+          fi
+          echo "Error handling test passed"
+
+      - name: Test output format (comma-separated single line)
+        run: |
+          cat > /tmp/format_rules.conf <<'EOF'
+          docs/**:documentation
+          src/**:source
+          EOF
+          cat > /tmp/format_files.txt <<'EOF'
+          docs/guide.md
+          src/main.sh
+          EOF
+          output=$(./pr_label_assigner.sh --config /tmp/format_rules.conf --files /tmp/format_files.txt)
+          echo "Format output: $output"
+          line_count=$(echo "$output" | grep -c . || true)
+          if [ "$line_count" -ne 1 ]; then
+            echo "FAIL: expected 1 line, got $line_count"
+            exit 1
+          fi
+          echo "$output" | grep -q "," || { echo "FAIL: expected comma-separated output"; exit 1; }
+          echo "Output format test passed"

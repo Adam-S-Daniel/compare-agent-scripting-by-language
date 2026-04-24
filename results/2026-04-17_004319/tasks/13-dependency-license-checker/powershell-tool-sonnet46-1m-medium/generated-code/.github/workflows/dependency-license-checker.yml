@@ -1,0 +1,58 @@
+name: Dependency License Checker
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Pester (no-op if pre-installed)
+        shell: pwsh
+        run: |
+          if (-not (Get-Module -ListAvailable -Name Pester | Where-Object Version -ge '5.0')) {
+            Install-Module -Name Pester -MinimumVersion 5.0 -Force -Scope CurrentUser
+          }
+          Import-Module Pester
+          (Get-Module Pester).Version | Write-Host
+
+      - name: Run Pester unit tests
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = './tests/LicenseChecker.Tests.ps1'
+          $config.Output.Verbosity = 'Detailed'
+          $config.Run.Exit = $true
+          Invoke-Pester -Configuration $config
+
+  check-licenses:
+    name: License Compliance Check
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Pester (no-op if pre-installed)
+        shell: pwsh
+        run: |
+          if (-not (Get-Module -ListAvailable -Name Pester | Where-Object Version -ge '5.0')) {
+            Install-Module -Name Pester -MinimumVersion 5.0 -Force -Scope CurrentUser
+          }
+
+      - name: Run license checker on sample manifest
+        shell: pwsh
+        run: |
+          ./Invoke-LicenseChecker.ps1 `
+            -ManifestPath ./fixtures/package.json `
+            -ConfigPath   ./config/license-config.json `
+            -MockLicensesPath ./fixtures/mock-licenses.json

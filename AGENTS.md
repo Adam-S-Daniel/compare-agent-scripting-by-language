@@ -26,8 +26,16 @@ python3 runner.py --tasks 11,12,13,15,16,17,18 --modes default,powershell,bash,t
 # Evaluate test quality (structural metrics only)
 python3 test_quality.py results/2026-04-09_152435
 
-# Evaluate test quality with LLM-as-judge (requires a provider)
-python3 test_quality.py --llm-judge --provider claude-cli results/2026-04-09_152435
+# Evaluate test + deliverable quality with the default panel of judges
+# (Haiku 4.5 via claude-cli + Gemini 3.1 Pro via gemini-cli). Each judge
+# writes its own cache file: test-quality-{short}.json and
+# deliverable-quality-{short}.json. 8-worker thread pool by default;
+# bump `--workers` if your CLIs + account limits allow more concurrency.
+python3 test_quality.py --llm-judge --deliverable-judge \
+    --judges haiku45,gemini31pro --workers 8 results/2026-04-17_004319
+
+# Re-evaluate with a single judge only (useful for bias cross-checks)
+python3 test_quality.py --llm-judge --judges haiku45 results/2026-04-17_004319
 
 # Build custom act container (optional, eliminates pwsh install overhead)
 docker build -t act-ubuntu-pwsh:latest -f Dockerfile.act .
@@ -39,6 +47,16 @@ docker build -t act-ubuntu-pwsh:latest -f Dockerfile.act .
 - Dollar amounts in results.md: round to nearest penny (`.2f`).
 - Durations in results.md: always in minutes with 1 decimal (`{seconds/60:.1f}min`).
 - No emojis in code or docs unless the user asks.
+
+## Terminology
+
+When the runtime wrapper uses `language_mode` (Python-side variable name), the
+*user-facing* axis is called **language**, never "mode". This covers docs,
+prompts, report prose, and LLM summaries. The internal field name stays
+`language_mode` so existing metrics.json readers don't break; everything else
+says "language" (e.g. "default/Python, bash, powershell, powershell-tool,
+typescript-bun"). Rationale: "mode" is ambiguous with agent-approval-modes and
+execution modes; "language" is the concept readers expect.
 
 ## Repository rules
 
@@ -56,8 +74,8 @@ docker build -t act-ubuntu-pwsh:latest -f Dockerfile.act .
 - `models.py` — single source of truth for model IDs and token pricing. Update here when Anthropic changes prices.
 - `runner.py` — benchmark harness. Runs agents via `claude -p`, collects metrics, pushes results. Imports from `models.py` and `generate_results.py`.
 - `generate_results.py` — generates `results.md` reports and updates `README.md`. Can run standalone: `python3 generate_results.py --all`.
-- `test_quality.py` — test quality evaluation. Structural metrics (always) + LLM-as-judge (with `--llm-judge --provider <name>`). Imported by `generate_results.py` for the "Test Quality Evaluation" section.
-- `llm_providers.py` — pluggable LLM provider abstraction for evaluation tasks (see "Adding LLM providers" below).
+- `test_quality.py` — test + deliverable quality evaluation. Structural metrics (always) + panel-of-judges LLM evaluation (`--llm-judge` for test-quality judge, `--deliverable-judge` for workflow+scripts judge). The default panel is Haiku 4.5 + Gemini 3.1 Pro (configured in the module-level `JUDGES` dict). Each judge writes its own per-run cache file; `load_panel_scores(variant_dir, kind)` reads them and returns a mean-aggregated score dict for the reporting layer. Legacy single-Sonnet `*-llm.json` caches still read for backward compat. Imported by `generate_results.py` for the "Test Quality Evaluation" section.
+- `llm_providers.py` — pluggable LLM provider abstraction for evaluation tasks (see "Adding LLM providers" below). Currently registered: `claude-cli` (pre-authenticated Claude Code CLI), `gemini-cli` (pre-authenticated Gemini CLI, bypasses billing gate), `gemini-api` (google-genai SDK, requires `GEMINI_API_KEY` and a paid-tier Google AI Studio account).
 - `benchmark-instructions-v*.md` — per-version specs given to agents during runs.
 - `hooks/syntax-check.py` — PostToolUse hook for syntax/lint checking.
 - `Dockerfile.act` — custom act container image with pwsh + Pester pre-installed. Build with `docker build -t act-ubuntu-pwsh:latest -f Dockerfile.act .`. Runner.py auto-detects it and injects `.actrc` into workspaces.
@@ -88,6 +106,114 @@ are auto-classified by `_find_discrepancies()` in `generate_results.py`:
 
 If a **new counter-gap** appears after changing `test_quality.py`, it's a
 regression. Fix it before merging.
+
+### Combined-report invariants (`combine_results.py`)
+
+The combined report (e.g. `results/results_<dirA>__<dirB>.md`) pools
+runs across multiple source directories. A few layout invariants must
+hold — changes here have broken the generated markdown before, so
+`tests/test_combine_results.py` guards them:
+
+- **No duplicate `(language, variant_disp)` rows in Tiers or
+  Comparison.** `aggregate_rows` groups by `(language_mode,
+  model_short, effort_level)` only. CLI versions pool into one row;
+  `cli_versions` on the row retains the per-CLI breakdown for the
+  legend to consume. (Previously the aggregate split by CLI, which
+  rendered as duplicate-looking rows whose Model column matched.)
+- **CLI Version Legend schema.** Exactly one CLI version per row.
+  Columns: `Variant label | CLI version | Tasks | Languages`. `Tasks`
+  and `Languages` each hold either `All` (pair covered every task /
+  every language observed in the report) or a comma-sorted subset.
+  The plural header `CLI version(s)` and comma-joined version cells
+  are the old layout — do not reintroduce.
+- **Section order in the body:** Scoring → Conclusions → **Judge
+  Consistency Summary** → Tiers → Comparison → Per-Run → Notes. JCS
+  is a top-level `##`, not a `### ` under Notes, because readers
+  benefit from the panel-health verdict before they consume
+  rankings.
+- **Quality-score lookup key.** The per-variant score bucket is keyed
+  by `(language_mode, _label(m))` which includes the `-cli<ver>`
+  suffix; aggregate lookups must therefore use `r["variant_with_cli"]`
+  (not `r["variant"]`). A prior regression where the lookup used the
+  CLI-less `variant` caused every aggregate Tests Quality / Workflow
+  Craft cell to render as `—` despite per-run scores being present.
+
+### Where the Conclusions prose lives
+
+The max-effort Opus `## Conclusions` block is produced **only for
+the combined cross-run report** (`combine_results.py`), not for
+per-run `results.md` files. `generate_results.py` still invokes the
+JCS Summary LLM call (cheap) but passes `speed_cost_input=None` so
+`conclusions_report.generate_conclusions_from_inputs` short-circuits
+the Conclusions call. Reasoning: comparing a single run directory
+against itself doesn't surface tradeoffs worth ~$1 of max-effort
+tokens per regen — the Conclusions prose only reads as useful when
+multiple run dirs are being compared.
+
+If you need per-run prose for some new purpose, plumb through a
+separate prompt; do not re-enable the merged Conclusions call at the
+single-run site.
+
+### Judge rationale audit (`judge_audit.py`)
+
+The combined report includes a `## Judge Audit Outcomes` section
+that lists every run where the panel judges span ≥ 4 points on a
+1–5 scale (i.e. Haiku = 1, Gemini = 5). For each flagged row the
+audit scans each judge's rationale for concrete file-existence
+claims (see `MISSING_PHRASES` + file-extension regex) and resolves
+them against the run's `generated-code/` tree. Drop rule:
+
+- One judge contradicted → drop that judge's score; panel mean
+  becomes the other judge's number.
+- Both contradicted → drop both; panel mean becomes `—` and the
+  row is excluded from aggregates.
+- Neither contradicted → keep both.
+
+Verdicts persist as `judge-audit-<kind>.json` next to each run's
+judge caches. `test_quality.load_panel_scores` consumes the verdict
+automatically, so the Tiers / Comparison / LLM-as-Judge tables
+above honor the audit with no extra plumbing.
+
+### Per-judge prompt addendums
+
+`JUDGES[...]` in `test_quality.py` accepts a `prompt_addendum_tests`
+key. The test-quality evaluator appends it to the shared rubric for
+that judge alone, so a model-specific steer (e.g. Haiku's
+missing-file sanity note) doesn't drag the other judges along.
+`python3 test_quality.py --rejudge haiku45 <run_dir>` refreshes
+only that judge's cache — handy after tweaking its addendum.
+
+### Combined-report parity with per-run reports
+
+Per-run `results.md` carries three top-level sections the combined
+report does not yet replicate in full:
+
+| Per-run section                  | Combined report status |
+|----------------------------------|------------------------|
+| `## Failed / Timed-Out Runs`     | Ported (2026-04-21)    |
+| `## Test Quality Evaluation`     | Partial — structural metrics + panel LLM-as-Judge table ported; Correlation and LLM-vs-Structural Discrepancies sub-tables still absent |
+| `## Savings Analysis` (Hook / Trap / Cache savings) | **Not yet ported.** Depends on per-run hook telemetry + `_detect_traps` output that aren't currently threaded into `combine_results.py`. Readers needing savings data should drop into the per-run `results.md` for now. |
+
+When porting the remaining bits, factor the section builders out of
+`generate_results.py` into module-level helpers so both entry
+points share a single implementation — the duplication we'd
+otherwise accrue would drift the two reports out of sync.
+
+### Judge consistency summary (prompt hygiene)
+
+`JUDGE_CONSISTENCY_SUMMARY_SYSTEM_PROMPT` in
+`judge_consistency_report.py` forbids unexplained shorthand. If you
+surface disagreement rows, introduce them with the plain-language gap
+size (e.g. "the widest disagreements — a judge scoring 1 vs 5, a
+4-point gap on a 1–5 scale — include …"). Do not coin abbreviations
+("Span-N", "Δ-N", etc.) that a reader has to decode. Cite specific
+runs as `task-id-name / language / model-variant` (the same triple
+the Per-Run table uses).
+
+Follow-up analyses of flagged disagreement rows live under
+`results/analysis/` as dated standalone markdown files (e.g.
+`judge_disagreement_1-vs-5_2026-04-21.md`). Link them from the JCS
+section when regenerating if they remain relevant.
 
 ### Updating model pricing
 

@@ -1,0 +1,80 @@
+name: PR Label Assigner
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-label:
+    name: Test and Assign PR Labels
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $result = Invoke-Pester ./Invoke-PrLabelAssigner.Tests.ps1 -PassThru -Output Detailed
+          if ($result.FailedCount -gt 0) {
+            Write-Error "Pester tests failed: $($result.FailedCount) test(s) failed."
+            exit 1
+          }
+          Write-Host "All $($result.PassedCount) tests passed."
+
+      - name: Run PR Label Assigner with mock data
+        shell: pwsh
+        run: |
+          . ./Invoke-PrLabelAssigner.ps1
+
+          # Configurable rules (glob pattern -> label with priority)
+          $rules = @(
+            @{ Pattern = "docs/**";    Label = "documentation"; Priority = 10 },
+            @{ Pattern = "src/api/**"; Label = "api";           Priority = 20 },
+            @{ Pattern = "*.test.*";   Label = "tests";         Priority = 30 },
+            @{ Pattern = "src/**";     Label = "source";        Priority = 5  },
+            @{ Pattern = "*.md";       Label = "documentation"; Priority = 10 }
+          )
+
+          # Mock PR changed files
+          $mockPrFiles = @(
+            "docs/README.md",
+            "src/api/routes.ps1",
+            "src/core/utils.ps1",
+            "src/api/auth.test.ps1",
+            "CHANGELOG.md"
+          )
+
+          Write-Host "=== PR Label Assigner ==="
+          Write-Host "Changed files:"
+          $mockPrFiles | ForEach-Object { Write-Host "  - $_" }
+
+          $result = Invoke-PrLabelAssigner -FilePaths $mockPrFiles -Rules $rules
+
+          Write-Host ""
+          Write-Host "=== Assigned Labels ==="
+          $result.Labels | ForEach-Object { Write-Host "  LABEL: $_" }
+
+          Write-Host ""
+          Write-Host "=== File-to-Label Mapping ==="
+          foreach ($entry in $result.MatchedFiles.GetEnumerator()) {
+            $labelsStr = $entry.Value -join ", "
+            Write-Host "  $($entry.Key) -> [$labelsStr]"
+          }
+
+          # Verify expected labels are present
+          $expected = @("tests", "api", "documentation", "source")
+          $missing = $expected | Where-Object { $result.Labels -notcontains $_ }
+          if ($missing.Count -gt 0) {
+            Write-Error "Missing expected labels: $($missing -join ', ')"
+            exit 1
+          }
+          Write-Host ""
+          Write-Host "All expected labels verified: $($expected -join ', ')"

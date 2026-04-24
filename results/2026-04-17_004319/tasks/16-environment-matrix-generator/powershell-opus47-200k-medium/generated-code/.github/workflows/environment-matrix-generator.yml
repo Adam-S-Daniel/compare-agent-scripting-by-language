@@ -1,0 +1,85 @@
+name: Environment Matrix Generator
+
+# Pester tests run first, then the generator is invoked against config.json.
+# The test harness writes a per-case config.json (and optionally an
+# expect-failure.marker file) into the repo before each `act push` invocation.
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pester-tests:
+    name: Run Pester Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Pester
+        shell: pwsh
+        run: |
+          $cfg = New-PesterConfiguration
+          $cfg.Run.Path = 'tests'
+          $cfg.Run.Exit = $true
+          $cfg.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $cfg
+
+  generate-matrix:
+    name: Generate Build Matrix
+    runs-on: ubuntu-latest
+    needs: pester-tests
+    env:
+      CONFIG_PATH: config.json
+      MARKER_PATH: expect-failure.marker
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate matrix
+        shell: pwsh
+        run: |
+          $expectFailure = Test-Path $env:MARKER_PATH
+          Write-Host "CONFIG_PATH=$env:CONFIG_PATH"
+          Write-Host "EXPECT_FAILURE=$expectFailure"
+
+          try {
+            $json = pwsh -NoProfile -File ./src/Generate-Matrix.ps1 -ConfigPath $env:CONFIG_PATH 2>&1
+            $exit = $LASTEXITCODE
+          } catch {
+            $json = $_.Exception.Message
+            $exit = 1
+          }
+
+          if ($expectFailure) {
+            if ($exit -eq 0) {
+              Write-Error "Expected generator to fail but it succeeded. Output: $json"
+              exit 1
+            }
+            Write-Host "MATRIX_FAILED_AS_EXPECTED:$json"
+            exit 0
+          } else {
+            if ($exit -ne 0) {
+              Write-Error "Generator failed unexpectedly: $json"
+              exit 1
+            }
+            $compact = ($json | Out-String).Trim()
+            Write-Host "MATRIX_JSON_BEGIN"
+            Write-Host $compact
+            Write-Host "MATRIX_JSON_END"
+
+            # Also emit a one-line stat so the harness can parse easily.
+            $parsed = $compact | ConvertFrom-Json
+            $entries = @($parsed.matrix.include).Count
+            Write-Host "MATRIX_ENTRIES:$entries"
+            Write-Host "MATRIX_FAILFAST:$($parsed.'fail-fast')"
+            if ($parsed.PSObject.Properties.Name -contains 'max-parallel') {
+              Write-Host "MATRIX_MAXPARALLEL:$($parsed.'max-parallel')"
+            }
+          }

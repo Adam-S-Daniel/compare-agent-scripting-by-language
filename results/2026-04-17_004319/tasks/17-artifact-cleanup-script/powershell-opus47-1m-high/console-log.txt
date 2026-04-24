@@ -1,0 +1,291 @@
+[Tool: Bash] ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-opus47-1m-high/
+[Result] total 44
+drwxr-xr-x  4 passp passp  4096 Apr 19 22:49 .
+drwxr-xr-x 24 passp passp  4096 Apr 19 22:49 ..
+-rw-r--r--  1 passp passp    40 Apr 19 22:49 .actrc
+drwxr-xr-x  2 passp passp  4096 Apr 19 22:49 .claude
+drwxr-xr-x  7 passp passp  4096 Apr 19 22:49 .git
+-rw-r--r--  1 passp passp 21843 Apr 17 00:12 benchmark-instructions-v4.md
+[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/AGENTS.md 2>/dev/null | head -100
+[Result] # Agent Instructions
+
+All agent-facing instructions live in this file. `CLAUDE.md` contains only a
+reference here. If you are a Claude Code agent, you have already loaded this
+via `CLAUDE.md`. Other agents: read this file directly.
+
+## Build and test
+
+```bash
+# Run unit tests (REQUIRED before every PR)
+pip install pytest  # if not already installed
+python3 -m pytest tests/ -v
+
+# Validate imports
+python3 -c "from runner import main"
+python3 -c "from generate_results import generate_results_md"
+python3 -c "from test_quality import compute_structural_metrics"
+python3 -c "from llm_providers import get_provider"
+
+# Regenerate all reports
+python3 generate_results.py --all
+
+# Run a benchmark (v4, all tasks/modes/models)
+python3 runner.py --tasks 11,12,13,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
+
+# Evaluate test quality (structural metrics only)
+python3 test_quality.py results/2026-04-09_152435
+
+# Evaluate test quality with LLM-as-judge (requires a provid
+[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-opus47-1m-high/.actrc
+[Result] -P ubuntu-latest=act-ubuntu-pwsh:latest
+[Tool: Bash] which actionlint act pwsh && pwsh -Command "Get-Module -ListAvailable Pester | Select-Object Name, Version"
+[Result] /home/passp/.local/bin/actionlint
+/home/passp/.local/bin/act
+/snap/bin/pwsh
+
+[32;1mName  [0m[32;1m Version[0m
+[32;1m----  [0m [32;1m-------[0m
+Pester 5.7.1
+[Assistant] Now I have enough context. Let me plan the structure and start with TDD.
+[Tool: ToolSearch] {"query": "select:TodoWrite", "max_results": 1}
+[Result] {'type': 'tool_reference', 'tool_name': 'TodoWrite'}
+[Tool: TodoWrite] {"todos": [{"content": "TDD: Write failing test for max-age retention policy", "activeForm": "Writing failing test for max-age policy", "status": "in_progress"}, {"content": "Implement minimum code to
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-opus47-1m-high/tests/ArtifactCleanup.Tests.ps1", "content": "# P
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-opus47-1m-high/tests/ArtifactCleanup.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Now confirm the test fails (red phase) by creating the module file with stubs, then implement minimally.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-opus47-1m-high/src/ArtifactCleanup.psm1", "content": "# Artifact
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-opus47-1m-high/src/ArtifactCleanup.psm1 (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -NoProfile -Command "Invoke-Pester -Path ./tests -Output Detailed" 2>&1 | tail -100
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 15 tests in 359ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-opus47-1m-high/tests/ArtifactCleanup.Tests.ps1'[0m
+[92mDescribing Get-ArtifactDeletionPlan: max-age policy[0m
+[32m  [+] marks artifacts older than MaxAgeDays for deletion[0m[90m 276ms (223ms|53ms)[0m
+[91m  [-] records the reason "max-age" on age-evicted artifacts[0m[90m 43ms (38ms|5ms)[0m
+[91m   PropertyNotFoundException: The property 'Sum' cannot be found on this object. Verify that the property exists.
+[91m   at Get-ArtifactDeletionPlan, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-opus47-1m-high/src/ArtifactCleanup.psm1:137
+[91m   at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspace
+[Assistant] Strict mode is making `.Sum` access fail when Measure-Object returns no items. Fix the property access pattern.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-opus47-1m-high/src/ArtifactCleanup.psm1", 
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-opus47-1m-high/src/ArtifactCleanup.psm1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-opus47-1m-high/src/ArtifactCleanup.psm1", 
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-opus47-1m-high/src/ArtifactCleanup.psm1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-opus47-1m-high/src/ArtifactCleanup.psm1", 
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-opus47-1m-high/src/ArtifactCleanup.psm1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -NoProfile -Command "Invoke-Pester -Path ./tests -Output Detailed" 2>&1 | tail -40
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 15 tests in 335ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-opus47-1m-high/tests/ArtifactCleanup.Tests.ps1'[0m
+[92mDescribing Get-ArtifactDeletionPlan: max-age policy[0m
+[32m  [+] marks artifacts older than MaxAgeDays for deletion[0m[90m 258ms (214ms|44ms)[0m
+[32m  [+] records the reason "max-age" on age-evicted artifacts[0m[90m 24ms (22ms|2ms)[0m
+[32m  [+] leaves all artifacts retained when no policies are supplied[0m[90m 14ms (12ms|2ms)[0m
+[0m
+[92mDescribing Get-ArtifactDeletionPlan: keep-latest-N per workflow[0m
+[32m  [+] keeps only the N newest artifacts per workflow run id[0m[90m 54ms (50ms|4ms)[0m
+[32m  [+] retains all artifacts when count per workflow does not exceed N[0m[90m 15ms (12ms|3ms)[0m
+[0m
+[92mDescribing Get-ArtifactD
+[Assistant] All 15 tests pass. Now let me create the CLI script and workflow.
+[Tool: TodoWrite] {"todos": [{"content": "TDD: Write failing test for max-age retention policy", "activeForm": "Writing failing test for max-age policy", "status": "completed"}, {"content": "Implement minimum code to p
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-opus47-1m-high/src/Invoke-Cleanup.ps1", "content": "#!/usr/bin/e
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-opus47-1m-high/src/Invoke-Cleanup.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Now let me create fixture files for the test cases.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-opus47-1m-high/fixtures/case-max-age.json", "content": "{\n  \"n
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-opus47-1m-high/fixtures/case-max-age.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-opus47-1m-high/fixtures/case-keep-latest.json", "content": "{\n 
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-opus47-1m-high/fixtures/case-keep-latest.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-opus47-1m-high/fixtures/case-combined.json", "content": "{\n  \"
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-opus47-1m-high/fixtures/case-combined.json (file state is current in your context — no need to Read it back)
+[Assistant] Now create the GitHub Actions workflow.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-opus47-1m-high/.github/workflows/artifact-cleanup-script.yml", "
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-opus47-1m-high/.github/workflows/artifact-cleanup-script.yml (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/artifact-cleanup-script.yml; echo "exit=$?"
+[Result] exit=0
+[Assistant] Actionlint passes. Now build the test harness for act.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-opus47-1m-high/tests/Harness.Tests.ps1", "content": "# Workflow 
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-opus47-1m-high/tests/Harness.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Tool: TodoWrite] {"todos": [{"content": "TDD: Write failing test for max-age retention policy", "activeForm": "Writing failing test for max-age policy", "status": "completed"}, {"content": "Implement minimum code to p
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Bash] pwsh -NoProfile -File ./src/Invoke-Cleanup.ps1 -InputJson ./fixtures/case-combined.json 2>&1
+[Result] === Artifact Cleanup Plan ===
+Total artifacts: 6
+Retain:          4
+Delete:          2
+Bytes retained:  5000
+Bytes reclaimed: 10999
+--- Deletions ---
+DELETE ancient (9999 bytes) reason=max-age
+DELETE w1-third (1000 bytes) reason=keep-latest-per-workflow
+--- Retentions ---
+RETAIN w1-latest (1000 bytes)
+RETAIN w1-second (1000 bytes)
+RETAIN w2-latest (1500 bytes)
+RETAIN w2-second (1500 bytes)
+MODE: DRY-RUN
+[Assistant] Output matches expected values. Now run the act-based harness. This will be slow.
+[Tool: Bash] pwsh -NoProfile -Command "Invoke-Pester -Path ./tests/Harness.Tests.ps1 -Output Detailed" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 7 tests in 296ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-opus47-1m-high/tests/Harness.Tests.ps1'[0m
+[92mDescribing Workflow structure[0m
+[32m  [+] workflow file exists[0m[90m 123ms (80ms|44ms)[0m
+[32m  [+] references files that actually exist[0m[90m 35ms (33ms|2ms)[0m
+[32m  [+] declares the expected triggers, jobs, and uses checkout@v4[0m[90m 20ms (18ms|2ms)[0m
+[32m  [+] passes actionlint[0m[90m 130ms (128ms|2ms)[0m
+[0m
+[92mDescribing act push end-to-end[0m
+[91m  [-] runs case-max-age and outputs the expected plan[0m[90m 1.08s (1.08s|4ms)[0m
+[91m   Expected 0, but got 1.
+[91m   at $r.ExitCode | Should -Be 0, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-opus
+[Tool: Bash] cat ./act-result.txt
+[Result] ==== CASE: max-age ====
+
+time="2026-04-19T22:54:58-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Artifact Cleanup/Pester unit tests] ⭐ Run Set up job
+[Artifact Cleanup/Pester unit tests] 🚀  Start image=act-ubuntu-pwsh:latest
+[Artifact Cleanup/Pester unit tests]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=true
+[Artifact Cleanup/Pester unit tests] using DockerAuthConfig authentication for docker pull
+Error: Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+[Artifact Cleanup/Pester unit tests] Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+[Artifact Cleanup/Pester unit tests]   ❌  Failure - Set up job
+[Artifact Cleanup/Pester unit tests] 🏁  Job failed
+
+==== CASE: keep-latest ====
+
+time="2026-04-19T22:54:59-04:00" level=info msg="Using
+[Assistant] Act is trying to pull the local-only image. I need `--pull=false`. Also, `Copy-Item` with `*` may skip dotfiles. Let me fix both.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-opus47-1m-high/tests/Harness.Tests.ps1", "
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-opus47-1m-high/tests/Harness.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] docker images act-ubuntu-pwsh:latest 2>&1 | head -5
+[Result] WARNING: This output is designed for human readability. For machine-readable output, please use --format.
+IMAGE                    ID             DISK USAGE   CONTENT SIZE   EXTRA
+act-ubuntu-pwsh:latest   413e38f474cc       2.55GB          640MB
+[Assistant] Good. Now run the full harness — this is one of my 3 act-run budget allocations.
+[Tool: Bash] pwsh -NoProfile -Command "Invoke-Pester -Path ./tests/Harness.Tests.ps1 -Output Detailed" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 7 tests in 282ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-opus47-1m-high/tests/Harness.Tests.ps1'[0m
+[92mDescribing Workflow structure[0m
+[32m  [+] workflow file exists[0m[90m 142ms (91ms|51ms)[0m
+[32m  [+] references files that actually exist[0m[90m 45ms (42ms|3ms)[0m
+[32m  [+] declares the expected triggers, jobs, and uses checkout@v4[0m[90m 26ms (23ms|3ms)[0m
+[32m  [+] passes actionlint[0m[90m 135ms (133ms|2ms)[0m
+[0m
+[92mDescribing act push end-to-end[0m
+[91m  [-] runs case-max-age and outputs the expected plan[0m[90m 10.45s (10.45s|5ms)[0m
+[91m   Expected 0, but got 1.
+[91m   at $r.ExitCode | Should -Be 0, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-op
+[Assistant] The Pester run inside the container is also picking up the harness tests (which need `act` and `actionlint` on the host). I need to scope the in-container Pester to the unit tests only.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-opus47-1m-high/.github/workflows/artifact-
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-opus47-1m-high/.github/workflows/artifact-cleanup-script.yml has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/artifact-cleanup-script.yml; echo "exit=$?"
+[Result] exit=0
+[Tool: Bash] pwsh -NoProfile -Command "Invoke-Pester -Path ./tests/Harness.Tests.ps1 -Output Detailed" 2>&1 | tail -60
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 7 tests in 497ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-opus47-1m-high/tests/Harness.Tests.ps1'[0m
+[92mDescribing Workflow structure[0m
+[32m  [+] workflow file exists[0m[90m 275ms (182ms|93ms)[0m
+[32m  [+] references files that actually exist[0m[90m 82ms (76ms|6ms)[0m
+[32m  [+] declares the expected triggers, jobs, and uses checkout@v4[0m[90m 36ms (31ms|5ms)[0m
+[32m  [+] passes actionlint[0m[90m 212ms (208ms|4ms)[0m
+[0m
+[92mDescribing act push end-to-end[0m
+[32m  [+] runs case-max-age and outputs the expected plan[0m[90m 18.5s (18.49s|8ms)[0m
+[32m  [+] runs case-keep-latest and outputs the expected plan[0m[90m 16.73s (16.72s|4ms)[0m
+[91m  [-] runs case-combined and outputs the expected plan[0m[90m 14.11s (14.1s|3ms)[0m
+[91m
+[Tool: Bash] grep -n "==== CASE: combined" act-result.txt | head -2
+[Result] 186:==== CASE: combined ====
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-opus47-1m-high/act-result.txt", "offset": 186}
+[Result] 186	==== CASE: combined ====
+187	
+188	time="2026-04-19T22:57:04-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+189	[Artifact Cleanup/Pester unit tests] ⭐ Run Set up job
+190	[Artifact Cleanup/Pester unit tests] 🚀  Start image=act-ubuntu-pwsh:latest
+191	[Artifact Cleanup/Pester unit tests]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+192	[Artifact Cleanup/Pester unit tests]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+193	[Artifact Cleanup/Pester unit tests]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+194	[Artifact Cleanup/Pester unit tests]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+195	[Artifact Cleanup/Pester unit tests]   ✅  Success - Set up job
+196	[Artifact Cleanup/Pester unit tests] ⭐ R
+[Assistant] The splat of an array doesn't work for switch params. Use conditional invocation.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-opus47-1m-high/.github/workflows/artifact-
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-opus47-1m-high/.github/workflows/artifact-cleanup-script.yml has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/artifact-cleanup-script.yml; echo "exit=$?"
+[Result] exit=0
+[Assistant] Now run all three cases one final time to capture clean act-result.txt.
+[Tool: Bash] pwsh -NoProfile -Command "Invoke-Pester -Path ./tests/Harness.Tests.ps1 -Output Detailed" 2>&1 | tail -30
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 7 tests in 299ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-opus47-1m-high/tests/Harness.Tests.ps1'[0m
+[92mDescribing Workflow structure[0m
+[32m  [+] workflow file exists[0m[90m 136ms (89ms|48ms)[0m
+[32m  [+] references files that actually exist[0m[90m 43ms (40ms|3ms)[0m
+[32m  [+] declares the expected triggers, jobs, and uses checkout@v4[0m[90m 17ms (15ms|2ms)[0m
+[32m  [+] passes actionlint[0m[90m 130ms (128ms|2ms)[0m
+[0m
+[92mDescribing act push end-to-end[0m
+[32m  [+] runs case-max-age and outputs the expected plan[0m[90m 14.5s (14.49s|4ms)[0m
+[32m  [+] runs case-keep-latest and outputs the expected plan[0m[90m 14.4s (14.4s|3ms)[0m
+[32m  [+] runs case-combined and outputs the expected plan[0m[90m 13.65s (13.64s|2ms)[0m
+[97mTe
+[Assistant] All 7 harness tests pass (4 structural + 3 act runs). Confirm act-result.txt and final state.
+[Tool: Bash] grep -E "==== CASE|Job succeeded|Job failed|MODE:|Bytes reclaimed:|Bytes retained:|Total artifacts:|Delete:|Retain:" act-result.txt
+[Result] ==== CASE: max-age ====
+[Artifact Cleanup/Pester unit tests] 🏁  Job succeeded
+[Artifact Cleanup/Run cleanup plan ]   | Total artifacts: 3
+[Artifact Cleanup/Run cleanup plan ]   | Retain:          1
+[Artifact Cleanup/Run cleanup plan ]   | Delete:          2
+[Artifact Cleanup/Run cleanup plan ]   | Bytes retained:  2048
+[Artifact Cleanup/Run cleanup plan ]   | Bytes reclaimed: 5120
+[Artifact Cleanup/Run cleanup plan ]   | MODE: DRY-RUN
+[Artifact Cleanup/Run cleanup plan ] 🏁  Job succeeded
+==== CASE: keep-latest ====
+[Artifact Cleanup/Pester unit tests] 🏁  Job succeeded
+[Artifact Cleanup/Run cleanup plan ]   | Total artifacts: 4
+[Artifact Cleanup/Run cleanup plan ]   | Retain:          2
+[Artifact Cleanup/Run cleanup plan ]   | Delete:          2
+[Artifact Cleanup/Run cleanup plan ]   | Bytes retained:  500
+[Artifact Cleanup/Run cleanup plan ]   | Bytes reclaimed: 500
+[Artifact Cleanup/Run cleanup plan ]   | MODE: DRY-RUN
+[Artifact Cleanup/Run cleanup plan ] 🏁  Job succeeded
+==== CASE: c
+[Tool: TodoWrite] {"todos": [{"content": "TDD: Write failing test for max-age retention policy", "activeForm": "Writing failing test for max-age policy", "status": "completed"}, {"content": "Implement minimum code to p
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Assistant] All tests pass end-to-end. Final state:
+
+- **Module**: `src/ArtifactCleanup.psm1` — three retention policies (max-age, keep-latest-per-workflow, max-total-size), plan summary, dry-run mode, per-artifact failure capture.
+- **CLI**: `src/Invoke-Cleanup.ps1` — reads JSON fixture, emits parseable plan.
+- **Unit tests**: `tests/ArtifactCleanup.Tests.ps1` — 15 Pester tests, all green.
+- **Workflow**: `.github/workflows/artifact-cleanup-script.yml` — push/PR/schedule/dispatch triggers, 2 jobs (test → cleanup), passes actionlint clean.
+- **Harness**: `tests/Harness.Tests.ps1` — 4 structural + 3 act-driven cases (max-age, keep-latest, combined w/ APPLY).
+- **Fixtures**: 3 JSON cases driving exact-value assertions (5120/500/10999 bytes reclaimed).
+- **`act-result.txt`**: contains all 3 act runs, every job marked "Job succeeded".

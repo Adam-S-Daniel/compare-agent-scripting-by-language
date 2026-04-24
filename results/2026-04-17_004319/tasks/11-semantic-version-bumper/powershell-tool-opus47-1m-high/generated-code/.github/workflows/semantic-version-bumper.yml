@@ -1,0 +1,94 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      version_file:
+        description: 'Path to the version file'
+        required: false
+        default: 'version.txt'
+      commits_file:
+        description: 'Path to the commits file'
+        required: false
+        default: 'commits.txt'
+
+permissions:
+  contents: read
+
+env:
+  VERSION_FILE: ${{ github.event.inputs.version_file || 'version.txt' }}
+  COMMITS_FILE: ${{ github.event.inputs.commits_file || 'commits.txt' }}
+  CHANGELOG_FILE: 'CHANGELOG.md'
+
+jobs:
+  test:
+    name: Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Show environment
+        shell: pwsh
+        run: |
+          $PSVersionTable.PSVersion
+          Get-Module -ListAvailable Pester | Select-Object Name, Version
+
+      - name: Run Pester suite
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = './Bump-Version.Tests.ps1'
+          $config.Run.Exit = $true
+          $config.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $config
+
+  bump:
+    name: Bump version end-to-end
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Verify script and fixture inputs exist
+        shell: pwsh
+        run: |
+          if (-not (Test-Path './Bump-Version.ps1')) {
+            throw 'Bump-Version.ps1 missing in repo root.'
+          }
+          if (-not (Test-Path $env:VERSION_FILE)) {
+            throw "Version file '$env:VERSION_FILE' missing in repo root."
+          }
+          if (-not (Test-Path $env:COMMITS_FILE)) {
+            throw "Commits file '$env:COMMITS_FILE' missing in repo root."
+          }
+
+      - name: Run version bumper
+        id: bump
+        shell: pwsh
+        run: |
+          $newVersion = & ./Bump-Version.ps1 `
+            -VersionFile  $env:VERSION_FILE `
+            -CommitsFile  $env:COMMITS_FILE `
+            -ChangelogFile $env:CHANGELOG_FILE
+          Write-Host "BUMPED_VERSION=$newVersion"
+          "version=$newVersion" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Show updated version file
+        shell: pwsh
+        run: Get-Content $env:VERSION_FILE
+
+      - name: Show changelog
+        shell: pwsh
+        run: |
+          if (Test-Path $env:CHANGELOG_FILE) {
+            Get-Content $env:CHANGELOG_FILE
+          }
+
+      - name: Echo job summary
+        shell: pwsh
+        run: |
+          Write-Host "::notice::New version is ${{ steps.bump.outputs.version }}"

@@ -1,0 +1,76 @@
+# Runs the Pester suite and the dependency-license CLI against the
+# repo's manifest fixture. Designed to be re-runnable under `act` with
+# swapped fixture files so a test harness can cover multiple scenarios
+# without changing the workflow itself.
+
+name: dependency-license-checker
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 6 * * 1'   # weekly Monday 06:00 UTC drift check
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  # manifest.json at repo root is the workflow input; fixtures/* are
+  # control data for the unit tests and are not touched by the act harness.
+  MANIFEST_PATH: manifest.json
+  POLICY_PATH: fixtures/license-policy.json
+  LICENSE_DB_PATH: fixtures/license-database.json
+
+jobs:
+  test:
+    name: Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path       = './tests/DependencyLicenseChecker.Tests.ps1'
+          $config.Run.Exit       = $true
+          $config.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $config
+
+  compliance:
+    name: Dependency compliance report
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate compliance report
+        shell: pwsh
+        run: |
+          Import-Module ./src/DependencyLicenseChecker.psm1 -Force
+
+          $policy = Get-Content $env:POLICY_PATH -Raw | ConvertFrom-Json -AsHashtable
+          $db     = Get-Content $env:LICENSE_DB_PATH -Raw | ConvertFrom-Json -AsHashtable
+
+          $provider = {
+              param($name)
+              if ($db.ContainsKey($name)) { $db[$name] } else { $null }
+          }.GetNewClosure()
+
+          $report = New-ComplianceReport `
+              -ManifestPath $env:MANIFEST_PATH `
+              -Policy $policy `
+              -Provider $provider
+
+          Format-ComplianceReport -Report $report | Write-Host
+
+          # Emit explicit machine-readable markers for the act harness to
+          # assert on. Using distinct prefixes keeps the grep unambiguous.
+          Write-Host ("=== COMPLIANCE_APPROVED: {0} ===" -f $report.Summary.Approved)
+          Write-Host ("=== COMPLIANCE_DENIED: {0} ==="   -f $report.Summary.Denied)
+          Write-Host ("=== COMPLIANCE_UNKNOWN: {0} ==="  -f $report.Summary.Unknown)
+          Write-Host ("=== COMPLIANCE_TOTAL: {0} ==="    -f $report.Summary.Total)
+          Write-Host ("=== COMPLIANCE_HAS_VIOLATIONS: {0} ===" -f ([string]$report.HasViolations).ToLower())

@@ -1,0 +1,113 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # ── Job 1: validate script syntax and lint ──────────────────────────────
+  lint:
+    name: Lint & Syntax Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install shellcheck
+        run: |
+          apt-get update -qq && apt-get install -y -qq shellcheck
+
+      - name: Bash syntax check
+        run: bash -n version_bumper.sh
+
+      - name: Shellcheck
+        run: shellcheck version_bumper.sh
+
+  # ── Job 2: unit tests via bats ──────────────────────────────────────────
+  unit-tests:
+    name: Unit Tests (bats)
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install bats-core
+        run: |
+          apt-get update -qq && apt-get install -y -qq bats
+
+      - name: Run bats tests
+        run: bats test/version_bumper.bats
+
+  # ── Job 3: integration tests using fixture files ─────────────────────────
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: lint
+    strategy:
+      matrix:
+        fixture:
+          - name: patch_bump
+            expected: "1.2.4"
+          - name: minor_bump
+            expected: "1.3.0"
+          - name: major_bump
+            expected: "3.0.0"
+          - name: no_bump
+            expected: "0.9.9"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run version bumper - ${{ matrix.fixture.name }}
+        id: bump
+        run: |
+          cp test/fixtures/${{ matrix.fixture.name }}/version.json /tmp/test_version.json
+          output=$(bash version_bumper.sh \
+            --file /tmp/test_version.json \
+            --commits test/fixtures/${{ matrix.fixture.name }}/commits.txt \
+            --changelog /tmp/CHANGELOG_${{ matrix.fixture.name }}.md \
+            2>&1)
+          echo "$output"
+          new_version=$(echo "$output" | tail -1)
+          echo "new_version=$new_version" >> "$GITHUB_OUTPUT"
+
+      - name: Assert expected version - ${{ matrix.fixture.name }}
+        run: |
+          actual="${{ steps.bump.outputs.new_version }}"
+          expected="${{ matrix.fixture.expected }}"
+          if [ "$actual" != "$expected" ]; then
+            echo "FAIL: expected $expected, got $actual"
+            exit 1
+          fi
+          echo "PASS: version is $actual"
+
+      - name: Verify changelog created - ${{ matrix.fixture.name }}
+        run: |
+          changelog="/tmp/CHANGELOG_${{ matrix.fixture.name }}.md"
+          if [ ! -f "$changelog" ]; then
+            echo "FAIL: changelog not created"
+            exit 1
+          fi
+          echo "Changelog contents:"
+          cat "$changelog"
+          expected="${{ matrix.fixture.expected }}"
+          if ! grep -q "\[$expected\]" "$changelog"; then
+            echo "FAIL: changelog does not contain version [$expected]"
+            exit 1
+          fi
+          echo "PASS: changelog contains expected version entry"
+
+      - name: Verify version file was updated - ${{ matrix.fixture.name }}
+        run: |
+          updated=$(grep -oP '"version"\s*:\s*"\K[^"]+' /tmp/test_version.json)
+          expected="${{ matrix.fixture.expected }}"
+          if [ "$updated" != "$expected" ]; then
+            echo "FAIL: version.json shows $updated, expected $expected"
+            exit 1
+          fi
+          echo "PASS: version.json updated to $updated"

@@ -1,0 +1,33 @@
+name: Test Results Aggregator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  aggregate-test-results:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run test results aggregator
+        run: bun run main.ts fixtures/
+
+      - name: Verify fixture files exist
+        run: |
+          test -f fixtures/junit-node18.xml && echo "junit-node18.xml OK"
+          test -f fixtures/junit-node20.xml && echo "junit-node20.xml OK"
+          test -f fixtures/results-api.json && echo "results-api.json OK"

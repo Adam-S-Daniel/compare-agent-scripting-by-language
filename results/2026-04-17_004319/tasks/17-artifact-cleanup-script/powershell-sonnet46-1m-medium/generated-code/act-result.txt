@@ -1,0 +1,185 @@
+============================================================
+TEST CASE: Max-Age Retention Policy (single act run)
+Timestamp: 2026-04-20T04:44:39.1014036-04:00
+time="2026-04-20T04:44:38-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Artifact Cleanup Script/artifact-cleanup] ⭐ Run Set up job
+[Artifact Cleanup Script/artifact-cleanup] 🚀  Start image=act-ubuntu-pwsh:latest
+[Artifact Cleanup Script/artifact-cleanup]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=true
+[Artifact Cleanup Script/artifact-cleanup] using DockerAuthConfig authentication for docker pull
+[Artifact Cleanup Script/artifact-cleanup] Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+[Artifact Cleanup Script/artifact-cleanup]   ❌  Failure - Set up job
+[Artifact Cleanup Script/artifact-cleanup] 🏁  Job failed
+Error: Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+
+============================================================
+============================================================
+TEST CASE: Max-Age Retention Policy (single act run)
+Timestamp: 2026-04-20T04:45:22.8933255-04:00
+time="2026-04-20T04:45:13-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Artifact Cleanup Script/artifact-cleanup] ⭐ Run Set up job
+[Artifact Cleanup Script/artifact-cleanup] 🚀  Start image=act-ubuntu-pwsh:latest
+[Artifact Cleanup Script/artifact-cleanup]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Artifact Cleanup Script/artifact-cleanup]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/artifact-cleanup]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/artifact-cleanup]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Artifact Cleanup Script/artifact-cleanup]   ✅  Success - Set up job
+[Artifact Cleanup Script/artifact-cleanup] ⭐ Run Main Checkout repository
+[Artifact Cleanup Script/artifact-cleanup]   🐳  docker cp src=/tmp/act-test-1545726676/. dst=/tmp/act-test-1545726676
+[Artifact Cleanup Script/artifact-cleanup]   ✅  Success - Main Checkout repository [98.777511ms]
+[Artifact Cleanup Script/artifact-cleanup] ⭐ Run Main Ensure PowerShell is available
+[Artifact Cleanup Script/artifact-cleanup]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/1.ps1] user= workdir=
+[Artifact Cleanup Script/artifact-cleanup]   | PowerShell version: 7.6.0
+[Artifact Cleanup Script/artifact-cleanup]   ✅  Success - Main Ensure PowerShell is available [1.235269825s]
+[Artifact Cleanup Script/artifact-cleanup] ⭐ Run Main Create test fixtures
+[Artifact Cleanup Script/artifact-cleanup]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/2.ps1] user= workdir=
+[Artifact Cleanup Script/artifact-cleanup]   | Fixtures written: artifacts.json, policy.json
+[Artifact Cleanup Script/artifact-cleanup]   ✅  Success - Main Create test fixtures [1.370594359s]
+[Artifact Cleanup Script/artifact-cleanup] ⭐ Run Main Run artifact cleanup in dry-run mode
+[Artifact Cleanup Script/artifact-cleanup]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/3.ps1] user= workdir=
+[Artifact Cleanup Script/artifact-cleanup]   | 
+[Artifact Cleanup Script/artifact-cleanup]   | === ARTIFACT CLEANUP PLAN ===
+[Artifact Cleanup Script/artifact-cleanup]   | Mode: DRY-RUN (no changes will be made)
+[Artifact Cleanup Script/artifact-cleanup]   | --- Artifacts to DELETE (1) ---
+[Artifact Cleanup Script/artifact-cleanup]   |   - artifact-old (300 MB) [40 days old, workflow: wf-2]
+[Artifact Cleanup Script/artifact-cleanup]   | --- Artifacts to RETAIN (2) ---
+[Artifact Cleanup Script/artifact-cleanup]   |   - artifact-fresh (100 MB) [5 days old, workflow: wf-1]
+[Artifact Cleanup Script/artifact-cleanup]   |   - artifact-medium (200 MB) [20 days old, workflow: wf-1]
+[Artifact Cleanup Script/artifact-cleanup]   | === SUMMARY ===
+[Artifact Cleanup Script/artifact-cleanup]   | Total artifacts    : 3
+[Artifact Cleanup Script/artifact-cleanup]   | Artifacts to delete: 1
+[Artifact Cleanup Script/artifact-cleanup]   | Artifacts to retain: 2
+[Artifact Cleanup Script/artifact-cleanup]   | Space reclaimed    : 300 MB (314572800 bytes)
+[Artifact Cleanup Script/artifact-cleanup]   | CLEANUP_RESULT: deleted=1 retained=2 reclaimed_bytes=314572800
+[Artifact Cleanup Script/artifact-cleanup]   | === END PLAN ===
+[Artifact Cleanup Script/artifact-cleanup]   | 
+[Artifact Cleanup Script/artifact-cleanup]   ✅  Success - Main Run artifact cleanup in dry-run mode [1.177763581s]
+[Artifact Cleanup Script/artifact-cleanup] ⭐ Run Main Run unit tests with Pester
+[Artifact Cleanup Script/artifact-cleanup]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/4.ps1] user= workdir=
+[Artifact Cleanup Script/artifact-cleanup]   ❗  ::error::System.Management.Automation.RuntimeException: No test files were found and no scriptblocks were provided. Please ensure that you provided at least one path to a *.Tests.ps1 file, or a directory that contains such file. Or that you provided a ScriptBlock test container.[0m
+[Artifact Cleanup Script/artifact-cleanup]   ❓  ::group::Message[0m
+[Artifact Cleanup Script/artifact-cleanup]   | at Invoke-Pester<End>, /usr/local/share/powershell/Modules/Pester/5.7.1/Pester.psm1: line 4956[0m
+[Artifact Cleanup Script/artifact-cleanup]   | at <ScriptBlock>, /var/run/act/workflow/4.ps1: line 8[0m
+[Artifact Cleanup Script/artifact-cleanup]   | at <ScriptBlock>, <No file>: line 1[0m
+[Artifact Cleanup Script/artifact-cleanup]   ❓  ::endgroup::[0m
+[Artifact Cleanup Script/artifact-cleanup]   | All  unit tests passed.
+[Artifact Cleanup Script/artifact-cleanup]   ✅  Success - Main Run unit tests with Pester [2.208933563s]
+[Artifact Cleanup Script/artifact-cleanup] ⭐ Run Complete job
+[Artifact Cleanup Script/artifact-cleanup] Cleaning up container for job artifact-cleanup
+[Artifact Cleanup Script/artifact-cleanup]   ✅  Success - Complete job
+[Artifact Cleanup Script/artifact-cleanup] 🏁  Job succeeded
+
+============================================================
+============================================================
+TEST CASE: Max-Age Retention Policy (single act run)
+Timestamp: 2026-04-20T04:45:41.2271627-04:00
+time="2026-04-20T04:45:31-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Artifact Cleanup Script/artifact-cleanup] ⭐ Run Set up job
+[Artifact Cleanup Script/artifact-cleanup] 🚀  Start image=act-ubuntu-pwsh:latest
+[Artifact Cleanup Script/artifact-cleanup]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Artifact Cleanup Script/artifact-cleanup]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/artifact-cleanup]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/artifact-cleanup]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Artifact Cleanup Script/artifact-cleanup]   ✅  Success - Set up job
+[Artifact Cleanup Script/artifact-cleanup] ⭐ Run Main Checkout repository
+[Artifact Cleanup Script/artifact-cleanup]   🐳  docker cp src=/tmp/act-test-738920432/. dst=/tmp/act-test-738920432
+[Artifact Cleanup Script/artifact-cleanup]   ✅  Success - Main Checkout repository [105.575971ms]
+[Artifact Cleanup Script/artifact-cleanup] ⭐ Run Main Ensure PowerShell is available
+[Artifact Cleanup Script/artifact-cleanup]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/1.ps1] user= workdir=
+[Artifact Cleanup Script/artifact-cleanup]   | PowerShell version: 7.6.0
+[Artifact Cleanup Script/artifact-cleanup]   ✅  Success - Main Ensure PowerShell is available [1.084473622s]
+[Artifact Cleanup Script/artifact-cleanup] ⭐ Run Main Create test fixtures
+[Artifact Cleanup Script/artifact-cleanup]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/2.ps1] user= workdir=
+[Artifact Cleanup Script/artifact-cleanup]   | Fixtures written: artifacts.json, policy.json
+[Artifact Cleanup Script/artifact-cleanup]   ✅  Success - Main Create test fixtures [1.116632338s]
+[Artifact Cleanup Script/artifact-cleanup] ⭐ Run Main Run artifact cleanup in dry-run mode
+[Artifact Cleanup Script/artifact-cleanup]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/3.ps1] user= workdir=
+[Artifact Cleanup Script/artifact-cleanup]   | 
+[Artifact Cleanup Script/artifact-cleanup]   | === ARTIFACT CLEANUP PLAN ===
+[Artifact Cleanup Script/artifact-cleanup]   | Mode: DRY-RUN (no changes will be made)
+[Artifact Cleanup Script/artifact-cleanup]   | --- Artifacts to DELETE (1) ---
+[Artifact Cleanup Script/artifact-cleanup]   |   - artifact-old (300 MB) [40 days old, workflow: wf-2]
+[Artifact Cleanup Script/artifact-cleanup]   | --- Artifacts to RETAIN (2) ---
+[Artifact Cleanup Script/artifact-cleanup]   |   - artifact-fresh (100 MB) [5 days old, workflow: wf-1]
+[Artifact Cleanup Script/artifact-cleanup]   |   - artifact-medium (200 MB) [20 days old, workflow: wf-1]
+[Artifact Cleanup Script/artifact-cleanup]   | === SUMMARY ===
+[Artifact Cleanup Script/artifact-cleanup]   | Total artifacts    : 3
+[Artifact Cleanup Script/artifact-cleanup]   | Artifacts to delete: 1
+[Artifact Cleanup Script/artifact-cleanup]   | Artifacts to retain: 2
+[Artifact Cleanup Script/artifact-cleanup]   | Space reclaimed    : 300 MB (314572800 bytes)
+[Artifact Cleanup Script/artifact-cleanup]   | CLEANUP_RESULT: deleted=1 retained=2 reclaimed_bytes=314572800
+[Artifact Cleanup Script/artifact-cleanup]   | === END PLAN ===
+[Artifact Cleanup Script/artifact-cleanup]   | 
+[Artifact Cleanup Script/artifact-cleanup]   ✅  Success - Main Run artifact cleanup in dry-run mode [1.311741004s]
+[Artifact Cleanup Script/artifact-cleanup] ⭐ Run Main Run unit tests with Pester
+[Artifact Cleanup Script/artifact-cleanup]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/4.ps1] user= workdir=
+[Artifact Cleanup Script/artifact-cleanup]   ❗  ::error::System.Management.Automation.RuntimeException: No test files were found and no scriptblocks were provided. Please ensure that you provided at least one path to a *.Tests.ps1 file, or a directory that contains such file. Or that you provided a ScriptBlock test container.[0m
+[Artifact Cleanup Script/artifact-cleanup]   ❓  ::group::Message[0m
+[Artifact Cleanup Script/artifact-cleanup]   | at Invoke-Pester<End>, /usr/local/share/powershell/Modules/Pester/5.7.1/Pester.psm1: line 4956[0m
+[Artifact Cleanup Script/artifact-cleanup]   | at <ScriptBlock>, /var/run/act/workflow/4.ps1: line 8[0m
+[Artifact Cleanup Script/artifact-cleanup]   | at <ScriptBlock>, <No file>: line 1[0m
+[Artifact Cleanup Script/artifact-cleanup]   ❓  ::endgroup::[0m
+[Artifact Cleanup Script/artifact-cleanup]   | All  unit tests passed.
+[Artifact Cleanup Script/artifact-cleanup]   ✅  Success - Main Run unit tests with Pester [2.252166348s]
+[Artifact Cleanup Script/artifact-cleanup] ⭐ Run Complete job
+[Artifact Cleanup Script/artifact-cleanup] Cleaning up container for job artifact-cleanup
+[Artifact Cleanup Script/artifact-cleanup]   ✅  Success - Complete job
+[Artifact Cleanup Script/artifact-cleanup] 🏁  Job succeeded
+
+============================================================
+============================================================
+TEST CASE: Max-Age Retention Policy (single act run)
+Timestamp: 2026-04-20T04:46:11.2558423-04:00
+time="2026-04-20T04:46:00-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Artifact Cleanup Script/artifact-cleanup] ⭐ Run Set up job
+[Artifact Cleanup Script/artifact-cleanup] 🚀  Start image=act-ubuntu-pwsh:latest
+[Artifact Cleanup Script/artifact-cleanup]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Artifact Cleanup Script/artifact-cleanup]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/artifact-cleanup]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/artifact-cleanup]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Artifact Cleanup Script/artifact-cleanup]   ✅  Success - Set up job
+[Artifact Cleanup Script/artifact-cleanup] ⭐ Run Main Checkout repository
+[Artifact Cleanup Script/artifact-cleanup]   🐳  docker cp src=/tmp/act-test-1051358058/. dst=/tmp/act-test-1051358058
+[Artifact Cleanup Script/artifact-cleanup]   ✅  Success - Main Checkout repository [125.873414ms]
+[Artifact Cleanup Script/artifact-cleanup] ⭐ Run Main Ensure PowerShell is available
+[Artifact Cleanup Script/artifact-cleanup]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/1.ps1] user= workdir=
+[Artifact Cleanup Script/artifact-cleanup]   | PowerShell version: 7.6.0
+[Artifact Cleanup Script/artifact-cleanup]   ✅  Success - Main Ensure PowerShell is available [1.378773374s]
+[Artifact Cleanup Script/artifact-cleanup] ⭐ Run Main Create test fixtures
+[Artifact Cleanup Script/artifact-cleanup]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/2.ps1] user= workdir=
+[Artifact Cleanup Script/artifact-cleanup]   | Fixtures written: artifacts.json, policy.json
+[Artifact Cleanup Script/artifact-cleanup]   ✅  Success - Main Create test fixtures [1.51597441s]
+[Artifact Cleanup Script/artifact-cleanup] ⭐ Run Main Run artifact cleanup in dry-run mode
+[Artifact Cleanup Script/artifact-cleanup]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/3.ps1] user= workdir=
+[Artifact Cleanup Script/artifact-cleanup]   | 
+[Artifact Cleanup Script/artifact-cleanup]   | === ARTIFACT CLEANUP PLAN ===
+[Artifact Cleanup Script/artifact-cleanup]   | Mode: DRY-RUN (no changes will be made)
+[Artifact Cleanup Script/artifact-cleanup]   | --- Artifacts to DELETE (1) ---
+[Artifact Cleanup Script/artifact-cleanup]   |   - artifact-old (300 MB) [40 days old, workflow: wf-2]
+[Artifact Cleanup Script/artifact-cleanup]   | --- Artifacts to RETAIN (2) ---
+[Artifact Cleanup Script/artifact-cleanup]   |   - artifact-fresh (100 MB) [5 days old, workflow: wf-1]
+[Artifact Cleanup Script/artifact-cleanup]   |   - artifact-medium (200 MB) [20 days old, workflow: wf-1]
+[Artifact Cleanup Script/artifact-cleanup]   | === SUMMARY ===
+[Artifact Cleanup Script/artifact-cleanup]   | Total artifacts    : 3
+[Artifact Cleanup Script/artifact-cleanup]   | Artifacts to delete: 1
+[Artifact Cleanup Script/artifact-cleanup]   | Artifacts to retain: 2
+[Artifact Cleanup Script/artifact-cleanup]   | Space reclaimed    : 300 MB (314572800 bytes)
+[Artifact Cleanup Script/artifact-cleanup]   | CLEANUP_RESULT: deleted=1 retained=2 reclaimed_bytes=314572800
+[Artifact Cleanup Script/artifact-cleanup]   | === END PLAN ===
+[Artifact Cleanup Script/artifact-cleanup]   | 
+[Artifact Cleanup Script/artifact-cleanup]   ✅  Success - Main Run artifact cleanup in dry-run mode [1.195402403s]
+[Artifact Cleanup Script/artifact-cleanup] ⭐ Run Main Run unit tests with Pester
+[Artifact Cleanup Script/artifact-cleanup]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/4.ps1] user= workdir=
+[Artifact Cleanup Script/artifact-cleanup]   ❗  ::error::System.Management.Automation.RuntimeException: No test files were found and no scriptblocks were provided. Please ensure that you provided at least one path to a *.Tests.ps1 file, or a directory that contains such file. Or that you provided a ScriptBlock test container.[0m
+[Artifact Cleanup Script/artifact-cleanup]   ❓  ::group::Message[0m
+[Artifact Cleanup Script/artifact-cleanup]   | at Invoke-Pester<End>, /usr/local/share/powershell/Modules/Pester/5.7.1/Pester.psm1: line 4956[0m
+[Artifact Cleanup Script/artifact-cleanup]   | at <ScriptBlock>, /var/run/act/workflow/4.ps1: line 8[0m
+[Artifact Cleanup Script/artifact-cleanup]   | at <ScriptBlock>, <No file>: line 1[0m
+[Artifact Cleanup Script/artifact-cleanup]   ❓  ::endgroup::[0m
+[Artifact Cleanup Script/artifact-cleanup]   | All  unit tests passed.
+[Artifact Cleanup Script/artifact-cleanup]   ✅  Success - Main Run unit tests with Pester [2.342869405s]
+[Artifact Cleanup Script/artifact-cleanup] ⭐ Run Complete job
+[Artifact Cleanup Script/artifact-cleanup] Cleaning up container for job artifact-cleanup
+[Artifact Cleanup Script/artifact-cleanup]   ✅  Success - Complete job
+[Artifact Cleanup Script/artifact-cleanup] 🏁  Job succeeded
+
+============================================================

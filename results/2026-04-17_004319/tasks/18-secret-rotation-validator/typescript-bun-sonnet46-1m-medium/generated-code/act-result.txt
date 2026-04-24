@@ -1,0 +1,413 @@
+
+================================================================================
+TEST CASE: act integration
+================================================================================
+[Secret Rotation Validator/validate-secrets] ⭐ Run Set up job
+[Secret Rotation Validator/validate-secrets] 🚀  Start image=act-ubuntu-pwsh:latest
+[Secret Rotation Validator/validate-secrets]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=true
+[Secret Rotation Validator/validate-secrets] using DockerAuthConfig authentication for docker pull
+[Secret Rotation Validator/validate-secrets] Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+[Secret Rotation Validator/validate-secrets]   ❌  Failure - Set up job
+[Secret Rotation Validator/validate-secrets] 🏁  Job failed
+time="2026-04-20T06:14:39-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+Error: Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+
+================================================================================
+TEST CASE: act integration
+================================================================================
+[Secret Rotation Validator/validate-secrets] ⭐ Run Set up job
+[Secret Rotation Validator/validate-secrets] 🚀  Start image=act-ubuntu-pwsh:latest
+[Secret Rotation Validator/validate-secrets]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Secret Rotation Validator/validate-secrets]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/validate-secrets]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/validate-secrets]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Secret Rotation Validator/validate-secrets]   ✅  Success - Set up job
+[Secret Rotation Validator/validate-secrets]   ☁  git clone 'https://github.com/oven-sh/setup-bun' # ref=v2
+[Secret Rotation Validator/validate-secrets] ⭐ Run Main Checkout
+[Secret Rotation Validator/validate-secrets]   🐳  docker cp src=/tmp/secret-rotation-act-test/. dst=/tmp/secret-rotation-act-test
+[Secret Rotation Validator/validate-secrets]   ✅  Success - Main Checkout [123.311504ms]
+[Secret Rotation Validator/validate-secrets] ⭐ Run Main Setup Bun
+[Secret Rotation Validator/validate-secrets]   🐳  docker cp src=/home/passp/.cache/act/oven-sh-setup-bun@v2/ dst=/var/run/act/actions/oven-sh-setup-bun@v2/
+[Secret Rotation Validator/validate-secrets]   🐳  docker exec cmd=[/opt/acttoolcache/node/24.14.1/x64/bin/node /var/run/act/actions/oven-sh-setup-bun@v2/dist/setup/index.js] user= workdir=
+[Secret Rotation Validator/validate-secrets]   | Downloading a new version of Bun: https://github.com/oven-sh/bun/releases/download/bun-v1.3.13/bun-linux-x64.zip
+[Secret Rotation Validator/validate-secrets]   | [command]/usr/bin/unzip -o -q /tmp/a5d751ab-2868-444b-8fc6-a6cb90b79801.zip
+[Secret Rotation Validator/validate-secrets]   | [command]/root/.bun/bin/bun --revision
+[Secret Rotation Validator/validate-secrets]   | 1.3.13+bf2e2cecf
+[Secret Rotation Validator/validate-secrets]   ✅  Success - Main Setup Bun [7.493157212s]
+[Secret Rotation Validator/validate-secrets]   ⚙  ::set-output:: bun-version=1.3.13
+[Secret Rotation Validator/validate-secrets]   ⚙  ::set-output:: bun-revision=1.3.13+bf2e2cecf
+[Secret Rotation Validator/validate-secrets]   ⚙  ::set-output:: bun-path=/root/.bun/bin/bun
+[Secret Rotation Validator/validate-secrets]   ⚙  ::set-output:: bun-download-url=https://github.com/oven-sh/bun/releases/download/bun-v1.3.13/bun-linux-x64.zip
+[Secret Rotation Validator/validate-secrets]   ⚙  ::set-output:: cache-hit=false
+[Secret Rotation Validator/validate-secrets]   ⚙  ::add-path:: /root/.bun/bin
+[Secret Rotation Validator/validate-secrets] ⭐ Run Main Install dependencies
+[Secret Rotation Validator/validate-secrets]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Secret Rotation Validator/validate-secrets]   | error: Bun could not find a package.json file to install from
+[Secret Rotation Validator/validate-secrets]   | note: Run "bun init" to initialize a project
+[Secret Rotation Validator/validate-secrets]   ✅  Success - Main Install dependencies [516.127033ms]
+[Secret Rotation Validator/validate-secrets] ⭐ Run Main Run unit tests
+[Secret Rotation Validator/validate-secrets]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/3] user= workdir=
+[Secret Rotation Validator/validate-secrets]   | bun test v1.3.13 (bf2e2cec)
+[Secret Rotation Validator/validate-secrets]   | 
+[Secret Rotation Validator/validate-secrets]   ❓  ::group::src/validator.test.ts:
+[Secret Rotation Validator/validate-secrets]   | (pass) computeDaysUntilExpiry > returns negative when secret is expired [0.57ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) computeDaysUntilExpiry > returns positive days remaining for ok secret [0.17ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) computeDaysUntilExpiry > returns 0 on expiry day [0.11ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) computeDaysUntilExpiry > returns exact days for warning secret [0.07ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) classifySecret > classifies expired secret correctly [0.14ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) classifySecret > classifies warning secret within window [0.14ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) classifySecret > classifies ok secret outside warning window [0.05ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) classifySecret > classifies secret at warning boundary as warning [0.05ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) classifySecret > classifies secret one day past warning boundary as ok [0.06ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) classifySecret > classifies secret with 0 days as expired [0.05ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) generateReport > groups secrets by urgency [0.87ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) generateReport > expired group contains correct secret [0.22ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) generateReport > warning group contains correct secret [0.15ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) generateReport > ok group contains correct secret [0.11ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) generateReport > report preserves requiredBy list [0.18ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) generateReport > report includes warningWindowDays [0.27ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) generateReport > handles empty secrets list [0.29ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) generateReport > custom warning window changes classification [0.12ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) formatMarkdown > contains markdown table headers [0.61ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) formatMarkdown > contains expired section [0.73ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) formatMarkdown > contains warning section [0.88ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) formatMarkdown > contains ok section [0.26ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) formatMarkdown > shows negative days for expired secrets [1.14ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) formatJSON > produces valid JSON [0.76ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) formatJSON > JSON contains all urgency groups [0.22ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) formatJSON > JSON expired entry has correct name [0.14ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) formatJSON > JSON ok entry has correct daysUntilExpiry [0.13ms]
+[Secret Rotation Validator/validate-secrets]   | 
+[Secret Rotation Validator/validate-secrets]   ❓  ::endgroup::
+[Secret Rotation Validator/validate-secrets]   | 
+[Secret Rotation Validator/validate-secrets]   |  27 pass
+[Secret Rotation Validator/validate-secrets]   |  0 fail
+[Secret Rotation Validator/validate-secrets]   |  45 expect() calls
+[Secret Rotation Validator/validate-secrets]   | Ran 27 tests across 1 file. [43.00ms]
+[Secret Rotation Validator/validate-secrets]   ✅  Success - Main Run unit tests [529.725645ms]
+[Secret Rotation Validator/validate-secrets] ⭐ Run Main Prepare config with workflow inputs
+[Secret Rotation Validator/validate-secrets]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/4] user= workdir=
+[Secret Rotation Validator/validate-secrets]   | Prepared config with warningWindowDays=7
+[Secret Rotation Validator/validate-secrets]   ✅  Success - Main Prepare config with workflow inputs [568.538513ms]
+[Secret Rotation Validator/validate-secrets] ⭐ Run Main Run secret rotation validator (JSON)
+[Secret Rotation Validator/validate-secrets]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/5] user= workdir=
+[Secret Rotation Validator/validate-secrets]   | {
+[Secret Rotation Validator/validate-secrets]   |   "generatedAt": "2026-04-20",
+[Secret Rotation Validator/validate-secrets]   |   "warningWindowDays": 7,
+[Secret Rotation Validator/validate-secrets]   |   "expired": [
+[Secret Rotation Validator/validate-secrets]   |     {
+[Secret Rotation Validator/validate-secrets]   |       "name": "DB_PASSWORD",
+[Secret Rotation Validator/validate-secrets]   |       "lastRotated": "2024-01-01",
+[Secret Rotation Validator/validate-secrets]   |       "rotationPolicyDays": 60,
+[Secret Rotation Validator/validate-secrets]   |       "requiredBy": [
+[Secret Rotation Validator/validate-secrets]   |         "api-service",
+[Secret Rotation Validator/validate-secrets]   |         "worker"
+[Secret Rotation Validator/validate-secrets]   |       ],
+[Secret Rotation Validator/validate-secrets]   |       "daysUntilExpiry": -780,
+[Secret Rotation Validator/validate-secrets]   |       "status": "expired"
+[Secret Rotation Validator/validate-secrets]   |     },
+[Secret Rotation Validator/validate-secrets]   |     {
+[Secret Rotation Validator/validate-secrets]   |       "name": "API_KEY",
+[Secret Rotation Validator/validate-secrets]   |       "lastRotated": "2024-02-10",
+[Secret Rotation Validator/validate-secrets]   |       "rotationPolicyDays": 37,
+[Secret Rotation Validator/validate-secrets]   |       "requiredBy": [
+[Secret Rotation Validator/validate-secrets]   |         "frontend"
+[Secret Rotation Validator/validate-secrets]   |       ],
+[Secret Rotation Validator/validate-secrets]   |       "daysUntilExpiry": -763,
+[Secret Rotation Validator/validate-secrets]   |       "status": "expired"
+[Secret Rotation Validator/validate-secrets]   |     },
+[Secret Rotation Validator/validate-secrets]   |     {
+[Secret Rotation Validator/validate-secrets]   |       "name": "JWT_SECRET",
+[Secret Rotation Validator/validate-secrets]   |       "lastRotated": "2024-03-01",
+[Secret Rotation Validator/validate-secrets]   |       "rotationPolicyDays": 90,
+[Secret Rotation Validator/validate-secrets]   |       "requiredBy": [
+[Secret Rotation Validator/validate-secrets]   |         "auth-service"
+[Secret Rotation Validator/validate-secrets]   |       ],
+[Secret Rotation Validator/validate-secrets]   |       "daysUntilExpiry": -690,
+[Secret Rotation Validator/validate-secrets]   |       "status": "expired"
+[Secret Rotation Validator/validate-secrets]   |     }
+[Secret Rotation Validator/validate-secrets]   |   ],
+[Secret Rotation Validator/validate-secrets]   |   "warning": [],
+[Secret Rotation Validator/validate-secrets]   |   "ok": []
+[Secret Rotation Validator/validate-secrets]   | }
+[Secret Rotation Validator/validate-secrets]   ✅  Success - Main Run secret rotation validator (JSON) [543.149663ms]
+[Secret Rotation Validator/validate-secrets] ⭐ Run Main Run secret rotation validator with fixed date (for CI assertion)
+[Secret Rotation Validator/validate-secrets]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/report] user= workdir=
+[Secret Rotation Validator/validate-secrets]   | {
+[Secret Rotation Validator/validate-secrets]   |   "generatedAt": "2024-03-15",
+[Secret Rotation Validator/validate-secrets]   |   "warningWindowDays": 7,
+[Secret Rotation Validator/validate-secrets]   |   "expired": [
+[Secret Rotation Validator/validate-secrets]   |     {
+[Secret Rotation Validator/validate-secrets]   |       "name": "DB_PASSWORD",
+[Secret Rotation Validator/validate-secrets]   |       "lastRotated": "2024-01-01",
+[Secret Rotation Validator/validate-secrets]   |       "rotationPolicyDays": 60,
+[Secret Rotation Validator/validate-secrets]   |       "requiredBy": [
+[Secret Rotation Validator/validate-secrets]   |         "api-service",
+[Secret Rotation Validator/validate-secrets]   |         "worker"
+[Secret Rotation Validator/validate-secrets]   |       ],
+[Secret Rotation Validator/validate-secrets]   |       "daysUntilExpiry": -14,
+[Secret Rotation Validator/validate-secrets]   |       "status": "expired"
+[Secret Rotation Validator/validate-secrets]   |     }
+[Secret Rotation Validator/validate-secrets]   |   ],
+[Secret Rotation Validator/validate-secrets]   |   "warning": [
+[Secret Rotation Validator/validate-secrets]   |     {
+[Secret Rotation Validator/validate-secrets]   |       "name": "API_KEY",
+[Secret Rotation Validator/validate-secrets]   |       "lastRotated": "2024-02-10",
+[Secret Rotation Validator/validate-secrets]   |       "rotationPolicyDays": 37,
+[Secret Rotation Validator/validate-secrets]   |       "requiredBy": [
+[Secret Rotation Validator/validate-secrets]   |         "frontend"
+[Secret Rotation Validator/validate-secrets]   |       ],
+[Secret Rotation Validator/validate-secrets]   |       "daysUntilExpiry": 3,
+[Secret Rotation Validator/validate-secrets]   |       "status": "warning"
+[Secret Rotation Validator/validate-secrets]   |     }
+[Secret Rotation Validator/validate-secrets]   |   ],
+[Secret Rotation Validator/validate-secrets]   |   "ok": [
+[Secret Rotation Validator/validate-secrets]   |     {
+[Secret Rotation Validator/validate-secrets]   |       "name": "JWT_SECRET",
+[Secret Rotation Validator/validate-secrets]   |       "lastRotated": "2024-03-01",
+[Secret Rotation Validator/validate-secrets]   |       "rotationPolicyDays": 90,
+[Secret Rotation Validator/validate-secrets]   |       "requiredBy": [
+[Secret Rotation Validator/validate-secrets]   |         "auth-service"
+[Secret Rotation Validator/validate-secrets]   |       ],
+[Secret Rotation Validator/validate-secrets]   |       "daysUntilExpiry": 76,
+[Secret Rotation Validator/validate-secrets]   |       "status": "ok"
+[Secret Rotation Validator/validate-secrets]   |     }
+[Secret Rotation Validator/validate-secrets]   |   ]
+[Secret Rotation Validator/validate-secrets]   | }
+[Secret Rotation Validator/validate-secrets]   ✅  Success - Main Run secret rotation validator with fixed date (for CI assertion) [537.761736ms]
+[Secret Rotation Validator/validate-secrets] ⭐ Run Main Assert report contains expected fields
+[Secret Rotation Validator/validate-secrets]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/7] user= workdir=
+[Secret Rotation Validator/validate-secrets]   | Expired secrets: 1 (DB_PASSWORD, daysUntilExpiry=-14)
+[Secret Rotation Validator/validate-secrets]   | Warning secrets: 1 (API_KEY, daysUntilExpiry=3)
+[Secret Rotation Validator/validate-secrets]   | OK secrets: 1 (JWT_SECRET, daysUntilExpiry=76)
+[Secret Rotation Validator/validate-secrets]   | All assertions passed
+[Secret Rotation Validator/validate-secrets]   ✅  Success - Main Assert report contains expected fields [607.012755ms]
+[Secret Rotation Validator/validate-secrets] ⭐ Run Main Run markdown format
+[Secret Rotation Validator/validate-secrets]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/8] user= workdir=
+[Secret Rotation Validator/validate-secrets]   | # Secret Rotation Report
+[Secret Rotation Validator/validate-secrets]   | Generated: 2024-03-15 | Warning window: 7 days
+[Secret Rotation Validator/validate-secrets]   | 
+[Secret Rotation Validator/validate-secrets]   | ## Expired
+[Secret Rotation Validator/validate-secrets]   | | Name | Status | Days Until Expiry | Last Rotated | Policy (days) | Required By |
+[Secret Rotation Validator/validate-secrets]   | |------|--------|-------------------|--------------|---------------|-------------|
+[Secret Rotation Validator/validate-secrets]   | | DB_PASSWORD | expired | -14 | 2024-01-01 | 60 | api-service, worker |
+[Secret Rotation Validator/validate-secrets]   | 
+[Secret Rotation Validator/validate-secrets]   | ## Warning
+[Secret Rotation Validator/validate-secrets]   | | Name | Status | Days Until Expiry | Last Rotated | Policy (days) | Required By |
+[Secret Rotation Validator/validate-secrets]   | |------|--------|-------------------|--------------|---------------|-------------|
+[Secret Rotation Validator/validate-secrets]   | | API_KEY | warning | 3 | 2024-02-10 | 37 | frontend |
+[Secret Rotation Validator/validate-secrets]   | 
+[Secret Rotation Validator/validate-secrets]   | ## OK
+[Secret Rotation Validator/validate-secrets]   | | Name | Status | Days Until Expiry | Last Rotated | Policy (days) | Required By |
+[Secret Rotation Validator/validate-secrets]   | |------|--------|-------------------|--------------|---------------|-------------|
+[Secret Rotation Validator/validate-secrets]   | | JWT_SECRET | ok | 76 | 2024-03-01 | 90 | auth-service |
+[Secret Rotation Validator/validate-secrets]   | 
+[Secret Rotation Validator/validate-secrets]   ✅  Success - Main Run markdown format [505.295151ms]
+[Secret Rotation Validator/validate-secrets] ⭐ Run Post Setup Bun
+[Secret Rotation Validator/validate-secrets]   🐳  docker exec cmd=[/opt/acttoolcache/node/24.14.1/x64/bin/node /var/run/act/actions/oven-sh-setup-bun@v2/dist/cache-save/index.js] user= workdir=
+[Secret Rotation Validator/validate-secrets]   ✅  Success - Post Setup Bun [742.288449ms]
+[Secret Rotation Validator/validate-secrets] ⭐ Run Complete job
+[Secret Rotation Validator/validate-secrets] Cleaning up container for job validate-secrets
+[Secret Rotation Validator/validate-secrets]   ✅  Success - Complete job
+[Secret Rotation Validator/validate-secrets] 🏁  Job succeeded
+time="2026-04-20T06:14:58-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+
+================================================================================
+TEST CASE: act integration
+================================================================================
+[Secret Rotation Validator/validate-secrets] ⭐ Run Set up job
+[Secret Rotation Validator/validate-secrets] 🚀  Start image=act-ubuntu-pwsh:latest
+[Secret Rotation Validator/validate-secrets]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Secret Rotation Validator/validate-secrets]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/validate-secrets]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/validate-secrets]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Secret Rotation Validator/validate-secrets]   ✅  Success - Set up job
+[Secret Rotation Validator/validate-secrets]   ☁  git clone 'https://github.com/oven-sh/setup-bun' # ref=v2
+[Secret Rotation Validator/validate-secrets] ⭐ Run Main Checkout
+[Secret Rotation Validator/validate-secrets]   🐳  docker cp src=/tmp/secret-rotation-act-test/. dst=/tmp/secret-rotation-act-test
+[Secret Rotation Validator/validate-secrets]   ✅  Success - Main Checkout [125.996385ms]
+[Secret Rotation Validator/validate-secrets] ⭐ Run Main Setup Bun
+[Secret Rotation Validator/validate-secrets]   🐳  docker cp src=/home/passp/.cache/act/oven-sh-setup-bun@v2/ dst=/var/run/act/actions/oven-sh-setup-bun@v2/
+[Secret Rotation Validator/validate-secrets]   🐳  docker exec cmd=[/opt/acttoolcache/node/24.14.1/x64/bin/node /var/run/act/actions/oven-sh-setup-bun@v2/dist/setup/index.js] user= workdir=
+[Secret Rotation Validator/validate-secrets]   | Downloading a new version of Bun: https://github.com/oven-sh/bun/releases/download/bun-v1.3.13/bun-linux-x64.zip
+[Secret Rotation Validator/validate-secrets]   | [command]/usr/bin/unzip -o -q /tmp/7ca88163-0ab8-45e8-9033-072e52e8e3e2.zip
+[Secret Rotation Validator/validate-secrets]   | [command]/root/.bun/bin/bun --revision
+[Secret Rotation Validator/validate-secrets]   | 1.3.13+bf2e2cecf
+[Secret Rotation Validator/validate-secrets]   ✅  Success - Main Setup Bun [8.163029837s]
+[Secret Rotation Validator/validate-secrets]   ⚙  ::set-output:: bun-path=/root/.bun/bin/bun
+[Secret Rotation Validator/validate-secrets]   ⚙  ::set-output:: bun-download-url=https://github.com/oven-sh/bun/releases/download/bun-v1.3.13/bun-linux-x64.zip
+[Secret Rotation Validator/validate-secrets]   ⚙  ::set-output:: cache-hit=false
+[Secret Rotation Validator/validate-secrets]   ⚙  ::set-output:: bun-version=1.3.13
+[Secret Rotation Validator/validate-secrets]   ⚙  ::set-output:: bun-revision=1.3.13+bf2e2cecf
+[Secret Rotation Validator/validate-secrets]   ⚙  ::add-path:: /root/.bun/bin
+[Secret Rotation Validator/validate-secrets] ⭐ Run Main Install dependencies
+[Secret Rotation Validator/validate-secrets]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Secret Rotation Validator/validate-secrets]   | error: Bun could not find a package.json file to install from
+[Secret Rotation Validator/validate-secrets]   | note: Run "bun init" to initialize a project
+[Secret Rotation Validator/validate-secrets]   ✅  Success - Main Install dependencies [532.06296ms]
+[Secret Rotation Validator/validate-secrets] ⭐ Run Main Run unit tests
+[Secret Rotation Validator/validate-secrets]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/3] user= workdir=
+[Secret Rotation Validator/validate-secrets]   | bun test v1.3.13 (bf2e2cec)
+[Secret Rotation Validator/validate-secrets]   | 
+[Secret Rotation Validator/validate-secrets]   ❓  ::group::src/validator.test.ts:
+[Secret Rotation Validator/validate-secrets]   | (pass) computeDaysUntilExpiry > returns negative when secret is expired [0.36ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) computeDaysUntilExpiry > returns positive days remaining for ok secret [0.08ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) computeDaysUntilExpiry > returns 0 on expiry day [0.04ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) computeDaysUntilExpiry > returns exact days for warning secret [0.03ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) classifySecret > classifies expired secret correctly [0.07ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) classifySecret > classifies warning secret within window [0.05ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) classifySecret > classifies ok secret outside warning window [0.04ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) classifySecret > classifies secret at warning boundary as warning [0.04ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) classifySecret > classifies secret one day past warning boundary as ok [0.05ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) classifySecret > classifies secret with 0 days as expired [0.06ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) generateReport > groups secrets by urgency [0.76ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) generateReport > expired group contains correct secret [0.18ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) generateReport > warning group contains correct secret [0.12ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) generateReport > ok group contains correct secret [0.11ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) generateReport > report preserves requiredBy list [0.21ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) generateReport > report includes warningWindowDays [0.10ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) generateReport > handles empty secrets list [0.08ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) generateReport > custom warning window changes classification [0.07ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) formatMarkdown > contains markdown table headers [0.46ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) formatMarkdown > contains expired section [0.63ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) formatMarkdown > contains warning section [0.79ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) formatMarkdown > contains ok section [1.44ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) formatMarkdown > shows negative days for expired secrets [0.31ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) formatJSON > produces valid JSON [0.49ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) formatJSON > JSON contains all urgency groups [0.19ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) formatJSON > JSON expired entry has correct name [0.18ms]
+[Secret Rotation Validator/validate-secrets]   | (pass) formatJSON > JSON ok entry has correct daysUntilExpiry [0.10ms]
+[Secret Rotation Validator/validate-secrets]   | 
+[Secret Rotation Validator/validate-secrets]   ❓  ::endgroup::
+[Secret Rotation Validator/validate-secrets]   | 
+[Secret Rotation Validator/validate-secrets]   |  27 pass
+[Secret Rotation Validator/validate-secrets]   |  0 fail
+[Secret Rotation Validator/validate-secrets]   |  45 expect() calls
+[Secret Rotation Validator/validate-secrets]   | Ran 27 tests across 1 file. [38.00ms]
+[Secret Rotation Validator/validate-secrets]   ✅  Success - Main Run unit tests [530.087476ms]
+[Secret Rotation Validator/validate-secrets] ⭐ Run Main Prepare config with workflow inputs
+[Secret Rotation Validator/validate-secrets]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/4] user= workdir=
+[Secret Rotation Validator/validate-secrets]   | Prepared config with warningWindowDays=7
+[Secret Rotation Validator/validate-secrets]   ✅  Success - Main Prepare config with workflow inputs [595.982747ms]
+[Secret Rotation Validator/validate-secrets] ⭐ Run Main Run secret rotation validator (JSON)
+[Secret Rotation Validator/validate-secrets]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/5] user= workdir=
+[Secret Rotation Validator/validate-secrets]   | {
+[Secret Rotation Validator/validate-secrets]   |   "generatedAt": "2026-04-20",
+[Secret Rotation Validator/validate-secrets]   |   "warningWindowDays": 7,
+[Secret Rotation Validator/validate-secrets]   |   "expired": [
+[Secret Rotation Validator/validate-secrets]   |     {
+[Secret Rotation Validator/validate-secrets]   |       "name": "DB_PASSWORD",
+[Secret Rotation Validator/validate-secrets]   |       "lastRotated": "2024-01-01",
+[Secret Rotation Validator/validate-secrets]   |       "rotationPolicyDays": 60,
+[Secret Rotation Validator/validate-secrets]   |       "requiredBy": [
+[Secret Rotation Validator/validate-secrets]   |         "api-service",
+[Secret Rotation Validator/validate-secrets]   |         "worker"
+[Secret Rotation Validator/validate-secrets]   |       ],
+[Secret Rotation Validator/validate-secrets]   |       "daysUntilExpiry": -780,
+[Secret Rotation Validator/validate-secrets]   |       "status": "expired"
+[Secret Rotation Validator/validate-secrets]   |     },
+[Secret Rotation Validator/validate-secrets]   |     {
+[Secret Rotation Validator/validate-secrets]   |       "name": "API_KEY",
+[Secret Rotation Validator/validate-secrets]   |       "lastRotated": "2024-02-10",
+[Secret Rotation Validator/validate-secrets]   |       "rotationPolicyDays": 37,
+[Secret Rotation Validator/validate-secrets]   |       "requiredBy": [
+[Secret Rotation Validator/validate-secrets]   |         "frontend"
+[Secret Rotation Validator/validate-secrets]   |       ],
+[Secret Rotation Validator/validate-secrets]   |       "daysUntilExpiry": -763,
+[Secret Rotation Validator/validate-secrets]   |       "status": "expired"
+[Secret Rotation Validator/validate-secrets]   |     },
+[Secret Rotation Validator/validate-secrets]   |     {
+[Secret Rotation Validator/validate-secrets]   |       "name": "JWT_SECRET",
+[Secret Rotation Validator/validate-secrets]   |       "lastRotated": "2024-03-01",
+[Secret Rotation Validator/validate-secrets]   |       "rotationPolicyDays": 90,
+[Secret Rotation Validator/validate-secrets]   |       "requiredBy": [
+[Secret Rotation Validator/validate-secrets]   |         "auth-service"
+[Secret Rotation Validator/validate-secrets]   |       ],
+[Secret Rotation Validator/validate-secrets]   |       "daysUntilExpiry": -690,
+[Secret Rotation Validator/validate-secrets]   |       "status": "expired"
+[Secret Rotation Validator/validate-secrets]   |     }
+[Secret Rotation Validator/validate-secrets]   |   ],
+[Secret Rotation Validator/validate-secrets]   |   "warning": [],
+[Secret Rotation Validator/validate-secrets]   |   "ok": []
+[Secret Rotation Validator/validate-secrets]   | }
+[Secret Rotation Validator/validate-secrets]   ✅  Success - Main Run secret rotation validator (JSON) [546.703534ms]
+[Secret Rotation Validator/validate-secrets] ⭐ Run Main Run secret rotation validator with fixed date (for CI assertion)
+[Secret Rotation Validator/validate-secrets]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/report] user= workdir=
+[Secret Rotation Validator/validate-secrets]   | {
+[Secret Rotation Validator/validate-secrets]   |   "generatedAt": "2024-03-15",
+[Secret Rotation Validator/validate-secrets]   |   "warningWindowDays": 7,
+[Secret Rotation Validator/validate-secrets]   |   "expired": [
+[Secret Rotation Validator/validate-secrets]   |     {
+[Secret Rotation Validator/validate-secrets]   |       "name": "DB_PASSWORD",
+[Secret Rotation Validator/validate-secrets]   |       "lastRotated": "2024-01-01",
+[Secret Rotation Validator/validate-secrets]   |       "rotationPolicyDays": 60,
+[Secret Rotation Validator/validate-secrets]   |       "requiredBy": [
+[Secret Rotation Validator/validate-secrets]   |         "api-service",
+[Secret Rotation Validator/validate-secrets]   |         "worker"
+[Secret Rotation Validator/validate-secrets]   |       ],
+[Secret Rotation Validator/validate-secrets]   |       "daysUntilExpiry": -14,
+[Secret Rotation Validator/validate-secrets]   |       "status": "expired"
+[Secret Rotation Validator/validate-secrets]   |     }
+[Secret Rotation Validator/validate-secrets]   |   ],
+[Secret Rotation Validator/validate-secrets]   |   "warning": [
+[Secret Rotation Validator/validate-secrets]   |     {
+[Secret Rotation Validator/validate-secrets]   |       "name": "API_KEY",
+[Secret Rotation Validator/validate-secrets]   |       "lastRotated": "2024-02-10",
+[Secret Rotation Validator/validate-secrets]   |       "rotationPolicyDays": 37,
+[Secret Rotation Validator/validate-secrets]   |       "requiredBy": [
+[Secret Rotation Validator/validate-secrets]   |         "frontend"
+[Secret Rotation Validator/validate-secrets]   |       ],
+[Secret Rotation Validator/validate-secrets]   |       "daysUntilExpiry": 3,
+[Secret Rotation Validator/validate-secrets]   |       "status": "warning"
+[Secret Rotation Validator/validate-secrets]   |     }
+[Secret Rotation Validator/validate-secrets]   |   ],
+[Secret Rotation Validator/validate-secrets]   |   "ok": [
+[Secret Rotation Validator/validate-secrets]   |     {
+[Secret Rotation Validator/validate-secrets]   |       "name": "JWT_SECRET",
+[Secret Rotation Validator/validate-secrets]   |       "lastRotated": "2024-03-01",
+[Secret Rotation Validator/validate-secrets]   |       "rotationPolicyDays": 90,
+[Secret Rotation Validator/validate-secrets]   |       "requiredBy": [
+[Secret Rotation Validator/validate-secrets]   |         "auth-service"
+[Secret Rotation Validator/validate-secrets]   |       ],
+[Secret Rotation Validator/validate-secrets]   |       "daysUntilExpiry": 76,
+[Secret Rotation Validator/validate-secrets]   |       "status": "ok"
+[Secret Rotation Validator/validate-secrets]   |     }
+[Secret Rotation Validator/validate-secrets]   |   ]
+[Secret Rotation Validator/validate-secrets]   | }
+[Secret Rotation Validator/validate-secrets]   ✅  Success - Main Run secret rotation validator with fixed date (for CI assertion) [537.846149ms]
+[Secret Rotation Validator/validate-secrets] ⭐ Run Main Assert report contains expected fields
+[Secret Rotation Validator/validate-secrets]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/7] user= workdir=
+[Secret Rotation Validator/validate-secrets]   | Expired secrets: 1 (DB_PASSWORD, daysUntilExpiry=-14)
+[Secret Rotation Validator/validate-secrets]   | Warning secrets: 1 (API_KEY, daysUntilExpiry=3)
+[Secret Rotation Validator/validate-secrets]   | OK secrets: 1 (JWT_SECRET, daysUntilExpiry=76)
+[Secret Rotation Validator/validate-secrets]   | All assertions passed
+[Secret Rotation Validator/validate-secrets]   ✅  Success - Main Assert report contains expected fields [578.77265ms]
+[Secret Rotation Validator/validate-secrets] ⭐ Run Main Run markdown format
+[Secret Rotation Validator/validate-secrets]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/8] user= workdir=
+[Secret Rotation Validator/validate-secrets]   | # Secret Rotation Report
+[Secret Rotation Validator/validate-secrets]   | Generated: 2024-03-15 | Warning window: 7 days
+[Secret Rotation Validator/validate-secrets]   | 
+[Secret Rotation Validator/validate-secrets]   | ## Expired
+[Secret Rotation Validator/validate-secrets]   | | Name | Status | Days Until Expiry | Last Rotated | Policy (days) | Required By |
+[Secret Rotation Validator/validate-secrets]   | |------|--------|-------------------|--------------|---------------|-------------|
+[Secret Rotation Validator/validate-secrets]   | | DB_PASSWORD | expired | -14 | 2024-01-01 | 60 | api-service, worker |
+[Secret Rotation Validator/validate-secrets]   | 
+[Secret Rotation Validator/validate-secrets]   | ## Warning
+[Secret Rotation Validator/validate-secrets]   | | Name | Status | Days Until Expiry | Last Rotated | Policy (days) | Required By |
+[Secret Rotation Validator/validate-secrets]   | |------|--------|-------------------|--------------|---------------|-------------|
+[Secret Rotation Validator/validate-secrets]   | | API_KEY | warning | 3 | 2024-02-10 | 37 | frontend |
+[Secret Rotation Validator/validate-secrets]   | 
+[Secret Rotation Validator/validate-secrets]   | ## OK
+[Secret Rotation Validator/validate-secrets]   | | Name | Status | Days Until Expiry | Last Rotated | Policy (days) | Required By |
+[Secret Rotation Validator/validate-secrets]   | |------|--------|-------------------|--------------|---------------|-------------|
+[Secret Rotation Validator/validate-secrets]   | | JWT_SECRET | ok | 76 | 2024-03-01 | 90 | auth-service |
+[Secret Rotation Validator/validate-secrets]   | 
+[Secret Rotation Validator/validate-secrets]   ✅  Success - Main Run markdown format [505.049042ms]
+[Secret Rotation Validator/validate-secrets] ⭐ Run Post Setup Bun
+[Secret Rotation Validator/validate-secrets]   🐳  docker exec cmd=[/opt/acttoolcache/node/24.14.1/x64/bin/node /var/run/act/actions/oven-sh-setup-bun@v2/dist/cache-save/index.js] user= workdir=
+[Secret Rotation Validator/validate-secrets]   ✅  Success - Post Setup Bun [721.59273ms]
+[Secret Rotation Validator/validate-secrets] ⭐ Run Complete job
+[Secret Rotation Validator/validate-secrets] Cleaning up container for job validate-secrets
+[Secret Rotation Validator/validate-secrets]   ✅  Success - Complete job
+[Secret Rotation Validator/validate-secrets] 🏁  Job succeeded
+time="2026-04-20T06:15:20-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"

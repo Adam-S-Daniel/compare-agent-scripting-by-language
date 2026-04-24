@@ -1,0 +1,83 @@
+name: environment-matrix-generator
+
+# Triggers: keep CI tight on push/PR, allow manual runs from the UI for ad-hoc fixtures,
+# and run weekly so a stale schedule catches Pester/PowerShell regressions.
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: "Fixture filename under fixtures/ to generate"
+        required: false
+        default: "simple.json"
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+
+env:
+  # Default fixture for pull_request / scheduled / push triggers. Overridable via
+  # workflow_dispatch input or by passing --env FIXTURE_FILE=... to act.
+  FIXTURE_FILE: simple.json
+
+jobs:
+
+  unit-tests:
+    name: Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = './MatrixGenerator.Tests.ps1'
+          $config.Run.Exit = $true
+          $config.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $config
+
+  generate-matrix:
+    name: Generate matrix from fixture
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Generate strategy matrix JSON
+        shell: pwsh
+        env:
+          FIXTURE_FILE: ${{ github.event.inputs.fixture || env.FIXTURE_FILE }}
+        run: |
+          $fixture = Join-Path 'fixtures' $env:FIXTURE_FILE
+          if (-not (Test-Path $fixture)) {
+              Write-Error "Fixture not found: $fixture"
+              exit 1
+          }
+          Write-Host "===MATRIX-BEGIN==="
+          ./Generate-Matrix.ps1 -ConfigPath $fixture -OutputPath matrix.json
+          Write-Host "===MATRIX-END==="
+          Write-Host "===SUMMARY==="
+          $obj = Get-Content matrix.json -Raw | ConvertFrom-Json
+          $axes = $obj.strategy.matrix.PSObject.Properties |
+              Where-Object { $_.Name -ne 'include' -and $_.Name -ne 'exclude' }
+          foreach ($axis in $axes) {
+              Write-Host ("axis:{0}=count:{1}" -f $axis.Name, @($axis.Value).Count)
+          }
+          $includeCount = if ($obj.strategy.matrix.PSObject.Properties['include']) { @($obj.strategy.matrix.include).Count } else { 0 }
+          $excludeCount = if ($obj.strategy.matrix.PSObject.Properties['exclude']) { @($obj.strategy.matrix.exclude).Count } else { 0 }
+          Write-Host ("include-count={0}" -f $includeCount)
+          Write-Host ("exclude-count={0}" -f $excludeCount)
+          if ($obj.strategy.PSObject.Properties['fail-fast']) {
+              Write-Host ("fail-fast={0}" -f $obj.strategy.'fail-fast'.ToString().ToLower())
+          }
+          if ($obj.strategy.PSObject.Properties['max-parallel']) {
+              Write-Host ("max-parallel={0}" -f $obj.strategy.'max-parallel')
+          }
+          Write-Host "===SUMMARY-END==="

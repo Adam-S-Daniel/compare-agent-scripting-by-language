@@ -1,0 +1,69 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: Fixture directory to use
+        required: false
+        default: minor
+
+permissions:
+  contents: read
+
+jobs:
+  unit-tests:
+    name: Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $cfg = New-PesterConfiguration
+          $cfg.Run.Path = './SemanticVersionBumper.Tests.ps1'
+          $cfg.Run.Exit = $true
+          $cfg.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $cfg
+
+  bump-version:
+    name: Bump version from fixture
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Resolve fixture
+        shell: pwsh
+        run: |
+          # Fixture can come from workflow_dispatch input OR the FIXTURE env
+          # var (set by the act-based test harness). Default to "minor" so
+          # plain pushes work too.
+          $fixture = if ($env:INPUT_FIXTURE) { $env:INPUT_FIXTURE }
+                     elseif ($env:FIXTURE)  { $env:FIXTURE }
+                     else                   { 'minor' }
+          Write-Host "Using fixture: $fixture"
+          $dir = Join-Path $PWD "fixtures/$fixture"
+          if (-not (Test-Path $dir)) {
+              throw "Fixture directory not found: $dir"
+          }
+          Copy-Item -Path (Join-Path $dir 'package.json') -Destination ./package.json -Force
+          Copy-Item -Path (Join-Path $dir 'commits.txt')  -Destination ./commits.txt  -Force
+      - name: Run version bumper
+        shell: pwsh
+        run: |
+          $out = ./Invoke-Bumper.ps1 `
+              -VersionFile ./package.json `
+              -CommitLogFile ./commits.txt `
+              -ChangelogFile ./CHANGELOG.md `
+              -Date '2026-04-19'
+          $out | ForEach-Object { Write-Host "BUMPER::$_" }
+          Write-Host '----- package.json after bump -----'
+          Get-Content ./package.json | ForEach-Object { Write-Host "PKG::$_" }
+          Write-Host '----- CHANGELOG.md after bump -----'
+          if (Test-Path ./CHANGELOG.md) {
+              Get-Content ./CHANGELOG.md | ForEach-Object { Write-Host "LOG::$_" }
+          } else {
+              Write-Host 'LOG::<no changelog written>'
+          }

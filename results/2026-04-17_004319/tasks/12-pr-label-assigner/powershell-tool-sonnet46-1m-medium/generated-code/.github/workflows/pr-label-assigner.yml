@@ -1,0 +1,173 @@
+name: PR Label Assigner
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Run Pester Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Verify script files exist
+        shell: pwsh
+        run: |
+          $required = @(
+            "PRLabelAssigner.ps1",
+            "PRLabelAssigner.Tests.ps1"
+          )
+          foreach ($file in $required) {
+            if (-not (Test-Path $file)) {
+              Write-Error "Required file not found: $file"
+              exit 1
+            }
+            Write-Host "Found: $file"
+          }
+
+      - name: Install Pester
+        shell: pwsh
+        run: |
+          if (-not (Get-Module -ListAvailable -Name Pester | Where-Object { $_.Version -ge '5.0' })) {
+            Write-Host "Installing Pester..."
+            Install-Module -Name Pester -MinimumVersion 5.0 -Force -Scope CurrentUser
+          } else {
+            Write-Host "Pester already available."
+          }
+          Import-Module Pester
+          Write-Host "Pester version: $((Get-Module Pester).Version)"
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = "./PRLabelAssigner.Tests.ps1"
+          $config.Output.Verbosity = "Detailed"
+          $config.TestResult.Enabled = $true
+          $config.TestResult.OutputPath = "./test-results.xml"
+          $config.TestResult.OutputFormat = "NUnitXml"
+          $config.Run.Exit = $true
+
+          $result = Invoke-Pester -Configuration $config
+          exit $result.Result -eq 'Failed' ? 1 : 0
+
+      - name: Run label assigner with mock data
+        shell: pwsh
+        run: |
+          Write-Host "=== Running PR Label Assigner with mock data ==="
+          pwsh -File ./PRLabelAssigner.ps1
+
+      - name: Validate label output
+        shell: pwsh
+        run: |
+          . ./PRLabelAssigner.ps1
+
+          $MockFiles = @(
+            "src/api/v1/users.ts",
+            "src/api/v1/orders.ts",
+            "src/api/v1/users.test.ts",
+            "src/lib/utils.ts",
+            "docs/api/users.md",
+            "docs/setup.md",
+            ".github/workflows/ci.yml",
+            "jest.config.ts",
+            "README.md"
+          )
+
+          $DefaultRules = @(
+            @{ Pattern = "docs/**";      Label = "documentation"; Priority = 10 },
+            @{ Pattern = "**/*.md";      Label = "documentation"; Priority = 10 },
+            @{ Pattern = "src/api/**";   Label = "api";           Priority = 20 },
+            @{ Pattern = "**/*.test.*";  Label = "tests";         Priority = 30 },
+            @{ Pattern = "**/*.spec.*";  Label = "tests";         Priority = 30 },
+            @{ Pattern = "src/**";       Label = "source";        Priority = 5  },
+            @{ Pattern = ".github/**";   Label = "ci/cd";         Priority = 40 },
+            @{ Pattern = "*.config.*";   Label = "config";        Priority = 15 }
+          )
+
+          $labels = Get-PRLabels -Files $MockFiles -Rules $DefaultRules -SortByPriority
+          $labelStr = $labels -join ','
+
+          Write-Host "RESULT_LABELS: $labelStr"
+
+          $expectedLabels = @("api", "ci/cd", "config", "documentation", "source", "tests")
+          $sortedLabels = $labels | Sort-Object
+
+          if ($sortedLabels.Count -ne $expectedLabels.Count) {
+            Write-Error "Label count mismatch: expected $($expectedLabels.Count), got $($sortedLabels.Count)"
+            exit 1
+          }
+
+          for ($i = 0; $i -lt $expectedLabels.Count; $i++) {
+            if ($sortedLabels[$i] -ne $expectedLabels[$i]) {
+              Write-Error "Label mismatch at index ${i}: expected '$($expectedLabels[$i])', got '$($sortedLabels[$i])'"
+              exit 1
+            }
+          }
+
+          Write-Host "Validation passed: all expected labels present."
+          Write-Host "Expected: $($expectedLabels -join ', ')"
+          Write-Host "Got:      $($sortedLabels -join ', ')"
+
+  workflow-structure:
+    name: Validate Workflow Structure
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Verify workflow YAML structure
+        shell: pwsh
+        run: |
+          $workflowPath = ".github/workflows/pr-label-assigner.yml"
+          if (-not (Test-Path $workflowPath)) {
+            Write-Error "Workflow file not found: $workflowPath"
+            exit 1
+          }
+          Write-Host "Workflow file found: $workflowPath"
+
+          $content = Get-Content $workflowPath -Raw
+          $checks = @(
+            @{ Pattern = "on:";          Name = "triggers section" },
+            @{ Pattern = "push:";        Name = "push trigger" },
+            @{ Pattern = "pull_request:"; Name = "pull_request trigger" },
+            @{ Pattern = "jobs:";        Name = "jobs section" },
+            @{ Pattern = "actions/checkout@v4"; Name = "checkout action" },
+            @{ Pattern = "shell: pwsh";  Name = "pwsh shell" }
+          )
+
+          $allPassed = $true
+          foreach ($check in $checks) {
+            if ($content -match [regex]::Escape($check.Pattern)) {
+              Write-Host "[PASS] Found: $($check.Name)"
+            } else {
+              Write-Error "[FAIL] Missing: $($check.Name)"
+              $allPassed = $false
+            }
+          }
+
+          if (-not $allPassed) { exit 1 }
+          Write-Host "Workflow structure validation passed."
+
+      - name: Verify script files referenced in workflow exist
+        shell: pwsh
+        run: |
+          $scripts = @("PRLabelAssigner.ps1", "PRLabelAssigner.Tests.ps1")
+          foreach ($script in $scripts) {
+            if (Test-Path $script) {
+              Write-Host "[PASS] Script exists: $script"
+            } else {
+              Write-Error "[FAIL] Script missing: $script"
+              exit 1
+            }
+          }

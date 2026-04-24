@@ -1,0 +1,40 @@
+name: Test Results Aggregator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  aggregate-test-results:
+    name: Aggregate Test Results
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Install actionlint
+        run: |
+          curl -fsSL https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz | tar xz -C /usr/local/bin actionlint
+
+      - name: Run unit tests
+        run: bun test
+        env:
+          # Setting GITHUB_ACTIONS prevents the act integration test from running
+          # recursively inside the container (act is not available here)
+          GITHUB_ACTIONS: "true"
+
+      - name: Aggregate test results from fixtures
+        run: bun run run.ts fixtures/

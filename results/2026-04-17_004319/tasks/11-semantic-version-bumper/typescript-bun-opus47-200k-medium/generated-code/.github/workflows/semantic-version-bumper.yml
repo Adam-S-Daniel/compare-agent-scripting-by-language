@@ -1,0 +1,65 @@
+name: semantic-version-bumper
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: Fixture directory under ./fixtures
+        required: false
+        default: case-feat
+
+permissions:
+  contents: read
+
+env:
+  FIXTURE: ${{ github.event.inputs.fixture || 'case-feat' }}
+
+jobs:
+  bump:
+    name: Bump version from fixture
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v bun >/dev/null 2>&1; then
+            curl -fsSL https://bun.sh/install | bash
+            echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+            export PATH="$HOME/.bun/bin:$PATH"
+          fi
+          bun --version
+
+      - name: Install dependencies
+        shell: bash
+        run: bun install --frozen-lockfile || bun install
+
+      - name: Run unit tests
+        shell: bash
+        run: bun test tests/bumper.test.ts
+
+      - name: Run version bumper against fixture
+        shell: bash
+        env:
+          FIXTURE: ${{ env.FIXTURE }}
+        run: |
+          set -euo pipefail
+          FIXTURE_DIR="fixtures/${FIXTURE}"
+          if [ ! -d "$FIXTURE_DIR" ]; then
+            echo "fixture dir not found: $FIXTURE_DIR" >&2
+            exit 1
+          fi
+          cp "$FIXTURE_DIR/VERSION" /tmp/VERSION
+          bun run src/cli.ts \
+            --version-file /tmp/VERSION \
+            --commits-file "$FIXTURE_DIR/commits.log" \
+            --changelog /tmp/CHANGELOG.md
+          echo "=== resulting VERSION file ==="
+          cat /tmp/VERSION
+          echo "=== resulting CHANGELOG ==="
+          cat /tmp/CHANGELOG.md

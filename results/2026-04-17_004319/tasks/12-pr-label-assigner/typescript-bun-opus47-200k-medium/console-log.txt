@@ -1,0 +1,185 @@
+[Tool: Bash] ls /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-opus47-200k-medium/
+[Result] benchmark-instructions-v4.md
+[Tool: Bash] which bun act actionlint docker && bun --version
+[Result] /home/passp/.bun/bin/bun
+/home/passp/.local/bin/act
+/home/passp/.local/bin/actionlint
+/usr/bin/docker
+1.3.11
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/AGENTS.md"}
+[Result] 1	# Agent Instructions
+2	
+3	All agent-facing instructions live in this file. `CLAUDE.md` contains only a
+4	reference here. If you are a Claude Code agent, you have already loaded this
+5	via `CLAUDE.md`. Other agents: read this file directly.
+6	
+7	## Build and test
+8	
+9	```bash
+10	# Run unit tests (REQUIRED before every PR)
+11	pip install pytest  # if not already installed
+12	python3 -m pytest tests/ -v
+13	
+14	# Validate imports
+15	python3 -c "from runner import main"
+16	python3 -c "from generate_results import generate_results_md"
+17	python3 -c "from test_quality import compute_structural_metrics"
+18	python3 -c "from llm_providers import get_provider"
+19	
+20	# Regenerate all reports
+21	python3 generate_results.py --all
+22	
+23	# Run a benchmark (v4, all tasks/modes/models)
+24	python3 runner.py --tasks 11,12,13,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
+25	
+26	# Evaluate test quality (structural metrics only)
+27	python3 test_quality.py results/2026-04
+[Tool: Bash] cat .actrc 2>/dev/null; ls -la .claude/ 2>/dev/null
+[Result] -P ubuntu-latest=act-ubuntu-pwsh:latest
+total 12
+drwxr-xr-x 2 passp passp 4096 Apr 19 13:36 .
+drwxr-xr-x 4 passp passp 4096 Apr 19 13:36 ..
+-rw-r--r-- 1 passp passp  316 Apr 19 13:36 settings.json
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-opus47-200k-medium/labeler.test.ts", "content": "import { describe
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-opus47-200k-medium/labeler.test.ts (file state is current in your context — no need to Read it back)
+[Tool: Bash] bun test 2>&1 | tail -20
+[Result] bun test v1.3.11 (af24e281)
+
+labeler.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module './labeler' from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-opus47-200k-medium/labeler.test.ts'
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [11.00ms]
+[Assistant] Good, red. Now the implementation.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-opus47-200k-medium/labeler.ts", "content": "// PR Label Assigner\n
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-opus47-200k-medium/labeler.ts (file state is current in your context — no need to Read it back)
+[Tool: Bash] bun test 2>&1 | tail -20
+[Result] bun test v1.3.11 (af24e281)
+
+ 9 pass
+ 0 fail
+ 13 expect() calls
+Ran 9 tests across 1 file. [21.00ms]
+[Assistant] All green. Now a CLI driver and workflow.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-opus47-200k-medium/cli.ts", "content": "// CLI entrypoint for the 
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-opus47-200k-medium/cli.ts (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-opus47-200k-medium/rules.json", "content": "[\n  { \"pattern\": \"
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-opus47-200k-medium/rules.json (file state is current in your context — no need to Read it back)
+[Tool: Bash] echo '["src/api/users.test.ts","docs/intro.md","README.md"]' > /tmp/f.json && bun run cli.ts --rules rules.json --files /tmp/f.json
+[Result] {"labels":["api","documentation","tests"]}
+LABELS: api,documentation,tests
+[Assistant] Now the workflow and test harness.
+[Tool: Bash] mkdir -p .github/workflows
+[Result] (Bash completed with no output)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-opus47-200k-medium/.github/workflows/pr-label-assigner.yml", "cont
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-opus47-200k-medium/.github/workflows/pr-label-assigner.yml (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/pr-label-assigner.yml && echo OK
+[Result] OK
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-opus47-200k-medium/workflow.test.ts", "content": "// Workflow test
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-opus47-200k-medium/workflow.test.ts (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-opus47-200k-medium/package.json", "content": "{\n  \"name\": \"pr-
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-opus47-200k-medium/package.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-opus47-200k-medium/tsconfig.json", "content": "{\n  \"compilerOpti
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-opus47-200k-medium/tsconfig.json (file state is current in your context — no need to Read it back)
+[Tool: Bash] bun install 2>&1 | tail -5
+[Result] + @types/bun@1.3.12
++ yaml@2.8.3
+
+5 packages installed [331.00ms]
+[Tool: Bash] bun test labeler.test.ts workflow.test.ts -t "workflow structure" 2>&1 | tail -20
+[Result] bun test v1.3.11 (af24e281)
+
+ 3 pass
+ 12 filtered out
+ 0 fail
+ 13 expect() calls
+Ran 3 tests across 2 files. [342.00ms]
+[Assistant] Structural pass. Now let me dry-run one act to verify it works, then gate the 3 real runs.
+[Tool: Bash] docker images | grep act-ubuntu-pwsh
+[Result] WARNING: This output is designed for human readability. For machine-readable output, please use --format.
+act-ubuntu-pwsh:latest                    ba4101fd0f65       2.55GB          639MB
+[Tool: Bash] bun test workflow.test.ts 2>&1 | tail -40
+[Result] error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-opus47-200k-medium/workflow.test.ts:139:29)
+(fail) workflow end-to-end via act > case: api-and-tests [696.72ms]
+134 |       appendFileSync(
+135 |         ACT_RESULT,
+136 |         `\n\n===== CASE: ${c.name} =====\nfiles: ${JSON.stringify(c.files)}\nexpected: ${c.expectedLabels.join(",")}\nexit: ${result.status}\n--- stdout+stderr ---\n${combined}\n`,
+137 |       );
+138 | 
+139 |       expect(result.status).toBe(0);
+                                  ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-opus47-200k-medium/workflow.test.ts:139:29)
+(fail) workflow end-to-end via act > case: docs-only [671.53ms]
+134 |       appendFileSync
+[Tool: Bash] head -60 act-result.txt
+[Result] # act results — 2026-04-19T17:39:19.320Z
+
+
+===== CASE: api-and-tests =====
+files: ["src/api/users.ts","src/api/users.test.ts"]
+expected: api,tests
+exit: 1
+--- stdout+stderr ---
+[PR Label Assigner/Assign labels] ⭐ Run Set up job
+[PR Label Assigner/Assign labels] 🚀  Start image=act-ubuntu-pwsh:latest
+[PR Label Assigner/Assign labels]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=true
+[PR Label Assigner/Assign labels] using DockerAuthConfig authentication for docker pull
+[PR Label Assigner/Assign labels] Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+[PR Label Assigner/Assign labels]   ❌  Failure - Set up job
+[PR Label Assigner/Assign labels] 🏁  Job failed
+
+time="2026-04-19T13:39:19-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+Error: Error response from daemon: pull access denied for act-ubuntu-pwsh, reposito
+[Assistant] Local image; act tried to pull it. Fix: add `--pull=false`.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-opus47-200k-medium/.actrc"}
+[Result] 1	-P ubuntu-latest=act-ubuntu-pwsh:latest
+2	
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-opus47-200k-medium/.actrc", "old_string": "-
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/typescript-bun-opus47-200k-medium/.actrc has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] bun test workflow.test.ts 2>&1 | tail -20
+[Result] bun test v1.3.11 (af24e281)
+
+ 6 pass
+ 0 fail
+ 22 expect() calls
+Ran 6 tests across 1 file. [32.33s]
+[Assistant] All 6 pass (3 structural + 3 act). Verify `act-result.txt`.
+[Tool: Bash] wc -l act-result.txt && grep -c "Job succeeded" act-result.txt && grep "FINAL_LABELS=" act-result.txt
+[Result] 211 act-result.txt
+3
+[PR Label Assigner/Assign labels]   | FINAL_LABELS=api,tests
+[PR Label Assigner/Assign labels]   | FINAL_LABELS=documentation
+[PR Label Assigner/Assign labels]   | FINAL_LABELS=api,backend,ci,documentation
+[Tool: Bash] bun test 2>&1 | tail -5
+[Result]  15 pass
+ 0 fail
+ 35 expect() calls
+Ran 15 tests across 2 files. [34.63s]
+[Assistant] All 15 tests pass (9 unit + 3 workflow-structure + 3 act E2E). 
+
+**Deliverables:**
+- `labeler.ts` — glob-to-regex matcher with group/priority conflict resolution
+- `labeler.test.ts` — 9 unit tests (TDD: red → green)
+- `cli.ts` + `rules.json` — CLI driver
+- `.github/workflows/pr-label-assigner.yml` — passes actionlint
+- `workflow.test.ts` — structure checks + 3 act push runs with exact `FINAL_LABELS=...` assertions
+- `act-result.txt` — 3 appended case outputs, all "Job succeeded"
+
+Expected labels matched exactly: `api,tests`, `documentation`, `api,backend,ci,documentation`.

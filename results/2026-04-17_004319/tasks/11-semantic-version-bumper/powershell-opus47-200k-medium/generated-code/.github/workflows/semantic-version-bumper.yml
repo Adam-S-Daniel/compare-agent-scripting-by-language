@@ -1,0 +1,71 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      commits_fixture:
+        description: 'Path to a commits fixture file (under fixtures/)'
+        required: false
+        default: 'fixtures/feat-only-commits.txt'
+
+permissions:
+  contents: read
+
+env:
+  DEFAULT_COMMITS_FIXTURE: ${{ github.event.inputs.commits_fixture || 'fixtures/feat-only-commits.txt' }}
+  DEFAULT_STARTING_VERSION: '1.1.0'
+
+jobs:
+  test:
+    name: Run Pester tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $result = Invoke-Pester -Path ./SemanticVersionBumper.Tests.ps1 -PassThru -Output Detailed
+          if ($result.FailedCount -gt 0) { exit 1 }
+
+  bump:
+    name: Bump version and generate changelog
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up package.json
+        shell: pwsh
+        run: |
+          $v = if ($env:STARTING_VERSION) { $env:STARTING_VERSION } else { $env:DEFAULT_STARTING_VERSION }
+          "{""name"":""demo"",""version"":""$v""}" | Set-Content -LiteralPath ./package.json -NoNewline
+          Write-Host "Starting with version $v"
+
+      - name: Bump version
+        id: bump
+        shell: pwsh
+        run: |
+          $fixture = if ($env:COMMITS_FIXTURE) { $env:COMMITS_FIXTURE } else { $env:DEFAULT_COMMITS_FIXTURE }
+          Write-Host "Using commits fixture: $fixture"
+          $out = & ./bump-version.ps1 -PackageJsonPath ./package.json -ChangelogPath ./CHANGELOG.md -CommitsFile $fixture
+          $out | ForEach-Object { Write-Host $_ }
+          $versionLine = $out | Where-Object { $_ -match '^VERSION=' } | Select-Object -Last 1
+          $version = ($versionLine -split '=', 2)[1]
+          "new_version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          Write-Host "NEW_VERSION::$version"
+
+      - name: Show resulting files
+        shell: pwsh
+        run: |
+          Write-Host "--- package.json ---"
+          Get-Content ./package.json
+          Write-Host ""
+          Write-Host "--- CHANGELOG.md ---"
+          if (Test-Path ./CHANGELOG.md) { Get-Content ./CHANGELOG.md } else { Write-Host "(no changelog)" }
+          Write-Host "RESULT_VERSION=${{ steps.bump.outputs.new_version }}"

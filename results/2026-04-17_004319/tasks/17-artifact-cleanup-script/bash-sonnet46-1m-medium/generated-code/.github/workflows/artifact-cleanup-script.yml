@@ -1,0 +1,64 @@
+name: Artifact Cleanup Script
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq jq bats shellcheck
+          curl -sSfL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash \
+            | bash -s -- latest /usr/local/bin
+
+      - name: Validate script syntax
+        run: |
+          bash -n artifact_cleanup.sh
+          shellcheck artifact_cleanup.sh
+
+      - name: Run unit tests
+        run: bats tests/artifact_cleanup.bats
+
+      - name: Integration test - age policy
+        run: |
+          bash artifact_cleanup.sh \
+            --artifacts tests/fixtures/artifacts_age.json \
+            --policy tests/fixtures/policy_age.json \
+            --reference-date 2026-04-20 \
+            --dry-run
+
+      - name: Integration test - size policy
+        run: |
+          bash artifact_cleanup.sh \
+            --artifacts tests/fixtures/artifacts_size.json \
+            --policy tests/fixtures/policy_size.json \
+            --reference-date 2026-04-20 \
+            --dry-run
+
+      - name: Integration test - keep latest N policy
+        run: |
+          bash artifact_cleanup.sh \
+            --artifacts tests/fixtures/artifacts_keep_n.json \
+            --policy tests/fixtures/policy_keep_n.json \
+            --reference-date 2026-04-20 \
+            --dry-run
+
+      - name: Integration test - combined policies
+        run: |
+          bash artifact_cleanup.sh \
+            --artifacts tests/fixtures/artifacts_combined.json \
+            --policy tests/fixtures/policy_combined.json \
+            --reference-date 2026-04-20 \
+            --dry-run

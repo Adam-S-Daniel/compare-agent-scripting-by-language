@@ -1,0 +1,26 @@
+name: PR Label Assigner
+
+"on":
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  label-assigner:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Python dependencies
+        run: pip install pytest pyyaml --break-system-packages
+
+      - name: Run unit tests
+        run: pytest tests/ -v
+
+      - name: Run label assigner with fixture
+        run: python3 label_assigner.py fixtures/test_input.json

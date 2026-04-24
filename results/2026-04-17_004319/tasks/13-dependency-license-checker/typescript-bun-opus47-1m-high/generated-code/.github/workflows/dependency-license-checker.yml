@@ -1,0 +1,61 @@
+name: Dependency License Checker
+
+# Run on pushes and PRs so every change is scanned, plus a weekly schedule
+# to catch policy drift, and a manual trigger for ad-hoc scans.
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  schedule:
+    - cron: "0 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  BUN_INSTALL: ${{ github.workspace }}/.bun-home
+
+jobs:
+  license-check:
+    name: Check dependency licences
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL https://bun.sh/install | bash
+          echo "${BUN_INSTALL}/bin" >> "${GITHUB_PATH}"
+
+      - name: Install project dependencies
+        shell: bash
+        run: bun install --frozen-lockfile
+
+      - name: Run unit tests
+        shell: bash
+        # Exclude the act harness (workflow/act.test.ts): it drives act and
+        # would recurse when run from inside the act container itself.
+        run: bun test src/ workflow/structure.test.ts
+
+      - name: Run dependency license checker
+        shell: bash
+        run: |
+          set -euo pipefail
+          bun run src/cli.ts \
+            --manifest fixtures/manifest.json \
+            --config fixtures/policy.json \
+            | tee compliance-report.md
+
+      - name: Upload compliance report
+        # Skip artifact upload when running locally under act — act does
+        # not provide ACTIONS_RUNTIME_TOKEN, so the upload would fail.
+        if: ${{ !env.ACT }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: compliance-report
+          path: compliance-report.md

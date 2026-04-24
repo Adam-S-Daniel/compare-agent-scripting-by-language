@@ -1,0 +1,220 @@
+[Assistant] Let me start by reading the project instructions.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/AGENTS.md"}
+[Result] 1	# Agent Instructions
+2	
+3	All agent-facing instructions live in this file. `CLAUDE.md` contains only a
+4	reference here. If you are a Claude Code agent, you have already loaded this
+5	via `CLAUDE.md`. Other agents: read this file directly.
+6	
+7	## Build and test
+8	
+9	```bash
+10	# Run unit tests (REQUIRED before every PR)
+11	pip install pytest  # if not already installed
+12	python3 -m pytest tests/ -v
+13	
+14	# Validate imports
+15	python3 -c "from runner import main"
+16	python3 -c "from generate_results import generate_results_md"
+17	python3 -c "from test_quality import compute_structural_metrics"
+18	python3 -c "from llm_providers import get_provider"
+19	
+20	# Regenerate all reports
+21	python3 generate_results.py --all
+22	
+23	# Run a benchmark (v4, all tasks/modes/models)
+24	python3 runner.py --tasks 11,12,13,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
+25	
+26	# Evaluate test quality (structural metrics only)
+27	python3 test_quality.py results/2026-04
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet-medium"}
+[Result ERROR] EISDIR: illegal operation on a directory, read '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet-medium'
+[Tool: Bash] ls /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet-medium/ && cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet-medium/benchmark-instructions-v4.md 2>/dev/null || echo "no benchmark file"
+[Result] benchmark-instructions-v4.md
+# Benchmark Instructions v4 — GitHub Actions
+
+**Version**: v4
+**Date**: 2026-04-09
+**Purpose**: Measure how well Claude Code agents perform GitHub Actions workflow authoring tasks across different language constraints, with trap-awareness guidance from v3 findings.
+
+**Changes from v3**:
+- Added "Common Pitfalls" section with guidance derived from v3 trap analysis (115min, 15.8% of v3 time lost to traps)
+- Act container now has pwsh and Pester pre-installed (matching real GitHub runners). Agents still need an install step for workflows that will run on vanilla act, but the benchmarking container already has them.
+- GHA workflow addendum expanded with `shell: pwsh` guidance for PowerShell mode
+- All other methodology, tasks, modes, and models are unchanged from v3
+
+## Methodology
+
+### Overview
+
+Each task is executed by a Claude Code agent under 4 different language constraints ("modes") and with 2 different models, yielding **8 runs per task**. Agents receive
+[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet-medium/.actrc 2>/dev/null || echo "no .actrc"
+[Result] -P ubuntu-latest=act-ubuntu-pwsh:latest
+[Assistant] Now I have all the context I need. Let me plan and implement this solution using red/green TDD.
+[Tool: Bash] ls /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet-medium/ && which actionlint && which act && which pwsh
+[Result] benchmark-instructions-v4.md
+/home/passp/.local/bin/actionlint
+/home/passp/.local/bin/act
+/snap/bin/pwsh
+[Tool: ToolSearch] {"query": "select:TodoWrite", "max_results": 1}
+[Result] {'type': 'tool_reference', 'tool_name': 'TodoWrite'}
+[Tool: TodoWrite] {"todos": [{"content": "Write first failing Pester test (function existence)", "status": "in_progress", "activeForm": "Writing first failing Pester test"}, {"content": "Implement ArtifactCleanup.ps1 w
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Assistant] Writing the first failing test — no implementation yet so `Get-DeletionPlan` won't be found.
+[Tool: Bash] mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet-medium/.github/workflows
+[Result] (Bash completed with no output)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet-medium/ArtifactCleanup.Tests.ps1", "content": "# Artifact
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet-medium/ArtifactCleanup.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester ./ArtifactCleanup.Tests.ps1 -PassThru 2>&1 | Select-Object -First 20" 2>&1 | head -20
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 29 tests in 638ms.[0m
+[95mRunning tests.[0m
+[91m[-] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet-medium/ArtifactCleanup.Tests.ps1 failed with:[0m
+[91mCommandNotFoundException: The term '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet-medium/ArtifactCleanup.ps1' is not recognized as a name of a cmdlet, function, script file, or executable program.
+[91mCheck the spelling of the name, or if a path was included, verify that the path is correct and try again.
+[91mat <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet-medium/ArtifactCleanup.Tests.ps1:12[0m
+[97mTests completed in 1.44s[0m
+[97mTests Passed: 0, [0m[91mFailed: 29, [0m[90mSkipped: 0, [0m[90mInconc
+[Assistant] All 29 tests fail — RED phase confirmed. Now implementing the minimum code to make them green.
+[Tool: TodoWrite] {"todos": [{"content": "Write first failing Pester test (function existence)", "status": "completed", "activeForm": "Writing first failing Pester test"}, {"content": "Implement ArtifactCleanup.ps1 wit
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet-medium/ArtifactCleanup.ps1", "content": "# ArtifactCleanu
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet-medium/ArtifactCleanup.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester ./ArtifactCleanup.Tests.ps1 -PassThru" 2>&1 | tail -20
+[Result] [32;1mUserDuration          : [0m00:00:01.1811054
+[32;1mFrameworkDuration     : [0m00:00:01.0811454
+[32;1mFailed                : [0m{[-] workflow file exists at expected path, [-] workflo
+                        w has push trigger, [-] workflow has pull_request trigg
+                        er, [-] workflow has a jobs section…}
+[32;1mFailedBlocks          : [0m{}
+[32;1mFailedContainers      : [0m{}
+[32;1mPassed                : [0m{[+] should be available as a function, [+] returns emp
+                        ty plan for empty artifact list, [+] marks artifacts ol
+                        der than MaxAgeDays for deletion, [+] retains artifacts
+                         within MaxAgeDays…}
+[32;1mSkipped               : [0m{}
+[32;1mInconclusive          : [0m{}
+[32;1mNotRun                : [0m{}
+[32;1mTests                 : [0m{[+] should be available as a function, [+] returns emp
+                        ty plan for empty artifact list, [+] marks artifacts ol
+      
+[Tool: Bash] pwsh -Command "Invoke-Pester ./ArtifactCleanup.Tests.ps1 -PassThru" 2>&1 | grep -E "Tests Passed|Tests completed|Failed:"
+[Result] [97mTests completed in 2.07s[0m
+[97mTests Passed: 22, [0m[91mFailed: 7, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Assistant] 22 pass — only the 7 workflow structure tests still fail because the workflow file doesn't exist yet. Creating it now.
+[Tool: TodoWrite] {"todos": [{"content": "Write first failing Pester test (function existence)", "status": "completed", "activeForm": "Writing first failing Pester test"}, {"content": "Implement ArtifactCleanup.ps1 wit
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet-medium/.github/workflows/artifact-cleanup-script.yml", "c
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet-medium/.github/workflows/artifact-cleanup-script.yml (file state is current in your context — no need to Read it back)
+[Tool: TodoWrite] {"todos": [{"content": "Write first failing Pester test (function existence)", "status": "completed", "activeForm": "Writing first failing Pester test"}, {"content": "Implement ArtifactCleanup.ps1 wit
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Bash] actionlint .github/workflows/artifact-cleanup-script.yml
+[Result] (Bash completed with no output)
+[Assistant] actionlint passes clean. Now verifying all 29 Pester tests go green.
+[Tool: Bash] pwsh -Command "Invoke-Pester ./ArtifactCleanup.Tests.ps1 -PassThru" 2>&1 | grep -E "Tests (Passed|completed|Failed)|Failed:"
+[Result] [97mTests completed in 2.01s[0m
+[32mTests Passed: 29, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Assistant] All 29 tests green. Now creating the test harness that runs everything through `act`.
+[Tool: TodoWrite] {"todos": [{"content": "Write first failing Pester test (function existence)", "status": "completed", "activeForm": "Writing first failing Pester test"}, {"content": "Implement ArtifactCleanup.ps1 wit
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet-medium/Run-TestHarness.ps1", "content": "# Run-TestHarnes
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet-medium/Run-TestHarness.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh ./Run-TestHarness.ps1 2>&1
+[Result ERROR] Exit code 1
+Creating temp repo at: /tmp/ac-harness-1718837153
+
+Running act push --rm (test case 1: all policies + dry-run)...
+
+act exit code: 1
+
+Asserting results...
+[31;1mWrite-Error: [0m/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet-medium/Run-TestHarness.ps1:126[0m
+[31;1m[0m[36;1mLine |[0m
+[31;1m[0m[36;1m[36;1m 126 | [0m     [36;1mWrite-Error $_[0m
+[31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m     | [31;1m     ~~~~~~~~~~~~~~[0m
+[31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m[31;1m[31;1m[36;1m     | [31;1mact exited with code 1 — see act-result.txt for details[0m
+[Tool: Bash] grep -A 30 "Error\|error\|failed\|Failed\|FAILED" /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet-medium/act-result.txt | head -60
+[Result] [Artifact Cleanup Script/test] Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+[Artifact Cleanup Script/test]   ❌  Failure - Set up job
+[Artifact Cleanup Script/test] 🏁  Job failed
+Error: Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+======================================================================
+
+Harness error: act exited with code 1 — see act-result.txt for details
+[Tool: Bash] docker images | grep -i "act\|pwsh\|ubuntu" | head -20
+[Result] WARNING: This output is designed for human readability. For machine-readable output, please use --format.
+act-ubuntu-pwsh:latest                    d49636934768       2.55GB          640MB        
+catthehacker/ubuntu:act-22.04             754f20d9a184       2.15GB          531MB        
+catthehacker/ubuntu:act-latest            f58445a786d6       2.26GB          559MB        
+catthehacker/ubuntu:full-latest           9327301aea27       67.7GB         16.8GB   U    
+ghcr.io/catthehacker/ubuntu:act-latest    bd77095e8123       1.99GB          284MB        
+ghcr.io/catthehacker/ubuntu:full-latest   9327301aea27       67.7GB         16.8GB   U    
+ghcr.io/catthehacker/ubuntu:pwsh-latest   5c3a44a9d687       2.59GB          384MB        
+ubuntu:latest                             c4a8d5503dfb        119MB         31.7MB
+[Tool: Bash] act --version && docker inspect act-ubuntu-pwsh:latest --format "{{.Id}}" 2>/dev/null | head -1
+[Result] act version 0.2.87
+sha256:d496369347688c82a78acb5b6fb0cb5168c51185060e32df8574e3f3454a91d4
+[Tool: Bash] cd /tmp && mkdir act-test-$$ && cd act-test-$$ && git init -q && git config user.email "t@t.com" && git config user.name "T" && mkdir -p .github/workflows && echo "name: t
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hello
+        shell: pwsh" > .github/workflows/t.yml && git add -A && git commit -q -m "t" && echo "-P ubuntu-latest=act-ubuntu-pwsh:latest" > .actrc && act push --rm --pull=false 2>&1 | tail -5; cd /tmp && rm -rf act-test-*
+[Result] [t/test]   ✅  Success - Main echo hello [2.320387305s]
+[t/test] ⭐ Run Complete job
+[t/test] Cleaning up container for job test
+[t/test]   ✅  Success - Complete job
+[t/test] 🏁  Job succeeded
+Shell cwd was reset to /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet-medium
+[Assistant] `--pull=false` is needed. Updating the harness.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet-medium/Run-TestHarness.ps1", "old_s
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet-medium/Run-TestHarness.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh ./Run-TestHarness.ps1 2>&1
+[Result] Creating temp repo at: /tmp/ac-harness-510530719
+
+Running act push --rm (test case 1: all policies + dry-run)...
+
+act exit code: 0
+
+Asserting results...
+  PASS [Job succeeded]: found 'Job succeeded'
+  PASS [Pester output present]: found '[PESTER] Total='
+  PASS [ArtifactsDeleted=3]: found '[VERIFICATION] ArtifactsDeleted=3'
+  PASS [ArtifactsRetained=2]: found '[VERIFICATION] ArtifactsRetained=2'
+  PASS [SpaceReclaimedBytes]: found '[VERIFICATION] SpaceReclaimedBytes=367001600'
+  PASS [DryRun=False]: found '[VERIFICATION] DryRun=False'
+  PASS [DryRun ArtifactsDeleted=3]: found '[VERIFICATION-DRYRUN] ArtifactsDeleted=3'
+  PASS [DryRun ArtifactsRetained=2]: found '[VERIFICATION-DRYRUN] ArtifactsRetained=2'
+  PASS [DryRun=True]: found '[VERIFICATION-DRYRUN] DryRun=True'
+
+All assertions passed. act-result.txt written to: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet-medium/act-result.txt
+[Assistant] All assertions pass. Let me do a final check to confirm everything is in order.
+[Tool: Bash] echo "=== Pester ===" && pwsh -Command "Invoke-Pester ./ArtifactCleanup.Tests.ps1 -PassThru" 2>&1 | grep -E "Tests (Passed|completed|Failed)" && echo "=== actionlint ===" && actionlint .github/workflows/artifact-cleanup-script.yml && echo "actionlint: PASS" && echo "=== act-result.txt exists ===" && test -f act-result.txt && echo "act-result.txt: EXISTS" && echo "=== Files ===" && ls -1
+[Result] === Pester ===
+[97mTests completed in 1.98s[0m
+[32mTests Passed: 29, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+=== actionlint ===
+actionlint: PASS
+=== act-result.txt exists ===
+act-result.txt: EXISTS
+=== Files ===
+ArtifactCleanup.Tests.ps1
+ArtifactCleanup.ps1
+Run-TestHarness.ps1
+act-result.txt
+benchmark-instructions-v4.md
+[Tool: TodoWrite] {"todos": [{"content": "Write first failing Pester test (function existence)", "status": "completed", "activeForm": "Writing first failing Pester test"}, {"content": "Implement ArtifactCleanup.ps1 wit
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Assistant] Everything is complete and passing. Here's a summary of what was built:
+
+**Files created:**
+- `ArtifactCleanup.ps1` — `Get-DeletionPlan` function applying three policies in order: MaxAge → KeepLatestNPerWorkflow → MaxTotalSizeBytes. Input objects are never mutated; each deleted artifact carries a `DeleteReason`.
+- `ArtifactCleanup.Tests.ps1` — 29 Pester tests covering all policies individually, combined, dry-run mode, summary accuracy, and workflow structure/actionlint validation.
+- `.github/workflows/artifact-cleanup-script.yml` — workflow that runs Pester, then two verification steps outputting tagged `[VERIFICATION]` lines with exact values.
+- `Run-TestHarness.ps1` — sets up a temp git repo, runs `act push --rm --pull=false`, saves output to `act-result.txt`, and asserts 9 exact expected values.
+- `act-result.txt` — produced by the harness run (required artifact).
+
+**Results:** 29/29 Pester tests pass, actionlint clean, act exits 0, all 9 exact-value assertions pass (including `ArtifactsDeleted=3`, `SpaceReclaimedBytes=367001600`, `DryRun=True/False`).

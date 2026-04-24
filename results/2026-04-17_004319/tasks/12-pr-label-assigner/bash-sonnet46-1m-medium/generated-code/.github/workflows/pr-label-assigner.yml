@@ -1,0 +1,109 @@
+name: PR Label Assigner
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      changed_files:
+        description: "Newline-separated list of changed file paths to label"
+        required: false
+        default: "docs/README.md\nsrc/api/users.js\nsrc/api/users.test.js"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  label:
+    name: Assign Labels
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          # Install bats-core for tests and shellcheck for validation
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq bats shellcheck
+
+      - name: Validate script syntax
+        run: |
+          bash -n pr-label-assigner.sh
+          shellcheck pr-label-assigner.sh
+
+      - name: Run bats tests
+        run: bats tests/pr-label-assigner.bats
+
+      - name: Determine changed files
+        id: changed
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            # Use manually supplied file list
+            FILES="${{ github.event.inputs.changed_files }}"
+            printf '%s\n' "$FILES" | tr '\\n' '\n' > /tmp/changed-files.txt
+          elif [ "${{ github.event_name }}" = "pull_request" ]; then
+            # For a real PR, fetch changed files from git diff
+            git diff --name-only HEAD~1 HEAD 2>/dev/null > /tmp/changed-files.txt || \
+              git diff --name-only origin/${{ github.base_ref }}...HEAD > /tmp/changed-files.txt
+          else
+            # For push events, use git diff against previous commit
+            git diff --name-only HEAD~1 HEAD 2>/dev/null > /tmp/changed-files.txt || \
+              echo "pr-label-assigner.sh" > /tmp/changed-files.txt
+          fi
+          echo "--- Changed files ---"
+          cat /tmp/changed-files.txt
+
+      - name: Assign labels from changed files
+        id: labels
+        run: |
+          chmod +x pr-label-assigner.sh
+          LABELS=$(bash pr-label-assigner.sh --rules label-rules.conf --files /tmp/changed-files.txt)
+          echo "--- Assigned labels ---"
+          echo "$LABELS"
+          # Export as comma-separated for downstream use
+          LABELS_CSV=$(echo "$LABELS" | tr '\n' ',' | sed 's/,$//')
+          {
+            echo "labels=$LABELS_CSV"
+            echo "labels_raw<<EOF"
+            echo "$LABELS"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Show label assignment result
+        run: |
+          echo "Assigned labels: ${{ steps.labels.outputs.labels }}"
+
+      - name: Run mock fixture integration test
+        run: |
+          # Integration test with a known fixture — validates exact expected output
+          cat > /tmp/mock-pr-files.txt <<'EOF'
+          docs/api-reference.md
+          src/api/endpoints.js
+          src/api/endpoints.test.js
+          src/utils/helpers.js
+          EOF
+          # Strip leading whitespace from heredoc
+          sed -i 's/^[[:space:]]*//' /tmp/mock-pr-files.txt
+
+          chmod +x pr-label-assigner.sh
+          RESULT=$(bash pr-label-assigner.sh --rules label-rules.conf --files /tmp/mock-pr-files.txt)
+          echo "--- Integration test output ---"
+          echo "$RESULT"
+
+          # Assert exact expected labels are present
+          echo "$RESULT" | grep -qx "documentation" || { echo "FAIL: missing label 'documentation'"; exit 1; }
+          echo "$RESULT" | grep -qx "api"           || { echo "FAIL: missing label 'api'"; exit 1; }
+          echo "$RESULT" | grep -qx "tests"         || { echo "FAIL: missing label 'tests'"; exit 1; }
+          echo "$RESULT" | grep -qx "source"        || { echo "FAIL: missing label 'source'"; exit 1; }
+
+          # Assert api (priority 20) appears before source (priority 5)
+          api_line=$(echo "$RESULT" | grep -n "^api$" | cut -d: -f1)
+          source_line=$(echo "$RESULT" | grep -n "^source$" | cut -d: -f1)
+          [ "$api_line" -lt "$source_line" ] || { echo "FAIL: api should appear before source"; exit 1; }
+
+          echo "Integration test PASSED"

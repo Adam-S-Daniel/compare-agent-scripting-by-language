@@ -1,0 +1,61 @@
+name: Dependency License Checker
+
+# Runs the license checker in CI. The Pester test suite executes first to
+# verify the module still works, then the CLI script produces a compliance
+# report against the fixture manifest. The harness swaps fixture content to
+# drive different test cases through this same workflow.
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  schedule:
+    # Weekly audit so new advisories/license changes are caught even without a push.
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+    inputs:
+      manifest_path:
+        description: 'Path to the manifest file to audit'
+        required: false
+        default: 'fixtures/package.json'
+
+permissions:
+  contents: read
+
+jobs:
+  license-check:
+    name: License compliance
+    runs-on: ubuntu-latest
+    env:
+      MANIFEST_PATH: ${{ inputs.manifest_path || 'fixtures/package.json' }}
+      CONFIG_PATH: fixtures/license-config.json
+      LICENSE_DATA_PATH: fixtures/license-data.json
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Show PowerShell / Pester versions
+        shell: pwsh
+        run: |
+          $PSVersionTable | Format-List
+          Get-Module -ListAvailable Pester | Select-Object Name, Version | Format-Table
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = './tests'
+          $config.Run.Exit = $true
+          $config.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $config
+
+      - name: Run license compliance check
+        shell: pwsh
+        run: |
+          ./Invoke-LicenseChecker.ps1 `
+            -ManifestPath $env:MANIFEST_PATH `
+            -ConfigPath $env:CONFIG_PATH `
+            -LicenseDataPath $env:LICENSE_DATA_PATH `
+            -Json `
+            -NoFailOnDenied

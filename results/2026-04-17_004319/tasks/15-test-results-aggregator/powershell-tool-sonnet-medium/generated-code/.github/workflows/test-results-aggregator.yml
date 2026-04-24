@@ -1,0 +1,56 @@
+name: Test Results Aggregator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 0'
+
+permissions:
+  contents: read
+
+jobs:
+  aggregate-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Pester unit tests
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path      = './tests/'
+          $config.Output.Verbosity = 'Detailed'
+          $config.Run.Exit      = $true
+          Invoke-Pester -Configuration $config
+
+      - name: Run test aggregator on fixture files
+        shell: pwsh
+        run: |
+          . ./src/Invoke-TestAggregator.ps1
+          $null = Invoke-TestAggregator -InputPaths @(
+            './fixtures/run1-junit.xml',
+            './fixtures/run2-junit.xml',
+            './fixtures/run3-results.json',
+            './fixtures/run4-results.json'
+          ) -OutputPath './summary.md'
+
+      - name: Upload markdown summary to job summary
+        if: always()
+        shell: pwsh
+        run: |
+          if (Test-Path './summary.md') {
+            Get-Content './summary.md' | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+          }
+
+      - name: Upload summary artifact
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-summary
+          path: summary.md
+          if-no-files-found: warn

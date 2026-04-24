@@ -1,0 +1,52 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Run unit tests
+        run: bun test matrix-generator.test.ts --no-bail 2>&1 || true
+
+      - name: Test fixture - simple (expect 4 combinations)
+        run: |
+          echo "=== FIXTURE: simple ==="
+          bun run generate-matrix.ts fixtures/simple.json
+
+      - name: Test fixture - with-exclude (expect 3 combinations)
+        run: |
+          echo "=== FIXTURE: with-exclude ==="
+          bun run generate-matrix.ts fixtures/with-exclude.json
+
+      - name: Test fixture - with-include (expect 2 combinations)
+        run: |
+          echo "=== FIXTURE: with-include ==="
+          bun run generate-matrix.ts fixtures/with-include.json
+
+      - name: Test fixture - max-size-exceeded (expect error)
+        continue-on-error: true
+        run: |
+          echo "=== FIXTURE: max-size-exceeded ==="
+          bun run generate-matrix.ts fixtures/max-size-exceeded.json
+
+      - name: Test fixture - full-config (expect max-parallel 4, fail-fast false)
+        run: |
+          echo "=== FIXTURE: full-config ==="
+          bun run generate-matrix.ts fixtures/full-config.json

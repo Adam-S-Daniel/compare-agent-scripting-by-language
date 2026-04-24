@@ -1,0 +1,55 @@
+name: Test Results Aggregator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  aggregate:
+    name: Aggregate test results
+    runs-on: ubuntu-latest
+    env:
+      RESULTS_DIR: fixtures
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          set -euo pipefail
+          if ! command -v jq >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq jq
+          fi
+          jq --version
+          bash --version | head -1
+
+      - name: Syntax check
+        run: bash -n aggregate.sh
+
+      - name: Run aggregator
+        run: |
+          chmod +x aggregate.sh
+          ./aggregate.sh "${RESULTS_DIR}" | tee aggregate-output.md
+
+      - name: Verify expected aggregate counts
+        run: |
+          set -euo pipefail
+          out=$(./aggregate.sh "${RESULTS_DIR}")
+          echo "$out"
+          # Default fixture set (junit-run1 + junit-run2 + json-run1):
+          #   records: 4 + 3 + 3 = 10
+          #   passed:  2 + 3 + 2 = 7
+          #   failed:  1 + 0 + 1 = 2
+          #   skipped: 1 + 0 + 0 = 1
+          #   flaky:   suiteA.testB (failed in run1, passed in run2)
+          echo "$out" | grep -q "Total: 10"  || { echo "FAIL: Total"; exit 1; }
+          echo "$out" | grep -q "Passed: 7"  || { echo "FAIL: Passed"; exit 1; }
+          echo "$out" | grep -q "Failed: 2"  || { echo "FAIL: Failed"; exit 1; }
+          echo "$out" | grep -q "Skipped: 1" || { echo "FAIL: Skipped"; exit 1; }
+          echo "$out" | grep -q "suiteA.testB" || { echo "FAIL: flaky"; exit 1; }
+          echo "AGGREGATE_OK"

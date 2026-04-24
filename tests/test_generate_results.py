@@ -16,6 +16,7 @@ from generate_results import (
     _ratio_tier,
     _spearman,
     _tier_num,
+    update_readme,
 )
 
 
@@ -330,30 +331,37 @@ class TestFindDiscrepancies:
 
 
 # =========================================================================
-# _ratio_tier — bin lower-is-better ratios (duration, cost) into A-E
+# _ratio_tier — bin lower-is-better ratios (duration, cost) into A+..F
 # =========================================================================
 
 class TestRatioTier:
-    def test_best_itself_is_A(self):
-        assert _ratio_tier(1.0) == "A"
+    def test_best_itself_is_top(self):
+        # The best ratio (1.0) is always in the A+ band.
+        assert _ratio_tier(1.0) == "A+"
 
-    def test_fallback_bands_when_none_passed(self):
-        # No bands argument → fixed fallback (1.50, 2.50, 4.00, 6.00).
-        assert _ratio_tier(1.0) == "A"
-        assert _ratio_tier(1.50) == "A"
-        assert _ratio_tier(2.50) == "B"
-        assert _ratio_tier(4.00) == "C"
-        assert _ratio_tier(6.00) == "D"
-        assert _ratio_tier(10.0) == "E"
+    def test_fallback_bands_partition_into_13(self):
+        # Without explicit bands, the boundary-12 anchor is 8.0: a ratio
+        # of 8.0 hits the last non-F tier (D-); beyond it falls to F.
+        assert _ratio_tier(1.0) == "A+"
+        assert _ratio_tier(8.0) == "D-"
+        assert _ratio_tier(10.0) == "F"
 
     def test_custom_bands_change_tiers(self):
-        # Narrow bands (tight cluster): a 1.1x ratio is now C, not A.
-        bands = (1.05, 1.10, 1.15, 1.20)
-        assert _ratio_tier(1.0, bands) == "A"
-        assert _ratio_tier(1.10, bands) == "B"
-        assert _ratio_tier(1.15, bands) == "C"
-        assert _ratio_tier(1.20, bands) == "D"
-        assert _ratio_tier(1.25, bands) == "E"
+        # 12 monotonically-increasing boundaries for 13 bands.
+        bands = tuple(1.0 + 0.1 * i for i in range(1, 13))  # 1.1, 1.2, ..., 2.2
+        assert _ratio_tier(1.0, bands) == "A+"
+        assert _ratio_tier(1.1, bands) == "A+"   # ≤ b1
+        assert _ratio_tier(1.2, bands) == "A"    # ≤ b2
+        assert _ratio_tier(2.2, bands) == "D-"   # ≤ b12 (last boundary)
+        assert _ratio_tier(2.3, bands) == "F"    # > b12
+
+    def test_all_thirteen_letters_reachable(self):
+        bands = tuple(1.0 + 0.5 * i for i in range(1, 13))  # 12 monotone
+        seen = set()
+        for r in [1.0, 1.2, 1.7, 2.2, 2.7, 3.2, 3.7, 4.2, 4.7, 5.2, 5.7, 6.2, 6.7, 100.0]:
+            seen.add(_ratio_tier(r, bands))
+        assert seen == {"A+", "A", "A-", "B+", "B", "B-",
+                        "C+", "C", "C-", "D+", "D", "D-", "F"}
 
 
 # =========================================================================
@@ -362,73 +370,69 @@ class TestRatioTier:
 
 class TestComputeRatioBands:
     def test_empty_returns_unit_bands(self):
-        # No data → degenerate but harmless; everything would classify as A.
-        assert _compute_ratio_bands([]) == (1.0, 1.0, 1.0, 1.0)
+        # No data → degenerate but harmless; everything would classify as A+.
+        b = _compute_ratio_bands([])
+        assert len(b) == 12
+        assert all(x == 1.0 for x in b)
 
     def test_all_equal_bands_collapse_to_one(self):
-        # Every combo identical → no gradation possible; all A.
         b = _compute_ratio_bands([1.0, 1.0, 1.0])
-        assert b == (1.0, 1.0, 1.0, 1.0)
+        assert all(x == 1.0 for x in b)
 
-    def test_wide_spread_distributes_across_A_to_E(self):
+    def test_wide_spread_distributes_across_A_plus_to_F(self):
         # Data matching the real campaign's cost spread: 1x -> ~7.2x.
-        # Log-equal bands should give roughly 1.49, 2.21, 3.29, 4.89.
         b = _compute_ratio_bands([1.0, 2.1, 3.1, 4.7, 7.22])
-        # Apply to the actual values and confirm a full A-E spread.
         tiers = [_ratio_tier(r, b) for r in [1.0, 2.1, 3.1, 4.7, 7.22]]
-        assert set(tiers) == {"A", "B", "C", "D", "E"}
-        assert tiers[0] == "A"
-        assert tiers[-1] == "E"
+        assert tiers[0] == "A+"     # best pegged at the top
+        assert tiers[-1] == "D-"    # worst lands just under the F line
 
-    def test_tight_cluster_keeps_narrow_bands(self):
-        # Data where everything is within 2x of the best. Bands should
-        # narrow proportionally so tier differences still surface.
-        b = _compute_ratio_bands([1.0, 1.2, 1.5, 1.8, 2.0])
-        # The 1.0 combo is A; the 2.0 (worst) is E.
-        assert _ratio_tier(1.0, b) == "A"
-        assert _ratio_tier(2.0, b) == "E"
+    def test_returns_twelve_boundaries(self):
+        b = _compute_ratio_bands([1.0, 3.0, 5.0])
+        assert len(b) == 12
 
     def test_ordering_is_monotonic(self):
-        # For any spread, b1 < b2 < b3 < b4 so the ratio tiers form a
-        # proper ordering.
         b = _compute_ratio_bands([1.0, 3.0, 5.0])
-        assert b[0] < b[1] < b[2] < b[3]
+        for i in range(len(b) - 1):
+            assert b[i] < b[i + 1]
 
-    def test_formula_matches_log_equal(self):
-        # boundary_i = max_ratio^(i/5) for i in 1..4.
+    def test_formula_matches_log_equal_anchored_at_max(self):
+        # boundary_i = max_ratio^(i/12) for i in 1..12, so b12 = max_r
+        # exactly — the worst observed value lands at D-, not F.
         max_r = 32.0
         b = _compute_ratio_bands([1.0, max_r])
-        expected = tuple(max_r ** (i / 5) for i in range(1, 5))
+        expected = tuple(max_r ** (i / 12) for i in range(1, 13))
         for actual, exp in zip(b, expected):
             assert abs(actual - exp) < 1e-9
+        assert b[-1] == max_r
 
 
 # =========================================================================
-# _llm_tier — absolute 1-5 score bands
+# _llm_tier — absolute 1-5 score bands split into 13 tiers
 # =========================================================================
 
 class TestLlmTier:
-    def test_perfect_score_is_A(self):
-        assert _llm_tier(5.0) == "A"
+    def test_perfect_score_is_A_plus(self):
+        assert _llm_tier(5.0) == "A+"
 
-    def test_boundary_of_A_band_inclusive(self):
-        assert _llm_tier(4.5) == "A"
-        assert _llm_tier(4.49) == "B"
-
-    def test_boundary_of_B_band(self):
+    def test_boundary_anchors(self):
+        # Thresholds: 4.7, 4.4, 4.1, 3.8, 3.5, 3.2, 2.9, 2.6, 2.3, 2.0, 1.7, 1.4
+        assert _llm_tier(4.7) == "A+"
+        assert _llm_tier(4.69) == "A"
+        assert _llm_tier(4.4) == "A"
+        assert _llm_tier(4.1) == "A-"
+        assert _llm_tier(3.8) == "B+"
         assert _llm_tier(3.5) == "B"
-        assert _llm_tier(3.49) == "C"
+        assert _llm_tier(3.2) == "B-"
+        assert _llm_tier(2.9) == "C+"
+        assert _llm_tier(2.6) == "C"
+        assert _llm_tier(2.3) == "C-"
+        assert _llm_tier(2.0) == "D+"
+        assert _llm_tier(1.7) == "D"
+        assert _llm_tier(1.4) == "D-"
+        assert _llm_tier(1.39) == "F"
 
-    def test_boundary_of_C_band(self):
-        assert _llm_tier(2.5) == "C"
-        assert _llm_tier(2.49) == "D"
-
-    def test_boundary_of_D_band(self):
-        assert _llm_tier(1.5) == "D"
-        assert _llm_tier(1.49) == "E"
-
-    def test_minimum_is_E(self):
-        assert _llm_tier(1.0) == "E"
+    def test_minimum_is_F(self):
+        assert _llm_tier(1.0) == "F"
 
 
 # =========================================================================
@@ -438,28 +442,66 @@ class TestLlmTier:
 # =========================================================================
 
 class TestDisplayRename:
+    # Most `_label` calls carry a claude_code_version; keep these test
+    # fixtures terse by pinning a representative value.
+    CLI = "2.1.114"
+
     def test_combine_results_renames_legacy_opus(self):
         from combine_results import _label
-        m = {"model_short": "opus", "effort_level": "medium"}
-        assert _label(m) == "opus46-medium"
+        m = {"model_short": "opus", "effort_level": "medium",
+             "claude_code_version": self.CLI}
+        assert _label(m) == "opus46-200k-medium-cli2.1.114"
 
     def test_combine_results_renames_legacy_sonnet(self):
         from combine_results import _label
-        m = {"model_short": "sonnet", "effort_level": None}
-        assert _label(m) == "sonnet46"
+        m = {"model_short": "sonnet", "effort_level": None,
+             "claude_code_version": self.CLI}
+        assert _label(m) == "sonnet46-200k-cli2.1.114"
+
+    def test_combine_results_renames_haiku_adds_context(self):
+        from combine_results import _label
+        m = {"model_short": "haiku45", "effort_level": None,
+             "claude_code_version": self.CLI}
+        assert _label(m) == "haiku45-200k-cli2.1.114"
 
     def test_combine_results_leaves_explicit_names_untouched(self):
         from combine_results import _label
-        # opus47-1m is already explicit about the version; no rename.
-        m = {"model_short": "opus47-1m", "effort_level": "xhigh"}
-        assert _label(m) == "opus47-1m-xhigh"
+        # opus47-1m / sonnet46-1m / opus47-200k are already explicit about
+        # model version and context — no rename should happen. CLI version
+        # is still appended to all of them.
+        m = {"model_short": "opus47-1m", "effort_level": "xhigh",
+             "claude_code_version": self.CLI}
+        assert _label(m) == "opus47-1m-xhigh-cli2.1.114"
+        m = {"model_short": "sonnet46-1m", "effort_level": "medium",
+             "claude_code_version": self.CLI}
+        assert _label(m) == "sonnet46-1m-medium-cli2.1.114"
+        m = {"model_short": "opus47-200k", "effort_level": "medium",
+             "claude_code_version": self.CLI}
+        assert _label(m) == "opus47-200k-medium-cli2.1.114"
 
-    def test_combine_results_path_label_never_renames(self):
-        # Filesystem subdirs keep their original plain names even when
-        # the display label rewrites them.
+    def test_combine_results_label_handles_missing_cli_version(self):
+        # Old runs may lack `claude_code_version` entirely or have an empty
+        # string. Both cases must produce a readable label — we don't want
+        # silent merging of "unknown-version" runs into whatever CLI
+        # happens to be current.
+        from combine_results import _label
+        assert _label({"model_short": "sonnet", "effort_level": None}) \
+            == "sonnet46-200k-cliunk"
+        assert _label({"model_short": "sonnet", "effort_level": None,
+                       "claude_code_version": ""}) \
+            == "sonnet46-200k-cliunk"
+
+    def test_combine_results_path_label_never_renames_or_appends_cli(self):
+        # Filesystem subdirs keep their original plain names AND never
+        # include CLI version — existing run directories were written
+        # without either and migrating would rename every prior subdir.
         from combine_results import _path_label
-        m = {"model_short": "opus", "effort_level": None}
+        m = {"model_short": "opus", "effort_level": None,
+             "claude_code_version": self.CLI}
         assert _path_label(m) == "opus"
+        m = {"model_short": "opus47-1m", "effort_level": "medium",
+             "claude_code_version": self.CLI}
+        assert _path_label(m) == "opus47-1m-medium"
 
 
 # =========================================================================
@@ -468,20 +510,32 @@ class TestDisplayRename:
 
 class TestTierNum:
     def test_letter_mapping(self):
-        assert _tier_num("A") == 1
-        assert _tier_num("B") == 2
-        assert _tier_num("C") == 3
-        assert _tier_num("D") == 4
-        assert _tier_num("E") == 5
+        assert _tier_num("A+") == 1
+        assert _tier_num("A") == 2
+        assert _tier_num("A-") == 3
+        assert _tier_num("B+") == 4
+        assert _tier_num("B") == 5
+        assert _tier_num("B-") == 6
+        assert _tier_num("C+") == 7
+        assert _tier_num("C") == 8
+        assert _tier_num("C-") == 9
+        assert _tier_num("D+") == 10
+        assert _tier_num("D") == 11
+        assert _tier_num("D-") == 12
+        assert _tier_num("F") == 13
 
     def test_em_dash_sorts_last(self):
-        # "—" (U+2014) is the "no data" marker and must always outrank E
+        # "—" (U+2014) is the "no data" marker and must always outrank F
         # so unranked rows sink to the bottom when sorting ascending.
-        assert _tier_num("—") == 6
-        assert _tier_num("—") > _tier_num("E")
+        assert _tier_num("—") == 14
+        assert _tier_num("—") > _tier_num("F")
 
     def test_unknown_defaults_to_last(self):
-        assert _tier_num("Z") == 6
+        # Unknown tier letters (e.g. legacy "E" from old caches) must
+        # also sort last so they don't silently masquerade as a real
+        # grade.
+        assert _tier_num("Z") == 14
+        assert _tier_num("E") == 14  # legacy letter no longer in scheme
 
 
 # =========================================================================
@@ -517,3 +571,203 @@ class TestEmitSortedVariantsCallableKey:
         )
         ks = [line for line in out if line.startswith("| ") and "k |" not in line and "---" not in line]
         assert ks == ["| 1 |", "| 2 |", "| 3 |"]
+
+
+class TestSingleRunSkipsConclusionsLLM:
+    """Per-run results.md files must NOT render a `## Conclusions`
+    section — that prose is only produced by the combined cross-run
+    report (combine_results.py). The single-run generator should also
+    avoid spending tokens on the Conclusions LLM even when panel data
+    is present; the Judge Consistency Summary remains.
+
+    A prior iteration piped the speed/cost aggregate table into the
+    Conclusions LLM for every per-run regen, burning ~$1 of max-effort
+    Opus per run-directory with panel data. The only reader for that
+    prose was the combined report — so the per-run call was pure waste.
+    """
+
+    def _mk_metric(self, task_id, mode, model, cli="2.1.114"):
+        return {
+            "task_id": task_id,
+            "task_name": f"Task {task_id}",
+            "language_mode": mode,
+            "model_short": model,
+            "effort_level": None,
+            "claude_code_version": cli,
+            "language_chosen": mode,
+            "timing": {"grand_total_duration_ms": 60000, "num_turns": 10,
+                       "tool_use_time_ms": 0, "overall_tool_use_time_ms": 0,
+                       "slowest_tool_uses": []},
+            "code_metrics": {"total_lines": 100},
+            "cost": {"total_cost_usd": 1.0},
+            "quality": {"error_count": 0},
+            "tool_use_timing": {"slowest_tool_uses": []},
+            "bash_commands": [],
+            "run_success": True,
+            "exit_code": 0,
+        }
+
+    def test_per_run_report_has_no_conclusions_section_and_skips_llm(self, tmp_path, monkeypatch):
+        import json
+        import conclusions_report
+        from generate_results import generate_results_md
+        # Seed a panel-quality cache file to trigger the LLM-generation
+        # code path (the `has_panel_data` gate).
+        run = tmp_path / "2026-04-01_000000"
+        mm = [
+            self._mk_metric("11-stub", "bash", "opus"),
+            self._mk_metric("12-stub", "bash", "opus"),
+        ]
+        for m in mm:
+            d = run / "tasks" / m["task_id"] / "bash-opus"
+            d.mkdir(parents=True, exist_ok=True)
+            (d / "metrics.json").write_text(json.dumps(m))
+            (d / "test-quality-haiku45.json").write_text("{}")
+
+        # Record every speed_cost_input value the single-run generator
+        # hands to the conclusions-report layer. A single-run regen must
+        # always pass None — non-None would indicate the Conclusions LLM
+        # is still being invoked.
+        passed_inputs = []
+        def _fake_gen(results_dir, speed_cost_input=None, repo_root=None):
+            passed_inputs.append(speed_cost_input)
+            return {
+                "conclusions": None,
+                "judge_consistency_summary": {
+                    "text": "**🟢 Stub JCS.**",
+                    "cost_usd": 0.0, "input_tokens": 0, "output_tokens": 0,
+                    "model": "test", "effort": "test", "from_cache": True,
+                },
+            }
+        monkeypatch.setattr(conclusions_report, "generate_conclusions", _fake_gen)
+
+        generate_results_md(run, mm, total_runs=2, run_count=2)
+        text = (run / "results.md").read_text()
+        # 1. No Conclusions section in the per-run body.
+        assert "## Conclusions" not in text, (
+            "Per-run report must not render a top-level Conclusions section"
+        )
+        # 2. The conclusions-report layer was called with
+        #    speed_cost_input=None (Conclusions LLM short-circuits).
+        assert passed_inputs, "generate_conclusions should still be called for JCS"
+        assert all(v is None for v in passed_inputs), (
+            f"expected every speed_cost_input=None, got {passed_inputs}"
+        )
+        # 3. JCS still renders in Notes.
+        assert "### Judge Consistency Summary" in text
+
+
+class TestSingleRunNoDuplicateRows:
+    """Regression: a single run dir that used multiple CLI versions
+    for the same (language, model, effort) produced apparent-duplicate
+    Comparison/Tiers rows whose visible Language + Model cells were
+    identical. Consolidation now pools per-CLI cmp_rows sharing the
+    same display label."""
+
+    def _mk_metric(self, task_id, mode, model, cli, cost=1.0, dur_ms=60000):
+        return {
+            "task_id": task_id,
+            "task_name": f"Task {task_id}",
+            "language_mode": mode,
+            "model_short": model,
+            "effort_level": None,
+            "claude_code_version": cli,
+            "language_chosen": mode,
+            "timing": {"grand_total_duration_ms": dur_ms, "num_turns": 10,
+                       "tool_use_time_ms": 0, "overall_tool_use_time_ms": 0,
+                       "slowest_tool_uses": []},
+            "code_metrics": {"total_lines": 100},
+            "cost": {"total_cost_usd": cost},
+            "quality": {"error_count": 0},
+            "tool_use_timing": {"slowest_tool_uses": []},
+            "bash_commands": [],
+            "run_success": True,
+            "exit_code": 0,
+        }
+
+    def test_multi_cli_rows_collapse_into_one(self, tmp_path):
+        import json
+        from generate_results import generate_results_md
+        # Scaffold a run dir with two tasks, both bash/opus, two CLI versions.
+        run = tmp_path / "2026-04-01_000000"
+        mm = [
+            self._mk_metric("11-stub", "bash", "opus", "2.1.97"),
+            self._mk_metric("12-stub", "bash", "opus", "2.1.98"),
+        ]
+        for m in mm:
+            d = run / "tasks" / m["task_id"] / "bash-opus"
+            d.mkdir(parents=True, exist_ok=True)
+            (d / "metrics.json").write_text(json.dumps(m))
+        generate_results_md(run, mm, total_runs=2, run_count=2)
+        text = (run / "results.md").read_text()
+        comparison_block = text.split("## Comparison by Language/Model/Effort", 1)
+        assert len(comparison_block) == 2, "Comparison section missing"
+        # Grab just the primary (non-collapsible) sub-table — stop at the
+        # first `<details>` block so alternate sort orders don't inflate
+        # the row count.
+        primary_table = comparison_block[1].split("<details>", 1)[0]
+        bash_opus_rows = [
+            ln for ln in primary_table.splitlines()
+            if ln.startswith("| bash ") and "opus46-200k" in ln
+        ]
+        assert len(bash_opus_rows) == 1, (
+            f"expected one consolidated row in primary Comparison table, "
+            f"got {len(bash_opus_rows)}:\n" + "\n".join(bash_opus_rows)
+        )
+
+
+class TestUpdateReadmeIgnoresNonRunDirs:
+    """update_readme scans results/ for subdirs to list in the Benchmark
+    Runs table. Ancillary folders like results/analysis/ hold follow-up
+    markdown, not a benchmark run, and previously slipped into the
+    table as a row with `0/?` metrics and no link. Guard against that."""
+
+    def _scaffold_repo(self, tmp_path):
+        (tmp_path / "results").mkdir()
+        # A plausible run dir (has tasks/ and run-manifest.json).
+        run_dir = tmp_path / "results" / "2026-04-01_000000"
+        (run_dir / "tasks" / "11-stub" / "bash-opus").mkdir(parents=True)
+        (run_dir / "run-manifest.json").write_text(
+            '{"total_runs": 1, "instructions_version": "v4", '
+            '"total_cost_usd": 1.0, "started_at": "2026-04-01T00:00:00"}'
+        )
+        (run_dir / "tasks" / "11-stub" / "bash-opus" / "metrics.json").write_text("{}")
+        (run_dir / "results.md").write_text("# stub\n")
+        # A non-run ancillary dir that must NOT be listed.
+        (tmp_path / "results" / "analysis").mkdir()
+        (tmp_path / "results" / "analysis" / "some-writeup.md").write_text("# writeup\n")
+        # Seed README.md so update_readme can splice the table in.
+        (tmp_path / "README.md").write_text(
+            "# Repo\n\n## Benchmark Runs\n\n"
+            "<!-- BEGIN BENCHMARK RUNS -->\n"
+            "<!-- END BENCHMARK RUNS -->\n"
+        )
+
+    def test_analysis_dir_excluded_from_benchmark_runs_table(self, tmp_path):
+        self._scaffold_repo(tmp_path)
+        update_readme(tmp_path)
+        text = (tmp_path / "README.md").read_text()
+        # Legitimate run is listed.
+        assert "2026-04-01_000000" in text
+        # Ancillary dir must not leak into the table.
+        assert "analysis" not in text.split("<!-- BEGIN BENCHMARK RUNS -->", 1)[1].split("<!-- END")[0]
+
+    def test_analysis_only_directory_produces_no_table_rows(self, tmp_path):
+        # If the only subdir under results/ is ancillary, the table
+        # must stay empty rather than inventing a garbage row.
+        (tmp_path / "results").mkdir()
+        (tmp_path / "results" / "analysis").mkdir()
+        (tmp_path / "results" / "analysis" / "note.md").write_text("hi")
+        (tmp_path / "README.md").write_text(
+            "# Repo\n\n## Benchmark Runs\n\n"
+            "<!-- BEGIN BENCHMARK RUNS -->\n"
+            "<!-- END BENCHMARK RUNS -->\n"
+        )
+        update_readme(tmp_path)
+        text = (tmp_path / "README.md").read_text()
+        table_body = text.split("<!-- BEGIN BENCHMARK RUNS -->", 1)[1].split("<!-- END")[0]
+        # No data row (data rows start with `| ` followed by a non-sep char).
+        data_rows = [ln for ln in table_body.splitlines()
+                     if ln.startswith("| ") and "---" not in ln
+                     and "Run |" not in ln]
+        assert data_rows == [], f"expected no data rows, got: {data_rows}"

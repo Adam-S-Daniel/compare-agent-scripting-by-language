@@ -1,0 +1,124 @@
+---
+name: Semantic Version Bumper
+
+# The workflow runs on push (for the real project CI flow), on pull_request
+# (so PR checks run the bumper against fixture data before merging), on a
+# nightly schedule (to catch drift), and via workflow_dispatch so humans /
+# the act harness can trigger it with a chosen fixture.
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: "Fixture folder under fixtures/ to bump against"
+        required: false
+        default: patch
+
+permissions:
+  contents: read
+
+env:
+  # Default fixture used when the workflow is triggered by push or schedule.
+  # The act harness overrides this via SVB_FIXTURE to exercise each case.
+  DEFAULT_FIXTURE: patch
+
+jobs:
+  unit-tests:
+    name: Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Run Pester unit tests
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $result = Invoke-Pester -Path tests/SemanticVersionBumper.Tests.ps1 `
+            -Output Detailed -PassThru
+          if ($result.FailedCount -gt 0) {
+            throw "Pester failures: $($result.FailedCount)"
+          }
+
+  bump-version:
+    name: Bump version from fixture
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    outputs:
+      new_version: ${{ steps.bump.outputs.new_version }}
+      old_version: ${{ steps.bump.outputs.old_version }}
+      bump_type: ${{ steps.bump.outputs.bump_type }}
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Select fixture
+        id: select
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $fixture = $env:SVB_FIXTURE
+          if (-not $fixture) { $fixture = '${{ inputs.fixture }}' }
+          if (-not $fixture) { $fixture = $env:DEFAULT_FIXTURE }
+          if (-not $fixture) { $fixture = 'patch' }
+          $dir = Join-Path 'fixtures' $fixture
+          if (-not (Test-Path $dir)) {
+            throw "Fixture directory not found: $dir"
+          }
+          $versionFile = Get-ChildItem -Path $dir -File |
+            Where-Object { $_.Name -in @('VERSION', 'package.json') } |
+            Select-Object -First 1
+          if (-not $versionFile) {
+            throw "No VERSION or package.json found in $dir"
+          }
+          $commitsFile = Join-Path $dir 'commits.txt'
+          if (-not (Test-Path $commitsFile)) {
+            throw "No commits.txt found in $dir"
+          }
+          "fixture=$fixture"               | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "version_file=$($versionFile.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "commits_file=$commitsFile"      | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          Write-Host "Using fixture '$fixture' (version file: $($versionFile.Name))"
+
+      - name: Bump version
+        id: bump
+        shell: pwsh
+        env:
+          SVB_VERSION_FILE: ${{ steps.select.outputs.version_file }}
+          SVB_COMMITS_FILE: ${{ steps.select.outputs.commits_file }}
+          SVB_DATE: "2026-04-19"
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Import-Module ./src/SemanticVersionBumper.psm1 -Force
+          $oldVersion = Get-CurrentVersion -Path $env:SVB_VERSION_FILE
+          $changelog = Join-Path $PWD 'CHANGELOG.md'
+          $result = Invoke-VersionBump `
+            -VersionFile $env:SVB_VERSION_FILE `
+            -CommitsFile $env:SVB_COMMITS_FILE `
+            -ChangelogFile $changelog `
+            -Date $env:SVB_DATE
+          Write-Host "SVB_OLD_VERSION=$oldVersion"
+          Write-Host "SVB_NEW_VERSION=$($result.NewVersion)"
+          Write-Host "SVB_BUMP_TYPE=$($result.BumpType)"
+          "new_version=$($result.NewVersion)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "old_version=$oldVersion"           | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "bump_type=$($result.BumpType)"     | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Show results
+        shell: pwsh
+        env:
+          NEW_VERSION: ${{ steps.bump.outputs.new_version }}
+          OLD_VERSION: ${{ steps.bump.outputs.old_version }}
+          BUMP_TYPE: ${{ steps.bump.outputs.bump_type }}
+        run: |
+          Write-Host "=== Semantic Version Bump Summary ==="
+          Write-Host "Old version : $env:OLD_VERSION"
+          Write-Host "New version : $env:NEW_VERSION"
+          Write-Host "Bump type   : $env:BUMP_TYPE"
+          Write-Host "=== Changelog (head) ==="
+          Get-Content CHANGELOG.md -TotalCount 40
