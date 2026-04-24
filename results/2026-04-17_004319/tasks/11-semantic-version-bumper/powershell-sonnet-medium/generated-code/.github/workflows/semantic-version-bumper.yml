@@ -1,0 +1,91 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Pester (no-op if pre-installed)
+        shell: pwsh
+        run: |
+          if (-not (Get-Module -ListAvailable -Name Pester | Where-Object { $_.Version -ge [version]"5.0" })) {
+            Install-Module -Name Pester -MinimumVersion 5.0 -Force -SkipPublisherCheck -Scope CurrentUser
+          }
+          Import-Module Pester -MinimumVersion 5.0
+
+      - name: Run Pester unit and structure tests
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = "./SemanticVersionBumper.Tests.ps1"
+          $config.Output.Verbosity = "Detailed"
+          # Exclude Act Integration from inline Pester run (handled by separate steps below)
+          $config.Filter.ExcludeTag = @("ActIntegration")
+          $results = Invoke-Pester -Configuration $config
+          if ($results.FailedCount -gt 0) {
+            Write-Error "Pester tests failed: $($results.FailedCount) failures"
+            exit 1
+          }
+
+      - name: Integration - Patch bump (1.0.0 should become 1.0.1)
+        shell: pwsh
+        run: |
+          . ./Invoke-SemanticVersionBump.ps1 -LoadOnly
+          Set-Content -Path "test-version-patch.json" -Value '{"version": "1.0.0"}'
+          Set-Content -Path "test-commits-patch.txt" -Value "fix: correct null pointer`nfix: handle edge case`nchore: update deps"
+          $r = Invoke-SemanticVersionBump -VersionFilePath "test-version-patch.json" -CommitsFilePath "test-commits-patch.txt"
+          Write-Host "PATCH_RESULT: $($r.NewVersion)"
+          if ($r.NewVersion -ne "1.0.1") {
+            Write-Error "Expected 1.0.1 but got $($r.NewVersion)"
+            exit 1
+          }
+
+      - name: Integration - Minor bump (1.0.0 should become 1.1.0)
+        shell: pwsh
+        run: |
+          . ./Invoke-SemanticVersionBump.ps1 -LoadOnly
+          Set-Content -Path "test-version-minor.json" -Value '{"version": "1.0.0"}'
+          Set-Content -Path "test-commits-minor.txt" -Value "feat: add new feature`nfix: small fix`nchore: cleanup"
+          $r = Invoke-SemanticVersionBump -VersionFilePath "test-version-minor.json" -CommitsFilePath "test-commits-minor.txt"
+          Write-Host "MINOR_RESULT: $($r.NewVersion)"
+          if ($r.NewVersion -ne "1.1.0") {
+            Write-Error "Expected 1.1.0 but got $($r.NewVersion)"
+            exit 1
+          }
+
+      - name: Integration - Major bump (1.0.0 should become 2.0.0)
+        shell: pwsh
+        run: |
+          . ./Invoke-SemanticVersionBump.ps1 -LoadOnly
+          Set-Content -Path "test-version-major.json" -Value '{"version": "1.0.0"}'
+          Set-Content -Path "test-commits-major.txt" -Value "feat!: breaking API redesign`nfeat: add options`nfix: correct format"
+          $r = Invoke-SemanticVersionBump -VersionFilePath "test-version-major.json" -CommitsFilePath "test-commits-major.txt"
+          Write-Host "MAJOR_RESULT: $($r.NewVersion)"
+          if ($r.NewVersion -ne "2.0.0") {
+            Write-Error "Expected 2.0.0 but got $($r.NewVersion)"
+            exit 1
+          }
+
+      - name: Run version bump on fixture files
+        shell: pwsh
+        run: |
+          . ./Invoke-SemanticVersionBump.ps1 -LoadOnly
+          # Reset fixture version for demo run
+          Set-Content -Path "fixtures/version.json" -Value '{"version": "1.0.0"}'
+          $r = Invoke-SemanticVersionBump -VersionFilePath "fixtures/version.json" -CommitsFilePath "fixtures/minor-commits.txt"
+          Write-Host "=== Version Bump Complete ==="
+          Write-Host "Old: $($r.OldVersion)  New: $($r.NewVersion)  Type: $($r.BumpType)"
+          Write-Host ""
+          Write-Host $r.Changelog

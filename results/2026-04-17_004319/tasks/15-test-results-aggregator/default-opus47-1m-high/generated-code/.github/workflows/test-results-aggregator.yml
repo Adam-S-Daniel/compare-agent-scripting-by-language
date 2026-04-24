@@ -1,0 +1,51 @@
+name: Test Results Aggregator
+
+# Run on push / PRs (so the aggregator produces a job summary for CI runs),
+# and on manual dispatch for experimentation. No secrets required.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      results_dir:
+        description: Directory (relative to repo) containing result files
+        required: false
+        default: test-results
+
+permissions:
+  contents: read
+
+env:
+  RESULTS_DIR: test-results
+
+jobs:
+  aggregate:
+    name: Aggregate test results
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Show inputs
+        run: |
+          echo "Using RESULTS_DIR=${RESULTS_DIR}"
+          ls -la "${RESULTS_DIR}" || echo "(no results dir yet)"
+
+      - name: Run aggregator
+        run: |
+          python aggregator.py "${RESULTS_DIR}" --output summary.md
+          echo "--- summary.md ---"
+          cat summary.md
+
+      - name: Upload summary
+        if: ${{ !env.ACT }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-summary
+          path: summary.md
+          if-no-files-found: error

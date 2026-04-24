@@ -1,0 +1,104 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # Test patch bump: fix commits only => 1.1.0 -> 1.1.1
+  bump-patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up starting version
+        shell: pwsh
+        run: |
+          @{ version = "1.1.0" } | ConvertTo-Json | Set-Content "test-version.json"
+
+      - name: Run version bumper (patch)
+        shell: pwsh
+        run: |
+          ./Invoke-SemanticVersionBump.ps1 -VersionFile test-version.json -CommitsFile fixtures/commits-patch.json
+
+      - name: Verify patch result
+        shell: pwsh
+        run: |
+          $v = (Get-Content "test-version.json" | ConvertFrom-Json).version
+          if ($v -ne "1.1.1") {
+            Write-Error "Patch bump: expected 1.1.1, got $v"
+            exit 1
+          }
+          Write-Output "PATCH_RESULT: $v"
+
+  # Test minor bump: feat commit => 1.1.0 -> 1.2.0
+  bump-minor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up starting version
+        shell: pwsh
+        run: |
+          @{ version = "1.1.0" } | ConvertTo-Json | Set-Content "test-version.json"
+
+      - name: Run version bumper (minor)
+        shell: pwsh
+        run: |
+          ./Invoke-SemanticVersionBump.ps1 -VersionFile test-version.json -CommitsFile fixtures/commits-minor.json
+
+      - name: Verify minor result
+        shell: pwsh
+        run: |
+          $v = (Get-Content "test-version.json" | ConvertFrom-Json).version
+          if ($v -ne "1.2.0") {
+            Write-Error "Minor bump: expected 1.2.0, got $v"
+            exit 1
+          }
+          Write-Output "MINOR_RESULT: $v"
+
+  # Test major bump: breaking change commit => 1.1.0 -> 2.0.0
+  bump-major:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up starting version
+        shell: pwsh
+        run: |
+          @{ version = "1.1.0" } | ConvertTo-Json | Set-Content "test-version.json"
+
+      - name: Run version bumper (major)
+        shell: pwsh
+        run: |
+          ./Invoke-SemanticVersionBump.ps1 -VersionFile test-version.json -CommitsFile fixtures/commits-major.json
+
+      - name: Verify major result
+        shell: pwsh
+        run: |
+          $v = (Get-Content "test-version.json" | ConvertFrom-Json).version
+          if ($v -ne "2.0.0") {
+            Write-Error "Major bump: expected 2.0.0, got $v"
+            exit 1
+          }
+          Write-Output "MAJOR_RESULT: $v"
+
+  # Run Pester unit tests and workflow structure tests inside the container.
+  # ACT env var is set by act, causing integration tests to be skipped (no recursion).
+  run-unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $result = Invoke-Pester -Path "./SemanticVersionBumper.Tests.ps1" -PassThru
+          if ($result.FailedCount -gt 0) {
+            Write-Error "$($result.FailedCount) test(s) failed"
+            exit 1
+          }
+          Write-Output "TESTS_PASSED: $($result.PassedCount)"

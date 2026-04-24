@@ -1,0 +1,54 @@
+name: artifact-cleanup-script
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 3 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Run bats tests and cleanup plan
+    runs-on: ubuntu-latest
+    env:
+      INPUT_FILE: fixtures/sample.tsv
+      ARGS_FILE: fixtures/args.txt
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install bats and shellcheck
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v bats >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y --no-install-recommends bats shellcheck
+          fi
+          bats --version
+          shellcheck --version | head -2
+
+      - name: Syntax + shellcheck
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash -n cleanup.sh
+          shellcheck cleanup.sh
+          echo "SYNTAX_OK"
+
+      - name: Run bats unit tests
+        shell: bash
+        run: bats tests/cleanup.bats
+
+      - name: Run cleanup plan against fixture
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "=== CLEANUP PLAN ==="
+          # shellcheck disable=SC2046
+          bash cleanup.sh --input "$INPUT_FILE" $(cat "$ARGS_FILE")
+          echo "=== PLAN END ==="

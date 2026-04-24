@@ -1,0 +1,62 @@
+name: Artifact Cleanup Script
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Run in dry-run mode (no actual deletions)"
+        required: false
+        default: "true"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile || true
+
+      - name: Run unit tests
+        run: bun test
+
+      - name: Run script (dry-run)
+        run: |
+          bun run artifact-cleanup.ts --dry-run
+          echo "Script completed successfully"
+
+      - name: Verify output format
+        run: |
+          OUTPUT=$(bun run artifact-cleanup.ts --dry-run 2>&1)
+          echo "$OUTPUT"
+          echo "---verification---"
+          if echo "$OUTPUT" | grep -q "SUMMARY_JSON="; then
+            echo "PASS: SUMMARY_JSON present"
+          else
+            echo "FAIL: SUMMARY_JSON missing" && exit 1
+          fi
+          if echo "$OUTPUT" | grep -q "totalArtifacts"; then
+            echo "PASS: totalArtifacts present"
+          else
+            echo "FAIL: totalArtifacts missing" && exit 1
+          fi
+          if echo "$OUTPUT" | grep -q "DRY RUN"; then
+            echo "PASS: dry-run mode indicated"
+          else
+            echo "FAIL: dry-run not indicated" && exit 1
+          fi

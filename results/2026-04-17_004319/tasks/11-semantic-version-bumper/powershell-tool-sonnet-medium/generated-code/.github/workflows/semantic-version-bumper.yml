@@ -1,0 +1,131 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Pester
+        shell: pwsh
+        run: |
+          if (-not (Get-Module -ListAvailable -Name Pester | Where-Object { $_.Version -ge '5.0' })) {
+            Install-Module -Name Pester -Force -Scope CurrentUser -MinimumVersion 5.0
+          }
+          Import-Module Pester -MinimumVersion 5.0
+
+      - name: Run Pester unit tests
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = './SemanticVersionBumper.Tests.ps1'
+          $config.Output.Verbosity = 'Detailed'
+          $config.Run.Exit = $true
+          Invoke-Pester -Configuration $config
+
+      - name: Test patch bump scenario (fix commits, 1.1.0 -> 1.1.1)
+        shell: pwsh
+        run: |
+          . ./SemanticVersionBumper.ps1
+          $tmpDir = Join-Path ([System.IO.Path]::GetTempPath()) "svb-patch-$([System.Guid]::NewGuid().ToString('N'))"
+          New-Item -ItemType Directory -Path $tmpDir | Out-Null
+          Copy-Item './fixtures/version.txt' "$tmpDir/version.txt"
+          $commits = Get-Content './fixtures/commits-patch.txt'
+          $newVersion = Invoke-SemanticVersionBump -VersionFile "$tmpDir/version.txt" -Commits $commits
+          Write-Host "PATCH_BUMP_RESULT=$newVersion"
+          if ($newVersion -ne '1.1.1') {
+            Write-Error "Expected 1.1.1 but got $newVersion"
+            exit 1
+          }
+          Write-Host "PATCH_BUMP_PASS=true"
+
+      - name: Test minor bump scenario (feat commits, 1.1.0 -> 1.2.0)
+        shell: pwsh
+        run: |
+          . ./SemanticVersionBumper.ps1
+          $tmpDir = Join-Path ([System.IO.Path]::GetTempPath()) "svb-minor-$([System.Guid]::NewGuid().ToString('N'))"
+          New-Item -ItemType Directory -Path $tmpDir | Out-Null
+          Copy-Item './fixtures/version.txt' "$tmpDir/version.txt"
+          $commits = Get-Content './fixtures/commits-minor.txt'
+          $newVersion = Invoke-SemanticVersionBump -VersionFile "$tmpDir/version.txt" -Commits $commits
+          Write-Host "MINOR_BUMP_RESULT=$newVersion"
+          if ($newVersion -ne '1.2.0') {
+            Write-Error "Expected 1.2.0 but got $newVersion"
+            exit 1
+          }
+          Write-Host "MINOR_BUMP_PASS=true"
+
+      - name: Test major bump scenario (breaking commits, 1.1.0 -> 2.0.0)
+        shell: pwsh
+        run: |
+          . ./SemanticVersionBumper.ps1
+          $tmpDir = Join-Path ([System.IO.Path]::GetTempPath()) "svb-major-$([System.Guid]::NewGuid().ToString('N'))"
+          New-Item -ItemType Directory -Path $tmpDir | Out-Null
+          Copy-Item './fixtures/version.txt' "$tmpDir/version.txt"
+          $commits = Get-Content './fixtures/commits-major.txt'
+          $newVersion = Invoke-SemanticVersionBump -VersionFile "$tmpDir/version.txt" -Commits $commits
+          Write-Host "MAJOR_BUMP_RESULT=$newVersion"
+          if ($newVersion -ne '2.0.0') {
+            Write-Error "Expected 2.0.0 but got $newVersion"
+            exit 1
+          }
+          Write-Host "MAJOR_BUMP_PASS=true"
+
+      - name: Test package.json bump scenario (feat commits, 2.3.1 -> 2.4.0)
+        shell: pwsh
+        run: |
+          . ./SemanticVersionBumper.ps1
+          $tmpDir = Join-Path ([System.IO.Path]::GetTempPath()) "svb-json-$([System.Guid]::NewGuid().ToString('N'))"
+          New-Item -ItemType Directory -Path $tmpDir | Out-Null
+          Copy-Item './fixtures/package.json' "$tmpDir/package.json"
+          $commits = Get-Content './fixtures/commits-minor.txt'
+          $newVersion = Invoke-SemanticVersionBump -VersionFile "$tmpDir/package.json" -Commits $commits
+          Write-Host "JSON_BUMP_RESULT=$newVersion"
+          if ($newVersion -ne '2.4.0') {
+            Write-Error "Expected 2.4.0 but got $newVersion"
+            exit 1
+          }
+          Write-Host "JSON_BUMP_PASS=true"
+
+      - name: Test changelog generation
+        shell: pwsh
+        run: |
+          . ./SemanticVersionBumper.ps1
+          $tmpDir = Join-Path ([System.IO.Path]::GetTempPath()) "svb-changelog-$([System.Guid]::NewGuid().ToString('N'))"
+          New-Item -ItemType Directory -Path $tmpDir | Out-Null
+          Set-Content "$tmpDir/version.txt" "1.0.0"
+          $commits = Get-Content './fixtures/commits-minor.txt'
+          $newVersion = Invoke-SemanticVersionBump -VersionFile "$tmpDir/version.txt" -Commits $commits
+          $changelogExists = Test-Path "$tmpDir/CHANGELOG.md"
+          $changelogContent = Get-Content "$tmpDir/CHANGELOG.md" -Raw
+          Write-Host "CHANGELOG_EXISTS=$changelogExists"
+          Write-Host "CHANGELOG_VERSION_HEADER=$($changelogContent -match '\[1\.1\.0\]')"
+          if (-not $changelogExists) {
+            Write-Error "CHANGELOG.md was not created"
+            exit 1
+          }
+          if ($changelogContent -notmatch '\[1\.1\.0\]') {
+            Write-Error "CHANGELOG.md missing version header"
+            exit 1
+          }
+          Write-Host "CHANGELOG_PASS=true"
+
+      - name: Summarize results
+        shell: pwsh
+        run: |
+          Write-Host "=== SEMANTIC VERSION BUMPER TEST SUMMARY ==="
+          Write-Host "All tests completed successfully"
+          Write-Host "PATCH: 1.1.0 + fix commits = 1.1.1"
+          Write-Host "MINOR: 1.1.0 + feat commits = 1.2.0"
+          Write-Host "MAJOR: 1.1.0 + breaking commits = 2.0.0"
+          Write-Host "JSON:  2.3.1 + feat commits = 2.4.0"
+          Write-Host "CHANGELOG: Generated correctly"
+          Write-Host "ALL_TESTS_PASSED=true"

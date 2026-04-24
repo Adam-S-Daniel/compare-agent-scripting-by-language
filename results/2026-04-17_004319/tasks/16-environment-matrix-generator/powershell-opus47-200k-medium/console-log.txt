@@ -1,0 +1,275 @@
+[Tool: Bash] ls -la && pwsh --version && actionlint --version && act --version && docker --version
+[Result] total 44
+drwxr-xr-x  4 passp passp  4096 Apr 20 02:49 .
+drwxr-xr-x 29 passp passp  4096 Apr 20 02:49 ..
+-rw-r--r--  1 passp passp    40 Apr 20 02:49 .actrc
+drwxr-xr-x  2 passp passp  4096 Apr 20 02:49 .claude
+drwxr-xr-x  7 passp passp  4096 Apr 20 02:49 .git
+-rw-r--r--  1 passp passp 21843 Apr 17 00:12 benchmark-instructions-v4.md
+PowerShell 7.6.0
+1.7.12
+installed by downloading from release page
+built with go1.26.1 compiler for linux/amd64
+act version 0.2.87
+Docker version 29.4.0, build 9d7ad9f
+[Tool: Bash] cat .actrc && cat /home/passp/repos/compare-agent-scripting-by-language/AGENTS.md 2>/dev/null | head -100
+[Result] -P ubuntu-latest=act-ubuntu-pwsh:latest
+# Agent Instructions
+
+All agent-facing instructions live in this file. `CLAUDE.md` contains only a
+reference here. If you are a Claude Code agent, you have already loaded this
+via `CLAUDE.md`. Other agents: read this file directly.
+
+## Build and test
+
+```bash
+# Run unit tests (REQUIRED before every PR)
+pip install pytest  # if not already installed
+python3 -m pytest tests/ -v
+
+# Validate imports
+python3 -c "from runner import main"
+python3 -c "from generate_results import generate_results_md"
+python3 -c "from test_quality import compute_structural_metrics"
+python3 -c "from llm_providers import get_provider"
+
+# Regenerate all reports
+python3 generate_results.py --all
+
+# Run a benchmark (v4, all tasks/modes/models)
+python3 runner.py --tasks 11,12,13,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
+
+# Evaluate test quality (structural metrics only)
+python3 test_quality.py results/2026-04-09_152435
+
+# Evaluate test qual
+[Assistant] I'll build this step by step with TDD. Starting with the module structure.
+[Tool: Bash] mkdir -p src tests fixtures .github/workflows && pwsh -NoProfile -Command "Get-Module -ListAvailable Pester | Select-Object Name,Version | Format-Table"
+[Result] [32;1mName  [0m[32;1m Version[0m
+[32;1m----  [0m [32;1m-------[0m
+Pester 5.7.1
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/powershell-opus47-200k-medium/tests/MatrixGenerator.Tests.ps1", "conte
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/powershell-opus47-200k-medium/tests/MatrixGenerator.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -NoProfile -Command "Invoke-Pester -Path tests/ -Output Minimal" 2>&1 | tail -20
+[Result] [91m     +           ~~~~~~~~~~~~~~~
+[91m at { New-BuildMatrix -Config @{} } | Should -Throw -ExpectedMessage '*axes*', /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/powershell-opus47-200k-medium/tests/MatrixGenerator.Tests.ps1:103
+[91m at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/powershell-opus47-200k-medium/tests/MatrixGenerator.Tests.ps1:103[0m
+[91m[-] New-BuildMatrix — input validation.throws when an axis is empty[0m[90m 269ms (266ms|3ms)[0m
+[91m Expected an exception with message like '*empty*' to be thrown, but the message was 'The term 'New-BuildMatrix' is not recognized as a name of a cmdlet, function, script file, or executable program.
+[91m Check the spelling of the name, or if a path was included, verify that the path is correct and try again.'. from /home/passp/repos/compare-agent-scripting-by-language/worksp
+[Assistant] Red confirmed. Now implementing the module.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/powershell-opus47-200k-medium/src/MatrixGenerator.psm1", "content": "#
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/powershell-opus47-200k-medium/src/MatrixGenerator.psm1 (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -NoProfile -Command "Invoke-Pester -Path tests/ -Output Detailed" 2>&1 | tail -40
+[Result] [91m       +           ~~~~~~~~~~~~~~~
+[91m   at { New-BuildMatrix -Config $cfg } | Should -Throw -ExpectedMessage '*exceeds max-size*', /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/powershell-opus47-200k-medium/tests/MatrixGenerator.Tests.ps1:89
+[91m   at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/powershell-opus47-200k-medium/tests/MatrixGenerator.Tests.ps1:89[0m
+[91m  [-] succeeds when size is exactly at max-size[0m[90m 333ms (331ms|2ms)[0m
+[91m   Expected no exception to be thrown, but an exception "The term 'New-BuildMatrix' is not recognized as a name of a cmdlet, function, script file, or executable program.
+[91m   Check the spelling of the name, or if a path was included, verify that the path is correct and try again." was thrown from /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_0043
+[Tool: Bash] pwsh -NoProfile -Command "Import-Module ./src/MatrixGenerator.psm1 -Force -Verbose 2>&1 | Out-String; Get-Command -Module MatrixGenerator"
+[Result] [33;1mVERBOSE: Loading module from path '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/powershell-opus47-200k-medium/src/MatrixGenerator.psm1'.[0m
+ParserError: Variable reference is not valid. ':' was not followed by a valid variable name
+character. Consider using ${} to delimit the name.
+
+Import-Module: The specified module './src/MatrixGenerator.psm1' was not loaded because no valid module file was found in any module directory.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/powershell-opus47-200k-medium/src/MatrixGenerato
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/powershell-opus47-200k-medium/src/MatrixGenerator.psm1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -NoProfile -Command "Invoke-Pester -Path tests/ -Output Minimal" 2>&1 | tail -15
+[Result] [91m     +         { New-BuildMatrix -Config $cfg } | Should -Not -Throw
+[91m     +           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~.
+[91m at { New-BuildMatrix -Config $cfg } | Should -Not -Throw, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/powershell-opus47-200k-medium/tests/MatrixGenerator.Tests.ps1:97
+[91m at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/powershell-opus47-200k-medium/tests/MatrixGenerator.Tests.ps1:97[0m
+[91m[-] ConvertTo-MatrixJson — json output shape.emits a valid GitHub Actions strategy.matrix JSON[0m[90m 13ms (10ms|3ms)[0m
+[91m InvalidOperationException: Collection was modified; enumeration operation may not execute.
+[91m at New-BuildMatrix, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/powershell-opus47-200k-medium/src/MatrixGenerator.psm1:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/powershell-opus47-200k-medium/src/MatrixGenerato
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/powershell-opus47-200k-medium/src/MatrixGenerator.psm1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -NoProfile -Command "Invoke-Pester -Path tests/ -Output Minimal" 2>&1 | tail -30
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 13 tests in 298ms.[0m
+[95mRunning tests.[0m
+[91m[-] New-BuildMatrix — base cartesian product.produces the full cross-product of os and node versions[0m[90m 252ms (212ms|39ms)[0m
+[91m Expected 1, but got 2.
+[91m at ($result.matrix.include | Where-Object { $_.os -eq 'ubuntu-latest' -and $_.node -eq '20' }).Count | Should -Be 1, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/powershell-opus47-200k-medium/tests/MatrixGenerator.Tests.ps1:19
+[91m at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/powershell-opus47-200k-medium/tests/MatrixGenerator.Tests.ps1:19[0m
+[97mTests completed in 1.5s[0m
+[97mTests Passed: 12, [0m[91mFailed: 1, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Tool: Bash] pwsh -NoProfile -Command "
+Import-Module ./src/MatrixGenerator.psm1 -Force
+\$cfg = @{ axes = @{ os=@('ubuntu-latest','windows-latest'); node=@('18','20') } }
+\$r = New-BuildMatrix -Config \$cfg
+\$r.matrix.include | ForEach-Object { [pscustomobject]\$_ } | Format-Table
+\$r.matrix.include.Count
+"
+[Result] [32;1mos            [0m[32;1m node[0m
+[32;1m--            [0m [32;1m----[0m
+ubuntu-latest  18
+windows-latest 18
+ubuntu-latest  20
+windows-latest 20
+
+4
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/powershell-opus47-200k-medium/src/MatrixGenerato
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/powershell-opus47-200k-medium/src/MatrixGenerator.psm1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -NoProfile -Command "Invoke-Pester -Path tests/ -Output Minimal" 2>&1 | tail -10
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 13 tests in 330ms.[0m
+[95mRunning tests.[0m
+[32m[+] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/powershell-opus47-200k-medium/tests/MatrixGenerator.Tests.ps1[0m[90m 1.27s (532ms|459ms)[0m
+[97mTests completed in 1.3s[0m
+[32mTests Passed: 13, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Assistant] All 13 green. Now the workflow, fixtures, and act harness.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/powershell-opus47-200k-medium/src/Generate-Matrix.ps1", "content": "#!
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/powershell-opus47-200k-medium/src/Generate-Matrix.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Create fixtures — one for happy path, one for include/exclude, one for over-max-size (expected failure):
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/powershell-opus47-200k-medium/fixtures/basic.json", "content": "{\n  \
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/powershell-opus47-200k-medium/fixtures/basic.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/powershell-opus47-200k-medium/fixtures/with-rules.json", "content": "{
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/powershell-opus47-200k-medium/fixtures/with-rules.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/powershell-opus47-200k-medium/fixtures/oversize.json", "content": "{\n
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/powershell-opus47-200k-medium/fixtures/oversize.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/powershell-opus47-200k-medium/.github/workflows/environment-matrix-gen
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/powershell-opus47-200k-medium/.github/workflows/environment-matrix-generator.yml (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/environment-matrix-generator.yml && echo OK
+[Result] OK
+[Assistant] Now the harness — runs act for each fixture case, captures output, asserts values.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/powershell-opus47-200k-medium/tests/Workflow.Tests.ps1", "content": "#
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/powershell-opus47-200k-medium/tests/Workflow.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -NoProfile -File ./src/Generate-Matrix.ps1 -ConfigPath ./fixtures/basic.json && echo '---' && pwsh -NoProfile -File ./src/Generate-Matrix.ps1 -ConfigPath ./fixtures/with-rules.json && echo '---' && pwsh -NoProfile -File ./src/Generate-Matrix.ps1 -ConfigPath ./fixtures/oversize.json; echo "exit=$?"
+[Result] {
+  "matrix": {
+    "include": [
+      {
+        "os": "ubuntu-latest",
+        "node": "18"
+      },
+      {
+        "os": "windows-latest",
+        "node": "18"
+      },
+      {
+        "os": "ubuntu-latest",
+        "node": "20"
+      },
+      {
+        "os": "windows-latest",
+        "node": "20"
+      }
+    ]
+  },
+  "fail-fast": true,
+  "max-parallel": 4
+}
+---
+{
+  "matrix": {
+    "include": [
+      {
+        "os": "ubuntu-latest",
+        "node": "18"
+      },
+      {
+        "os": "windows-latest",
+        "node": "18"
+      },
+      {
+        "os": "ubuntu-latest",
+        "node": "20",
+        "coverage": true
+      },
+      {
+        "os": "windows-latest",
+        "node": "20"
+      },
+      {
+        "os": "macos-latest",
+        "node": "20"
+      },
+      {
+        "os": "ubuntu-latest",
+        "node": "21",
+        "experimental": true
+      }
+    ]
+  },
+  "fail-fast": false,
+  "max-parallel": 3
+}
+---
+[31;1mWrite-Error: [0m/home/passp/repos/compare-agent-scripting-by-l
+[Assistant] All three fixtures behave as expected. Now running the full harness (3 act runs, within budget).
+[Tool: Bash] pwsh -NoProfile -Command "Invoke-Pester -Path tests/Workflow.Tests.ps1 -Output Detailed" 2>&1 | tail -80
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 9 tests in 260ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/powershell-opus47-200k-medium/tests/Workflow.Tests.ps1'[0m
+[92mDescribing Workflow structure[0m
+[32m  [+] exists at the required path[0m[90m 146ms (91ms|55ms)[0m
+[32m  [+] declares push, pull_request, and workflow_dispatch triggers[0m[90m 31ms (18ms|12ms)[0m
+[32m  [+] defines pester-tests and generate-matrix jobs[0m[90m 10ms (8ms|2ms)[0m
+[32m  [+] uses actions/checkout@v4 and shell: pwsh[0m[90m 12ms (9ms|3ms)[0m
+[32m  [+] references src/Generate-Matrix.ps1 and the file exists[0m[90m 17ms (14ms|3ms)[0m
+[32m  [+] passes actionlint cleanly[0m[90m 92ms (90ms|2ms)[0m
+[0m
+[92mDescribing act end-to-end: basic fixture (2x2 matrix)[0m
+[91m  [-] runs the workflow successfully and emits 4-
+[Tool: Bash] docker images act-ubuntu-pwsh:latest
+[Result] WARNING: This output is designed for human readability. For machine-readable output, please use --format.
+IMAGE                    ID             DISK USAGE   CONTENT SIZE   EXTRA
+act-ubuntu-pwsh:latest   413e38f474cc       2.55GB          640MB
+[Assistant] Image exists locally. Need `--pull=false` for act. Fix the harness:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/powershell-opus47-200k-medium/tests/Workflow.Tes
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/powershell-opus47-200k-medium/tests/Workflow.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -NoProfile -Command "Invoke-Pester -Path tests/Workflow.Tests.ps1 -Output Detailed" 2>&1 | tail -60
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 9 tests in 301ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/powershell-opus47-200k-medium/tests/Workflow.Tests.ps1'[0m
+[92mDescribing Workflow structure[0m
+[32m  [+] exists at the required path[0m[90m 148ms (97ms|51ms)[0m
+[32m  [+] declares push, pull_request, and workflow_dispatch triggers[0m[90m 32ms (19ms|13ms)[0m
+[32m  [+] defines pester-tests and generate-matrix jobs[0m[90m 11ms (8ms|2ms)[0m
+[32m  [+] uses actions/checkout@v4 and shell: pwsh[0m[90m 8ms (6ms|2ms)[0m
+[32m  [+] references src/Generate-Matrix.ps1 and the file exists[0m[90m 16ms (13ms|3ms)[0m
+[32m  [+] passes actionlint cleanly[0m[90m 86ms (84ms|2ms)[0m
+[0m
+[92mDescribing act end-to-end: basic fixture (2x2 matrix)[0m
+[32m  [+] runs the workflow successfully and emits 4-e
+[Assistant] All 9 workflow + act tests pass. Let me run the full suite to confirm everything and verify `act-result.txt` exists.
+[Tool: Bash] ls -la act-result.txt && echo "---" && head -5 act-result.txt && echo "..." && grep -c 'Job succeeded' act-result.txt && grep -c 'MATRIX_' act-result.txt
+[Result] -rw-r--r-- 1 passp passp 29411 Apr 20 02:55 act-result.txt
+---
+
+
+===== CASE: basic (exit=0) =====
+
+time="2026-04-20T02:54:54-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+...
+6
+11
+[Tool: Bash] pwsh -NoProfile -Command "Invoke-Pester -Path tests/MatrixGenerator.Tests.ps1 -Output Minimal" 2>&1 | tail -6
+[Result] [95mStarting discovery in 1 files.[0m
+[95mDiscovery found 13 tests in 349ms.[0m
+[95mRunning tests.[0m
+[32m[+] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/16-environment-matrix-generator/powershell-opus47-200k-medium/tests/MatrixGenerator.Tests.ps1[0m[90m 1.54s (645ms|599ms)[0m
+[97mTests completed in 1.57s[0m
+[32mTests Passed: 13, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Assistant] All 22 tests pass (13 unit + 9 workflow/act). `act-result.txt` is present with 6 "Job succeeded" lines across the 3 cases.
+
+**Summary:**
+- `src/MatrixGenerator.psm1` — module with `New-BuildMatrix`, `ConvertTo-MatrixJson`, `Invoke-MatrixGenerator` (cartesian product, include/exclude, max-parallel, fail-fast, max-size validation)
+- `src/Generate-Matrix.ps1` — CLI wrapper
+- `tests/MatrixGenerator.Tests.ps1` — 13 Pester unit tests (TDD: red → green)
+- `tests/Workflow.Tests.ps1` — 6 structure tests + 3 act end-to-end cases (basic / with-rules / oversize)
+- `.github/workflows/environment-matrix-generator.yml` — actionlint-clean; runs Pester, then generates matrix for the fixture copied to `config.json`, with `expect-failure.marker` switching assertion mode
+- `fixtures/{basic,with-rules,oversize}.json`
+- `act-result.txt` — 29 KB, 3 delimited cases, all `exit=0`, exact-value assertions verified (`MATRIX_ENTRIES:4/6`, `MATRIX_FAILFAST:True/False`, `MATRIX_FAILED_AS_EXPECTED` with `exceeds max-size`)

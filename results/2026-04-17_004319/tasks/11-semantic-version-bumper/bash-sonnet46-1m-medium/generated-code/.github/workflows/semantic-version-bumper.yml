@@ -1,0 +1,74 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install bats and actionlint
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y bats shellcheck
+          # Install actionlint binary
+          ACTIONLINT_VERSION="1.7.4"
+          curl -sL "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz" \
+            | sudo tar -xz -C /usr/local/bin actionlint
+          echo "bats version: $(bats --version)"
+          echo "shellcheck version: $(shellcheck --version | head -2)"
+          echo "actionlint version: $(actionlint --version)"
+
+      - name: Validate bump-version.sh syntax
+        run: |
+          bash -n bump-version.sh
+          shellcheck bump-version.sh
+          echo "Syntax validation passed"
+
+      - name: Run bats test suite
+        run: |
+          chmod +x bump-version.sh
+          bats tests/version-bumper.bats
+
+      - name: Run version bump scenarios (exact output verification)
+        run: |
+          chmod +x bump-version.sh
+
+          # Scenario 1: fix commit -> patch bump (1.0.0 -> 1.0.1)
+          echo "1.0.0" > /tmp/ver.txt
+          cp fixtures/commits-fix.txt /tmp/commits.txt
+          result=$(bash bump-version.sh /tmp/ver.txt /tmp/commits.txt /tmp/cl.md)
+          echo "SCENARIO_FIX_RESULT=${result}"
+
+          # Scenario 2: feat commit -> minor bump (1.0.0 -> 1.1.0)
+          echo "1.0.0" > /tmp/ver.txt
+          cp fixtures/commits-feat.txt /tmp/commits.txt
+          result=$(bash bump-version.sh /tmp/ver.txt /tmp/commits.txt /tmp/cl.md)
+          echo "SCENARIO_FEAT_RESULT=${result}"
+
+          # Scenario 3: breaking change -> major bump (1.0.0 -> 2.0.0)
+          echo "1.0.0" > /tmp/ver.txt
+          cp fixtures/commits-breaking.txt /tmp/commits.txt
+          result=$(bash bump-version.sh /tmp/ver.txt /tmp/commits.txt /tmp/cl.md)
+          echo "SCENARIO_BREAKING_RESULT=${result}"
+
+          # Scenario 4: mixed commits feat+fix -> minor bump (2.3.4 -> 2.4.0)
+          echo "2.3.4" > /tmp/ver.txt
+          cp fixtures/commits-mixed.txt /tmp/commits.txt
+          result=$(bash bump-version.sh /tmp/ver.txt /tmp/commits.txt /tmp/cl.md)
+          echo "SCENARIO_MIXED_RESULT=${result}"
+
+          # Scenario 5: package.json fix -> patch bump (2.3.4 -> 2.3.5)
+          cp fixtures/package-2.3.4.json /tmp/pkg.json
+          cp fixtures/commits-fix.txt /tmp/cpkg.txt
+          result=$(bash bump-version.sh /tmp/pkg.json /tmp/cpkg.txt /tmp/cl.md)
+          echo "SCENARIO_PKG_RESULT=${result}"

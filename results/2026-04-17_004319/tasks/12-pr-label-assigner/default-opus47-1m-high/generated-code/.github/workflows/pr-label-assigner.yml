@@ -1,0 +1,64 @@
+name: PR Label Assigner
+
+# Triggers: we want this to run on pushes (for CI), on PRs (the real use case),
+# and be manually invokable for debugging via workflow_dispatch.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  RULES_FILE: rules.json
+  # The harness writes the per-case changed-file list to this path before running act.
+  CHANGED_FILES: changed_files.txt
+
+jobs:
+  test:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pytest
+        # --break-system-packages needed on Ubuntu 24.04 (PEP 668); the act container
+        # is throwaway so there's nothing to break.
+        shell: bash
+        run: python3 -m pip install --quiet --break-system-packages pytest
+      - name: Run unit tests
+        shell: bash
+        # Only the pure-Python unit tests — the workflow-level tests require
+        # docker/act and must run on the host, not inside the CI container.
+        run: python3 -m pytest tests/test_pr_label_assigner.py -v
+
+  assign-labels:
+    name: Assign labels
+    needs: test
+    runs-on: ubuntu-latest
+    outputs:
+      labels: ${{ steps.labels.outputs.labels }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify fixture + rules exist
+        shell: bash
+        run: |
+          test -f "${RULES_FILE}" || { echo "missing ${RULES_FILE}"; exit 1; }
+          test -f "${CHANGED_FILES}" || { echo "missing ${CHANGED_FILES}"; exit 1; }
+      - name: Show changed files
+        shell: bash
+        run: |
+          echo "---BEGIN_CHANGED_FILES---"
+          cat "${CHANGED_FILES}"
+          echo "---END_CHANGED_FILES---"
+      - name: Compute labels
+        id: labels
+        shell: bash
+        run: |
+          set -euo pipefail
+          labels="$(python3 pr_label_assigner.py --rules "${RULES_FILE}" --files "${CHANGED_FILES}")"
+          echo "labels=${labels}" >> "${GITHUB_OUTPUT}"
+          echo "---BEGIN_LABELS---"
+          echo "${labels}"
+          echo "---END_LABELS---"

@@ -1,0 +1,61 @@
+name: PR Label Assigner
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      rules_path:
+        description: Path to the rules JSON file
+        default: rules.json
+        required: false
+      files_path:
+        description: Path to the changed-files list (newline-delimited)
+        default: changed-files.txt
+        required: false
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  RULES_PATH: ${{ github.event.inputs.rules_path || 'rules.json' }}
+  FILES_PATH: ${{ github.event.inputs.files_path || 'changed-files.txt' }}
+
+jobs:
+  unit-tests:
+    name: Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $cfg = New-PesterConfiguration
+          $cfg.Run.Path = './PRLabelAssigner.Tests.ps1'
+          $cfg.Run.Exit = $true
+          $cfg.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $cfg
+
+  assign-labels:
+    name: Compute PR labels
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Verify fixtures exist
+        shell: pwsh
+        run: |
+          if (-not (Test-Path $env:RULES_PATH)) { throw "Missing rules file: $env:RULES_PATH" }
+          if (-not (Test-Path $env:FILES_PATH)) { throw "Missing files list: $env:FILES_PATH" }
+          Write-Host "Rules:  $env:RULES_PATH"
+          Write-Host "Files:  $env:FILES_PATH"
+
+      - name: Run label assigner
+        shell: pwsh
+        run: |
+          ./Invoke-PRLabelAssigner.ps1 -RulesPath $env:RULES_PATH -FilesPath $env:FILES_PATH

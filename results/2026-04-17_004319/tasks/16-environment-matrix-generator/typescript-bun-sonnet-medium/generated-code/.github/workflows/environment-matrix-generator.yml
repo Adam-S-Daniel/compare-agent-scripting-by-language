@@ -1,0 +1,65 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  generate-matrix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Run unit tests
+        run: bun test matrix-generator.test.ts
+
+      - name: Generate basic matrix
+        run: |
+          bun run matrix-generator.ts fixtures/basic.json > /tmp/basic.json
+          echo "=== Basic Matrix ==="
+          cat /tmp/basic.json
+          COMBOS=$(python3 -c "import json; m=json.load(open('/tmp/basic.json')); print(m['combinations'])")
+          echo "BASIC_COMBINATIONS=$COMBOS"
+
+      - name: Generate matrix with excludes
+        run: |
+          bun run matrix-generator.ts fixtures/with-exclude.json > /tmp/exclude.json
+          echo "=== Matrix with Excludes ==="
+          cat /tmp/exclude.json
+          COMBOS=$(python3 -c "import json; m=json.load(open('/tmp/exclude.json')); print(m['combinations'])")
+          echo "EXCLUDE_COMBINATIONS=$COMBOS"
+
+      - name: Generate matrix with includes
+        run: |
+          bun run matrix-generator.ts fixtures/with-include.json > /tmp/include.json
+          echo "=== Matrix with Includes ==="
+          cat /tmp/include.json
+          COMBOS=$(python3 -c "import json; m=json.load(open('/tmp/include.json')); print(m['combinations'])")
+          echo "INCLUDE_COMBINATIONS=$COMBOS"
+
+      - name: Validate too-large matrix fails correctly
+        run: |
+          set +e
+          bun run matrix-generator.ts fixtures/too-large.json > /tmp/too-large.json 2>&1
+          EXIT_CODE=$?
+          set -e
+          echo "=== Too-Large Matrix ==="
+          cat /tmp/too-large.json
+          echo "TOO_LARGE_EXIT=$EXIT_CODE"
+          if [ "$EXIT_CODE" -ne 1 ]; then
+            echo "ERROR: Expected exit code 1 for too-large matrix, got $EXIT_CODE"
+            exit 1
+          fi
+          echo "TOO_LARGE_VALIDATION=PASSED"

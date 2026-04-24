@@ -1,0 +1,65 @@
+name: Test Results Aggregator
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      fixtures_dir:
+        description: Directory containing test result fixtures to aggregate
+        required: false
+        default: fixtures
+
+permissions:
+  contents: read
+
+env:
+  FIXTURES_DIR: ${{ github.event.inputs.fixtures_dir || 'fixtures' }}
+
+jobs:
+  unit-tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.11"
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run unit tests
+        run: bun test tests/junit-parser.test.ts tests/json-parser.test.ts tests/aggregator.test.ts tests/renderer.test.ts
+
+  aggregate:
+    name: Aggregate test results
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.11"
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Aggregate results
+        run: |
+          mkdir -p out
+          bun run src/cli.ts --input "$FIXTURES_DIR" --output out/summary.md
+
+      - name: Print summary to logs
+        run: |
+          echo "===== AGGREGATED SUMMARY BEGIN ====="
+          cat out/summary.md
+          echo "===== AGGREGATED SUMMARY END ====="

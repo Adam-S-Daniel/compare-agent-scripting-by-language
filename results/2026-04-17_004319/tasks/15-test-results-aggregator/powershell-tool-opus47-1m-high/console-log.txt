@@ -1,0 +1,529 @@
+[Tool: Bash] ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/
+[Result] total 44
+drwxr-xr-x  4 passp passp  4096 Apr 19 21:33 .
+drwxr-xr-x 25 passp passp  4096 Apr 19 21:33 ..
+-rw-r--r--  1 passp passp    40 Apr 19 21:33 .actrc
+drwxr-xr-x  2 passp passp  4096 Apr 19 21:33 .claude
+drwxr-xr-x  7 passp passp  4096 Apr 19 21:33 .git
+-rw-r--r--  1 passp passp 21843 Apr 17 00:12 benchmark-instructions-v4.md
+[Tool: Bash] which pwsh actionlint act docker && pwsh --version
+[Result] /snap/bin/pwsh
+/home/passp/.local/bin/actionlint
+/home/passp/.local/bin/act
+/usr/bin/docker
+PowerShell 7.6.0
+[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/.actrc
+[Result] -P ubuntu-latest=act-ubuntu-pwsh:latest
+[Tool: Bash] pwsh -NoProfile -Command "Get-Module -ListAvailable Pester | Select-Object Name,Version | Format-Table"
+[Result] [32;1mName  [0m[32;1m Version[0m
+[32;1m----  [0m [32;1m-------[0m
+Pester 5.7.1
+[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/AGENTS.md 2>/dev/null | head -100
+[Result] # Agent Instructions
+
+All agent-facing instructions live in this file. `CLAUDE.md` contains only a
+reference here. If you are a Claude Code agent, you have already loaded this
+via `CLAUDE.md`. Other agents: read this file directly.
+
+## Build and test
+
+```bash
+# Run unit tests (REQUIRED before every PR)
+pip install pytest  # if not already installed
+python3 -m pytest tests/ -v
+
+# Validate imports
+python3 -c "from runner import main"
+python3 -c "from generate_results import generate_results_md"
+python3 -c "from test_quality import compute_structural_metrics"
+python3 -c "from llm_providers import get_provider"
+
+# Regenerate all reports
+python3 generate_results.py --all
+
+# Run a benchmark (v4, all tasks/modes/models)
+python3 runner.py --tasks 11,12,13,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
+
+# Evaluate test quality (structural metrics only)
+python3 test_quality.py results/2026-04-09_152435
+
+# Evaluate test quality with LLM-as-judge (requires a provid
+[Assistant] I'll build this in PowerShell with Pester TDD. Let me start writing failing tests first.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/TestResultsAggregator.Tests.ps1", "content":
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/TestResultsAggregator.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Now create fixtures:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/fixtures/junit-run1.xml", "content": "<?xml 
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/fixtures/junit-run1.xml (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/fixtures/junit-run2.xml", "content": "<?xml 
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/fixtures/junit-run2.xml (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/fixtures/json-run1.json", "content": "{\n  \
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/fixtures/json-run1.json (file state is current in your context — no need to Read it back)
+[Tool: ToolSearch] {"query": "select:TodoWrite", "max_results": 1}
+[Result] {'type': 'tool_reference', 'tool_name': 'TodoWrite'}
+[Tool: TodoWrite] {"todos": [{"content": "Write failing Pester tests + fixtures", "status": "completed", "activeForm": "Writing failing Pester tests + fixtures"}, {"content": "Implement TestResultsAggregator.ps1 to mak
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Assistant] Now let me confirm tests fail first (red), then implement.
+[Tool: Bash] pwsh -NoProfile -Command "Invoke-Pester -Path ./TestResultsAggregator.Tests.ps1 -Output Minimal" 2>&1 | tail -20
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 22 tests in 340ms.[0m
+[95mRunning tests.[0m
+[91m[-] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/TestResultsAggregator.Tests.ps1 failed with:[0m
+[91mCommandNotFoundException: The term '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/TestResultsAggregator.ps1' is not recognized as a name of a cmdlet, function, script file, or executable program.
+[91mCheck the spelling of the name, or if a path was included, verify that the path is correct and try again.
+[91mat <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/TestResultsAggregator.Tests.ps1:7[0m
+[97mTests completed in 775ms[0m
+[97mTests Passed: 0, [0m[91mFailed: 22, 
+[Assistant] Red confirmed. Now implement the script:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/TestResultsAggregator.ps1", "content": "<#\n
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/TestResultsAggregator.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Let me simplify — move the CLI into a separate wrapper script so `TestResultsAggregator.ps1` stays a clean library file.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/TestResultsAggregator.
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/TestResultsAggregator.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/Invoke-Aggregator.ps1", "content": "<#\n.SYN
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/Invoke-Aggregator.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -NoProfile -Command "Invoke-Pester -Path ./TestResultsAggregator.Tests.ps1 -Output Detailed" 2>&1 | tail -60
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 22 tests in 331ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/TestResultsAggregator.Tests.ps1'[0m
+[92mDescribing Read-JUnitXmlResult[0m
+[32m  [+] parses a simple JUnit XML file into test result objects[0m[90m 244ms (194ms|50ms)[0m
+[32m  [+] captures name, classname, outcome, and duration[0m[90m 54ms (51ms|3ms)[0m
+[32m  [+] identifies failed tests[0m[90m 21ms (17ms|4ms)[0m
+[32m  [+] identifies skipped tests[0m[90m 14ms (12ms|2ms)[0m
+[32m  [+] throws a descriptive error if the path does not exist[0m[90m 62ms (59ms|3ms)[0m
+[32m  [+] throws if the XML is malformed[0m[90m 118ms (116ms|2ms)[0m
+[0m
+[92mDescribing Read-JsonResult[0m
+[32m  [+] parses a JSON test-result file into test result objects[0m[90m 49ms (44ms|5ms
+[Assistant] All 22 tests green. Now create the GitHub Actions workflow.
+[Tool: TodoWrite] {"todos": [{"content": "Write failing Pester tests + fixtures", "status": "completed", "activeForm": "Writing failing Pester tests + fixtures"}, {"content": "Implement TestResultsAggregator.ps1 to mak
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/.github/workflows/test-results-aggregator.ym
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/.github/workflows/test-results-aggregator.yml (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/test-results-aggregator.yml; echo "EXIT=$?"
+[Result] EXIT=0
+[Tool: TodoWrite] {"todos": [{"content": "Write failing Pester tests + fixtures", "status": "completed", "activeForm": "Writing failing Pester tests + fixtures"}, {"content": "Implement TestResultsAggregator.ps1 to mak
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Assistant] Now build the act test harness. I have 3 act runs budgeted, so 3 distinct test cases.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/fixtures-allpass/junit-allpass.xml", "conten
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/fixtures-allpass/junit-allpass.xml (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/fixtures-allpass/json-allpass.json", "conten
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/fixtures-allpass/json-allpass.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/fixtures-single/junit-single.xml", "content"
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/fixtures-single/junit-single.xml (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/WorkflowStructure.Tests.ps1", "content": "# 
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/WorkflowStructure.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Now the act harness. I'll use a test-case definition with expected exact values:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/Run-ActHarness.ps1", "content": "<#\n.SYNOPS
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/Run-ActHarness.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Bash] docker images act-ubuntu-pwsh:latest --format '{{.Repository}}:{{.Tag}}'
+[Result] act-ubuntu-pwsh:latest
+[Tool: Bash] pwsh -NoProfile -Command "Invoke-Pester -Path ./WorkflowStructure.Tests.ps1 -Output Minimal" 2>&1 | tail -30
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 15 tests in 343ms.[0m
+[95mRunning tests.[0m
+[32m[+] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/WorkflowStructure.Tests.ps1[0m[90m 1.29s (436ms|564ms)[0m
+[97mTests completed in 1.33s[0m
+[32mTests Passed: 15, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Assistant] Now run the act harness. This will run up to 3 `act push` invocations.
+[Tool: Bash] pwsh -NoProfile -File ./Run-ActHarness.ps1 2>&1 | tail -80
+[Result] === Running case: default-matrix-with-flaky ===
+  act exit: 1, assertion errors: 4
+
+=== Running case: single-run-no-flaky ===
+  act exit: 1, assertion errors: 4
+
+=== Running case: all-pass-no-failures ===
+  act exit: 1, assertion errors: 4
+
+=== Summary ===
+Failures:
+  [all-pass-no-failures]
+    - act exited with 1 (expected 0)
+    - Expected at least 2 'Job succeeded' occurrences, got 0
+    - Missing exact token: 'AGG_RESULT total=5 passed=5 failed=0 skipped=0 flaky=0'
+    - Missing exact token: 'PESTER_RESULT passed=22 failed=0'
+  [single-run-no-flaky]
+    - act exited with 1 (expected 0)
+    - Expected at least 2 'Job succeeded' occurrences, got 0
+    - Missing exact token: 'AGG_RESULT total=4 passed=2 failed=1 skipped=1 flaky=0'
+    - Missing exact token: 'PESTER_RESULT passed=22 failed=0'
+  [default-matrix-with-flaky]
+    - act exited with 1 (expected 0)
+    - Expected at least 2 'Job succeeded' occurrences, got 0
+    - Missing exact token: 'AGG_RESULT total=11 passed=7 failed=2 sk
+[Assistant] All 3 cases failed — same error in each. Let me diagnose from the output file without re-running.
+[Tool: Bash] head -60 ./act-result.txt
+[Result] ===== CASE: default-matrix-with-flaky =====
+Temp repo: /tmp/act-case-d0c12976440d43dd8e76762b9f9fd144
+Fixtures source: fixtures
+Expected: total=11 passed=7 failed=2 skipped=2 flaky=1
+---
+time="2026-04-19T21:38:37-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Test Results Aggregator/Pester unit tests] ⭐ Run Set up job
+[Test Results Aggregator/Pester unit tests] 🚀  Start image=act-ubuntu-pwsh:latest
+[Test Results Aggregator/Pester unit tests]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=true
+[Test Results Aggregator/Pester unit tests] using DockerAuthConfig authentication for docker pull
+[Test Results Aggregator/Pester unit tests] Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+[Test Results Aggregator/Pester unit tests]   ❌  Failure - Set up job
+[Test Results Aggregator/Pester unit tests] 🏁  Job failed
+Erro
+[Assistant] Image pull is being forced. The fix: add `--pull=false` so act uses the local `act-ubuntu-pwsh:latest` image.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/.actrc"}
+[Result] 1	-P ubuntu-latest=act-ubuntu-pwsh:latest
+2	
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/.actrc", "content": "-P ubuntu-latest=act-ub
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/.actrc has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -NoProfile -File ./Run-ActHarness.ps1 2>&1 | tail -40
+[Result] === Running case: default-matrix-with-flaky ===
+  act exit: 1, assertion errors: 2
+
+=== Running case: single-run-no-flaky ===
+  act exit: 1, assertion errors: 4
+
+=== Running case: all-pass-no-failures ===
+  act exit: 1, assertion errors: 4
+
+=== Summary ===
+Failures:
+  [single-run-no-flaky]
+    - act exited with 1 (expected 0)
+    - Expected at least 2 'Job succeeded' occurrences, got 0
+    - Missing exact token: 'AGG_RESULT total=4 passed=2 failed=1 skipped=1 flaky=0'
+    - Missing exact token: 'PESTER_RESULT passed=22 failed=0'
+  [all-pass-no-failures]
+    - act exited with 1 (expected 0)
+    - Expected at least 2 'Job succeeded' occurrences, got 0
+    - Missing exact token: 'AGG_RESULT total=5 passed=5 failed=0 skipped=0 flaky=0'
+    - Missing exact token: 'PESTER_RESULT passed=22 failed=0'
+  [default-matrix-with-flaky]
+    - act exited with 1 (expected 0)
+    - Expected at least 2 'Job succeeded' occurrences, got 1
+[Tool: Bash] grep -n "CASE:\|Job succeeded\|Job failed\|AGG_RESULT\|PESTER_RESULT\|Error\|❌\|FAIL\| act exit:" ./act-result.txt | head -60
+[Result] 1:===== CASE: default-matrix-with-flaky =====
+63:[Test Results Aggregator/Pester unit tests]   | PESTER_RESULT passed=22 failed=0 skipped=0
+68:[Test Results Aggregator/Pester unit tests] 🏁  Job succeeded
+90:[Test Results Aggregator/Aggregate test results]   | AGG_RESULT total=11 passed=7 failed=2 skipped=2 flaky=1
+163:[Test Results Aggregator/Aggregate test results]   ❌  Failure - Main Upload summary artifact [1.267863296s]
+168:[Test Results Aggregator/Aggregate test results] 🏁  Job failed
+169:Error: Job 'Aggregate test results' failed
+171:---- act exit: 1
+173:===== CASE: single-run-no-flaky =====
+318:[Test Results Aggregator/Pester unit tests]   | [31;1mWrite-Error: [31;1mPester: 18 test(s) failed[0m
+319:[Test Results Aggregator/Pester unit tests]   ❌  Failure - Main Run Pester tests [7.371457634s]
+324:[Test Results Aggregator/Pester unit tests] 🏁  Job failed
+325:Error: Job 'Pester unit tests' failed
+327:---- act exit: 1
+329:===== CASE: all-pass-no-failures =====
+474:[Test Results 
+[Assistant] Two issues to fix without re-running act:
+
+1. `upload-artifact@v4` fails in act (known limitation) — remove it.
+2. Swapping `fixtures/` breaks Pester (which hardcodes fixture paths). Separate Pester fixtures from aggregator input.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/.github/workflows/test-results-aggregator.ym
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/.github/workflows/test-results-aggregator.yml has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Now rename fixture dirs: the `input/` dir is what the aggregate step reads. `fixtures/` stays for Pester.
+[Tool: Bash] cp -r ./fixtures ./input && ls input/
+[Result] json-run1.json
+junit-run1.xml
+junit-run2.xml
+[Tool: Bash] mv ./fixtures-single ./input-single && mv ./fixtures-allpass ./input-allpass && ls
+[Result] Invoke-Aggregator.ps1
+Run-ActHarness.ps1
+TestResultsAggregator.Tests.ps1
+TestResultsAggregator.ps1
+WorkflowStructure.Tests.ps1
+act-result.txt
+benchmark-instructions-v4.md
+fixtures
+input
+input-allpass
+input-single
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/Run-ActHarness.ps1", "
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/Run-ActHarness.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/Run-ActHarness.ps1", "
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/Run-ActHarness.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/Run-ActHarness.ps1", "
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/Run-ActHarness.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/Run-ActHarness.ps1", "
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/Run-ActHarness.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Update the workflow-structure test to check for `input/` dir too:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/WorkflowStructure.Test
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/WorkflowStructure.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/test-results-aggregator.yml; echo "actionlint=$?"
+pwsh -NoProfile -Command "Invoke-Pester -Path ./TestResultsAggregator.Tests.ps1,./WorkflowStructure.Tests.ps1 -Output Minimal" 2>&1 | tail -5
+[Result] actionlint=0
+[95mRunning tests.[0m
+[32m[+] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/TestResultsAggregator.Tests.ps1[0m[90m 1.88s (954ms|633ms)[0m
+[32m[+] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/WorkflowStructure.Tests.ps1[0m[90m 516ms (278ms|168ms)[0m
+[97mTests completed in 2.43s[0m
+[32mTests Passed: 38, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Assistant] 38 tests green locally. Now run the act harness.
+[Tool: Bash] pwsh -NoProfile -File ./Run-ActHarness.ps1 2>&1 | tail -40
+[Result] === Running case: default-matrix-with-flaky ===
+  act exit: 1, assertion errors: 3
+
+=== Running case: single-run-no-flaky ===
+  act exit: 1, assertion errors: 3
+
+=== Running case: all-pass-no-failures ===
+  act exit: 1, assertion errors: 3
+
+=== Summary ===
+Failures:
+  [default-matrix-with-flaky]
+    - act exited with 1 (expected 0)
+    - Expected at least 2 'Job succeeded' occurrences, got 0
+    - Missing exact token: 'AGG_RESULT total=11 passed=7 failed=2 skipped=2 flaky=1'
+  [all-pass-no-failures]
+    - act exited with 1 (expected 0)
+    - Expected at least 2 'Job succeeded' occurrences, got 0
+    - Missing exact token: 'AGG_RESULT total=5 passed=5 failed=0 skipped=0 flaky=0'
+  [single-run-no-flaky]
+    - act exited with 1 (expected 0)
+    - Expected at least 2 'Job succeeded' occurrences, got 0
+    - Missing exact token: 'AGG_RESULT total=4 passed=2 failed=1 skipped=1 flaky=0'
+[Tool: Bash] grep -n "CASE:\|Job succeeded\|Job failed\|AGG_RESULT\|PESTER_RESULT\|STRUCTURE_RESULT\|❌\|Failure - Main\|Error:\| act exit:" ./act-result.txt | head -40
+[Result] 1:===== CASE: default-matrix-with-flaky =====
+63:[Test Results Aggregator/Pester unit tests]   | PESTER_RESULT passed=22 failed=0 skipped=0
+106:[Test Results Aggregator/Pester unit tests]   | [31;1mWrite-Error: [31;1mWorkflow structure: 1 test(s) failed[0m
+107:[Test Results Aggregator/Pester unit tests]   ❌  Failure - Main Run workflow structure tests [4.487278778s]
+112:[Test Results Aggregator/Pester unit tests] 🏁  Job failed
+113:Error: Job 'Pester unit tests' failed
+115:---- act exit: 1
+117:===== CASE: single-run-no-flaky =====
+179:[Test Results Aggregator/Pester unit tests]   | PESTER_RESULT passed=22 failed=0 skipped=0
+222:[Test Results Aggregator/Pester unit tests]   | [31;1mWrite-Error: [31;1mWorkflow structure: 1 test(s) failed[0m
+223:[Test Results Aggregator/Pester unit tests]   ❌  Failure - Main Run workflow structure tests [4.53137225s]
+228:[Test Results Aggregator/Pester unit tests] 🏁  Job failed
+229:Error: Job 'Pester unit tests' failed
+231:---- act exit: 1
+233:===== 
+[Tool: Bash] sed -n '80,112p' ./act-result.txt
+[Result] [Test Results Aggregator/Pester unit tests]   | [32m  [+] triggers on workflow_dispatch[0m[90m 5ms (3ms|2ms)[0m
+[Test Results Aggregator/Pester unit tests]   | [32m  [+] has a schedule block[0m[90m 8ms (5ms|3ms)[0m
+[Test Results Aggregator/Pester unit tests]   | [0m
+[Test Results Aggregator/Pester unit tests]   | [92mDescribing Workflow jobs[0m
+[Test Results Aggregator/Pester unit tests]   | [32m  [+] defines a pester-unit-tests job[0m[90m 11ms (7ms|4ms)[0m
+[Test Results Aggregator/Pester unit tests]   | [32m  [+] defines an aggregate job that depends on pester-unit-tests[0m[90m 7ms (4ms|2ms)[0m
+[Test Results Aggregator/Pester unit tests]   | [32m  [+] uses ubuntu-latest runners[0m[90m 26ms (21ms|6ms)[0m
+[Test Results Aggregator/Pester unit tests]   | [32m  [+] uses actions/checkout@v4[0m[90m 8ms (5ms|3ms)[0m
+[Test Results Aggregator/Pester unit tests]   | [32m  [+] uses shell: pwsh for run steps[0m[90m 8ms (5ms|3ms)[0m
+[Test Results Aggregator/Pester uni
+[Assistant] actionlint isn't in the container. Make the test conditionally skip when actionlint isn't available:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/WorkflowStructure.Test
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/WorkflowStructure.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -NoProfile -Command "Invoke-Pester -Path ./WorkflowStructure.Tests.ps1 -Output Minimal" 2>&1 | tail -6
+[Result] [95mStarting discovery in 1 files.[0m
+[95mDiscovery found 16 tests in 368ms.[0m
+[95mRunning tests.[0m
+[32m[+] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/WorkflowStructure.Tests.ps1[0m[90m 1.32s (434ms|572ms)[0m
+[97mTests completed in 1.35s[0m
+[32mTests Passed: 16, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Tool: Bash] pwsh -NoProfile -File ./Run-ActHarness.ps1 2>&1 | tail -20
+[Result] === Running case: default-matrix-with-flaky ===
+[31;1mRun-ActHarness.ps1: [31;1mThe property 'Count' cannot be found on this object. Verify that the property exists.[0m
+[Assistant] Strict mode glitch in the harness. Let me relax it and add error trapping:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/Run-ActHarness.ps1", "
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/Run-ActHarness.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/Run-ActHarness.ps1", "
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/Run-ActHarness.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -NoProfile -File ./Run-ActHarness.ps1 2>&1 | tail -30
+[Result] === Running case: default-matrix-with-flaky ===
+  act exit: 0, assertion errors: 0
+
+=== Running case: single-run-no-flaky ===
+  act exit: 0, assertion errors: 1
+
+=== Running case: all-pass-no-failures ===
+  act exit: 0, assertion errors: 1
+
+=== Summary ===
+Failures:
+  [all-pass-no-failures]
+    - Missing exact token: 'AGG_RESULT total=5 passed=5 failed=0 skipped=0 flaky=0'
+  [single-run-no-flaky]
+    - Missing exact token: 'AGG_RESULT total=4 passed=2 failed=1 skipped=1 flaky=0'
+[Tool: Bash] grep -n "CASE:\|AGG_RESULT" ./act-result.txt
+[Result] 1:===== CASE: default-matrix-with-flaky =====
+126:[Test Results Aggregator/Aggregate test results]   | AGG_RESULT total=11 passed=7 failed=2 skipped=2 flaky=1
+197:===== CASE: single-run-no-flaky =====
+322:[Test Results Aggregator/Aggregate test results]   | AGG_RESULT total=4 passed=2 failed=1 skipped=1 flaky=1
+387:===== CASE: all-pass-no-failures =====
+512:[Test Results Aggregator/Aggregate test results]   | AGG_RESULT total=5 passed=5 failed=0 skipped=0 flaky=1
+[Assistant] Bug: `Get-FlakyTest` returns a 1-element array containing `$null` when there are no flaky tests. Fix:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/TestResultsAggregator.
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/TestResultsAggregator.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -NoProfile -Command "Invoke-Pester -Path ./TestResultsAggregator.Tests.ps1 -Output Minimal" 2>&1 | tail -5
+pwsh -NoProfile -Command ". ./TestResultsAggregator.ps1; \$agg = Get-AggregatedResult -Paths @('./input-single/junit-single.xml'); \$f = Get-FlakyTest -Aggregated \$agg; Write-Host ('Flaky count: ' + @(\$f).Count)"
+[Result] [95mDiscovery found 22 tests in 366ms.[0m
+[95mRunning tests.[0m
+[32m[+] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/TestResultsAggregator.Tests.ps1[0m[90m 1.86s (933ms|607ms)[0m
+[97mTests completed in 1.89s[0m
+[32mTests Passed: 22, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+Flaky count: 0
+[Assistant] Fix verified. Now run act harness one last time — I expect all 3 cases to pass.
+[Tool: Bash] pwsh -NoProfile -File ./Run-ActHarness.ps1 2>&1 | tail -20
+[Result] === Running case: default-matrix-with-flaky ===
+  act exit: 0, assertion errors: 0
+
+=== Running case: single-run-no-flaky ===
+  act exit: 0, assertion errors: 1
+
+=== Running case: all-pass-no-failures ===
+  act exit: 0, assertion errors: 1
+
+=== Summary ===
+Failures:
+  [single-run-no-flaky]
+    - Missing exact token: 'AGG_RESULT total=4 passed=2 failed=1 skipped=1 flaky=0'
+  [all-pass-no-failures]
+    - Missing exact token: 'AGG_RESULT total=5 passed=5 failed=0 skipped=0 flaky=0'
+[Tool: Bash] grep -n "AGG_RESULT" ./act-result.txt
+[Result] 126:[Test Results Aggregator/Aggregate test results]   | AGG_RESULT total=11 passed=7 failed=2 skipped=2 flaky=1
+322:[Test Results Aggregator/Aggregate test results]   | AGG_RESULT total=4 passed=2 failed=1 skipped=1 flaky=1
+512:[Test Results Aggregator/Aggregate test results]   | AGG_RESULT total=5 passed=5 failed=0 skipped=0 flaky=1
+[Tool: Bash] pwsh -NoProfile -File ./Invoke-Aggregator.ps1 -InputDir ./input-single -OutputPath /tmp/out.md 2>&1 | tail -10
+[Result] Total:    4
+Passed:   2
+Failed:   1
+Skipped:  1
+Duration: 0.25s
+Flaky:    1
+AGG_RESULT total=4 passed=2 failed=1 skipped=1 flaky=1
+[Tool: Bash] pwsh -NoProfile -Command "function F { \$l = New-Object System.Collections.Generic.List[object]; return ,@(\$l.ToArray()) }; \$r = F; Write-Host ('type=' + \$r.GetType().Name + ' count=' + @(\$r).Count)"
+[Result] type=Object[] count=0
+[Tool: Bash] pwsh -NoProfile -Command ". ./TestResultsAggregator.ps1; \$s = Invoke-TestResultsAggregator -Paths @('./input-single/junit-single.xml'); Write-Host ('FlakyIsNull=' + (\$null -eq \$s.Flaky) + ' Type=' + (if (\$null -eq \$s.Flaky) {'<null>'} else {\$s.Flaky.GetType().Name}) + ' Count=' + @(\$s.Flaky).Count)"
+[Result ERROR] Exit code 1
+[31;1mif: [31;1mThe term 'if' is not recognized as a name of a cmdlet, function, script file, or executable program.[0m
+[31;1m[31;1mCheck the spelling of the name, or if a path was included, verify that the path is correct and try again.[0m
+[Tool: Bash] pwsh -NoProfile -Command ". ./TestResultsAggregator.ps1; \$s = Invoke-TestResultsAggregator -Paths @('./input-single/junit-single.xml'); Write-Host \"Flaky type: \$(\$s.Flaky.GetType().FullName)\"; Write-Host \"Flaky length: \$(\$s.Flaky.Length)\"; Write-Host \"Count: \$(@(\$s.Flaky).Count)\"; Write-Host \"First: \$(\$s.Flaky[0])\""
+[Result] Flaky type: System.Object[]
+Flaky length: 1
+Count: 1
+First:
+[Tool: Bash] pwsh -NoProfile -Command "function F { \$l = New-Object System.Collections.Generic.List[object]; return ,@(\$l.ToArray()) }; \$o = [pscustomobject]@{ X = @(F) }; Write-Host ('stored=' + \$o.X.GetType().Name + ' len=' + \$o.X.Length + ' count=' + @(\$o.X).Count)"
+[Result] stored=Object[] len=1 count=1
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/TestResultsAggregator.
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/TestResultsAggregator.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/TestResultsAggregator.
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/TestResultsAggregator.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -NoProfile -File ./Invoke-Aggregator.ps1 -InputDir ./input-single 2>&1 | tail -10
+echo "---"
+pwsh -NoProfile -File ./Invoke-Aggregator.ps1 -InputDir ./input-allpass 2>&1 | tail -10
+echo "---"
+pwsh -NoProfile -File ./Invoke-Aggregator.ps1 -InputDir ./input 2>&1 | tail -10
+echo "---"
+pwsh -NoProfile -Command "Invoke-Pester -Path ./TestResultsAggregator.Tests.ps1,./WorkflowStructure.Tests.ps1 -Output Minimal" 2>&1 | tail -4
+[Result] Total:    4
+Passed:   2
+Failed:   1
+Skipped:  1
+Duration: 0.25s
+Flaky:    0
+AGG_RESULT total=4 passed=2 failed=1 skipped=1 flaky=0
+---
+Total:    5
+Passed:   5
+Failed:   0
+Skipped:  0
+Duration: 0.70s
+Flaky:    0
+AGG_RESULT total=5 passed=5 failed=0 skipped=0 flaky=0
+---
+Total:    11
+Passed:   7
+Failed:   2
+Skipped:  2
+Duration: 1.40s
+Flaky:    1
+AGG_RESULT total=11 passed=7 failed=2 skipped=2 flaky=1
+---
+[32m[+] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/TestResultsAggregator.Tests.ps1[0m[90m 1.86s (970ms|610ms)[0m
+[32m[+] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/powershell-tool-opus47-1m-high/WorkflowStructure.Tests.ps1[0m[90m 502ms (274ms|144ms)[0m
+[97mTests completed in 2.39s[0m
+[32mTests Passed: 38, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Assistant] All local values match expected. Now the final act run:
+[Tool: Bash] pwsh -NoProfile -File ./Run-ActHarness.ps1 2>&1 | tail -20
+[Result] === Running case: default-matrix-with-flaky ===
+  act exit: 0, assertion errors: 0
+
+=== Running case: single-run-no-flaky ===
+  act exit: 0, assertion errors: 0
+
+=== Running case: all-pass-no-failures ===
+  act exit: 0, assertion errors: 0
+
+=== Summary ===
+All 3 act cases passed
+[Assistant] All 3 act cases pass. Let me verify the artifact exists and contains expected content:
+[Tool: Bash] ls -la ./act-result.txt
+echo "---"
+grep -c "Job succeeded" ./act-result.txt
+echo "---"
+grep "AGG_RESULT\|PESTER_RESULT\|STRUCTURE_RESULT\|CASE:\|act exit:" ./act-result.txt
+[Result] -rw-r--r-- 1 passp passp 48784 Apr 19 21:49 ./act-result.txt
+---
+6
+---
+===== CASE: default-matrix-with-flaky =====
+[Test Results Aggregator/Pester unit tests]   | PESTER_RESULT passed=22 failed=0 skipped=0
+[Test Results Aggregator/Pester unit tests]   | STRUCTURE_RESULT passed=15 failed=0
+[Test Results Aggregator/Aggregate test results]   | AGG_RESULT total=11 passed=7 failed=2 skipped=2 flaky=1
+---- act exit: 0
+===== CASE: single-run-no-flaky =====
+[Test Results Aggregator/Pester unit tests]   | PESTER_RESULT passed=22 failed=0 skipped=0
+[Test Results Aggregator/Pester unit tests]   | STRUCTURE_RESULT passed=15 failed=0
+[Test Results Aggregator/Aggregate test results]   | AGG_RESULT total=4 passed=2 failed=1 skipped=1 flaky=0
+---- act exit: 0
+===== CASE: all-pass-no-failures =====
+[Test Results Aggregator/Pester unit tests]   | PESTER_RESULT passed=22 failed=0 skipped=0
+[Test Results Aggregator/Pester unit tests]   | STRUCTURE_RESULT passed=15 failed=0
+[Test Results Aggregator/Aggrega
+[Tool: TodoWrite] {"todos": [{"content": "Write failing Pester tests + fixtures", "status": "completed", "activeForm": "Writing failing Pester tests + fixtures"}, {"content": "Implement TestResultsAggregator.ps1 to mak
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Bash] ls -la
+echo "---"
+echo "Final check: actionlint + all Pester tests + act-result.txt exists"
+actionlint .github/workflows/test-results-aggregator.yml && echo "actionlint: OK"
+test -f act-result.txt && echo "act-result.txt: $(wc -l < act-result.txt) lines"
+[Result] total 152
+drwxr-xr-x  9 passp passp  4096 Apr 19 21:48 .
+drwxr-xr-x 25 passp passp  4096 Apr 19 21:33 ..
+-rw-r--r--  1 passp passp    53 Apr 19 21:38 .actrc
+drwxr-xr-x  2 passp passp  4096 Apr 19 21:33 .claude
+drwxr-xr-x  7 passp passp  4096 Apr 19 21:33 .git
+drwxr-xr-x  3 passp passp  4096 Apr 19 21:36 .github
+-rw-r--r--  1 passp passp  2645 Apr 19 21:36 Invoke-Aggregator.ps1
+-rw-r--r--  1 passp passp  8748 Apr 19 21:43 Run-ActHarness.ps1
+-rw-r--r--  1 passp passp  7831 Apr 19 21:34 TestResultsAggregator.Tests.ps1
+-rw-r--r--  1 passp passp 11631 Apr 19 21:47 TestResultsAggregator.ps1
+-rw-r--r--  1 passp passp  3773 Apr 19 21:42 WorkflowStructure.Tests.ps1
+-rw-r--r--  1 passp passp 48784 Apr 19 21:49 act-result.txt
+-rw-r--r--  1 passp passp 21843 Apr 17 00:12 benchmark-instructions-v4.md
+drwxr-xr-x  2 passp passp  4096 Apr 19 21:34 fixtures
+drwxr-xr-x  2 passp passp  4096 Apr 19 21:40 input
+drwxr-xr-x  2 passp passp  4096 Apr 19 21:37 input-allpass
+drwxr-xr-x  2 passp passp  4096 Apr 1
+[Assistant] All green. Summary of the build:
+
+**Deliverables**
+- `TestResultsAggregator.ps1` — library with `Read-JUnitXmlResult`, `Read-JsonResult`, `Read-TestResultFile`, `Get-AggregatedResult`, `Get-FlakyTest`, `Format-MarkdownSummary`, `Invoke-TestResultsAggregator`
+- `Invoke-Aggregator.ps1` — CLI wrapper (writes to `-OutputPath` and appends to `GITHUB_STEP_SUMMARY`)
+- `TestResultsAggregator.Tests.ps1` — 22 Pester TDD tests
+- `WorkflowStructure.Tests.ps1` — 16 workflow-structure tests (15 executed + 1 actionlint, skipped inside act)
+- `.github/workflows/test-results-aggregator.yml` — actionlint-clean workflow with `push`/`pull_request`/`workflow_dispatch`/`schedule` triggers, two jobs (pester → aggregate)
+- `fixtures/` (Pester reference), `input/`, `input-single/`, `input-allpass/` (per-case aggregator inputs)
+- `Run-ActHarness.ps1` — runs `act push --rm` for 3 cases, asserts exit code 0, ≥2 "Job succeeded", and exact `AGG_RESULT`/`PESTER_RESULT` tokens
+- `act-result.txt` — 578 lines, all 3 cases with exit=0 and matching expected values
+
+**Verified results**
+- default-matrix: 11/7/2/2, 1 flaky
+- single-run: 4/2/1/1, 0 flaky
+- all-pass: 5/5/0/0, 0 flaky

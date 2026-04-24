@@ -1,0 +1,93 @@
+name: Dependency License Check
+
+# Runs on every push / PR, on demand, and once a week on Mondays 06:00 UTC so
+# newly published denied-list licenses get flagged even on stale branches.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      manifest_file:
+        description: "Path to the manifest to scan"
+        required: false
+        default: "fixtures/sample-package.json"
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  unit-tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pytest
+        run: python3 -m pip install --quiet pytest
+
+      - name: Run pytest
+        run: python3 -m pytest tests/ -v
+
+  compliance:
+    name: License compliance
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    env:
+      # POLICY_FILE is fixed for CI. MANIFEST_FILE is NOT declared here on
+      # purpose: the act harness passes it via `--env MANIFEST_FILE=...`, and a
+      # job-level env: entry would override the container-level value. The
+      # resolve step below falls back to the workflow_dispatch input or a
+      # shipped fixture when the variable isn't set.
+      POLICY_FILE: fixtures/policy.json
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Resolve manifest path
+        id: resolve
+        env:
+          INPUT_MANIFEST: ${{ inputs.manifest_file }}
+        run: |
+          MANIFEST="${MANIFEST_FILE:-${INPUT_MANIFEST:-fixtures/sample-package.json}}"
+          if [ ! -f "$MANIFEST" ]; then
+            echo "manifest not found: $MANIFEST" >&2
+            exit 1
+          fi
+          echo "path=$MANIFEST" >> "$GITHUB_OUTPUT"
+
+      - name: Generate compliance report
+        id: report
+        # The checker exits non-zero on denied deps. We want the workflow to
+        # ALWAYS complete so downstream steps / logs remain assertable — the
+        # status is surfaced via COMPLIANCE_EXIT below instead.
+        run: |
+          set +e
+          echo "=== BEGIN-COMPLIANCE-REPORT ==="
+          python3 license_checker.py \
+            --manifest "${{ steps.resolve.outputs.path }}" \
+            --policy "$POLICY_FILE"
+          EXIT=$?
+          echo "=== END-COMPLIANCE-REPORT ==="
+          echo "COMPLIANCE_EXIT=$EXIT"
+          echo "compliance_exit=$EXIT" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Print status summary
+        run: |
+          echo "Compliance script exit code: ${{ steps.report.outputs.compliance_exit }}"
+          if [ "${{ steps.report.outputs.compliance_exit }}" = "0" ]; then
+            echo "STATUS: clean"
+          else
+            echo "STATUS: violations-present"
+          fi

@@ -1,0 +1,36 @@
+name: Dependency License Checker
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  license-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        run: |
+          python3 --version
+          python3 -m pip install --quiet --break-system-packages pytest pyyaml
+
+      - name: Run unit tests
+        run: python3 -m pytest tests/test_unit.py -v
+
+      - name: Run license compliance check
+        run: |
+          python3 license_checker.py \
+            fixtures/package.json \
+            fixtures/license_config.json \
+            fixtures/mock_licenses.json
+
+      - name: Compliance check complete
+        run: echo "License compliance check finished."

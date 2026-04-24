@@ -1,0 +1,58 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: 'Fixture name under fixtures/ (without .json)'
+        required: false
+        default: 'basic'
+
+permissions:
+  contents: read
+
+env:
+  FIXTURE: ${{ github.event.inputs.fixture || 'basic' }}
+
+jobs:
+  unit-tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install pytest
+        run: python3 -m pip install --quiet --break-system-packages pytest pyyaml
+
+      - name: Run pytest
+        run: python3 -m pytest tests/test_matrix_generator.py -v
+
+  generate:
+    name: Generate matrix
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    outputs:
+      size: ${{ steps.run.outputs.size }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate matrix JSON
+        id: run
+        env:
+          FIXTURE_NAME: ${{ env.FIXTURE }}
+        run: |
+          set -euo pipefail
+          fixture="fixtures/${FIXTURE_NAME}.json"
+          if [ ! -f "$fixture" ]; then
+            echo "fixture not found: $fixture" >&2
+            exit 1
+          fi
+          python3 matrix_generator.py "$fixture" > matrix.json
+          cat matrix.json
+          size=$(python3 -c 'import json,sys; print(json.load(open("matrix.json"))["size"])')
+          echo "size=$size" >> "$GITHUB_OUTPUT"
+          echo "MATRIX_SIZE=$size"

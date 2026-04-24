@@ -1,0 +1,72 @@
+name: environment-matrix-generator
+
+# Triggers: run on pushes/PRs, weekly to catch toolchain drift,
+# and allow manual dispatch for debugging.
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+# Minimum permissions: this workflow only reads code.
+permissions:
+  contents: read
+
+env:
+  # Harness overwrites active-fixture.json for each test case
+  # before invoking `act push`. Defaults to simple.json when missing.
+  ACTIVE_FIXTURE: active-fixture.json
+
+jobs:
+  test:
+    name: Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $result = Invoke-Pester -Path ./MatrixGenerator.Tests.ps1 -PassThru -Output Detailed
+          if ($result.FailedCount -gt 0) {
+              Write-Error "$($result.FailedCount) Pester test(s) failed."
+              exit 1
+          }
+          Write-Host "===PESTER_PASSED===$($result.PassedCount)==="
+
+  generate:
+    name: Generate matrix
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve active fixture
+        shell: pwsh
+        run: |
+          # Pick active-fixture.json if harness staged one, else fall back.
+          $path = if (Test-Path $env:ACTIVE_FIXTURE) { $env:ACTIVE_FIXTURE } else { 'fixtures/simple.json' }
+          "FIXTURE_PATH=$path" | Out-File -FilePath $env:GITHUB_ENV -Append
+          Write-Host "Using fixture: $path"
+          Get-Content $path
+
+      - name: Run generator
+        shell: pwsh
+        run: |
+          . ./MatrixGenerator.ps1
+          try {
+              $json = Invoke-MatrixGenerator -ConfigPath $env:FIXTURE_PATH
+              Write-Host "===MATRIX_START==="
+              Write-Host $json
+              Write-Host "===MATRIX_END==="
+          } catch {
+              # Surface validation errors as structured output (do not fail the job).
+              Write-Host "===ERROR_START==="
+              Write-Host $_.Exception.Message
+              Write-Host "===ERROR_END==="
+          }

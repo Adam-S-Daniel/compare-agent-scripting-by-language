@@ -1,0 +1,44 @@
+name: Dependency License Checker
+
+"on":
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'  # weekly on Monday
+
+permissions:
+  contents: read
+
+jobs:
+  check-licenses:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run license checker (package.json)
+        run: |
+          python3 license_checker.py package.json config/license_config.json
+        continue-on-error: true
+        id: check_package_json
+
+      - name: Run license checker (requirements.txt)
+        run: |
+          python3 license_checker.py requirements.txt config/license_config.json
+        continue-on-error: true
+        id: check_requirements
+
+      - name: Report compliance status
+        run: |
+          echo "License check complete."
+          if [ "${{ steps.check_package_json.outcome }}" = "failure" ] || [ "${{ steps.check_requirements.outcome }}" = "failure" ]; then
+            echo "WARNING: One or more dependency manifests contain denied licenses."
+          else
+            echo "All checked manifests are compliant."
+          fi

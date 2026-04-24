@@ -1,0 +1,68 @@
+name: Dependency License Checker
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+    inputs:
+      manifest:
+        description: Manifest path to check
+        required: false
+        default: fixtures/mixed.package.json
+
+permissions:
+  contents: read
+
+env:
+  MANIFEST_PATH: ${{ github.event.inputs.manifest || 'fixtures/mixed.package.json' }}
+  CONFIG_PATH: fixtures/license-config.json
+  LICENSES_PATH: fixtures/mock-licenses.json
+
+jobs:
+  test:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+
+      - name: Run bun test
+        run: bun test
+
+  license-check:
+    name: License compliance
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+
+      - name: Run license checker
+        id: check
+        continue-on-error: true
+        run: |
+          set +e
+          bun run src/cli.ts \
+            --manifest "$MANIFEST_PATH" \
+            --config "$CONFIG_PATH" \
+            --licenses "$LICENSES_PATH" | tee report.txt
+          echo "exitcode=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+
+      - name: Summarize outcome
+        run: |
+          echo "Checker exit code: ${{ steps.check.outputs.exitcode }}"
+          echo "--- report.txt ---"
+          cat report.txt
+          echo "--- end ---"

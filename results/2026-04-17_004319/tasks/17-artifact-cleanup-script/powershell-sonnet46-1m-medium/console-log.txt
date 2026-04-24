@@ -1,0 +1,243 @@
+[Assistant] Let me read the project instructions and benchmark guidelines first.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/AGENTS.md"}
+[Result] 1	# Agent Instructions
+2	
+3	All agent-facing instructions live in this file. `CLAUDE.md` contains only a
+4	reference here. If you are a Claude Code agent, you have already loaded this
+5	via `CLAUDE.md`. Other agents: read this file directly.
+6	
+7	## Build and test
+8	
+9	```bash
+10	# Run unit tests (REQUIRED before every PR)
+11	pip install pytest  # if not already installed
+12	python3 -m pytest tests/ -v
+13	
+14	# Validate imports
+15	python3 -c "from runner import main"
+16	python3 -c "from generate_results import generate_results_md"
+17	python3 -c "from test_quality import compute_structural_metrics"
+18	python3 -c "from llm_providers import get_provider"
+19	
+20	# Regenerate all reports
+21	python3 generate_results.py --all
+22	
+23	# Run a benchmark (v4, all tasks/modes/models)
+24	python3 runner.py --tasks 11,12,13,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
+25	
+26	# Evaluate test quality (structural metrics only)
+27	python3 test_quality.py results/2026-04
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/benchmark-instructions-v4.md"}
+[Result] 1	# Benchmark Instructions v4 — GitHub Actions
+2	
+3	**Version**: v4
+4	**Date**: 2026-04-09
+5	**Purpose**: Measure how well Claude Code agents perform GitHub Actions workflow authoring tasks across different language constraints, with trap-awareness guidance from v3 findings.
+6	
+7	**Changes from v3**:
+8	- Added "Common Pitfalls" section with guidance derived from v3 trap analysis (115min, 15.8% of v3 time lost to traps)
+9	- Act container now has pwsh and Pester pre-installed (matching real GitHub runners). Agents still need an install step for workflows that will run on vanilla act, but the benchmarking container already has them.
+10	- GHA workflow addendum expanded with `shell: pwsh` guidance for PowerShell mode
+11	- All other methodology, tasks, modes, and models are unchanged from v3
+12	
+13	## Methodology
+14	
+15	### Overview
+16	
+17	Each task is executed by a Claude Code agent under 4 different language constraints ("modes") and with 2 different models, yielding **8 runs per task**. A
+[Assistant] Let me check the existing `.actrc` and workspace structure.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/.actrc"}
+[Result] 1	-P ubuntu-latest=act-ubuntu-pwsh:latest
+2	
+[Tool: Bash] ls /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/
+[Result] benchmark-instructions-v4.md
+[Assistant] Now I have a clear picture of the project. Let me implement this step by step with TDD. I'll create all files in the right order.
+[Tool: Bash] mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/.github/workflows
+[Result] (Bash completed with no output)
+[Assistant] **Step 1: Write the first failing test (TDD red phase)**
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.Tests.ps1", "content": "#Requ
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Now let me verify the test fails (since the implementation doesn't exist yet), then write the implementation.
+[Tool: Bash] pwsh -Command "Invoke-Pester ./ArtifactCleanup.Tests.ps1 -Tag Unit -Output Minimal" 2>&1 | head -30
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 28 tests in 424ms.[0m
+[95mRunning tests.[0m
+[91m[-] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.Tests.ps1 failed with:[0m
+[91mCommandNotFoundException: The term '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.ps1' is not recognized as a name of a cmdlet, function, script file, or executable program.
+[91mCheck the spelling of the name, or if a path was included, verify that the path is correct and try again.
+[91mat <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.Tests.ps1:10[0m
+[97mTests completed in 825ms[0m
+[97mTests Passed: 0, [0m[91mFailed: 21, [0m[90mSkipped: 0, 
+[Assistant] Tests are failing as expected (red phase). Now write the implementation.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.ps1", "content": "<#\n.SYNOPS
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Now run unit tests to verify the green phase:
+[Tool: Bash] pwsh -Command "Invoke-Pester ./ArtifactCleanup.Tests.ps1 -Tag Unit -Output Normal" 2>&1
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 28 tests in 395ms.[0m
+[95mRunning tests.[0m
+[91m[-] Get-ArtifactDeletionPlan - Max Age Policy.retains all artifacts when none exceed MaxAgeDays[0m[90m 29ms (25ms|3ms)[0m
+[91m PropertyNotFoundException: The property 'Sum' cannot be found on this object. Verify that the property exists.
+[91m at Get-ArtifactDeletionPlan, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.ps1:110
+[91m at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.Tests.ps1:57[0m
+[91m[-] Get-ArtifactDeletionPlan - Max Age Policy.handles an empty artifact list gracefully[0m[90m 13ms (11ms|2ms)[0m
+[91m ParameterBindingValidationException: Cannot bind argument to parameter 'Artifacts' because it is an empty array.
+[
+[Assistant] Two issues: `Measure-Object -Sum` on empty arrays with strict mode, and empty array binding. Let me fix the implementation:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.ps1", "
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.ps1", "
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Also remove the now-stale null check line:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.ps1", "
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.ps1", "offset": 100, "limit":
+[Result] 100	        foreach ($artifact in $candidates) {
+101	            if ($currentSize -le $Policy.MaxTotalSizeBytes) { break }
+102	            [void]$deleteSet.Add($artifact.Name)
+103	            $currentSize -= $artifact.SizeBytes
+104	        }
+105	    }
+106	
+107	    # ── Build final plan ───────────────────────────────────────
+108	    $toDelete = @($Artifacts | Where-Object { $deleteSet.Contains($_.Name) })
+109	    $toRetain = @($Artifacts | Where-Object { -not $deleteSet.Contains($_.Name) })
+110	    $reclMeasure = $toDelete | Measure-Object -Property SizeBytes -Sum
+111	    $reclaimed   = if ($reclMeasure.Count -gt 0 -and $null -ne $reclMeasure.Sum) { [long]$reclMeasure.Sum } else { 0L }
+112	
+113	    return [PSCustomObject]@{
+114	
+115	        ToDelete            = $toDelete
+116	        ToRetain            = $toRetain
+117	        SpaceReclaimedBytes = [long]$reclaimed
+118	        DryRun              = [bool]$DryRun
+119	    }
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.ps1", "
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester ./ArtifactCleanup.Tests.ps1 -Tag Unit -Output Normal" 2>&1
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 28 tests in 347ms.[0m
+[95mRunning tests.[0m
+[91m[-] Workflow Structure Tests.workflow YAML file exists[0m[90m 69ms (64ms|5ms)[0m
+[91m Expected path '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/.github/workflows/artifact-cleanup-script.yml' to exist, but it did not exist.
+[91m at $script:WorkflowFile | Should -Exist, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.Tests.ps1:259
+[91m at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.Tests.ps1:259[0m
+[91m[-] Workflow Structure Tests.workflow has push trigger[0m[90m 11ms (9ms|2ms)[0m
+[91m ItemNotFoundException: Cannot find path '/home/p
+[Assistant] All logic tests pass now. The 7 failures are workflow structure tests — need the YAML file. Let me create it:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/.github/workflows/artifact-cleanup-script.yml
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/.github/workflows/artifact-cleanup-script.yml (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/.github/workflows/artifact-cleanup-script.yml
+[Result] (Bash completed with no output)
+[Assistant] actionlint passes cleanly. Now run unit tests again to verify all pass:
+[Tool: Bash] pwsh -Command "Invoke-Pester ./ArtifactCleanup.Tests.ps1 -Tag Unit -Output Normal" 2>&1
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 28 tests in 320ms.[0m
+[95mRunning tests.[0m
+[32m[+] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.Tests.ps1[0m[90m 1.46s (617ms|573ms)[0m
+[97mTests completed in 1.49s[0m
+[32mTests Passed: 21, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[37mNotRun: 7[0m
+[Assistant] All 21 unit tests pass. Now run the integration test (single `act push` run):
+[Tool: Bash] pwsh -Command "Invoke-Pester ./ArtifactCleanup.Tests.ps1 -Tag Integration -Output Normal" 2>&1
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 28 tests in 343ms.[0m
+[95mRunning tests.[0m
+[91m[-] Act Integration Tests.act exits with code 0[0m[90m 208ms (175ms|33ms)[0m
+[91m Expected 0, because act output:
+[91m time="2026-04-20T04:44:38-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[91m [Artifact Cleanup Script/artifact-cleanup] ⭐ Run Set up job
+[91m [Artifact Cleanup Script/artifact-cleanup] 🚀  Start image=act-ubuntu-pwsh:latest
+[91m [Artifact Cleanup Script/artifact-cleanup]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=true
+[91m [Artifact Cleanup Script/artifact-cleanup] using DockerAuthConfig authentication for docker pull
+[91m [Artifact Cleanup Script/artifact-cleanup] Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+[91m [Artifact Cleanup Script/artifact-cleanup]   
+[Assistant] The `act-ubuntu-pwsh:latest` image isn't available. Let me check what's available:
+[Tool: Bash] docker images | grep -E "act|ubuntu|pwsh" 2>&1
+[Result] WARNING: This output is designed for human readability. For machine-readable output, please use --format.
+act-ubuntu-pwsh:latest                    413e38f474cc       2.55GB          640MB        
+catthehacker/ubuntu:act-22.04             754f20d9a184       2.15GB          531MB        
+catthehacker/ubuntu:act-latest            f58445a786d6       2.26GB          559MB        
+catthehacker/ubuntu:full-latest           9327301aea27       67.7GB         16.8GB   U    
+ghcr.io/catthehacker/ubuntu:act-latest    bd77095e8123       1.99GB          284MB        
+ghcr.io/catthehacker/ubuntu:full-latest   9327301aea27       67.7GB         16.8GB   U    
+ghcr.io/catthehacker/ubuntu:pwsh-latest   5c3a44a9d687       2.59GB          384MB        
+ubuntu:latest                             c4a8d5503dfb        119MB         31.7MB
+[Assistant] The image exists locally but act is force-pulling. I need to add `--pull=false` to the actrc:
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/.actrc"}
+[Result] 1	-P ubuntu-latest=act-ubuntu-pwsh:latest
+2	
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/.actrc", "content": "-P ubuntu-latest=act-ubu
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/.actrc has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -Command "Invoke-Pester ./ArtifactCleanup.Tests.ps1 -Tag Integration -Output Normal" 2>&1
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 28 tests in 361ms.[0m
+[95mRunning tests.[0m
+[32m[+] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.Tests.ps1[0m[90m 11.24s (10.36s|561ms)[0m
+[97mTests completed in 11.29s[0m
+[32mTests Passed: 7, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[37mNotRun: 21[0m
+[Assistant] All integration tests pass. Let me now run the full test suite (unit + integration):
+[Tool: Bash] pwsh -Command "Invoke-Pester ./ArtifactCleanup.Tests.ps1 -Output Normal" 2>&1
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 28 tests in 393ms.[0m
+[95mRunning tests.[0m
+[32m[+] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.Tests.ps1[0m[90m 11.72s (10.6s|788ms)[0m
+[97mTests completed in 11.75s[0m
+[32mTests Passed: 28, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Assistant] All 28 tests pass. Let me verify `act-result.txt` exists and check its content:
+[Tool: Bash] ls -la act-result.txt && head -30 act-result.txt
+[Result] -rw-r--r-- 1 passp passp 11894 Apr 20 04:45 act-result.txt
+============================================================
+TEST CASE: Max-Age Retention Policy (single act run)
+Timestamp: 2026-04-20T04:44:39.1014036-04:00
+time="2026-04-20T04:44:38-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Artifact Cleanup Script/artifact-cleanup] ⭐ Run Set up job
+[Artifact Cleanup Script/artifact-cleanup] 🚀  Start image=act-ubuntu-pwsh:latest
+[Artifact Cleanup Script/artifact-cleanup]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=true
+[Artifact Cleanup Script/artifact-cleanup] using DockerAuthConfig authentication for docker pull
+[Artifact Cleanup Script/artifact-cleanup] Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+[Artifact Cleanup Script/artifact-cleanup]   ❌  Failure - Set up job
+[Artifact Cleanup Script/artifact-cle
+[Tool: Bash] grep -n "CLEANUP_RESULT\|Job succeeded\|Job failed\|deleted=\|retained=\|DRY-RUN" act-result.txt
+[Result] 11:[Artifact Cleanup Script/artifact-cleanup] 🏁  Job failed
+41:[Artifact Cleanup Script/artifact-cleanup]   | Mode: DRY-RUN (no changes will be made)
+52:[Artifact Cleanup Script/artifact-cleanup]   | CLEANUP_RESULT: deleted=1 retained=2 reclaimed_bytes=314572800
+69:[Artifact Cleanup Script/artifact-cleanup] 🏁  Job succeeded
+98:[Artifact Cleanup Script/artifact-cleanup]   | Mode: DRY-RUN (no changes will be made)
+109:[Artifact Cleanup Script/artifact-cleanup]   | CLEANUP_RESULT: deleted=1 retained=2 reclaimed_bytes=314572800
+126:[Artifact Cleanup Script/artifact-cleanup] 🏁  Job succeeded
+[Assistant] `act-result.txt` shows the expected exact values: `CLEANUP_RESULT: deleted=1 retained=2 reclaimed_bytes=314572800` and `Job succeeded`. The file has 2 runs recorded (first was the failed pull attempt before `.actrc` fix, second is the successful run).
+
+Final verification — confirm all tests pass with `Invoke-Pester` and `act-result.txt` exists:
+[Tool: Bash] ls -la && pwsh -Command "Invoke-Pester ./ArtifactCleanup.Tests.ps1 -Output Minimal" 2>&1
+[Result] total 92
+drwxr-xr-x  5 passp passp  4096 Apr 20 04:45 .
+drwxr-xr-x 34 passp passp  4096 Apr 20 04:38 ..
+-rw-r--r--  1 passp passp    53 Apr 20 04:45 .actrc
+drwxr-xr-x  2 passp passp  4096 Apr 20 04:38 .claude
+drwxr-xr-x  7 passp passp  4096 Apr 20 04:38 .git
+drwxr-xr-x  3 passp passp  4096 Apr 20 04:41 .github
+-rw-r--r--  1 passp passp 17288 Apr 20 04:42 ArtifactCleanup.Tests.ps1
+-rw-r--r--  1 passp passp  9862 Apr 20 04:43 ArtifactCleanup.ps1
+-rw-r--r--  1 passp passp 11894 Apr 20 04:45 act-result.txt
+-rw-r--r--  1 passp passp 21843 Apr 17 00:12 benchmark-instructions-v4.md
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 28 tests in 354ms.[0m
+[95mRunning tests.[0m
+[32m[+] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.Tests.ps1[0m[90m 12.67s (11.63s|729ms)[0m
+[97mTests completed in 12.7s[0m
+[32mTests Passed: 28, [0m[90mFailed: 0, [0m[90mSkipped:
+[Assistant] All 28 tests pass and `act-result.txt` is present. Here's a summary of what was built:
+
+**Files created:**
+- `ArtifactCleanup.ps1` — main script with `Get-ArtifactDeletionPlan` (three policies: max-age, keep-latest-N, max-total-size) and `Format-CleanupPlan` (outputs machine-readable `CLEANUP_RESULT:` marker). CLI entry point reads JSON fixture files, supports `-DryRun`.
+- `ArtifactCleanup.Tests.ps1` — 28 Pester tests across 6 describe blocks: unit tests for each policy, combined policies, output formatting, workflow structure validation (including actionlint), and act integration test that runs `act push --rm` and asserts exact values (`deleted=1 retained=2 reclaimed_bytes=314572800`).
+- `.github/workflows/artifact-cleanup-script.yml` — workflow with push/PR/schedule/dispatch triggers; dynamically creates fixtures (relative dates, fixed sizes), runs cleanup in dry-run, then runs Pester unit tests inside Docker. Passes actionlint.
+- `act-result.txt` — required artifact capturing act output with `Job succeeded` and exact `CLEANUP_RESULT:` values.

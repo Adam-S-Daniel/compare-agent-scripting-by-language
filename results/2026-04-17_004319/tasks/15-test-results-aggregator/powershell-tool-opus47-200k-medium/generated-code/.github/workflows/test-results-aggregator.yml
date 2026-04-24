@@ -1,0 +1,54 @@
+name: Test Results Aggregator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  aggregate:
+    name: Aggregate test results
+    runs-on: ubuntu-latest
+    env:
+      AGG_OUTPUT: summary.md
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Pester unit tests
+        shell: pwsh
+        run: |
+          $res = Invoke-Pester -Path ./TestResultsAggregator.Tests.ps1 -PassThru -Output Detailed
+          if ($res.FailedCount -gt 0) { exit 1 }
+
+      - name: Aggregate test results
+        shell: pwsh
+        run: |
+          # If an input/ directory is provided (by the act harness), use that.
+          # Otherwise fall back to the committed fixtures/ directory so the
+          # workflow is demonstrable on its own.
+          $dir = if (Test-Path ./input) { './input' } else { './fixtures' }
+          $files = Get-ChildItem -Path $dir -Include *.xml,*.json -File -Recurse |
+                   ForEach-Object FullName
+          if (-not $files) { throw "No test result files found in $dir" }
+          ./aggregate.ps1 -InputPaths $files -OutputPath $env:AGG_OUTPUT
+
+      - name: Append summary to job summary
+        if: always() && env.GITHUB_STEP_SUMMARY != ''
+        shell: pwsh
+        run: |
+          if (Test-Path $env:AGG_OUTPUT) {
+            Get-Content $env:AGG_OUTPUT -Raw | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+          }
+
+      - name: Print summary to log
+        shell: pwsh
+        run: |
+          Write-Host '--- SUMMARY BEGIN ---'
+          Get-Content $env:AGG_OUTPUT -Raw | Write-Host
+          Write-Host '--- SUMMARY END ---'

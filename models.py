@@ -14,8 +14,10 @@
 MODELS = {
     "opus": "claude-opus-4-6",
     "sonnet": "claude-sonnet-4-6",
+    "opus47-200k": "claude-opus-4-7",
     "opus47-1m": "claude-opus-4-7[1m]",
     "opus46-1m": "claude-opus-4-6[1m]",
+    "sonnet46-1m": "claude-sonnet-4-6[1m]",
     "haiku45": "claude-haiku-4-5",
 }
 
@@ -36,5 +38,6 @@ COST_PER_MTOK = {
     "claude-opus-4-6[1m]":   {"input": 5.0, "output": 25.0, "cache_read": 0.50, "cache_write": 6.25},
     "claude-opus-4-7[1m]":   {"input": 5.0, "output": 25.0, "cache_read": 0.50, "cache_write": 6.25},
     "claude-sonnet-4-6":     {"input": 3.0, "output": 15.0, "cache_read": 0.30, "cache_write": 3.75},
+    "claude-sonnet-4-6[1m]": {"input": 3.0, "output": 15.0, "cache_read": 0.30, "cache_write": 3.75},
     "claude-haiku-4-5":      {"input": 1.0, "output": 5.0,  "cache_read": 0.10, "cache_write": 1.25},
 }

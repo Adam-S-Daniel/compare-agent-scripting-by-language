@@ -1,0 +1,48 @@
+name: Artifact Cleanup
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Run without deleting
+        default: 'true'
+        required: false
+  schedule:
+    - cron: '0 3 * * *'
+
+permissions:
+  contents: read
+
+env:
+  FIXTURE_PATH: fixtures/default.json
+
+jobs:
+  test:
+    name: Pester tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Pester
+        shell: pwsh
+        run: |
+          $r = Invoke-Pester -Path ./Cleanup.Tests.ps1 -PassThru -Output Detailed
+          if ($r.FailedCount -gt 0) { throw "Pester failures: $($r.FailedCount)" }
+
+  cleanup:
+    name: Run cleanup (dry run)
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Execute cleanup plan
+        shell: pwsh
+        env:
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'true' }}
+        run: |
+          $dry = ($env:DRY_RUN -eq 'true')
+          if ($dry) {
+            ./Invoke-Cleanup.ps1 -FixturePath $env:FIXTURE_PATH -DryRun
+          } else {
+            ./Invoke-Cleanup.ps1 -FixturePath $env:FIXTURE_PATH
+          }

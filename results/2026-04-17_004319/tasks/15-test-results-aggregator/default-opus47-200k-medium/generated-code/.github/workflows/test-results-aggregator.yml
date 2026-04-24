@@ -1,0 +1,73 @@
+name: Test Results Aggregator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unit-tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install pytest
+        run: python -m pip install --quiet pytest
+
+      - name: Run pytest
+        run: python -m pytest tests/ -v
+
+  aggregate:
+    name: Aggregate test results
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    env:
+      FIXTURES_DIR: fixtures-input
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Choose fixtures directory
+        id: fixtures
+        shell: bash
+        run: |
+          if [ -d "$FIXTURES_DIR" ]; then
+            echo "dir=$FIXTURES_DIR" >> "$GITHUB_OUTPUT"
+          else
+            echo "dir=tests/fixtures" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run aggregator
+        id: agg
+        shell: bash
+        env:
+          DIR: ${{ steps.fixtures.outputs.dir }}
+        run: |
+          set -euo pipefail
+          python aggregator.py "$DIR"/run*.xml "$DIR"/run*.json \
+            --output summary.md 2> aggregator.log
+          cat aggregator.log
+          # Emit the summary line to job output so downstream steps can assert on it.
+          grep '^\[aggregator\]' aggregator.log | tee -a "$GITHUB_STEP_SUMMARY"
+          {
+            echo ''
+            echo '---'
+            cat summary.md
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Show summary
+        shell: bash
+        run: cat summary.md

@@ -1,0 +1,64 @@
+name: PR Label Assigner
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      config:
+        description: "Path to label-rule config"
+        required: false
+        default: "fixtures/labels.conf"
+      files:
+        description: "Path to changed-file list"
+        required: false
+        default: "fixtures/files.txt"
+
+permissions:
+  contents: read
+
+env:
+  CONFIG_PATH: ${{ github.event.inputs.config || 'fixtures/labels.conf' }}
+  FILES_PATH:  ${{ github.event.inputs.files  || 'fixtures/files.txt' }}
+
+jobs:
+  assign-labels:
+    name: Assign labels from changed-file list
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install bats and shellcheck
+        run: |
+          set -euo pipefail
+          if ! command -v bats >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq bats shellcheck
+          fi
+          bats --version
+          shellcheck --version | head -2
+
+      - name: Validate script syntax
+        run: |
+          set -euo pipefail
+          bash -n pr-label-assigner.sh
+          shellcheck pr-label-assigner.sh
+
+      - name: Run unit tests (bats)
+        run: bats tests/pr-label-assigner.bats
+
+      - name: Assign labels for fixture
+        id: assign
+        run: |
+          set -euo pipefail
+          chmod +x pr-label-assigner.sh
+          echo "----- LABELS BEGIN -----"
+          ./pr-label-assigner.sh \
+            --config "$CONFIG_PATH" \
+            --files  "$FILES_PATH"
+          echo "----- LABELS END -----"
+
+      - name: Summary
+        run: |
+          echo "Workflow completed for fixture: $FILES_PATH (config: $CONFIG_PATH)"

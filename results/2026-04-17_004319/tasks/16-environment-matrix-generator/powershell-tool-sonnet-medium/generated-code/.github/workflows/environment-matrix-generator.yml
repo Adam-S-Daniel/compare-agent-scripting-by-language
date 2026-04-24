@@ -1,0 +1,73 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ensure Pester is installed
+        shell: pwsh
+        run: |
+          if (-not (Get-Module -ListAvailable -Name Pester)) {
+            Install-Module Pester -Force -Scope CurrentUser -SkipPublisherCheck
+          }
+          Import-Module Pester
+
+      - name: Run Pester unit tests
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = './New-EnvironmentMatrix.Tests.ps1'
+          $config.Output.Verbosity = 'Detailed'
+          $config.Run.Exit = $true
+          Invoke-Pester -Configuration $config
+
+      - name: Generate basic matrix (2 OS x 2 node = 4 combinations)
+        shell: pwsh
+        run: |
+          $json = ./New-EnvironmentMatrix.ps1 -ConfigFile ./fixtures/basic.json
+          $matrix = $json | ConvertFrom-Json
+          Write-Host "BASIC_COMPUTED_COUNT=$($matrix.computed_count)"
+          Write-Host "BASIC_MAX_PARALLEL=$($matrix.strategy.'max-parallel')"
+          Write-Host "BASIC_FAIL_FAST=$($matrix.strategy.'fail-fast')"
+          Write-Host "BASIC_OS_COUNT=$($matrix.strategy.matrix.os.Count)"
+          Write-Host "BASIC_NODE_COUNT=$($matrix.strategy.matrix.node.Count)"
+          Write-Host "--- BASIC MATRIX JSON ---"
+          Write-Host $json
+
+      - name: Generate matrix with include/exclude rules (3 OS x 2 python = 6 base)
+        shell: pwsh
+        run: |
+          $json = ./New-EnvironmentMatrix.ps1 -ConfigFile ./fixtures/with-rules.json
+          $matrix = $json | ConvertFrom-Json
+          Write-Host "RULES_COMPUTED_COUNT=$($matrix.computed_count)"
+          Write-Host "RULES_MAX_PARALLEL=$($matrix.strategy.'max-parallel')"
+          Write-Host "RULES_FAIL_FAST=$($matrix.strategy.'fail-fast')"
+          Write-Host "RULES_INCLUDE_COUNT=$($matrix.strategy.matrix.include.Count)"
+          Write-Host "RULES_EXCLUDE_COUNT=$($matrix.strategy.matrix.exclude.Count)"
+          Write-Host "--- RULES MATRIX JSON ---"
+          Write-Host $json
+
+      - name: Validate that oversized matrix is rejected
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          try {
+            ./New-EnvironmentMatrix.ps1 -ConfigFile ./fixtures/too-large.json
+            Write-Error "Expected an error for an oversized matrix but none was thrown"
+            exit 1
+          } catch {
+            Write-Host "TOO_LARGE_VALIDATION=PASS"
+            Write-Host "Error message: $_"
+          }

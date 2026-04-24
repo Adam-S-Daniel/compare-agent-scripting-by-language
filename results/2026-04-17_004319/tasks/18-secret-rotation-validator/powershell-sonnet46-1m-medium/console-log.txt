@@ -1,0 +1,267 @@
+[Assistant] I'll start by reading the project instructions and understanding the workspace structure.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/AGENTS.md"}
+[Result] 1	# Agent Instructions
+2	
+3	All agent-facing instructions live in this file. `CLAUDE.md` contains only a
+4	reference here. If you are a Claude Code agent, you have already loaded this
+5	via `CLAUDE.md`. Other agents: read this file directly.
+6	
+7	## Build and test
+8	
+9	```bash
+10	# Run unit tests (REQUIRED before every PR)
+11	pip install pytest  # if not already installed
+12	python3 -m pytest tests/ -v
+13	
+14	# Validate imports
+15	python3 -c "from runner import main"
+16	python3 -c "from generate_results import generate_results_md"
+17	python3 -c "from test_quality import compute_structural_metrics"
+18	python3 -c "from llm_providers import get_provider"
+19	
+20	# Regenerate all reports
+21	python3 generate_results.py --all
+22	
+23	# Run a benchmark (v4, all tasks/modes/models)
+24	python3 runner.py --tasks 11,12,13,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
+25	
+26	# Evaluate test quality (structural metrics only)
+27	python3 test_quality.py results/2026-04
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/powershell-sonnet46-1m-medium"}
+[Result ERROR] EISDIR: illegal operation on a directory, read '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/powershell-sonnet46-1m-medium'
+[Tool: Bash] ls /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/powershell-sonnet46-1m-medium/
+[Result] benchmark-instructions-v4.md
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/benchmark-instructions-v4.md"}
+[Result] 1	# Benchmark Instructions v4 — GitHub Actions
+2	
+3	**Version**: v4
+4	**Date**: 2026-04-09
+5	**Purpose**: Measure how well Claude Code agents perform GitHub Actions workflow authoring tasks across different language constraints, with trap-awareness guidance from v3 findings.
+6	
+7	**Changes from v3**:
+8	- Added "Common Pitfalls" section with guidance derived from v3 trap analysis (115min, 15.8% of v3 time lost to traps)
+9	- Act container now has pwsh and Pester pre-installed (matching real GitHub runners). Agents still need an install step for workflows that will run on vanilla act, but the benchmarking container already has them.
+10	- GHA workflow addendum expanded with `shell: pwsh` guidance for PowerShell mode
+11	- All other methodology, tasks, modes, and models are unchanged from v3
+12	
+13	## Methodology
+14	
+15	### Overview
+16	
+17	Each task is executed by a Claude Code agent under 4 different language constraints ("modes") and with 2 different models, yielding **8 runs per task**. A
+[Assistant] Let me check the `.actrc` file and set up the workspace structure.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/powershell-sonnet46-1m-medium/.actrc"}
+[Result] 1	-P ubuntu-latest=act-ubuntu-pwsh:latest
+2	
+[Tool: Bash] which act && which actionlint && pwsh --version 2>/dev/null || true
+[Result] /home/passp/.local/bin/act
+/home/passp/.local/bin/actionlint
+PowerShell 7.6.0
+[Tool: Bash] docker image inspect act-ubuntu-pwsh:latest --format "exists" 2>/dev/null || echo "not found"
+[Result] exists
+[Tool: Bash] pwsh -c "Get-Module Pester -ListAvailable | Select-Object Version, Path"
+[Result] [32;1mVersion[0m[32;1m Path[0m
+[32;1m-------[0m [32;1m----[0m
+5.7.1   /home/passp/.local/share/powershell/Modules/Pester/5.7.1/Pester.psd1
+[Assistant] The custom `act-ubuntu-pwsh:latest` image exists. Now I'll follow TDD — writing the first failing test before implementing anything.
+[Tool: Bash] mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/powershell-sonnet46-1m-medium/fixtures
+mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/powershell-sonnet46-1m-medium/.github/workflows
+[Result] (Bash completed with no output)
+[Assistant] Now writing the first failing test (TDD red phase):
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/powershell-sonnet46-1m-medium/SecretRotationValidator.Tests.ps1", "conten
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/powershell-sonnet46-1m-medium/SecretRotationValidator.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Now verify the tests fail (TDD red):
+[Tool: Bash] pwsh -c "Invoke-Pester -Path ./SecretRotationValidator.Tests.ps1 -Tag 'Unit' -Output Normal 2>&1 | head -30"
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 32 tests in 332ms.[0m
+[95mRunning tests.[0m
+[91m[-] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/powershell-sonnet46-1m-medium/SecretRotationValidator.Tests.ps1 failed with:[0m
+[91mCommandNotFoundException: The term '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/powershell-sonnet46-1m-medium/SecretRotationValidator.ps1' is not recognized as a name of a cmdlet, function, script file, or executable program.
+[91mCheck the spelling of the name, or if a path was included, verify that the path is correct and try again.
+[91mat <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/powershell-sonnet46-1m-medium/SecretRotationValidator.Tests.ps1:11[0m
+[97mTests completed in 787ms[0m
+[97mTests Passed: 0, [0m[91mFai
+[Assistant] Tests fail as expected. Now writing the fixture data and implementation to make them pass (TDD green):
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/powershell-sonnet46-1m-medium/fixtures/secrets-config.json", "content": "
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/powershell-sonnet46-1m-medium/fixtures/secrets-config.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/powershell-sonnet46-1m-medium/SecretRotationValidator.ps1", "content": "<
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/powershell-sonnet46-1m-medium/SecretRotationValidator.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Now run unit tests to verify the green phase (excluding integration and workflow tests first):
+[Tool: Bash] pwsh -c "Invoke-Pester -Path ./SecretRotationValidator.Tests.ps1 -ExcludeTag 'Integration' -Output Normal 2>&1"
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 32 tests in 347ms.[0m
+[95mRunning tests.[0m
+[91m[-] Get-SecretStatus.returns the correct ExpiryDate[0m[90m 111ms (107ms|4ms)[0m
+[91m Expected strings to be the same, but they were different.
+[91m String lengths are both 10.
+[91m Strings differ at index 8.
+[91m Expected: '2024-07-29'
+[91m But was:  '2024-07-30'
+[91m            --------^
+[91m at $result.ExpiryDate | Should -Be "2024-07-29", /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/powershell-sonnet46-1m-medium/SecretRotationValidator.Tests.ps1:76
+[91m at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/powershell-sonnet46-1m-medium/SecretRotationValidator.Tests.ps1:76[0m
+[31;1mGet-Content: [0m/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/power
+[Assistant] Two issues: the ExpiryDate test has a wrong expected value (May 1 + 90 days = July 30, not 29), and the workflow file needs to be created. Fix the test first:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/powershell-sonnet46-1m-medium/SecretRotationValidat
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/powershell-sonnet46-1m-medium/SecretRotationValidator.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Now create the workflow file:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/powershell-sonnet46-1m-medium/.github/workflows/secret-rotation-validator
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/powershell-sonnet46-1m-medium/.github/workflows/secret-rotation-validator.yml (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/secret-rotation-validator.yml 2>&1
+[Result] (Bash completed with no output)
+[Assistant] actionlint passes. Now run all unit tests:
+[Tool: Bash] pwsh -c "Invoke-Pester -Path ./SecretRotationValidator.Tests.ps1 -ExcludeTag 'Integration' -Output Normal 2>&1"
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 32 tests in 347ms.[0m
+[95mRunning tests.[0m
+[32m[+] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/powershell-sonnet46-1m-medium/SecretRotationValidator.Tests.ps1[0m[90m 1.54s (684ms|562ms)[0m
+[97mTests completed in 1.57s[0m
+[32mTests Passed: 31, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[37mNotRun: 1[0m
+[Assistant] All 31 unit tests pass. Now run the full integration test (which triggers `act push --rm`):
+[Tool: Bash] pwsh -c "Invoke-Pester -Path ./SecretRotationValidator.Tests.ps1 -Tag 'Integration' -Output Detailed 2>&1" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 32 tests in 360ms.[0m
+[95mFilter 'Tag' set to ('Integration').[0m
+[95mFilters selected 1 tests to run.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/powershell-sonnet46-1m-medium/SecretRotationValidator.Tests.ps1'[0m
+[92mDescribing Act integration[0m
+[91m  [-] runs act push and validates exact expected output[0m[90m 1.14s (1.09s|44ms)[0m
+[91m   Expected 0, because act must exit 0 for a passing workflow, but got 1.
+[91m   at $actExitCode | Should -Be 0 -Because "act must exit 0 for a passing workflow", /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/powershell-sonnet46-1m-medium/SecretRotationValidator.Tests.ps1:317
+[91m   at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/works
+[Tool: Bash] cat act-result.txt 2>/dev/null || echo "File not found"
+[Result] ======================================================================
+TEST CASE: Default fixture secrets-config.json (ref date 2024-06-01)
+======================================================================
+time="2026-04-20T05:48:26-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Secret Rotation Validator/validate-secrets] ⭐ Run Set up job
+[Secret Rotation Validator/validate-secrets] 🚀  Start image=act-ubuntu-pwsh:latest
+[Secret Rotation Validator/validate-secrets]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=true
+[Secret Rotation Validator/validate-secrets] using DockerAuthConfig authentication for docker pull
+[Secret Rotation Validator/validate-secrets] Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+[Secret Rotation Validator/validate-secrets]   ❌  Failure - Set up job
+[Secret Rotation Validator/valid
+[Assistant] The issue is `forcePull=true` — act tries to pull the local image from Docker Hub. Need to add `--pull=false`:
+[Tool: Bash] act --help 2>&1 | grep -E "pull|no-pull" | head -10
+[Result]       --action-offline-mode                               If action contents exists, it will not be fetch and pull again. If turn on this, will turn off force pull
+  -p, --pull                                              pull docker image(s) even if already present (default true)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/powershell-sonnet46-1m-medium/SecretRotationValidat
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/powershell-sonnet46-1m-medium/SecretRotationValidator.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -c "Invoke-Pester -Path ./SecretRotationValidator.Tests.ps1 -Tag 'Integration' -Output Detailed 2>&1"
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 32 tests in 287ms.[0m
+[95mFilter 'Tag' set to ('Integration').[0m
+[95mFilters selected 1 tests to run.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/powershell-sonnet46-1m-medium/SecretRotationValidator.Tests.ps1'[0m
+[92mDescribing Act integration[0m
+[91m  [-] runs act push and validates exact expected output[0m[90m 11.43s (11.38s|52ms)[0m
+[91m   Expected 0, because act must exit 0 for a passing workflow, but got 1.
+[91m   at $actExitCode | Should -Be 0 -Because "act must exit 0 for a passing workflow", /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/powershell-sonnet46-1m-medium/SecretRotationValidator.Tests.ps1:318
+[91m   at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/wor
+[Tool: Bash] cat act-result.txt
+[Result] ======================================================================
+TEST CASE: Default fixture secrets-config.json (ref date 2024-06-01)
+======================================================================
+time="2026-04-20T05:48:26-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Secret Rotation Validator/validate-secrets] ⭐ Run Set up job
+[Secret Rotation Validator/validate-secrets] 🚀  Start image=act-ubuntu-pwsh:latest
+[Secret Rotation Validator/validate-secrets]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=true
+[Secret Rotation Validator/validate-secrets] using DockerAuthConfig authentication for docker pull
+[Secret Rotation Validator/validate-secrets] Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+[Secret Rotation Validator/validate-secrets]   ❌  Failure - Set up job
+[Secret Rotation Validator/valid
+[Assistant] `actionlint` isn't in the container. Let me check the custom image:
+[Tool: Bash] docker run --rm act-ubuntu-pwsh:latest which actionlint 2>&1 || echo "not found"
+[Result] not found
+[Tool: Bash] docker run --rm act-ubuntu-pwsh:latest ls /usr/local/bin/ 2>&1 | head -20
+[Result] python
+[Tool: Bash] docker run --rm --network=host act-ubuntu-pwsh:latest curl -s --max-time 5 https://github.com 2>&1 | head -5 || echo "no network"
+[Result] (Bash completed with no output)
+[Tool: Bash] docker run --rm --network=host act-ubuntu-pwsh:latest curl -s -o /dev/null -w "%{http_code}" --max-time 5 https://github.com 2>&1 || echo "failed"
+[Result] 200
+[Tool: Bash] actionlint --version 2>&1
+[Result] 1.7.12
+installed by downloading from release page
+built with go1.26.1 compiler for linux/amd64
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/powershell-sonnet46-1m-medium/.github/workflows/sec
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/powershell-sonnet46-1m-medium/.github/workflows/secret-rotation-validator.yml has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/secret-rotation-validator.yml 2>&1
+[Result] (Bash completed with no output)
+[Assistant] actionlint still passes. Now run the integration test again:
+[Tool: Bash] pwsh -c "Invoke-Pester -Path ./SecretRotationValidator.Tests.ps1 -Tag 'Integration' -Output Detailed 2>&1"
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 32 tests in 336ms.[0m
+[95mFilter 'Tag' set to ('Integration').[0m
+[95mFilters selected 1 tests to run.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/powershell-sonnet46-1m-medium/SecretRotationValidator.Tests.ps1'[0m
+[92mDescribing Act integration[0m
+[32m  [+] runs act push and validates exact expected output[0m[90m 15.8s (15.74s|61ms)[0m
+[97mTests completed in 16.68s[0m
+[32mTests Passed: 1, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[37mNotRun: 31[0m
+[Assistant] Integration test passes. Now run the complete test suite to confirm all 32 tests pass:
+[Tool: Bash] pwsh -c "Invoke-Pester -Path ./SecretRotationValidator.Tests.ps1 -Output Normal 2>&1"
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 32 tests in 355ms.[0m
+[95mRunning tests.[0m
+[32m[+] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/powershell-sonnet46-1m-medium/SecretRotationValidator.Tests.ps1[0m[90m 17.19s (16.26s|638ms)[0m
+[97mTests completed in 17.23s[0m
+[32mTests Passed: 32, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Assistant] All 32 tests pass. Let me verify `act-result.txt` exists and the final workflow output is correct:
+[Tool: Bash] tail -60 act-result.txt
+[Result] [Secret Rotation Validator/validate-secrets]   |         "RotationDays": 30,
+[Secret Rotation Validator/validate-secrets]   |         "RequiredBy": [
+[Secret Rotation Validator/validate-secrets]   |           "api-gateway",
+[Secret Rotation Validator/validate-secrets]   |           "auth-service"
+[Secret Rotation Validator/validate-secrets]   |         ],
+[Secret Rotation Validator/validate-secrets]   |         "Status": "expired"
+[Secret Rotation Validator/validate-secrets]   |       }
+[Secret Rotation Validator/validate-secrets]   |     ],
+[Secret Rotation Validator/validate-secrets]   |     "warning": [
+[Secret Rotation Validator/validate-secrets]   |       {
+[Secret Rotation Validator/validate-secrets]   |         "Name": "STAGING_TOKEN",
+[Secret Rotation Validator/validate-secrets]   |         "LastRotated": "2024-05-08",
+[Secret Rotation Validator/validate-secrets]   |         "ExpiryDate": "2024-06-07",
+[Secret Rotation Validator/validate-secrets]   |         "DaysUntilExpiry": 
+[Assistant] All tests pass and `act-result.txt` contains the full workflow output with "Job succeeded". Let me do a final summary check:
+[Tool: Bash] ls -la *.ps1 fixtures/ .github/workflows/ act-result.txt 2>&1
+[Result] -rw-r--r-- 1 passp passp 13864 Apr 20 05:49 SecretRotationValidator.Tests.ps1
+-rw-r--r-- 1 passp passp  8693 Apr 20 05:47 SecretRotationValidator.ps1
+-rw-r--r-- 1 passp passp 31328 Apr 20 05:51 act-result.txt
+
+.github/workflows/:
+total 12
+drwxr-xr-x 2 passp passp 4096 Apr 20 05:50 .
+drwxr-xr-x 3 passp passp 4096 Apr 20 05:45 ..
+-rw-r--r-- 1 passp passp 3155 Apr 20 05:50 secret-rotation-validator.yml
+
+fixtures/:
+total 12
+drwxr-xr-x 2 passp passp 4096 Apr 20 05:46 .
+drwxr-xr-x 6 passp passp 4096 Apr 20 05:49 ..
+-rw-r--r-- 1 passp passp  624 Apr 20 05:46 secrets-config.json
+[Assistant] Everything is complete. Here's a summary of what was built:
+
+**Files created:**
+- `SecretRotationValidator.ps1` — main script with `Get-SecretStatus`, `Format-MarkdownReport`, `Format-JsonReport`, and `Invoke-SecretRotationValidator` functions; guards main execution when dot-sourced by Pester
+- `SecretRotationValidator.Tests.ps1` — 32 Pester tests across 6 Describe blocks (TDD red → green)
+- `fixtures/secrets-config.json` — 4 secrets: 1 expired (PROD_API_KEY), 1 warning (STAGING_TOKEN), 2 ok (DEV_SECRET, BACKUP_KEY) with reference date 2024-06-01
+- `.github/workflows/secret-rotation-validator.yml` — workflow with push/PR/schedule/workflow_dispatch triggers, installs actionlint, runs unit tests, validates exact counts
+- `act-result.txt` — act output artifact with "Job succeeded" and exact validated values (Expired: 1, Warning: 1, OK: 2, VALIDATION PASSED)
+
+**Test results:** 32/32 pass — 31 unit tests (Get-SecretStatus, markdown/JSON formatters, end-to-end, workflow YAML structure, actionlint) + 1 act integration test asserting exact expected values through the pipeline.

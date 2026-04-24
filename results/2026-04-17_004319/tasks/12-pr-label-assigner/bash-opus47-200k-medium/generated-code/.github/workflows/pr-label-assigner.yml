@@ -1,0 +1,60 @@
+---
+name: PR Label Assigner
+
+# Runs on pushes/PRs and can be triggered manually. We also expose a
+# schedule trigger so maintainers can dry-run the script daily.
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-run:
+    name: Test script and assign labels
+    runs-on: ubuntu-latest
+    env:
+      RULES_FILE: fixtures/rules.conf
+      FILES_FILE: fixtures/files.txt
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install bats (bash test framework)
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v bats >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y --no-install-recommends bats
+          fi
+          bats --version
+
+      - name: Validate script syntax
+        shell: bash
+        run: bash -n pr-label-assigner.sh
+
+      - name: Run bats unit tests
+        shell: bash
+        run: bats tests/pr-label-assigner.bats
+
+      - name: Assign labels for fixture PR
+        id: assign
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "--- Rules ---"
+          cat "$RULES_FILE"
+          echo "--- Changed files ---"
+          cat "$FILES_FILE"
+          echo "--- Assigned labels ---"
+          labels=$(bash pr-label-assigner.sh "$RULES_FILE" "$FILES_FILE")
+          echo "$labels"
+          # Emit a single-line marker we can grep for from the test harness.
+          joined=$(printf '%s' "$labels" | paste -sd, -)
+          echo "LABELS_RESULT=${joined}"

@@ -1,0 +1,48 @@
+name: Dependency License Checker
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  license-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          echo "${HOME}/.bun/bin" >> "$GITHUB_PATH"
+
+      - name: Check licenses - all approved fixture
+        run: |
+          echo "=== CHECK: package-all-approved ==="
+          "${HOME}/.bun/bin/bun" run src/licenseChecker.ts \
+            --config fixtures/config.json \
+            --manifest fixtures/package-all-approved.json
+
+      - name: Check licenses - fixture with denied dependency
+        run: |
+          echo "=== CHECK: package-with-denied ==="
+          "${HOME}/.bun/bin/bun" run src/licenseChecker.ts \
+            --config fixtures/config.json \
+            --manifest fixtures/package-with-denied.json || true
+
+      - name: Check licenses - fixture with unknown dependency
+        run: |
+          echo "=== CHECK: package-with-unknown ==="
+          "${HOME}/.bun/bin/bun" run src/licenseChecker.ts \
+            --config fixtures/config.json \
+            --manifest fixtures/package-with-unknown.json
+
+      - name: Run unit tests
+        run: |
+          "${HOME}/.bun/bin/bun" test tests/unit.test.ts

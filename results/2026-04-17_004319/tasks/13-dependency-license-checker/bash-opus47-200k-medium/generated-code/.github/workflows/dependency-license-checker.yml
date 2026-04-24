@@ -1,0 +1,85 @@
+name: Dependency License Checker
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      manifest_path:
+        description: "Path to manifest file (relative to repo root)"
+        required: false
+        default: "fixtures/sample-manifest.txt"
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+
+env:
+  LICENSES_DB: fixtures/licenses.csv
+  ALLOW_LIST: fixtures/allow.txt
+  DENY_LIST: fixtures/deny.txt
+
+jobs:
+  bats-tests:
+    name: Run bats tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install bats and shellcheck
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v bats >/dev/null 2>&1; then
+            sudo apt-get update -y
+            sudo apt-get install -y bats shellcheck
+          fi
+
+      - name: Validate script syntax
+        shell: bash
+        run: |
+          bash -n license-check.sh
+          shellcheck license-check.sh
+
+      - name: Run bats test suite
+        shell: bash
+        run: bats tests/license-check.bats
+
+  compliance-check:
+    name: Run license compliance check
+    runs-on: ubuntu-latest
+    needs: bats-tests
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run license checker against manifest
+        id: check
+        shell: bash
+        env:
+          MANIFEST: ${{ github.event.inputs.manifest_path || 'fixtures/sample-manifest.txt' }}
+        run: |
+          set -euo pipefail
+          chmod +x license-check.sh
+          # Allow this step to succeed even if denied/unknown entries exist,
+          # so we can still inspect the report in CI.
+          set +e
+          ./license-check.sh \
+            --manifest "$MANIFEST" \
+            --licenses "$LICENSES_DB" \
+            --allow "$ALLOW_LIST" \
+            --deny "$DENY_LIST" | tee compliance-report.txt
+          echo "exit_code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+          set -e
+
+      - name: Report result
+        shell: bash
+        env:
+          CHECK_EXIT: ${{ steps.check.outputs.exit_code }}
+        run: |
+          echo "License check exit code: ${CHECK_EXIT}"
+          if [ "${CHECK_EXIT}" = "0" ]; then
+            echo "All dependencies passed license compliance."
+          else
+            echo "One or more dependencies failed license compliance."
+          fi

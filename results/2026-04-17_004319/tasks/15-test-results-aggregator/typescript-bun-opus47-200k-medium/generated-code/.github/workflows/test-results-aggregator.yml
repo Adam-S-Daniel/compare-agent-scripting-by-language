@@ -1,0 +1,39 @@
+name: Test Results Aggregator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * *"
+
+permissions:
+  contents: read
+
+env:
+  FIXTURES_DIR: fixtures
+
+jobs:
+  aggregate:
+    name: Aggregate test results
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile || bun install
+
+      - name: Run aggregator unit tests
+        run: bun test aggregator.test.ts
+
+      - name: Run aggregator on fixtures
+        run: bun run cli.ts "${FIXTURES_DIR}" summary.md
+
+      - name: Print generated summary
+        run: cat summary.md

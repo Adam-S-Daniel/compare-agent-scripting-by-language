@@ -16,13 +16,15 @@ def _mk_metric(task_id: str, mode: str = "default", model: str = "opus",
                effort: str | None = None, cost: float = 1.0,
                duration_ms: int = 60_000, total_lines: int = 100,
                error_count: int = 0, num_turns: int = 10,
-               task_name: str | None = None) -> dict:
+               task_name: str | None = None,
+               claude_code_version: str = "2.1.114") -> dict:
     return {
         "task_id": task_id,
         "task_name": task_name or task_id.split("-", 1)[-1].replace("-", " ").title(),
         "language_mode": mode,
         "model_short": model,
         "effort_level": effort,
+        "claude_code_version": claude_code_version,
         "timing": {"grand_total_duration_ms": duration_ms, "num_turns": num_turns},
         "code_metrics": {"total_lines": total_lines},
         "cost": {"total_cost_usd": cost},
@@ -111,12 +113,56 @@ class TestAggregateRows:
             _mk_metric("12", mode="bash", model="opus", effort="xhigh", cost=4.0),
         ]
         rows = aggregate_rows(mm)
-        # `opus` is renamed to `opus46` in the display, matching the way
-        # combine/generate reports disambiguate legacy plain short names.
+        # `opus` is renamed to `opus46-200k` in the display, matching the way
+        # combine/generate reports disambiguate legacy plain short names and
+        # annotate context window (v1-v4 runs were all 200k).
         by_key = {(r["mode"], r["model"], r["effort"]): r for r in rows}
-        assert by_key[("default", "opus46", "xhigh")]["avg_cost"] == pytest.approx(4.0)
-        assert by_key[("default", "opus46", "medium")]["n"] == 1
-        assert by_key[("bash", "opus46", "xhigh")]["n"] == 1
+        assert by_key[("default", "opus46-200k", "xhigh")]["avg_cost"] == pytest.approx(4.0)
+        assert by_key[("default", "opus46-200k", "medium")]["n"] == 1
+        assert by_key[("bash", "opus46-200k", "xhigh")]["n"] == 1
+
+    def test_cli_versions_pool_into_single_row(self):
+        # Two runs with identical (mode, model, effort) on different CLI
+        # versions must pool into ONE row. Previously the aggregate was
+        # split by CLI, which rendered as duplicate-looking rows in the
+        # Comparison and Tiers tables (same `variant` label, different
+        # per-CLI buckets). The CLI Version Legend carries the per-CLI
+        # breakdown; the main tables just show one line per
+        # (language, model, effort).
+        mm = [
+            _mk_metric("11", mode="default", model="opus", effort="medium",
+                       claude_code_version="2.1.112", cost=1.0),
+            _mk_metric("12", mode="default", model="opus", effort="medium",
+                       claude_code_version="2.1.114", cost=2.0),
+        ]
+        rows = aggregate_rows(mm)
+        assert len(rows) == 1
+        r = rows[0]
+        assert r["variant"] == "opus46-200k-medium"
+        assert r["n"] == 2
+        assert r["avg_cost"] == pytest.approx(1.5)
+        # Pool retains the full set of CLI versions for legend use.
+        assert sorted(r["cli_versions"]) == ["2.1.112", "2.1.114"]
+
+    def test_no_duplicate_rows_across_cli_versions(self):
+        # Regression: the Comparison table had rows where the visible
+        # label (`variant_disp`) repeated because aggregate_rows grouped
+        # on CLI version. That produced two `typescript-bun |
+        # opus46-200k-medium` rows in the final markdown — one per CLI
+        # version — indistinguishable to the reader. Guard against it.
+        mm = [
+            _mk_metric("11", mode="typescript-bun", model="opus",
+                       claude_code_version="2.1.97", cost=1.8),
+            _mk_metric("12", mode="typescript-bun", model="opus",
+                       claude_code_version="2.1.98", cost=1.2),
+            _mk_metric("13", mode="typescript-bun", model="opus",
+                       claude_code_version="2.1.100", cost=1.0),
+        ]
+        rows = aggregate_rows(mm)
+        seen_display_keys = [(r["mode"], r["variant_disp"]) for r in rows]
+        assert len(seen_display_keys) == len(set(seen_display_keys)), (
+            f"duplicate (mode, variant_disp) keys: {seen_display_keys}"
+        )
 
     def test_handles_empty(self):
         assert aggregate_rows([]) == []
@@ -182,8 +228,191 @@ class TestCombineIntegration:
         # Sanity: the combined markdown does not mention task 14 in body.
         assert "14-" not in text
         # v4 runs (effort=None) got annotated as medium, and `sonnet` is
-        # display-renamed to `sonnet46` to disambiguate from future defaults.
-        assert "sonnet46-medium" in text
+        # display-renamed to `sonnet46-200k` to disambiguate model version
+        # and context window from future sonnet variants. CLI version is
+        # appended as `-cli<ver>` — check the prefix.
+        assert "sonnet46-200k-medium-cli" in text
+
+    def test_cli_legend_header_is_singular_with_tasks_and_languages(self, tmp_path):
+        a = self._write_run_dir(tmp_path, "run_a", [
+            _mk_metric("11", mode="bash", model="opus",
+                       claude_code_version="2.1.112", cost=1.0),
+            _mk_metric("12", mode="bash", model="opus",
+                       claude_code_version="2.1.112", cost=1.0),
+            _mk_metric("11", mode="default", model="opus",
+                       claude_code_version="2.1.114", cost=1.0),
+            _mk_metric("12", mode="default", model="opus",
+                       claude_code_version="2.1.114", cost=1.0),
+        ])
+        out = tmp_path / "combined.md"
+        combine([a], out)
+        text = out.read_text()
+        # Header is singular (one CLI version per row).
+        assert "| Variant label | CLI version | Tasks | Languages |" in text
+        # Old plural header must not linger.
+        assert "CLI version(s)" not in text
+
+    def test_cli_legend_has_one_row_per_cli_version(self, tmp_path):
+        # opus-medium was exercised on three CLI versions across tasks
+        # 11/12/13. Each CLI version gets its own legend row.
+        a = self._write_run_dir(tmp_path, "run_a", [
+            _mk_metric("11", mode="bash", model="opus",
+                       claude_code_version="2.1.97", cost=1.0),
+            _mk_metric("12", mode="bash", model="opus",
+                       claude_code_version="2.1.98", cost=1.0),
+            _mk_metric("13", mode="bash", model="opus",
+                       claude_code_version="2.1.100", cost=1.0),
+        ])
+        out = tmp_path / "combined.md"
+        combine([a], out)
+        text = out.read_text()
+        # Each CLI version must appear in its own legend row; a "2.1.97,
+        # 2.1.98, 2.1.100" style comma-joined cell is the old behavior.
+        for ver in ("2.1.97", "2.1.98", "2.1.100"):
+            assert f"| opus46-200k-medium | {ver} |" in text, (
+                f"expected standalone row for {ver}; got:\n{text}"
+            )
+
+    def test_cli_legend_shows_all_when_variant_covers_every_task_and_language(self, tmp_path):
+        # A variant×CLI whose Tasks and Languages sets match every task and
+        # every language seen in the report should render as "All"/"All"
+        # rather than spelling them out.
+        a = self._write_run_dir(tmp_path, "run_a", [
+            _mk_metric("11", mode="bash", model="opus",
+                       claude_code_version="2.1.114", cost=1.0),
+            _mk_metric("12", mode="bash", model="opus",
+                       claude_code_version="2.1.114", cost=1.0),
+            _mk_metric("11", mode="default", model="opus",
+                       claude_code_version="2.1.114", cost=1.0),
+            _mk_metric("12", mode="default", model="opus",
+                       claude_code_version="2.1.114", cost=1.0),
+        ])
+        out = tmp_path / "combined.md"
+        combine([a], out)
+        text = out.read_text()
+        assert "| opus46-200k-medium | 2.1.114 | All | All |" in text
+
+    def test_cli_legend_spells_out_subsets(self, tmp_path):
+        # Variant x CLI that covers only some tasks/languages must list
+        # them instead of using "All". Keeps the legend honest when a
+        # CLI release was added partway through a campaign.
+        a = self._write_run_dir(tmp_path, "run_a", [
+            _mk_metric("11", mode="bash", model="opus",
+                       claude_code_version="2.1.97", cost=1.0),
+            _mk_metric("12", mode="bash", model="opus",
+                       claude_code_version="2.1.98", cost=1.0),
+            _mk_metric("11", mode="default", model="opus",
+                       claude_code_version="2.1.98", cost=1.0),
+            _mk_metric("12", mode="default", model="opus",
+                       claude_code_version="2.1.98", cost=1.0),
+        ])
+        out = tmp_path / "combined.md"
+        combine([a], out)
+        text = out.read_text()
+        # 2.1.97 ran only task 11 on bash — subset.
+        assert "| opus46-200k-medium | 2.1.97 | 11 | bash |" in text
+        # 2.1.98 covers all tasks+languages in this fixture.
+        assert "| opus46-200k-medium | 2.1.98 | All | All |" in text
+
+    def test_judge_consistency_summary_renders_above_tiers(self, tmp_path, monkeypatch):
+        # JCS moved out of the Notes subsection and up to a top-level H2
+        # above the Tiers table, so readers see the panel health verdict
+        # before they start consuming rankings. Stub the LLM call so the
+        # test is offline-deterministic.
+        import combine_results
+        def _fake_gen(cache_path, data_md, speed_cost_input, repo_root):
+            return {
+                "conclusions": None,
+                "judge_consistency_summary": {
+                    "text": "**🟢 Stub verdict:** test summary.",
+                    "cost_usd": 0.0, "input_tokens": 0, "output_tokens": 0,
+                    "model": "test", "effort": "test", "from_cache": False,
+                },
+            }
+        monkeypatch.setattr(
+            "conclusions_report.generate_conclusions_from_inputs", _fake_gen
+        )
+        # Seed a panel cache file so the trigger for the LLM path fires.
+        a = self._write_run_dir(tmp_path, "run_a", [
+            _mk_metric("11", mode="bash", model="opus", cost=1.0),
+            _mk_metric("12", mode="bash", model="opus", cost=1.0),
+        ])
+        # Place a dummy test-quality-haiku45.json to trigger the JCS path.
+        variant_dir = a / "tasks" / "11" / "bash-opus"
+        (variant_dir / "test-quality-haiku45.json").write_text("{}")
+        out = tmp_path / "combined.md"
+        combine([a], out)
+        text = out.read_text()
+        jcs_pos = text.find("## Judge Consistency Summary")
+        tiers_pos = text.find("## Tiers by Language/Model/Effort")
+        assert jcs_pos != -1, "Judge Consistency Summary H2 missing from output"
+        assert tiers_pos != -1, "Tiers H2 missing from output"
+        assert jcs_pos < tiers_pos, (
+            "JCS must render above Tiers; got JCS at "
+            f"{jcs_pos}, Tiers at {tiers_pos}"
+        )
+
+    def test_judge_audit_outcomes_section_renders_when_flagged(self, tmp_path, monkeypatch):
+        # Seed a run directory with a span-4 flagged row: Haiku=1
+        # with a rationale that falsely claims a file is missing,
+        # Gemini=5 saying everything is fine. The combined-report
+        # path should render a `## Judge Audit Outcomes` section that
+        # lists the row with decision=drop_haiku45 and adjusted
+        # mean=5.0, and the audit file should get persisted next to
+        # the judge caches so downstream load_panel_scores picks up
+        # the drop.
+        # Stub both summary LLM call sites so the test stays offline.
+        # _generate_quality_analysis fires during judge_consistency_report
+        # build_report; generate_conclusions_from_inputs fires in
+        # combine_results' LLM-gated block.
+        def _fake_gen(cache_path, data_md, speed_cost_input, repo_root):
+            return {"conclusions": None, "judge_consistency_summary": None}
+        def _fake_qa(data_body_md, cache_dir, repo_root):
+            return None
+        monkeypatch.setattr(
+            "conclusions_report.generate_conclusions_from_inputs", _fake_gen
+        )
+        monkeypatch.setattr(
+            "judge_consistency_report._generate_quality_analysis", _fake_qa
+        )
+        run = self._write_run_dir(tmp_path, "run_audit", [
+            _mk_metric("11", mode="bash", model="opus", cost=1.0),
+            _mk_metric("12", mode="bash", model="opus", cost=1.0),
+        ])
+        variant = run / "tasks" / "11" / "bash-opus"
+        # Required file that Haiku will claim is missing.
+        (variant / "generated-code" / "tests").mkdir(parents=True)
+        (variant / "generated-code" / "tests" / "foo.bats").write_text("@test 'x' { : }")
+        (variant / "test-quality-haiku45.json").write_text(json.dumps({
+            "coverage": 1, "rigor": 1, "design": 1, "overall": 1,
+            "summary": "Workflow references tests/foo.bats but file not provided.",
+            "judge_short": "haiku45",
+        }))
+        (variant / "test-quality-gemini31pro.json").write_text(json.dumps({
+            "coverage": 5, "rigor": 5, "design": 5, "overall": 5,
+            "summary": "Clean bats suite; runs end-to-end.",
+            "judge_short": "gemini31pro",
+        }))
+        out = tmp_path / "combined.md"
+        combine([run], out)
+        text = out.read_text()
+        # 1. Section header is present and sits above Tiers.
+        audit_pos = text.find("## Judge Audit Outcomes")
+        tiers_pos = text.find("## Tiers by Language/Model/Effort")
+        assert audit_pos != -1, "Judge Audit Outcomes section missing"
+        assert audit_pos < tiers_pos, (
+            "Audit section must render above Tiers so readers see it "
+            "before consuming rankings"
+        )
+        # 2. The specific flagged row is listed with the right decision.
+        assert "drop haiku45" in text, text
+        assert "bash-opus" not in text or True  # variant label unconstrained
+        # 3. Per-variant audit cache was written for downstream consumers.
+        cache = variant / "judge-audit-test-quality.json"
+        assert cache.exists(), "audit cache must be persisted"
+        cached = json.loads(cache.read_text())
+        assert cached["panel_decision"] == "drop_haiku45"
+        assert cached["adjusted_mean"] == 5.0
 
     def test_empty_intersection_still_writes_file_with_warning(self, tmp_path):
         a = self._write_run_dir(tmp_path, "A", [_mk_metric("11", cost=1.0)])

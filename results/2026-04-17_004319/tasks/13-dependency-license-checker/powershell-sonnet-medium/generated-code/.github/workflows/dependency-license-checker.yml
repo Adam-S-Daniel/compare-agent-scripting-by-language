@@ -1,0 +1,97 @@
+name: Dependency License Checker
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Run Pester Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Pester
+        shell: pwsh
+        run: |
+          Install-Module -Name Pester -Force -Scope CurrentUser -MinimumVersion 5.0.0
+
+      - name: Run tests
+        shell: pwsh
+        run: |
+          $result = Invoke-Pester -Path './DependencyLicenseChecker.Tests.ps1' -Output Detailed -PassThru
+          if ($result.FailedCount -gt 0) {
+            Write-Error "Pester: $($result.FailedCount) test(s) failed"
+            exit 1
+          }
+          Write-Host "PESTER_PASSED=$($result.PassedCount)"
+          Write-Host "PESTER_FAILED=$($result.FailedCount)"
+
+  license-check-npm:
+    name: License Check (npm)
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Pester
+        shell: pwsh
+        run: |
+          Install-Module -Name Pester -Force -Scope CurrentUser -MinimumVersion 5.0.0
+
+      - name: Check npm dependencies
+        shell: pwsh
+        run: |
+          . ./DependencyLicenseChecker.ps1
+          $report = Invoke-LicenseCheck `
+            -ManifestPath  "./fixtures/package.json" `
+            -ConfigPath    "./fixtures/license-config.json" `
+            -MockDatabasePath "./fixtures/mock-licenses.json"
+          Write-Host (Format-ComplianceReport -Report $report)
+          Write-Host "LICENSE_CHECK_STATUS=$($report.Compliant)"
+          Write-Host "TOTAL=$($report.Summary.Total)"
+          Write-Host "APPROVED=$($report.Summary.Approved)"
+          Write-Host "DENIED=$($report.Summary.Denied)"
+          Write-Host "UNKNOWN=$($report.Summary.Unknown)"
+          if (-not $report.Compliant) {
+            Write-Error "License compliance check failed: denied dependencies found"
+            exit 1
+          }
+
+  license-check-pip:
+    name: License Check (pip)
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Pester
+        shell: pwsh
+        run: |
+          Install-Module -Name Pester -Force -Scope CurrentUser -MinimumVersion 5.0.0
+
+      - name: Check pip dependencies
+        shell: pwsh
+        run: |
+          . ./DependencyLicenseChecker.ps1
+          $report = Invoke-LicenseCheck `
+            -ManifestPath  "./fixtures/requirements.txt" `
+            -ConfigPath    "./fixtures/license-config.json" `
+            -MockDatabasePath "./fixtures/mock-licenses.json"
+          Write-Host (Format-ComplianceReport -Report $report)
+          Write-Host "LICENSE_CHECK_STATUS=$($report.Compliant)"
+          Write-Host "TOTAL=$($report.Summary.Total)"
+          Write-Host "APPROVED=$($report.Summary.Approved)"
+          Write-Host "DENIED=$($report.Summary.Denied)"
+          Write-Host "UNKNOWN=$($report.Summary.Unknown)"

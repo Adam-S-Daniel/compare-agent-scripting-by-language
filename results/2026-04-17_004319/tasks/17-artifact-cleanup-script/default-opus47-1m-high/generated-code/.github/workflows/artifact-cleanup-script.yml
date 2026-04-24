@@ -1,0 +1,51 @@
+name: Artifact Cleanup
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    # Daily at 03:00 UTC — the cleanup is idempotent so a cron trigger is safe.
+    - cron: '0 3 * * *'
+
+permissions:
+  contents: read
+
+env:
+  REFERENCE_NOW: '2026-04-19T12:00:00Z'
+
+jobs:
+  unit-tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Show Python version
+        run: python3 --version
+      - name: Install pytest
+        run: python3 -m pip install --quiet --break-system-packages pytest
+      - name: Run pytest
+        run: python3 -m pytest tests/ -v
+
+  scenario:
+    name: Scenario execution
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Show scenario fixture
+        run: |
+          echo "Artifacts:" && cat fixtures/current/artifacts.json
+          echo "Policy:" && cat fixtures/current/policy.json
+          echo "Expected:" && cat fixtures/current/expected.json
+      - name: Run cleanup planner (dry run)
+        run: |
+          python3 cleanup.py \
+            --artifacts fixtures/current/artifacts.json \
+            --policy fixtures/current/policy.json \
+            --now "${REFERENCE_NOW}" \
+            --output plan.json \
+            --dry-run
+      - name: Assert plan matches expected summary
+        run: python3 assert_plan.py plan.json fixtures/current/expected.json

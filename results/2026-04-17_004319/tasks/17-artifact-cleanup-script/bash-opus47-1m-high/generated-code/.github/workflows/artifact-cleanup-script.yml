@@ -1,0 +1,123 @@
+name: Artifact Cleanup Script
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+    inputs:
+      max_age_days:
+        description: "Delete artifacts older than N days"
+        required: false
+        default: "30"
+      keep_latest:
+        description: "Keep N newest artifacts per workflow"
+        required: false
+        default: "3"
+
+permissions:
+  contents: read
+
+env:
+  NOW_OVERRIDE: "2026-04-19"
+  FIXTURE: fixtures/sample-artifacts.json
+
+jobs:
+  lint-and-test:
+    name: Lint and unit-test cleanup script
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install toolchain (bats, shellcheck, jq)
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v bats >/dev/null 2>&1; then
+            # bats-core is packaged on Ubuntu as `bats`.
+            if command -v apt-get >/dev/null 2>&1; then
+              sudo apt-get update -qq
+              sudo apt-get install -y --no-install-recommends bats shellcheck jq
+            fi
+          fi
+          bats --version
+          shellcheck --version | head -2
+          jq --version
+
+      - name: Syntax check (bash -n)
+        shell: bash
+        run: bash -n artifact-cleanup.sh
+
+      - name: Shellcheck
+        shell: bash
+        run: shellcheck artifact-cleanup.sh
+
+      - name: Run bats unit tests
+        shell: bash
+        run: bats tests/cleanup.bats
+
+  run-cleanup:
+    name: Apply retention policies to fixture
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install jq
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v jq >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y --no-install-recommends jq
+          fi
+
+      - name: Validate fixture exists
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f "$FIXTURE"
+          jq -e 'type == "array"' "$FIXTURE" >/dev/null
+
+      - name: Dry-run cleanup (max-age 30, keep-latest 1)
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./artifact-cleanup.sh \
+            --input "$FIXTURE" \
+            --max-age-days 30 \
+            --keep-latest 1 \
+            --now "$NOW_OVERRIDE" \
+            --dry-run
+
+      - name: Machine-readable plan (JSON)
+        id: plan
+        shell: bash
+        run: |
+          set -euo pipefail
+          plan="$(./artifact-cleanup.sh \
+            --input "$FIXTURE" \
+            --max-age-days 30 \
+            --keep-latest 1 \
+            --now "$NOW_OVERRIDE" \
+            --dry-run --json)"
+
+          deleted=$(echo "$plan" | jq '.summary.deleted_count')
+          retained=$(echo "$plan" | jq '.summary.retained_count')
+          reclaimed=$(echo "$plan" | jq '.summary.space_reclaimed_bytes')
+
+          # Deterministic machine-readable markers for the act harness.
+          echo "RESULT_DELETED=${deleted}"
+          echo "RESULT_RETAINED=${retained}"
+          echo "RESULT_RECLAIMED=${reclaimed}"
+
+          # Also verify invariant: reclaimed == sum(deleted sizes).
+          sum=$(echo "$plan" | jq '[.plan[] | select(.action=="DELETE") | .size_bytes] | add // 0')
+          if [ "$reclaimed" != "$sum" ]; then
+            echo "INVARIANT_FAILED: reclaimed($reclaimed) != sum($sum)" >&2
+            exit 1
+          fi
+          echo "INVARIANT_OK=1"

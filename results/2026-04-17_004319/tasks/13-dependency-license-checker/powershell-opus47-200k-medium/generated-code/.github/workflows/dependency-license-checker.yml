@@ -1,0 +1,51 @@
+name: Dependency License Checker
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  license-check:
+    runs-on: ubuntu-latest
+    env:
+      MANIFEST_PATH: manifest.json
+      CONFIG_PATH: config.json
+      LICENSE_MAP_PATH: license-map.json
+      REPORT_PATH: report.json
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Pester unit tests
+        shell: pwsh
+        run: |
+          $cfg = New-PesterConfiguration
+          $cfg.Run.Path = 'tests/LicenseChecker.Tests.ps1'
+          $cfg.Run.Exit = $true
+          $cfg.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $cfg
+
+      - name: Run license compliance check
+        shell: pwsh
+        run: |
+          ./check-licenses.ps1 `
+            -ManifestPath   $env:MANIFEST_PATH `
+            -ConfigPath     $env:CONFIG_PATH `
+            -LicenseMapPath $env:LICENSE_MAP_PATH `
+            -OutputPath     $env:REPORT_PATH `
+            -ReportOnly
+
+      - name: Emit parseable summary
+        shell: pwsh
+        run: |
+          $r = Get-Content $env:REPORT_PATH -Raw | ConvertFrom-Json
+          "SUMMARY total=$($r.summary.total) approved=$($r.summary.approved) denied=$($r.summary.denied) unknown=$($r.summary.unknown)"
+          foreach ($d in $r.dependencies) {
+            "DEP name=$($d.name) version=$($d.version) license=$($d.license) status=$($d.status)"
+          }

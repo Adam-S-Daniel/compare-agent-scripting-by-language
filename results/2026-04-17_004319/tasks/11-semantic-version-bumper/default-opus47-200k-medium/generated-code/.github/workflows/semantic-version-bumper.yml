@@ -1,0 +1,53 @@
+name: semantic-version-bumper
+
+# Triggers: regular CI on push/PR, plus manual dispatch so the harness
+# can drive the workflow with different commit fixtures.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: "Name of fixture file under fixtures/"
+        required: false
+        default: "feat-commits.txt"
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-bump:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show node version
+        run: node --version
+
+      - name: Run unit tests
+        run: node --test test/bump.test.js
+
+      - name: Prepare working copy of version file
+        env:
+          INPUT_FIXTURE: ${{ github.event.inputs.fixture }}
+        run: |
+          # Resolve fixture precedence: workflow_dispatch input -> env FIXTURE_FILE -> default.
+          FIXTURE="${INPUT_FIXTURE:-${FIXTURE_FILE:-feat-commits.txt}}"
+          echo "Using fixture: ${FIXTURE}"
+          cp package.json /tmp/pkg.json
+          cp "fixtures/${FIXTURE}" /tmp/commits.txt
+
+      - name: Run bumper against fixture
+        id: bump
+        run: |
+          node bump.js \
+            --version-file /tmp/pkg.json \
+            --commits /tmp/commits.txt \
+            --changelog /tmp/CHANGELOG.md | tee /tmp/bump-output.txt
+          NEW_VERSION=$(grep '^NEW_VERSION=' /tmp/bump-output.txt | cut -d= -f2)
+          echo "new_version=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "BUMPED_TO=${NEW_VERSION}"
+
+      - name: Show changelog
+        run: cat /tmp/CHANGELOG.md

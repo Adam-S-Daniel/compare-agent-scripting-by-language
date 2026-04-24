@@ -40,6 +40,10 @@ Each benchmark version defines a set of scripting tasks, language modes, and mod
 | `models.py` | Model IDs and token pricing ([single source of truth](models.py)) |
 | `runner.py` | Benchmark harness — invokes `claude -p`, collects metrics |
 | `generate_results.py` | Generates `results.md` reports from metrics; updates this README |
+| `combine_results.py` | Combines metrics from multiple run directories into a single comparison report (with pooled aggregates + per-CLI legend) |
+| `judge_consistency_report.py` | Produces the `Judge Consistency` panel summary from per-judge score caches |
+| `conclusions_report.py` | Produces the combined Conclusions prose using a max-effort Claude CLI call |
+| `results/analysis/` | Dated follow-up analyses (e.g. judge-disagreement spot-checks) referenced from the main reports |
 | `test_quality.py` | Test quality evaluation — structural metrics + LLM-as-judge |
 | `llm_providers.py` | Pluggable LLM provider abstraction for evaluation tasks |
 | `hooks/syntax-check.py` | PostToolUse hook for syntax/lint checking (v3+) |
@@ -59,7 +63,7 @@ Each benchmark version defines a set of scripting tasks, language modes, and mod
 <!-- BEGIN BENCHMARK RUNS -->
 | Run | Version | Runs | Cost | Results |
 |-----|---------|------|------|---------|
-| **2026-04-17_004319** (latest) | [v4](benchmark-instructions-v4.md) | 105/35 | $167.01 | [results.md](results/2026-04-17_004319/results.md) |
+| **2026-04-17_004319** (latest) | [v4](benchmark-instructions-v4.md) | 245/50 | $360.74 | [results.md](results/2026-04-17_004319/results.md) |
 | 2026-04-09_152435 | [v4](benchmark-instructions-v4.md) | 64/64 | $86.90 | [results.md](results/2026-04-09_152435/results.md) |
 | 2026-04-08_192624 | [v3](benchmark-instructions-v3.md) | 64/64 | $85.10 | [results.md](results/2026-04-08_192624/results.md) |
 | 2026-04-07_225702 | [v2](benchmark-instructions-v2.md) | 111/144 | $75.38 | [results.md](results/2026-04-07_225702/results.md) |

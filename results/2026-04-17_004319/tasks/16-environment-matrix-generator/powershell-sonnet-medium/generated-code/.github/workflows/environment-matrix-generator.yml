@@ -1,0 +1,89 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Run Pester Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Pester
+        shell: pwsh
+        run: |
+          if (-not (Get-Module -ListAvailable -Name Pester | Where-Object { $_.Version -ge '5.0' })) {
+            Install-Module -Name Pester -MinimumVersion 5.0 -Force -Scope CurrentUser
+          }
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = "New-BuildMatrix.Tests.ps1"
+          $config.Output.Verbosity = "Detailed"
+          $config.Run.Exit = $true
+          Invoke-Pester -Configuration $config
+
+  generate-matrix:
+    name: Generate Example Matrix
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Pester
+        shell: pwsh
+        run: |
+          if (-not (Get-Module -ListAvailable -Name Pester | Where-Object { $_.Version -ge '5.0' })) {
+            Install-Module -Name Pester -MinimumVersion 5.0 -Force -Scope CurrentUser
+          }
+
+      - name: Generate example build matrix
+        shell: pwsh
+        run: |
+          . ./New-BuildMatrix.ps1
+
+          $config = @{
+            os           = @("ubuntu-latest", "windows-latest", "macos-latest")
+            language     = @("3.10", "3.11", "3.12")
+            features     = @("default", "experimental")
+            fail_fast    = $false
+            max_parallel = 6
+            max_size     = 256
+            include      = @(@{ os = "ubuntu-latest"; language = "3.9"; features = "legacy" })
+            exclude      = @(@{ os = "windows-latest"; language = "3.10"; features = "experimental" })
+          }
+
+          $matrix = New-BuildMatrix -Config $config
+          Write-Host "Generated matrix:"
+          Write-Host $matrix
+          $matrix | Out-File -FilePath matrix-output.json
+          Write-Host "Matrix written to matrix-output.json"
+
+      - name: Validate matrix output
+        shell: pwsh
+        run: |
+          $raw = Get-Content matrix-output.json -Raw
+          $parsed = $raw | ConvertFrom-Json
+          Write-Host "OS options: $($parsed.matrix.os -join ', ')"
+          Write-Host "Language versions: $($parsed.matrix.language -join ', ')"
+          Write-Host "Features: $($parsed.matrix.features -join ', ')"
+          Write-Host "fail-fast: $($parsed.'fail-fast')"
+          Write-Host "max-parallel: $($parsed.'max-parallel')"
+
+          if ($parsed.matrix.os.Count -ne 3) { throw "Expected 3 OS options" }
+          if ($parsed.matrix.language.Count -ne 3) { throw "Expected 3 language versions" }
+          Write-Host "Validation passed."

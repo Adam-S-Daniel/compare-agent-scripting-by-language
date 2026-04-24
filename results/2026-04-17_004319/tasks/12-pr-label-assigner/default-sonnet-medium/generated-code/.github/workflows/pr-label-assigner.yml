@@ -1,0 +1,139 @@
+name: PR Label Assigner
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      changed_files:
+        description: "Space-separated list of changed file paths for testing"
+        required: false
+        default: "docs/README.md src/api/routes.py app.test.js"
+
+permissions:
+  contents: read
+
+jobs:
+  # ── Unit tests ─────────────────────────────────────────────────────────────
+  unit-tests:
+    name: Run unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pytest
+        run: pip install pytest --break-system-packages
+        shell: bash
+
+      - name: Run pytest
+        run: python3 -m pytest tests/test_label_assigner.py -v
+        shell: bash
+
+  # ── Fixture-based integration tests ────────────────────────────────────────
+  integration-tests:
+    name: Integration tests with fixtures
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pytest
+        run: pip install pytest --break-system-packages
+        shell: bash
+
+      # Test case 1: docs file -> documentation label
+      - name: "Fixture 1: docs file"
+        run: |
+          OUTPUT=$(python3 label_assigner.py --config config/labels.json \
+            --files docs/README.md --output lines)
+          echo "OUTPUT: $OUTPUT"
+          echo "$OUTPUT" | grep -qx "documentation" || (echo "FAIL: expected 'documentation'" && exit 1)
+          echo "PASS: fixture 1"
+        shell: bash
+
+      # Test case 2: API source file -> api + source labels
+      - name: "Fixture 2: API source file"
+        run: |
+          OUTPUT=$(python3 label_assigner.py --config config/labels.json \
+            --files src/api/routes.py --output lines)
+          echo "OUTPUT: $OUTPUT"
+          echo "$OUTPUT" | grep -qx "api" || (echo "FAIL: expected 'api'" && exit 1)
+          echo "$OUTPUT" | grep -qx "source" || (echo "FAIL: expected 'source'" && exit 1)
+          echo "PASS: fixture 2"
+        shell: bash
+
+      # Test case 3: test file -> tests label
+      - name: "Fixture 3: test file"
+        run: |
+          OUTPUT=$(python3 label_assigner.py --config config/labels.json \
+            --files app.test.js --output lines)
+          echo "OUTPUT: $OUTPUT"
+          echo "$OUTPUT" | grep -qx "tests" || (echo "FAIL: expected 'tests'" && exit 1)
+          echo "PASS: fixture 3"
+        shell: bash
+
+      # Test case 4: mixed PR -> multiple labels
+      - name: "Fixture 4: mixed PR changed files"
+        run: |
+          OUTPUT=$(python3 label_assigner.py --config config/labels.json \
+            --files docs/installation.md src/api/endpoints.py src/utils/helper.test.js src/models/user.py \
+            --output lines)
+          echo "OUTPUT: $OUTPUT"
+          echo "$OUTPUT" | grep -qx "documentation" || (echo "FAIL: expected 'documentation'" && exit 1)
+          echo "$OUTPUT" | grep -qx "api"           || (echo "FAIL: expected 'api'" && exit 1)
+          echo "$OUTPUT" | grep -qx "tests"         || (echo "FAIL: expected 'tests'" && exit 1)
+          echo "$OUTPUT" | grep -qx "source"        || (echo "FAIL: expected 'source'" && exit 1)
+          echo "PASS: fixture 4"
+        shell: bash
+
+      # Test case 5: no matching files -> empty output
+      - name: "Fixture 5: no matching files"
+        run: |
+          OUTPUT=$(python3 label_assigner.py --config config/labels.json \
+            --files unknown/path/file.xyz --output lines)
+          echo "OUTPUT: '$OUTPUT'"
+          if [ -n "$OUTPUT" ]; then
+            echo "FAIL: expected empty output, got: $OUTPUT"
+            exit 1
+          fi
+          echo "PASS: fixture 5"
+        shell: bash
+
+      # Test case 6: JSON output format
+      - name: "Fixture 6: JSON output format"
+        run: |
+          OUTPUT=$(python3 label_assigner.py --config config/labels.json \
+            --files docs/guide.md --output json)
+          echo "OUTPUT: $OUTPUT"
+          echo "$OUTPUT" | python3 -c "import json,sys; data=json.load(sys.stdin); assert 'documentation' in data, 'missing documentation'" || exit 1
+          echo "PASS: fixture 6"
+        shell: bash
+
+      # Test case 7: workflow_dispatch with custom files input
+      - name: "Fixture 7: workflow_dispatch inputs simulation"
+        run: |
+          FILES="${{ github.event.inputs.changed_files || 'docs/README.md src/api/routes.py app.test.js' }}"
+          OUTPUT=$(python3 label_assigner.py --config config/labels.json \
+            --files $FILES --output lines)
+          echo "OUTPUT: $OUTPUT"
+          [ -n "$OUTPUT" ] || (echo "FAIL: expected non-empty output" && exit 1)
+          echo "PASS: fixture 7"
+        shell: bash
+
+  # ── Summary ────────────────────────────────────────────────────────────────
+  summary:
+    name: Test summary
+    runs-on: ubuntu-latest
+    needs: [unit-tests, integration-tests]
+    steps:
+      - name: Print final summary
+        run: |
+          echo "============================================"
+          echo "PR Label Assigner — all tests passed"
+          echo "  - pytest (15 unit tests): PASS"
+          echo "  - integration fixtures (7): PASS"
+          echo "Job succeeded"
+          echo "============================================"
+        shell: bash

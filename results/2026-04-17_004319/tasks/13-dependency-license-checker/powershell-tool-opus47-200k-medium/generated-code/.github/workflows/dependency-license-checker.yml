@@ -1,0 +1,73 @@
+name: Dependency License Checker
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      manifest:
+        description: Manifest path
+        required: false
+        default: fixtures/package.json
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+env:
+  MANIFEST_PATH: ${{ vars.MANIFEST_PATH || 'fixtures/package.json' }}
+  CONFIG_PATH: ${{ vars.CONFIG_PATH || 'fixtures/licenses.json' }}
+  MOCK_PATH: ${{ vars.MOCK_PATH || 'fixtures/mock-licenses.json' }}
+  EXPECT_COMPLIANT: ${{ vars.EXPECT_COMPLIANT || 'false' }}
+
+jobs:
+  test:
+    name: Run Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $cfg = New-PesterConfiguration
+          # Only unit tests here; Workflow.Tests.ps1 is the outer harness
+          # that drives this workflow via act and must run on the host.
+          $cfg.Run.Path = './Tests/LicenseChecker.Tests.ps1'
+          $cfg.Run.Exit = $true
+          $cfg.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $cfg
+
+  check:
+    name: Run license compliance check
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run license checker
+        id: check
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          Write-Host "Running checker on $env:MANIFEST_PATH"
+          ./Invoke-LicenseCheck.ps1 `
+            -ManifestPath $env:MANIFEST_PATH `
+            -ConfigPath $env:CONFIG_PATH `
+            -MockLicenseFile $env:MOCK_PATH `
+            -OutputPath report.json
+          "exit_code=$LASTEXITCODE" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Verify compliance matches expectation
+        shell: pwsh
+        run: |
+          $report = Get-Content report.json -Raw | ConvertFrom-Json
+          $expected = [bool]::Parse($env:EXPECT_COMPLIANT)
+          Write-Host "REPORT_APPROVED=$($report.Summary.approved)"
+          Write-Host "REPORT_DENIED=$($report.Summary.denied)"
+          Write-Host "REPORT_UNKNOWN=$($report.Summary.unknown)"
+          Write-Host "REPORT_COMPLIANT=$($report.OverallCompliant)"
+          if ($report.OverallCompliant -ne $expected) {
+            Write-Error "Expected OverallCompliant=$expected but got $($report.OverallCompliant)"
+            exit 1
+          }
+          Write-Host "COMPLIANCE_CHECK_OK"

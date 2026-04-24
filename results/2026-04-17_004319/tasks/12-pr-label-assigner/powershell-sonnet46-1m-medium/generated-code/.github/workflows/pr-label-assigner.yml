@@ -1,0 +1,61 @@
+name: PR Label Assigner
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  label-assigner:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ensure Pester is available
+        shell: pwsh
+        run: |
+          if (-not (Get-Module -ListAvailable -Name Pester)) {
+            Install-Module -Name Pester -Force -Scope CurrentUser
+          }
+          Import-Module Pester
+
+      - name: Run Pester unit and structure tests
+        shell: pwsh
+        run: |
+          $pesterConfig = New-PesterConfiguration
+          $pesterConfig.Run.Path = './PRLabelAssigner.Tests.ps1'
+          $pesterConfig.Run.PassThru = $true
+          $pesterConfig.Output.Verbosity = 'Detailed'
+          # Exclude ActIntegration tests to avoid running act inside act
+          $pesterConfig.Filter.ExcludeTag = @('ActIntegration')
+          $result = Invoke-Pester -Configuration $pesterConfig
+          if ($result.FailedCount -gt 0) {
+            Write-Error "Pester: $($result.FailedCount) test(s) failed"
+            exit 1
+          }
+          Write-Output "All $($result.PassedCount) unit/structure tests passed"
+
+      - name: Run label assigner on all fixture files
+        shell: pwsh
+        run: |
+          . ./Invoke-PRLabelAssigner.ps1
+
+          $fixtures = Get-ChildItem -Path . -Filter 'fixture-*.json' | Sort-Object Name
+
+          if ($fixtures.Count -eq 0) {
+            Write-Output "No fixture files found — running with default demo input"
+            $changedFiles = @('docs/README.md', 'src/api/users.ts')
+            $labels = Get-PRLabels -ChangedFiles $changedFiles -ConfigPath './config.json'
+            Write-Output "LABELS: $(($labels | Sort-Object) -join ',')"
+          } else {
+            foreach ($fixture in $fixtures) {
+              $changedFiles = Get-Content $fixture.FullName -Raw | ConvertFrom-Json
+              $labels = Get-PRLabels -ChangedFiles ([string[]]$changedFiles) -ConfigPath './config.json'
+              Write-Output "FIXTURE: $($fixture.Name)"
+              Write-Output "LABELS: $(($labels | Sort-Object) -join ',')"
+            }
+          }

@@ -1,0 +1,39 @@
+name: Dependency License Checker
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    # Run weekly on Monday mornings to catch newly-added dependencies
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  license-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install jq
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq jq
+
+      - name: Run license check on package.json
+        run: |
+          bash license_checker.sh \
+            --manifest fixtures/package.json \
+            --config fixtures/license_config.json \
+            --license-db fixtures/license_db.json || true
+
+      - name: Run license check on requirements.txt
+        run: |
+          bash license_checker.sh \
+            --manifest fixtures/requirements.txt \
+            --config fixtures/license_config.json \
+            --license-db fixtures/license_db.json

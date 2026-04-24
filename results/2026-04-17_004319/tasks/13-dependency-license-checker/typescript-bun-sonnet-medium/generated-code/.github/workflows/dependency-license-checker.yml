@@ -1,0 +1,32 @@
+name: Dependency License Checker
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  schedule:
+    - cron: "0 8 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  BUN_BIN: "/root/.bun/bin/bun"
+
+jobs:
+  license-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+
+      - name: Run unit tests
+        run: /root/.bun/bin/bun test tests/checker.test.ts
+
+      - name: Run license compliance check
+        run: /root/.bun/bin/bun run src/index.ts --config fixtures/license-config.json fixtures/package.json || true

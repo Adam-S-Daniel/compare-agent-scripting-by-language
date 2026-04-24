@@ -108,26 +108,32 @@ class ClaudeCLIProvider(LLMProvider):
         return shutil.which("claude") is not None
 
     def judge(self, system_prompt: str, user_message: str,
-              model: str = "sonnet") -> dict | None:
+              model: str = "sonnet",
+              effort: str | None = None,
+              max_budget_usd: float = 0.50,
+              timeout_s: int = 120) -> dict | None:
         # Run from a temp dir to avoid CLAUDE.md auto-discovery
         judge_dir = tempfile.mkdtemp(prefix="llm-judge-")
+        cmd = [
+            "claude", "-p",
+            "--model", model,
+            "--system-prompt", system_prompt,
+            "--output-format", "json",
+            "--max-budget-usd", f"{max_budget_usd:.2f}",
+        ]
+        if effort:
+            cmd.extend(["--effort", effort])
         try:
             result = subprocess.run(
-                [
-                    "claude", "-p",
-                    "--model", model,
-                    "--system-prompt", system_prompt,
-                    "--output-format", "json",
-                    "--max-budget-usd", "0.50",
-                ],
+                cmd,
                 input=user_message,
                 capture_output=True,
                 text=True,
-                timeout=120,
+                timeout=timeout_s,
                 cwd=judge_dir,
             )
         except subprocess.TimeoutExpired:
-            print(f"  [{self.name}] timed out (120s)", file=sys.stderr)
+            print(f"  [{self.name}] timed out ({timeout_s}s)", file=sys.stderr)
             return None
         except Exception as e:
             print(f"  [{self.name}] subprocess error: {e}", file=sys.stderr)
@@ -175,11 +181,215 @@ class ClaudeCLIProvider(LLMProvider):
 
 
 # ---------------------------------------------------------------------------
+# Gemini Developer API provider
+# ---------------------------------------------------------------------------
+# Cross-family judge. Uses the google-genai SDK (Developer API flavour)
+# reading GEMINI_API_KEY from the environment. Pricing (April 2026) for
+# Gemini 3.1 Pro is $2/$12 per 1M tokens at ≤200K context; outputs are
+# typically 200-2000 tokens for our rubric so per-call cost lands ~$0.03-
+# 0.05. Billing is computed from the SDK's usage fields if present,
+# otherwise derived from our own per-1M rates below.
+
+# Model → (input $/M, output $/M) for the ≤200K context tier.
+_GEMINI_PRICE_PER_MTOK = {
+    "gemini-3.1-pro":               (2.00, 12.00),
+    "gemini-3.1-pro-preview":       (2.00, 12.00),
+    "gemini-3.1-pro-latest":        (2.00, 12.00),
+    "gemini-3.1-flash":             (0.30, 2.50),
+    "gemini-3.1-flash-lite":        (0.25, 1.50),
+    "gemini-3.1-flash-lite-preview": (0.25, 1.50),
+    "gemini-3-pro-preview":         (2.00, 12.00),
+    "gemini-2.5-pro":               (1.00, 10.00),
+    "gemini-2.5-flash":              (0.30, 2.50),
+    "gemini-2.5-flash-lite":         (0.10, 0.40),
+}
+
+
+class GeminiAPIProvider(LLMProvider):
+    """LLM provider using Google's Gemini Developer API.
+
+    Requires `GEMINI_API_KEY` in the environment and the `google-genai`
+    SDK installed. Default model is `gemini-3.1-pro` (current flagship as
+    of April 2026) — the judge dimensions in test_quality.py match
+    Gemini's JSON output format well.
+    """
+
+    name = "gemini-api"
+
+    def is_available(self) -> bool:
+        try:
+            from google import genai  # noqa: F401
+        except ImportError:
+            return False
+        return bool(os.environ.get("GEMINI_API_KEY"))
+
+    def judge(self, system_prompt: str, user_message: str,
+              model: str = "gemini-3.1-pro") -> dict | None:
+        try:
+            from google import genai
+            from google.genai import types as genai_types
+        except ImportError:
+            print(f"  [{self.name}] google-genai SDK not installed", file=sys.stderr)
+            return None
+
+        try:
+            client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+            resp = client.models.generate_content(
+                model=model,
+                contents=user_message,
+                config=genai_types.GenerateContentConfig(
+                    system_instruction=system_prompt,
+                    # JSON-forced responses are more reliable than markdown-
+                    # fenced JSON; the rubric already specifies the schema.
+                    response_mime_type="application/json",
+                    # Low temperature keeps scores more consistent across
+                    # repeat runs of the same input.
+                    temperature=0.2,
+                ),
+            )
+        except Exception as e:
+            print(f"  [{self.name}] API error: {type(e).__name__}: {e}",
+                  file=sys.stderr)
+            return None
+
+        text = getattr(resp, "text", None)
+        if not text:
+            print(f"  [{self.name}] empty response", file=sys.stderr)
+            return None
+        # Strip any residual markdown fences defensively.
+        text = re.sub(r"^```(?:json)?\s*\n?", "", text.strip())
+        text = re.sub(r"\n?```\s*$", "", text).strip()
+
+        # Prefer SDK-reported usage; otherwise compute from price table.
+        usage = getattr(resp, "usage_metadata", None)
+        in_tok = getattr(usage, "prompt_token_count", 0) if usage else 0
+        out_tok = getattr(usage, "candidates_token_count", 0) if usage else 0
+        rates = _GEMINI_PRICE_PER_MTOK.get(model, (2.0, 12.0))
+        cost = (in_tok / 1_000_000) * rates[0] + (out_tok / 1_000_000) * rates[1]
+
+        return {
+            "text": text,
+            "cost_usd": round(cost, 6),
+            "input_tokens": int(in_tok),
+            "output_tokens": int(out_tok),
+        }
+
+
+# ---------------------------------------------------------------------------
+# Gemini CLI provider (OAuth-authenticated, no API key needed)
+# ---------------------------------------------------------------------------
+# The official `gemini` CLI handles auth via OAuth (Google account login).
+# Avoids the billing gate on the Developer API — our user has this
+# installed and logged in. The CLI doesn't take a separate system prompt
+# so we merge system + user into one `-p` argument; we run from a fresh
+# temp dir to avoid loading any local GEMINI.md / tool config.
+
+class GeminiCLIProvider(LLMProvider):
+    """LLM provider using the pre-authenticated Gemini CLI.
+
+    Uses `gemini -p <prompt> -m <model> -o json --approval-mode plan`.
+    The `plan` approval mode is read-only and prevents the CLI from
+    executing any tool actions — we want pure prompt→JSON behaviour.
+    """
+
+    name = "gemini-cli"
+
+    def is_available(self) -> bool:
+        return shutil.which("gemini") is not None
+
+    def judge(self, system_prompt: str, user_message: str,
+              model: str = "gemini-3.1-pro-preview",
+              timeout_s: int | None = None) -> dict | None:
+        # Env override lets callers (e.g. the retry pass on Gemini
+        # timeouts) bump the ceiling without threading a kwarg through
+        # every layer.
+        if timeout_s is None:
+            import os
+            timeout_s = int(os.environ.get("GEMINI_CLI_TIMEOUT_S", "180"))
+        # The Gemini CLI doesn't expose a --system-prompt flag. Merge the
+        # two with a clear separator so the model treats the system block
+        # as leading instructions.
+        combined = f"{system_prompt}\n\n---\n\n{user_message}"
+        judge_dir = tempfile.mkdtemp(prefix="gemini-judge-")
+        try:
+            result = subprocess.run(
+                [
+                    "gemini",
+                    "-p", combined,
+                    "-m", model,
+                    "-o", "json",
+                    "--approval-mode", "plan",  # read-only; no tool execution
+                ],
+                capture_output=True,
+                text=True,
+                timeout=timeout_s,
+                cwd=judge_dir,
+            )
+        except subprocess.TimeoutExpired:
+            print(f"  [{self.name}] timed out ({timeout_s}s)", file=sys.stderr)
+            return None
+        except Exception as e:
+            print(f"  [{self.name}] subprocess error: {e}", file=sys.stderr)
+            return None
+        finally:
+            shutil.rmtree(judge_dir, ignore_errors=True)
+
+        if result.returncode != 0:
+            snippet = result.stderr[:200] if result.stderr else "(no stderr)"
+            print(f"  [{self.name}] CLI failed (exit {result.returncode}): {snippet}",
+                  file=sys.stderr)
+            return None
+
+        try:
+            envelope = json.loads(result.stdout)
+        except json.JSONDecodeError:
+            print(f"  [{self.name}] non-JSON output: {result.stdout[:200]}",
+                  file=sys.stderr)
+            return None
+
+        raw = envelope.get("response", "")
+        # Strip any markdown fences the model added despite the instruction.
+        text = re.sub(r"^```(?:json)?\s*\n?", "", raw.strip())
+        text = re.sub(r"\n?```\s*$", "", text).strip()
+
+        # Pull token usage + cost out of the stats block. The CLI reports
+        # a detailed per-model stats breakdown; we aggregate across all
+        # reported models in case multiple are touched in a single call.
+        in_tok = 0
+        out_tok = 0
+        cost = 0.0
+        stats = envelope.get("stats", {})
+        for m_name, m_stats in (stats.get("models") or {}).items():
+            toks = m_stats.get("tokens", {}) or {}
+            in_tok += int(toks.get("input", 0) or 0)
+            out_tok += int(toks.get("candidates", 0) or 0)
+            rates = _GEMINI_PRICE_PER_MTOK.get(m_name)
+            if rates is None:
+                # Strip common suffixes like `-preview` to hit the base price.
+                base = re.sub(r"-preview.*$", "", m_name)
+                rates = _GEMINI_PRICE_PER_MTOK.get(base)
+            if rates is None:
+                # Fall back to 3.1 Pro rates; better to over-estimate than miss.
+                rates = (2.0, 12.0)
+            cost += (toks.get("input", 0) / 1_000_000) * rates[0]
+            cost += (toks.get("candidates", 0) / 1_000_000) * rates[1]
+
+        return {
+            "text": text,
+            "cost_usd": round(cost, 6),
+            "input_tokens": in_tok,
+            "output_tokens": out_tok,
+        }
+
+
+# ---------------------------------------------------------------------------
 # Provider registry
 # ---------------------------------------------------------------------------
 
 PROVIDERS: dict[str, type[LLMProvider]] = {
     "claude-cli": ClaudeCLIProvider,
+    "gemini-api": GeminiAPIProvider,
+    "gemini-cli": GeminiCLIProvider,
 }
 
 DEFAULT_PROVIDER = "claude-cli"

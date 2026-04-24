@@ -442,60 +442,80 @@ def _emit_sorted_variants(header: str, separator: str, data_rows: list[dict],
 # Tier letters mapped to numeric positions for compound sort keys.
 # "—" (em-dash, no data) gets the highest value so no-data rows sink
 # to the bottom when sorting ascending/A-first.
-_TIER_RANK = {"A": 1, "B": 2, "C": 3, "D": 4, "E": 5, "—": 6}
+# 13-tier grade scheme: A+ (best) → F (worst), with "—" as no-data sentinel.
+# Ordered numerically so lower numbers are better, identical to academic grades.
+_TIER_LETTERS: tuple[str, ...] = (
+    "A+", "A", "A-",
+    "B+", "B", "B-",
+    "C+", "C", "C-",
+    "D+", "D", "D-",
+    "F",
+)
+_TIER_RANK = {letter: i + 1 for i, letter in enumerate(_TIER_LETTERS)}
+_TIER_RANK["—"] = len(_TIER_LETTERS) + 1  # no-data sorts after F
+_N_TIERS = len(_TIER_LETTERS)  # = 13
 
 
 def _tier_num(tier: str) -> int:
-    """Return the numeric position of a tier letter (A=1 ... E=5; —=6)."""
-    return _TIER_RANK.get(tier, 6)
+    """Return the numeric position of a tier letter (A+=1 ... F=13; —=14)."""
+    return _TIER_RANK.get(tier, _N_TIERS + 1)
 
 
 # ── Tier binning: groups close values into bands so tables can answer
 # "is 1st tightly clustered with the rest, or a runaway?" at a glance.
 # Ratio-based for lower-is-better axes (duration, cost); absolute-band
 # for LLM score since its 1-5 scale makes ratios meaningless.
-def _compute_ratio_bands(ratios: list[float]) -> tuple[float, float, float, float]:
-    """Return the four band boundaries (b1, b2, b3, b4) such that
-    A=ratio≤b1, B=≤b2, C=≤b3, D=≤b4, E=>b4.
+def _compute_ratio_bands(ratios: list[float]) -> tuple[float, ...]:
+    """Return 12 band boundaries (b1..b12) such that tier[i] applies when
+    ratio ≤ b[i] and F = > b12. Boundaries are log-equal divisions of the
+    best-to-worst spread so they auto-calibrate: tight clusters get narrow
+    bands (everything ~A+); wide spreads get wide bands (A+..D-, with F
+    reserved for ratios exceeding the observed max).
 
-    Bands are log-equal divisions of the best-to-worst spread so they
-    auto-calibrate to the data: tight clusters get narrow bands (every
-    combo ~A); wide spreads get wide bands (full A-E distribution). For
-    a best ratio of 1.0 and max ratio M, boundary i is M^(i/5).
+    For best ratio 1.0 and max M, boundary i is M^(i/12), so the worst
+    observed value (r == M) satisfies `r <= b12 = M` and lands in D-;
+    anything beyond M would fall to F.
     """
+    n_bands = _N_TIERS - 1  # 12 boundaries for 13 tiers
     if not ratios:
-        return (1.0, 1.0, 1.0, 1.0)
+        return tuple(1.0 for _ in range(n_bands))
     max_r = max(ratios)
     if max_r <= 1.0:
-        return (1.0, 1.0, 1.0, 1.0)
-    return tuple(max_r ** (i / 5) for i in range(1, 5))  # type: ignore[return-value]
+        return tuple(1.0 for _ in range(n_bands))
+    return tuple(max_r ** (i / n_bands) for i in range(1, n_bands + 1))
 
 
-def _ratio_tier(ratio: float, bands: tuple[float, float, float, float] | None = None) -> str:
-    """Return tier letter A-E for a ratio where 1.0 is best.
+def _ratio_tier(ratio: float, bands: tuple[float, ...] | None = None) -> str:
+    """Return tier letter A+..F for a ratio where 1.0 is best.
 
-    When `bands` is None, falls back to fixed broad bands suitable for
-    the agent-benchmark spreads seen here (Haiku to Opus-xhigh is ~7x).
-    Callers with a full row set should compute data-driven bands via
-    `_compute_ratio_bands` and pass them in for auto-calibration.
+    `bands` must have len == _N_TIERS - 1 (=12). When None, falls back to
+    a fixed spread that keeps agent-benchmark ratios (Haiku→Opus-xhigh
+    is ~7x on cost) mostly within the letter grades; ratios beyond the
+    spread top fall to F.
     """
     if bands is None:
-        bands = (1.50, 2.50, 4.00, 6.00)
-    b1, b2, b3, b4 = bands
-    if ratio <= b1: return "A"
-    if ratio <= b2: return "B"
-    if ratio <= b3: return "C"
-    if ratio <= b4: return "D"
-    return "E"
+        # Fallback: boundary 12 at ratio ~8 (~= observed worst campaign
+        # spread) so a typical dataset maps sanely even before
+        # _compute_ratio_bands is called with real data.
+        n_bands = _N_TIERS - 1  # 12
+        max_r = 8.0
+        bands = tuple(max_r ** (i / n_bands) for i in range(1, n_bands + 1))
+    for letter, b in zip(_TIER_LETTERS[:-1], bands):
+        if ratio <= b:
+            return letter
+    return _TIER_LETTERS[-1]  # "F"
 
 
 def _llm_tier(score: float) -> str:
-    """Return tier letter A-E for an LLM judge Overall score (1-5 scale)."""
-    if score >= 4.5: return "A"
-    if score >= 3.5: return "B"
-    if score >= 2.5: return "C"
-    if score >= 1.5: return "D"
-    return "E"
+    """Return tier letter A+..F for an LLM judge Overall score (1-5 scale).
+    Step is 0.3 points; top boundary 4.7, bottom boundary 1.4. Score 3.5
+    (between B and B-) maps to B, matching intuitive "slightly above
+    average" grading."""
+    thresholds = [4.7, 4.4, 4.1, 3.8, 3.5, 3.2, 2.9, 2.6, 2.3, 2.0, 1.7, 1.4]
+    for letter, t in zip(_TIER_LETTERS[:-1], thresholds):
+        if score >= t:
+            return letter
+    return _TIER_LETTERS[-1]  # "F"
 
 
 
@@ -518,19 +538,48 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     total_cost = sum(m["cost"]["total_cost_usd"] for m in all_metrics)
     total_duration = sum(m["timing"]["grand_total_duration_ms"] for m in all_metrics) / 1000
 
+    # We build the body into `lines` and emit a Table of Contents at the
+    # very top once all section headings are known. `_TOC_MARKER` reserves
+    # the slot; we substitute it at write time.
+    _TOC_MARKER = "%%%TABLE_OF_CONTENTS%%%"
+    # Notes deferred to the bottom: tier-band explanations, scoring rubric
+    # anchors, CLI-version legend. Any caller that would have emitted an
+    # above-table prose block now appends to `notes_sections` instead so
+    # the body stays scannable.
+    notes_sections: list[tuple[str, list[str]]] = []
+
+    # Conclusions section (LLM-generated) is populated AFTER cmp_rows
+    # exist and judge-consistency-data.md has been (re)built, then
+    # substituted into this marker at write time.
+    _CONCLUSIONS_MARKER = "%%%CONCLUSIONS_SECTION%%%"
+    # Scoring section sits between ToC and Conclusions. Built after
+    # ratio bands are computed (they populate the "Properties" bullets
+    # for Duration/Cost), then substituted into this slot.
+    _SCORING_MARKER = "%%%SCORING_SECTION%%%"
+
     lines = []
     lines.append("# Benchmark Results: Language Comparison")
     lines.append("")
-    lines.append(f"**Last updated:** {now_et}")
+    # Status inlined with "Last updated:" — no separate Status section.
+    lines.append(
+        f"**Last updated:** {now_et} — {completed}/{total_runs} runs "
+        f"completed, {remaining} remaining; total cost "
+        f"${total_cost:.2f}; total agent time "
+        f"{total_duration/60:.1f} min."
+    )
     lines.append("")
-    lines.append(f"**Status:** {completed}/{total_runs} runs completed, {remaining} remaining")
-    lines.append(f"**Total cost so far:** ${total_cost:.2f}")
-    lines.append(f"**Total agent time so far:** {total_duration/60:.1f} min")
-    lines.append("")
+    lines.append(_TOC_MARKER)
+    # Scoring section sits directly under the ToC so readers see the
+    # rubric before the Conclusions interpret it.
+    lines.append(_SCORING_MARKER)
+    # Conclusions slot — filled at write time if the LLM calls succeed.
+    lines.append(_CONCLUSIONS_MARKER)
 
     if not all_metrics:
+        lines.append("")
         lines.append("*No completed runs yet.*")
-        (run_dir / "results.md").write_text("\n".join(lines))
+        text = "\n".join(lines).replace(_TOC_MARKER, "")
+        (run_dir / "results.md").write_text(text)
         return
 
     # Separate successful and failed runs
@@ -541,22 +590,49 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     # the CLI, which today resolve to different models across providers.
     # Rename them in DISPLAY so readers of the merged report know which
     # concrete version was tested (Opus 4.6 / Sonnet 4.6 on this repo's
-    # history). Filesystem subdirs keep their original plain name.
-    _DISPLAY_RENAME = {"opus": "opus46", "sonnet": "sonnet46"}
+    # history) and at what context window. Filesystem subdirs keep their
+    # original plain name.
+    _DISPLAY_RENAME = {
+        "opus": "opus46-200k",
+        "sonnet": "sonnet46-200k",
+        "haiku45": "haiku45-200k",
+    }
+
+    def _cli_suffix(m):
+        """Format the CLI version as a `-cli<ver>` label suffix. Different
+        CLI releases are tracked as distinct buckets — CLI behavior changes
+        per release, so we don't want to silently average across them."""
+        ver = m.get("claude_code_version") or ""
+        return f"-cli{ver}" if ver else "-cliunk"
 
     def _path_label(m):
         """On-disk subdir label: exactly matches directories already on
-        the filesystem. No rename here — breaking this breaks file I/O."""
+        the filesystem. No rename here, and no CLI version — existing
+        subdirs were written without either and migrating would rename
+        every prior run's directory on disk."""
         eff = m.get("effort_level")
         return f"{m['model_short']}-{eff}" if eff else m["model_short"]
 
     def _label(m):
-        """Display label used for grouping and the Model column in tables.
-        Applies _DISPLAY_RENAME so legacy `opus`/`sonnet` rows read as
-        `opus46`/`sonnet46`. Do NOT use for paths — use _path_label."""
+        """Internal grouping label — includes `-cli<ver>` so distinct
+        Claude Code releases bucket separately. Used as a dict key for
+        aggregation. NOT for display; use `_strip_cli(_label(m))` when
+        rendering to tables/prose — the CLI Version Legend in Notes is
+        the canonical mapping from label → CLI version."""
         eff = m.get("effort_level")
         short = _DISPLAY_RENAME.get(m["model_short"], m["model_short"])
-        return f"{short}-{eff}" if eff else short
+        base = f"{short}-{eff}" if eff else short
+        return base + _cli_suffix(m)
+
+    _CLI_SUFFIX_RE = re.compile(r"-cli[^-\s*]+$")
+
+    def _strip_cli(s: str) -> str:
+        """Strip `-cli<ver>` from a display label. Preserves a trailing
+        `*` (excluded-runs marker) if present."""
+        had_star = s.endswith("*")
+        core = s[:-1] if had_star else s
+        core = _CLI_SUFFIX_RE.sub("", core)
+        return core + ("*" if had_star else "")
 
     modes_seen = sorted(set(m["language_mode"] for m in all_metrics))
     models_seen = sorted(set(_label(m) for m in all_metrics))
@@ -572,23 +648,26 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     # COLLECT ALL ANALYSIS DATA UP FRONT
     # ==================================================================
 
-    # ── LLM-as-judge score cache ──
-    # Hoisted here so the aggregate Comparison table and the Per-Run table
-    # can both read scores without re-doing I/O later. Keyed by
-    # (task_id, language_mode, variant_label); value is the full judge dict
-    # (overall/coverage/rigor/design/summary/judge_cost). Runs without a
-    # cached judge result are simply absent from the map.
-    from test_quality import LLM_JUDGE_CACHE_FILE
+    # ── Panel-of-judges score cache ──
+    # Both the test-quality judge and the deliverable-quality judge can
+    # now have multiple judges contributing per run (e.g. Haiku + Gemini).
+    # load_panel_scores reads every `{kind}-*.json` under a variant subdir
+    # and returns a panel-averaged dict (coverage/rigor/design/overall
+    # for test-quality; best_practices/.../overall for deliverable), plus
+    # n_judges, judges, and total judge_cost_usd. Legacy Sonnet-era
+    # `{kind}-llm.json` files are picked up too for back-compat.
+    from test_quality import load_panel_scores
     llm_data_by_key: dict[tuple, dict] = {}
+    deliv_data_by_key: dict[tuple, dict] = {}
     for m in all_metrics:
-        cache_path = (run_dir / "tasks" / m["task_id"]
-                      / f"{m['language_mode']}-{_path_label(m)}" / LLM_JUDGE_CACHE_FILE)
-        if not cache_path.exists():
-            continue
-        try:
-            llm_data_by_key[(m["task_id"], m["language_mode"], _label(m))] = json.loads(cache_path.read_text())
-        except Exception:
-            pass
+        variant_subdir = run_dir / "tasks" / m["task_id"] / f"{m['language_mode']}-{_path_label(m)}"
+        key = (m["task_id"], m["language_mode"], _label(m))
+        lj_panel = load_panel_scores(variant_subdir, "test-quality")
+        if lj_panel is not None:
+            llm_data_by_key[key] = lj_panel
+        dj_panel = load_panel_scores(variant_subdir, "deliverable-quality")
+        if dj_panel is not None:
+            deliv_data_by_key[key] = dj_panel
 
     # ── Comparison by Language/Model/Effort ──
     # Track how many failed runs each (mode, model) combo excluded from
@@ -614,13 +693,24 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
                           if (m["task_id"], mode, model) in llm_data_by_key]
             llm_scores = [s for s in llm_scores if isinstance(s, (int, float))]
             avg_llm = sum(llm_scores) / len(llm_scores) if llm_scores else None
+            # Same treatment for the deliverable-quality judge (scores the
+            # produced workflows + scripts, not the test code).
+            deliv_scores = [deliv_data_by_key[(m["task_id"], mode, model)].get("overall")
+                            for m in mm
+                            if (m["task_id"], mode, model) in deliv_data_by_key]
+            deliv_scores = [s for s in deliv_scores if isinstance(s, (int, float))]
+            avg_deliv = sum(deliv_scores) / len(deliv_scores) if deliv_scores else None
             excl = excluded_by_combo.get((mode, model), 0)
             cmp_rows.append({
                 "mode": mode, "model": model,
                 # Plain model string; Model column display appends an
                 # asterisk in the row formatters when excluded > 0.
                 "excluded": excl,
-                "model_disp": f"{model}*" if excl else model,
+                # `model_disp` drops the `-cli<ver>` so rendered tables
+                # stay compact; the CLI Version Legend in Notes maps
+                # each stripped label back to its CLI release.
+                "model_disp": f"{_strip_cli(model)}*" if excl else _strip_cli(model),
+                "model_full": model,  # retained for legend/grouping use
                 "n": n,
                 "avg_dur": sum(m["timing"]["grand_total_duration_ms"] for m in mm) / n / 1000,
                 "avg_lines": sum(m["code_metrics"]["total_lines"] for m in mm) / n,
@@ -631,7 +721,66 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
                 "avg_llm": avg_llm if avg_llm is not None else 0.0,
                 "avg_llm_disp": f"{avg_llm:.1f}" if avg_llm is not None else "—",
                 "avg_llm_n": len(llm_scores),
+                "avg_deliv": avg_deliv if avg_deliv is not None else 0.0,
+                "avg_deliv_disp": f"{avg_deliv:.1f}" if avg_deliv is not None else "—",
+                "avg_deliv_n": len(deliv_scores),
             })
+
+    # Consolidate per-CLI rows sharing the same display label into one.
+    # Without this step a run dir that spans two CLI releases for the
+    # same (language, model, effort) renders two Comparison/Tiers rows
+    # whose Language + Model cells are identical — indistinguishable
+    # duplicates to the reader. The CLI Version Legend further down
+    # still documents each CLI release individually.
+    def _consolidate_cmp_rows(rows):
+        grouped: dict[tuple, list[dict]] = {}
+        order: list[tuple] = []
+        for r in rows:
+            k = (r["mode"], _strip_cli(r["model"]))
+            if k not in grouped:
+                order.append(k)
+            grouped.setdefault(k, []).append(r)
+        merged: list[dict] = []
+        for k in order:
+            parts = grouped[k]
+            if len(parts) == 1:
+                merged.append(parts[0])
+                continue
+            n_total = sum(p["n"] for p in parts)
+            def _wavg(key):
+                return sum(p[key] * p["n"] for p in parts) / n_total
+            def _wavg_judged(key, n_key):
+                total_n = sum(p[n_key] for p in parts)
+                if not total_n:
+                    return None
+                return sum(p[key] * p[n_key] for p in parts) / total_n
+            avg_llm = _wavg_judged("avg_llm", "avg_llm_n")
+            avg_deliv = _wavg_judged("avg_deliv", "avg_deliv_n")
+            excl_total = sum(p.get("excluded", 0) for p in parts)
+            base = dict(parts[0])
+            display_model = _strip_cli(parts[0]["model"])
+            base.update({
+                "model": display_model,
+                "model_disp": f"{display_model}*" if excl_total else display_model,
+                "model_full": ",".join(p["model"] for p in parts),
+                "excluded": excl_total,
+                "n": n_total,
+                "avg_dur": _wavg("avg_dur"),
+                "avg_lines": _wavg("avg_lines"),
+                "avg_errors": _wavg("avg_errors"),
+                "avg_turns": _wavg("avg_turns"),
+                "avg_cost": _wavg("avg_cost"),
+                "total_cost": sum(p["total_cost"] for p in parts),
+                "avg_llm": avg_llm if avg_llm is not None else 0.0,
+                "avg_llm_disp": f"{avg_llm:.1f}" if avg_llm is not None else "—",
+                "avg_llm_n": sum(p["avg_llm_n"] for p in parts),
+                "avg_deliv": avg_deliv if avg_deliv is not None else 0.0,
+                "avg_deliv_disp": f"{avg_deliv:.1f}" if avg_deliv is not None else "—",
+                "avg_deliv_n": sum(p["avg_deliv_n"] for p in parts),
+            })
+            merged.append(base)
+        return merged
+    cmp_rows = _consolidate_cmp_rows(cmp_rows)
 
     # ── Trap & Hook data ──
     TEST_RUN_COST_S = {"default": 8, "powershell": 35, "powershell-tool": 35, "bash": 12, "typescript-bun": 8}
@@ -800,6 +949,15 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         for r in cmp_rows:
             r.setdefault("llm_rank", _llm_sentinel)
             r["llm_rank_disp"] = str(r["llm_rank"]) if r["llm_rank"] != _llm_sentinel else "—"
+        # Same pattern for deliverable judge score. Separate sentinel so
+        # rows missing one judge but having the other still sort sensibly.
+        deliv_scored = [r for r in cmp_rows if r["avg_deliv_n"] > 0]
+        for i, r in enumerate(sorted(deliv_scored, key=lambda r: -r["avg_deliv"]), start=1):
+            r["deliv_rank"] = i
+        _deliv_sentinel = len(cmp_rows) + 1
+        for r in cmp_rows:
+            r.setdefault("deliv_rank", _deliv_sentinel)
+            r["deliv_rank_disp"] = str(r["deliv_rank"]) if r["deliv_rank"] != _deliv_sentinel else "—"
         best_dur = min(r["avg_dur"] for r in cmp_rows)
         best_cost = min(r["avg_cost"] for r in cmp_rows)
         # Auto-calibrate ratio bands to this dataset's best-to-worst spread.
@@ -815,90 +973,96 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
             r["dur_tier"] = _ratio_tier(r["avg_dur"] / best_dur, dur_bands)
             r["cost_tier"] = _ratio_tier(r["avg_cost"] / best_cost, cost_bands)
             r["llm_tier"] = _llm_tier(r["avg_llm"]) if r["avg_llm_n"] > 0 else "—"
+            r["deliv_tier"] = _llm_tier(r["avg_deliv"]) if r["avg_deliv_n"] > 0 else "—"
 
         def _fmt_bands(bands):
-            b1, b2, b3, b4 = bands
-            return (f"**A** ≤{b1:.2f}×, **B** ≤{b2:.2f}×, "
-                    f"**C** ≤{b3:.2f}×, **D** ≤{b4:.2f}×, **E** >{b4:.2f}×")
+            # Format the 12 log-equal boundaries compactly: one line with
+            # every letter tier paired with its upper bound ratio. F is
+            # "> b12" (beyond the observed worst), so it sits at the end.
+            parts = [f"**{letter}** ≤{b:.2f}×"
+                     for letter, b in zip(_TIER_LETTERS[:-1], bands)]
+            parts.append(f"**{_TIER_LETTERS[-1]}** >{bands[-1]:.2f}×")
+            return ", ".join(parts)
+
+        # Composite key used as the DEFAULT sort for both Tiers and
+        # Rankings: 40% Tests Quality, 25% Workflow Craft, 35% split
+        # evenly between Duration and Cost tiers. All tier_num values
+        # are lower-is-better (A+=1, F=13, —=14), so ascending sort
+        # surfaces the best combo first. Per-axis sort variants below
+        # still allow isolating a single axis.
+        def _tier_composite(r):
+            return (0.40 * _tier_num(r["llm_tier"])
+                    + 0.25 * _tier_num(r["deliv_tier"])
+                    + 0.35 * (_tier_num(r["dur_tier"])
+                              + _tier_num(r["cost_tier"])) / 2)
 
         # ── Tiers (bin by value so gap-vs-cluster is visible at a glance) ──
-        # Ranks alone don't reveal whether 1st and 5th are close or miles
-        # apart. Tiers bin each axis into A-E bands so a reader can see
-        # `all A` (tight cluster) vs a mix (spread). This section comes
-        # before Rankings because the "at a glance" shape is usually the
-        # most useful starting question; rankings below supply the detail.
         lines.append("## Tiers by Language/Model/Effort")
         lines.append("")
-        lines.append("*Duration / Cost tier = ratio of this combo's average to the best combo's "
-                     "average on that axis (lower ratio = better). Bands are auto-calibrated to "
-                     "the data's best-to-worst spread via log-equal division (`boundary_i = max_ratio^(i/5)`).*")
-        lines.append(f"*Duration bands: {_fmt_bands(dur_bands)}.*")
-        lines.append(f"*Cost bands: {_fmt_bands(cost_bands)}.*")
-        lines.append("*LLM Score tier = absolute Overall score band. "
-                     "**A** ≥4.5, **B** ≥3.5, **C** ≥2.5, **D** ≥1.5, **E** <1.5, `—` = no data.*")
+        lines.append("*Default sort: weighted composite of tiers (40% Tests, 25% Workflow Craft, 35% split between Duration & Cost). See [Notes](#notes) for tier-band definitions and scoring rubric.*")
         any_excluded = sum(r["excluded"] for r in cmp_rows) > 0
         if any_excluded:
             lines.append("*`*` after a Model label = this combo's aggregates exclude one or more failed/timed-out runs (see the Failed / Timed-Out Runs table).*")
         lines.append("")
-        tr_hdr = "| Language | Model | Duration | Cost | LLM Score |"
-        tr_sep = "|----------|-------|----------|------|-----------|"
+        tr_hdr = "| Language | Model | Duration | Cost | Tests Quality | Workflow Craft |"
+        tr_sep = "|----------|-------|----------|------|-----------|-------------|"
         def _fmt_tr(r):
             return (f"| {r['mode']} | {r['model_disp']} "
                     f"| {r['dur_tier']} ({_dur(r['avg_dur'])}) "
                     f"| {r['cost_tier']} (${r['avg_cost']:.2f}) "
                     f"| {r['llm_tier']}"
                     + (f" ({r['avg_llm']:.1f})" if r['avg_llm_n'] > 0 else "")
+                    + " | "
+                    + r['deliv_tier']
+                    + (f" ({r['avg_deliv']:.1f})" if r['avg_deliv_n'] > 0 else "")
                     + " |")
         lines.append(tr_hdr)
         lines.append(tr_sep)
-        for r in sorted(cmp_rows, key=lambda r: (r['mode'], r['model'])):
+        for r in sorted(cmp_rows, key=_tier_composite):
             lines.append(_fmt_tr(r))
         lines.append("")
         # Sort variants for Tiers. Primary key is the sorted-on axis's
-        # tier; secondary is the average numeric tier of the OTHER two
+        # tier; secondary is the average numeric tier of the OTHER three
         # axes, so ties on the primary axis break toward the combo that
         # is stronger overall. A-first / ascending on both.
         lines.extend(_emit_sorted_variants(tr_hdr, tr_sep, cmp_rows, [
-            ("Sorted by Duration tier (A-first), then avg of Cost/LLM tiers",
+            ("Sorted by Duration tier (best-first), then avg of Cost/Tests/Workflow Craft tiers",
              lambda r: (_tier_num(r["dur_tier"]),
-                        (_tier_num(r["cost_tier"]) + _tier_num(r["llm_tier"])) / 2),
+                        (_tier_num(r["cost_tier"]) + _tier_num(r["llm_tier"])
+                         + _tier_num(r["deliv_tier"])) / 3),
              False),
-            ("Sorted by Cost tier (A-first), then avg of Duration/LLM tiers",
+            ("Sorted by Cost tier (best-first), then avg of Duration/Tests/Workflow Craft tiers",
              lambda r: (_tier_num(r["cost_tier"]),
-                        (_tier_num(r["dur_tier"]) + _tier_num(r["llm_tier"])) / 2),
+                        (_tier_num(r["dur_tier"]) + _tier_num(r["llm_tier"])
+                         + _tier_num(r["deliv_tier"])) / 3),
              False),
-            ("Sorted by LLM Score tier (A-first; no-data last), then avg of Duration/Cost tiers",
+            ("Sorted by Tests Quality tier (best-first; no-data last), then avg of other tiers",
              lambda r: (_tier_num(r["llm_tier"]),
-                        (_tier_num(r["dur_tier"]) + _tier_num(r["cost_tier"])) / 2),
+                        (_tier_num(r["dur_tier"]) + _tier_num(r["cost_tier"])
+                         + _tier_num(r["deliv_tier"])) / 3),
+             False),
+            ("Sorted by Workflow Craft tier (best-first; no-data last), then avg of other tiers",
+             lambda r: (_tier_num(r["deliv_tier"]),
+                        (_tier_num(r["dur_tier"]) + _tier_num(r["cost_tier"])
+                         + _tier_num(r["llm_tier"])) / 3),
              False),
         ], _fmt_tr))
         lines.append("")
 
-        lines.append("## Rankings by Language/Model/Effort")
-        lines.append("")
-        lines.append("*Lower rank = better on that axis (1 = fastest / cheapest / highest LLM score).*")
-        lines.append("*LLM Score = Overall (1-5) from LLM-as-judge of generated test code (dimensions: coverage, rigor, design). `—` = no judge data.*")
-        lines.append("")
-        rk_hdr = "| Language | Model | Duration | Cost | LLM Score |"
-        rk_sep = "|----------|-------|----------|------|-----------|"
-        def _fmt_rk(r):
-            llm_cell = (f"{r['llm_rank_disp']} ({r['avg_llm']:.1f})"
-                        if r['avg_llm_n'] > 0 else r['llm_rank_disp'])
-            return (f"| {r['mode']} | {r['model_disp']} "
-                    f"| {r['dur_rank']} ({_dur(r['avg_dur'])}) "
-                    f"| {r['cost_rank']} (${r['avg_cost']:.2f}) "
-                    f"| {llm_cell} |")
-        lines.append(rk_hdr)
-        lines.append(rk_sep)
-        for r in sorted(cmp_rows, key=lambda r: (r['mode'], r['model'])):
-            lines.append(_fmt_rk(r))
-        lines.append("")
-        lines.extend(_emit_sorted_variants(rk_hdr, rk_sep, cmp_rows, [
-            ("Sorted by Duration rank (fastest first)", "dur_rank", False),
-            ("Sorted by Cost rank (cheapest first)", "cost_rank", False),
-            ("Sorted by LLM Score rank (best first; no-data last)", "llm_rank", False),
-        ], _fmt_rk))
-        lines.append("")
+        # Tiers under Notes carries only the band tables; the Duration/
+        # Cost "what are ratios" prose lives in the top-level Scoring
+        # section (built below as `scoring_block`).
+        notes_sections.append(("Tiers", [
+            f"- **Duration bands:** {_fmt_bands(dur_bands)}",
+            f"- **Cost bands:** {_fmt_bands(cost_bands)}",
+            "",
+            "*Tests/Workflow Craft bands are absolute Overall score bands:* "
+            "**A+** ≥4.7, **A** ≥4.4, **A-** ≥4.1, "
+            "**B+** ≥3.8, **B** ≥3.5, **B-** ≥3.2, "
+            "**C+** ≥2.9, **C** ≥2.6, **C-** ≥2.3, "
+            "**D+** ≥2.0, **D** ≥1.7, **D-** ≥1.4, "
+            "**F** <1.4, `—` = no data.*",
+        ]))
 
         if completed < total_runs and total_duration > 0 and completed > 0:
             est_remaining_s = (total_duration / completed) * (total_runs - run_count)
@@ -920,7 +1084,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
             alint = "pass" if alint_val else ("fail" if alint_val is False else "n/a")
             act = "yes" if m.get("quality", {}).get("act_result_txt_exists") else "no"
             lines.append(
-                f"| {m['task_name'][:30]} | {m['language_mode']} | {_label(m)} "
+                f"| {m['task_name'][:30]} | {m['language_mode']} | {_strip_cli(_label(m))} "
                 f"| {_dur(dur)} | {reason} | {m['code_metrics']['total_lines']} | {alint} | {act} |")
         lines.append("")
         lines.append(f"*{len(failed)} run(s) excluded from averages below.*")
@@ -933,14 +1097,14 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         lines.append("## Comparison by Language/Model/Effort")
         if failed:
             lines.append("*(averages exclude failed/timed-out runs)*")
-        lines.append("*Avg LLM Score = Overall (1-5) from LLM-as-judge of generated test code (dimensions: coverage, rigor, design). `—` = no judge data.*")
+        lines.append("*See [Notes](#notes) for scoring rubric and CLI version legend.*")
         lines.append("")
-        cmp_hdr = "| Language | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost | Avg LLM Score |"
-        cmp_sep = "|----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|"
+        cmp_hdr = "| Language | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost | Avg Tests Quality | Avg Workflow Craft |"
+        cmp_sep = "|----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|-----------------|"
         def _fmt_cmp(r):
             return (f"| {r['mode']} | {r['model_disp']} | {r['n']} | {_dur(r['avg_dur'])} | {_dur(r['avg_dur_net'])} "
                     f"| {r['avg_errors']:.1f} | {r['avg_turns']:.0f} | ${r['avg_cost']:.2f} | ${r['total_cost']:.2f} "
-                    f"| {r['avg_llm_disp']} |")
+                    f"| {r['avg_llm_disp']} | {r['avg_deliv_disp']} |")
         lines.append(cmp_hdr)
         lines.append(cmp_sep)
         for r in cmp_rows:
@@ -953,6 +1117,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
             ("Sorted by avg errors (fewest first)", "avg_errors", False),
             ("Sorted by avg turns (fewest first)", "avg_turns", False),
             ("Sorted by LLM-as-judge score (best first)", "avg_llm", True),
+            ("Sorted by deliverable-quality score (best first)", "avg_deliv", True),
         ], _fmt_cmp))
         lines.append("")
 
@@ -1230,7 +1395,8 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         sq = compute_structural_metrics(gen_dir)
 
         tq_rows.append({
-            "task": m["task_name"][:30], "mode": m["language_mode"], "model": _label(m),
+            "task": m["task_name"][:30], "mode": m["language_mode"],
+            "model": _strip_cli(_label(m)),
             "tests": sq["test_count"], "asserts": sq["assertion_count"],
             "apt": sq["assertions_per_test"],
             "t_lines": sq["test_lines"], "i_lines": sq["impl_lines"],
@@ -1243,7 +1409,8 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         if lj:
             has_llm = True
             llm_rows.append({
-                "task": m["task_name"][:30], "mode": m["language_mode"], "model": _label(m),
+                "task": m["task_name"][:30], "mode": m["language_mode"],
+                "model": _strip_cli(_label(m)),
                 "coverage": lj.get("coverage", 0), "rigor": lj.get("rigor", 0),
                 "design": lj.get("design", 0), "overall": lj.get("overall", 0),
                 "summary": lj.get("summary", ""),
@@ -1406,7 +1573,7 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
             paired_ovr.append(lr["overall"])
 
         if len(paired_tests) >= 5:
-            lines.append("### Correlation: Structural Metrics vs LLM Scores")
+            lines.append("### Correlation: Structural Metrics vs Tests Quality")
             lines.append("")
             lines.append("Spearman rank correlation between automated counts and LLM judge scores.")
             lines.append("Values near +1.0 indicate the LLM agrees with the structural signal; near 0 means no relationship.")
@@ -1477,9 +1644,9 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     # ==================================================================
     lines.append("## Per-Run Results")
     lines.append("")
-    lines.append("*LLM Score = Overall (1-5) from LLM-as-judge of generated test code (dimensions: coverage, rigor, design). `—` = no judge data.*")
+    lines.append("*Tests Quality = Overall (1-5) from LLM-as-judge of generated test code (dimensions: coverage, rigor, design). `—` = no judge data.*")
     lines.append("")
-    pr_hdr = "| Task | Language | Model | Duration | Turns | Errors | Cost | LLM Score | Chosen | Status |"
+    pr_hdr = "| Task | Language | Model | Duration | Turns | Errors | Cost | Tests Quality | Chosen | Status |"
     pr_sep = "|------|----------|-------|----------|-------|--------|------|-----------|--------|--------|"
     pr_rows = []
     for m in all_metrics:
@@ -1488,7 +1655,8 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
         lj = llm_data_by_key.get((m["task_id"], m["language_mode"], _label(m)))
         llm_overall = lj.get("overall") if lj else None
         pr_rows.append({
-            "task": m["task_name"][:30], "mode": m["language_mode"], "model": _label(m),
+            "task": m["task_name"][:30], "mode": m["language_mode"],
+            "model": _strip_cli(_label(m)),
             "dur": dur, "turns": m["timing"]["num_turns"],
             "errors": m["quality"]["error_count"],
             "cost": m["cost"]["total_cost_usd"],
@@ -1519,6 +1687,151 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     ], _fmt_pr))
     lines.append("")
 
+    # ──────────────────────────────────────────────────────────────────
+    # NOTES SECTION — rendered at the very bottom of the body. Moved here
+    # from above-table prose so the tables themselves lead the document.
+    # ──────────────────────────────────────────────────────────────────
+    if cmp_rows:
+        # Scoring rubric now lives in a top-level `## Scoring` section
+        # substituted into _SCORING_MARKER directly after the ToC.
+
+        # CLI Version Legend: one row per (variant × CLI version), with
+        # Tasks/Languages columns that spell out the subset when a
+        # release was added mid-campaign. "All" means the pair covered
+        # every task / every language present in this report.
+        from collections import defaultdict as _defaultdict
+        all_task_ids = sorted({m["task_id"] for m in successful})
+        all_langs = sorted({m["language_mode"] for m in successful})
+        per_pair: dict[tuple[str, str], dict[str, set[str]]] = _defaultdict(
+            lambda: {"tasks": set(), "langs": set()})
+        for m in successful:
+            model_short = m["model_short"]
+            display_model = _DISPLAY_RENAME.get(model_short, model_short)
+            effort = m.get("effort_level")
+            variant = f"{display_model}-{effort}" if effort else display_model
+            cli = m.get("claude_code_version") or "?"
+            bucket = per_pair[(variant, cli)]
+            bucket["tasks"].add(m["task_id"])
+            bucket["langs"].add(m["language_mode"])
+        if per_pair:
+            def _cell(observed: set[str], universe: list[str]) -> str:
+                if set(observed) == set(universe):
+                    return "All"
+                return ", ".join(sorted(observed))
+            legend = [
+                "| Variant label | CLI version | Tasks | Languages |",
+                "|---------------|-------------|-------|-----------|",
+            ]
+            for (variant, cli) in sorted(per_pair):
+                bucket = per_pair[(variant, cli)]
+                tasks_cell = _cell(bucket["tasks"], all_task_ids)
+                langs_cell = _cell(bucket["langs"], all_langs)
+                legend.append(
+                    f"| {variant} | {cli} | {tasks_cell} | {langs_cell} |"
+                )
+            notes_sections.append(("CLI Version Legend", legend))
+
+    # ── Build/refresh judge-consistency-data.md + LLM conclusions ──
+    # Prefer a fresh run: if per-judge cache files exist for this run,
+    # rebuild the data .md (which includes its own LLM Quality Analysis)
+    # and call the merged Conclusions generator (quality+speed+cost
+    # integrated). Both cached in conclusions-cache.json so regens are
+    # cheap when the underlying data hasn't changed.
+    conclusions = {"conclusions": None, "judge_consistency_summary": None}
+    has_panel_data = any(
+        (p / "test-quality-haiku45.json").exists() or
+        (p / "test-quality-gemini31pro.json").exists() or
+        (p / "deliverable-quality-haiku45.json").exists() or
+        (p / "deliverable-quality-gemini31pro.json").exists()
+        for p in (run_dir / "tasks").glob("*/*")
+    )
+    if has_panel_data:
+        print(f"  [{run_dir.name}] panel data detected — building "
+              "judge-consistency-data.md (may invoke Opus-max for "
+              "Quality Analysis)...", file=sys.stderr, flush=True)
+        try:
+            from judge_consistency_report import build_report as _build_jc
+            data_md = _build_jc(run_dir)
+            (run_dir / "judge-consistency-data.md").write_text(data_md)
+            print(f"  [{run_dir.name}] judge-consistency-data.md "
+                  "written.", file=sys.stderr, flush=True)
+        except Exception as e:
+            print(f"  (judge-consistency-data.md not written: {e})",
+                  file=sys.stderr)
+
+        # Per-run reports do NOT invoke the merged Conclusions LLM —
+        # that section is produced only for combined cross-run reports
+        # (see combine_results.py) where comparing multiple run dirs
+        # actually surfaces tradeoffs worth prose. Passing
+        # `speed_cost_input=None` below short-circuits the Conclusions
+        # call in conclusions_report.generate_conclusions_from_inputs
+        # while still generating the Judge Consistency Summary (which
+        # only needs data_md).
+        print(f"  [{run_dir.name}] invoking JCS Summary (Opus-max, "
+              "cached by input hash)...",
+              file=sys.stderr, flush=True)
+        try:
+            from conclusions_report import generate_conclusions
+            conclusions = generate_conclusions(
+                run_dir, speed_cost_input=None,
+                repo_root=Path(__file__).parent.resolve())
+            entry = conclusions.get("judge_consistency_summary")
+            if entry and entry.get("text"):
+                cached = " (cached)" if entry.get("from_cache") else ""
+                print(f"    judge_consistency_summary: "
+                      f"{entry.get('input_tokens', 0)}in/"
+                      f"{entry.get('output_tokens', 0)}out "
+                      f"${entry.get('cost_usd', 0):.4f}{cached}",
+                      file=sys.stderr, flush=True)
+            else:
+                print(f"    judge_consistency_summary: (empty/failed)",
+                      file=sys.stderr, flush=True)
+        except Exception as e:
+            print(f"  (JCS generation failed: {e})", file=sys.stderr)
+
+    # Judge Consistency Summary in Notes (shortened — "What we can trust"
+    # moved up to Conclusions > Quality). Pulls from the LLM output if
+    # available; otherwise notes-section is skipped.
+    jcs = conclusions.get("judge_consistency_summary")
+    if jcs and jcs.get("text"):
+        prov_bullets = [
+            f"- **Model:** `{jcs.get('model', '?')}` at effort "
+            f"`{jcs.get('effort', '?')}` via the Claude CLI"
+            f"{' (from cache)' if jcs.get('from_cache') else ''}.",
+            "- **Inputs:** the [`judge-consistency-data.md`]"
+            "(judge-consistency-data.md) tables plus benchmark context "
+            "(rubrics, task list, experiment setup).",
+            "- **Script:** [`conclusions_report.py`]"
+            "(../../conclusions_report.py) — regenerate with "
+            "`python3 generate_results.py <run_dir>`.",
+            "- **Instruction:** [`JUDGE_CONSISTENCY_SUMMARY_SYSTEM_PROMPT`]"
+            "(../../judge_consistency_report.py) in that script.",
+            f"- **Usage:** {jcs.get('input_tokens', 0)} input + "
+            f"{jcs.get('output_tokens', 0)} output tokens, "
+            f"${jcs.get('cost_usd', 0):.4f}.",
+        ]
+        notes_sections.append(("Judge Consistency Summary", [
+            jcs["text"],
+            "",
+            "#### Provenance",
+            "",
+            *prov_bullets,
+            "",
+            "*Full breakdown with per-model / per-language / "
+            "per-language×model ranking tables and disagreement "
+            "hotspots in [judge-consistency-data.md]"
+            "(judge-consistency-data.md).*",
+        ]))
+
+    if notes_sections:
+        lines.append("## Notes")
+        lines.append("")
+        for subtitle, subtext in notes_sections:
+            lines.append(f"### {subtitle}")
+            lines.append("")
+            lines.extend(subtext)
+            lines.append("")
+
     lines.append("---")
     # Determine the instructions version from the run data, not from the
     # current generate_results.py constant (which may have moved on to a
@@ -1528,7 +1841,109 @@ def generate_results_md(run_dir, all_metrics, total_runs, run_count):
     run_ver_str = ", ".join(run_versions) if run_versions else "unknown"
     lines.append(f"*Generated by generate_results.py — benchmark instructions {run_ver_str}*")
 
-    (run_dir / "results.md").write_text("\n".join(lines))
+    # ── Build Conclusions section (if LLM output available) ──
+    # Populated here so it can go immediately after the header via the
+    # _CONCLUSIONS_MARKER placeholder. The merged Conclusions integrates
+    # quality + speed + cost tradeoffs in one prose block — no
+    # subheadings.
+    def _prov_line(entry: dict | None, prompt_anchor: str) -> str | None:
+        if not entry:
+            return None
+        return (
+            "*Provenance:* "
+            f"`{entry.get('model', '?')}` at effort "
+            f"`{entry.get('effort', '?')}` via Claude CLI"
+            f"{' (from cache)' if entry.get('from_cache') else ''}; "
+            f"{entry.get('input_tokens', 0)} in / "
+            f"{entry.get('output_tokens', 0)} out tokens, "
+            f"${entry.get('cost_usd', 0):.4f}. "
+            f"Prompt: [`{prompt_anchor.rsplit('#', 1)[0].split('/')[-1]}"
+            f"`]({prompt_anchor})."
+        )
+
+    merged = conclusions.get("conclusions")
+    conclusions_block: list[str] = []
+    if merged and merged.get("text"):
+        conclusions_block.append("## Conclusions")
+        conclusions_block.append("")
+        conclusions_block.append(merged["text"])
+        conclusions_block.append("")
+        prov = _prov_line(merged, "../../conclusions_report.py")
+        if prov:
+            conclusions_block.append(prov)
+        conclusions_block.append("")
+    conclusions_md = "\n".join(conclusions_block)
+
+    # ── Build Scoring section (renders between ToC and Conclusions) ──
+    # Defines each scored axis, its dimensions, and how Duration/Cost
+    # ratios map to tier letters. `_fmt_bands()` is defined where the
+    # ratio bands themselves are computed; we only build the Scoring
+    # block here if cmp_rows had content so bands exist.
+    scoring_block: list[str] = []
+    if cmp_rows:
+        scoring_block = [
+            "## Scoring",
+            "",
+            "Judges: panel of LLM-as-judge models — `haiku-4-5` (via Claude CLI) and `gemini-3.1-pro-preview` (via Gemini CLI). Each run's quality score is the mean of both judges, cached per-run so numbers are deterministic across regenerations. Known bias caveats live in the [Judge Consistency Summary](#judge-consistency-summary).",
+            "",
+            "**Tests Quality** = Overall score (1-5) for the generated **test code**.",
+            "",
+            "Dimensions:",
+            "- **coverage** — requirements tested",
+            "- **rigor** — edge cases + error paths",
+            "- **design** — fixture quality + independence",
+            "- **overall** — holistic",
+            "",
+            "**Workflow Craft** = Overall score (1-5) for the produced **deliverable** (workflow YAML + scripts, excluding tests).",
+            "",
+            "Dimensions:",
+            "- **best_practices** — language-appropriate conventions",
+            "- **conciseness** — penalizes dead code AND repetition that should be factored",
+            "- **readability** — clarity for a reader encountering it cold",
+            "- **maintainability** — modularity, error-handling, testability",
+            "- **overall** — holistic",
+            "",
+            "**Duration / Cost** = ratio of each combo's average to the best combo's average on the same axis (lower is better).",
+            "",
+            "Properties:",
+            "- **Scale:** ratios, not raw seconds or dollars",
+            "- **Band calibration:** auto-calibrated to the data's best-to-worst spread via log-equal division (`boundary_i = max_ratio^(i/12)`), so the best observed ratio lands at A+ and the worst at D-",
+            "- **F band:** reserved for ratios beyond the observed worst",
+            "",
+        ]
+    scoring_md = "\n".join(scoring_block)
+
+    # ── Build TOC and substitute into the placeholder slot ──
+    # Scan `## ` (H2) and `### ` (H3) headings; H3 entries indent one
+    # level under their preceding H2. GitHub flavoured Markdown anchors
+    # lowercase the heading, replace spaces with hyphens, and strip most
+    # punctuation. We scan AFTER the conclusions + scoring blocks are
+    # assembled so their headings are picked up for the TOC.
+    all_lines = []
+    for line in lines:
+        if line == _CONCLUSIONS_MARKER:
+            all_lines.extend(conclusions_md.splitlines())
+        elif line == _SCORING_MARKER:
+            all_lines.extend(scoring_md.splitlines())
+        else:
+            all_lines.append(line)
+    toc_lines = ["## Table of Contents", ""]
+    for line in all_lines:
+        if line.startswith("## ") and line != "## Table of Contents":
+            title = line[3:].strip()
+            slug = re.sub(r"[^\w\s-]", "", title.lower()).strip()
+            slug = re.sub(r"[\s_]+", "-", slug)
+            toc_lines.append(f"- [{title}](#{slug})")
+        elif line.startswith("### "):
+            title = line[4:].strip()
+            slug = re.sub(r"[^\w\s-]", "", title.lower()).strip()
+            slug = re.sub(r"[\s_]+", "-", slug)
+            toc_lines.append(f"  - [{title}](#{slug})")
+    toc_lines.append("")
+    toc_md = "\n".join(toc_lines)
+
+    text = "\n".join(all_lines).replace(_TOC_MARKER, toc_md)
+    (run_dir / "results.md").write_text(text)
 
 
 # ---------------------------------------------------------------------------
@@ -1541,9 +1956,16 @@ def update_readme(repo_root: Path) -> None:
     if not results_dir.exists():
         return
 
+    # Only treat subdirs that look like a benchmark run (have a
+    # tasks/ tree or a run-manifest.json) as runs. Ancillary dirs like
+    # results/analysis/ — which carries follow-up markdown, not a run
+    # — would otherwise show up in the Benchmark Runs table as a
+    # garbage row (`0/?`, no cost, no link).
     runs: list[dict] = []
     for d in sorted(results_dir.iterdir(), reverse=True):
         if not d.is_dir() or d.name.startswith("."):
+            continue
+        if not ((d / "tasks").is_dir() or (d / "run-manifest.json").exists()):
             continue
         results_md = d / "results.md"
         manifest = d / "run-manifest.json"
@@ -1603,9 +2025,27 @@ def update_readme(repo_root: Path) -> None:
         # Append section
         new_content = content.rstrip() + "\n\n## Benchmark Runs\n\n" + "\n".join(table_lines) + "\n"
 
-    # Keep the "Latest results" link in the subtitle current
+    # Keep the "Latest results" link in the subtitle current. Prefer the
+    # most recently modified combined-report MD at the top level of
+    # results/ (if it's newer than the newest per-run results.md), since
+    # combined reports are the most current analytical artefact once
+    # they exist. Fall back to the newest per-run results.md otherwise.
+    combined_candidates = list(results_dir.glob("results_*.md"))
+    newest_combined = max(combined_candidates,
+                          key=lambda p: p.stat().st_mtime,
+                          default=None)
+    newest_run_results = None
     if runs and runs[0].get("has_results"):
+        newest_run_results = repo_root / runs[0]["link"]
+    latest_link = None
+    if (newest_combined is not None
+            and (newest_run_results is None
+                 or newest_combined.stat().st_mtime
+                    >= newest_run_results.stat().st_mtime)):
+        latest_link = f"results/{newest_combined.name}"
+    elif newest_run_results is not None:
         latest_link = runs[0]["link"]
+    if latest_link:
         new_content = re.sub(
             r"\*\*\[Latest results\]\([^)]*\)\*\*",
             f"**[Latest results]({latest_link})**",
@@ -1656,9 +2096,17 @@ def main():
         update_readme(repo_root)
         return
 
+    def _is_run_dir(d: Path) -> bool:
+        """A results/ subdir counts as a benchmark run only if it holds a
+        tasks/ tree or a run-manifest.json. Ancillary directories like
+        results/analysis/ (follow-up markdown, not a run) are skipped."""
+        if not d.is_dir() or d.name.startswith("."):
+            return False
+        return (d / "tasks").is_dir() or (d / "run-manifest.json").exists()
+
     if "--all" in sys.argv:
         for d in sorted(results_dir.iterdir()):
-            if d.is_dir() and not d.name.startswith("."):
+            if _is_run_dir(d):
                 _regenerate_run(d)
         update_readme(repo_root)
         return
@@ -1669,7 +2117,7 @@ def main():
         if not target.is_absolute():
             target = repo_root / target
     else:
-        dirs = sorted(d for d in results_dir.iterdir() if d.is_dir() and not d.name.startswith("."))
+        dirs = sorted(d for d in results_dir.iterdir() if _is_run_dir(d))
         if not dirs:
             print("No results directories found.", file=sys.stderr)
             sys.exit(1)

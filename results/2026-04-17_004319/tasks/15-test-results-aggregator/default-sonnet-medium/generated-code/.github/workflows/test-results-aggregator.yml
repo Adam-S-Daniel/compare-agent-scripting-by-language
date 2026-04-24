@@ -1,0 +1,49 @@
+name: Test Results Aggregator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  aggregate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install test dependencies
+        run: pip install pytest pyyaml
+
+      - name: Install actionlint
+        run: |
+          wget -q https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_amd64.tar.gz -O /tmp/actionlint.tar.gz
+          tar xz -C /usr/local/bin -f /tmp/actionlint.tar.gz actionlint
+
+      - name: Run unit tests
+        run: pytest tests/ -v
+
+      - name: Run aggregator on all fixture files
+        run: |
+          python aggregator.py \
+            fixtures/run1/junit.xml \
+            fixtures/run2/json.json \
+            fixtures/run3/junit.xml
+
+      - name: Write job summary
+        run: |
+          python aggregator.py \
+            fixtures/run1/junit.xml \
+            fixtures/run2/json.json \
+            fixtures/run3/junit.xml >> "$GITHUB_STEP_SUMMARY"

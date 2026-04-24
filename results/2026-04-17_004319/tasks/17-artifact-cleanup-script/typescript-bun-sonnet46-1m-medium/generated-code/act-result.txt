@@ -1,0 +1,142 @@
+
+============================================================
+TEST CASE: push-event-dry-run-fixture
+============================================================
+STDOUT:
+[Artifact Cleanup Script/Run Artifact Cleanup] ⭐ Run Set up job
+[Artifact Cleanup Script/Run Artifact Cleanup] 🚀  Start image=act-ubuntu-pwsh:latest
+[Artifact Cleanup Script/Run Artifact Cleanup]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Artifact Cleanup Script/Run Artifact Cleanup]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Run Artifact Cleanup]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/Run Artifact Cleanup]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Artifact Cleanup Script/Run Artifact Cleanup]   ✅  Success - Set up job
+[Artifact Cleanup Script/Run Artifact Cleanup] ⭐ Run Main Checkout repository
+[Artifact Cleanup Script/Run Artifact Cleanup]   🐳  docker cp src=/tmp/artifact-cleanup-act-2Nbu9c/. dst=/tmp/artifact-cleanup-act-2Nbu9c
+[Artifact Cleanup Script/Run Artifact Cleanup]   ✅  Success - Main Checkout repository [110.720894ms]
+[Artifact Cleanup Script/Run Artifact Cleanup] ⭐ Run Main Install Bun
+[Artifact Cleanup Script/Run Artifact Cleanup]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/1] user= workdir=
+[Artifact Cleanup Script/Run Artifact Cleanup]   | #=#=#                                                                                                                                                     0.0%#                                                                          2.6%####                                                                       5.6%######                                                                     9.6%#########                                                                 13.3%###########                                                               16.1%#############                                                             19.3%################                                                          23.0%###################                                                       26.6%######################                                                    30.8%#########################                                                 34.9%###########################                                               38.3%#############################                                             40.9%###############################                                           43.3%################################                                          45.1%#################################                                         46.4%###################################                                       49.8%#####################################                                     52.0%#######################################                                   55.5%##########################################                                59.4%#############################################                             63.2%###############################################                           65.8%#################################################                         69.0%####################################################                      73.3%#######################################################                   76.7%##########################################################                81.1%#############################################################             84.8%###############################################################           87.8%##################################################################        91.8%####################################################################      95.7%#######################################################################   99.4%######################################################################## 100.0%
+[Artifact Cleanup Script/Run Artifact Cleanup]   | bun was installed successfully to ~/.bun/bin/bun 
+[Artifact Cleanup Script/Run Artifact Cleanup]   | 
+[Artifact Cleanup Script/Run Artifact Cleanup]   | Added "~/.bun/bin" to $PATH in "~/.bashrc" 
+[Artifact Cleanup Script/Run Artifact Cleanup]   | 
+[Artifact Cleanup Script/Run Artifact Cleanup]   | To get started, run: 
+[Artifact Cleanup Script/Run Artifact Cleanup]   | 
+[Artifact Cleanup Script/Run Artifact Cleanup]   |   source /root/.bashrc 
+[Artifact Cleanup Script/Run Artifact Cleanup]   |   bun --help 
+[Artifact Cleanup Script/Run Artifact Cleanup]   ✅  Success - Main Install Bun [5.19439664s]
+[Artifact Cleanup Script/Run Artifact Cleanup]   ⚙  ::add-path:: /root/.bun/bin
+[Artifact Cleanup Script/Run Artifact Cleanup] ⭐ Run Main Verify Bun installation
+[Artifact Cleanup Script/Run Artifact Cleanup]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Artifact Cleanup Script/Run Artifact Cleanup]   | 1.3.13
+[Artifact Cleanup Script/Run Artifact Cleanup]   ✅  Success - Main Verify Bun installation [370.11306ms]
+[Artifact Cleanup Script/Run Artifact Cleanup] ⭐ Run Main Run unit tests
+[Artifact Cleanup Script/Run Artifact Cleanup]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/3] user= workdir=
+[Artifact Cleanup Script/Run Artifact Cleanup]   | bun test v1.3.13 (bf2e2cec)
+[Artifact Cleanup Script/Run Artifact Cleanup]   | 
+[Artifact Cleanup Script/Run Artifact Cleanup]   ❓  ::group::artifact-cleanup.test.ts:
+[Artifact Cleanup Script/Run Artifact Cleanup]   | (pass) applyRetentionPolicies - maxAgeDays > deletes artifacts older than maxAgeDays [0.77ms]
+[Artifact Cleanup Script/Run Artifact Cleanup]   | (pass) applyRetentionPolicies - maxAgeDays > keeps artifacts exactly at the age boundary (not strictly older) [0.15ms]
+[Artifact Cleanup Script/Run Artifact Cleanup]   | (pass) applyRetentionPolicies - maxAgeDays > deletes nothing when all artifacts are within maxAgeDays [0.11ms]
+[Artifact Cleanup Script/Run Artifact Cleanup]   | (pass) applyRetentionPolicies - keepLatestNPerWorkflow > keeps only the N most recent artifacts per workflow run [0.51ms]
+[Artifact Cleanup Script/Run Artifact Cleanup]   | (pass) applyRetentionPolicies - keepLatestNPerWorkflow > keeps all artifacts when count <= N [0.28ms]
+[Artifact Cleanup Script/Run Artifact Cleanup]   | (pass) applyRetentionPolicies - keepLatestNPerWorkflow > applies keep-latest-N independently per workflow run ID [0.46ms]
+[Artifact Cleanup Script/Run Artifact Cleanup]   | (pass) applyRetentionPolicies - maxTotalSizeBytes > deletes oldest artifacts until total size is within budget [0.27ms]
+[Artifact Cleanup Script/Run Artifact Cleanup]   | (pass) applyRetentionPolicies - maxTotalSizeBytes > does not delete anything when total size is within budget [0.11ms]
+[Artifact Cleanup Script/Run Artifact Cleanup]   | (pass) applyRetentionPolicies - maxTotalSizeBytes > computes correct space reclaimed [0.19ms]
+[Artifact Cleanup Script/Run Artifact Cleanup]   | (pass) applyRetentionPolicies - combined policies > applies all policies together (age + keep-N + size) [0.29ms]
+[Artifact Cleanup Script/Run Artifact Cleanup]   | (pass) applyRetentionPolicies - dry-run mode > dry-run flag is reflected in summary [0.12ms]
+[Artifact Cleanup Script/Run Artifact Cleanup]   | (pass) applyRetentionPolicies - dry-run mode > dry-run false is reflected in summary [0.16ms]
+[Artifact Cleanup Script/Run Artifact Cleanup]   | (pass) applyRetentionPolicies - summary fields > summary counts are correct [0.43ms]
+[Artifact Cleanup Script/Run Artifact Cleanup]   | (pass) applyRetentionPolicies - summary fields > no-op policy produces zero deletions [0.13ms]
+[Artifact Cleanup Script/Run Artifact Cleanup]   | (pass) formatDeletionPlan > output includes expected summary lines [1.81ms]
+[Artifact Cleanup Script/Run Artifact Cleanup]   | (pass) formatDeletionPlan > dry-run output includes [DRY RUN] marker [0.16ms]
+[Artifact Cleanup Script/Run Artifact Cleanup]   | (pass) formatDeletionPlan > output includes 'No artifacts to delete' when plan is empty [0.14ms]
+[Artifact Cleanup Script/Run Artifact Cleanup]   | (pass) applyRetentionPolicies - edge cases > handles empty artifact list [0.09ms]
+[Artifact Cleanup Script/Run Artifact Cleanup]   | (pass) applyRetentionPolicies - edge cases > handles single artifact within policy [0.09ms]
+[Artifact Cleanup Script/Run Artifact Cleanup]   | (pass) applyRetentionPolicies - edge cases > keepLatestNPerWorkflow=0 deletes all artifacts [0.13ms]
+[Artifact Cleanup Script/Run Artifact Cleanup]   | (pass) Workflow structure > workflow file exists [0.20ms]
+[Artifact Cleanup Script/Run Artifact Cleanup]   | (pass) Workflow structure > workflow contains expected triggers [0.21ms]
+[Artifact Cleanup Script/Run Artifact Cleanup]   | (pass) Workflow structure > workflow contains a job [0.06ms]
+[Artifact Cleanup Script/Run Artifact Cleanup]   | (pass) Workflow structure > workflow references actions/checkout@v4 [0.03ms]
+[Artifact Cleanup Script/Run Artifact Cleanup]   | (pass) Workflow structure > workflow installs Bun [0.03ms]
+[Artifact Cleanup Script/Run Artifact Cleanup]   | (pass) Workflow structure > workflow runs unit tests [0.05ms]
+[Artifact Cleanup Script/Run Artifact Cleanup]   | (pass) Workflow structure > workflow references artifact-cleanup.ts [0.03ms]
+[Artifact Cleanup Script/Run Artifact Cleanup]   | (pass) Workflow structure > workflow references fixture files that exist [0.08ms]
+[Artifact Cleanup Script/Run Artifact Cleanup]   | (pass) Workflow structure > actionlint passes on the workflow file [4.77ms]
+[Artifact Cleanup Script/Run Artifact Cleanup]   | (pass) Workflow structure > script file exists at path referenced by workflow [0.13ms]
+[Artifact Cleanup Script/Run Artifact Cleanup]   | 
+[Artifact Cleanup Script/Run Artifact Cleanup]   ❓  ::endgroup::
+[Artifact Cleanup Script/Run Artifact Cleanup]   | 
+[Artifact Cleanup Script/Run Artifact Cleanup]   |  30 pass
+[Artifact Cleanup Script/Run Artifact Cleanup]   |  0 fail
+[Artifact Cleanup Script/Run Artifact Cleanup]   |  66 expect() calls
+[Artifact Cleanup Script/Run Artifact Cleanup]   | Ran 30 tests across 1 file. [60.00ms]
+[Artifact Cleanup Script/Run Artifact Cleanup]   ✅  Success - Main Run unit tests [441.117571ms]
+[Artifact Cleanup Script/Run Artifact Cleanup] ⭐ Run Main Run cleanup script (dry-run with fixture data)
+[Artifact Cleanup Script/Run Artifact Cleanup]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/4] user= workdir=
+[Artifact Cleanup Script/Run Artifact Cleanup]   | === Artifact Cleanup Plan ===
+[Artifact Cleanup Script/Run Artifact Cleanup]   | [DRY RUN] No artifacts will actually be deleted
+[Artifact Cleanup Script/Run Artifact Cleanup]   | 
+[Artifact Cleanup Script/Run Artifact Cleanup]   | Total artifacts: 5
+[Artifact Cleanup Script/Run Artifact Cleanup]   | Artifacts to delete: 1
+[Artifact Cleanup Script/Run Artifact Cleanup]   | Artifacts to keep: 4
+[Artifact Cleanup Script/Run Artifact Cleanup]   | Space to reclaim: 100.00 MB (104857600 bytes)
+[Artifact Cleanup Script/Run Artifact Cleanup]   | 
+[Artifact Cleanup Script/Run Artifact Cleanup]   | Artifacts marked for deletion:
+[Artifact Cleanup Script/Run Artifact Cleanup]   |   - artifact-A | 100.00 MB | workflow: workflow-run-1 | created: 2026-01-01T00:00:00.000Z
+[Artifact Cleanup Script/Run Artifact Cleanup]   | 
+[Artifact Cleanup Script/Run Artifact Cleanup]   | Artifacts retained:
+[Artifact Cleanup Script/Run Artifact Cleanup]   |   - artifact-B | 50.00 MB | workflow: workflow-run-1
+[Artifact Cleanup Script/Run Artifact Cleanup]   |   - artifact-C | 20.00 MB | workflow: workflow-run-1
+[Artifact Cleanup Script/Run Artifact Cleanup]   |   - artifact-D | 30.00 MB | workflow: workflow-run-2
+[Artifact Cleanup Script/Run Artifact Cleanup]   |   - artifact-E | 10.00 MB | workflow: workflow-run-2
+[Artifact Cleanup Script/Run Artifact Cleanup]   | 
+[Artifact Cleanup Script/Run Artifact Cleanup]   | JSON Summary:
+[Artifact Cleanup Script/Run Artifact Cleanup]   | {
+[Artifact Cleanup Script/Run Artifact Cleanup]   |   "totalArtifacts": 5,
+[Artifact Cleanup Script/Run Artifact Cleanup]   |   "artifactsToDelete": 1,
+[Artifact Cleanup Script/Run Artifact Cleanup]   |   "artifactsToKeep": 4,
+[Artifact Cleanup Script/Run Artifact Cleanup]   |   "spaceReclaimedBytes": 104857600,
+[Artifact Cleanup Script/Run Artifact Cleanup]   |   "spaceReclaimedMB": 100,
+[Artifact Cleanup Script/Run Artifact Cleanup]   |   "dryRun": true
+[Artifact Cleanup Script/Run Artifact Cleanup]   | }
+[Artifact Cleanup Script/Run Artifact Cleanup]   ✅  Success - Main Run cleanup script (dry-run with fixture data) [601.824427ms]
+[Artifact Cleanup Script/Run Artifact Cleanup] ⭐ Run Main Run cleanup script (live mode with fixture data)
+[Artifact Cleanup Script/Run Artifact Cleanup]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/5] user= workdir=
+[Artifact Cleanup Script/Run Artifact Cleanup]   | === Artifact Cleanup Plan ===
+[Artifact Cleanup Script/Run Artifact Cleanup]   | 
+[Artifact Cleanup Script/Run Artifact Cleanup]   | Total artifacts: 5
+[Artifact Cleanup Script/Run Artifact Cleanup]   | Artifacts to delete: 1
+[Artifact Cleanup Script/Run Artifact Cleanup]   | Artifacts to keep: 4
+[Artifact Cleanup Script/Run Artifact Cleanup]   | Space to reclaim: 100.00 MB (104857600 bytes)
+[Artifact Cleanup Script/Run Artifact Cleanup]   | 
+[Artifact Cleanup Script/Run Artifact Cleanup]   | Artifacts marked for deletion:
+[Artifact Cleanup Script/Run Artifact Cleanup]   |   - artifact-A | 100.00 MB | workflow: workflow-run-1 | created: 2026-01-01T00:00:00.000Z
+[Artifact Cleanup Script/Run Artifact Cleanup]   | 
+[Artifact Cleanup Script/Run Artifact Cleanup]   | Artifacts retained:
+[Artifact Cleanup Script/Run Artifact Cleanup]   |   - artifact-B | 50.00 MB | workflow: workflow-run-1
+[Artifact Cleanup Script/Run Artifact Cleanup]   |   - artifact-C | 20.00 MB | workflow: workflow-run-1
+[Artifact Cleanup Script/Run Artifact Cleanup]   |   - artifact-D | 30.00 MB | workflow: workflow-run-2
+[Artifact Cleanup Script/Run Artifact Cleanup]   |   - artifact-E | 10.00 MB | workflow: workflow-run-2
+[Artifact Cleanup Script/Run Artifact Cleanup]   | 
+[Artifact Cleanup Script/Run Artifact Cleanup]   | JSON Summary:
+[Artifact Cleanup Script/Run Artifact Cleanup]   | {
+[Artifact Cleanup Script/Run Artifact Cleanup]   |   "totalArtifacts": 5,
+[Artifact Cleanup Script/Run Artifact Cleanup]   |   "artifactsToDelete": 1,
+[Artifact Cleanup Script/Run Artifact Cleanup]   |   "artifactsToKeep": 4,
+[Artifact Cleanup Script/Run Artifact Cleanup]   |   "spaceReclaimedBytes": 104857600,
+[Artifact Cleanup Script/Run Artifact Cleanup]   |   "spaceReclaimedMB": 100,
+[Artifact Cleanup Script/Run Artifact Cleanup]   |   "dryRun": false
+[Artifact Cleanup Script/Run Artifact Cleanup]   | }
+[Artifact Cleanup Script/Run Artifact Cleanup]   ✅  Success - Main Run cleanup script (live mode with fixture data) [436.643431ms]
+[Artifact Cleanup Script/Run Artifact Cleanup] ⭐ Run Complete job
+[Artifact Cleanup Script/Run Artifact Cleanup] Cleaning up container for job Run Artifact Cleanup
+[Artifact Cleanup Script/Run Artifact Cleanup]   ✅  Success - Complete job
+[Artifact Cleanup Script/Run Artifact Cleanup] 🏁  Job succeeded
+
+
+STDERR:
+time="2026-04-20T05:08:23-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+
+RESULT: PASSED

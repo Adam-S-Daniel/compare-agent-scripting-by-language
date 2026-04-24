@@ -1,0 +1,33 @@
+name: Test Results Aggregator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  aggregate:
+    name: Aggregate Test Results
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify Python3 is available
+        run: python3 --version
+
+      - name: Make aggregator executable
+        run: chmod +x aggregate.sh
+
+      - name: Run test results aggregator on fixture files
+        run: |
+          ./aggregate.sh \
+            fixtures/junit-run1.xml \
+            fixtures/junit-run2.xml \
+            fixtures/results-run1.json \
+            fixtures/results-run2.json

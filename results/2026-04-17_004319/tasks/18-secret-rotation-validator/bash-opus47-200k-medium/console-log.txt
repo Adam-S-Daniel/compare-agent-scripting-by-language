@@ -1,0 +1,277 @@
+[Tool: Bash] pwd && ls -la && which bats shellcheck actionlint act docker 2>&1
+[Result] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/bash-opus47-200k-medium
+total 44
+drwxr-xr-x  4 passp passp  4096 Apr 20 05:23 .
+drwxr-xr-x 31 passp passp  4096 Apr 20 05:23 ..
+-rw-r--r--  1 passp passp    40 Apr 20 05:23 .actrc
+drwxr-xr-x  2 passp passp  4096 Apr 20 05:23 .claude
+drwxr-xr-x  7 passp passp  4096 Apr 20 05:23 .git
+-rw-r--r--  1 passp passp 21843 Apr 17 00:12 benchmark-instructions-v4.md
+/home/passp/.npm-global/bin/bats
+/home/passp/.local/bin/shellcheck
+/home/passp/.local/bin/actionlint
+/home/passp/.local/bin/act
+/usr/bin/docker
+[Tool: Bash] cat .actrc
+[Result] -P ubuntu-latest=act-ubuntu-pwsh:latest
+[Tool: Bash] ls /home/passp/repos/compare-agent-scripting-by-language/AGENTS.md 2>&1 && docker images | head -5
+[Result] /home/passp/repos/compare-agent-scripting-by-language/AGENTS.md
+WARNING: This output is designed for human readability. For machine-readable output, please use --format.
+IMAGE                                     ID             DISK USAGE   CONTENT SIZE   EXTRA
+act-ubuntu-pwsh:latest                    413e38f474cc       2.55GB          640MB        
+catthehacker/ubuntu:act-22.04             754f20d9a184       2.15GB          531MB        
+catthehacker/ubuntu:act-latest            f58445a786d6       2.26GB          559MB        
+catthehacker/ubuntu:full-latest           9327301aea27       67.7GB         16.8GB   U
+[Tool: Bash] head -60 /home/passp/repos/compare-agent-scripting-by-language/AGENTS.md
+[Result] # Agent Instructions
+
+All agent-facing instructions live in this file. `CLAUDE.md` contains only a
+reference here. If you are a Claude Code agent, you have already loaded this
+via `CLAUDE.md`. Other agents: read this file directly.
+
+## Build and test
+
+```bash
+# Run unit tests (REQUIRED before every PR)
+pip install pytest  # if not already installed
+python3 -m pytest tests/ -v
+
+# Validate imports
+python3 -c "from runner import main"
+python3 -c "from generate_results import generate_results_md"
+python3 -c "from test_quality import compute_structural_metrics"
+python3 -c "from llm_providers import get_provider"
+
+# Regenerate all reports
+python3 generate_results.py --all
+
+# Run a benchmark (v4, all tasks/modes/models)
+python3 runner.py --tasks 11,12,13,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
+
+# Evaluate test quality (structural metrics only)
+python3 test_quality.py results/2026-04-09_152435
+
+# Evaluate test quality with LLM-as-judge (requires a provid
+[Assistant] Now I'll build the solution. I'll write the first failing bats test, then the script, fixtures, workflow, and harness.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/bash-opus47-200k-medium/tests/fixtures/mixed.json", "content": "{\n  \"se
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/bash-opus47-200k-medium/tests/fixtures/mixed.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/bash-opus47-200k-medium/tests/fixtures/all-ok.json", "content": "{\n  \"s
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/bash-opus47-200k-medium/tests/fixtures/all-ok.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/bash-opus47-200k-medium/tests/fixtures/all-expired.json", "content": "{\n
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/bash-opus47-200k-medium/tests/fixtures/all-expired.json (file state is current in your context — no need to Read it back)
+[Assistant] Now the main script:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/bash-opus47-200k-medium/secret-rotation.sh", "content": "#!/usr/bin/env b
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/bash-opus47-200k-medium/secret-rotation.sh (file state is current in your context — no need to Read it back)
+[Tool: Bash] chmod +x secret-rotation.sh && bash -n secret-rotation.sh && shellcheck secret-rotation.sh && echo OK
+[Result] OK
+[Tool: Bash] ./secret-rotation.sh -c tests/fixtures/mixed.json --today 2026-04-20 -w 14 -f json | jq '.counts, (.secrets | map({name, status, age_days, days_until_due}))'
+[Result] {
+  "expired": 2,
+  "warning": 1,
+  "ok": 1,
+  "total": 4
+}
+[
+  {
+    "name": "prod_api_key",
+    "status": "expired",
+    "age_days": 201,
+    "days_until_due": -111
+  },
+  {
+    "name": "db_password",
+    "status": "expired",
+    "age_days": 95,
+    "days_until_due": -5
+  },
+  {
+    "name": "oauth_secret",
+    "status": "ok",
+    "age_days": 10,
+    "days_until_due": 170
+  },
+  {
+    "name": "slack_webhook",
+    "status": "warning",
+    "age_days": 78,
+    "days_until_due": 2
+  }
+]
+[Tool: Bash] ./secret-rotation.sh -c tests/fixtures/mixed.json --today 2026-04-20 -w 14 -f markdown
+[Result ERROR] Exit code 2
+# Secret Rotation Report
+
+./secret-rotation.sh: line 113: printf: - : invalid option
+printf: usage: printf [-v var] format [arguments]
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/bash-opus47-200k-medium/secret-rotation.sh", "old_s
+[Result ERROR] <tool_use_error>String to replace not found in file.
+String:   printf '- Date: %s\n' "$today_iso"
+printf '- Warning window: %s days\n' "$warning"
+printf '- Expired: %s\n' "$(jq -r '.expired' <<<"$counts")"
+printf '- Warning: %s\n' "$(jq -r '.warning' <<<"$counts")"
+printf '- OK: %s\n\n' "$(jq -r '.ok' <<<"$counts")"</tool_use_error>
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/bash-opus47-200k-medium/secret-rotation.sh", "offset": 110, "limit": 20}
+[Result] 110	
+111	# Markdown output: header + summary + sections grouped by urgency.
+112	printf '# Secret Rotation Report\n\n'
+113	printf '- Date: %s\n' "$today_iso"
+114	printf '- Warning window: %s days\n' "$warning"
+115	printf '- Expired: %s\n' "$(jq -r '.expired' <<<"$counts")"
+116	printf '- Warning: %s\n' "$(jq -r '.warning' <<<"$counts")"
+117	printf '- OK: %s\n\n' "$(jq -r '.ok' <<<"$counts")"
+118	
+119	render_section() {
+120	  local label="$1" status="$2"
+121	  local rows
+122	  rows=$(jq -r --arg s "$status" '
+123	    map(select(.status == $s))
+124	    | sort_by(.days_until_due)
+125	    | .[]
+126	    | "| \(.name) | \(.last_rotated) | \(.rotation_days) | \(.age_days) | \(.days_until_due) | \((.services // []) | join(", ")) |"
+127	  ' <<<"$enriched")
+128	  printf '## %s\n\n' "$label"
+129	  if [[ -z "$rows" ]]; then
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/bash-opus47-200k-medium/secret-rotation.sh", "old_s
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/bash-opus47-200k-medium/secret-rotation.sh has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] ./secret-rotation.sh -c tests/fixtures/mixed.json --today 2026-04-20 -w 14 -f markdown
+[Result] # Secret Rotation Report
+
+- Date: 2026-04-20
+- Warning window: 14 days
+- Expired: 2
+- Warning: 1
+- OK: 1
+
+## Expired
+
+| Name | Last Rotated | Policy (days) | Age (days) | Days Until Due | Services |
+| --- | --- | --- | --- | --- | --- |
+| prod_api_key | 2025-10-01 | 90 | 201 | -111 | api, web |
+| db_password | 2026-01-15 | 90 | 95 | -5 | db, migrations |
+
+## Warning
+
+| Name | Last Rotated | Policy (days) | Age (days) | Days Until Due | Services |
+| --- | --- | --- | --- | --- | --- |
+| slack_webhook | 2026-02-01 | 80 | 78 | 2 | notifications |
+
+## OK
+
+| Name | Last Rotated | Policy (days) | Age (days) | Days Until Due | Services |
+| --- | --- | --- | --- | --- | --- |
+| oauth_secret | 2026-04-10 | 180 | 10 | 170 | auth |
+[Tool: Bash] shellcheck secret-rotation.sh && echo OK
+[Result] OK
+[Assistant] Now the workflow file:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/bash-opus47-200k-medium/.github/workflows/secret-rotation-validator.yml",
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/bash-opus47-200k-medium/.github/workflows/secret-rotation-validator.yml (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/secret-rotation-validator.yml && echo ACTIONLINT_OK
+[Result] ACTIONLINT_OK
+[Assistant] Now the bats test harness. I'll run act once with all fixtures and parse the delimited output for each test case.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/bash-opus47-200k-medium/tests/secret-rotation.bats", "content": "#!/usr/b
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/bash-opus47-200k-medium/tests/secret-rotation.bats (file state is current in your context — no need to Read it back)
+[Tool: Bash] bats tests/secret-rotation.bats 2>&1 | tail -80
+[Result] 1..14
+ok 1 workflow file exists and is valid YAML structure
+ok 2 workflow references the real script and fixtures
+ok 3 workflow declares expected triggers and permissions
+ok 4 bash -n syntax check passes
+ok 5 shellcheck passes
+not ok 6 act exited successfully
+# (in test file tests/secret-rotation.bats, line 81)
+#   `[ "$status" -eq 0 ]' failed
+not ok 7 act log reports Job succeeded
+# (in test file tests/secret-rotation.bats, line 86)
+#   `[ "$status" -eq 0 ]' failed
+not ok 8 mixed fixture JSON has expected status counts
+# (in test file tests/secret-rotation.bats, line 91)
+#   `[ -n "$body" ]' failed
+not ok 9 mixed fixture classifies each secret correctly
+# (in test file tests/secret-rotation.bats, line 103)
+#   `echo "$body" | jq -e '.secrets[] | select(.name=="prod_api_key") | .status=="expired" and .age_days==201' >/dev/null' failed with status 4
+not ok 10 mixed fixture preserves services list
+# (in test file tests/secret-rotation.bats, line 111)
+#   `echo "$body" | jq -e '.secrets[]
+[Tool: Bash] tail -60 act-result.txt
+[Result] ===ACT_RUN_BEGIN===
+2026-04-20T09:25:47Z
+time="2026-04-20T05:25:47-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+time="2026-04-20T05:25:47-04:00" level=warning msg="unable to get git ref: reference not found"
+time="2026-04-20T05:25:47-04:00" level=warning msg="unable to get git revision: reference not found"
+[secret-rotation-validator/Validate secret rotation] ⭐ Run Set up job
+[secret-rotation-validator/Validate secret rotation] 🚀  Start image=act-ubuntu-pwsh:latest
+[secret-rotation-validator/Validate secret rotation]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=true
+[secret-rotation-validator/Validate secret rotation] using DockerAuthConfig authentication for docker pull
+[secret-rotation-validator/Validate secret rotation] Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+[secret-rotation-validator/Validate 
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/bash-opus47-200k-medium/tests/secret-rotation.bats"
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/bash-opus47-200k-medium/tests/secret-rotation.bats has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] bats tests/secret-rotation.bats 2>&1 | tail -60
+[Result] 1..14
+ok 1 workflow file exists and is valid YAML structure
+ok 2 workflow references the real script and fixtures
+ok 3 workflow declares expected triggers and permissions
+ok 4 bash -n syntax check passes
+ok 5 shellcheck passes
+ok 6 act exited successfully
+ok 7 act log reports Job succeeded
+not ok 8 mixed fixture JSON has expected status counts
+# (in test file tests/secret-rotation.bats, line 92)
+#   `echo "$body" | jq -e '.counts.expired == 2' >/dev/null' failed with status 5
+# jq: parse error: Invalid numeric literal at line 1, column 36
+not ok 9 mixed fixture classifies each secret correctly
+# (in test file tests/secret-rotation.bats, line 103)
+#   `echo "$body" | jq -e '.secrets[] | select(.name=="prod_api_key") | .status=="expired" and .age_days==201' >/dev/null' failed with status 5
+# jq: parse error: Invalid numeric literal at line 1, column 36
+not ok 10 mixed fixture preserves services list
+# (in test file tests/secret-rotation.bats, line 111)
+#   `echo "$body" | jq -e '.secrets
+[Tool: Bash] grep -n 'BEGIN:mixed:json' act-result.txt | head -3 && echo "---" && awk '/BEGIN:mixed:json/{on=1; next} /END:mixed:json/{exit} on' act-result.txt | head -20
+[Result] 223:[secret-rotation-validator/Validate secret rotation]   | ===BEGIN:mixed:json===
+---
+[secret-rotation-validator/Validate secret rotation]   | {
+[secret-rotation-validator/Validate secret rotation]   |   "today": "2026-04-20",
+[secret-rotation-validator/Validate secret rotation]   |   "warning_days": 14,
+[secret-rotation-validator/Validate secret rotation]   |   "counts": {
+[secret-rotation-validator/Validate secret rotation]   |     "expired": 2,
+[secret-rotation-validator/Validate secret rotation]   |     "warning": 1,
+[secret-rotation-validator/Validate secret rotation]   |     "ok": 1,
+[secret-rotation-validator/Validate secret rotation]   |     "total": 4
+[secret-rotation-validator/Validate secret rotation]   |   },
+[secret-rotation-validator/Validate secret rotation]   |   "secrets": [
+[secret-rotation-validator/Validate secret rotation]   |     {
+[secret-rotation-validator/Validate secret rotation]   |       "name": "prod_api_key",
+[secret-rotation-validator/Validate secret ro
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/bash-opus47-200k-medium/tests/secret-rotation.bats"
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/bash-opus47-200k-medium/tests/secret-rotation.bats has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/bash-opus47-200k-medium/tests/secret-rotation.bats"
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/18-secret-rotation-validator/bash-opus47-200k-medium/tests/secret-rotation.bats has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] bats tests/secret-rotation.bats 2>&1 | tail -50
+[Result] 1..14
+ok 1 workflow file exists and is valid YAML structure
+ok 2 workflow references the real script and fixtures
+ok 3 workflow declares expected triggers and permissions
+ok 4 bash -n syntax check passes
+ok 5 shellcheck passes
+ok 6 act exited successfully
+ok 7 act log reports Job succeeded
+ok 8 mixed fixture JSON has expected status counts
+ok 9 mixed fixture classifies each secret correctly
+ok 10 mixed fixture preserves services list
+ok 11 mixed fixture markdown groups by urgency
+ok 12 all-ok fixture has no expired or warning secrets
+ok 13 all-ok markdown shows empty expired/warning sections
+ok 14 all-expired fixture has every secret expired
+[Assistant] All 14 tests pass. Let me verify final artifacts and check shellcheck/actionlint one more time.
+[Tool: Bash] shellcheck secret-rotation.sh && bash -n secret-rotation.sh && actionlint .github/workflows/secret-rotation-validator.yml && echo ALL_OK && ls -la act-result.txt && wc -l act-result.txt
+[Result] ALL_OK
+-rw-r--r-- 1 passp passp 27106 Apr 20 05:26 act-result.txt
+320 act-result.txt
+[Assistant] All 14 bats tests pass, shellcheck/bash-n/actionlint clean, `act-result.txt` present (27KB, 320 lines) with `ACT_EXIT=0` and "Job succeeded". Used 2 of 3 allowed `act push` runs.
+
+**Deliverables:**
+- `secret-rotation.sh` — validator with `-c/--config`, `-w/--warning`, `-f markdown|json`, `--today` flags
+- `tests/fixtures/{mixed,all-ok,all-expired}.json` — deterministic test configs
+- `.github/workflows/secret-rotation-validator.yml` — push/PR/schedule/dispatch triggers, runs validator over every fixture with delimited output
+- `tests/secret-rotation.bats` — runs `act push --rm --pull=false` once, parses delimited blocks, asserts exact counts/statuses/ages/service lists/markdown rows
+- `act-result.txt` — full act log artifact

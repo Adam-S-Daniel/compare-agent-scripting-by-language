@@ -1,0 +1,66 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: Path to the matrix config fixture.
+        required: false
+        default: test-fixtures/case-1-basic.json
+
+permissions:
+  contents: read
+
+# FIXTURE_PATH is overridden by the test harness per case by editing this file
+# in a temp copy before running `act push`.
+env:
+  FIXTURE_PATH: test-fixtures/case-1-basic.json
+
+jobs:
+  test-and-generate:
+    name: Test & Generate Matrix
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show environment
+        shell: pwsh
+        run: |
+          $PSVersionTable | Format-Table | Out-String | Write-Host
+          Get-Module -ListAvailable Pester | Select-Object Name, Version | Format-Table | Out-String | Write-Host
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = './tests'
+          $config.Run.PassThru = $true
+          $config.Output.Verbosity = 'Detailed'
+          $result = Invoke-Pester -Configuration $config
+          Write-Host "----PESTER-SUMMARY: total=$($result.TotalCount) passed=$($result.PassedCount) failed=$($result.FailedCount)----"
+          if ($result.FailedCount -gt 0) { exit 1 }
+
+      - name: Generate matrix from fixture
+        shell: pwsh
+        env:
+          FIXTURE: ${{ github.event.inputs.fixture || env.FIXTURE_PATH }}
+        run: |
+          if (-not (Test-Path $env:FIXTURE)) {
+            throw "Fixture not found: $env:FIXTURE"
+          }
+          Write-Host "----FIXTURE: $env:FIXTURE----"
+          $json = & ./src/Invoke-MatrixGenerator.ps1 -ConfigPath $env:FIXTURE
+          Write-Host "----MATRIX-BEGIN----"
+          Write-Host $json
+          Write-Host "----MATRIX-END----"
+          $obj = $json | ConvertFrom-Json
+          Write-Host "----TOTAL=$($obj.total)----"
+          Write-Host "----FAIL-FAST=$($obj.'fail-fast')----"
+          if ($obj.PSObject.Properties.Name -contains 'max-parallel') {
+            Write-Host "----MAX-PARALLEL=$($obj.'max-parallel')----"
+          } else {
+            Write-Host "----MAX-PARALLEL=none----"
+          }

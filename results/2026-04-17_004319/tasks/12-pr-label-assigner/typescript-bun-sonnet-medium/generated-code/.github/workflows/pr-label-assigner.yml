@@ -1,0 +1,59 @@
+name: PR Label Assigner
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  workflow_dispatch:
+    inputs:
+      files:
+        description: "Space-separated list of changed file paths to label"
+        required: false
+        default: "docs/api-guide.md src/api/users.ts src/api/users.test.ts src/utils.ts"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Run label assigner tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile || true
+
+      - name: Run unit tests
+        run: bun test label-assigner.test.ts
+
+  assign-labels:
+    name: Assign PR labels
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Run label assigner
+        run: |
+          FILES="${{ github.event.inputs.files || 'docs/api-guide.md src/api/users.ts src/api/users.test.ts src/utils.ts' }}"
+          echo "Running label assigner on files: $FILES"
+          cat > /tmp/label-config.json << 'JSONEOF'
+          {"rules":[{"pattern":"docs/**","label":"documentation","priority":1},{"pattern":"src/api/**","label":"api","priority":3},{"pattern":"**/*.test.*","label":"tests","priority":2},{"pattern":"src/**","label":"source","priority":1},{"pattern":".github/**","label":"ci","priority":4}]}
+          JSONEOF
+          bun run label-assigner.ts /tmp/label-config.json $FILES

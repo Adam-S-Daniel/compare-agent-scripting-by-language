@@ -1,0 +1,80 @@
+name: environment-matrix-generator
+
+# Triggers: run on pushes and PRs so the matrix is regenerated whenever the
+# config or script changes, plus manual dispatch for ad-hoc validation.
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+# Read-only permissions: this workflow only reads the repo and prints output;
+# it never writes commits, issues, or deployments.
+permissions:
+  contents: read
+
+env:
+  # Centralized so both the matrix-generator step and downstream consumers
+  # reference the same file.
+  MATRIX_CONFIG: tests/fixtures/basic.json
+
+jobs:
+  generate-matrix:
+    name: Generate matrix from primary config
+    runs-on: ubuntu-latest
+    outputs:
+      strategy: ${{ steps.gen.outputs.strategy }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Ensure jq is available
+        shell: bash
+        run: |
+          if ! command -v jq >/dev/null 2>&1; then
+            apt-get update && apt-get install -y jq
+          fi
+          jq --version
+
+      - name: Make script executable
+        shell: bash
+        run: chmod +x ./matrix-generator.sh ./test-harness.sh
+
+      - name: Generate matrix JSON
+        id: gen
+        shell: bash
+        run: |
+          echo "Using config: $MATRIX_CONFIG"
+          strategy="$(./matrix-generator.sh "$MATRIX_CONFIG")"
+          echo "$strategy"
+          # Emit a single-line output for downstream jobs (GH Actions outputs
+          # do not allow raw newlines unless wrapped with the heredoc form).
+          {
+            echo "strategy<<__EOF__"
+            echo "$strategy"
+            echo "__EOF__"
+          } >> "$GITHUB_OUTPUT"
+
+  run-fixtures:
+    name: Run every fixture via harness
+    runs-on: ubuntu-latest
+    needs: generate-matrix
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Ensure jq is available
+        shell: bash
+        run: |
+          if ! command -v jq >/dev/null 2>&1; then
+            apt-get update && apt-get install -y jq
+          fi
+
+      - name: Make scripts executable
+        shell: bash
+        run: chmod +x ./matrix-generator.sh ./test-harness.sh
+
+      - name: Execute harness over all fixtures
+        shell: bash
+        run: ./test-harness.sh

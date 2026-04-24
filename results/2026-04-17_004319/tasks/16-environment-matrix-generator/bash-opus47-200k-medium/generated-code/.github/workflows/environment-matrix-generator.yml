@@ -1,0 +1,117 @@
+name: environment-matrix-generator
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+env:
+  CONFIG_FILE: matrix-config.json
+
+jobs:
+  generate-matrix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Ensure jq is available
+        shell: bash
+        run: |
+          if ! command -v jq >/dev/null 2>&1; then
+            apt-get update && apt-get install -y jq
+          fi
+          jq --version
+
+      - name: Run matrix generator over all cases
+        shell: bash
+        env:
+          CONFIG_FILE: ${{ env.CONFIG_FILE }}
+        run: |
+          set -euo pipefail
+          chmod +x ./generate-matrix.sh
+
+          if [[ ! -f "$CONFIG_FILE" ]]; then
+            echo "No $CONFIG_FILE found — skipping" >&2
+            exit 0
+          fi
+
+          cases_len=$(jq '.cases | length' "$CONFIG_FILE")
+          echo "Running $cases_len matrix case(s)"
+
+          pass=0
+          for i in $(seq 0 $((cases_len - 1))); do
+            name=$(jq -r ".cases[$i].name" "$CONFIG_FILE")
+            jq ".cases[$i].config"  "$CONFIG_FILE" > case-config.json
+            jq ".cases[$i].expect"  "$CONFIG_FILE" > case-expect.json
+
+            echo "--- case: $name ---"
+            set +e
+            out=$(./generate-matrix.sh case-config.json 2>case-err.txt)
+            rc=$?
+            set -e
+            echo "$out"
+            echo "exit=$rc"
+
+            want_error=$(jq -r '.error // empty' case-expect.json)
+            if [[ -n "$want_error" ]]; then
+              if [[ $rc -ne 3 ]]; then
+                echo "FAIL: case '$name' expected error exit 3, got $rc"; exit 1
+              fi
+              echo "CASE-OK $name error"
+              pass=$((pass+1)); continue
+            fi
+
+            if [[ $rc -ne 0 ]]; then
+              echo "FAIL: case '$name' exited $rc"; cat case-err.txt; exit 1
+            fi
+
+            want_count=$(jq -r '.count'         case-expect.json)
+            got_count=$(jq  -r '.count'         <<<"$out")
+            if [[ "$want_count" != "null" && "$got_count" != "$want_count" ]]; then
+              echo "FAIL: case '$name' count: want=$want_count got=$got_count"; exit 1
+            fi
+
+            line="CASE-OK $name count=$got_count"
+
+            want_extra=$(jq -r '."has-extra" // false' case-expect.json)
+            if [[ "$want_extra" == "true" ]]; then
+              got_extra=$(jq '[.matrix.include[] | select(.extra=="x")] | length' <<<"$out")
+              if [[ "$got_extra" -lt 1 ]]; then
+                echo "FAIL: case '$name' expected include with extra=x"; exit 1
+              fi
+              line="$line extra=yes"
+            fi
+
+            want_mp=$(jq -r '."max-parallel" // empty' case-expect.json)
+            if [[ -n "$want_mp" ]]; then
+              got_mp=$(jq -r '."max-parallel"' <<<"$out")
+              if [[ "$got_mp" != "$want_mp" ]]; then
+                echo "FAIL: case '$name' max-parallel: want=$want_mp got=$got_mp"; exit 1
+              fi
+              line="$line max-parallel=$got_mp"
+            fi
+
+            want_ff=$(jq -r '."fail-fast" // empty' case-expect.json)
+            if [[ -n "$want_ff" ]]; then
+              got_ff=$(jq -r '."fail-fast"' <<<"$out")
+              if [[ "$got_ff" != "$want_ff" ]]; then
+                echo "FAIL: case '$name' fail-fast: want=$want_ff got=$got_ff"; exit 1
+              fi
+              line="$line fail-fast=$got_ff"
+            fi
+
+            echo "$line"
+            pass=$((pass+1))
+          done
+
+          echo "Passed: $pass / $cases_len"
+          if [[ "$pass" -eq "$cases_len" ]]; then
+            echo "ALL-CASES-PASSED"
+          else
+            echo "SOME-CASES-FAILED"; exit 1
+          fi
