@@ -1,6 +1,6 @@
 # Benchmark Results: Language Comparison
 
-**Last updated:** 2026-05-06 06:13:10 PM ET — 3/35 runs completed, 32 remaining; total cost $1.69; total agent time 29.1 min.
+**Last updated:** 2026-05-06 06:14:11 PM ET — 4/35 runs completed, 31 remaining; total cost $2.23; total agent time 39.0 min.
 
 ## Table of Contents
 
@@ -53,6 +53,7 @@ Properties:
 | Language | Model | Duration | Cost | Tests Quality | Workflow Craft |
 |----------|-------|----------|------|-----------|-------------|
 | default | haiku45-200k | A+ (7.5min) | A+ ($0.45) | — | — |
+| powershell-tool | haiku45-200k | C (9.9min) | B ($0.53) | — | — |
 | bash | haiku45-200k | D- (11.9min) | B- ($0.54) | — | — |
 | powershell | haiku45-200k | C+ (9.8min) | D- ($0.70) | — | — |
 
@@ -64,6 +65,7 @@ Properties:
 |----------|-------|----------|------|-----------|-------------|
 | default | haiku45-200k | A+ (7.5min) | A+ ($0.45) | — | — |
 | powershell | haiku45-200k | C+ (9.8min) | D- ($0.70) | — | — |
+| powershell-tool | haiku45-200k | C (9.9min) | B ($0.53) | — | — |
 | bash | haiku45-200k | D- (11.9min) | B- ($0.54) | — | — |
 
 </details>
@@ -74,6 +76,7 @@ Properties:
 | Language | Model | Duration | Cost | Tests Quality | Workflow Craft |
 |----------|-------|----------|------|-----------|-------------|
 | default | haiku45-200k | A+ (7.5min) | A+ ($0.45) | — | — |
+| powershell-tool | haiku45-200k | C (9.9min) | B ($0.53) | — | — |
 | bash | haiku45-200k | D- (11.9min) | B- ($0.54) | — | — |
 | powershell | haiku45-200k | C+ (9.8min) | D- ($0.70) | — | — |
 
@@ -85,6 +88,7 @@ Properties:
 | Language | Model | Duration | Cost | Tests Quality | Workflow Craft |
 |----------|-------|----------|------|-----------|-------------|
 | default | haiku45-200k | A+ (7.5min) | A+ ($0.45) | — | — |
+| powershell-tool | haiku45-200k | C (9.9min) | B ($0.53) | — | — |
 | bash | haiku45-200k | D- (11.9min) | B- ($0.54) | — | — |
 | powershell | haiku45-200k | C+ (9.8min) | D- ($0.70) | — | — |
 
@@ -96,13 +100,14 @@ Properties:
 | Language | Model | Duration | Cost | Tests Quality | Workflow Craft |
 |----------|-------|----------|------|-----------|-------------|
 | default | haiku45-200k | A+ (7.5min) | A+ ($0.45) | — | — |
+| powershell-tool | haiku45-200k | C (9.9min) | B ($0.53) | — | — |
 | bash | haiku45-200k | D- (11.9min) | B- ($0.54) | — | — |
 | powershell | haiku45-200k | C+ (9.8min) | D- ($0.70) | — | — |
 
 </details>
 
-- **Estimated time remaining:** 310.5min
-- **Estimated total cost:** $19.73
+- **Estimated time remaining:** 302.0min
+- **Estimated total cost:** $19.47
 
 ## Comparison by Language/Model/Effort
 *See [Notes](#notes) for scoring rubric and CLI version legend.*
@@ -112,6 +117,7 @@ Properties:
 | bash | haiku45-200k | 1 | 11.9min | 6.9min | 3.0 | 55 | $0.54 | $0.54 | — | — |
 | default | haiku45-200k | 1 | 7.5min | 7.0min | 1.0 | 50 | $0.45 | $0.45 | — | — |
 | powershell | haiku45-200k | 1 | 9.8min | 0.7min | 3.0 | 71 | $0.70 | $0.70 | — | — |
+| powershell-tool | haiku45-200k | 1 | 9.9min | 8.2min | 2.0 | 48 | $0.53 | $0.53 | — | — |
 
 
 <details>
@@ -120,6 +126,7 @@ Properties:
 | Language | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost | Avg Tests Quality | Avg Workflow Craft |
 |----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|-----------------|
 | default | haiku45-200k | 1 | 7.5min | 7.0min | 1.0 | 50 | $0.45 | $0.45 | — | — |
+| powershell-tool | haiku45-200k | 1 | 9.9min | 8.2min | 2.0 | 48 | $0.53 | $0.53 | — | — |
 | bash | haiku45-200k | 1 | 11.9min | 6.9min | 3.0 | 55 | $0.54 | $0.54 | — | — |
 | powershell | haiku45-200k | 1 | 9.8min | 0.7min | 3.0 | 71 | $0.70 | $0.70 | — | — |
 
@@ -132,6 +139,7 @@ Properties:
 |----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|-----------------|
 | default | haiku45-200k | 1 | 7.5min | 7.0min | 1.0 | 50 | $0.45 | $0.45 | — | — |
 | powershell | haiku45-200k | 1 | 9.8min | 0.7min | 3.0 | 71 | $0.70 | $0.70 | — | — |
+| powershell-tool | haiku45-200k | 1 | 9.9min | 8.2min | 2.0 | 48 | $0.53 | $0.53 | — | — |
 | bash | haiku45-200k | 1 | 11.9min | 6.9min | 3.0 | 55 | $0.54 | $0.54 | — | — |
 
 </details>
@@ -144,6 +152,7 @@ Properties:
 | powershell | haiku45-200k | 1 | 9.8min | 0.7min | 3.0 | 71 | $0.70 | $0.70 | — | — |
 | bash | haiku45-200k | 1 | 11.9min | 6.9min | 3.0 | 55 | $0.54 | $0.54 | — | — |
 | default | haiku45-200k | 1 | 7.5min | 7.0min | 1.0 | 50 | $0.45 | $0.45 | — | — |
+| powershell-tool | haiku45-200k | 1 | 9.9min | 8.2min | 2.0 | 48 | $0.53 | $0.53 | — | — |
 
 </details>
 
@@ -153,6 +162,7 @@ Properties:
 | Language | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost | Avg Tests Quality | Avg Workflow Craft |
 |----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|-----------------|
 | default | haiku45-200k | 1 | 7.5min | 7.0min | 1.0 | 50 | $0.45 | $0.45 | — | — |
+| powershell-tool | haiku45-200k | 1 | 9.9min | 8.2min | 2.0 | 48 | $0.53 | $0.53 | — | — |
 | bash | haiku45-200k | 1 | 11.9min | 6.9min | 3.0 | 55 | $0.54 | $0.54 | — | — |
 | powershell | haiku45-200k | 1 | 9.8min | 0.7min | 3.0 | 71 | $0.70 | $0.70 | — | — |
 
@@ -163,6 +173,7 @@ Properties:
 
 | Language | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost | Avg Tests Quality | Avg Workflow Craft |
 |----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|-----------------|
+| powershell-tool | haiku45-200k | 1 | 9.9min | 8.2min | 2.0 | 48 | $0.53 | $0.53 | — | — |
 | default | haiku45-200k | 1 | 7.5min | 7.0min | 1.0 | 50 | $0.45 | $0.45 | — | — |
 | bash | haiku45-200k | 1 | 11.9min | 6.9min | 3.0 | 55 | $0.54 | $0.54 | — | — |
 | powershell | haiku45-200k | 1 | 9.8min | 0.7min | 3.0 | 71 | $0.70 | $0.70 | — | — |
@@ -177,6 +188,7 @@ Properties:
 | bash | haiku45-200k | 1 | 11.9min | 6.9min | 3.0 | 55 | $0.54 | $0.54 | — | — |
 | default | haiku45-200k | 1 | 7.5min | 7.0min | 1.0 | 50 | $0.45 | $0.45 | — | — |
 | powershell | haiku45-200k | 1 | 9.8min | 0.7min | 3.0 | 71 | $0.70 | $0.70 | — | — |
+| powershell-tool | haiku45-200k | 1 | 9.9min | 8.2min | 2.0 | 48 | $0.53 | $0.53 | — | — |
 
 </details>
 
@@ -188,6 +200,7 @@ Properties:
 | bash | haiku45-200k | 1 | 11.9min | 6.9min | 3.0 | 55 | $0.54 | $0.54 | — | — |
 | default | haiku45-200k | 1 | 7.5min | 7.0min | 1.0 | 50 | $0.45 | $0.45 | — | — |
 | powershell | haiku45-200k | 1 | 9.8min | 0.7min | 3.0 | 71 | $0.70 | $0.70 | — | — |
+| powershell-tool | haiku45-200k | 1 | 9.9min | 8.2min | 2.0 | 48 | $0.53 | $0.53 | — | — |
 
 </details>
 
@@ -202,9 +215,10 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Language | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time | Test Run Time | % of Test Time Saved |
 |------|-------|-------|--------|------|------------|-----------|----------|-----------|-----------|-----------|---------------|----------------------|
-| bash | haiku45-200k-cli2.1.131 | 20 | 1 | 5.0% | 0.2min | 0.7% | 0.0min | 0.1% | 0.2min | 0.6% | 0.4min | 28.2% |
-| default | haiku45-200k-cli2.1.131 | 17 | 0 | 0.0% | 0.0min | 0.0% | 0.0min | 0.2% | -0.0min | -0.2% | 0.0min | 100.0% |
-| powershell | haiku45-200k-cli2.1.131 | 23 | 1 | 4.3% | 0.6min | 2.0% | 0.2min | 0.8% | 0.4min | 1.3% | 0.8min | 31.9% |
+| bash | haiku45-200k-cli2.1.131 | 20 | 1 | 5.0% | 0.2min | 0.5% | 0.0min | 0.1% | 0.2min | 0.4% | 0.4min | 28.2% |
+| default | haiku45-200k-cli2.1.131 | 17 | 0 | 0.0% | 0.0min | 0.0% | 0.0min | 0.1% | -0.0min | -0.1% | 0.0min | 100.0% |
+| powershell | haiku45-200k-cli2.1.131 | 23 | 1 | 4.3% | 0.6min | 1.5% | 0.2min | 0.6% | 0.4min | 0.9% | 0.8min | 31.9% |
+| powershell-tool | haiku45-200k-cli2.1.131 | 15 | 0 | 0.0% | 0.0min | 0.0% | 0.3min | 0.8% | -0.3min | -0.8% | 5.6min | -5.8% |
 
 
 <details>
@@ -212,9 +226,10 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Language | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time | Test Run Time | % of Test Time Saved |
 |------|-------|-------|--------|------|------------|-----------|----------|-----------|-----------|-----------|---------------|----------------------|
-| powershell | haiku45-200k-cli2.1.131 | 23 | 1 | 4.3% | 0.6min | 2.0% | 0.2min | 0.8% | 0.4min | 1.3% | 0.8min | 31.9% |
-| bash | haiku45-200k-cli2.1.131 | 20 | 1 | 5.0% | 0.2min | 0.7% | 0.0min | 0.1% | 0.2min | 0.6% | 0.4min | 28.2% |
-| default | haiku45-200k-cli2.1.131 | 17 | 0 | 0.0% | 0.0min | 0.0% | 0.0min | 0.2% | -0.0min | -0.2% | 0.0min | 100.0% |
+| powershell | haiku45-200k-cli2.1.131 | 23 | 1 | 4.3% | 0.6min | 1.5% | 0.2min | 0.6% | 0.4min | 0.9% | 0.8min | 31.9% |
+| bash | haiku45-200k-cli2.1.131 | 20 | 1 | 5.0% | 0.2min | 0.5% | 0.0min | 0.1% | 0.2min | 0.4% | 0.4min | 28.2% |
+| default | haiku45-200k-cli2.1.131 | 17 | 0 | 0.0% | 0.0min | 0.0% | 0.0min | 0.1% | -0.0min | -0.1% | 0.0min | 100.0% |
+| powershell-tool | haiku45-200k-cli2.1.131 | 15 | 0 | 0.0% | 0.0min | 0.0% | 0.3min | 0.8% | -0.3min | -0.8% | 5.6min | -5.8% |
 
 </details>
 
@@ -223,9 +238,10 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Language | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time | Test Run Time | % of Test Time Saved |
 |------|-------|-------|--------|------|------------|-----------|----------|-----------|-----------|-----------|---------------|----------------------|
-| default | haiku45-200k-cli2.1.131 | 17 | 0 | 0.0% | 0.0min | 0.0% | 0.0min | 0.2% | -0.0min | -0.2% | 0.0min | 100.0% |
-| powershell | haiku45-200k-cli2.1.131 | 23 | 1 | 4.3% | 0.6min | 2.0% | 0.2min | 0.8% | 0.4min | 1.3% | 0.8min | 31.9% |
-| bash | haiku45-200k-cli2.1.131 | 20 | 1 | 5.0% | 0.2min | 0.7% | 0.0min | 0.1% | 0.2min | 0.6% | 0.4min | 28.2% |
+| default | haiku45-200k-cli2.1.131 | 17 | 0 | 0.0% | 0.0min | 0.0% | 0.0min | 0.1% | -0.0min | -0.1% | 0.0min | 100.0% |
+| powershell | haiku45-200k-cli2.1.131 | 23 | 1 | 4.3% | 0.6min | 1.5% | 0.2min | 0.6% | 0.4min | 0.9% | 0.8min | 31.9% |
+| bash | haiku45-200k-cli2.1.131 | 20 | 1 | 5.0% | 0.2min | 0.5% | 0.0min | 0.1% | 0.2min | 0.4% | 0.4min | 28.2% |
+| powershell-tool | haiku45-200k-cli2.1.131 | 15 | 0 | 0.0% | 0.0min | 0.0% | 0.3min | 0.8% | -0.3min | -0.8% | 5.6min | -5.8% |
 
 </details>
 
@@ -234,9 +250,10 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Language | Model | Fires | Caught | Rate | Gross Saved | % of Time | Overhead | % of Time | Net Saved | % of Time | Test Run Time | % of Test Time Saved |
 |------|-------|-------|--------|------|------------|-----------|----------|-----------|-----------|-----------|---------------|----------------------|
-| bash | haiku45-200k-cli2.1.131 | 20 | 1 | 5.0% | 0.2min | 0.7% | 0.0min | 0.1% | 0.2min | 0.6% | 0.4min | 28.2% |
-| powershell | haiku45-200k-cli2.1.131 | 23 | 1 | 4.3% | 0.6min | 2.0% | 0.2min | 0.8% | 0.4min | 1.3% | 0.8min | 31.9% |
-| default | haiku45-200k-cli2.1.131 | 17 | 0 | 0.0% | 0.0min | 0.0% | 0.0min | 0.2% | -0.0min | -0.2% | 0.0min | 100.0% |
+| bash | haiku45-200k-cli2.1.131 | 20 | 1 | 5.0% | 0.2min | 0.5% | 0.0min | 0.1% | 0.2min | 0.4% | 0.4min | 28.2% |
+| powershell | haiku45-200k-cli2.1.131 | 23 | 1 | 4.3% | 0.6min | 1.5% | 0.2min | 0.6% | 0.4min | 0.9% | 0.8min | 31.9% |
+| default | haiku45-200k-cli2.1.131 | 17 | 0 | 0.0% | 0.0min | 0.0% | 0.0min | 0.1% | -0.0min | -0.1% | 0.0min | 100.0% |
+| powershell-tool | haiku45-200k-cli2.1.131 | 15 | 0 | 0.0% | 0.0min | 0.0% | 0.3min | 0.8% | -0.3min | -0.8% | 5.6min | -5.8% |
 
 </details>
 
@@ -244,12 +261,14 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Trap | Language | Model | Fell In | Time Lost | % of Time | $ Lost | % of $ |
 |------|------|-------|---------|-----------|-----------|--------|--------|
-| act-push-debug-loops | bash | haiku45-200k-cli2.1.131 | 1 | 4.3min | 14.6% | $0.20 | 11.54% |
-| act-push-debug-loops | powershell | haiku45-200k-cli2.1.131 | 1 | 6.1min | 20.8% | $0.43 | 25.46% |
-| repeated-test-reruns | bash | haiku45-200k-cli2.1.131 | 1 | 0.7min | 2.3% | $0.03 | 1.81% |
-| repeated-test-reruns | powershell | haiku45-200k-cli2.1.131 | 1 | 2.3min | 8.0% | $0.17 | 9.81% |
-| actionlint-fix-cycles | powershell | haiku45-200k-cli2.1.131 | 1 | 0.7min | 2.3% | $0.05 | 2.80% |
-| fixture-rework | default | haiku45-200k-cli2.1.131 | 1 | 0.5min | 1.7% | $0.03 | 1.79% |
+| act-push-debug-loops | bash | haiku45-200k-cli2.1.131 | 1 | 4.3min | 10.9% | $0.20 | 8.77% |
+| act-push-debug-loops | powershell | haiku45-200k-cli2.1.131 | 1 | 6.1min | 15.5% | $0.43 | 19.36% |
+| repeated-test-reruns | bash | haiku45-200k-cli2.1.131 | 1 | 0.7min | 1.7% | $0.03 | 1.38% |
+| repeated-test-reruns | powershell | haiku45-200k-cli2.1.131 | 1 | 2.3min | 6.0% | $0.17 | 7.46% |
+| repeated-test-reruns | powershell-tool | haiku45-200k-cli2.1.131 | 1 | 1.0min | 2.6% | $0.05 | 2.43% |
+| actionlint-fix-cycles | powershell | haiku45-200k-cli2.1.131 | 1 | 0.7min | 1.7% | $0.05 | 2.13% |
+| pwsh-runtime-install-overhead | powershell-tool | haiku45-200k-cli2.1.131 | 1 | 0.7min | 1.7% | $0.04 | 1.60% |
+| fixture-rework | default | haiku45-200k-cli2.1.131 | 1 | 0.5min | 1.3% | $0.03 | 1.36% |
 
 
 <details>
@@ -257,12 +276,14 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Trap | Language | Model | Fell In | Time Lost | % of Time | $ Lost | % of $ |
 |------|------|-------|---------|-----------|-----------|--------|--------|
-| fixture-rework | default | haiku45-200k-cli2.1.131 | 1 | 0.5min | 1.7% | $0.03 | 1.79% |
-| repeated-test-reruns | bash | haiku45-200k-cli2.1.131 | 1 | 0.7min | 2.3% | $0.03 | 1.81% |
-| actionlint-fix-cycles | powershell | haiku45-200k-cli2.1.131 | 1 | 0.7min | 2.3% | $0.05 | 2.80% |
-| repeated-test-reruns | powershell | haiku45-200k-cli2.1.131 | 1 | 2.3min | 8.0% | $0.17 | 9.81% |
-| act-push-debug-loops | bash | haiku45-200k-cli2.1.131 | 1 | 4.3min | 14.6% | $0.20 | 11.54% |
-| act-push-debug-loops | powershell | haiku45-200k-cli2.1.131 | 1 | 6.1min | 20.8% | $0.43 | 25.46% |
+| fixture-rework | default | haiku45-200k-cli2.1.131 | 1 | 0.5min | 1.3% | $0.03 | 1.36% |
+| pwsh-runtime-install-overhead | powershell-tool | haiku45-200k-cli2.1.131 | 1 | 0.7min | 1.7% | $0.04 | 1.60% |
+| repeated-test-reruns | bash | haiku45-200k-cli2.1.131 | 1 | 0.7min | 1.7% | $0.03 | 1.38% |
+| actionlint-fix-cycles | powershell | haiku45-200k-cli2.1.131 | 1 | 0.7min | 1.7% | $0.05 | 2.13% |
+| repeated-test-reruns | powershell-tool | haiku45-200k-cli2.1.131 | 1 | 1.0min | 2.6% | $0.05 | 2.43% |
+| repeated-test-reruns | powershell | haiku45-200k-cli2.1.131 | 1 | 2.3min | 6.0% | $0.17 | 7.46% |
+| act-push-debug-loops | bash | haiku45-200k-cli2.1.131 | 1 | 4.3min | 10.9% | $0.20 | 8.77% |
+| act-push-debug-loops | powershell | haiku45-200k-cli2.1.131 | 1 | 6.1min | 15.5% | $0.43 | 19.36% |
 
 </details>
 
@@ -271,12 +292,14 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Trap | Language | Model | Fell In | Time Lost | % of Time | $ Lost | % of $ |
 |------|------|-------|---------|-----------|-----------|--------|--------|
-| fixture-rework | default | haiku45-200k-cli2.1.131 | 1 | 0.5min | 1.7% | $0.03 | 1.79% |
-| repeated-test-reruns | bash | haiku45-200k-cli2.1.131 | 1 | 0.7min | 2.3% | $0.03 | 1.81% |
-| actionlint-fix-cycles | powershell | haiku45-200k-cli2.1.131 | 1 | 0.7min | 2.3% | $0.05 | 2.80% |
-| repeated-test-reruns | powershell | haiku45-200k-cli2.1.131 | 1 | 2.3min | 8.0% | $0.17 | 9.81% |
-| act-push-debug-loops | bash | haiku45-200k-cli2.1.131 | 1 | 4.3min | 14.6% | $0.20 | 11.54% |
-| act-push-debug-loops | powershell | haiku45-200k-cli2.1.131 | 1 | 6.1min | 20.8% | $0.43 | 25.46% |
+| fixture-rework | default | haiku45-200k-cli2.1.131 | 1 | 0.5min | 1.3% | $0.03 | 1.36% |
+| repeated-test-reruns | bash | haiku45-200k-cli2.1.131 | 1 | 0.7min | 1.7% | $0.03 | 1.38% |
+| pwsh-runtime-install-overhead | powershell-tool | haiku45-200k-cli2.1.131 | 1 | 0.7min | 1.7% | $0.04 | 1.60% |
+| actionlint-fix-cycles | powershell | haiku45-200k-cli2.1.131 | 1 | 0.7min | 1.7% | $0.05 | 2.13% |
+| repeated-test-reruns | powershell-tool | haiku45-200k-cli2.1.131 | 1 | 1.0min | 2.6% | $0.05 | 2.43% |
+| repeated-test-reruns | powershell | haiku45-200k-cli2.1.131 | 1 | 2.3min | 6.0% | $0.17 | 7.46% |
+| act-push-debug-loops | bash | haiku45-200k-cli2.1.131 | 1 | 4.3min | 10.9% | $0.20 | 8.77% |
+| act-push-debug-loops | powershell | haiku45-200k-cli2.1.131 | 1 | 6.1min | 15.5% | $0.43 | 19.36% |
 
 </details>
 
@@ -285,12 +308,14 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Trap | Language | Model | Fell In | Time Lost | % of Time | $ Lost | % of $ |
 |------|------|-------|---------|-----------|-----------|--------|--------|
-| act-push-debug-loops | bash | haiku45-200k-cli2.1.131 | 1 | 4.3min | 14.6% | $0.20 | 11.54% |
-| act-push-debug-loops | powershell | haiku45-200k-cli2.1.131 | 1 | 6.1min | 20.8% | $0.43 | 25.46% |
-| repeated-test-reruns | bash | haiku45-200k-cli2.1.131 | 1 | 0.7min | 2.3% | $0.03 | 1.81% |
-| repeated-test-reruns | powershell | haiku45-200k-cli2.1.131 | 1 | 2.3min | 8.0% | $0.17 | 9.81% |
-| actionlint-fix-cycles | powershell | haiku45-200k-cli2.1.131 | 1 | 0.7min | 2.3% | $0.05 | 2.80% |
-| fixture-rework | default | haiku45-200k-cli2.1.131 | 1 | 0.5min | 1.7% | $0.03 | 1.79% |
+| act-push-debug-loops | bash | haiku45-200k-cli2.1.131 | 1 | 4.3min | 10.9% | $0.20 | 8.77% |
+| act-push-debug-loops | powershell | haiku45-200k-cli2.1.131 | 1 | 6.1min | 15.5% | $0.43 | 19.36% |
+| repeated-test-reruns | bash | haiku45-200k-cli2.1.131 | 1 | 0.7min | 1.7% | $0.03 | 1.38% |
+| repeated-test-reruns | powershell | haiku45-200k-cli2.1.131 | 1 | 2.3min | 6.0% | $0.17 | 7.46% |
+| repeated-test-reruns | powershell-tool | haiku45-200k-cli2.1.131 | 1 | 1.0min | 2.6% | $0.05 | 2.43% |
+| actionlint-fix-cycles | powershell | haiku45-200k-cli2.1.131 | 1 | 0.7min | 1.7% | $0.05 | 2.13% |
+| pwsh-runtime-install-overhead | powershell-tool | haiku45-200k-cli2.1.131 | 1 | 0.7min | 1.7% | $0.04 | 1.60% |
+| fixture-rework | default | haiku45-200k-cli2.1.131 | 1 | 0.5min | 1.3% | $0.03 | 1.36% |
 
 </details>
 
@@ -299,6 +324,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 - **act-push-debug-loops**: Agent ran `act push` more than twice, indicating repeated workflow debugging.
 - **actionlint-fix-cycles**: Workflow YAML required 3+ actionlint runs and 2+ fixes to pass.
 - **fixture-rework**: Agent wrote, broke, and rewrote test fixture data (4+ fixture-related commands).
+- **pwsh-runtime-install-overhead**: Time spent installing PowerShell and Pester inside act containers. Both are pre-installed on real GitHub runners but must be downloaded (~56MB) and installed in each act job. Measured from act step durations.
 - **repeated-test-reruns**: Same test command executed 4+ times without the underlying code changing.
 
 #### Column Definitions
@@ -314,9 +340,10 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Language | Model | Runs | Traps | Time Lost | % of Time | $ Lost | % of $ |
 |------|-------|------|-------|-----------|-----------|--------|--------|
-| bash | haiku45-200k-cli2.1.131 | 1 | 2 | 4.9min | 16.9% | $0.23 | 13.35% |
-| default | haiku45-200k-cli2.1.131 | 1 | 1 | 0.5min | 1.7% | $0.03 | 1.79% |
-| powershell | haiku45-200k-cli2.1.131 | 1 | 3 | 9.1min | 31.1% | $0.64 | 38.08% |
+| bash | haiku45-200k-cli2.1.131 | 1 | 2 | 4.9min | 12.6% | $0.23 | 10.15% |
+| default | haiku45-200k-cli2.1.131 | 1 | 1 | 0.5min | 1.3% | $0.03 | 1.36% |
+| powershell | haiku45-200k-cli2.1.131 | 1 | 3 | 9.1min | 23.2% | $0.64 | 28.95% |
+| powershell-tool | haiku45-200k-cli2.1.131 | 1 | 2 | 1.7min | 4.3% | $0.09 | 4.03% |
 
 
 <details>
@@ -324,9 +351,10 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Language | Model | Runs | Traps | Time Lost | % of Time | $ Lost | % of $ |
 |------|-------|------|-------|-----------|-----------|--------|--------|
-| default | haiku45-200k-cli2.1.131 | 1 | 1 | 0.5min | 1.7% | $0.03 | 1.79% |
-| bash | haiku45-200k-cli2.1.131 | 1 | 2 | 4.9min | 16.9% | $0.23 | 13.35% |
-| powershell | haiku45-200k-cli2.1.131 | 1 | 3 | 9.1min | 31.1% | $0.64 | 38.08% |
+| default | haiku45-200k-cli2.1.131 | 1 | 1 | 0.5min | 1.3% | $0.03 | 1.36% |
+| powershell-tool | haiku45-200k-cli2.1.131 | 1 | 2 | 1.7min | 4.3% | $0.09 | 4.03% |
+| bash | haiku45-200k-cli2.1.131 | 1 | 2 | 4.9min | 12.6% | $0.23 | 10.15% |
+| powershell | haiku45-200k-cli2.1.131 | 1 | 3 | 9.1min | 23.2% | $0.64 | 28.95% |
 
 </details>
 
@@ -335,9 +363,10 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 
 | Language | Model | Runs | Traps | Time Lost | % of Time | $ Lost | % of $ |
 |------|-------|------|-------|-----------|-----------|--------|--------|
-| default | haiku45-200k-cli2.1.131 | 1 | 1 | 0.5min | 1.7% | $0.03 | 1.79% |
-| bash | haiku45-200k-cli2.1.131 | 1 | 2 | 4.9min | 16.9% | $0.23 | 13.35% |
-| powershell | haiku45-200k-cli2.1.131 | 1 | 3 | 9.1min | 31.1% | $0.64 | 38.08% |
+| default | haiku45-200k-cli2.1.131 | 1 | 1 | 0.5min | 1.3% | $0.03 | 1.36% |
+| powershell-tool | haiku45-200k-cli2.1.131 | 1 | 2 | 1.7min | 4.3% | $0.09 | 4.03% |
+| bash | haiku45-200k-cli2.1.131 | 1 | 2 | 4.9min | 12.6% | $0.23 | 10.15% |
+| powershell | haiku45-200k-cli2.1.131 | 1 | 3 | 9.1min | 23.2% | $0.64 | 28.95% |
 
 </details>
 
@@ -346,8 +375,8 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | Status | Runs | $ Saved | % of $ |
 |--------|------|---------|--------|
 | Full hit (100%) | 0 | $0.00 | 0.00% |
-| Partial | 3 | $0.08 | 4.95% |
-| Miss | 0 | $0.00 | 0.00% |
+| Partial | 3 | $0.08 | 3.77% |
+| Miss | 1 | $0.00 | 0.00% |
 
 ## Test Quality Evaluation
 
@@ -360,6 +389,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | bash | haiku45-200k | 20.0 | 26.0 | 1.3 | 1.00 |
 | default | haiku45-200k | 0.0 | 0.0 | 0.0 | 0.00 |
 | powershell | haiku45-200k | 18.0 | 22.0 | 1.2 | 0.59 |
+| powershell-tool | haiku45-200k | 20.0 | 44.0 | 2.2 | 0.38 |
 
 
 <details>
@@ -368,6 +398,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Language | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
 |------|-------|-----------|----------------|-----------------|---------------------|
 | bash | haiku45-200k | 20.0 | 26.0 | 1.3 | 1.00 |
+| powershell-tool | haiku45-200k | 20.0 | 44.0 | 2.2 | 0.38 |
 | powershell | haiku45-200k | 18.0 | 22.0 | 1.2 | 0.59 |
 | default | haiku45-200k | 0.0 | 0.0 | 0.0 | 0.00 |
 
@@ -378,6 +409,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 
 | Language | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
 |------|-------|-----------|----------------|-----------------|---------------------|
+| powershell-tool | haiku45-200k | 20.0 | 44.0 | 2.2 | 0.38 |
 | bash | haiku45-200k | 20.0 | 26.0 | 1.3 | 1.00 |
 | powershell | haiku45-200k | 18.0 | 22.0 | 1.2 | 0.59 |
 | default | haiku45-200k | 0.0 | 0.0 | 0.0 | 0.00 |
@@ -391,6 +423,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 |------|-------|-----------|----------------|-----------------|---------------------|
 | bash | haiku45-200k | 20.0 | 26.0 | 1.3 | 1.00 |
 | powershell | haiku45-200k | 18.0 | 22.0 | 1.2 | 0.59 |
+| powershell-tool | haiku45-200k | 20.0 | 44.0 | 2.2 | 0.38 |
 | default | haiku45-200k | 0.0 | 0.0 | 0.0 | 0.00 |
 
 </details>
@@ -404,6 +437,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Semantic Version Bumper | default | haiku45-200k | 0 | 0 | 0.0 | 0 | 17 | 0.00 |
 | Semantic Version Bumper | powershell | haiku45-200k | 18 | 22 | 1.2 | 197 | 333 | 0.59 |
 | Semantic Version Bumper | bash | haiku45-200k | 20 | 26 | 1.3 | 259 | 258 | 1.00 |
+| Semantic Version Bumper | powershell-tool | haiku45-200k | 20 | 44 | 2.2 | 227 | 599 | 0.38 |
 
 </details>
 
@@ -416,6 +450,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Semantic Version Bumper | bash | haiku45-200k | 11.9min | 55 | 3 | $0.54 | — | bash | ok |
 | Semantic Version Bumper | default | haiku45-200k | 7.5min | 50 | 1 | $0.45 | — | javascript | ok |
 | Semantic Version Bumper | powershell | haiku45-200k | 9.8min | 71 | 3 | $0.70 | — | powershell | ok |
+| Semantic Version Bumper | powershell-tool | haiku45-200k | 9.9min | 48 | 2 | $0.53 | — | powershell | ok |
 
 
 <details>
@@ -424,6 +459,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Task | Language | Model | Duration | Turns | Errors | Cost | Tests Quality | Chosen | Status |
 |------|----------|-------|----------|-------|--------|------|-----------|--------|--------|
 | Semantic Version Bumper | default | haiku45-200k | 7.5min | 50 | 1 | $0.45 | — | javascript | ok |
+| Semantic Version Bumper | powershell-tool | haiku45-200k | 9.9min | 48 | 2 | $0.53 | — | powershell | ok |
 | Semantic Version Bumper | bash | haiku45-200k | 11.9min | 55 | 3 | $0.54 | — | bash | ok |
 | Semantic Version Bumper | powershell | haiku45-200k | 9.8min | 71 | 3 | $0.70 | — | powershell | ok |
 
@@ -436,6 +472,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 |------|----------|-------|----------|-------|--------|------|-----------|--------|--------|
 | Semantic Version Bumper | default | haiku45-200k | 7.5min | 50 | 1 | $0.45 | — | javascript | ok |
 | Semantic Version Bumper | powershell | haiku45-200k | 9.8min | 71 | 3 | $0.70 | — | powershell | ok |
+| Semantic Version Bumper | powershell-tool | haiku45-200k | 9.9min | 48 | 2 | $0.53 | — | powershell | ok |
 | Semantic Version Bumper | bash | haiku45-200k | 11.9min | 55 | 3 | $0.54 | — | bash | ok |
 
 </details>
@@ -446,6 +483,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Task | Language | Model | Duration | Turns | Errors | Cost | Tests Quality | Chosen | Status |
 |------|----------|-------|----------|-------|--------|------|-----------|--------|--------|
 | Semantic Version Bumper | default | haiku45-200k | 7.5min | 50 | 1 | $0.45 | — | javascript | ok |
+| Semantic Version Bumper | powershell-tool | haiku45-200k | 9.9min | 48 | 2 | $0.53 | — | powershell | ok |
 | Semantic Version Bumper | powershell | haiku45-200k | 9.8min | 71 | 3 | $0.70 | — | powershell | ok |
 | Semantic Version Bumper | bash | haiku45-200k | 11.9min | 55 | 3 | $0.54 | — | bash | ok |
 
@@ -456,6 +494,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 
 | Task | Language | Model | Duration | Turns | Errors | Cost | Tests Quality | Chosen | Status |
 |------|----------|-------|----------|-------|--------|------|-----------|--------|--------|
+| Semantic Version Bumper | powershell-tool | haiku45-200k | 9.9min | 48 | 2 | $0.53 | — | powershell | ok |
 | Semantic Version Bumper | default | haiku45-200k | 7.5min | 50 | 1 | $0.45 | — | javascript | ok |
 | Semantic Version Bumper | bash | haiku45-200k | 11.9min | 55 | 3 | $0.54 | — | bash | ok |
 | Semantic Version Bumper | powershell | haiku45-200k | 9.8min | 71 | 3 | $0.70 | — | powershell | ok |
@@ -470,6 +509,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Semantic Version Bumper | default | haiku45-200k | 7.5min | 50 | 1 | $0.45 | — | javascript | ok |
 | Semantic Version Bumper | powershell | haiku45-200k | 9.8min | 71 | 3 | $0.70 | — | powershell | ok |
 | Semantic Version Bumper | bash | haiku45-200k | 11.9min | 55 | 3 | $0.54 | — | bash | ok |
+| Semantic Version Bumper | powershell-tool | haiku45-200k | 9.9min | 48 | 2 | $0.53 | — | powershell | ok |
 
 </details>
 

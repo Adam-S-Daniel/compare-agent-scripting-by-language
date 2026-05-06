@@ -1,0 +1,161 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - "SemanticVersionBumper.ps1"
+      - "package.json"
+      - "VERSION"
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-unit:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/powershell:7.4-ubuntu-22.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Pester
+        shell: pwsh
+        run: |
+          Install-Module -Name Pester -Force -SkipPublisherCheck -AllowClobber
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $testResults = Invoke-Pester -Path './SemanticVersionBumper.Tests.ps1' -PassThru
+          exit $testResults.FailedCount
+
+  test-integration:
+    name: Integration Test
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/powershell:7.4-ubuntu-22.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Test bump patch version
+        shell: pwsh
+        run: |
+          # Create test package.json
+          $testFile = "./test-package.json"
+          @{ name = "test-app"; version = "1.0.0" } | ConvertTo-Json | Set-Content $testFile
+
+          . ./SemanticVersionBumper.ps1
+
+          $commits = @(
+              @{ type = "fix"; subject = "fix memory leak"; breaking = $false }
+          )
+
+          $result = Invoke-SemanticVersionBump -VersionFilePath $testFile -Commits $commits
+
+          if ($result.NewVersion -ne "1.0.1") {
+            throw "Expected version 1.0.1, got $($result.NewVersion)"
+          }
+
+          Write-Host "✓ Patch bump test passed: $($result.NewVersion)"
+          Remove-Item $testFile -Force
+
+      - name: Test bump minor version
+        shell: pwsh
+        run: |
+          # Create test package.json
+          $testFile = "./test-package.json"
+          @{ name = "test-app"; version = "1.0.0" } | ConvertTo-Json | Set-Content $testFile
+
+          . ./SemanticVersionBumper.ps1
+
+          $commits = @(
+              @{ type = "feat"; subject = "add new endpoint"; breaking = $false }
+          )
+
+          $result = Invoke-SemanticVersionBump -VersionFilePath $testFile -Commits $commits
+
+          if ($result.NewVersion -ne "1.1.0") {
+            throw "Expected version 1.1.0, got $($result.NewVersion)"
+          }
+
+          Write-Host "✓ Minor bump test passed: $($result.NewVersion)"
+          Remove-Item $testFile -Force
+
+      - name: Test bump major version
+        shell: pwsh
+        run: |
+          # Create test package.json
+          $testFile = "./test-package.json"
+          @{ name = "test-app"; version = "1.0.0" } | ConvertTo-Json | Set-Content $testFile
+
+          . ./SemanticVersionBumper.ps1
+
+          $commits = @(
+              @{ type = "feat"; subject = "redesign API"; breaking = $true }
+          )
+
+          $result = Invoke-SemanticVersionBump -VersionFilePath $testFile -Commits $commits
+
+          if ($result.NewVersion -ne "2.0.0") {
+            throw "Expected version 2.0.0, got $($result.NewVersion)"
+          }
+
+          Write-Host "✓ Major bump test passed: $($result.NewVersion)"
+          Remove-Item $testFile -Force
+
+  validate-workflow:
+    name: Validate Workflow Structure
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/powershell:7.4-ubuntu-22.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Verify script exists
+        shell: pwsh
+        run: |
+          if (-not (Test-Path './SemanticVersionBumper.ps1')) {
+            throw "SemanticVersionBumper.ps1 not found"
+          }
+          Write-Host "✓ Script file found"
+
+      - name: Verify tests exist
+        shell: pwsh
+        run: |
+          if (-not (Test-Path './SemanticVersionBumper.Tests.ps1')) {
+            throw "SemanticVersionBumper.Tests.ps1 not found"
+          }
+          Write-Host "✓ Test file found"
+
+      - name: Verify functions are defined
+        shell: pwsh
+        run: |
+          . ./SemanticVersionBumper.ps1
+
+          $requiredFunctions = @(
+              'Parse-SemanticVersion',
+              'Parse-ConventionalCommit',
+              'Get-NextVersion',
+              'Update-VersionFile',
+              'Generate-ChangelogEntry',
+              'Invoke-SemanticVersionBump'
+          )
+
+          foreach ($func in $requiredFunctions) {
+            if (-not (Get-Command $func -ErrorAction SilentlyContinue)) {
+              throw "Function $func not found"
+            }
+            Write-Host "✓ Function $func defined"
+          }
