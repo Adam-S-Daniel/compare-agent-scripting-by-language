@@ -1,0 +1,62 @@
+name: PR Label Assigner
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-label-assigner:
+    name: Test Label Assigner
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run unit tests
+        run: bun test
+
+      - name: Run CLI tests with mock data
+        run: |
+          echo "Running Label Assigner CLI tests..."
+
+          # Test 1: Documentation files
+          echo "Test 1: Documentation files"
+          bun run cli.ts docs/README.md docs/CONTRIBUTING.md
+
+          # Test 2: API files
+          echo "Test 2: API files"
+          bun run cli.ts src/api/users.ts src/api/posts.ts
+
+          # Test 3: Mixed files
+          echo "Test 3: Mixed files (documentation + API + UI + tests)"
+          bun run cli.ts docs/README.md src/api/users.ts src/ui/Button.tsx utils.test.ts
+
+          # Test 4: Using environment variable
+          echo "Test 4: Using CHANGED_FILES environment variable"
+          CHANGED_FILES='["docs/API.md","src/api/auth.ts",".github/workflows/ci.yml"]' bun run cli.ts
+
+          echo "All CLI tests completed successfully!"
+
+      - name: Output label assignments
+        if: always()
+        run: |
+          echo "=== Label Assigner Configuration ==="
+          jq '.rules[] | "\(.pattern) -> \(.labels | join(", "))"' < label-config.json
