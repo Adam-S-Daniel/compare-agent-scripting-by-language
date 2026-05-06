@@ -1,0 +1,161 @@
+name: Dependency License Checker
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Run Tests with BATS
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y bats shellcheck
+
+      - name: Run BATS test suite
+        run: |
+          bats test_dependency_checker.bats
+
+      - name: Check script syntax with shellcheck
+        run: |
+          shellcheck dependency-checker.sh
+          bash -n dependency-checker.sh
+
+  check-licenses:
+    name: Check Dependency Licenses
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up test configuration
+        run: |
+          mkdir -p config
+
+          # Create allow-list
+          cat > config/allow-list.txt <<'EOF'
+          MIT
+          Apache-2.0
+          BSD-3-Clause
+          ISC
+          Unlicense
+          HPND
+          MPL-2.0
+          Python Software Foundation
+          EOF
+
+          # Create deny-list
+          cat > config/deny-list.txt <<'EOF'
+          AGPL-3.0
+          GPL-3.0
+          GPL-2.0
+          LGPL-3.0
+          LGPL-2.1
+          EOF
+
+          # Create license database (mock)
+          cat > config/license-db.txt <<'EOF'
+          lodash|MIT
+          express|MIT
+          react|MIT
+          cors|MIT
+          moment|MIT
+          uuid|MIT
+          eslint|MIT
+          webpack|MIT
+          typescript|MIT
+          jest|MIT
+          axios|MIT
+          sqlite3|BSD-3-Clause
+          mysql|BSD-3-Clause
+          mongodb|Apache-2.0
+          redis|MIT
+          next|MIT
+          vue|MIT
+          angular|MIT
+          flask|BSD-3-Clause
+          django|BSD-3-Clause
+          numpy|BSD-3-Clause
+          pandas|BSD-3-Clause
+          requests|Apache-2.0
+          EOF
+
+      - name: Create test manifest
+        run: |
+          cat > package.json <<'EOF'
+          {
+            "name": "test-app",
+            "version": "1.0.0",
+            "dependencies": {
+              "lodash": "^4.17.21",
+              "express": "^4.18.0",
+              "react": "^18.0.0"
+            }
+          }
+          EOF
+
+      - name: Run license check on package.json
+        run: |
+          bash dependency-checker.sh \
+            --manifest package.json \
+            --allow config/allow-list.txt \
+            --deny config/deny-list.txt \
+            --license-db config/license-db.txt
+
+      - name: Generate JSON report
+        run: |
+          bash dependency-checker.sh \
+            --manifest package.json \
+            --allow config/allow-list.txt \
+            --deny config/deny-list.txt \
+            --license-db config/license-db.txt \
+            --format json | tee report.json
+          echo "✓ Report generated successfully"
+
+  validate-workflow:
+    name: Validate Workflow File
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Verify workflow file exists
+        run: |
+          test -f .github/workflows/dependency-license-checker.yml || exit 1
+          echo "✓ Workflow file exists"
+
+      - name: Check workflow structure
+        run: |
+          # Verify workflow has required sections using grep
+          grep -q "name:" .github/workflows/dependency-license-checker.yml && echo "✓ Has name section"
+          grep -q "on:" .github/workflows/dependency-license-checker.yml && echo "✓ Has on section"
+          grep -q "jobs:" .github/workflows/dependency-license-checker.yml && echo "✓ Has jobs section"
+          grep -q "runs-on: ubuntu-latest" .github/workflows/dependency-license-checker.yml && echo "✓ Uses ubuntu-latest"
+
+      - name: Verify script exists
+        run: |
+          test -f dependency-checker.sh || exit 1
+          echo "✓ Script file exists"
+
+      - name: Verify test file exists
+        run: |
+          test -f test_dependency_checker.bats || exit 1
+          echo "✓ Test file exists"
