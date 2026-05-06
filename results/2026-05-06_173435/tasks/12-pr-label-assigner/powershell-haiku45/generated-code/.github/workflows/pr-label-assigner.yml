@@ -1,0 +1,121 @@
+name: PR Label Assigner
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'PrLabelAssigner.ps1'
+      - 'AssignPrLabels.ps1'
+      - 'label-config.json'
+      - 'Tests/**'
+      - '.github/workflows/pr-label-assigner.yml'
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test Label Assigner
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install PowerShell and dependencies
+        run: |
+          apt-get update
+          apt-get install -y powershell
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted -ErrorAction SilentlyContinue
+          if (-not (Get-Module -ListAvailable Pester)) {
+            Install-Module -Name Pester -Force -MinimumVersion 5.0
+          }
+          Invoke-Pester Tests/PrLabelAssigner.Tests.ps1 -PassThru -Verbose
+
+  lint:
+    name: Validate workflow
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install actionlint
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y golang-go
+          go install github.com/rhysd/actionlint/cmd/actionlint@latest
+
+      - name: Run actionlint
+        run: |
+          ~/go/bin/actionlint .github/workflows/pr-label-assigner.yml
+
+  integration-test:
+    name: Integration Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install PowerShell
+        run: |
+          apt-get update
+          apt-get install -y powershell
+
+      - name: Test label assignment
+        shell: pwsh
+        run: |
+          $files = @(
+            'docs/README.md',
+            'src/api/endpoints.ps1',
+            'Tests/unit.test.ps1',
+            '.github/workflows/deploy.yml'
+          )
+
+          $labels = ./AssignPrLabels.ps1 -Files $files
+
+          Write-Host "Labels assigned: $($labels -join ', ')"
+
+          if ($labels -contains 'documentation' -and $labels -contains 'api' -and $labels -contains 'tests' -and $labels -contains 'ci') {
+            Write-Host "Integration test passed"
+            exit 0
+          } else {
+            Write-Error "Expected labels not found"
+            exit 1
+          }
+
+      - name: Test --list-rules option
+        shell: pwsh
+        run: |
+          ./AssignPrLabels.ps1 -ListRules
+          if ($LASTEXITCODE -eq 0) {
+            Write-Host "List rules test passed"
+          } else {
+            Write-Error "List rules test failed"
+            exit 1
+          }
+
+      - name: Test with custom config
+        shell: pwsh
+        run: |
+          @{
+            rules = @(
+              @{
+                pattern = "custom/**"
+                labels = @("custom-label")
+                priority = 1
+              }
+            )
+          } | ConvertTo-Json | Out-File -Path custom-config.json
+
+          $labels = ./AssignPrLabels.ps1 -ConfigFile custom-config.json -Files 'custom/file.ps1'
+
+          if ($labels -contains 'custom-label') {
+            Write-Host "Custom config test passed"
+            exit 0
+          } else {
+            Write-Error "Custom config test failed"
+            exit 1
+          }
