@@ -1,0 +1,62 @@
+name: Dependency License Checker
+
+on:
+  push:
+    paths:
+      - 'dependency_license_checker.py'
+      - 'test_dependency_license_checker.py'
+      - 'requirements.txt'
+      - '.github/workflows/dependency-license-checker.yml'
+  pull_request:
+    paths:
+      - 'dependency_license_checker.py'
+      - 'test_dependency_license_checker.py'
+      - 'requirements.txt'
+      - '.github/workflows/dependency-license-checker.yml'
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.1.7
+        # 2024-12-06
+
+      - name: Set up Python
+        uses: actions/setup-python@v5.0.0
+        # 2024-08-13
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
+
+      - name: Run pytest tests
+        run: |
+          pytest test_dependency_license_checker.py -v --tb=short
+        id: test_run
+
+      - name: Test package.json parsing
+        if: success()
+        run: |
+          python dependency_license_checker.py fixtures/package.json > /tmp/test_package.out 2>&1
+          cat /tmp/test_package.out
+
+      - name: Test requirements.txt parsing
+        if: success()
+        run: |
+          python dependency_license_checker.py fixtures/requirements.txt > /tmp/test_requirements.out 2>&1
+          cat /tmp/test_requirements.out
+
+      - name: Verify all tests passed
+        if: success()
+        run: |
+          echo "All tests passed successfully!"
+          exit 0
