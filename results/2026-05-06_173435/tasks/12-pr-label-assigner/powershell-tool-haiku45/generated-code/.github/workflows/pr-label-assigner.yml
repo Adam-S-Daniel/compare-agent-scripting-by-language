@@ -1,0 +1,113 @@
+name: PR Label Assigner
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+    inputs:
+      test_mode:
+        description: 'Run in test mode'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  assign-labels:
+    name: Assign PR Labels
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup PowerShell
+        shell: bash
+        run: |
+          apt-get update -qq
+          apt-get install -y -qq wget apt-transport-https software-properties-common
+          wget -q "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb"
+          dpkg -i packages-microsoft-prod.deb
+          rm packages-microsoft-prod.deb
+          apt-get update -qq
+          apt-get install -y -qq powershell
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get changed files
+        id: changed-files
+        shell: pwsh
+        run: |
+          try {
+            if ("${{ github.event_name }}" -eq "pull_request") {
+              # For PRs, get files changed compared to base branch
+              $baseBranch = "${{ github.base_ref }}"
+              $files = @(git diff --name-only "origin/$baseBranch...HEAD" 2>/dev/null || git ls-tree -r --name-only HEAD)
+            } else {
+              # For push events, get files changed in the latest commit
+              $before = "${{ github.event.before }}"
+              if ($before -eq "0000000000000000000000000000000000000000" -or [string]::IsNullOrEmpty($before)) {
+                # Initial commit - list all files
+                $files = @(git ls-tree -r --name-only HEAD)
+              } else {
+                $files = @(git diff --name-only "$before" HEAD 2>/dev/null || @(git ls-tree -r --name-only HEAD))
+              }
+            }
+
+            $jsonFiles = if ($files.Count -gt 0) { $files | ConvertTo-Json -Compress } else { "[]" }
+            Add-Content -Path $env:GITHUB_OUTPUT -Value "files=$jsonFiles"
+          }
+          catch {
+            Write-Host "Error getting changed files: $_"
+            Add-Content -Path $env:GITHUB_OUTPUT -Value "files=[]"
+          }
+
+      - name: Assign labels
+        id: assign-labels
+        shell: pwsh
+        run: |
+          # Convert JSON files array to PowerShell array
+          $filesJson = '${{ steps.changed-files.outputs.files }}'
+          Write-Host "Files JSON: $filesJson"
+          $files = $filesJson | ConvertFrom-Json
+          Write-Host "Parsed files count: $(@($files).Count)"
+
+          # Load and run the label assigner directly
+          . "./src/PR-LabelAssigner.ps1"
+
+          # Read configuration
+          $config = Get-Content "./label-rules.json" | ConvertFrom-Json
+          $rules = $config.rules
+
+          # Get assigned labels
+          $labels = Get-AssignedLabels -ChangedFiles @($files) -LabelRules $rules
+
+          # Output results
+          $output = @{
+            labels = @($labels)
+            count = @($labels).Count
+            timestamp = (Get-Date -AsUTC).ToString("o")
+          } | ConvertTo-Json -Compress
+
+          Write-Host "Label assignment result:"
+          Write-Host $output
+
+          Add-Content -Path $env:GITHUB_OUTPUT -Value "result=$output"
+
+      - name: Test workflow (optional)
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.test_mode == 'true'
+        shell: pwsh
+        run: |
+          Write-Host "Running tests in workflow..."
+          Invoke-Pester "./tests/PR-LabelAssigner.Tests.ps1" -Verbose
