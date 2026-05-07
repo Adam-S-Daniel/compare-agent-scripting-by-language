@@ -1,0 +1,68 @@
+name: PR Label Assigner
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Run PR Label Assigner Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install bats and dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y bats python3-yaml
+
+      - name: Install actionlint
+        run: |
+          ACTIONLINT_VERSION=1.7.12
+          curl -sL \
+            "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz" \
+            | sudo tar -xz -C /usr/local/bin actionlint
+
+      - name: Make script executable
+        run: chmod +x pr-label-assigner.sh
+
+      - name: Run unit tests (bats)
+        run: bats tests/pr-label-assigner.bats
+
+      - name: Integration test - verify exact label output
+        run: |
+          # Run the script with a known set of changed files and assert
+          # that the output exactly matches the expected labels in order.
+          LABELS=$(printf 'docs/README.md\nsrc/api/handler.js\nsrc/utils.test.js\n' \
+            | ./pr-label-assigner.sh tests/fixtures/basic.conf \
+            | tr '\n' ',' | sed 's/,$//')
+          EXPECTED="documentation,api,tests"
+          echo "ACTUAL_LABELS: $LABELS"
+          echo "EXPECTED_LABELS: $EXPECTED"
+          if [ "$LABELS" = "$EXPECTED" ]; then
+            echo "INTEGRATION_TEST_PASSED: Labels match expected output"
+          else
+            echo "INTEGRATION_TEST_FAILED: expected '$EXPECTED', got '$LABELS'"
+            exit 1
+          fi
+
+      - name: Integration test - priority ordering
+        run: |
+          # priority.conf has api=1, tests=2; file matching both should list api first
+          LABELS=$(printf 'src/api/handler.test.js\n' \
+            | ./pr-label-assigner.sh tests/fixtures/priority.conf \
+            | tr '\n' ',' | sed 's/,$//')
+          EXPECTED="api,tests"
+          echo "PRIORITY_LABELS: $LABELS"
+          if [ "$LABELS" = "$EXPECTED" ]; then
+            echo "PRIORITY_TEST_PASSED: Priority ordering correct"
+          else
+            echo "PRIORITY_TEST_FAILED: expected '$EXPECTED', got '$LABELS'"
+            exit 1
+          fi
