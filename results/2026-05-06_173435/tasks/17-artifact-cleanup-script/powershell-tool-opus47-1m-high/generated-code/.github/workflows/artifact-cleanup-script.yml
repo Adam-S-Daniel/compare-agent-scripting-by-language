@@ -1,0 +1,110 @@
+name: artifact-cleanup-script
+
+# Triggers cover the common cases: validate on push/PR, schedule a nightly
+# cleanup pass, and allow manual runs from the Actions tab. workflow_dispatch
+# lets a maintainer point the same job at different fixtures by overriding
+# the inputs (the act harness uses the default values).
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    inputs:
+      input_path:
+        description: 'Path to the artifacts JSON file'
+        required: false
+        default: 'fixtures/input.json'
+      config_path:
+        description: 'Path to the policy config JSON file'
+        required: false
+        default: 'fixtures/config.json'
+
+permissions:
+  contents: read
+
+# Where the test harness drops fixtures before invoking act. The workflow
+# reads these env vars (rather than hard-coding paths) so we can swap in a
+# different test case per act run by overwriting the env file.
+env:
+  ARTIFACT_INPUT: ${{ github.event.inputs.input_path || 'fixtures/input.json' }}
+  ARTIFACT_CONFIG: ${{ github.event.inputs.config_path || 'fixtures/config.json' }}
+
+jobs:
+  unit-tests:
+    name: Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify required files exist
+        shell: pwsh
+        run: |
+          $required = @(
+            'ArtifactCleanup.ps1',
+            'Run-Cleanup.ps1',
+            'tests/ArtifactCleanup.Tests.ps1'
+          )
+          foreach ($f in $required) {
+            if (-not (Test-Path $f)) { throw "Missing required file: $f" }
+            Write-Host "OK: $f"
+          }
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          # Pester is pre-installed in the act container; use Detailed output
+          # so failures surface in the act log without needing artifacts.
+          $cfg = New-PesterConfiguration
+          $cfg.Run.Path = 'tests'
+          $cfg.Run.Exit = $true
+          $cfg.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $cfg
+
+  cleanup-plan:
+    name: Generate cleanup plan
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify fixture inputs exist
+        shell: pwsh
+        run: |
+          if (-not (Test-Path $env:ARTIFACT_INPUT))  { throw "Input not found:  $env:ARTIFACT_INPUT" }
+          if (-not (Test-Path $env:ARTIFACT_CONFIG)) { throw "Config not found: $env:ARTIFACT_CONFIG" }
+          Write-Host ("Input:  {0} ({1} bytes)" -f $env:ARTIFACT_INPUT, (Get-Item $env:ARTIFACT_INPUT).Length)
+          Write-Host ("Config: {0}" -f $env:ARTIFACT_CONFIG)
+
+      - name: Run cleanup planner
+        shell: pwsh
+        run: |
+          # Run-Cleanup.ps1 prints CONFIG: and SUMMARY: marker lines that the
+          # act harness asserts against. plan.json is the structured artifact.
+          ./Run-Cleanup.ps1 `
+            -InputPath  $env:ARTIFACT_INPUT `
+            -ConfigPath $env:ARTIFACT_CONFIG `
+            -OutputPath plan.json
+
+      - name: Show plan summary
+        shell: pwsh
+        run: |
+          if (-not (Test-Path plan.json)) { throw 'plan.json was not produced' }
+          $plan = Get-Content plan.json -Raw | ConvertFrom-Json
+          Write-Host ("PLAN_SUMMARY: deleted={0} retained={1} reclaimed_bytes={2} dry_run={3}" -f `
+            $plan.Summary.DeletedCount,
+            $plan.Summary.RetainedCount,
+            $plan.Summary.TotalReclaimedBytes,
+            $plan.DryRun.ToString().ToLowerInvariant())
+
+      - name: Upload plan
+        # Skipped under act (the local nektos/act runner) because act has no
+        # built-in artifact server. Real GitHub Actions runs use this step.
+        if: ${{ !env.ACT }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: cleanup-plan
+          path: plan.json
+          if-no-files-found: error
