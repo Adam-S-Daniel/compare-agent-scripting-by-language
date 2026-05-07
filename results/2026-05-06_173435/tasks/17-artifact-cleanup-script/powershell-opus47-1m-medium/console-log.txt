@@ -1,0 +1,239 @@
+[Tool: Bash] ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/17-artifact-cleanup-script/powershell-opus47-1m-medium/ && pwsh --version && which actionlint act
+[Result] total 44
+drwxr-xr-x  4 passp passp  4096 May  7 16:17 .
+drwxr-xr-x 24 passp passp  4096 May  7 16:17 ..
+-rw-r--r--  1 passp passp    40 May  7 16:17 .actrc
+drwxr-xr-x  2 passp passp  4096 May  7 16:17 .claude
+drwxr-xr-x  6 passp passp  4096 May  7 16:17 .git
+-rw-r--r--  1 passp passp 21843 Apr 17 00:12 benchmark-instructions-v4.md
+PowerShell 7.6.1
+/home/passp/.local/bin/actionlint
+/home/passp/.local/bin/act
+[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/17-artifact-cleanup-script/powershell-opus47-1m-medium/.actrc
+[Result] -P ubuntu-latest=act-ubuntu-pwsh:latest
+[Assistant] I'll work in the project dir. Let me start with the first failing test using TDD.
+[Tool: Bash] mkdir -p tests fixtures .github/workflows
+[Result] (Bash completed with no output)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/17-artifact-cleanup-script/powershell-opus47-1m-medium/tests/ArtifactCleanup.Tests.ps1", "content": "#
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/17-artifact-cleanup-script/powershell-opus47-1m-medium/tests/ArtifactCleanup.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/17-artifact-cleanup-script/powershell-opus47-1m-medium/ArtifactCleanup.psm1", "content": "# ArtifactCl
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/17-artifact-cleanup-script/powershell-opus47-1m-medium/ArtifactCleanup.psm1 (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -NoProfile -Command "Invoke-Pester -Path ./tests -Output Detailed" 2>&1 | tail -60
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 9 tests in 433ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/17-artifact-cleanup-script/powershell-opus47-1m-medium/tests/ArtifactCleanup.Tests.ps1'[0m
+[92mDescribing Get-DeletionPlan: structure[0m
+[91m  [-] returns an object with Delete, Retain, and Summary properties[0m[90m 138ms (71ms|67ms)[0m
+[91m   PropertyNotFoundException: The property 'Sum' cannot be found on this object. Verify that the property exists.
+[91m   at Get-DeletionPlan, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/17-artifact-cleanup-script/powershell-opus47-1m-medium/ArtifactCleanup.psm1:72
+[91m   at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/17-artifact-cleanup-script/powershell-opus47-1m-medium/tests/ArtifactCleanup.Tests.ps1:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/17-artifact-cleanup-script/powershell-opus47-1m-medium/ArtifactCleanup.psm1", "o
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/17-artifact-cleanup-script/powershell-opus47-1m-medium/ArtifactCleanup.psm1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -NoProfile -Command "Invoke-Pester -Path ./tests -Output Detailed" 2>&1 | tail -25
+[Result] [32m  [+] returns an object with Delete, Retain, and Summary properties[0m[90m 152ms (99ms|53ms)[0m
+[0m
+[92mDescribing Get-DeletionPlan: max age policy[0m
+[32m  [+] deletes artifacts older than MaxAgeDays[0m[90m 72ms (67ms|5ms)[0m
+[0m
+[92mDescribing Get-DeletionPlan: keep-latest-N per workflow[0m
+[32m  [+] keeps only the N most recent artifacts per workflow run id[0m[90m 33ms (29ms|4ms)[0m
+[0m
+[92mDescribing Get-DeletionPlan: max total size policy[0m
+[32m  [+] deletes oldest artifacts until total retained size is under MaxTotalSizeBytes[0m[90m 23ms (20ms|3ms)[0m
+[0m
+[92mDescribing Get-DeletionPlan: summary[0m
+[32m  [+] reports total space reclaimed and counts[0m[90m 26ms (22ms|4ms)[0m
+[0m
+[92mDescribing Get-DeletionPlan: combined policies[0m
+[32m  [+] applies age, keep-latest, and size together[0m[90m 44ms (41ms|3ms)[0m
+[0m
+[92mDescribing Invoke-ArtifactCleanup: dry-run[0m
+[32m  [+] does not invoke the deleter when -DryRun is set[0m[90m 84ms
+[Assistant] All 9 unit tests pass. Now I need a CLI script the workflow can call with fixture data, plus the workflow + act harness.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/17-artifact-cleanup-script/powershell-opus47-1m-medium/Invoke-Cleanup.ps1", "content": "#!/usr/bin/env
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/17-artifact-cleanup-script/powershell-opus47-1m-medium/Invoke-Cleanup.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Now fixtures and the act harness.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/17-artifact-cleanup-script/powershell-opus47-1m-medium/fixtures/case1-max-age.json", "content": "[\n  
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/17-artifact-cleanup-script/powershell-opus47-1m-medium/fixtures/case1-max-age.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/17-artifact-cleanup-script/powershell-opus47-1m-medium/fixtures/case2-keep-latest.json", "content": "[
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/17-artifact-cleanup-script/powershell-opus47-1m-medium/fixtures/case2-keep-latest.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/17-artifact-cleanup-script/powershell-opus47-1m-medium/fixtures/case3-dry-run-combined.json", "content
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/17-artifact-cleanup-script/powershell-opus47-1m-medium/fixtures/case3-dry-run-combined.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/17-artifact-cleanup-script/powershell-opus47-1m-medium/.github/workflows/artifact-cleanup-script.yml",
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/17-artifact-cleanup-script/powershell-opus47-1m-medium/.github/workflows/artifact-cleanup-script.yml (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/artifact-cleanup-script.yml && echo OK
+[Result] OK
+[Assistant] Now the act harness test that runs each fixture through the workflow.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/17-artifact-cleanup-script/powershell-opus47-1m-medium/tests/Workflow.Tests.ps1", "content": "#Require
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/17-artifact-cleanup-script/powershell-opus47-1m-medium/tests/Workflow.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -NoProfile -File ./Invoke-Cleanup.ps1 -FixturePath fixtures/case1-max-age.json -MaxAgeDays 30 2>&1
+echo "---"
+pwsh -NoProfile -File ./Invoke-Cleanup.ps1 -FixturePath fixtures/case2-keep-latest.json -KeepLatestPerWorkflow 1 2>&1
+echo "---"
+pwsh -NoProfile -File ./Invoke-Cleanup.ps1 -FixturePath fixtures/case3-dry-run-combined.json -MaxAgeDays 30 -KeepLatestPerWorkflow 1 -DryRun 2>&1
+[Result] DRY_RUN=False
+DELETED_COUNT=1
+RETAINED_COUNT=1
+SPACE_RECLAIMED=1000
+RETAINED_SIZE=500
+DELETE_NAMES=old.zip
+RETAIN_NAMES=fresh.zip
+ACTUALLY_DELETED=old.zip
+---
+DRY_RUN=False
+DELETED_COUNT=1
+RETAINED_COUNT=2
+SPACE_RECLAIMED=100
+RETAINED_SIZE=500
+DELETE_NAMES=a.zip
+RETAIN_NAMES=b.zip,c.zip
+ACTUALLY_DELETED=a.zip
+---
+DRY_RUN=True
+DELETED_COUNT=2
+RETAINED_COUNT=1
+SPACE_RECLAIMED=300
+RETAINED_SIZE=300
+DELETE_NAMES=old.zip,recent1.zip
+RETAIN_NAMES=recent2.zip
+ACTUALLY_DELETED=
+[Tool: Bash] docker images act-ubuntu-pwsh:latest --format '{{.Repository}}:{{.Tag}}' 2>&1
+[Result] act-ubuntu-pwsh:latest
+[Assistant] Image is present. Let me run the workflow tests now (3 act runs total).
+[Tool: Bash] pwsh -NoProfile -Command "Invoke-Pester -Path ./tests/Workflow.Tests.ps1 -Output Detailed" 2>&1 | tail -80
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 6 tests in 248ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/17-artifact-cleanup-script/powershell-opus47-1m-medium/tests/Workflow.Tests.ps1'[0m
+[92mDescribing Workflow structure[0m
+[32m  [+] YAML parses and declares expected triggers and jobs[0m[90m 146ms (105ms|41ms)[0m
+[32m  [+] references script files that exist[0m[90m 20ms (11ms|9ms)[0m
+[32m  [+] passes actionlint[0m[90m 161ms (159ms|2ms)[0m
+[0m
+[92mDescribing Pipeline runs (act)[0m
+[91m  [-] case1 max-age: deletes 1, retains 1, reclaims 1000[0m[90m 925ms (919ms|6ms)[0m
+[91m   Expected 0, but got 1.
+[91m   at $r.ExitCode | Should -Be 0, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/17-artifact-cleanup-script/powershell-opus47-1m-medium/tests/Workflow.Tests.ps1:92
+[91m   at <ScriptBloc
+[Tool: Bash] head -80 act-result.txt
+[Result] ===== CASE: case1 (exit=1) =====
+time="2026-05-07T16:21:22-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Artifact Cleanup Script/cleanup] ⭐ Run Set up job
+[Artifact Cleanup Script/cleanup] 🚀  Start image=act-ubuntu-pwsh:latest
+[Artifact Cleanup Script/cleanup]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=true
+[Artifact Cleanup Script/cleanup] using DockerAuthConfig authentication for docker pull
+[Artifact Cleanup Script/cleanup] Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+[Artifact Cleanup Script/cleanup]   ❌  Failure - Set up job
+[Artifact Cleanup Script/cleanup] 🏁  Job failed
+Error: Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+
+
+===== CASE: case2 (exit=1) =====
+time="2026-05-07T16:21:23-04:00" level=info msg="Using docker 
+[Assistant] Need to disable forced image pulling. Update .actrc.
+[Tool: Bash] cat .actrc
+[Result] -P ubuntu-latest=act-ubuntu-pwsh:latest
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/17-artifact-cleanup-script/powershell-opus47-1m-medium/.actrc", "content": "-P ubuntu-latest=act-ubunt
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/17-artifact-cleanup-script/powershell-opus47-1m-medium/.actrc has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -NoProfile -Command "Invoke-Pester -Path ./tests/Workflow.Tests.ps1 -Output Detailed" 2>&1 | tail -60
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 6 tests in 251ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/17-artifact-cleanup-script/powershell-opus47-1m-medium/tests/Workflow.Tests.ps1'[0m
+[92mDescribing Workflow structure[0m
+[32m  [+] YAML parses and declares expected triggers and jobs[0m[90m 151ms (108ms|43ms)[0m
+[32m  [+] references script files that exist[0m[90m 26ms (16ms|10ms)[0m
+[32m  [+] passes actionlint[0m[90m 162ms (160ms|2ms)[0m
+[0m
+[92mDescribing Pipeline runs (act)[0m
+[91m  [-] case1 max-age: deletes 1, retains 1, reclaims 1000[0m[90m 10.52s (10.51s|7ms)[0m
+[91m   Expected 0, but got 1.
+[91m   at $r.ExitCode | Should -Be 0, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/17-artifact-cleanup-script/powershell-opus47-1m-medium/tests/Workflow.Tests.ps1:92
+[91m   at <ScriptB
+[Tool: Bash] grep -A2 "Failure\|Error\|❌" act-result.txt | head -80
+[Result] [Artifact Cleanup Script/cleanup]   ❌  Failure - Main Run unit tests (Pester) [5.691453274s]
+[Artifact Cleanup Script/cleanup] exitcode '1': failure
+[Artifact Cleanup Script/cleanup] ⭐ Run Complete job
+--
+Error: Job 'cleanup' failed
+
+
+--
+[Artifact Cleanup Script/cleanup]   ❌  Failure - Main Run unit tests (Pester) [4.418855715s]
+[Artifact Cleanup Script/cleanup] exitcode '1': failure
+[Artifact Cleanup Script/cleanup] ⭐ Run Complete job
+--
+Error: Job 'cleanup' failed
+
+
+--
+[Artifact Cleanup Script/cleanup]   ❌  Failure - Main Run unit tests (Pester) [4.201132244s]
+[Artifact Cleanup Script/cleanup] exitcode '1': failure
+[Artifact Cleanup Script/cleanup] ⭐ Run Complete job
+--
+Error: Job 'cleanup' failed
+[Assistant] The workflow runs all of `./tests` which includes the act-based tests, causing recursion. Limit it to unit tests.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/17-artifact-cleanup-script/powershell-opus47-1m-medium/.github/workflows/artifac
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/17-artifact-cleanup-script/powershell-opus47-1m-medium/.github/workflows/artifact-cleanup-script.yml has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/artifact-cleanup-script.yml && echo OK
+[Result] OK
+[Tool: Bash] pwsh -NoProfile -Command "Invoke-Pester -Path ./tests/Workflow.Tests.ps1 -Output Detailed" 2>&1 | tail -50
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 6 tests in 267ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/17-artifact-cleanup-script/powershell-opus47-1m-medium/tests/Workflow.Tests.ps1'[0m
+[92mDescribing Workflow structure[0m
+[32m  [+] YAML parses and declares expected triggers and jobs[0m[90m 153ms (107ms|45ms)[0m
+[32m  [+] references script files that exist[0m[90m 23ms (13ms|10ms)[0m
+[32m  [+] passes actionlint[0m[90m 163ms (161ms|2ms)[0m
+[0m
+[92mDescribing Pipeline runs (act)[0m
+[32m  [+] case1 max-age: deletes 1, retains 1, reclaims 1000[0m[90m 9.05s (9.05s|4ms)[0m
+[32m  [+] case2 keep-latest-per-workflow: keeps newest of each workflow[0m[90m 8.9s (8.89s|2ms)[0m
+[32m  [+] case3 combined+dry-run: deletes nothing for real but plans 2[0m[90m 9.3s (9.29s|2ms)[0m
+[97mTests completed in 28.27s[0m
+[32mTests Passed
+[Assistant] All 6 workflow tests pass, including 3 act runs. Let me confirm act-result.txt exists and run all unit + workflow tests together.
+[Tool: Bash] ls -la act-result.txt && grep -c "Job succeeded" act-result.txt && pwsh -NoProfile -Command "Invoke-Pester -Path ./tests -Output Detailed" 2>&1 | tail -20
+[Result] -rw-r--r-- 1 passp passp 19636 May  7 16:22 act-result.txt
+3
+[0m
+[92mDescribing Invoke-ArtifactCleanup: dry-run[0m
+[32m  [+] does not invoke the deleter when -DryRun is set[0m[90m 55ms (50ms|5ms)[0m
+[32m  [+] invokes the deleter once per artifact when not in dry-run[0m[90m 24ms (21ms|3ms)[0m
+[0m
+[92mDescribing Get-DeletionPlan: input validation[0m
+[32m  [+] throws a meaningful error when no policy is supplied[0m[90m 73ms (69ms|4ms)[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/17-artifact-cleanup-script/powershell-opus47-1m-medium/tests/Workflow.Tests.ps1'[0m
+[92mDescribing Workflow structure[0m
+[32m  [+] YAML parses and declares expected triggers and jobs[0m[90m 32ms (29ms|3ms)[0m
+[32m  [+] references script files that exist[0m[90m 15ms (13ms|2ms)[0m
+[32m  [+] passes actionlint[0m[90m 145ms (143ms|2ms)[0m
+[0m
+[92mDescribing Pipeline runs (act)[0m
+[32m  [+] case1 max-age: deletes
+[Assistant] All 15 tests pass: 9 unit + 3 workflow structure + 3 act pipeline runs. `act-result.txt` exists with 3 "Job succeeded" entries.
+
+**Files created:**
+- `ArtifactCleanup.psm1` — pure-logic module with `Get-DeletionPlan` and `Invoke-ArtifactCleanup`
+- `Invoke-Cleanup.ps1` — CLI wrapper, reads JSON fixtures, prints deterministic key=value output
+- `tests/ArtifactCleanup.Tests.ps1` — 9 Pester unit tests (TDD: structure → max-age → keep-latest → max-size → summary → combined → dry-run → validation)
+- `tests/Workflow.Tests.ps1` — 6 Pester tests: YAML structure, file refs, actionlint, plus 3 cases run end-to-end via `act push --rm` with exact-value assertions
+- `fixtures/case{1,2,3}-*.json` — three deterministic input fixtures
+- `.github/workflows/artifact-cleanup-script.yml` — pwsh-based workflow on push/PR/schedule/dispatch, runs Pester then exercises the script against the fixture
+- `.actrc` — pins ubuntu-latest to local image and disables remote pulls
+- `act-result.txt` — captured output from all three act runs

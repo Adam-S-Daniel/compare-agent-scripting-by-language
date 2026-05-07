@@ -1,0 +1,67 @@
+name: Artifact Cleanup Script
+
+# Run on push/PR to validate the script, on a daily schedule to actually clean
+# artifacts up, and manually so a developer can dry-run any fixture.
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: 'Fixture file under fixtures/'
+        required: false
+        default: 'case1-max-age.json'
+
+permissions:
+  contents: read
+
+env:
+  # Test harness selects which fixture + policy to run by writing this file.
+  CASE_FILE: .ci-case.txt
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show environment
+        shell: pwsh
+        run: |
+          $PSVersionTable.PSVersion | Out-String
+          Get-Module -ListAvailable Pester | Select-Object Name,Version | Out-String
+
+      - name: Run unit tests (Pester)
+        shell: pwsh
+        run: |
+          # Run only the unit tests; Workflow.Tests.ps1 is the harness that
+          # invokes act and would recurse if executed inside the runner.
+          $r = Invoke-Pester -Path ./tests/ArtifactCleanup.Tests.ps1 -PassThru -Output Detailed
+          if ($r.FailedCount -gt 0) { throw "Pester: $($r.FailedCount) failed" }
+
+      - name: Run cleanup script against fixture
+        shell: pwsh
+        run: |
+          # The harness writes .ci-case.txt with: fixture|maxAge|maxSize|keepN|dryRun
+          # When absent (e.g. on plain push), default to case1 in dry-run.
+          $caseFile = $env:CASE_FILE
+          if (Test-Path $caseFile) {
+            $line = (Get-Content -LiteralPath $caseFile -Raw).Trim()
+          } else {
+            $line = 'case1-max-age.json|30|0|0|true'
+          }
+          $parts = $line -split '\|'
+          $fixture, $age, $size, $keep, $dry = $parts
+          Write-Host "::group::Running case $fixture"
+          $params = @{
+            FixturePath           = "fixtures/$fixture"
+            MaxAgeDays            = [int]$age
+            MaxTotalSizeBytes     = [long]$size
+            KeepLatestPerWorkflow = [int]$keep
+          }
+          if ($dry -eq 'true') { $params.DryRun = $true }
+          ./Invoke-Cleanup.ps1 @params
+          Write-Host "::endgroup::"
