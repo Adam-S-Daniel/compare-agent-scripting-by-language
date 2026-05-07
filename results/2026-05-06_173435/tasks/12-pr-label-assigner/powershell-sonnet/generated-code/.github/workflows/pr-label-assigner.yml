@@ -1,0 +1,171 @@
+name: PR Label Assigner
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  test-label-assigner:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # -------------------------------------------------------------------
+      # Test Case 1: Basic documentation label
+      # Files: docs/README.md
+      # Rules: docs/** -> documentation (priority 1)
+      # Expected labels (sorted): documentation
+      # -------------------------------------------------------------------
+      - name: "TC1 - Basic documentation label"
+        shell: pwsh
+        run: |
+          . ./Invoke-PRLabelAssigner.ps1
+          $files = @("docs/README.md")
+          $rules = @(
+            [PSCustomObject]@{Pattern = "docs/**"; Label = "documentation"; Priority = 1}
+          )
+          $labels = Get-PRLabels -ChangedFiles $files -Rules $rules
+          $labelsSorted = ($labels | Sort-Object) -join ','
+          Write-Output "TC1_LABELS=$labelsSorted"
+          if (-not ($labels -contains "documentation")) {
+            Write-Error "TC1 FAILED: expected 'documentation', got: $labelsSorted"
+            exit 1
+          }
+          Write-Output "TC1_RESULT=PASS"
+
+      # -------------------------------------------------------------------
+      # Test Case 2: Multiple files, multiple labels
+      # Files: docs/README.md, src/api/endpoint.js
+      # Rules: docs/** -> documentation (p1), src/api/** -> api (p2)
+      # Expected labels (sorted): api,documentation
+      # -------------------------------------------------------------------
+      - name: "TC2 - Multiple files multiple labels"
+        shell: pwsh
+        run: |
+          . ./Invoke-PRLabelAssigner.ps1
+          $files = @("docs/README.md", "src/api/endpoint.js")
+          $rules = @(
+            [PSCustomObject]@{Pattern = "docs/**";    Label = "documentation"; Priority = 1},
+            [PSCustomObject]@{Pattern = "src/api/**"; Label = "api";           Priority = 2}
+          )
+          $labels = Get-PRLabels -ChangedFiles $files -Rules $rules
+          $labelsSorted = ($labels | Sort-Object) -join ','
+          Write-Output "TC2_LABELS=$labelsSorted"
+          if (-not ($labels -contains "documentation")) {
+            Write-Error "TC2 FAILED: expected 'documentation', got: $labelsSorted"
+            exit 1
+          }
+          if (-not ($labels -contains "api")) {
+            Write-Error "TC2 FAILED: expected 'api', got: $labelsSorted"
+            exit 1
+          }
+          Write-Output "TC2_RESULT=PASS"
+
+      # -------------------------------------------------------------------
+      # Test Case 3: Glob pattern matching test files
+      # Files: src/utils.test.js, src/api/api.test.ts
+      # Rules: **/*.test.* -> tests (p1)
+      # Expected labels (sorted): tests
+      # -------------------------------------------------------------------
+      - name: "TC3 - Glob pattern for test files"
+        shell: pwsh
+        run: |
+          . ./Invoke-PRLabelAssigner.ps1
+          $files = @("src/utils.test.js", "src/api/api.test.ts")
+          $rules = @(
+            [PSCustomObject]@{Pattern = "**/*.test.*"; Label = "tests"; Priority = 1}
+          )
+          $labels = Get-PRLabels -ChangedFiles $files -Rules $rules
+          $labelsSorted = ($labels | Sort-Object) -join ','
+          Write-Output "TC3_LABELS=$labelsSorted"
+          if (-not ($labels -contains "tests")) {
+            Write-Error "TC3 FAILED: expected 'tests', got: $labelsSorted"
+            exit 1
+          }
+          Write-Output "TC3_RESULT=PASS"
+
+      # -------------------------------------------------------------------
+      # Test Case 4: Multiple labels per single file
+      # Files: src/api/api.test.ts
+      # Rules: src/api/** -> api (p2), **/*.test.* -> tests (p1)
+      # Expected labels (sorted): api,tests
+      # -------------------------------------------------------------------
+      - name: "TC4 - Multiple labels per file"
+        shell: pwsh
+        run: |
+          . ./Invoke-PRLabelAssigner.ps1
+          $files = @("src/api/api.test.ts")
+          $rules = @(
+            [PSCustomObject]@{Pattern = "src/api/**";  Label = "api";   Priority = 2},
+            [PSCustomObject]@{Pattern = "**/*.test.*"; Label = "tests"; Priority = 1}
+          )
+          $labels = Get-PRLabels -ChangedFiles $files -Rules $rules
+          $labelsSorted = ($labels | Sort-Object) -join ','
+          Write-Output "TC4_LABELS=$labelsSorted"
+          if (-not ($labels -contains "api")) {
+            Write-Error "TC4 FAILED: expected 'api', got: $labelsSorted"
+            exit 1
+          }
+          if (-not ($labels -contains "tests")) {
+            Write-Error "TC4 FAILED: expected 'tests', got: $labelsSorted"
+            exit 1
+          }
+          Write-Output "TC4_RESULT=PASS"
+
+      # -------------------------------------------------------------------
+      # Test Case 5: Priority ordering
+      # Files: src/api/endpoint.js
+      # Rules: src/** -> backend (p5), src/api/** -> api (p10)
+      # Expected labels (sorted): api,backend
+      # Expected first label by priority order: api (priority=10 wins)
+      # -------------------------------------------------------------------
+      - name: "TC5 - Priority ordering"
+        shell: pwsh
+        run: |
+          . ./Invoke-PRLabelAssigner.ps1
+          $files = @("src/api/endpoint.js")
+          $rules = @(
+            [PSCustomObject]@{Pattern = "src/**";     Label = "backend"; Priority = 5},
+            [PSCustomObject]@{Pattern = "src/api/**"; Label = "api";     Priority = 10}
+          )
+          $labels = Get-PRLabels -ChangedFiles $files -Rules $rules
+          $labelsSorted = ($labels | Sort-Object) -join ','
+          Write-Output "TC5_LABELS=$labelsSorted"
+          # Verify both labels are returned
+          if (-not ($labels -contains "api")) {
+            Write-Error "TC5 FAILED: expected 'api', got: $labelsSorted"
+            exit 1
+          }
+          if (-not ($labels -contains "backend")) {
+            Write-Error "TC5 FAILED: expected 'backend', got: $labelsSorted"
+            exit 1
+          }
+          # Verify priority order: api (p=10) must be first in the returned array
+          $firstByPriority = $labels[0]
+          Write-Output "TC5_PRIORITY_FIRST=$firstByPriority"
+          if ($firstByPriority -ne "api") {
+            Write-Error "TC5 FAILED: expected 'api' first (priority=10), got: $firstByPriority"
+            exit 1
+          }
+          Write-Output "TC5_RESULT=PASS"
+
+      # -------------------------------------------------------------------
+      # Pester unit tests (runs the same Tests.ps1 that TDD was written against)
+      # -------------------------------------------------------------------
+      - name: "Run Pester Unit Tests"
+        shell: pwsh
+        run: |
+          $result = Invoke-Pester ./Invoke-PRLabelAssigner.Tests.ps1 -PassThru -Output Detailed
+          if ($result.FailedCount -gt 0) {
+            Write-Error "Pester unit tests failed: $($result.FailedCount) failures"
+            exit 1
+          }
+          Write-Output "PESTER_PASSED=$($result.PassedCount)"
+          Write-Output "PESTER_RESULT=PASS"
