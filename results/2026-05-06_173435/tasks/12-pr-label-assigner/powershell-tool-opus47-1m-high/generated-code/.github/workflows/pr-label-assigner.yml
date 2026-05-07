@@ -1,0 +1,121 @@
+name: PR Label Assigner
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      changed_files:
+        description: 'Newline-separated list of changed file paths to label.'
+        required: false
+        default: ''
+      conflict_resolution:
+        description: 'Union | Priority'
+        required: false
+        default: 'Union'
+
+permissions:
+  contents: read
+
+env:
+  CONFIG_PATH: labels.json
+
+jobs:
+  test:
+    name: Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Import-Module Pester -MinimumVersion 5.0.0
+          $cfg = New-PesterConfiguration
+          $cfg.Run.Path = './tests'
+          $cfg.Run.Exit = $true
+          $cfg.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $cfg
+
+  assign-labels:
+    name: "Assign PR labels: ${{ matrix.case }}"
+    runs-on: ubuntu-latest
+    needs: test
+    # Matrix runs every documented test case in a single workflow run,
+    # so one `act push` exercises the whole suite.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - case: multi-file-union
+            fixture: fixtures/case-multi-file-union.txt
+            conflict: Union
+            expected: '["api","ci","documentation","source","tests"]'
+          - case: empty-changeset
+            fixture: fixtures/case-empty.txt
+            conflict: Union
+            expected: '[]'
+          - case: priority-mode
+            fixture: fixtures/case-priority.txt
+            conflict: Priority
+            expected: '["api","documentation","source"]'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show fixture
+        shell: pwsh
+        run: |
+          Write-Host "Case          : ${{ matrix.case }}"
+          Write-Host "Conflict mode : ${{ matrix.conflict }}"
+          Write-Host "Fixture file  : ${{ matrix.fixture }}"
+          Write-Host "--- contents ---"
+          if ((Test-Path '${{ matrix.fixture }}') -and ((Get-Item '${{ matrix.fixture }}').Length -gt 0)) {
+            Get-Content -Path '${{ matrix.fixture }}'
+          } else {
+            Write-Host "(empty fixture)"
+          }
+          Write-Host "--- end contents ---"
+
+      - name: Run label assigner (lines)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          # Tolerate a blank/missing fixture (the empty-changeset case).
+          if (-not (Test-Path '${{ matrix.fixture }}')) {
+            New-Item -ItemType File -Path '${{ matrix.fixture }}' -Force | Out-Null
+          }
+          Write-Host "::group::Computed labels"
+          ./Get-PRLabels.ps1 `
+            -ConfigPath $env:CONFIG_PATH `
+            -ChangedFilesPath '${{ matrix.fixture }}' `
+            -ConflictResolution '${{ matrix.conflict }}'
+          Write-Host "::endgroup::"
+
+      - name: Run label assigner (json) and assert exact match
+        id: labels
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if (-not (Test-Path '${{ matrix.fixture }}')) {
+            New-Item -ItemType File -Path '${{ matrix.fixture }}' -Force | Out-Null
+          }
+          $json = ./Get-PRLabels.ps1 `
+            -ConfigPath $env:CONFIG_PATH `
+            -ChangedFilesPath '${{ matrix.fixture }}' `
+            -ConflictResolution '${{ matrix.conflict }}' `
+            -OutputFormat json
+
+          $expected = '${{ matrix.expected }}'
+          # Tag the line so the test harness can grep it cleanly.
+          Write-Host "CASE_RESULT case=${{ matrix.case }} observed=$json expected=$expected"
+          if ($json -ne $expected) {
+            Write-Error "Label mismatch for case ${{ matrix.case }}: expected $expected, got $json"
+            exit 1
+          }
+          Write-Host "OK [${{ matrix.case }}] labels=$json"
+          "labels_json=$json" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
