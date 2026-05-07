@@ -1,0 +1,89 @@
+---
+name: Dependency License Checker
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    # Weekly drift check (in case mock data or allow/deny list shifts).
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+env:
+  MANIFEST_PATH: fixtures/manifest.package.json
+  CONFIG_PATH: fixtures/license-config.json
+  MOCK_DATA_PATH: fixtures/mock-licenses.json
+  REPORT_JSON: license-report.json
+
+jobs:
+  test-and-check:
+    name: Test and run license check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Show PowerShell + Pester versions
+        shell: pwsh
+        run: |
+          $PSVersionTable.PSVersion
+          (Get-Module -ListAvailable Pester | Select-Object -First 1).Version
+
+      - name: Run Pester unit tests
+        shell: pwsh
+        run: |
+          $cfg = New-PesterConfiguration
+          $cfg.Run.Path = './tests'
+          $cfg.Run.Exit = $true
+          $cfg.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $cfg
+
+      - name: Run dependency license check (gate)
+        id: license_check
+        shell: pwsh
+        # Allow the script to exit 1 for "violations found" without
+        # failing this step prematurely; we inspect $LASTEXITCODE
+        # below and decide whether the workflow should fail.
+        continue-on-error: true
+        run: |
+          ./scripts/Invoke-LicenseCheck.ps1 `
+            -ManifestPath  $env:MANIFEST_PATH `
+            -ConfigPath    $env:CONFIG_PATH `
+            -MockDataPath  $env:MOCK_DATA_PATH `
+            -OutputJson    $env:REPORT_JSON
+          $code = $LASTEXITCODE
+          "gate_exit_code=$code" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          Write-Output "::notice::gate exit code = $code"
+
+      - name: Print JSON report
+        shell: pwsh
+        run: |
+          if (Test-Path $env:REPORT_JSON) {
+            Write-Output '--- JSON REPORT ---'
+            Get-Content $env:REPORT_JSON
+            Write-Output '--- END JSON REPORT ---'
+          } else {
+            Write-Output 'No JSON report produced.'
+          }
+
+      - name: Enforce gate result
+        shell: pwsh
+        env:
+          GATE_EXIT: ${{ steps.license_check.outputs.gate_exit_code }}
+          ENFORCE_MODE: ${{ vars.LICENSE_GATE_MODE || 'report-only' }}
+        run: |
+          $code = [int]$env:GATE_EXIT
+          $mode = $env:ENFORCE_MODE
+          Write-Output "License gate exit code: $code (mode=$mode)"
+          if ($code -eq 2) {
+            Write-Error 'License checker reported an operational error.'
+            exit 1
+          }
+          if ($code -eq 1 -and $mode -eq 'enforce') {
+            Write-Error 'License compliance violations detected.'
+            exit 1
+          }
+          Write-Output 'WORKFLOW_GATE_OK'
