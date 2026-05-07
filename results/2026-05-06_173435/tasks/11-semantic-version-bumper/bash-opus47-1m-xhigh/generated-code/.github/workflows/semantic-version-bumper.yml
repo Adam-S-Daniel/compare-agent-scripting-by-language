@@ -1,0 +1,94 @@
+name: Semantic Version Bumper
+
+# Trigger on push, pull_request, and manual dispatch. Schedule lets us
+# do a nightly sanity check that the bumper still functions even when
+# nobody pushes.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint and unit-test the bumper
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Install bats and shellcheck
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends bats shellcheck
+
+      - name: Shellcheck
+        run: shellcheck bump_version.sh
+
+      - name: Bash syntax check
+        run: bash -n bump_version.sh
+
+      - name: Unit tests (bats)
+        run: bats tests/bump_version.bats
+
+  bump:
+    name: Run bumper against fixture
+    needs: lint
+    runs-on: ubuntu-latest
+    env:
+      # The harness writes a fixture into the workspace before invoking
+      # `act push`. The bumper auto-detects whether to use VERSION or
+      # package.json, so no env-var plumbing is needed for that.
+      CHANGELOG_FILE: CHANGELOG.md
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Pick the version file (VERSION or package.json)
+        id: pickfile
+        run: |
+          if [ -f VERSION ]; then
+            echo "file=VERSION" >> "$GITHUB_OUTPUT"
+          elif [ -f package.json ]; then
+            echo "file=package.json" >> "$GITHUB_OUTPUT"
+          else
+            echo "no version file (VERSION or package.json) present" >&2
+            exit 1
+          fi
+
+      - name: Verify a commits fixture is present
+        run: |
+          if [ ! -f commits.txt ]; then
+            echo "no commits.txt fixture present" >&2
+            exit 1
+          fi
+
+      - name: Run bumper
+        id: bump
+        run: |
+          NEW=$(./bump_version.sh bump \
+              "${{ steps.pickfile.outputs.file }}" \
+              commits.txt \
+              "$CHANGELOG_FILE")
+          # Tag the parseable line so the test harness can grep it
+          # unambiguously out of the act output stream.
+          echo "NEW_VERSION=${NEW}"
+          echo "new_version=${NEW}" >> "$GITHUB_OUTPUT"
+
+      - name: Show resulting version-file contents
+        run: |
+          echo "--- ${{ steps.pickfile.outputs.file }} ---"
+          cat "${{ steps.pickfile.outputs.file }}"
+
+      - name: Show CHANGELOG (if any)
+        run: |
+          if [ -f "$CHANGELOG_FILE" ]; then
+            echo "--- $CHANGELOG_FILE ---"
+            cat "$CHANGELOG_FILE"
+          else
+            echo "(no changelog written — this is expected for no-op bumps)"
+          fi
