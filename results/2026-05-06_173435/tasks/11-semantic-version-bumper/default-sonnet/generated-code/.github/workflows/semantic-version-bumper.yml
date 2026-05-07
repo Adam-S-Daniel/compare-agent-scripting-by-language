@@ -1,0 +1,118 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  test-version-bumper:
+    name: Test Semantic Version Bumper
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify version_bumper.py exists
+        run: |
+          test -f version_bumper.py || { echo "ERROR: version_bumper.py not found"; exit 1; }
+          echo "version_bumper.py found"
+
+      # Test case 1: patch bump — fix commits only => 1.0.0 -> 1.0.1
+      - name: "TC1 patch bump: 1.0.0 + fix -> 1.0.1"
+        run: |
+          printf '1.0.0\n' > VERSION
+          printf 'fix: resolve null pointer exception in auth module\nfix: handle edge case in validator\n' > commits.txt
+          python3 version_bumper.py
+          NEW_VER=$(cat NEW_VERSION.txt)
+          echo "TC1_NEW_VERSION: ${NEW_VER}"
+          if [ "${NEW_VER}" != "1.0.1" ]; then
+            echo "FAIL TC1: expected 1.0.1, got ${NEW_VER}"
+            exit 1
+          fi
+          echo "PASS TC1: ${NEW_VER}"
+
+      # Test case 2: minor bump — feat + fix => 1.0.0 -> 1.1.0
+      - name: "TC2 minor bump: 1.0.0 + feat -> 1.1.0"
+        run: |
+          printf '1.0.0\n' > VERSION
+          printf 'feat: add user profile picture upload\nfix: correct typo in error message\n' > commits.txt
+          python3 version_bumper.py
+          NEW_VER=$(cat NEW_VERSION.txt)
+          echo "TC2_NEW_VERSION: ${NEW_VER}"
+          if [ "${NEW_VER}" != "1.1.0" ]; then
+            echo "FAIL TC2: expected 1.1.0, got ${NEW_VER}"
+            exit 1
+          fi
+          echo "PASS TC2: ${NEW_VER}"
+
+      # Test case 3: major bump — breaking change via ! suffix => 1.0.0 -> 2.0.0
+      - name: "TC3 major bump: 1.0.0 + feat! -> 2.0.0"
+        run: |
+          printf '1.0.0\n' > VERSION
+          printf 'feat!: remove deprecated v1 authentication API\nfix: correct validation error messages\n' > commits.txt
+          python3 version_bumper.py
+          NEW_VER=$(cat NEW_VERSION.txt)
+          echo "TC3_NEW_VERSION: ${NEW_VER}"
+          if [ "${NEW_VER}" != "2.0.0" ]; then
+            echo "FAIL TC3: expected 2.0.0, got ${NEW_VER}"
+            exit 1
+          fi
+          echo "PASS TC3: ${NEW_VER}"
+
+      # Test case 4: minor bump from non-trivial base version => 2.3.4 -> 2.4.0
+      - name: "TC4 minor bump from 2.3.4: feat -> 2.4.0"
+        run: |
+          printf '2.3.4\n' > VERSION
+          printf 'feat: add analytics dashboard widget\nfix: correct calculation in reports\nchore: update CI configuration\n' > commits.txt
+          python3 version_bumper.py
+          NEW_VER=$(cat NEW_VERSION.txt)
+          echo "TC4_NEW_VERSION: ${NEW_VER}"
+          if [ "${NEW_VER}" != "2.4.0" ]; then
+            echo "FAIL TC4: expected 2.4.0, got ${NEW_VER}"
+            exit 1
+          fi
+          echo "PASS TC4: ${NEW_VER}"
+
+      # Test case 5: no bump — chore/docs commits only => 1.5.2 unchanged
+      - name: "TC5 no bump: 1.5.2 + chore/docs -> 1.5.2"
+        run: |
+          printf '1.5.2\n' > VERSION
+          printf 'chore: update npm dependencies\ndocs: update README with examples\n' > commits.txt
+          python3 version_bumper.py
+          NEW_VER=$(cat NEW_VERSION.txt)
+          echo "TC5_NEW_VERSION: ${NEW_VER}"
+          if [ "${NEW_VER}" != "1.5.2" ]; then
+            echo "FAIL TC5: expected 1.5.2, got ${NEW_VER}"
+            exit 1
+          fi
+          echo "PASS TC5: ${NEW_VER}"
+
+      # Test case 6: major bump via BREAKING CHANGE keyword => 3.0.0 -> 4.0.0
+      - name: "TC6 major bump via BREAKING CHANGE keyword: 3.0.0 -> 4.0.0"
+        run: |
+          printf '3.0.0\n' > VERSION
+          printf 'feat: redesign authentication system\nBREAKING CHANGE: old session tokens are no longer valid\n' > commits.txt
+          python3 version_bumper.py
+          NEW_VER=$(cat NEW_VERSION.txt)
+          echo "TC6_NEW_VERSION: ${NEW_VER}"
+          if [ "${NEW_VER}" != "4.0.0" ]; then
+            echo "FAIL TC6: expected 4.0.0, got ${NEW_VER}"
+            exit 1
+          fi
+          echo "PASS TC6: ${NEW_VER}"
+
+      - name: Show all test results summary
+        run: |
+          echo "=== All test cases completed successfully ==="
+          echo "TC1: 1.0.0 + fix commits -> 1.0.1 (patch bump)"
+          echo "TC2: 1.0.0 + feat commits -> 1.1.0 (minor bump)"
+          echo "TC3: 1.0.0 + feat! commit -> 2.0.0 (major bump via !)"
+          echo "TC4: 2.3.4 + feat commits -> 2.4.0 (minor bump, non-trivial base)"
+          echo "TC5: 1.5.2 + chore/docs  -> 1.5.2 (no bump)"
+          echo "TC6: 3.0.0 + BREAKING CHANGE -> 4.0.0 (major bump via keyword)"
