@@ -1,0 +1,114 @@
+name: PR Label Assigner
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # -----------------------------------------------------------------------
+      # Run full Pester test suite (covers all TDD iterations including
+      # workflow-structure checks).  Fail the job on any test failure.
+      # -----------------------------------------------------------------------
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $result = Invoke-Pester -Path ./PrLabelAssigner.Tests.ps1 -PassThru -Output Detailed
+          if ($result.FailedCount -gt 0) {
+            Write-Error "Pester: $($result.FailedCount) test(s) failed"
+            exit 1
+          }
+          Write-Host "All Pester tests passed: $($result.PassedCount) tests"
+
+      # -----------------------------------------------------------------------
+      # Scenario 1 – full mixed file list
+      # Expected: LABELS_RESULT: api,documentation,source,tests
+      # -----------------------------------------------------------------------
+      - name: Scenario - full mixed file list
+        shell: pwsh
+        run: |
+          . ./PrLabelAssigner.ps1
+          $rules = @(
+            [PSCustomObject]@{ Pattern = 'docs/**';    Label = 'documentation'; Priority = 10 }
+            [PSCustomObject]@{ Pattern = 'src/api/**'; Label = 'api';           Priority = 8  }
+            [PSCustomObject]@{ Pattern = '*.test.*';   Label = 'tests';         Priority = 6  }
+            [PSCustomObject]@{ Pattern = 'src/**';     Label = 'source';        Priority = 4  }
+          )
+          $files = @(
+            'docs/README.md'
+            'docs/api/guide.md'
+            'src/api/controllers/user.ps1'
+            'src/auth.test.ps1'
+          )
+          $labels = Get-PrLabels -ChangedFiles $files -LabelRules $rules
+          Write-Host "LABELS_RESULT: $($labels -join ',')"
+
+      # -----------------------------------------------------------------------
+      # Scenario 2 – docs-only files
+      # Expected: DOCS_ONLY_RESULT: documentation
+      # -----------------------------------------------------------------------
+      - name: Scenario - docs only
+        shell: pwsh
+        run: |
+          . ./PrLabelAssigner.ps1
+          $rules = @(
+            [PSCustomObject]@{ Pattern = 'docs/**'; Label = 'documentation'; Priority = 10 }
+          )
+          $files = @('docs/README.md')
+          $labels = Get-PrLabels -ChangedFiles $files -LabelRules $rules
+          Write-Host "DOCS_ONLY_RESULT: $($labels -join ',')"
+
+      # -----------------------------------------------------------------------
+      # Scenario 3 – empty file list
+      # Expected: EMPTY_RESULT: 0 labels
+      # -----------------------------------------------------------------------
+      - name: Scenario - empty file list
+        shell: pwsh
+        run: |
+          . ./PrLabelAssigner.ps1
+          $rules = @(
+            [PSCustomObject]@{ Pattern = 'docs/**'; Label = 'documentation'; Priority = 10 }
+          )
+          $labels = Get-PrLabels -ChangedFiles @() -LabelRules $rules
+          Write-Host "EMPTY_RESULT: $($labels.Count) labels"
+
+      # -----------------------------------------------------------------------
+      # Scenario 4 – test files matched by filename-only patterns
+      # Expected: TESTS_ONLY_RESULT: tests
+      # -----------------------------------------------------------------------
+      - name: Scenario - test files only
+        shell: pwsh
+        run: |
+          . ./PrLabelAssigner.ps1
+          $rules = @(
+            [PSCustomObject]@{ Pattern = '*.test.*'; Label = 'tests'; Priority = 6 }
+            [PSCustomObject]@{ Pattern = '*.spec.*'; Label = 'tests'; Priority = 6 }
+          )
+          $files = @('src/auth.test.ps1', 'tests/login.spec.ts', 'src/main.ps1')
+          $labels = Get-PrLabels -ChangedFiles $files -LabelRules $rules
+          Write-Host "TESTS_ONLY_RESULT: $($labels -join ',')"
+
+      # -----------------------------------------------------------------------
+      # Scenario 5 – default rule set with a CI/CD change
+      # Expected: CICD_RESULT: api,ci/cd,documentation,source,tests
+      # -----------------------------------------------------------------------
+      - name: Scenario - default rules with CI and test files
+        shell: pwsh
+        run: |
+          . ./PrLabelAssigner.ps1
+          $files = @(
+            '.github/workflows/ci.yml'
+            'docs/CONTRIBUTING.md'
+            'src/api/handlers/auth.test.ps1'
+          )
+          $labels = Get-PrLabels -ChangedFiles $files -LabelRules $DefaultLabelRules
+          Write-Host "CICD_RESULT: $($labels -join ',')"
