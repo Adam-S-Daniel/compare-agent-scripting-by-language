@@ -1,0 +1,36 @@
+name: Artifact Cleanup Script
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Pester Tests
+        shell: pwsh
+        run: |
+          $result = Invoke-Pester -Path ./Invoke-ArtifactCleanup.Tests.ps1 -Output Detailed -PassThru
+          Write-Output "PESTER_RESULT: Passed=$($result.PassedCount) Failed=$($result.FailedCount)"
+          if ($result.FailedCount -gt 0) { throw "$($result.FailedCount) Pester test(s) failed" }
+
+      - name: Run cleanup with standard fixture (dry-run)
+        shell: pwsh
+        run: |
+          Write-Output ">>> STANDARD_FIXTURE_OUTPUT <<<"
+          ./Invoke-ArtifactCleanup.ps1 -ArtifactsPath ./fixtures/standard-artifacts.json -MaxAgeDays 30 -MaxTotalSizeMB 30 -KeepLatestN 2 -ReferenceDate '2026-05-07' -DryRun
+
+      - name: Run cleanup with empty fixture (dry-run)
+        shell: pwsh
+        run: |
+          Write-Output ">>> EMPTY_FIXTURE_OUTPUT <<<"
+          ./Invoke-ArtifactCleanup.ps1 -ArtifactsPath ./fixtures/empty-artifacts.json -MaxAgeDays 30 -MaxTotalSizeMB 30 -KeepLatestN 2 -ReferenceDate '2026-05-07' -DryRun
