@@ -1,0 +1,53 @@
+name: Test Results Aggregator
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      fixtures_dir:
+        description: Directory containing test result files
+        required: false
+        default: fixtures
+
+permissions:
+  contents: read
+
+env:
+  FIXTURES_DIR: ${{ github.event.inputs.fixtures_dir || 'fixtures' }}
+
+jobs:
+  aggregate:
+    name: Aggregate test results
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        run: |
+          set -euo pipefail
+          if ! command -v bun >/dev/null 2>&1; then
+            curl -fsSL https://bun.sh/install | bash
+            echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+            export PATH="$HOME/.bun/bin:$PATH"
+          fi
+          bun --version
+
+      - name: Run unit tests (bun test)
+        run: bun test
+
+      - name: Aggregate fixtures and write summary
+        run: |
+          bun run src/cli.ts "$FIXTURES_DIR" --out summary.md
+          echo "----- summary.md -----"
+          cat summary.md
+
+      - name: Upload summary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-summary
+          path: summary.md
+          if-no-files-found: error
