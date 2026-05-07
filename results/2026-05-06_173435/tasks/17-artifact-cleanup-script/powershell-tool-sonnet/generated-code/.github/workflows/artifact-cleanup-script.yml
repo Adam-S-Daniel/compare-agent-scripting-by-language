@@ -1,0 +1,64 @@
+name: Artifact Cleanup Script
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  schedule:
+    - cron: "0 3 * * 0"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Run in dry-run mode (no deletions)"
+        required: false
+        default: "true"
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Run Pester Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $result = Invoke-Pester ./ArtifactCleanup.Tests.ps1 -Output Detailed -PassThru
+          if ($result.FailedCount -gt 0) {
+            Write-Error "Pester: $($result.FailedCount) test(s) failed"
+            exit 1
+          }
+          Write-Output "All $($result.PassedCount) tests passed"
+
+  dry-run:
+    name: Dry-Run Cleanup Plan
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate dry-run deletion plan
+        shell: pwsh
+        run: |
+          ./ArtifactCleanup.ps1 -DryRun -MaxAgeDays 30 -MaxTotalSizeMB 500 -KeepLatestN 3
+
+  live-run:
+    name: Execute Cleanup Plan
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run == 'false')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Execute cleanup plan
+        shell: pwsh
+        run: |
+          ./ArtifactCleanup.ps1 -MaxAgeDays 30 -MaxTotalSizeMB 500 -KeepLatestN 3
