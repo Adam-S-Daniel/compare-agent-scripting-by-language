@@ -1,0 +1,96 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  schedule:
+    - cron: '0 9 * * MON'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  matrix-generator-tests:
+    name: Test Matrix Generator
+    runs-on: ubuntu-latest
+    env:
+      PYTHONUNBUFFERED: "1"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install pytest
+
+      - name: Verify module imports
+        run: |
+          python3 -c "from matrix_generator import MatrixGenerator, MatrixConfig, MatrixValidationError"
+          python3 -c "from generate_matrix import main"
+
+      - name: Run unit tests
+        run: |
+          python3 -m pytest tests/ -v --tb=short
+
+      - name: Test basic matrix generation
+        run: |
+          python3 generate_matrix.py --config tests/fixtures/config_basic.json
+
+      - name: Test matrix with rules
+        run: |
+          python3 generate_matrix.py --config tests/fixtures/config_with_rules.json
+
+      - name: Test large matrix generation
+        run: |
+          python3 generate_matrix.py --config tests/fixtures/config_large.json
+
+      - name: Test output to file
+        run: |
+          python3 generate_matrix.py \
+            --config tests/fixtures/config_basic.json \
+            --output /tmp/matrix-output.json
+          cat /tmp/matrix-output.json
+
+      - name: Validate JSON schema
+        run: |
+          python3 -c "
+          import json
+          with open('/tmp/matrix-output.json') as f:
+            matrix = json.load(f)
+          assert 'include' in matrix, 'Missing include key'
+          assert isinstance(matrix['include'], list), 'include must be list'
+          assert len(matrix['include']) > 0, 'include must not be empty'
+          print('✓ JSON schema validation passed')
+          "
+
+      - name: Test error handling
+        run: |
+          set +e
+          python3 generate_matrix.py --config /nonexistent/file.json
+          EXIT_CODE=$?
+          set -e
+          if [ "$EXIT_CODE" -eq 1 ]; then
+            echo "✓ Error handling test passed"
+          else
+            echo "✗ Error handling test failed"
+            exit 1
+          fi
+
+      - name: Final verification
+        run: |
+          echo "✓ All workflow steps completed successfully"
+          echo "✓ Matrix generator is fully functional"
