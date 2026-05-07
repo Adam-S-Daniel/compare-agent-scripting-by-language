@@ -1,0 +1,61 @@
+name: Artifact Cleanup
+
+# Runs on push, pull request, manual dispatch, and on a daily schedule
+# (so retention is enforced without anyone having to remember).
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry-run only (no artifact deletion)"
+        required: false
+        default: "true"
+  schedule:
+    # 04:17 UTC daily -- offset from the top of the hour to avoid
+    # contention on shared scheduler tiers.
+    - cron: "17 4 * * *"
+
+# Pin a deterministic NOW so test assertions are stable across runs.
+env:
+  ARTIFACTS_FILE: fixtures/artifacts.json
+  POLICY_FILE: fixtures/policy.json
+  NOW: "2026-05-07T12:00:00Z"
+
+permissions:
+  contents: read
+
+jobs:
+  unit-tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Show Python version
+        run: python3 --version
+      - name: Run unit tests (stdlib unittest -- no pip required)
+        run: python3 -m unittest discover -v -s tests
+
+  cleanup-plan:
+    name: Cleanup plan
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Verify fixture inputs exist
+        run: |
+          test -f "${ARTIFACTS_FILE}" || { echo "missing ${ARTIFACTS_FILE}"; exit 1; }
+          test -f "${POLICY_FILE}"    || { echo "missing ${POLICY_FILE}"; exit 1; }
+          echo "Artifacts:"; cat "${ARTIFACTS_FILE}"
+          echo "Policy:";    cat "${POLICY_FILE}"
+      - name: Run cleanup planner (dry-run)
+        run: |
+          python3 retention.py \
+            --artifacts "${ARTIFACTS_FILE}" \
+            --policy "${POLICY_FILE}" \
+            --now "${NOW}" \
+            --dry-run
