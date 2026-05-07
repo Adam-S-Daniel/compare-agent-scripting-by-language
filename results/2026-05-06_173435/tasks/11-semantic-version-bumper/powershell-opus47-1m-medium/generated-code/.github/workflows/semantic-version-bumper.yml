@@ -1,0 +1,66 @@
+name: semantic-version-bumper
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: "Single fixture name (overrides matrix when provided via dispatch)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  bump:
+    name: Bump version (${{ matrix.fixture }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        fixture: [feat, fix, breaking]
+    env:
+      FIXTURE: ${{ matrix.fixture }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Stage workspace from fixture
+        shell: pwsh
+        run: |
+          $src = Join-Path 'fixtures' $env:FIXTURE
+          if (-not (Test-Path $src)) { throw "Fixture not found: $src" }
+          $work = Join-Path 'work' $env:FIXTURE
+          New-Item -ItemType Directory -Force -Path $work | Out-Null
+          Copy-Item -Recurse -Force "$src/*" $work
+          Write-Host "Staged fixture '$($env:FIXTURE)' into $work"
+
+      - name: Run bumper
+        shell: pwsh
+        run: |
+          $work = Join-Path 'work' $env:FIXTURE
+          $verFile = if (Test-Path (Join-Path $work 'version.json')) {
+            Join-Path $work 'version.json'
+          } else {
+            Join-Path $work 'version.txt'
+          }
+          $changelog = Join-Path $work 'CHANGELOG.md'
+          $output = & ./Bump-Version.ps1 -VersionFile $verFile `
+              -CommitsFile (Join-Path $work 'commits.txt') `
+              -ChangelogFile $changelog
+          $newVersion = ($output | Select-Object -Last 1).Trim()
+          Write-Host ("CASE_FIXTURE=" + $env:FIXTURE)
+          Write-Host "----- BEGIN BUMPER OUTPUT [$($env:FIXTURE)] -----"
+          $output | ForEach-Object { Write-Host $_ }
+          Write-Host "----- END BUMPER OUTPUT [$($env:FIXTURE)] -----"
+          Write-Host ("RESULT_VERSION[" + $env:FIXTURE + "]=" + $newVersion)
+          Write-Host "----- BEGIN VERSION FILE [$($env:FIXTURE)] -----"
+          Get-Content $verFile | ForEach-Object { Write-Host $_ }
+          Write-Host "----- END VERSION FILE [$($env:FIXTURE)] -----"
+          Write-Host "----- BEGIN CHANGELOG [$($env:FIXTURE)] -----"
+          if (Test-Path $changelog) { Get-Content $changelog | ForEach-Object { Write-Host $_ } }
+          Write-Host "----- END CHANGELOG [$($env:FIXTURE)] -----"
