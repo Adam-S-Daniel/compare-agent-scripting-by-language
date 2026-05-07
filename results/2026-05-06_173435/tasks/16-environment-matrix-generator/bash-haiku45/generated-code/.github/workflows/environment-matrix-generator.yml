@@ -1,0 +1,104 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  build-matrix:
+    name: Generate and Test Build Matrix
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Make script executable
+        run: chmod +x generate-matrix.sh
+
+      - name: Install dependencies
+        run: |
+          echo "Installing bats..."
+          npm install -g bats
+
+      - name: Run matrix generator tests
+        run: |
+          echo "Running bats tests..."
+          bats tests/test_matrix_generator.bats
+
+      - name: Test matrix generation with sample configs
+        run: |
+          echo "===== Testing matrix generation =====" | tee -a act-result.txt
+          echo "" | tee -a act-result.txt
+
+          echo "Test 1: Simple single OS matrix" | tee -a act-result.txt
+          ./generate-matrix.sh '{"os": ["ubuntu-latest"], "node-version": ["18"]}' | jq . | tee -a act-result.txt
+          echo "" | tee -a act-result.txt
+
+          echo "Test 2: Multiple OS with versions" | tee -a act-result.txt
+          ./generate-matrix.sh '{"os": ["ubuntu-latest", "macos-latest"], "node-version": ["16", "18", "20"]}' | jq . | tee -a act-result.txt
+          echo "" | tee -a act-result.txt
+
+          echo "Test 3: Matrix with max-parallel and fail-fast" | tee -a act-result.txt
+          ./generate-matrix.sh '{"os": ["ubuntu-latest", "windows-latest"], "node-version": ["18"], "max-parallel": 5, "fail-fast": false}' | jq . | tee -a act-result.txt
+          echo "" | tee -a act-result.txt
+
+          echo "Test 4: Matrix with include rules" | tee -a act-result.txt
+          ./generate-matrix.sh '{
+            "os": ["ubuntu-latest"],
+            "node-version": ["18"],
+            "include": [
+              {"os": "windows-latest", "node-version": "20", "msvc": "2022"}
+            ]
+          }' | jq . | tee -a act-result.txt
+          echo "" | tee -a act-result.txt
+
+          echo "Test 5: Matrix with exclude rules" | tee -a act-result.txt
+          ./generate-matrix.sh '{
+            "os": ["ubuntu-latest", "windows-latest"],
+            "node-version": ["16", "18"],
+            "exclude": [
+              {"os": "windows-latest", "node-version": "16"}
+            ]
+          }' | jq . | tee -a act-result.txt
+          echo "" | tee -a act-result.txt
+
+          echo "Test 6: Complex multi-factor matrix" | tee -a act-result.txt
+          ./generate-matrix.sh '{
+            "os": ["ubuntu-latest", "macos-latest"],
+            "node-version": ["16", "18", "20"],
+            "feature": ["api", "cli"],
+            "max-parallel": 8,
+            "fail-fast": true
+          }' | jq . | tee -a act-result.txt
+          echo "" | tee -a act-result.txt
+
+          echo "All matrix generation tests completed successfully!" | tee -a act-result.txt
+
+      - name: Verify act-result.txt artifact
+        run: |
+          if [ ! -f act-result.txt ]; then
+            echo "ERROR: act-result.txt was not created" >&2
+            exit 1
+          fi
+          echo "✓ act-result.txt artifact created successfully"
+          echo "Contents:"
+          wc -l act-result.txt
+
+      - name: Save test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: test-results
+          path: act-result.txt
+          retention-days: 30
