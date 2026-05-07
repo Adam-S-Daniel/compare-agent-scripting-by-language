@@ -1,0 +1,78 @@
+name: PR Label Assigner
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  label-assigner:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate script syntax
+        run: |
+          bash -n pr-label-assigner.sh
+          echo "SYNTAX_CHECK=pass" >> "$GITHUB_ENV"
+
+      - name: "Test Case 1: Docs only files"
+        run: |
+          echo "=== TEST CASE 1: docs-only ==="
+          output=$(bash pr-label-assigner.sh -c label-rules.conf -f test-fixtures/case1-docs-only.files)
+          echo "$output"
+          echo "=== END CASE 1 ==="
+
+      - name: "Test Case 2: Mixed file types"
+        run: |
+          echo "=== TEST CASE 2: mixed ==="
+          output=$(bash pr-label-assigner.sh -c label-rules.conf -f test-fixtures/case2-mixed.files)
+          echo "$output"
+          echo "=== END CASE 2 ==="
+
+      - name: "Test Case 3: Infrastructure files"
+        run: |
+          echo "=== TEST CASE 3: infra ==="
+          output=$(bash pr-label-assigner.sh -c label-rules.conf -f test-fixtures/case3-infra.files)
+          echo "$output"
+          echo "=== END CASE 3 ==="
+
+      - name: "Test Case 4: Priority conflict - file matches multiple rules"
+        run: |
+          echo "=== TEST CASE 4: priority ==="
+          output=$(bash pr-label-assigner.sh -c label-rules.conf -f test-fixtures/case4-priority.files)
+          echo "$output"
+          echo "=== END CASE 4 ==="
+
+      - name: "Test Case 5: Custom rules config"
+        run: |
+          echo "=== TEST CASE 5: custom-rules ==="
+          output=$(bash pr-label-assigner.sh -c test-fixtures/case5-custom-rules.conf -f test-fixtures/case5-custom.files)
+          echo "$output"
+          echo "=== END CASE 5 ==="
+
+      - name: "Test Case 6: Error handling - missing config"
+        run: |
+          echo "=== TEST CASE 6: error-missing-config ==="
+          if bash pr-label-assigner.sh -c nonexistent.conf -f test-fixtures/case1-docs-only.files 2>&1; then
+            echo "FAIL: Should have exited with error"
+            exit 1
+          else
+            echo "PASS: Correctly failed with missing config"
+          fi
+          echo "=== END CASE 6 ==="
+
+      - name: "Test Case 7: Stdin input"
+        run: |
+          echo "=== TEST CASE 7: stdin-input ==="
+          output=$(echo -e "src/main.js\ntests/unit.test.js" | bash pr-label-assigner.sh -c label-rules.conf)
+          echo "$output"
+          echo "=== END CASE 7 ==="
+
+      - name: Summary
+        run: echo "All test cases completed successfully"
