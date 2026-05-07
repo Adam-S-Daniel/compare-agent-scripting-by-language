@@ -1,0 +1,45 @@
+name: Test Results Aggregator
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  aggregate:
+    name: Aggregate Test Results
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Ensure Pester is available
+        shell: pwsh
+        run: |
+          if (-not (Get-Module -ListAvailable -Name Pester)) {
+            Install-Module Pester -Force -Scope CurrentUser -SkipPublisherCheck
+          }
+          Import-Module Pester -PassThru | Select-Object -ExpandProperty Version
+
+      - name: Run unit tests
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = './Invoke-TestResultAggregator.Tests.ps1'
+          # Exclude tests that require Docker-in-Docker (act-integration)
+          # and tests that need the host tools like actionlint (workflow-structure)
+          $config.Filter.ExcludeTag = @('act-integration', 'workflow-structure')
+          $config.Output.Verbosity = 'Detailed'
+          $config.Run.Exit = $true
+          Invoke-Pester -Configuration $config
+
+      - name: Aggregate fixture test results
+        shell: pwsh
+        run: |
+          ./Invoke-TestResultAggregator.ps1 -InputPath ./fixtures
