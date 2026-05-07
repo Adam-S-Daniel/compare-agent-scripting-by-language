@@ -1,0 +1,89 @@
+name: environment-matrix-generator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: "Fixture file under fixtures/ to run (defaults to simple.json)"
+        required: false
+        default: "simple.json"
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+
+env:
+  PYTHONUNBUFFERED: "1"
+  FIXTURE: ${{ github.event.inputs.fixture || 'simple.json' }}
+
+jobs:
+  unit-tests:
+    name: Unit tests (pytest)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pytest
+        run: pip install --quiet pytest
+
+      - name: Run unit tests
+        # Only the unit tests run inside the container; workflow-level tests
+        # need actionlint+act on the host and live in tests/test_workflow.py.
+        run: python -m pytest tests/test_matrix_generator.py -v
+
+  generate-matrix:
+    name: Generate matrix from fixture
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    outputs:
+      matrix: ${{ steps.gen.outputs.matrix }}
+      include_count: ${{ steps.gen.outputs.include_count }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Generate matrix JSON
+        id: gen
+        run: |
+          set -euo pipefail
+          MATRIX=$(python matrix_generator.py "fixtures/${FIXTURE}")
+          echo "$MATRIX"
+          # Emit as a single-line output so downstream jobs can consume it.
+          echo "matrix=$(echo "$MATRIX" | python -c 'import json,sys; print(json.dumps(json.loads(sys.stdin.read())))')" >> "$GITHUB_OUTPUT"
+          COUNT=$(echo "$MATRIX" | python -c 'import json,sys; print(len(json.loads(sys.stdin.read())["include"]))')
+          echo "include_count=${COUNT}" >> "$GITHUB_OUTPUT"
+          echo "MATRIX_OUTPUT_BEGIN"
+          echo "$MATRIX"
+          echo "MATRIX_OUTPUT_END"
+          echo "INCLUDE_COUNT=${COUNT}"
+
+  summary:
+    name: Verify matrix
+    runs-on: ubuntu-latest
+    needs: generate-matrix
+    steps:
+      - name: Print matrix and assert non-empty
+        env:
+          MATRIX_JSON: ${{ needs.generate-matrix.outputs.matrix }}
+          INCLUDE_COUNT: ${{ needs.generate-matrix.outputs.include_count }}
+        run: |
+          set -euo pipefail
+          echo "Matrix: ${MATRIX_JSON}"
+          echo "Include count: ${INCLUDE_COUNT}"
+          test -n "${MATRIX_JSON}"
+          test "${INCLUDE_COUNT}" -gt 0
+          echo "VERIFY_OK"
