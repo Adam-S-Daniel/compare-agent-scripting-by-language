@@ -1,0 +1,64 @@
+name: PR Label Assigner
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      config:
+        description: Path to the rules config JSON
+        required: false
+        default: fixtures/config.json
+      files:
+        description: Path to the changed-files list (one path per line)
+        required: false
+        default: fixtures/files.txt
+
+permissions:
+  contents: read
+
+jobs:
+  assign-labels:
+    runs-on: ubuntu-latest
+    env:
+      # Defaults exercised by `act push`; overridable via workflow_dispatch.
+      CONFIG_PATH: ${{ github.event.inputs.config || 'fixtures/config.json' }}
+      FILES_PATH: ${{ github.event.inputs.files  || 'fixtures/files.txt' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+
+      - name: Install project dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Assign labels from changed file paths
+        id: assign
+        run: |
+          set -euo pipefail
+          echo "Using config: $CONFIG_PATH"
+          echo "Using files:  $FILES_PATH"
+          OUTPUT="$(bun run pr-label-assigner.ts --config "$CONFIG_PATH" --files "$FILES_PATH")"
+          # Stable, single-line marker that the test harness greps on:
+          echo "LABELS_OUTPUT=${OUTPUT}"
+          # Also emit as a step output for downstream jobs / GitHub UI.
+          {
+            echo "labels<<EOF"
+            echo "$OUTPUT"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Append to job summary
+        run: |
+          {
+            echo "## PR Label Assigner"
+            echo ""
+            echo "Config: \`${CONFIG_PATH}\`"
+            echo "Files:  \`${FILES_PATH}\`"
+            echo ""
+            echo "Result: \`${{ steps.assign.outputs.labels }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"

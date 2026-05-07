@@ -1,0 +1,977 @@
+{
+  "task_id": "12-pr-label-assigner",
+  "task_name": "PR Label Assigner",
+  "task_category": "GitHub Actions / Triage",
+  "language_mode": "typescript-bun",
+  "language_chosen": "typescript",
+  "language_breakdown": {
+    "typescript": 100.0
+  },
+  "interpreter_versions": {},
+  "powershell_version": "",
+  "dotnet_version": "",
+  "model": "claude-opus-4-7[1m]",
+  "model_short": "opus47-1m",
+  "variant": "opus47-1m-xhigh",
+  "claude_code_version": "2.1.132",
+  "instructions_version": "v4",
+  "timestamp_start": "2026-05-07T23:07:20.085382+00:00",
+  "timestamp_end": "2026-05-07T23:19:24.215025+00:00",
+  "prompt_text": "You are completing a scripting task. You MUST use TypeScript with Bun as your implementation language and runtime.\n\nTASK: Given a list of changed file paths (simulating a PR's changed files), apply labels based on configurable path-to-label mapping rules (e.g., docs/** -> documentation, src/api/** -> api, *.test.* -> tests). Support glob patterns, multiple labels per file, and priority ordering when rules conflict. Output the final label set. Mock the file list for testing.\n\nREQUIREMENTS:\n1. Use red/green TDD methodology: write a failing test FIRST, then write the minimum code to make it pass, then refactor. Repeat for each piece of functionality.\n2. Create mocks and test fixtures as necessary for testability. Use Bun's built-in test runner (`bun test`).\n3. All tests must be runnable with `bun test` and must pass at the end.\n4. Include clear comments explaining your approach.\n5. Handle errors gracefully with meaningful error messages.\n6. Use TypeScript features: explicit types, interfaces, and type annotations. Run scripts with `bun run <file>.ts`.\n\nCreate your solution in the current working directory. Start by writing your first failing test.\n\nGITHUB ACTIONS REQUIREMENT:\nCreate a GitHub Actions workflow file at .github/workflows/pr-label-assigner.yml that uses\nyour script in a real CI/CD pipeline. The workflow must:\n- Use appropriate trigger events (push, pull_request, schedule, workflow_dispatch, etc.)\n- Reference your script correctly\n- Pass actionlint validation (valid YAML, valid action references, correct syntax)\n- Include appropriate permissions, environment variables, and job dependencies\n- Actually run successfully when executed locally with `act` (nektos/act)\n\nDesign your workflow so its steps work in an isolated Docker container \u2014 use\n`actions/checkout@v4`, install dependencies your script needs, and run it.\nAvoid steps requiring external services or secrets without sensible defaults.\n\nIMPORTANT for PowerShell mode: Use `shell: pwsh` on your workflow run: steps instead\nof invoking `pwsh -Command` or `pwsh -File` from bash. This avoids escaping issues\nand works correctly in act containers. pwsh and Pester are pre-installed in the\ncontainer.\n\nWORKFLOW VALIDATION:\nRun `actionlint .github/workflows/pr-label-assigner.yml` and fix any errors. actionlint is\npre-installed. Iterate until it passes cleanly. Validate with actionlint BEFORE\nrunning act \u2014 actionlint is instant, act takes 30-90 seconds per run.\n\nALL TESTS MUST RUN THROUGH ACT:\nEvery single test case must execute through the GitHub Actions workflow via `act`.\nDo NOT test your script directly \u2014 all testing goes through the pipeline.\n\nStructure your workflow to accept test fixture data and produce verifiable output.\nYour test harness must:\n1. For each test case: set up a temp git repo with your project files + that case's\n   fixture data, run `act push --rm`, capture the output\n2. Save all act output to `act-result.txt` in the current working directory (append\n   each test case's output, clearly delimited)\n3. Assert that act exited with code 0 for each case\n4. Parse the act output and assert on EXACT EXPECTED VALUES \u2014 not just that output\n   appeared, but that it matches the known-good result for that test case's input.\n   For example: if your workflow bumps version 1.1.0 with a feat commit, assert\n   the output contains exactly \"1.2.0\", not just \"a version number\"\n5. Assert every job shows \"Job succeeded\"\n\nThe `act-result.txt` file MUST exist when done. It is a required artifact.\n`act` and Docker are pre-installed. Limit yourself to at most 3 `act push` runs \u2014\ndiagnose errors from the output rather than re-running blindly.\n\nWORKFLOW STRUCTURE TESTS (also required):\n- Parse the YAML and check expected structure (triggers, jobs, steps)\n- Verify the workflow references your script files correctly (paths exist)\n- Verify actionlint passes (assert exit code 0)\n",
+  "exit_code": 0,
+  "run_success": true,
+  "failure_reason": null,
+  "session": {
+    "session_id": "b7ebedb1-42ef-4788-977d-5f63b2d32388",
+    "stop_reason": "end_turn",
+    "terminal_reason": "completed",
+    "fast_mode_state": "off",
+    "service_tier": "standard",
+    "speed": "standard",
+    "inference_geo": "",
+    "context_window": 200000,
+    "max_output_tokens": 32000,
+    "permission_mode": "bypassPermissions",
+    "output_style": "default",
+    "tools_available_count": 28,
+    "mcp_servers": [],
+    "permission_denials": []
+  },
+  "model_usage_detail": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 1304,
+      "outputTokens": 19,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.001399,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "claude-opus-4-7[1m]": {
+      "inputTokens": 73,
+      "outputTokens": 33873,
+      "cacheReadInputTokens": 3610518,
+      "cacheCreationInputTokens": 85342,
+      "webSearchRequests": 0,
+      "costUSD": 3.1858364999999997,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000
+    }
+  },
+  "effort_level": "xhigh",
+  "timing": {
+    "grand_total_duration_ms": 724129,
+    "total_api_duration_ms": 528969,
+    "total_execution_duration_ms": 193478,
+    "num_turns": 64
+  },
+  "tokens": {
+    "input_tokens": 73,
+    "output_tokens": 33873,
+    "cache_read_tokens": 3610518,
+    "cache_creation_tokens": 85342,
+    "total_context_consumed": 3695933,
+    "compaction_count": 0
+  },
+  "cost": {
+    "total_cost_usd": 3.1872355,
+    "assumed_input_cost_per_mtok": 5.0,
+    "assumed_output_cost_per_mtok": 25.0,
+    "assumed_cache_read_cost_per_mtok": 0.5,
+    "assumed_cache_write_cost_per_mtok": 6.25
+  },
+  "code_metrics": {
+    "total_lines": 1202,
+    "total_tokens_estimate": 13745,
+    "file_count": 12,
+    "files": [
+      "act-result.txt",
+      "bun.lock",
+      "package.json",
+      "pr-label-assigner.ts",
+      "tsconfig.json",
+      "fixtures/config.json",
+      "fixtures/files.txt",
+      ".github/workflows/pr-label-assigner.yml",
+      "tests/harness/act-cases.ts",
+      "tests/harness/act.test.ts",
+      "tests/unit/assign-labels.test.ts",
+      "tests/unit/cli.test.ts"
+    ]
+  },
+  "quality": {
+    "tests_pass": null,
+    "error_count": 0,
+    "error_details": [],
+    "actionlint_pass": true,
+    "actionlint_errors": 0,
+    "actionlint_results": [
+      {
+        "file": ".github/workflows/pr-label-assigner.yml",
+        "passed": true,
+        "errors": ""
+      }
+    ],
+    "act_result_txt_exists": true,
+    "act_result_txt_size": 28266,
+    "areas_of_difficulty": [],
+    "observations": ""
+  },
+  "tool_install": {
+    "tool_install_duration_ms": 0,
+    "tools_installed": [],
+    "install_commands_count": 0
+  },
+  "tool_use_timing": {
+    "total_tool_uses": 63,
+    "total_tool_duration_ms": 200675,
+    "bash_tool_uses": 37,
+    "bash_total_ms": 124580,
+    "slowest_tool_uses": [
+      {
+        "tool_name": "Bash",
+        "command": "echo \"--- actionlint ---\" && actionlint .github/workflows/pr-label-assigner.yml; echo \"exit=$?\"\necho \"--- type check ---\" && bunx tsc --noEmit 2>&1\necho \"--- unit tests ---\" && bun test tests/unit 2>&",
+        "duration_ms": 40623,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test tests/harness 2>&1 | tail -25",
+        "duration_ms": 39300,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "docker run --rm act-ubuntu-pwsh:latest bash -c \"time npm i -g bun 2>&1 | tail -5; bun --version\"",
+        "duration_ms": 20133,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test tests/harness/act.test.ts -t \"02-no-matches\" 2>&1 | tail -40",
+        "duration_ms": 10683,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 7996,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 6166,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "docker run --rm act-ubuntu-pwsh:latest bash -c \"time curl -fsSL https://bun.sh/install | bash 2>&1 | tail -3\"",
+        "duration_ms": 5785,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 5448,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 5387,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 5327,
+        "is_error": false,
+        "is_install": false
+      }
+    ],
+    "all_tool_uses": [
+      {
+        "tool_name": "Bash",
+        "command": "pwd && ls -la",
+        "duration_ms": 142,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cat .actrc && cat benchmark-instructions-v4.md | head -100",
+        "duration_ms": 69,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cat benchmark-instructions-v4.md | sed -n '100,250p'",
+        "duration_ms": 177,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "which bun && bun --version && which actionlint && which act && docker --version",
+        "duration_ms": 138,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "ls /home/passp/.bun/install/cache/ 2>/dev/null | head -20; bun pm cache 2>&1 | head -3",
+        "duration_ms": 110,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "ls /home/passp/.bun/install/cache/ | grep -i -E \"(picomatch|minimatch|micromatch|glob|yaml|js-yaml)\" 2>/dev/null",
+        "duration_ms": 68,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cd /tmp && cat > test-glob.ts << 'EOF'\nconst g = new Bun.Glob(\"docs/**\");\nconsole.log(g.match(\"docs/intro.md\"));\nconsole.log(g.match(\"src/api/foo.ts\"));\nconst g2 = new Bun.Glob(\"**/*.test.*\");\nconsole",
+        "duration_ms": 226,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "docker images | grep -i act",
+        "duration_ms": 264,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "docker run --rm act-ubuntu-pwsh:latest bash -c \"which bun node npm pwsh actionlint 2>&1 || true; bun --version 2>&1 || true; node --version 2>&1 || true\"",
+        "duration_ms": 582,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "ToolSearch",
+        "command": "",
+        "duration_ms": 102,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "TodoWrite",
+        "command": "",
+        "duration_ms": 79,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 64,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 86,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun install 2>&1 | tail -10",
+        "duration_ms": 556,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 5448,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test tests/unit 2>&1 | tail -20",
+        "duration_ms": 81,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 5387,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test tests/unit 2>&1 | tail -10",
+        "duration_ms": 110,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 4949,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "TodoWrite",
+        "command": "",
+        "duration_ms": 61,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test tests/unit 2>&1 | tail -20",
+        "duration_ms": 90,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 5210,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test tests/unit 2>&1 | tail -10",
+        "duration_ms": 126,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 4941,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test tests/unit 2>&1 | tail -30",
+        "duration_ms": 75,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 4797,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test tests/unit 2>&1 | tail -10",
+        "duration_ms": 103,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "TodoWrite",
+        "command": "",
+        "duration_ms": 64,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 4834,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test tests/unit/cli.test.ts 2>&1 | tail -20",
+        "duration_ms": 151,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 7996,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test tests/unit 2>&1 | tail -10",
+        "duration_ms": 478,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "mkdir -p /tmp/smoke && cd /tmp/smoke && cat > cfg.json << 'EOF'\n{\"rules\":[{\"label\":\"docs\",\"patterns\":[\"docs/**\",\"*.md\"]},{\"label\":\"api\",\"patterns\":[\"src/api/**\"],\"priority\":10},{\"label\":\"tests\",\"patte",
+        "duration_ms": 123,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "docker run --rm act-ubuntu-pwsh:latest bash -c \"time npm i -g bun 2>&1 | tail -5; bun --version\"",
+        "duration_ms": 20133,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "docker run --rm act-ubuntu-pwsh:latest bash -c \"time curl -fsSL https://bun.sh/install | bash 2>&1 | tail -3\"",
+        "duration_ms": 5785,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "mkdir -p .github/workflows fixtures tests/harness",
+        "duration_ms": 72,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 133,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "actionlint .github/workflows/pr-label-assigner.yml 2>&1; echo \"exit=$?\"",
+        "duration_ms": 123,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 70,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 70,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 4943,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 5327,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 4852,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 5158,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "TodoWrite",
+        "command": "",
+        "duration_ms": 45,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun add -d yaml 2>&1 | tail -5 && ls bun.lock 2>&1",
+        "duration_ms": 202,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test tests/unit 2>&1 | tail -5",
+        "duration_ms": 277,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test tests/harness/act.test.ts -t \"workflow structure\" 2>&1 | tail -20",
+        "duration_ms": 299,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test tests/harness/act.test.ts -t \"02-no-matches\" 2>&1 | tail -40",
+        "duration_ms": 10683,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "wc -l act-result.txt && head -80 act-result.txt",
+        "duration_ms": 205,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "cat .actrc",
+        "duration_ms": 174,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 6166,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test tests/harness 2>&1 | tail -25",
+        "duration_ms": 2627,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "grep -A3 \"01-multi-rule-overlap\" act-result.txt | head -30",
+        "duration_ms": 73,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "grep -E \"(01-multi-rule|level=error|FATA|panic)\" act-result.txt | head -20",
+        "duration_ms": 63,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "awk '/CASE: 01-multi-rule-overlap/,/END CASE: 01-multi-rule-overlap/' act-result.txt",
+        "duration_ms": 65,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 5189,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "TodoWrite",
+        "command": "",
+        "duration_ms": 64,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test tests/harness 2>&1 | tail -25",
+        "duration_ms": 39300,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "ls -la act-result.txt && wc -l act-result.txt && grep -E \"(CASE:|ACT EXIT CODE|LABELS_OUTPUT|Job succeeded)\" act-result.txt",
+        "duration_ms": 135,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "echo \"--- actionlint ---\" && actionlint .github/workflows/pr-label-assigner.yml; echo \"exit=$?\"\necho \"--- type check ---\" && bunx tsc --noEmit 2>&1\necho \"--- unit tests ---\" && bun test tests/unit 2>&",
+        "duration_ms": 40623,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "TodoWrite",
+        "command": "",
+        "duration_ms": 60,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "ls -la",
+        "duration_ms": 72,
+        "is_error": false,
+        "is_install": false
+      }
+    ],
+    "install_duration_ms": 5785,
+    "test_duration_ms": 95023,
+    "act_duration_ms": 0
+  },
+  "hooks": {
+    "hook_fires": 20,
+    "hook_errors_caught": 13,
+    "hook_failures": 0,
+    "hook_events": [
+      {
+        "subtype": "hook_started",
+        "hook_id": "948876ad-34c7-4798-99c2-6370b9bfa81b",
+        "hook_name": "UserPromptSubmit",
+        "hook_event": "UserPromptSubmit"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "948876ad-34c7-4798-99c2-6370b9bfa81b",
+        "hook_name": "UserPromptSubmit",
+        "hook_event": "UserPromptSubmit",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "0f8131a5-6a4b-4c3a-9389-8362fec44df0",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "0f8131a5-6a4b-4c3a-9389-8362fec44df0",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "f36cb107-7700-4641-8ced-0ea13b0d7cd0",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "f36cb107-7700-4641-8ced-0ea13b0d7cd0",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "2dcbca5c-e621-4be7-846b-798b208e6db3",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "2dcbca5c-e621-4be7-846b-798b208e6db3",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\ntests/unit/assign-labels.test.ts(2,43): error TS2307: Cannot find module '../../pr-label-assigner.ts' or its corresponding type declarations.\"}",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "d76c8fd2-774c-48bf-8093-a190edc9a13d",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "d76c8fd2-774c-48bf-8093-a190edc9a13d",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "4fa9654f-f8b0-4c23-9063-7166fde56d68",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "4fa9654f-f8b0-4c23-9063-7166fde56d68",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\ntests/unit/assign-labels.test.ts(2,43): error TS5097: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.\"}",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "f07017e2-8d37-46a8-b8ca-1fb89a4f61cd",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "f07017e2-8d37-46a8-b8ca-1fb89a4f61cd",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\npr-label-assigner.ts(48,14): error TS2802: Type 'Set<string>' can only be iterated through when using the '--downlevelIteration' flag or with a '--target' of 'es2015' or higher.\"}",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "a9b6a901-a588-422e-9239-8f59568e0550",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "a9b6a901-a588-422e-9239-8f59568e0550",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\npr-label-assigner.ts(48,14): error TS2802: Type 'Set<string>' can only be iterated through when using the '--downlevelIteration' flag or with a '--target' of 'es2015' or higher.\\ntests/unit/assign-labels.test.ts(2,43): error TS5097: An import path can only end with a '.ts' extension when 'allowImportingTsExtensions' is enabled.\"}",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "cbf903d2-8773-4efa-acfa-80356b526080",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "cbf903d2-8773-4efa-acfa-80356b526080",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\npr-label-assigner.ts(69,14): error TS2802: Type 'Set<string>' can only be iterated through when using the '--downlevelIteration' flag or with a '--target' of 'es2015' or higher.\"}",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "8a2c0db6-d8e7-4a25-bf75-3faf567a50e1",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "8a2c0db6-d8e7-4a25-bf75-3faf567a50e1",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\ntests/unit/cli.test.ts(10,18): error TS1343: The 'import.meta' meta-property is only allowed when the '--module' option is 'es2020', 'es2022', 'esnext', 'system', 'node16', 'node18', 'node20', or 'nodenext'.\"}",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "54cf0ef4-3cd7-4f74-b2dc-19800c6fcf9c",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "54cf0ef4-3cd7-4f74-b2dc-19800c6fcf9c",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\npr-label-assigner.ts(69,14): error TS2802: Type 'Set<string>' can only be iterated through when using the '--downlevelIteration' flag or with a '--target' of 'es2015' or higher.\\npr-label-assigner.ts(126,24): error TS2802: Type 'ArrayIterator<[number, any]>' can only be iterated through when using the '--downlevelIteration' flag or with a '--target' of 'es2015' or higher.\\npr-la",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "a37b7bf0-38ce-4a5c-9d79-bc78ea503f3b",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "a37b7bf0-38ce-4a5c-9d79-bc78ea503f3b",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "1d5376c1-760c-4e6f-858a-65c601a3bb99",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "1d5376c1-760c-4e6f-858a-65c601a3bb99",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "cc631eff-24bc-4c8d-8382-a9355cb09022",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "cc631eff-24bc-4c8d-8382-a9355cb09022",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "9a082dc9-4da3-483c-8ca0-26686d7ecd0b",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "9a082dc9-4da3-483c-8ca0-26686d7ecd0b",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\npr-label-assigner.ts(69,14): error TS2802: Type 'Set<string>' can only be iterated through when using the '--downlevelIteration' flag or with a '--target' of 'es2015' or higher.\\npr-label-assigner.ts(126,24): error TS2802: Type 'ArrayIterator<[number, any]>' can only be iterated through when using the '--downlevelIteration' flag or with a '--target' of 'es2015' or higher.\\npr-la",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "0206532b-d90c-4c76-afaf-9310624156d6",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "0206532b-d90c-4c76-afaf-9310624156d6",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\npr-label-assigner.ts(69,14): error TS2802: Type 'Set<string>' can only be iterated through when using the '--downlevelIteration' flag or with a '--target' of 'es2015' or higher.\\npr-label-assigner.ts(126,24): error TS2802: Type 'ArrayIterator<[number, any]>' can only be iterated through when using the '--downlevelIteration' flag or with a '--target' of 'es2015' or higher.\\npr-la",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "82b802b9-a529-4082-9c57-654ae6094b2a",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "82b802b9-a529-4082-9c57-654ae6094b2a",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\npr-label-assigner.ts(69,14): error TS2802: Type 'Set<string>' can only be iterated through when using the '--downlevelIteration' flag or with a '--target' of 'es2015' or higher.\\npr-label-assigner.ts(126,24): error TS2802: Type 'ArrayIterator<[number, any]>' can only be iterated through when using the '--downlevelIteration' flag or with a '--target' of 'es2015' or higher.\\npr-la",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "7b4247ed-8680-48fd-ba2b-4afa9e2b1374",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "7b4247ed-8680-48fd-ba2b-4afa9e2b1374",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\npr-label-assigner.ts(69,14): error TS2802: Type 'Set<string>' can only be iterated through when using the '--downlevelIteration' flag or with a '--target' of 'es2015' or higher.\\npr-label-assigner.ts(126,24): error TS2802: Type 'ArrayIterator<[number, any]>' can only be iterated through when using the '--downlevelIteration' flag or with a '--target' of 'es2015' or higher.\\npr-la",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "e6f768b4-d16a-417b-aea3-7ece1602be8b",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "e6f768b4-d16a-417b-aea3-7ece1602be8b",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\npr-label-assigner.ts(69,14): error TS2802: Type 'Set<string>' can only be iterated through when using the '--downlevelIteration' flag or with a '--target' of 'es2015' or higher.\\npr-label-assigner.ts(126,24): error TS2802: Type 'ArrayIterator<[number, any]>' can only be iterated through when using the '--downlevelIteration' flag or with a '--target' of 'es2015' or higher.\\npr-la",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "4718bad2-3004-4b69-95c7-e7c0cfcd18c5",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "4718bad2-3004-4b69-95c7-e7c0cfcd18c5",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\npr-label-assigner.ts(69,14): error TS2802: Type 'Set<string>' can only be iterated through when using the '--downlevelIteration' flag or with a '--target' of 'es2015' or higher.\\npr-label-assigner.ts(126,24): error TS2802: Type 'ArrayIterator<[number, any]>' can only be iterated through when using the '--downlevelIteration' flag or with a '--target' of 'es2015' or higher.\\npr-la",
+        "stderr": ""
+      }
+    ]
+  }
+}
