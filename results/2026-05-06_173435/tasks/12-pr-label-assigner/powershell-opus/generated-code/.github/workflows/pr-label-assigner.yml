@@ -1,0 +1,53 @@
+name: PR Label Assigner
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  label-assigner:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = './Invoke-PRLabelAssigner.Tests.ps1'
+          $config.Output.Verbosity = 'Detailed'
+          $config.Run.PassThru = $true
+          $results = Invoke-Pester -Configuration $config
+          Write-Output "PESTER_RESULT: $($results.PassedCount) passed, $($results.FailedCount) failed"
+          if ($results.FailedCount -gt 0) { exit 1 }
+
+      - name: Run demo scenarios
+        shell: pwsh
+        run: |
+          . ./Invoke-PRLabelAssigner.ps1
+
+          $rules1 = @(
+            @{ Pattern = 'docs/**'; Label = 'documentation'; Priority = 1 },
+            @{ Pattern = 'src/**'; Label = 'source'; Priority = 2 }
+          )
+          $labels1 = @(Get-PRLabels -ChangedFiles @('docs/readme.md', 'src/app.js') -Rules $rules1)
+          Write-Output "DEMO_BASIC: $($labels1 -join ',')"
+
+          $rules2 = @(
+            @{ Pattern = 'src/**'; Label = 'source'; Priority = 1 },
+            @{ Pattern = 'src/api/**'; Label = 'api'; Priority = 2 }
+          )
+          $labels2 = @(Get-PRLabels -ChangedFiles @('src/api/index.js') -Rules $rules2)
+          Write-Output "DEMO_MULTI: $($labels2 -join ',')"
+
+          $rules3 = @(
+            @{ Pattern = 'src/**'; Label = 'source'; Priority = 1 },
+            @{ Pattern = 'src/api/**'; Label = 'api'; Priority = 2 },
+            @{ Pattern = '*.test.*'; Label = 'tests'; Priority = 3 }
+          )
+          $labels3 = @(Get-PRLabels -ChangedFiles @('src/api/handler.test.js') -Rules $rules3)
+          Write-Output "DEMO_PRIORITY: $($labels3 -join ',')"
+
+          $labels4 = @(Invoke-PRLabelAssigner -ConfigPath './label-config.json' -ChangedFiles @('docs/guide.md', 'tests/unit.test.js'))
+          Write-Output "DEMO_CONFIG: $($labels4 -join ',')"
