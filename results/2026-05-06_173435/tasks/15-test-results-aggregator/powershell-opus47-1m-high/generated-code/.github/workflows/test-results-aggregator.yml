@@ -1,0 +1,45 @@
+name: Test Results Aggregator
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    # Daily sanity run at 06:00 UTC so the aggregator stays exercised
+    # against the committed fixture set even without code changes.
+    - cron: '0 6 * * *'
+
+permissions:
+  contents: read
+
+env:
+  FIXTURE_DIR: ./fixtures
+  SUMMARY_PATH: ./summary.md
+
+jobs:
+  aggregate:
+    name: Aggregate test results
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show PowerShell + Pester versions
+        shell: pwsh
+        run: |
+          $PSVersionTable.PSVersion
+          Get-Module -ListAvailable Pester | Select-Object Name, Version | Format-Table
+
+      - name: Aggregate test results
+        shell: pwsh
+        run: |
+          ./Invoke-Aggregator.ps1 -InputDirectory $env:FIXTURE_DIR -OutputPath $env:SUMMARY_PATH
+
+      - name: Echo summary file
+        shell: pwsh
+        run: |
+          Write-Host "----- ${env:SUMMARY_PATH} -----"
+          Get-Content $env:SUMMARY_PATH
+          Write-Host "----- end summary -----"
