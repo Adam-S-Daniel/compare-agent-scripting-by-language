@@ -1,0 +1,51 @@
+---
+# CI workflow that runs the PR label assigner script.
+#
+# A CI driver file (ci/rules.txt and ci/files.txt) is read by the
+# script. The test harness checks in different fixture data per
+# test case and dispatches this workflow via `act push --rm`.
+name: PR Label Assigner
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  assign-labels:
+    name: Assign labels from changed files
+    runs-on: ubuntu-latest
+    env:
+      RULES_FILE: ci/rules.txt
+      FILES_FILE: ci/files.txt
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show inputs
+        run: |
+          echo "=== Rules ==="
+          cat "$RULES_FILE"
+          echo "=== Files ==="
+          cat "$FILES_FILE"
+
+      - name: Run label assigner
+        id: labels
+        run: |
+          set -euo pipefail
+          chmod +x ./label-assigner.sh
+          out=$(./label-assigner.sh --rules "$RULES_FILE" --files "$FILES_FILE")
+          echo "=== LABELS_BEGIN ==="
+          printf '%s\n' "$out"
+          echo "=== LABELS_END ==="
+          # Emit as a single comma-separated string for easy assertion.
+          joined=$(printf '%s\n' "$out" | paste -sd, -)
+          echo "labels=$joined" >> "$GITHUB_OUTPUT"
+          echo "RESULT: labels=$joined"
+
+      - name: Summary
+        run: |
+          echo "Final labels: ${{ steps.labels.outputs.labels }}"
