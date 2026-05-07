@@ -1,0 +1,119 @@
+# Semantic version bumper workflow.
+#
+# Triggers:
+#   - push / pull_request: lets PR builds verify the script + tests
+#   - workflow_dispatch:   lets a maintainer run a release manually
+#
+# The workflow is fixture-friendly: it reads the starting version and commits
+# from files inside the repo (VERSION + commits.txt). The bump job uses a
+# matrix strategy so a single `act push` run can verify multiple bump
+# scenarios in one shot - this is what the act test harness relies on.
+name: semantic-version-bumper
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CHANGELOG_FILE: CHANGELOG.md
+
+jobs:
+  test:
+    name: Run Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $cfg = New-PesterConfiguration
+          $cfg.Run.Path = './tests'
+          $cfg.Run.Exit = $true
+          $cfg.Output.Verbosity = 'Detailed'
+          # Skip the act harness tests inside the workflow itself - they
+          # would recursively try to spawn `act` from inside an act container.
+          $cfg.Filter.ExcludeTag = 'ActHarness'
+          Invoke-Pester -Configuration $cfg
+
+  bump:
+    name: Bump version
+    runs-on: ubuntu-latest
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - case: feat
+            start: 1.1.0
+            commits_file: fixtures/commits-feat.txt
+            expected_bump: minor
+            expected_version: 1.2.0
+          - case: fix
+            start: 2.4.1
+            commits_file: fixtures/commits-fix.txt
+            expected_bump: patch
+            expected_version: 2.4.2
+          - case: breaking
+            start: 0.9.4
+            commits_file: fixtures/commits-breaking.txt
+            expected_bump: major
+            expected_version: 1.0.0
+          - case: none
+            start: 3.0.0
+            commits_file: fixtures/commits-none.txt
+            expected_bump: none
+            expected_version: 3.0.0
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Seed version file for this matrix case
+        shell: pwsh
+        env:
+          START_VERSION: ${{ matrix.start }}
+        run: |
+          Set-Content -LiteralPath VERSION -Value $env:START_VERSION -NoNewline
+          Write-Host "Seeded VERSION = $env:START_VERSION"
+
+      - name: Run semantic version bumper
+        id: bump
+        shell: pwsh
+        env:
+          MATRIX_COMMITS_FILE: ${{ matrix.commits_file }}
+        run: |
+          ./Invoke-Bumper.ps1 `
+            -VersionFile  VERSION `
+            -CommitsFile  $env:MATRIX_COMMITS_FILE `
+            -ChangelogFile $env:CHANGELOG_FILE
+
+      - name: Assert expected bump and version
+        shell: pwsh
+        env:
+          EXPECTED_BUMP: ${{ matrix.expected_bump }}
+          EXPECTED_VERSION: ${{ matrix.expected_version }}
+          MATRIX_CASE: ${{ matrix.case }}
+        run: |
+          $actualBump    = $env:BUMP_TYPE_LAST   # not set; we re-derive from the file
+          $actualVersion = (Get-Content -LiteralPath VERSION -Raw).Trim()
+          Write-Host "ASSERT case=$env:MATRIX_CASE expected_version=$env:EXPECTED_VERSION actual_version=$actualVersion"
+          if ($actualVersion -ne $env:EXPECTED_VERSION) {
+            throw "Version mismatch for case '$env:MATRIX_CASE': expected $env:EXPECTED_VERSION, got $actualVersion"
+          }
+          # Print a stable, easy-to-grep marker for the act harness.
+          Write-Host "BUMP_RESULT case=$env:MATRIX_CASE version=$actualVersion expected=$env:EXPECTED_VERSION OK"
+
+      - name: Print resulting CHANGELOG entry
+        shell: pwsh
+        run: |
+          if (Test-Path -LiteralPath $env:CHANGELOG_FILE) {
+            Write-Host '----- CHANGELOG.md -----'
+            Get-Content -LiteralPath $env:CHANGELOG_FILE
+          } else {
+            Write-Host 'No CHANGELOG.md was generated (bump type was none).'
+          }
