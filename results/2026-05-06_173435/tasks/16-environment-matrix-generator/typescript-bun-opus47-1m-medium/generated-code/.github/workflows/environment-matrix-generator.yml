@@ -1,0 +1,57 @@
+name: environment-matrix-generator
+
+# Generates a GitHub Actions strategy.matrix from a config fixture.
+# Triggered on push, PR, manual dispatch, and a weekly schedule.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: Fixture file to run
+        required: false
+        default: fixtures/basic.json
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+
+env:
+  FIXTURE: ${{ github.event.inputs.fixture || 'fixtures/basic.json' }}
+
+jobs:
+  generate:
+    name: Generate matrix
+    runs-on: ubuntu-latest
+    outputs:
+      total: ${{ steps.run.outputs.total }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        run: |
+          if ! command -v bun >/dev/null 2>&1; then
+            curl -fsSL https://bun.sh/install | bash
+            echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+          fi
+
+      - name: Run unit tests
+        # Restrict to matrix.test.ts so the workflow doesn't recursively try to
+        # run the act-harness test file (which would invoke act inside act).
+        run: bun test matrix.test.ts
+
+      - name: Generate matrix from fixture
+        id: run
+        run: |
+          set -euo pipefail
+          echo "Using fixture: $FIXTURE"
+          bun run cli.ts "$FIXTURE" | tee matrix.json
+          total=$(bun -e 'console.log(JSON.parse(require("fs").readFileSync("matrix.json","utf8")).total)')
+          echo "total=$total" >> "$GITHUB_OUTPUT"
+          echo "MATRIX_TOTAL=$total"
+
+      - name: Upload matrix artifact
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+        run: ls -la matrix.json
