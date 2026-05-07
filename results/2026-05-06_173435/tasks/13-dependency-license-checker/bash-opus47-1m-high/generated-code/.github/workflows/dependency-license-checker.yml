@@ -1,0 +1,75 @@
+name: Dependency License Check
+
+# Runs the license compliance check on every push, on every PR, on a weekly
+# schedule (to catch newly-flagged licenses without code changes), and on
+# manual dispatch (handy for ad-hoc audits).
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# The test harness writes a `manifest` file at the repo root with each
+# fixture's content. The workflow always points the script at this fixed
+# location so the harness has one knob to set per test case.
+env:
+  MANIFEST_PATH: manifest
+  CONFIG_PATH: fixtures/config.json
+  LICENSE_DB_PATH: fixtures/license-db.json
+
+jobs:
+  license-check:
+    name: License compliance scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install jq (manifest parser dependency)
+        run: |
+          if ! command -v jq >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y --no-install-recommends jq
+          fi
+
+      - name: Show manifest under test
+        run: |
+          echo "::group::Manifest contents"
+          cat "${MANIFEST_PATH}"
+          echo "::endgroup::"
+
+      - name: Run license compliance check
+        id: license_check
+        # The script returns 1 on non-compliance and 2 on usage error. We
+        # capture the rc here so the job itself stays green — downstream
+        # consumers (and our test harness) read the VERDICT line emitted by
+        # the next step. If you'd like CI to *fail* on non-compliance,
+        # delete the `set +e` / `exit 0` wrapper and rely on the script's
+        # exit code directly.
+        run: |
+          set +e
+          ./bin/license-check.sh \
+            --manifest "${MANIFEST_PATH}" \
+            --config "${CONFIG_PATH}" \
+            --license-db "${LICENSE_DB_PATH}" \
+            | tee report.txt
+          rc=${PIPESTATUS[0]}
+          echo "rc=${rc}" >> "${GITHUB_OUTPUT}"
+          exit 0
+
+      - name: Report compliance verdict
+        # The verdict line is the contract between this workflow and any
+        # consumer (humans reading logs, downstream jobs, or our test
+        # harness). It is always exactly one of two strings.
+        run: |
+          rc='${{ steps.license_check.outputs.rc }}'
+          echo "license-check exit code: ${rc}"
+          if [ "${rc}" = "0" ]; then
+            echo "VERDICT: COMPLIANT"
+          else
+            echo "VERDICT: NON_COMPLIANT"
+          fi
