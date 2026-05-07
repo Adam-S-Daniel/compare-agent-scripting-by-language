@@ -1,6 +1,6 @@
 # Benchmark Results: Language Comparison
 
-**Last updated:** 2026-05-07 09:52:49 AM ET — 117/140 runs completed, 23 remaining; total cost $153.81; total agent time 976.8 min.
+**Last updated:** 2026-05-07 09:53:50 AM ET — 117/140 runs completed, 23 remaining; total cost $153.81; total agent time 976.8 min.
 
 ## Table of Contents
 
