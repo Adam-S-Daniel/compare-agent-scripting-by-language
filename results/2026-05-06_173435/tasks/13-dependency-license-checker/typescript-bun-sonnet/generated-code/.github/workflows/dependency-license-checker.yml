@@ -1,0 +1,43 @@
+name: Dependency License Checker
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+    inputs:
+      manifest:
+        description: 'Path to dependency manifest'
+        default: 'fixtures/package.json'
+        required: false
+      config:
+        description: 'Path to license config'
+        default: 'fixtures/license-config.json'
+        required: false
+      mock_db:
+        description: 'Path to mock license database'
+        default: 'fixtures/mock-db.json'
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  check-licenses:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+
+      - name: Run dependency license checker
+        run: |
+          bun run src/index.ts \
+            --manifest "${{ github.event.inputs.manifest || 'fixtures/package.json' }}" \
+            --config "${{ github.event.inputs.config || 'fixtures/license-config.json' }}" \
+            --mock-db "${{ github.event.inputs.mock_db || 'fixtures/mock-db.json' }}"
