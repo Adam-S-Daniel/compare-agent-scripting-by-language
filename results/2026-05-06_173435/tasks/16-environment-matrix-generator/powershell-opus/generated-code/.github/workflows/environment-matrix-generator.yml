@@ -1,0 +1,60 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $result = Invoke-Pester -Path './New-EnvironmentMatrix.Tests.ps1' -Output Detailed -PassThru
+          Write-Output "PESTER_TOTAL=$($result.TotalCount)"
+          Write-Output "PESTER_PASSED=$($result.PassedCount)"
+          Write-Output "PESTER_FAILED=$($result.FailedCount)"
+          if ($result.FailedCount -gt 0) { exit 1 }
+
+      - name: Demo basic matrix
+        shell: pwsh
+        run: |
+          Write-Output '===BASIC_MATRIX_START==='
+          ./New-EnvironmentMatrix.ps1 -ConfigPath ./fixtures/basic-config.json
+          Write-Output '===BASIC_MATRIX_END==='
+
+      - name: Demo include-exclude matrix
+        shell: pwsh
+        run: |
+          Write-Output '===INCLUDE_EXCLUDE_MATRIX_START==='
+          ./New-EnvironmentMatrix.ps1 -ConfigPath ./fixtures/include-exclude-config.json
+          Write-Output '===INCLUDE_EXCLUDE_MATRIX_END==='
+
+      - name: Demo feature-flags matrix
+        shell: pwsh
+        run: |
+          Write-Output '===FEATURE_FLAGS_MATRIX_START==='
+          ./New-EnvironmentMatrix.ps1 -ConfigPath ./fixtures/feature-flags-config.json
+          Write-Output '===FEATURE_FLAGS_MATRIX_END==='
+
+      - name: Validate oversized matrix rejection
+        shell: pwsh
+        run: |
+          $threw = $false
+          try {
+            & ./New-EnvironmentMatrix.ps1 -ConfigPath ./fixtures/oversized-config.json
+          } catch {
+            $threw = $true
+            Write-Output "===OVERSIZED_ERROR===$($_.Exception.Message)"
+          }
+          if (-not $threw) {
+            throw 'Expected oversized matrix to be rejected but it was not'
+          }
+          Write-Output '===OVERSIZED_VALIDATED==='
