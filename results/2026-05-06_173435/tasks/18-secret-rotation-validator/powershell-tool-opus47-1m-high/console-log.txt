@@ -1,0 +1,278 @@
+[Tool: Bash] ls -la && pwd
+[Result] total 44
+drwxr-xr-x  4 passp passp  4096 May  7 13:33 .
+drwxr-xr-x 21 passp passp  4096 May  7 13:33 ..
+-rw-r--r--  1 passp passp    40 May  7 13:33 .actrc
+drwxr-xr-x  2 passp passp  4096 May  7 13:33 .claude
+drwxr-xr-x  6 passp passp  4096 May  7 13:33 .git
+-rw-r--r--  1 passp passp 21843 Apr 17 00:12 benchmark-instructions-v4.md
+/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-opus47-1m-high
+[Tool: Bash] cat .actrc && which pwsh actionlint act docker && pwsh -Command "Get-Module -ListAvailable Pester | Select-Object Name,Version | Format-Table"
+[Result] -P ubuntu-latest=act-ubuntu-pwsh:latest
+/snap/bin/pwsh
+/home/passp/.local/bin/actionlint
+/home/passp/.local/bin/act
+/usr/bin/docker
+
+[32;1mName  [0m[32;1m Version[0m
+[32;1m----  [0m [32;1m-------[0m
+Pester 5.7.1
+[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/AGENTS.md 2>/dev/null | head -100
+[Result] # Agent Instructions
+
+All agent-facing instructions live in this file. `CLAUDE.md` contains only a
+reference here. If you are a Claude Code agent, you have already loaded this
+via `CLAUDE.md`. Other agents: read this file directly.
+
+## Build and test
+
+```bash
+# Run unit tests (REQUIRED before every PR)
+pip install pytest  # if not already installed
+python3 -m pytest tests/ -v
+
+# Validate imports
+python3 -c "from runner import main"
+python3 -c "from generate_results import generate_results_md"
+python3 -c "from test_quality import compute_structural_metrics"
+python3 -c "from llm_providers import get_provider"
+
+# Regenerate all reports
+python3 generate_results.py --all
+
+# Run a benchmark (v4, all tasks/modes/models)
+python3 runner.py --tasks 11,12,13,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
+
+# Evaluate test quality (structural metrics only)
+python3 test_quality.py results/2026-04-09_152435
+
+# Evaluate test + deliverable quality with the default panel
+[Assistant] Looking at this task — PowerShell-based secret rotation validator with TDD via Pester, GitHub Actions workflow, and full validation through `act`. Let me explore tools and plan.
+[Tool: Bash] docker images act-ubuntu-pwsh:latest 2>/dev/null && actionlint --version
+[Result] IMAGE                    ID             DISK USAGE   CONTENT SIZE   EXTRA
+act-ubuntu-pwsh:latest   05bbd1974971        2.6GB          652MB        
+1.7.12
+installed by downloading from release page
+built with go1.26.1 compiler for linux/amd64
+[Assistant] Good. Now I'll start TDD: write the first failing test for `Get-SecretStatus`.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-opus47-1m-high/tests/SecretRotationValidator.Tests.ps1", 
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-opus47-1m-high/tests/SecretRotationValidator.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Tests written. Let me confirm they fail (red), then build the impl.
+[Tool: Bash] pwsh -NoProfile -Command "Invoke-Pester -Path ./tests -CI" 2>&1 | tail -30
+[Result] [91m                   [-Version] [-WindowStyle <style>]
+[91m                   [-WorkingDirectory <directoryPath>]
+[91m        pwsh[.exe] -h | -Help | -? | /?
+[91m PowerShell Online Help https://aka.ms/powershell-docs
+[91m All parameters are case-insensitive.', but it did not match.
+[91m at ($err -join "`n") | Should -Match 'not found', /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-opus47-1m-high/tests/SecretRotationValidator.Tests.ps1:210
+[91m at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-opus47-1m-high/tests/SecretRotationValidator.Tests.ps1:210[0m
+[91m[-] Invoke-SecretRotationValidator.ps1 (CLI).exits non-zero with a helpful error when the JSON is malformed[0m[90m 245ms (244ms|2ms)[0m
+[91m Expected regular expression 'parse' to match 'The argument '/home/passp/repos/compare-agent-scripting-
+[Assistant] Red as expected — 17 failures. Now I write the implementation.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-opus47-1m-high/src/SecretRotationValidator.psm1", "conten
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-opus47-1m-high/src/SecretRotationValidator.psm1 (file state is current in your context — no need to Read it back)
+[Tool: ToolSearch] {"query": "select:TodoWrite", "max_results": 1}
+[Result] {'type': 'tool_reference', 'tool_name': 'TodoWrite'}
+[Tool: TodoWrite] {"todos": [{"content": "Write Pester tests (red phase)", "status": "completed", "activeForm": "Writing Pester tests"}, {"content": "Implement validator module (green phase)", "status": "in_progress", 
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Assistant] Now the CLI entry script.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-opus47-1m-high/Invoke-SecretRotationValidator.ps1", "cont
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-opus47-1m-high/Invoke-SecretRotationValidator.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -NoProfile -Command "Invoke-Pester -Path ./tests -CI" 2>&1 | tail -40
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 17 tests in 598ms.[0m
+[95mRunning tests.[0m
+[32m[+] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-opus47-1m-high/tests/SecretRotationValidator.Tests.ps1[0m[90m 12.29s (10.91s|854ms)[0m
+[97mTests completed in 12.32s[0m
+[32mTests Passed: 17, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Assistant] All 17 tests green. Now the GitHub Actions workflow.
+[Tool: TodoWrite] {"todos": [{"content": "Write Pester tests (red phase)", "status": "completed", "activeForm": "Writing Pester tests"}, {"content": "Implement validator module (green phase)", "status": "completed", "a
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-opus47-1m-high/.github/workflows/secret-rotation-validato
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-opus47-1m-high/.github/workflows/secret-rotation-validator.yml (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/secret-rotation-validator.yml; echo "exit=$?"
+[Result] exit=0
+[Assistant] actionlint passes. Now create fixtures and the act test harness.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-opus47-1m-high/tests/fixtures/mixed/secrets.json", "conte
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-opus47-1m-high/tests/fixtures/mixed/secrets.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-opus47-1m-high/tests/fixtures/all-ok/secrets.json", "cont
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-opus47-1m-high/tests/fixtures/all-ok/secrets.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-opus47-1m-high/tests/fixtures/empty/secrets.json", "conte
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-opus47-1m-high/tests/fixtures/empty/secrets.json (file state is current in your context — no need to Read it back)
+[Assistant] I need to refactor the workflow so each fixture run can pin `today` via a file in the repo (more robust than env var passthrough through act).
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-opus47-1m-high/.github/workflows/secret-rotation-validato
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-opus47-1m-high/.github/workflows/secret-rotation-validator.yml has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Let me remove the unnecessary tag exclusion — CLI tests should work fine in the pwsh container.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-opus47-1m-high/.github/workflows/se
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-opus47-1m-high/.github/workflows/secret-rotation-validator.yml has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/secret-rotation-validator.yml; echo "exit=$?"
+[Result] exit=0
+[Assistant] Now build the act harness.
+[Tool: TodoWrite] {"todos": [{"content": "Write Pester tests (red phase)", "status": "completed", "activeForm": "Writing Pester tests"}, {"content": "Implement validator module (green phase)", "status": "completed", "a
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-opus47-1m-high/tests/Run-ActTests.ps1", "content": "#requ
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-opus47-1m-high/tests/Run-ActTests.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Quick local sanity: re-run Pester to confirm no regressions.
+[Tool: Bash] pwsh -NoProfile -Command "Invoke-Pester -Path ./tests -CI" 2>&1 | tail -8
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 17 tests in 773ms.[0m
+[95mRunning tests.[0m
+[32m[+] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-opus47-1m-high/tests/SecretRotationValidator.Tests.ps1[0m[90m 15.72s (13.98s|1.07s)[0m
+[97mTests completed in 15.76s[0m
+[32mTests Passed: 17, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Assistant] All 17 green. Now run the harness through act.
+[Tool: TodoWrite] {"todos": [{"content": "Write Pester tests (red phase)", "status": "completed", "activeForm": "Writing Pester tests"}, {"content": "Implement validator module (green phase)", "status": "completed", "a
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Bash] pwsh -NoProfile -File ./tests/Run-ActTests.ps1 2>&1 | tail -80
+[Result] ==> Validating workflow structure...
+  PASS  actionlint clean
+  PASS  all expected triggers present
+  PASS  all expected workflow tokens present
+  PASS  all referenced script files exist
+==> Running act for case 'mixed'...
+  FAIL  [mixed] act exited with code 1
+==> Running act for case 'all-ok'...
+  FAIL  [all-ok] act exited with code 1
+==> Running act for case 'empty'...
+  FAIL  [empty] act exited with code 1
+
+======================================================================
+3 failure(s):
+  - [mixed] act exited with code 1
+  - [all-ok] act exited with code 1
+  - [empty] act exited with code 1
+act-result.txt: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-opus47-1m-high/act-result.txt
+[Tool: Bash] grep -E "(error|fail|Fail|Error|❌|✗|Job (succeeded|failed))" act-result.txt | head -40
+[Result] [Secret Rotation Validator/Pester unit tests] Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+[Secret Rotation Validator/Pester unit tests]   ❌  Failure - Set up job
+[Secret Rotation Validator/Pester unit tests] 🏁  Job failed
+Error: Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+[Secret Rotation Validator/Pester unit tests] Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+Error: Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+[Secret Rotation Validator/Pester unit tests]   ❌  Failure - Set up job
+[Secret Rotation Validator/Pester unit tests] 🏁  Job failed
+[Secret Rotation Validator/Pester unit tests] Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not 
+[Assistant] The image exists locally but act is trying to pull. Add `--pull=false`.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-opus47-1m-high/tests/Run-ActTests.p
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-opus47-1m-high/tests/Run-ActTests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -NoProfile -File ./tests/Run-ActTests.ps1 2>&1 | tail -60
+[Result] ==> Validating workflow structure...
+  PASS  actionlint clean
+  PASS  all expected triggers present
+  PASS  all expected workflow tokens present
+  PASS  all referenced script files exist
+==> Running act for case 'mixed'...
+  PASS  [mixed] act exit=0
+  PASS  [mixed] both jobs succeeded (2)
+  PASS  [mixed] summary : 'SUMMARY total=4 expired=2 warning=1 ok=1'
+  PASS  [mixed] expired-names : 'EXPIRED_NAMES=ANCIENT_TOKEN,DB_PASSWORD'
+  PASS  [mixed] warning-names : 'WARNING_NAMES=API_KEY'
+  PASS  [mixed] ok-names : 'OK_NAMES=TLS_CERT'
+  PASS  [mixed] markdown:# Secret Rotation Report : '# Secret Rotation Report'
+  PASS  [mixed] markdown:## Expired (2) : '## Expired (2)'
+  PASS  [mixed] markdown:## Warning (1) : '## Warning (1)'
+  PASS  [mixed] markdown:## OK (1) : '## OK (1)'
+  PASS  [mixed] markdown:DB_PASSWORD : 'DB_PASSWORD'
+  PASS  [mixed] markdown:API_KEY : 'API_KEY'
+  PASS  [mixed] markdown:TLS_CERT : 'TLS_CERT'
+==> Running act for case 'all-ok'...
+  PASS  [all-ok] act exit=0
+  PASS  
+[Assistant] Mixed and all-ok pass perfectly. Let me diagnose the empty case.
+[Tool: Bash] awk '/=== case empty/,0' act-result.txt | head -100
+[Result] === case empty (exit=1) ===
+================================================================================
+time="2026-05-07T13:41:40-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Secret Rotation Validator/Pester unit tests] ⭐ Run Set up job
+[Secret Rotation Validator/Pester unit tests] 🚀  Start image=act-ubuntu-pwsh:latest
+[Secret Rotation Validator/Pester unit tests]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Secret Rotation Validator/Pester unit tests]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/Pester unit tests]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/Pester unit tests]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Secret Ro
+[Assistant] PowerShell unwrapping empty array to `$null`. Fix by wrapping the call site.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-opus47-1m-high/Invoke-SecretRotatio
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-opus47-1m-high/Invoke-SecretRotationValidator.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Add a Pester test pinning this empty-config behavior so it can't regress.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-opus47-1m-high/tests/SecretRotation
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-opus47-1m-high/tests/SecretRotationValidator.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -NoProfile -Command "Invoke-Pester -Path ./tests -CI" 2>&1 | tail -6
+[Result] [95mStarting discovery in 1 files.[0m
+[95mDiscovery found 18 tests in 331ms.[0m
+[95mRunning tests.[0m
+[32m[+] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-opus47-1m-high/tests/SecretRotationValidator.Tests.ps1[0m[90m 9.8s (9.07s|451ms)[0m
+[97mTests completed in 9.82s[0m
+[32mTests Passed: 18, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Assistant] All 18 tests green. Now re-run the act harness — this is the 3rd `act push` cycle.
+[Tool: Bash] pwsh -NoProfile -File ./tests/Run-ActTests.ps1 2>&1 | tail -50
+[Result] ==> Validating workflow structure...
+  PASS  actionlint clean
+  PASS  all expected triggers present
+  PASS  all expected workflow tokens present
+  PASS  all referenced script files exist
+==> Running act for case 'mixed'...
+  PASS  [mixed] act exit=0
+  PASS  [mixed] both jobs succeeded (2)
+  PASS  [mixed] summary : 'SUMMARY total=4 expired=2 warning=1 ok=1'
+  PASS  [mixed] expired-names : 'EXPIRED_NAMES=ANCIENT_TOKEN,DB_PASSWORD'
+  PASS  [mixed] warning-names : 'WARNING_NAMES=API_KEY'
+  PASS  [mixed] ok-names : 'OK_NAMES=TLS_CERT'
+  PASS  [mixed] markdown:# Secret Rotation Report : '# Secret Rotation Report'
+  PASS  [mixed] markdown:## Expired (2) : '## Expired (2)'
+  PASS  [mixed] markdown:## Warning (1) : '## Warning (1)'
+  PASS  [mixed] markdown:## OK (1) : '## OK (1)'
+  PASS  [mixed] markdown:DB_PASSWORD : 'DB_PASSWORD'
+  PASS  [mixed] markdown:API_KEY : 'API_KEY'
+  PASS  [mixed] markdown:TLS_CERT : 'TLS_CERT'
+==> Running act for case 'all-ok'...
+  PASS  [all-ok] act exit=0
+  PASS  
+[Assistant] All 3 fixtures pass through act with exact-value assertions. Let me verify the artifact exists and confirm final status.
+[Tool: Bash] ls -la act-result.txt && wc -l act-result.txt && echo "---" && ls -R src tests .github/workflows Invoke-SecretRotationValidator.ps1 2>&1 | head -30
+[Result] -rw-r--r-- 1 passp passp 41594 May  7 13:43 act-result.txt
+438 act-result.txt
+---
+Invoke-SecretRotationValidator.ps1
+
+.github/workflows:
+secret-rotation-validator.yml
+
+src:
+SecretRotationValidator.psm1
+
+tests:
+Run-ActTests.ps1
+SecretRotationValidator.Tests.ps1
+fixtures
+
+tests/fixtures:
+all-ok
+empty
+mixed
+
+tests/fixtures/all-ok:
+secrets.json
+
+tests/fixtures/empty:
+secrets.json
+
+tests/fixtures/mixed:
+secrets.json
+[Tool: TodoWrite] {"todos": [{"content": "Write Pester tests (red phase)", "status": "completed", "activeForm": "Writing Pester tests"}, {"content": "Implement validator module (green phase)", "status": "completed", "a
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Assistant] Done. Summary:
+
+**Files**
+- `src/SecretRotationValidator.psm1` — pure-logic module: `Get-SecretStatus`, `Get-SecretRotationReport`, `Format-RotationReport` (markdown/JSON), `Read-SecretsConfig`.
+- `Invoke-SecretRotationValidator.ps1` — CLI entry, params: `-ConfigPath`, `-WarningWindowDays`, `-Format`, `-Today`, `-FailOnExpired`.
+- `tests/SecretRotationValidator.Tests.ps1` — 18 Pester tests (computation, classification, grouping, formats, CLI exit codes, error paths, empty config).
+- `tests/fixtures/{mixed,all-ok,empty}/secrets.json` — 3 deterministic fixtures.
+- `tests/Run-ActTests.ps1` — harness that validates workflow structure (actionlint + token checks), then runs `act push --rm` for each fixture and asserts on **exact** expected SUMMARY/EXPIRED_NAMES/WARNING_NAMES/OK_NAMES/markdown markers.
+- `.github/workflows/secret-rotation-validator.yml` — push/PR/schedule/workflow_dispatch triggers, two jobs (`test` → `validate`), `actions/checkout@v4`, `shell: pwsh`, machine-readable summary lines.
+- `act-result.txt` (41 KB, 438 lines) — appended logs from all 3 act runs, clearly delimited.
+
+**TDD flow:** wrote 17 failing tests → ran red (17 fail) → wrote module + CLI → ran green (17 pass) → added empty-config regression test (18) after fixing PowerShell array-unwrap bug found via act → green (18 pass).
+
+**act runs:** 3 cycles (max permitted). Run 1 = red (image-pull error, fixed via `--pull=false`); Run 2 = mixed/all-ok green, empty red (null param-binding bug in CLI); Run 3 = all 3 fixtures green, both jobs report `Job succeeded`, all exit codes 0, all exact-value assertions pass. actionlint exit=0.
