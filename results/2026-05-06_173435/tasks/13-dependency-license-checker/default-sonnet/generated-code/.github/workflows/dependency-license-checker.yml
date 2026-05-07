@@ -1,0 +1,65 @@
+name: Dependency License Checker
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - "**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  license-check:
+    name: Check Dependency Licenses
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Python packages
+        run: pip install --break-system-packages pytest pyyaml
+
+      - name: Install actionlint
+        run: |
+          ACTIONLINT_VERSION="1.7.12"
+          curl -sL "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz" \
+            | tar xzf - -C /usr/local/bin actionlint
+          actionlint --version
+
+      - name: Run unit and workflow-structure tests
+        run: python3 -m pytest tests/ -v
+
+      - name: Lint workflow file
+        run: actionlint .github/workflows/dependency-license-checker.yml
+
+      - name: "Test case 1: sample_package.json (mixed licenses)"
+        run: |
+          echo "=== TEST CASE: sample_package.json ==="
+          python3 license_checker.py \
+            fixtures/sample_package.json \
+            fixtures/license_config.json \
+            --mock-db fixtures/mock_licenses.json || true
+          echo "=== END TEST CASE: sample_package.json ==="
+
+      - name: "Test case 2: sample_requirements.txt (mixed licenses)"
+        run: |
+          echo "=== TEST CASE: sample_requirements.txt ==="
+          python3 license_checker.py \
+            fixtures/sample_requirements.txt \
+            fixtures/license_config.json \
+            --mock-db fixtures/mock_licenses.json || true
+          echo "=== END TEST CASE: sample_requirements.txt ==="
+
+      - name: "Test case 3: clean_package.json (all approved)"
+        run: |
+          echo "=== TEST CASE: clean_package.json ==="
+          python3 license_checker.py \
+            fixtures/clean_package.json \
+            fixtures/license_config.json \
+            --mock-db fixtures/mock_licenses.json
+          echo "=== END TEST CASE: clean_package.json ==="
