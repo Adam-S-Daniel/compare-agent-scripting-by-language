@@ -1,0 +1,128 @@
+===== act push --rm =====
+time="2026-05-07T13:31:59-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[secret-rotation-validator/Validate secret rotation fixtures] ⭐ Run Set up job
+[secret-rotation-validator/Validate secret rotation fixtures] 🚀  Start image=act-ubuntu-pwsh:latest
+[secret-rotation-validator/Validate secret rotation fixtures]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[secret-rotation-validator/Validate secret rotation fixtures]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[secret-rotation-validator/Validate secret rotation fixtures]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[secret-rotation-validator/Validate secret rotation fixtures]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[secret-rotation-validator/Validate secret rotation fixtures]   ✅  Success - Set up job
+[secret-rotation-validator/Validate secret rotation fixtures] ⭐ Run Main Checkout repository
+[secret-rotation-validator/Validate secret rotation fixtures]   🐳  docker cp src=/tmp/tmp.RrI3s0MVLT/. dst=/tmp/tmp.RrI3s0MVLT
+[secret-rotation-validator/Validate secret rotation fixtures]   ✅  Success - Main Checkout repository [126.255458ms]
+[secret-rotation-validator/Validate secret rotation fixtures] ⭐ Run Main Install jq
+[secret-rotation-validator/Validate secret rotation fixtures]   🐳  docker exec cmd=[bash --noprofile --norc -e -o pipefail /var/run/act/workflow/1.sh] user= workdir=
+[secret-rotation-validator/Validate secret rotation fixtures]   | jq-1.6
+[secret-rotation-validator/Validate secret rotation fixtures]   ✅  Success - Main Install jq [405.969503ms]
+[secret-rotation-validator/Validate secret rotation fixtures] ⭐ Run Main Make validator executable
+[secret-rotation-validator/Validate secret rotation fixtures]   🐳  docker exec cmd=[bash --noprofile --norc -e -o pipefail /var/run/act/workflow/2.sh] user= workdir=
+[secret-rotation-validator/Validate secret rotation fixtures]   ✅  Success - Main Make validator executable [364.205141ms]
+[secret-rotation-validator/Validate secret rotation fixtures] ⭐ Run Main Fixture A — mixed (markdown)
+[secret-rotation-validator/Validate secret rotation fixtures]   🐳  docker exec cmd=[bash --noprofile --norc -e -o pipefail /var/run/act/workflow/3.sh] user= workdir=
+[secret-rotation-validator/Validate secret rotation fixtures]   | ===== FIXTURE A: mixed (markdown) =====
+[secret-rotation-validator/Validate secret rotation fixtures]   | # Secret Rotation Report
+[secret-rotation-validator/Validate secret rotation fixtures]   | 
+[secret-rotation-validator/Validate secret rotation fixtures]   | Warning window: 14 day(s)
+[secret-rotation-validator/Validate secret rotation fixtures]   | 
+[secret-rotation-validator/Validate secret rotation fixtures]   | | Name | Last Rotated | Rotation (days) | Days Until Due | Status | Required By |
+[secret-rotation-validator/Validate secret rotation fixtures]   | |------|--------------|-----------------|----------------|--------|-------------|
+[secret-rotation-validator/Validate secret rotation fixtures]   | | STRIPE_API_KEY | 2025-01-01 | 90 | -401 | EXPIRED | payments-svc, billing-svc |
+[secret-rotation-validator/Validate secret rotation fixtures]   | | GITHUB_TOKEN | 2026-04-01 | 45 | 9 | WARNING | ci-runner |
+[secret-rotation-validator/Validate secret rotation fixtures]   | | SLACK_WEBHOOK | 2026-04-15 | 60 | 38 | OK | alerts |
+[secret-rotation-validator/Validate secret rotation fixtures]   | 
+[secret-rotation-validator/Validate secret rotation fixtures]   | Summary: expired=1 warning=1 ok=1
+[secret-rotation-validator/Validate secret rotation fixtures]   ✅  Success - Main Fixture A — mixed (markdown) [673.297212ms]
+[secret-rotation-validator/Validate secret rotation fixtures] ⭐ Run Main Fixture A — fail-on-expired exit code
+[secret-rotation-validator/Validate secret rotation fixtures]   🐳  docker exec cmd=[bash --noprofile --norc -e -o pipefail /var/run/act/workflow/4.sh] user= workdir=
+[secret-rotation-validator/Validate secret rotation fixtures]   | FAIL_ON_EXPIRED_EXIT=2
+[secret-rotation-validator/Validate secret rotation fixtures]   ✅  Success - Main Fixture A — fail-on-expired exit code [683.637793ms]
+[secret-rotation-validator/Validate secret rotation fixtures] ⭐ Run Main Fixture B — all-ok (markdown + fail-on-expired)
+[secret-rotation-validator/Validate secret rotation fixtures]   🐳  docker exec cmd=[bash --noprofile --norc -e -o pipefail /var/run/act/workflow/5.sh] user= workdir=
+[secret-rotation-validator/Validate secret rotation fixtures]   | ===== FIXTURE B: all-ok =====
+[secret-rotation-validator/Validate secret rotation fixtures]   | # Secret Rotation Report
+[secret-rotation-validator/Validate secret rotation fixtures]   | 
+[secret-rotation-validator/Validate secret rotation fixtures]   | Warning window: 14 day(s)
+[secret-rotation-validator/Validate secret rotation fixtures]   | 
+[secret-rotation-validator/Validate secret rotation fixtures]   | | Name | Last Rotated | Rotation (days) | Days Until Due | Status | Required By |
+[secret-rotation-validator/Validate secret rotation fixtures]   | |------|--------------|-----------------|----------------|--------|-------------|
+[secret-rotation-validator/Validate secret rotation fixtures]   | | DATABASE_PASSWORD | 2026-04-30 | 90 | 83 | OK | api-svc |
+[secret-rotation-validator/Validate secret rotation fixtures]   | | REDIS_AUTH | 2026-05-01 | 180 | 174 | OK | cache-svc, session-svc |
+[secret-rotation-validator/Validate secret rotation fixtures]   | 
+[secret-rotation-validator/Validate secret rotation fixtures]   | Summary: expired=0 warning=0 ok=2
+[secret-rotation-validator/Validate secret rotation fixtures]   | ALLGOOD_EXIT=0
+[secret-rotation-validator/Validate secret rotation fixtures]   ✅  Success - Main Fixture B — all-ok (markdown + fail-on-expired) [827.889961ms]
+[secret-rotation-validator/Validate secret rotation fixtures] ⭐ Run Main Fixture C — json output and grouping
+[secret-rotation-validator/Validate secret rotation fixtures]   🐳  docker exec cmd=[bash --noprofile --norc -e -o pipefail /var/run/act/workflow/6.sh] user= workdir=
+[secret-rotation-validator/Validate secret rotation fixtures]   | ===== FIXTURE C: json =====
+[secret-rotation-validator/Validate secret rotation fixtures]   | {
+[secret-rotation-validator/Validate secret rotation fixtures]   |   "warning_days": 14,
+[secret-rotation-validator/Validate secret rotation fixtures]   |   "summary": {
+[secret-rotation-validator/Validate secret rotation fixtures]   |     "expired": 1,
+[secret-rotation-validator/Validate secret rotation fixtures]   |     "warning": 1,
+[secret-rotation-validator/Validate secret rotation fixtures]   |     "ok": 0
+[secret-rotation-validator/Validate secret rotation fixtures]   |   },
+[secret-rotation-validator/Validate secret rotation fixtures]   |   "groups": {
+[secret-rotation-validator/Validate secret rotation fixtures]   |     "expired": [
+[secret-rotation-validator/Validate secret rotation fixtures]   |       {
+[secret-rotation-validator/Validate secret rotation fixtures]   |         "name": "AWS_SECRET_KEY",
+[secret-rotation-validator/Validate secret rotation fixtures]   |         "last_rotated": "2024-06-01",
+[secret-rotation-validator/Validate secret rotation fixtures]   |         "rotation_days": 60,
+[secret-rotation-validator/Validate secret rotation fixtures]   |         "required_by": [
+[secret-rotation-validator/Validate secret rotation fixtures]   |           "s3-uploader"
+[secret-rotation-validator/Validate secret rotation fixtures]   |         ],
+[secret-rotation-validator/Validate secret rotation fixtures]   |         "days_overdue": 645,
+[secret-rotation-validator/Validate secret rotation fixtures]   |         "days_until_due": -645,
+[secret-rotation-validator/Validate secret rotation fixtures]   |         "status": "EXPIRED"
+[secret-rotation-validator/Validate secret rotation fixtures]   |       }
+[secret-rotation-validator/Validate secret rotation fixtures]   |     ],
+[secret-rotation-validator/Validate secret rotation fixtures]   |     "warning": [
+[secret-rotation-validator/Validate secret rotation fixtures]   |       {
+[secret-rotation-validator/Validate secret rotation fixtures]   |         "name": "DATADOG_API_KEY",
+[secret-rotation-validator/Validate secret rotation fixtures]   |         "last_rotated": "2026-04-25",
+[secret-rotation-validator/Validate secret rotation fixtures]   |         "rotation_days": 21,
+[secret-rotation-validator/Validate secret rotation fixtures]   |         "required_by": [
+[secret-rotation-validator/Validate secret rotation fixtures]   |           "metrics-agent",
+[secret-rotation-validator/Validate secret rotation fixtures]   |           "log-shipper"
+[secret-rotation-validator/Validate secret rotation fixtures]   |         ],
+[secret-rotation-validator/Validate secret rotation fixtures]   |         "days_overdue": 0,
+[secret-rotation-validator/Validate secret rotation fixtures]   |         "days_until_due": 9,
+[secret-rotation-validator/Validate secret rotation fixtures]   |         "status": "WARNING"
+[secret-rotation-validator/Validate secret rotation fixtures]   |       }
+[secret-rotation-validator/Validate secret rotation fixtures]   |     ],
+[secret-rotation-validator/Validate secret rotation fixtures]   |     "ok": []
+[secret-rotation-validator/Validate secret rotation fixtures]   |   }
+[secret-rotation-validator/Validate secret rotation fixtures]   | }
+[secret-rotation-validator/Validate secret rotation fixtures]   | JSON_GROUPS=expired:1,warning:1,ok:0
+[secret-rotation-validator/Validate secret rotation fixtures]   | JSON_FIELDS_OK=true
+[secret-rotation-validator/Validate secret rotation fixtures]   ✅  Success - Main Fixture C — json output and grouping [898.731486ms]
+[secret-rotation-validator/Validate secret rotation fixtures] ⭐ Run Main Fixture D — tight warning window flips GITHUB_TOKEN to OK
+[secret-rotation-validator/Validate secret rotation fixtures]   🐳  docker exec cmd=[bash --noprofile --norc -e -o pipefail /var/run/act/workflow/7.sh] user= workdir=
+[secret-rotation-validator/Validate secret rotation fixtures]   | ===== FIXTURE D: tight warning window =====
+[secret-rotation-validator/Validate secret rotation fixtures]   | # Secret Rotation Report
+[secret-rotation-validator/Validate secret rotation fixtures]   | 
+[secret-rotation-validator/Validate secret rotation fixtures]   | Warning window: 5 day(s)
+[secret-rotation-validator/Validate secret rotation fixtures]   | 
+[secret-rotation-validator/Validate secret rotation fixtures]   | | Name | Last Rotated | Rotation (days) | Days Until Due | Status | Required By |
+[secret-rotation-validator/Validate secret rotation fixtures]   | |------|--------------|-----------------|----------------|--------|-------------|
+[secret-rotation-validator/Validate secret rotation fixtures]   | | STRIPE_API_KEY | 2025-01-01 | 90 | -401 | EXPIRED | payments-svc, billing-svc |
+[secret-rotation-validator/Validate secret rotation fixtures]   | | GITHUB_TOKEN | 2026-04-01 | 45 | 9 | OK | ci-runner |
+[secret-rotation-validator/Validate secret rotation fixtures]   | | SLACK_WEBHOOK | 2026-04-15 | 60 | 38 | OK | alerts |
+[secret-rotation-validator/Validate secret rotation fixtures]   | 
+[secret-rotation-validator/Validate secret rotation fixtures]   | Summary: expired=1 warning=0 ok=2
+[secret-rotation-validator/Validate secret rotation fixtures]   | TIGHT_WINDOW_GITHUB_STATUS=OK
+[secret-rotation-validator/Validate secret rotation fixtures]   ✅  Success - Main Fixture D — tight warning window flips GITHUB_TOKEN to OK [554.635734ms]
+[secret-rotation-validator/Validate secret rotation fixtures] ⭐ Run Main Error path — malformed JSON
+[secret-rotation-validator/Validate secret rotation fixtures]   🐳  docker exec cmd=[bash --noprofile --norc -e -o pipefail /var/run/act/workflow/8.sh] user= workdir=
+[secret-rotation-validator/Validate secret rotation fixtures]   | MALFORMED_OUTPUT: error: config file is not valid JSON: tests/fixtures/malformed.json
+[secret-rotation-validator/Validate secret rotation fixtures]   | MALFORMED_JSON_HANDLED=true
+[secret-rotation-validator/Validate secret rotation fixtures]   ✅  Success - Main Error path — malformed JSON [433.81229ms]
+[secret-rotation-validator/Validate secret rotation fixtures] ⭐ Run Main Error path — missing config file
+[secret-rotation-validator/Validate secret rotation fixtures]   🐳  docker exec cmd=[bash --noprofile --norc -e -o pipefail /var/run/act/workflow/9.sh] user= workdir=
+[secret-rotation-validator/Validate secret rotation fixtures]   | MISSING_OUTPUT: error: config file not found: tests/fixtures/does-not-exist.json
+[secret-rotation-validator/Validate secret rotation fixtures]   | MISSING_FILE_HANDLED=true
+[secret-rotation-validator/Validate secret rotation fixtures]   ✅  Success - Main Error path — missing config file [338.63613ms]
+[secret-rotation-validator/Validate secret rotation fixtures] ⭐ Run Complete job
+[secret-rotation-validator/Validate secret rotation fixtures] Cleaning up container for job Validate secret rotation fixtures
+[secret-rotation-validator/Validate secret rotation fixtures]   ✅  Success - Complete job
+[secret-rotation-validator/Validate secret rotation fixtures] 🏁  Job succeeded
+ACT_EXIT_CODE=0
