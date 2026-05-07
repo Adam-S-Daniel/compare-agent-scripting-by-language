@@ -1,0 +1,113 @@
+name: Test Results Aggregator
+
+# Triggers: run on every push and PR, and allow manual + scheduled runs so
+# the aggregator can be exercised against fresh fixtures.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    # Daily smoke run at 06:00 UTC.
+    - cron: '0 6 * * *'
+
+permissions:
+  contents: read
+
+# FIXTURES_DIR (defaulted in the aggregate step) lets the act-based test
+# harness point the aggregator at different fixture sets without editing the
+# workflow file. Default is the in-repo fixtures/ directory.
+
+jobs:
+  lint:
+    name: Lint shell script
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install shellcheck
+        run: |
+          if ! command -v shellcheck >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends shellcheck
+          fi
+      - name: Run shellcheck
+        run: shellcheck aggregate.sh
+      - name: Bash syntax check
+        run: bash -n aggregate.sh
+
+  unit-tests:
+    name: Bats unit tests
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install bats, jq, shellcheck
+        run: |
+          missing=()
+          for tool in bats jq shellcheck; do
+            if ! command -v "$tool" >/dev/null 2>&1; then
+              missing+=("$tool")
+            fi
+          done
+          if [ "${#missing[@]}" -gt 0 ]; then
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends "${missing[@]}"
+          fi
+      - name: Run bats tests
+        run: bats tests/aggregate.bats
+
+  aggregate:
+    name: Aggregate fixtures and summarize
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install jq
+        run: |
+          if ! command -v jq >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends jq
+          fi
+      - name: Run aggregator
+        id: agg
+        run: |
+          chmod +x aggregate.sh
+          fixtures_dir="${FIXTURES_DIR:-fixtures}"
+          if [ ! -d "${fixtures_dir}" ]; then
+            echo "::error::FIXTURES_DIR '${fixtures_dir}' does not exist"
+            exit 1
+          fi
+          echo "Aggregating from: ${fixtures_dir}"
+          ./aggregate.sh "${fixtures_dir}" | tee /tmp/output.md
+
+          # Emit machine-readable counters that the test harness asserts on.
+          passed=$(awk -F'|' '/^\| Passed/ {gsub(/ /,"",$3); print $3}' /tmp/output.md)
+          failed=$(awk -F'|' '/^\| Failed/ {gsub(/ /,"",$3); print $3}' /tmp/output.md)
+          skipped=$(awk -F'|' '/^\| Skipped/ {gsub(/ /,"",$3); print $3}' /tmp/output.md)
+          total=$(awk -F'|' '/^\| \*\*Total\*\*/ {gsub(/[* ]/,"",$3); print $3}' /tmp/output.md)
+          duration=$(awk -F'|' '/^\| Duration/ {gsub(/[ s]/,"",$3); print $3}' /tmp/output.md)
+          flaky=$(grep -cE '^- `' /tmp/output.md || true)
+
+          # Print a single tagged line per metric so harness assertions can
+          # match exact values without depending on table formatting.
+          echo "AGG_PASSED=${passed}"
+          echo "AGG_FAILED=${failed}"
+          echo "AGG_SKIPPED=${skipped}"
+          echo "AGG_TOTAL=${total}"
+          echo "AGG_DURATION=${duration}"
+          echo "AGG_FLAKY_COUNT=${flaky}"
+
+          {
+            echo "passed=${passed}"
+            echo "failed=${failed}"
+            echo "skipped=${skipped}"
+            echo "total=${total}"
+            echo "flaky_count=${flaky}"
+          } >> "$GITHUB_OUTPUT"
+
+          # Echo the runner-provided GITHUB_STEP_SUMMARY contents (if any) so
+          # the rendered job summary is visible in the act log.
+          if [ -n "${GITHUB_STEP_SUMMARY:-}" ] && [ -s "${GITHUB_STEP_SUMMARY}" ]; then
+            echo "----- GITHUB_STEP_SUMMARY -----"
+            cat "${GITHUB_STEP_SUMMARY}"
+            echo "----- end summary -----"
+          fi
