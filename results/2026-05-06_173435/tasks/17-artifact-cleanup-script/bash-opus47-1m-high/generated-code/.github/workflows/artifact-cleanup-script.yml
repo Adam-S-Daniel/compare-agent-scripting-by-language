@@ -1,0 +1,96 @@
+name: Artifact cleanup script
+
+# Triggers:
+# - push / pull_request: validate every change
+# - schedule: a weekly dry-run of the cleanup plan against the realistic fixture
+# - workflow_dispatch: lets ops kick off an ad-hoc plan
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 4 * * 1'   # Mondays 04:00 UTC
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Run in dry-run mode'
+        required: false
+        default: 'true'
+
+permissions:
+  contents: read
+
+env:
+  # Frozen "current time" so all expected outputs are deterministic in CI.
+  FAKE_NOW: '1778457600'   # 2026-05-07 00:00:00 UTC
+
+jobs:
+  test:
+    name: Lint, unit-test, and execute scenarios
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies (bats, shellcheck)
+        shell: bash
+        run: |
+          set -euo pipefail
+          export DEBIAN_FRONTEND=noninteractive
+          if ! command -v bats >/dev/null; then
+            sudo apt-get update -y
+            sudo apt-get install -y --no-install-recommends bats shellcheck
+          fi
+          bats --version
+          shellcheck --version | head -1
+
+      - name: Static analysis (bash -n + shellcheck)
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash -n cleanup.sh
+          shellcheck cleanup.sh
+
+      - name: Run bats unit tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          bats tests/cleanup.bats
+
+      - name: 'Scenario A: no policies, every artifact kept'
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '=== SCENARIO A ==='
+          ./cleanup.sh --input fixtures/realistic.tsv --now "$FAKE_NOW"
+          echo '=== END SCENARIO A ==='
+
+      - name: 'Scenario B: max-age + keep-latest + max-total-size'
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '=== SCENARIO B ==='
+          ./cleanup.sh \
+            --input fixtures/realistic.tsv \
+            --max-age-days 90 \
+            --keep-latest 1 \
+            --max-total-size 10000 \
+            --dry-run \
+            --now "$FAKE_NOW"
+          echo '=== END SCENARIO B ==='
+
+      - name: 'Scenario C: max-total-size only, oldest evicted'
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '=== SCENARIO C ==='
+          tmp="$(mktemp)"
+          # Four 1000-byte artifacts; cap 2500 → drop the two oldest.
+          {
+            printf 'a\t1000\t%d\t1\n' $((FAKE_NOW - 4*86400))
+            printf 'b\t1000\t%d\t1\n' $((FAKE_NOW - 3*86400))
+            printf 'c\t1000\t%d\t2\n' $((FAKE_NOW - 2*86400))
+            printf 'd\t1000\t%d\t2\n' $((FAKE_NOW - 1*86400))
+          } > "$tmp"
+          ./cleanup.sh --input "$tmp" --max-total-size 2500 --now "$FAKE_NOW"
+          rm -f "$tmp"
+          echo '=== END SCENARIO C ==='

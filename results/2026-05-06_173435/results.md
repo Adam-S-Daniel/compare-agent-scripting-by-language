@@ -1,6 +1,6 @@
 # Benchmark Results: Language Comparison
 
-**Last updated:** 2026-05-07 12:50:18 PM ET — 132/140 runs completed, 8 remaining; total cost $201.53; total agent time 1149.7 min.
+**Last updated:** 2026-05-07 12:51:17 PM ET — 133/140 runs completed, 7 remaining; total cost $203.12; total agent time 1155.4 min.
 
 ## Table of Contents
 
@@ -58,21 +58,21 @@ Properties:
 | typescript-bun | haiku45-200k | A (5.5min) | A ($0.48) | — | — |
 | powershell | haiku45-200k* | B+ (6.4min) | A ($0.54) | — | — |
 | powershell-tool | haiku45-200k | B- (7.2min) | A ($0.48) | — | — |
-| bash | haiku45-200k | B- (7.6min) | B+ ($0.70) | — | — |
+| bash | haiku45-200k | C+ (7.6min) | B+ ($0.70) | — | — |
 | default | opus46-200k | B+ (6.4min) | C+ ($1.37) | — | — |
 | typescript-bun | opus46-200k | B+ (6.2min) | C+ ($1.30) | — | — |
 | powershell-tool | opus46-200k | C+ (8.1min) | C ($1.56) | — | — |
 | bash | opus46-200k | C (8.3min) | C ($1.63) | — | — |
 | default | opus47-1m-high | C+ (8.1min) | D+ ($2.24) | — | — |
-| powershell | opus46-200k | C (8.8min) | C- ($1.79) | — | — |
 | typescript-bun | sonnet46-200k | C- (9.0min) | C ($1.50) | — | — |
 | default | sonnet46-200k | D+ (9.9min) | C ($1.47) | — | — |
-| bash | sonnet46-200k | D (11.3min) | C ($1.62) | — | — |
-| powershell | sonnet46-200k | D (11.2min) | C ($1.63) | — | — |
+| powershell | opus46-200k | C- (8.8min) | C- ($1.79) | — | — |
 | powershell-tool | sonnet46-200k | D (10.7min) | C ($1.47) | — | — |
 | typescript-bun | opus47-1m-high | C (8.5min) | D ($2.57) | — | — |
+| bash | sonnet46-200k | D- (11.3min) | C ($1.62) | — | — |
+| powershell | sonnet46-200k | D- (11.2min) | C ($1.63) | — | — |
 | powershell | opus47-1m-high | D (10.7min) | D ($2.88) | — | — |
-| bash | opus47-1m-high | D- (12.4min) | D ($2.84) | — | — |
+| bash | opus47-1m-high | D- (11.3min) | D ($2.63) | — | — |
 | powershell-tool | opus47-1m-high | D- (12.0min) | D- ($3.69) | — | — |
 
 
@@ -87,19 +87,19 @@ Properties:
 | default | opus46-200k | B+ (6.4min) | C+ ($1.37) | — | — |
 | typescript-bun | opus46-200k | B+ (6.2min) | C+ ($1.30) | — | — |
 | powershell-tool | haiku45-200k | B- (7.2min) | A ($0.48) | — | — |
-| bash | haiku45-200k | B- (7.6min) | B+ ($0.70) | — | — |
+| bash | haiku45-200k | C+ (7.6min) | B+ ($0.70) | — | — |
 | powershell-tool | opus46-200k | C+ (8.1min) | C ($1.56) | — | — |
 | default | opus47-1m-high | C+ (8.1min) | D+ ($2.24) | — | — |
 | bash | opus46-200k | C (8.3min) | C ($1.63) | — | — |
-| powershell | opus46-200k | C (8.8min) | C- ($1.79) | — | — |
 | typescript-bun | opus47-1m-high | C (8.5min) | D ($2.57) | — | — |
 | typescript-bun | sonnet46-200k | C- (9.0min) | C ($1.50) | — | — |
+| powershell | opus46-200k | C- (8.8min) | C- ($1.79) | — | — |
 | default | sonnet46-200k | D+ (9.9min) | C ($1.47) | — | — |
-| bash | sonnet46-200k | D (11.3min) | C ($1.62) | — | — |
-| powershell | sonnet46-200k | D (11.2min) | C ($1.63) | — | — |
 | powershell-tool | sonnet46-200k | D (10.7min) | C ($1.47) | — | — |
 | powershell | opus47-1m-high | D (10.7min) | D ($2.88) | — | — |
-| bash | opus47-1m-high | D- (12.4min) | D ($2.84) | — | — |
+| bash | sonnet46-200k | D- (11.3min) | C ($1.62) | — | — |
+| powershell | sonnet46-200k | D- (11.2min) | C ($1.63) | — | — |
+| bash | opus47-1m-high | D- (11.3min) | D ($2.63) | — | — |
 | powershell-tool | opus47-1m-high | D- (12.0min) | D- ($3.69) | — | — |
 
 </details>
@@ -113,21 +113,21 @@ Properties:
 | typescript-bun | haiku45-200k | A (5.5min) | A ($0.48) | — | — |
 | powershell | haiku45-200k* | B+ (6.4min) | A ($0.54) | — | — |
 | powershell-tool | haiku45-200k | B- (7.2min) | A ($0.48) | — | — |
-| bash | haiku45-200k | B- (7.6min) | B+ ($0.70) | — | — |
+| bash | haiku45-200k | C+ (7.6min) | B+ ($0.70) | — | — |
 | default | opus46-200k | B+ (6.4min) | C+ ($1.37) | — | — |
 | typescript-bun | opus46-200k | B+ (6.2min) | C+ ($1.30) | — | — |
 | powershell-tool | opus46-200k | C+ (8.1min) | C ($1.56) | — | — |
 | bash | opus46-200k | C (8.3min) | C ($1.63) | — | — |
 | typescript-bun | sonnet46-200k | C- (9.0min) | C ($1.50) | — | — |
 | default | sonnet46-200k | D+ (9.9min) | C ($1.47) | — | — |
-| bash | sonnet46-200k | D (11.3min) | C ($1.62) | — | — |
-| powershell | sonnet46-200k | D (11.2min) | C ($1.63) | — | — |
 | powershell-tool | sonnet46-200k | D (10.7min) | C ($1.47) | — | — |
-| powershell | opus46-200k | C (8.8min) | C- ($1.79) | — | — |
+| bash | sonnet46-200k | D- (11.3min) | C ($1.62) | — | — |
+| powershell | sonnet46-200k | D- (11.2min) | C ($1.63) | — | — |
+| powershell | opus46-200k | C- (8.8min) | C- ($1.79) | — | — |
 | default | opus47-1m-high | C+ (8.1min) | D+ ($2.24) | — | — |
 | typescript-bun | opus47-1m-high | C (8.5min) | D ($2.57) | — | — |
 | powershell | opus47-1m-high | D (10.7min) | D ($2.88) | — | — |
-| bash | opus47-1m-high | D- (12.4min) | D ($2.84) | — | — |
+| bash | opus47-1m-high | D- (11.3min) | D ($2.63) | — | — |
 | powershell-tool | opus47-1m-high | D- (12.0min) | D- ($3.69) | — | — |
 
 </details>
@@ -141,21 +141,21 @@ Properties:
 | typescript-bun | haiku45-200k | A (5.5min) | A ($0.48) | — | — |
 | powershell | haiku45-200k* | B+ (6.4min) | A ($0.54) | — | — |
 | powershell-tool | haiku45-200k | B- (7.2min) | A ($0.48) | — | — |
-| bash | haiku45-200k | B- (7.6min) | B+ ($0.70) | — | — |
+| bash | haiku45-200k | C+ (7.6min) | B+ ($0.70) | — | — |
 | default | opus46-200k | B+ (6.4min) | C+ ($1.37) | — | — |
 | typescript-bun | opus46-200k | B+ (6.2min) | C+ ($1.30) | — | — |
 | powershell-tool | opus46-200k | C+ (8.1min) | C ($1.56) | — | — |
 | bash | opus46-200k | C (8.3min) | C ($1.63) | — | — |
 | default | opus47-1m-high | C+ (8.1min) | D+ ($2.24) | — | — |
-| powershell | opus46-200k | C (8.8min) | C- ($1.79) | — | — |
 | typescript-bun | sonnet46-200k | C- (9.0min) | C ($1.50) | — | — |
 | default | sonnet46-200k | D+ (9.9min) | C ($1.47) | — | — |
-| bash | sonnet46-200k | D (11.3min) | C ($1.62) | — | — |
-| powershell | sonnet46-200k | D (11.2min) | C ($1.63) | — | — |
+| powershell | opus46-200k | C- (8.8min) | C- ($1.79) | — | — |
 | powershell-tool | sonnet46-200k | D (10.7min) | C ($1.47) | — | — |
 | typescript-bun | opus47-1m-high | C (8.5min) | D ($2.57) | — | — |
+| bash | sonnet46-200k | D- (11.3min) | C ($1.62) | — | — |
+| powershell | sonnet46-200k | D- (11.2min) | C ($1.63) | — | — |
 | powershell | opus47-1m-high | D (10.7min) | D ($2.88) | — | — |
-| bash | opus47-1m-high | D- (12.4min) | D ($2.84) | — | — |
+| bash | opus47-1m-high | D- (11.3min) | D ($2.63) | — | — |
 | powershell-tool | opus47-1m-high | D- (12.0min) | D- ($3.69) | — | — |
 
 </details>
@@ -169,27 +169,27 @@ Properties:
 | typescript-bun | haiku45-200k | A (5.5min) | A ($0.48) | — | — |
 | powershell | haiku45-200k* | B+ (6.4min) | A ($0.54) | — | — |
 | powershell-tool | haiku45-200k | B- (7.2min) | A ($0.48) | — | — |
-| bash | haiku45-200k | B- (7.6min) | B+ ($0.70) | — | — |
+| bash | haiku45-200k | C+ (7.6min) | B+ ($0.70) | — | — |
 | default | opus46-200k | B+ (6.4min) | C+ ($1.37) | — | — |
 | typescript-bun | opus46-200k | B+ (6.2min) | C+ ($1.30) | — | — |
 | powershell-tool | opus46-200k | C+ (8.1min) | C ($1.56) | — | — |
 | bash | opus46-200k | C (8.3min) | C ($1.63) | — | — |
 | default | opus47-1m-high | C+ (8.1min) | D+ ($2.24) | — | — |
-| powershell | opus46-200k | C (8.8min) | C- ($1.79) | — | — |
 | typescript-bun | sonnet46-200k | C- (9.0min) | C ($1.50) | — | — |
 | default | sonnet46-200k | D+ (9.9min) | C ($1.47) | — | — |
-| bash | sonnet46-200k | D (11.3min) | C ($1.62) | — | — |
-| powershell | sonnet46-200k | D (11.2min) | C ($1.63) | — | — |
+| powershell | opus46-200k | C- (8.8min) | C- ($1.79) | — | — |
 | powershell-tool | sonnet46-200k | D (10.7min) | C ($1.47) | — | — |
 | typescript-bun | opus47-1m-high | C (8.5min) | D ($2.57) | — | — |
+| bash | sonnet46-200k | D- (11.3min) | C ($1.62) | — | — |
+| powershell | sonnet46-200k | D- (11.2min) | C ($1.63) | — | — |
 | powershell | opus47-1m-high | D (10.7min) | D ($2.88) | — | — |
-| bash | opus47-1m-high | D- (12.4min) | D ($2.84) | — | — |
+| bash | opus47-1m-high | D- (11.3min) | D ($2.63) | — | — |
 | powershell-tool | opus47-1m-high | D- (12.0min) | D- ($3.69) | — | — |
 
 </details>
 
-- **Estimated time remaining:** 984.2min
-- **Estimated total cost:** $213.74
+- **Estimated time remaining:** 973.0min
+- **Estimated total cost:** $213.81
 
 ## Failed / Timed-Out Runs
 
@@ -207,7 +207,7 @@ Properties:
 |----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|-----------------|
 | bash | haiku45-200k | 7 | 7.6min | 7.6min | 4.9 | 70 | $0.70 | $4.87 | — | — |
 | bash | opus46-200k | 7 | 8.3min | 6.4min | 5.4 | 53 | $1.63 | $11.41 | — | — |
-| bash | opus47-1m-high | 5 | 12.4min | 12.2min | 1.2 | 50 | $2.84 | $14.22 | — | — |
+| bash | opus47-1m-high | 6 | 11.3min | 11.1min | 1.5 | 46 | $2.63 | $15.81 | — | — |
 | bash | sonnet46-200k | 7 | 11.3min | 10.1min | 4.0 | 43 | $1.62 | $11.33 | — | — |
 | default | haiku45-200k | 7 | 4.8min | 4.8min | 3.6 | 40 | $0.38 | $2.68 | — | — |
 | default | opus46-200k | 7 | 6.4min | 6.1min | 2.9 | 34 | $1.37 | $9.59 | — | — |
@@ -249,7 +249,7 @@ Properties:
 | powershell | opus46-200k | 7 | 8.8min | 8.6min | 1.0 | 33 | $1.79 | $12.50 | — | — |
 | default | opus47-1m-high | 6 | 8.1min | 8.0min | 0.0 | 37 | $2.24 | $13.45 | — | — |
 | typescript-bun | opus47-1m-high | 5 | 8.5min | 5.6min | 0.4 | 49 | $2.57 | $12.87 | — | — |
-| bash | opus47-1m-high | 5 | 12.4min | 12.2min | 1.2 | 50 | $2.84 | $14.22 | — | — |
+| bash | opus47-1m-high | 6 | 11.3min | 11.1min | 1.5 | 46 | $2.63 | $15.81 | — | — |
 | powershell | opus47-1m-high | 6 | 10.7min | 10.1min | 0.5 | 43 | $2.88 | $17.30 | — | — |
 | powershell-tool | opus47-1m-high | 5 | 12.0min | 11.2min | 0.6 | 56 | $3.69 | $18.43 | — | — |
 
@@ -277,9 +277,9 @@ Properties:
 | powershell-tool | sonnet46-200k | 7 | 10.7min | 10.3min | 1.4 | 36 | $1.47 | $10.26 | — | — |
 | powershell | opus47-1m-high | 6 | 10.7min | 10.1min | 0.5 | 43 | $2.88 | $17.30 | — | — |
 | powershell | sonnet46-200k | 7 | 11.2min | 11.0min | 2.3 | 33 | $1.63 | $11.41 | — | — |
+| bash | opus47-1m-high | 6 | 11.3min | 11.1min | 1.5 | 46 | $2.63 | $15.81 | — | — |
 | bash | sonnet46-200k | 7 | 11.3min | 10.1min | 4.0 | 43 | $1.62 | $11.33 | — | — |
 | powershell-tool | opus47-1m-high | 5 | 12.0min | 11.2min | 0.6 | 56 | $3.69 | $18.43 | — | — |
-| bash | opus47-1m-high | 5 | 12.4min | 12.2min | 1.2 | 50 | $2.84 | $14.22 | — | — |
 
 </details>
 
@@ -306,8 +306,8 @@ Properties:
 | powershell | opus47-1m-high | 6 | 10.7min | 10.1min | 0.5 | 43 | $2.88 | $17.30 | — | — |
 | powershell-tool | sonnet46-200k | 7 | 10.7min | 10.3min | 1.4 | 36 | $1.47 | $10.26 | — | — |
 | powershell | sonnet46-200k | 7 | 11.2min | 11.0min | 2.3 | 33 | $1.63 | $11.41 | — | — |
+| bash | opus47-1m-high | 6 | 11.3min | 11.1min | 1.5 | 46 | $2.63 | $15.81 | — | — |
 | powershell-tool | opus47-1m-high | 5 | 12.0min | 11.2min | 0.6 | 56 | $3.69 | $18.43 | — | — |
-| bash | opus47-1m-high | 5 | 12.4min | 12.2min | 1.2 | 50 | $2.84 | $14.22 | — | — |
 
 </details>
 
@@ -321,10 +321,10 @@ Properties:
 | powershell | opus47-1m-high | 6 | 10.7min | 10.1min | 0.5 | 43 | $2.88 | $17.30 | — | — |
 | powershell-tool | opus47-1m-high | 5 | 12.0min | 11.2min | 0.6 | 56 | $3.69 | $18.43 | — | — |
 | powershell | opus46-200k | 7 | 8.8min | 8.6min | 1.0 | 33 | $1.79 | $12.50 | — | — |
-| bash | opus47-1m-high | 5 | 12.4min | 12.2min | 1.2 | 50 | $2.84 | $14.22 | — | — |
 | powershell-tool | opus46-200k | 7 | 8.1min | 8.1min | 1.3 | 28 | $1.56 | $10.91 | — | — |
 | powershell-tool | haiku45-200k | 7 | 7.2min | 7.2min | 1.4 | 46 | $0.48 | $3.34 | — | — |
 | powershell-tool | sonnet46-200k | 7 | 10.7min | 10.3min | 1.4 | 36 | $1.47 | $10.26 | — | — |
+| bash | opus47-1m-high | 6 | 11.3min | 11.1min | 1.5 | 46 | $2.63 | $15.81 | — | — |
 | typescript-bun | opus46-200k | 7 | 6.2min | 4.9min | 1.9 | 35 | $1.30 | $9.09 | — | — |
 | powershell | haiku45-200k* | 6 | 6.4min | 6.4min | 2.0 | 52 | $0.54 | $3.23 | — | — |
 | powershell | sonnet46-200k | 7 | 11.2min | 11.0min | 2.3 | 33 | $1.63 | $11.41 | — | — |
@@ -356,9 +356,9 @@ Properties:
 | bash | sonnet46-200k | 7 | 11.3min | 10.1min | 4.0 | 43 | $1.62 | $11.33 | — | — |
 | powershell | opus47-1m-high | 6 | 10.7min | 10.1min | 0.5 | 43 | $2.88 | $17.30 | — | — |
 | powershell-tool | haiku45-200k | 7 | 7.2min | 7.2min | 1.4 | 46 | $0.48 | $3.34 | — | — |
+| bash | opus47-1m-high | 6 | 11.3min | 11.1min | 1.5 | 46 | $2.63 | $15.81 | — | — |
 | typescript-bun | opus47-1m-high | 5 | 8.5min | 5.6min | 0.4 | 49 | $2.57 | $12.87 | — | — |
 | typescript-bun | sonnet46-200k | 7 | 9.0min | 7.0min | 2.7 | 49 | $1.50 | $10.52 | — | — |
-| bash | opus47-1m-high | 5 | 12.4min | 12.2min | 1.2 | 50 | $2.84 | $14.22 | — | — |
 | typescript-bun | haiku45-200k | 7 | 5.5min | 5.5min | 4.0 | 50 | $0.48 | $3.34 | — | — |
 | powershell | haiku45-200k* | 6 | 6.4min | 6.4min | 2.0 | 52 | $0.54 | $3.23 | — | — |
 | bash | opus46-200k | 7 | 8.3min | 6.4min | 5.4 | 53 | $1.63 | $11.41 | — | — |
@@ -374,7 +374,7 @@ Properties:
 |----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|-----------------|
 | bash | haiku45-200k | 7 | 7.6min | 7.6min | 4.9 | 70 | $0.70 | $4.87 | — | — |
 | bash | opus46-200k | 7 | 8.3min | 6.4min | 5.4 | 53 | $1.63 | $11.41 | — | — |
-| bash | opus47-1m-high | 5 | 12.4min | 12.2min | 1.2 | 50 | $2.84 | $14.22 | — | — |
+| bash | opus47-1m-high | 6 | 11.3min | 11.1min | 1.5 | 46 | $2.63 | $15.81 | — | — |
 | bash | sonnet46-200k | 7 | 11.3min | 10.1min | 4.0 | 43 | $1.62 | $11.33 | — | — |
 | default | haiku45-200k | 7 | 4.8min | 4.8min | 3.6 | 40 | $0.38 | $2.68 | — | — |
 | default | opus46-200k | 7 | 6.4min | 6.1min | 2.9 | 34 | $1.37 | $9.59 | — | — |
@@ -402,7 +402,7 @@ Properties:
 |----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|-----------------|
 | bash | haiku45-200k | 7 | 7.6min | 7.6min | 4.9 | 70 | $0.70 | $4.87 | — | — |
 | bash | opus46-200k | 7 | 8.3min | 6.4min | 5.4 | 53 | $1.63 | $11.41 | — | — |
-| bash | opus47-1m-high | 5 | 12.4min | 12.2min | 1.2 | 50 | $2.84 | $14.22 | — | — |
+| bash | opus47-1m-high | 6 | 11.3min | 11.1min | 1.5 | 46 | $2.63 | $15.81 | — | — |
 | bash | sonnet46-200k | 7 | 11.3min | 10.1min | 4.0 | 43 | $1.62 | $11.33 | — | — |
 | default | haiku45-200k | 7 | 4.8min | 4.8min | 3.6 | 40 | $0.38 | $2.68 | — | — |
 | default | opus46-200k | 7 | 6.4min | 6.1min | 2.9 | 34 | $1.37 | $9.59 | — | — |
@@ -437,7 +437,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | bash | haiku45-200k-cli2.1.131 | 20 | 1 | 5.0% | 0.2min | 0.0% | 0.0min | 0.0% | 0.2min | 0.0% | 0.4min | 28.2% |
 | bash | haiku45-200k-cli2.1.132 | 124 | 38 | 30.6% | 7.6min | 0.7% | 0.2min | 0.0% | 7.4min | 0.6% | 3.5min | 67.9% |
 | bash | opus46-200k-cli2.1.132 | 129 | 13 | 10.1% | 2.6min | 0.2% | 0.3min | 0.0% | 2.3min | 0.2% | 2.7min | 45.8% |
-| bash | opus47-1m-high-cli2.1.132 | 92 | 5 | 5.4% | 1.0min | 0.1% | 0.2min | 0.0% | 0.8min | 0.1% | 10.4min | 7.2% |
+| bash | opus47-1m-high-cli2.1.132 | 102 | 6 | 5.9% | 1.2min | 0.1% | 0.2min | 0.0% | 1.0min | 0.1% | 10.8min | 8.3% |
 | bash | sonnet46-200k-cli2.1.132 | 106 | 4 | 3.8% | 0.8min | 0.1% | 0.2min | 0.0% | 0.6min | 0.1% | 9.5min | 6.4% |
 | default | haiku45-200k-cli2.1.131 | 27 | 3 | 11.1% | 0.4min | 0.0% | 0.1min | 0.0% | 0.3min | 0.0% | 0.0min | 91.1% |
 | default | haiku45-200k-cli2.1.132 | 74 | 12 | 16.2% | 1.6min | 0.1% | 0.2min | 0.0% | 1.4min | 0.1% | 3.0min | 32.2% |
@@ -475,7 +475,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | powershell | haiku45-200k-cli2.1.132 | 109 | 4 | 3.7% | 2.3min | 0.2% | 0.8min | 0.1% | 1.5min | 0.1% | 6.0min | 20.1% |
 | default | haiku45-200k-cli2.1.132 | 74 | 12 | 16.2% | 1.6min | 0.1% | 0.2min | 0.0% | 1.4min | 0.1% | 3.0min | 32.2% |
 | powershell-tool | haiku45-200k-cli2.1.132 | 102 | 3 | 2.9% | 1.8min | 0.2% | 0.7min | 0.1% | 1.1min | 0.1% | 3.2min | 25.3% |
-| bash | opus47-1m-high-cli2.1.132 | 92 | 5 | 5.4% | 1.0min | 0.1% | 0.2min | 0.0% | 0.8min | 0.1% | 10.4min | 7.2% |
+| bash | opus47-1m-high-cli2.1.132 | 102 | 6 | 5.9% | 1.2min | 0.1% | 0.2min | 0.0% | 1.0min | 0.1% | 10.8min | 8.3% |
 | powershell-tool | opus46-200k-cli2.1.132 | 71 | 2 | 2.8% | 1.2min | 0.1% | 0.4min | 0.0% | 0.7min | 0.1% | 1.8min | 29.7% |
 | typescript-bun | haiku45-200k-cli2.1.132 | 108 | 44 | 40.7% | 5.9min | 0.5% | 5.2min | 0.4% | 0.7min | 0.1% | 1.7min | 29.1% |
 | bash | sonnet46-200k-cli2.1.132 | 106 | 4 | 3.8% | 0.8min | 0.1% | 0.2min | 0.0% | 0.6min | 0.1% | 9.5min | 6.4% |
@@ -513,7 +513,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | bash | haiku45-200k-cli2.1.131 | 20 | 1 | 5.0% | 0.2min | 0.0% | 0.0min | 0.0% | 0.2min | 0.0% | 0.4min | 28.2% |
 | powershell-tool | haiku45-200k-cli2.1.132 | 102 | 3 | 2.9% | 1.8min | 0.2% | 0.7min | 0.1% | 1.1min | 0.1% | 3.2min | 25.3% |
 | powershell | haiku45-200k-cli2.1.132 | 109 | 4 | 3.7% | 2.3min | 0.2% | 0.8min | 0.1% | 1.5min | 0.1% | 6.0min | 20.1% |
-| bash | opus47-1m-high-cli2.1.132 | 92 | 5 | 5.4% | 1.0min | 0.1% | 0.2min | 0.0% | 0.8min | 0.1% | 10.4min | 7.2% |
+| bash | opus47-1m-high-cli2.1.132 | 102 | 6 | 5.9% | 1.2min | 0.1% | 0.2min | 0.0% | 1.0min | 0.1% | 10.8min | 8.3% |
 | powershell | sonnet46-200k-cli2.1.132 | 79 | 1 | 1.3% | 0.6min | 0.1% | 0.4min | 0.0% | 0.2min | 0.0% | 2.5min | 7.2% |
 | bash | sonnet46-200k-cli2.1.132 | 106 | 4 | 3.8% | 0.8min | 0.1% | 0.2min | 0.0% | 0.6min | 0.1% | 9.5min | 6.4% |
 | default | opus47-1m-high-cli2.1.132 | 90 | 0 | 0.0% | 0.0min | 0.0% | 0.2min | 0.0% | -0.2min | -0.0% | 7.2min | -2.5% |
@@ -542,7 +542,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | default | haiku45-200k-cli2.1.131 | 27 | 3 | 11.1% | 0.4min | 0.0% | 0.1min | 0.0% | 0.3min | 0.0% | 0.0min | 91.1% |
 | bash | opus46-200k-cli2.1.132 | 129 | 13 | 10.1% | 2.6min | 0.2% | 0.3min | 0.0% | 2.3min | 0.2% | 2.7min | 45.8% |
 | powershell | opus46-200k-cli2.1.132 | 96 | 9 | 9.4% | 5.2min | 0.5% | 0.5min | 0.0% | 4.8min | 0.4% | 3.2min | 59.6% |
-| bash | opus47-1m-high-cli2.1.132 | 92 | 5 | 5.4% | 1.0min | 0.1% | 0.2min | 0.0% | 0.8min | 0.1% | 10.4min | 7.2% |
+| bash | opus47-1m-high-cli2.1.132 | 102 | 6 | 5.9% | 1.2min | 0.1% | 0.2min | 0.0% | 1.0min | 0.1% | 10.8min | 8.3% |
 | bash | haiku45-200k-cli2.1.131 | 20 | 1 | 5.0% | 0.2min | 0.0% | 0.0min | 0.0% | 0.2min | 0.0% | 0.4min | 28.2% |
 | powershell | haiku45-200k-cli2.1.131 | 23 | 1 | 4.3% | 0.6min | 0.1% | 0.2min | 0.0% | 0.4min | 0.0% | 0.8min | 31.9% |
 | bash | sonnet46-200k-cli2.1.132 | 106 | 4 | 3.8% | 0.8min | 0.1% | 0.2min | 0.0% | 0.6min | 0.1% | 9.5min | 6.4% |
@@ -565,7 +565,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | Trap | Language | Model | Fell In | Time Lost | % of Time | $ Lost | % of $ |
 |------|------|-------|---------|-----------|-----------|--------|--------|
 | repeated-test-reruns | bash | haiku45-200k-cli2.1.131 | 1 | 0.7min | 0.1% | $0.03 | 0.02% |
-| repeated-test-reruns | bash | haiku45-200k-cli2.1.132 | 5 | 6.3min | 0.6% | $0.64 | 0.32% |
+| repeated-test-reruns | bash | haiku45-200k-cli2.1.132 | 5 | 6.3min | 0.5% | $0.64 | 0.32% |
 | repeated-test-reruns | bash | opus46-200k-cli2.1.132 | 1 | 2.0min | 0.2% | $0.16 | 0.08% |
 | repeated-test-reruns | bash | sonnet46-200k-cli2.1.132 | 3 | 3.0min | 0.3% | $0.40 | 0.20% |
 | repeated-test-reruns | default | opus47-1m-high-cli2.1.132 | 1 | 0.7min | 0.1% | $0.19 | 0.09% |
@@ -580,15 +580,15 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | repeated-test-reruns | powershell-tool | opus47-1m-high-cli2.1.132 | 1 | 1.0min | 0.1% | $0.36 | 0.18% |
 | repeated-test-reruns | powershell-tool | sonnet46-200k-cli2.1.132 | 3 | 2.7min | 0.2% | $0.36 | 0.18% |
 | repeated-test-reruns | typescript-bun | haiku45-200k-cli2.1.131 | 1 | 0.7min | 0.1% | $0.05 | 0.02% |
-| repeated-test-reruns | typescript-bun | haiku45-200k-cli2.1.132 | 6 | 8.7min | 0.8% | $0.88 | 0.44% |
+| repeated-test-reruns | typescript-bun | haiku45-200k-cli2.1.132 | 6 | 8.7min | 0.8% | $0.88 | 0.43% |
 | repeated-test-reruns | typescript-bun | opus46-200k-cli2.1.132 | 1 | 0.7min | 0.1% | $0.13 | 0.06% |
 | repeated-test-reruns | typescript-bun | opus47-1m-high-cli2.1.132 | 2 | 2.7min | 0.2% | $0.73 | 0.36% |
 | repeated-test-reruns | typescript-bun | sonnet46-200k-cli2.1.132 | 4 | 3.3min | 0.3% | $0.61 | 0.30% |
 | ts-type-error-fix-cycles | typescript-bun | haiku45-200k-cli2.1.131 | 1 | 2.0min | 0.2% | $0.15 | 0.07% |
 | ts-type-error-fix-cycles | typescript-bun | haiku45-200k-cli2.1.132 | 6 | 8.8min | 0.8% | $0.85 | 0.42% |
 | ts-type-error-fix-cycles | typescript-bun | opus46-200k-cli2.1.132 | 7 | 8.8min | 0.8% | $1.84 | 0.91% |
-| ts-type-error-fix-cycles | typescript-bun | opus47-1m-high-cli2.1.132 | 5 | 11.4min | 1.0% | $3.45 | 1.71% |
-| ts-type-error-fix-cycles | typescript-bun | sonnet46-200k-cli2.1.132 | 7 | 10.6min | 0.9% | $1.88 | 0.93% |
+| ts-type-error-fix-cycles | typescript-bun | opus47-1m-high-cli2.1.132 | 5 | 11.4min | 1.0% | $3.45 | 1.70% |
+| ts-type-error-fix-cycles | typescript-bun | sonnet46-200k-cli2.1.132 | 7 | 10.6min | 0.9% | $1.88 | 0.92% |
 | act-push-debug-loops | bash | haiku45-200k-cli2.1.131 | 1 | 4.3min | 0.4% | $0.20 | 0.10% |
 | act-push-debug-loops | bash | haiku45-200k-cli2.1.132 | 3 | 5.1min | 0.4% | $0.53 | 0.26% |
 | act-push-debug-loops | bash | sonnet46-200k-cli2.1.132 | 2 | 1.2min | 0.1% | $0.15 | 0.07% |
@@ -596,15 +596,15 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | act-push-debug-loops | default | haiku45-200k-cli2.1.132 | 1 | 0.3min | 0.0% | $0.03 | 0.01% |
 | act-push-debug-loops | powershell | haiku45-200k-cli2.1.131 | 1 | 6.1min | 0.5% | $0.43 | 0.21% |
 | act-push-debug-loops | powershell | haiku45-200k-cli2.1.132 | 3 | 3.9min | 0.3% | $0.35 | 0.17% |
-| act-push-debug-loops | powershell-tool | haiku45-200k-cli2.1.132 | 5 | 12.8min | 1.1% | $0.70 | 0.35% |
+| act-push-debug-loops | powershell-tool | haiku45-200k-cli2.1.132 | 5 | 12.8min | 1.1% | $0.70 | 0.34% |
 | act-push-debug-loops | typescript-bun | haiku45-200k-cli2.1.131 | 1 | 1.4min | 0.1% | $0.10 | 0.05% |
 | act-push-debug-loops | typescript-bun | haiku45-200k-cli2.1.132 | 4 | 2.7min | 0.2% | $0.22 | 0.11% |
 | fixture-rework | bash | haiku45-200k-cli2.1.132 | 2 | 2.0min | 0.2% | $0.19 | 0.10% |
-| fixture-rework | bash | opus46-200k-cli2.1.132 | 5 | 9.8min | 0.8% | $2.41 | 1.19% |
+| fixture-rework | bash | opus46-200k-cli2.1.132 | 5 | 9.8min | 0.8% | $2.41 | 1.18% |
 | fixture-rework | bash | opus47-1m-high-cli2.1.132 | 1 | 0.8min | 0.1% | $0.24 | 0.12% |
 | fixture-rework | bash | sonnet46-200k-cli2.1.132 | 3 | 4.5min | 0.4% | $0.67 | 0.33% |
 | fixture-rework | default | haiku45-200k-cli2.1.131 | 1 | 0.5min | 0.0% | $0.03 | 0.01% |
-| fixture-rework | default | haiku45-200k-cli2.1.132 | 2 | 1.8min | 0.2% | $0.17 | 0.09% |
+| fixture-rework | default | haiku45-200k-cli2.1.132 | 2 | 1.8min | 0.2% | $0.17 | 0.08% |
 | fixture-rework | default | opus46-200k-cli2.1.132 | 2 | 1.8min | 0.2% | $0.38 | 0.19% |
 | fixture-rework | default | sonnet46-200k-cli2.1.132 | 1 | 1.0min | 0.1% | $0.17 | 0.08% |
 | fixture-rework | powershell | opus46-200k-cli2.1.132 | 1 | 0.8min | 0.1% | $0.16 | 0.08% |
@@ -654,7 +654,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | repeated-test-reruns | powershell | sonnet46-200k-cli2.1.132 | 1 | 1.3min | 0.1% | $0.26 | 0.13% |
 | act-push-debug-loops | typescript-bun | haiku45-200k-cli2.1.131 | 1 | 1.4min | 0.1% | $0.10 | 0.05% |
 | actionlint-fix-cycles | bash | opus46-200k-cli2.1.132 | 1 | 1.7min | 0.1% | $0.42 | 0.21% |
-| fixture-rework | default | haiku45-200k-cli2.1.132 | 2 | 1.8min | 0.2% | $0.17 | 0.09% |
+| fixture-rework | default | haiku45-200k-cli2.1.132 | 2 | 1.8min | 0.2% | $0.17 | 0.08% |
 | fixture-rework | default | opus46-200k-cli2.1.132 | 2 | 1.8min | 0.2% | $0.38 | 0.19% |
 | repeated-test-reruns | bash | opus46-200k-cli2.1.132 | 1 | 2.0min | 0.2% | $0.16 | 0.08% |
 | ts-type-error-fix-cycles | typescript-bun | haiku45-200k-cli2.1.131 | 1 | 2.0min | 0.2% | $0.15 | 0.07% |
@@ -679,14 +679,14 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | act-push-debug-loops | bash | haiku45-200k-cli2.1.132 | 3 | 5.1min | 0.4% | $0.53 | 0.26% |
 | repeated-test-reruns | powershell | haiku45-200k-cli2.1.132 | 4 | 5.3min | 0.5% | $0.33 | 0.16% |
 | act-push-debug-loops | powershell | haiku45-200k-cli2.1.131 | 1 | 6.1min | 0.5% | $0.43 | 0.21% |
-| repeated-test-reruns | bash | haiku45-200k-cli2.1.132 | 5 | 6.3min | 0.6% | $0.64 | 0.32% |
-| repeated-test-reruns | typescript-bun | haiku45-200k-cli2.1.132 | 6 | 8.7min | 0.8% | $0.88 | 0.44% |
+| repeated-test-reruns | bash | haiku45-200k-cli2.1.132 | 5 | 6.3min | 0.5% | $0.64 | 0.32% |
+| repeated-test-reruns | typescript-bun | haiku45-200k-cli2.1.132 | 6 | 8.7min | 0.8% | $0.88 | 0.43% |
 | ts-type-error-fix-cycles | typescript-bun | haiku45-200k-cli2.1.132 | 6 | 8.8min | 0.8% | $0.85 | 0.42% |
 | ts-type-error-fix-cycles | typescript-bun | opus46-200k-cli2.1.132 | 7 | 8.8min | 0.8% | $1.84 | 0.91% |
-| fixture-rework | bash | opus46-200k-cli2.1.132 | 5 | 9.8min | 0.8% | $2.41 | 1.19% |
-| ts-type-error-fix-cycles | typescript-bun | sonnet46-200k-cli2.1.132 | 7 | 10.6min | 0.9% | $1.88 | 0.93% |
-| ts-type-error-fix-cycles | typescript-bun | opus47-1m-high-cli2.1.132 | 5 | 11.4min | 1.0% | $3.45 | 1.71% |
-| act-push-debug-loops | powershell-tool | haiku45-200k-cli2.1.132 | 5 | 12.8min | 1.1% | $0.70 | 0.35% |
+| fixture-rework | bash | opus46-200k-cli2.1.132 | 5 | 9.8min | 0.8% | $2.41 | 1.18% |
+| ts-type-error-fix-cycles | typescript-bun | sonnet46-200k-cli2.1.132 | 7 | 10.6min | 0.9% | $1.88 | 0.92% |
+| ts-type-error-fix-cycles | typescript-bun | opus47-1m-high-cli2.1.132 | 5 | 11.4min | 1.0% | $3.45 | 1.70% |
+| act-push-debug-loops | powershell-tool | haiku45-200k-cli2.1.132 | 5 | 12.8min | 1.1% | $0.70 | 0.34% |
 
 </details>
 
@@ -718,7 +718,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | repeated-test-reruns | powershell | opus47-1m-high-cli2.1.132 | 1 | 0.7min | 0.1% | $0.17 | 0.08% |
 | fixture-rework | typescript-bun | haiku45-200k-cli2.1.132 | 1 | 2.0min | 0.2% | $0.17 | 0.08% |
 | fixture-rework | default | sonnet46-200k-cli2.1.132 | 1 | 1.0min | 0.1% | $0.17 | 0.08% |
-| fixture-rework | default | haiku45-200k-cli2.1.132 | 2 | 1.8min | 0.2% | $0.17 | 0.09% |
+| fixture-rework | default | haiku45-200k-cli2.1.132 | 2 | 1.8min | 0.2% | $0.17 | 0.08% |
 | repeated-test-reruns | default | opus47-1m-high-cli2.1.132 | 1 | 0.7min | 0.1% | $0.19 | 0.09% |
 | actionlint-fix-cycles | powershell-tool | haiku45-200k-cli2.1.132 | 3 | 2.7min | 0.2% | $0.19 | 0.09% |
 | fixture-rework | bash | haiku45-200k-cli2.1.132 | 2 | 2.0min | 0.2% | $0.19 | 0.10% |
@@ -742,17 +742,17 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | mid-run-module-restructure | powershell | opus47-1m-high-cli2.1.132 | 1 | 2.0min | 0.2% | $0.50 | 0.25% |
 | act-push-debug-loops | bash | haiku45-200k-cli2.1.132 | 3 | 5.1min | 0.4% | $0.53 | 0.26% |
 | repeated-test-reruns | typescript-bun | sonnet46-200k-cli2.1.132 | 4 | 3.3min | 0.3% | $0.61 | 0.30% |
-| repeated-test-reruns | bash | haiku45-200k-cli2.1.132 | 5 | 6.3min | 0.6% | $0.64 | 0.32% |
+| repeated-test-reruns | bash | haiku45-200k-cli2.1.132 | 5 | 6.3min | 0.5% | $0.64 | 0.32% |
 | fixture-rework | bash | sonnet46-200k-cli2.1.132 | 3 | 4.5min | 0.4% | $0.67 | 0.33% |
-| act-push-debug-loops | powershell-tool | haiku45-200k-cli2.1.132 | 5 | 12.8min | 1.1% | $0.70 | 0.35% |
+| act-push-debug-loops | powershell-tool | haiku45-200k-cli2.1.132 | 5 | 12.8min | 1.1% | $0.70 | 0.34% |
 | repeated-test-reruns | typescript-bun | opus47-1m-high-cli2.1.132 | 2 | 2.7min | 0.2% | $0.73 | 0.36% |
 | ts-type-error-fix-cycles | typescript-bun | haiku45-200k-cli2.1.132 | 6 | 8.8min | 0.8% | $0.85 | 0.42% |
-| repeated-test-reruns | typescript-bun | haiku45-200k-cli2.1.132 | 6 | 8.7min | 0.8% | $0.88 | 0.44% |
+| repeated-test-reruns | typescript-bun | haiku45-200k-cli2.1.132 | 6 | 8.7min | 0.8% | $0.88 | 0.43% |
 | fixture-rework | powershell-tool | opus47-1m-high-cli2.1.132 | 1 | 3.2min | 0.3% | $1.18 | 0.58% |
 | ts-type-error-fix-cycles | typescript-bun | opus46-200k-cli2.1.132 | 7 | 8.8min | 0.8% | $1.84 | 0.91% |
-| ts-type-error-fix-cycles | typescript-bun | sonnet46-200k-cli2.1.132 | 7 | 10.6min | 0.9% | $1.88 | 0.93% |
-| fixture-rework | bash | opus46-200k-cli2.1.132 | 5 | 9.8min | 0.8% | $2.41 | 1.19% |
-| ts-type-error-fix-cycles | typescript-bun | opus47-1m-high-cli2.1.132 | 5 | 11.4min | 1.0% | $3.45 | 1.71% |
+| ts-type-error-fix-cycles | typescript-bun | sonnet46-200k-cli2.1.132 | 7 | 10.6min | 0.9% | $1.88 | 0.92% |
+| fixture-rework | bash | opus46-200k-cli2.1.132 | 5 | 9.8min | 0.8% | $2.41 | 1.18% |
+| ts-type-error-fix-cycles | typescript-bun | opus47-1m-high-cli2.1.132 | 5 | 11.4min | 1.0% | $3.45 | 1.70% |
 
 </details>
 
@@ -796,7 +796,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | repeated-test-reruns | typescript-bun | opus47-1m-high-cli2.1.132 | 2 | 2.7min | 0.2% | $0.73 | 0.36% |
 | act-push-debug-loops | bash | sonnet46-200k-cli2.1.132 | 2 | 1.2min | 0.1% | $0.15 | 0.07% |
 | fixture-rework | bash | haiku45-200k-cli2.1.132 | 2 | 2.0min | 0.2% | $0.19 | 0.10% |
-| fixture-rework | default | haiku45-200k-cli2.1.132 | 2 | 1.8min | 0.2% | $0.17 | 0.09% |
+| fixture-rework | default | haiku45-200k-cli2.1.132 | 2 | 1.8min | 0.2% | $0.17 | 0.08% |
 | fixture-rework | default | opus46-200k-cli2.1.132 | 2 | 1.8min | 0.2% | $0.38 | 0.19% |
 | fixture-rework | powershell | opus47-1m-high-cli2.1.132 | 2 | 1.0min | 0.1% | $0.28 | 0.14% |
 | actionlint-fix-cycles | default | haiku45-200k-cli2.1.132 | 2 | 2.3min | 0.2% | $0.22 | 0.11% |
@@ -811,14 +811,14 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | repeated-test-reruns | powershell | haiku45-200k-cli2.1.132 | 4 | 5.3min | 0.5% | $0.33 | 0.16% |
 | repeated-test-reruns | typescript-bun | sonnet46-200k-cli2.1.132 | 4 | 3.3min | 0.3% | $0.61 | 0.30% |
 | act-push-debug-loops | typescript-bun | haiku45-200k-cli2.1.132 | 4 | 2.7min | 0.2% | $0.22 | 0.11% |
-| repeated-test-reruns | bash | haiku45-200k-cli2.1.132 | 5 | 6.3min | 0.6% | $0.64 | 0.32% |
-| ts-type-error-fix-cycles | typescript-bun | opus47-1m-high-cli2.1.132 | 5 | 11.4min | 1.0% | $3.45 | 1.71% |
-| act-push-debug-loops | powershell-tool | haiku45-200k-cli2.1.132 | 5 | 12.8min | 1.1% | $0.70 | 0.35% |
-| fixture-rework | bash | opus46-200k-cli2.1.132 | 5 | 9.8min | 0.8% | $2.41 | 1.19% |
-| repeated-test-reruns | typescript-bun | haiku45-200k-cli2.1.132 | 6 | 8.7min | 0.8% | $0.88 | 0.44% |
+| repeated-test-reruns | bash | haiku45-200k-cli2.1.132 | 5 | 6.3min | 0.5% | $0.64 | 0.32% |
+| ts-type-error-fix-cycles | typescript-bun | opus47-1m-high-cli2.1.132 | 5 | 11.4min | 1.0% | $3.45 | 1.70% |
+| act-push-debug-loops | powershell-tool | haiku45-200k-cli2.1.132 | 5 | 12.8min | 1.1% | $0.70 | 0.34% |
+| fixture-rework | bash | opus46-200k-cli2.1.132 | 5 | 9.8min | 0.8% | $2.41 | 1.18% |
+| repeated-test-reruns | typescript-bun | haiku45-200k-cli2.1.132 | 6 | 8.7min | 0.8% | $0.88 | 0.43% |
 | ts-type-error-fix-cycles | typescript-bun | haiku45-200k-cli2.1.132 | 6 | 8.8min | 0.8% | $0.85 | 0.42% |
 | ts-type-error-fix-cycles | typescript-bun | opus46-200k-cli2.1.132 | 7 | 8.8min | 0.8% | $1.84 | 0.91% |
-| ts-type-error-fix-cycles | typescript-bun | sonnet46-200k-cli2.1.132 | 7 | 10.6min | 0.9% | $1.88 | 0.93% |
+| ts-type-error-fix-cycles | typescript-bun | sonnet46-200k-cli2.1.132 | 7 | 10.6min | 0.9% | $1.88 | 0.92% |
 
 </details>
 
@@ -847,10 +847,10 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | Language | Model | Runs | Traps | Time Lost | % of Time | $ Lost | % of $ |
 |------|-------|------|-------|-----------|-----------|--------|--------|
 | bash | haiku45-200k-cli2.1.131 | 1 | 2 | 4.9min | 0.4% | $0.23 | 0.11% |
-| bash | haiku45-200k-cli2.1.132 | 6 | 12 | 15.5min | 1.3% | $1.57 | 0.78% |
-| bash | opus46-200k-cli2.1.132 | 7 | 7 | 13.4min | 1.2% | $2.98 | 1.48% |
-| bash | opus47-1m-high-cli2.1.132 | 5 | 1 | 0.8min | 0.1% | $0.24 | 0.12% |
-| bash | sonnet46-200k-cli2.1.132 | 7 | 8 | 8.7min | 0.8% | $1.23 | 0.61% |
+| bash | haiku45-200k-cli2.1.132 | 6 | 12 | 15.5min | 1.3% | $1.57 | 0.77% |
+| bash | opus46-200k-cli2.1.132 | 7 | 7 | 13.4min | 1.2% | $2.98 | 1.47% |
+| bash | opus47-1m-high-cli2.1.132 | 6 | 1 | 0.8min | 0.1% | $0.24 | 0.12% |
+| bash | sonnet46-200k-cli2.1.132 | 7 | 8 | 8.7min | 0.8% | $1.23 | 0.60% |
 | default | haiku45-200k-cli2.1.131 | 2 | 2 | 1.1min | 0.1% | $0.08 | 0.04% |
 | default | haiku45-200k-cli2.1.132 | 5 | 5 | 4.4min | 0.4% | $0.42 | 0.21% |
 | default | opus46-200k-cli2.1.132 | 7 | 2 | 1.8min | 0.2% | $0.38 | 0.19% |
@@ -859,18 +859,18 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | powershell | haiku45-200k-cli2.1.131 | 1 | 3 | 9.1min | 0.8% | $0.64 | 0.32% |
 | powershell | haiku45-200k-cli2.1.132 | 6 | 7 | 9.2min | 0.8% | $0.67 | 0.33% |
 | powershell | opus46-200k-cli2.1.132 | 7 | 2 | 1.8min | 0.2% | $0.37 | 0.18% |
-| powershell | opus47-1m-high-cli2.1.132 | 6 | 4 | 3.7min | 0.3% | $0.94 | 0.47% |
+| powershell | opus47-1m-high-cli2.1.132 | 6 | 4 | 3.7min | 0.3% | $0.94 | 0.46% |
 | powershell | sonnet46-200k-cli2.1.132 | 7 | 1 | 1.3min | 0.1% | $0.26 | 0.13% |
 | powershell-tool | haiku45-200k-cli2.1.131 | 1 | 2 | 1.7min | 0.1% | $0.09 | 0.04% |
 | powershell-tool | haiku45-200k-cli2.1.132 | 6 | 11 | 21.5min | 1.9% | $1.17 | 0.58% |
 | powershell-tool | opus46-200k-cli2.1.132 | 7 | 0 | 0.0min | 0.0% | $0.00 | 0.00% |
 | powershell-tool | opus47-1m-high-cli2.1.132 | 5 | 2 | 4.2min | 0.4% | $1.54 | 0.76% |
 | powershell-tool | sonnet46-200k-cli2.1.132 | 7 | 3 | 2.7min | 0.2% | $0.36 | 0.18% |
-| typescript-bun | haiku45-200k-cli2.1.131 | 1 | 3 | 4.0min | 0.4% | $0.30 | 0.15% |
-| typescript-bun | haiku45-200k-cli2.1.132 | 6 | 19 | 24.8min | 2.2% | $2.31 | 1.15% |
-| typescript-bun | opus46-200k-cli2.1.132 | 7 | 8 | 9.5min | 0.8% | $1.97 | 0.98% |
-| typescript-bun | opus47-1m-high-cli2.1.132 | 5 | 7 | 14.1min | 1.2% | $4.18 | 2.07% |
-| typescript-bun | sonnet46-200k-cli2.1.132 | 7 | 12 | 14.4min | 1.3% | $2.59 | 1.29% |
+| typescript-bun | haiku45-200k-cli2.1.131 | 1 | 3 | 4.0min | 0.3% | $0.30 | 0.15% |
+| typescript-bun | haiku45-200k-cli2.1.132 | 6 | 19 | 24.8min | 2.1% | $2.31 | 1.14% |
+| typescript-bun | opus46-200k-cli2.1.132 | 7 | 8 | 9.5min | 0.8% | $1.97 | 0.97% |
+| typescript-bun | opus47-1m-high-cli2.1.132 | 5 | 7 | 14.1min | 1.2% | $4.18 | 2.06% |
+| typescript-bun | sonnet46-200k-cli2.1.132 | 7 | 12 | 14.4min | 1.2% | $2.59 | 1.28% |
 
 
 <details>
@@ -880,7 +880,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 |------|-------|------|-------|-----------|-----------|--------|--------|
 | powershell-tool | opus46-200k-cli2.1.132 | 7 | 0 | 0.0min | 0.0% | $0.00 | 0.00% |
 | default | opus47-1m-high-cli2.1.132 | 6 | 1 | 0.7min | 0.1% | $0.19 | 0.09% |
-| bash | opus47-1m-high-cli2.1.132 | 5 | 1 | 0.8min | 0.1% | $0.24 | 0.12% |
+| bash | opus47-1m-high-cli2.1.132 | 6 | 1 | 0.8min | 0.1% | $0.24 | 0.12% |
 | default | haiku45-200k-cli2.1.131 | 2 | 2 | 1.1min | 0.1% | $0.08 | 0.04% |
 | powershell | sonnet46-200k-cli2.1.132 | 7 | 1 | 1.3min | 0.1% | $0.26 | 0.13% |
 | powershell-tool | haiku45-200k-cli2.1.131 | 1 | 2 | 1.7min | 0.1% | $0.09 | 0.04% |
@@ -888,21 +888,21 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | default | opus46-200k-cli2.1.132 | 7 | 2 | 1.8min | 0.2% | $0.38 | 0.19% |
 | powershell | opus46-200k-cli2.1.132 | 7 | 2 | 1.8min | 0.2% | $0.37 | 0.18% |
 | powershell-tool | sonnet46-200k-cli2.1.132 | 7 | 3 | 2.7min | 0.2% | $0.36 | 0.18% |
-| powershell | opus47-1m-high-cli2.1.132 | 6 | 4 | 3.7min | 0.3% | $0.94 | 0.47% |
-| typescript-bun | haiku45-200k-cli2.1.131 | 1 | 3 | 4.0min | 0.4% | $0.30 | 0.15% |
+| powershell | opus47-1m-high-cli2.1.132 | 6 | 4 | 3.7min | 0.3% | $0.94 | 0.46% |
+| typescript-bun | haiku45-200k-cli2.1.131 | 1 | 3 | 4.0min | 0.3% | $0.30 | 0.15% |
 | powershell-tool | opus47-1m-high-cli2.1.132 | 5 | 2 | 4.2min | 0.4% | $1.54 | 0.76% |
 | default | haiku45-200k-cli2.1.132 | 5 | 5 | 4.4min | 0.4% | $0.42 | 0.21% |
 | bash | haiku45-200k-cli2.1.131 | 1 | 2 | 4.9min | 0.4% | $0.23 | 0.11% |
-| bash | sonnet46-200k-cli2.1.132 | 7 | 8 | 8.7min | 0.8% | $1.23 | 0.61% |
+| bash | sonnet46-200k-cli2.1.132 | 7 | 8 | 8.7min | 0.8% | $1.23 | 0.60% |
 | powershell | haiku45-200k-cli2.1.131 | 1 | 3 | 9.1min | 0.8% | $0.64 | 0.32% |
 | powershell | haiku45-200k-cli2.1.132 | 6 | 7 | 9.2min | 0.8% | $0.67 | 0.33% |
-| typescript-bun | opus46-200k-cli2.1.132 | 7 | 8 | 9.5min | 0.8% | $1.97 | 0.98% |
-| bash | opus46-200k-cli2.1.132 | 7 | 7 | 13.4min | 1.2% | $2.98 | 1.48% |
-| typescript-bun | opus47-1m-high-cli2.1.132 | 5 | 7 | 14.1min | 1.2% | $4.18 | 2.07% |
-| typescript-bun | sonnet46-200k-cli2.1.132 | 7 | 12 | 14.4min | 1.3% | $2.59 | 1.29% |
-| bash | haiku45-200k-cli2.1.132 | 6 | 12 | 15.5min | 1.3% | $1.57 | 0.78% |
+| typescript-bun | opus46-200k-cli2.1.132 | 7 | 8 | 9.5min | 0.8% | $1.97 | 0.97% |
+| bash | opus46-200k-cli2.1.132 | 7 | 7 | 13.4min | 1.2% | $2.98 | 1.47% |
+| typescript-bun | opus47-1m-high-cli2.1.132 | 5 | 7 | 14.1min | 1.2% | $4.18 | 2.06% |
+| typescript-bun | sonnet46-200k-cli2.1.132 | 7 | 12 | 14.4min | 1.2% | $2.59 | 1.28% |
+| bash | haiku45-200k-cli2.1.132 | 6 | 12 | 15.5min | 1.3% | $1.57 | 0.77% |
 | powershell-tool | haiku45-200k-cli2.1.132 | 6 | 11 | 21.5min | 1.9% | $1.17 | 0.58% |
-| typescript-bun | haiku45-200k-cli2.1.132 | 6 | 19 | 24.8min | 2.2% | $2.31 | 1.15% |
+| typescript-bun | haiku45-200k-cli2.1.132 | 6 | 19 | 24.8min | 2.1% | $2.31 | 1.14% |
 
 </details>
 
@@ -916,26 +916,26 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | powershell-tool | haiku45-200k-cli2.1.131 | 1 | 2 | 1.7min | 0.1% | $0.09 | 0.04% |
 | default | opus47-1m-high-cli2.1.132 | 6 | 1 | 0.7min | 0.1% | $0.19 | 0.09% |
 | bash | haiku45-200k-cli2.1.131 | 1 | 2 | 4.9min | 0.4% | $0.23 | 0.11% |
-| bash | opus47-1m-high-cli2.1.132 | 5 | 1 | 0.8min | 0.1% | $0.24 | 0.12% |
+| bash | opus47-1m-high-cli2.1.132 | 6 | 1 | 0.8min | 0.1% | $0.24 | 0.12% |
 | powershell | sonnet46-200k-cli2.1.132 | 7 | 1 | 1.3min | 0.1% | $0.26 | 0.13% |
 | default | sonnet46-200k-cli2.1.132 | 7 | 2 | 1.7min | 0.1% | $0.28 | 0.14% |
-| typescript-bun | haiku45-200k-cli2.1.131 | 1 | 3 | 4.0min | 0.4% | $0.30 | 0.15% |
+| typescript-bun | haiku45-200k-cli2.1.131 | 1 | 3 | 4.0min | 0.3% | $0.30 | 0.15% |
 | powershell-tool | sonnet46-200k-cli2.1.132 | 7 | 3 | 2.7min | 0.2% | $0.36 | 0.18% |
 | powershell | opus46-200k-cli2.1.132 | 7 | 2 | 1.8min | 0.2% | $0.37 | 0.18% |
 | default | opus46-200k-cli2.1.132 | 7 | 2 | 1.8min | 0.2% | $0.38 | 0.19% |
 | default | haiku45-200k-cli2.1.132 | 5 | 5 | 4.4min | 0.4% | $0.42 | 0.21% |
 | powershell | haiku45-200k-cli2.1.131 | 1 | 3 | 9.1min | 0.8% | $0.64 | 0.32% |
 | powershell | haiku45-200k-cli2.1.132 | 6 | 7 | 9.2min | 0.8% | $0.67 | 0.33% |
-| powershell | opus47-1m-high-cli2.1.132 | 6 | 4 | 3.7min | 0.3% | $0.94 | 0.47% |
+| powershell | opus47-1m-high-cli2.1.132 | 6 | 4 | 3.7min | 0.3% | $0.94 | 0.46% |
 | powershell-tool | haiku45-200k-cli2.1.132 | 6 | 11 | 21.5min | 1.9% | $1.17 | 0.58% |
-| bash | sonnet46-200k-cli2.1.132 | 7 | 8 | 8.7min | 0.8% | $1.23 | 0.61% |
+| bash | sonnet46-200k-cli2.1.132 | 7 | 8 | 8.7min | 0.8% | $1.23 | 0.60% |
 | powershell-tool | opus47-1m-high-cli2.1.132 | 5 | 2 | 4.2min | 0.4% | $1.54 | 0.76% |
-| bash | haiku45-200k-cli2.1.132 | 6 | 12 | 15.5min | 1.3% | $1.57 | 0.78% |
-| typescript-bun | opus46-200k-cli2.1.132 | 7 | 8 | 9.5min | 0.8% | $1.97 | 0.98% |
-| typescript-bun | haiku45-200k-cli2.1.132 | 6 | 19 | 24.8min | 2.2% | $2.31 | 1.15% |
-| typescript-bun | sonnet46-200k-cli2.1.132 | 7 | 12 | 14.4min | 1.3% | $2.59 | 1.29% |
-| bash | opus46-200k-cli2.1.132 | 7 | 7 | 13.4min | 1.2% | $2.98 | 1.48% |
-| typescript-bun | opus47-1m-high-cli2.1.132 | 5 | 7 | 14.1min | 1.2% | $4.18 | 2.07% |
+| bash | haiku45-200k-cli2.1.132 | 6 | 12 | 15.5min | 1.3% | $1.57 | 0.77% |
+| typescript-bun | opus46-200k-cli2.1.132 | 7 | 8 | 9.5min | 0.8% | $1.97 | 0.97% |
+| typescript-bun | haiku45-200k-cli2.1.132 | 6 | 19 | 24.8min | 2.1% | $2.31 | 1.14% |
+| typescript-bun | sonnet46-200k-cli2.1.132 | 7 | 12 | 14.4min | 1.2% | $2.59 | 1.28% |
+| bash | opus46-200k-cli2.1.132 | 7 | 7 | 13.4min | 1.2% | $2.98 | 1.47% |
+| typescript-bun | opus47-1m-high-cli2.1.132 | 5 | 7 | 14.1min | 1.2% | $4.18 | 2.06% |
 
 </details>
 
@@ -944,7 +944,7 @@ Every hook fire (hit or miss) costs execution time for the syntax/type checker.
 | Status | Runs | $ Saved | % of $ |
 |--------|------|---------|--------|
 | Full hit (100%) | 0 | $0.00 | 0.00% |
-| Partial | 130 | $8.21 | 4.08% |
+| Partial | 131 | $8.32 | 4.10% |
 | Miss | 2 | $0.00 | 0.00% |
 
 ## Test Quality Evaluation
@@ -957,7 +957,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 |------|-------|-----------|----------------|-----------------|---------------------|
 | bash | haiku45-200k | 14.1 | 20.3 | 1.4 | 1.12 |
 | bash | opus46-200k | 23.0 | 42.9 | 1.9 | 0.71 |
-| bash | opus47-1m-high | 27.6 | 42.8 | 1.6 | 0.87 |
+| bash | opus47-1m-high | 27.5 | 48.3 | 1.8 | 0.85 |
 | bash | sonnet46-200k | 23.0 | 42.0 | 1.8 | 0.76 |
 | default | haiku45-200k | 14.7 | 28.4 | 1.9 | 1.19 |
 | default | opus46-200k | 10.3 | 27.7 | 2.7 | 1.88 |
@@ -989,7 +989,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | powershell-tool | sonnet46-200k | 32.0 | 47.6 | 1.5 | 0.96 |
 | typescript-bun | opus47-1m-high | 31.6 | 62.0 | 2.0 | 1.88 |
 | powershell-tool | opus47-1m-high | 30.4 | 52.0 | 1.7 | 1.02 |
-| bash | opus47-1m-high | 27.6 | 42.8 | 1.6 | 0.87 |
+| bash | opus47-1m-high | 27.5 | 48.3 | 1.8 | 0.85 |
 | powershell | opus47-1m-high | 26.0 | 45.0 | 1.7 | 2.83 |
 | bash | opus46-200k | 23.0 | 42.9 | 1.9 | 0.71 |
 | bash | sonnet46-200k | 23.0 | 42.0 | 1.8 | 0.76 |
@@ -1017,13 +1017,13 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | powershell | opus46-200k | 36.3 | 54.6 | 1.5 | 1.34 |
 | powershell-tool | opus47-1m-high | 30.4 | 52.0 | 1.7 | 1.02 |
 | default | sonnet46-200k | 36.1 | 51.6 | 1.4 | 2.11 |
+| bash | opus47-1m-high | 27.5 | 48.3 | 1.8 | 0.85 |
 | powershell-tool | sonnet46-200k | 32.0 | 47.6 | 1.5 | 0.96 |
 | typescript-bun | haiku45-200k | 21.6 | 47.0 | 2.2 | 1.11 |
 | powershell | opus47-1m-high | 26.0 | 45.0 | 1.7 | 2.83 |
 | powershell-tool | opus46-200k | 20.3 | 44.4 | 2.2 | 0.73 |
 | default | opus47-1m-high | 20.2 | 43.2 | 2.1 | 1.28 |
 | bash | opus46-200k | 23.0 | 42.9 | 1.9 | 0.71 |
-| bash | opus47-1m-high | 27.6 | 42.8 | 1.6 | 0.87 |
 | bash | sonnet46-200k | 23.0 | 42.0 | 1.8 | 0.76 |
 | powershell-tool | haiku45-200k | 12.9 | 28.7 | 2.2 | 0.64 |
 | default | haiku45-200k | 14.7 | 28.4 | 1.9 | 1.19 |
@@ -1052,7 +1052,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | powershell-tool | opus47-1m-high | 30.4 | 52.0 | 1.7 | 1.02 |
 | powershell-tool | sonnet46-200k | 32.0 | 47.6 | 1.5 | 0.96 |
 | typescript-bun | opus46-200k | 22.7 | 55.1 | 2.4 | 0.92 |
-| bash | opus47-1m-high | 27.6 | 42.8 | 1.6 | 0.87 |
+| bash | opus47-1m-high | 27.5 | 48.3 | 1.8 | 0.85 |
 | bash | sonnet46-200k | 23.0 | 42.0 | 1.8 | 0.76 |
 | powershell-tool | opus46-200k | 20.3 | 44.4 | 2.2 | 0.73 |
 | bash | opus46-200k | 23.0 | 42.9 | 1.9 | 0.71 |
@@ -1199,6 +1199,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Environment Matrix Generator | typescript-bun | opus47-1m-high | 25 | 64 | 2.6 | 590 | 194 | 3.04 |
 | Artifact Cleanup Script | default | opus47-1m-high | 24 | 55 | 2.3 | 343 | 500 | 0.69 |
 | Artifact Cleanup Script | powershell | opus47-1m-high | 11 | 38 | 3.5 | 210 | 557 | 0.38 |
+| Artifact Cleanup Script | bash | opus47-1m-high | 27 | 76 | 2.8 | 275 | 363 | 0.76 |
 
 </details>
 
@@ -1210,6 +1211,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 |------|----------|-------|----------|-------|--------|------|-----------|--------|--------|
 | Artifact Cleanup Script | bash | haiku45-200k | 7.6min | 88 | 7 | $0.93 | — | bash | ok |
 | Artifact Cleanup Script | bash | opus46-200k | 5.2min | 40 | 3 | $1.48 | — | bash | ok |
+| Artifact Cleanup Script | bash | opus47-1m-high | 5.7min | 28 | 3 | $1.59 | — | bash | ok |
 | Artifact Cleanup Script | bash | sonnet46-200k | 8.4min | 36 | 5 | $1.42 | — | bash | ok |
 | Artifact Cleanup Script | default | haiku45-200k | 4.4min | 32 | 3 | $0.37 | — | python | ok |
 | Artifact Cleanup Script | default | opus46-200k | 8.3min | 34 | 3 | $1.61 | — | python | ok |
@@ -1424,6 +1426,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Dependency License Checker | default | sonnet46-200k | 9.0min | 41 | 4 | $1.53 | — | python | ok |
 | Test Results Aggregator | bash | opus46-200k | 19.3min | 47 | 7 | $1.54 | — | bash | ok |
 | Artifact Cleanup Script | default | sonnet46-200k | 11.5min | 39 | 3 | $1.55 | — | python | ok |
+| Artifact Cleanup Script | bash | opus47-1m-high | 5.7min | 28 | 3 | $1.59 | — | bash | ok |
 | Test Results Aggregator | powershell-tool | opus46-200k | 8.5min | 24 | 1 | $1.59 | — | powershell | ok |
 | Dependency License Checker | bash | opus46-200k | 6.4min | 57 | 7 | $1.59 | — | bash | ok |
 | Artifact Cleanup Script | default | opus46-200k | 8.3min | 34 | 3 | $1.61 | — | python | ok |
@@ -1520,6 +1523,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | PR Label Assigner | typescript-bun | opus46-200k | 5.5min | 34 | 0 | $0.98 | — | typescript | ok |
 | Semantic Version Bumper | default | opus46-200k | 5.5min | 37 | 1 | $1.25 | — | python | ok |
 | Semantic Version Bumper | bash | sonnet46-200k | 5.7min | 30 | 1 | $0.88 | — | bash | ok |
+| Artifact Cleanup Script | bash | opus47-1m-high | 5.7min | 28 | 3 | $1.59 | — | bash | ok |
 | Semantic Version Bumper | bash | opus46-200k | 5.9min | 53 | 3 | $1.52 | — | bash | ok |
 | Environment Matrix Generator | typescript-bun | opus46-200k | 6.0min | 29 | 3 | $1.16 | — | typescript | ok |
 | Semantic Version Bumper | powershell | opus46-200k | 6.0min | 28 | 2 | $1.12 | — | powershell | ok |
@@ -1727,6 +1731,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Artifact Cleanup Script | powershell | haiku45-200k | 5.5min | 46 | 3 | $0.46 | — | powershell | ok |
 | Secret Rotation Validator | powershell-tool | sonnet46-200k | 10.3min | 33 | 3 | $1.28 | — | powershell | ok |
 | Test Results Aggregator | bash | opus47-1m-high | 20.0min | 74 | 3 | $4.92 | — | bash | ok |
+| Artifact Cleanup Script | bash | opus47-1m-high | 5.7min | 28 | 3 | $1.59 | — | bash | ok |
 | Semantic Version Bumper | default | sonnet46-200k | 8.0min | 29 | 4 | $1.05 | — | python | ok |
 | Semantic Version Bumper | typescript-bun | haiku45-200k | 8.5min | 55 | 4 | $0.63 | — | typescript | ok |
 | PR Label Assigner | default | sonnet46-200k | 11.4min | 45 | 4 | $1.66 | — | python | ok |
@@ -1780,6 +1785,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Semantic Version Bumper | powershell | opus46-200k | 6.0min | 28 | 2 | $1.12 | — | powershell | ok |
 | Test Results Aggregator | powershell | sonnet46-200k | 9.2min | 28 | 0 | $1.13 | — | powershell | ok |
 | Dependency License Checker | powershell-tool | opus47-1m-high | 7.3min | 28 | 0 | $1.62 | — | powershell | ok |
+| Artifact Cleanup Script | bash | opus47-1m-high | 5.7min | 28 | 3 | $1.59 | — | bash | ok |
 | Semantic Version Bumper | default | sonnet46-200k | 8.0min | 29 | 4 | $1.05 | — | python | ok |
 | PR Label Assigner | powershell | sonnet46-200k | 12.3min | 29 | 2 | $1.46 | — | powershell | ok |
 | Dependency License Checker | default | opus46-200k | 4.2min | 29 | 3 | $0.91 | — | python | ok |
@@ -2039,6 +2045,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Environment Matrix Generator | typescript-bun | opus47-1m-high | 8.1min | 48 | 0 | $2.51 | — | typescript | ok |
 | Artifact Cleanup Script | default | opus47-1m-high | 8.1min | 40 | 0 | $2.68 | — | python | ok |
 | Artifact Cleanup Script | powershell | opus47-1m-high | 9.2min | 42 | 0 | $2.86 | — | powershell | ok |
+| Artifact Cleanup Script | bash | opus47-1m-high | 5.7min | 28 | 3 | $1.59 | — | bash | ok |
 
 </details>
 
@@ -2046,7 +2053,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 
 ### Tiers
 
-- **Duration bands:** **A+** ≤1.08×, **A** ≤1.17×, **A-** ≤1.27×, **B+** ≤1.37×, **B** ≤1.49×, **B-** ≤1.61×, **C+** ≤1.74×, **C** ≤1.89×, **C-** ≤2.05×, **D+** ≤2.21×, **D** ≤2.40×, **D-** ≤2.60×, **F** >2.60×
+- **Duration bands:** **A+** ≤1.08×, **A** ≤1.17×, **A-** ≤1.26×, **B+** ≤1.36×, **B** ≤1.47×, **B-** ≤1.59×, **C+** ≤1.72×, **C** ≤1.86×, **C-** ≤2.01×, **D+** ≤2.17×, **D** ≤2.34×, **D-** ≤2.53×, **F** >2.53×
 - **Cost bands:** **A+** ≤1.21×, **A** ≤1.46×, **A-** ≤1.76×, **B+** ≤2.13×, **B** ≤2.57×, **B-** ≤3.10×, **C+** ≤3.74×, **C** ≤4.52×, **C-** ≤5.46×, **D+** ≤6.59×, **D** ≤7.96×, **D-** ≤9.61×, **F** >9.61×
 
 *Tests/Workflow Craft bands are absolute Overall score bands:* **A+** ≥4.7, **A** ≥4.4, **A-** ≥4.1, **B+** ≥3.8, **B** ≥3.5, **B-** ≥3.2, **C+** ≥2.9, **C** ≥2.6, **C-** ≥2.3, **D+** ≥2.0, **D** ≥1.7, **D-** ≥1.4, **F** <1.4, `—` = no data.*
