@@ -1,0 +1,141 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test Matrix Generator
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run unit tests
+        run: bun test
+
+      - name: Test basic matrix generation
+        run: |
+          CONFIG_FILE=$(mktemp)
+          cat > "$CONFIG_FILE" << 'EOF'
+          {
+            "os": ["ubuntu-latest", "macos-latest"],
+            "language": ["node@18", "node@20"],
+            "maxParallel": 4,
+            "failFast": false
+          }
+          EOF
+          OUTPUT=$(bun run cli.ts "$CONFIG_FILE")
+          echo "Generated matrix:"
+          echo "$OUTPUT" | jq .
+
+      - name: Test matrix with features and exclude
+        run: |
+          CONFIG_FILE=$(mktemp)
+          cat > "$CONFIG_FILE" << 'EOF'
+          {
+            "os": ["ubuntu-latest"],
+            "language": ["node@18", "node@20"],
+            "features": ["esm", "cjs"],
+            "exclude": [{"os": "ubuntu-latest", "language": "node@18", "feature": "esm"}],
+            "maxParallel": 2,
+            "failFast": true
+          }
+          EOF
+          OUTPUT=$(bun run cli.ts "$CONFIG_FILE")
+          echo "Advanced matrix output:"
+          echo "$OUTPUT" | jq .
+
+          # Verify exclude worked
+          EXCLUDED_COUNT=$(echo "$OUTPUT" | jq '[.include[] | select(.os=="ubuntu-latest" and .language=="node@18" and .feature=="esm")] | length')
+          if [ "$EXCLUDED_COUNT" -ne 0 ]; then
+            echo "ERROR: Excluded combination still present in matrix"
+            exit 1
+          fi
+          echo "✓ Exclusion rules working correctly"
+
+      - name: Test matrix size validation
+        run: |
+          CONFIG_FILE=$(mktemp)
+          cat > "$CONFIG_FILE" << 'EOF'
+          {
+            "os": ["ubuntu-latest", "macos-latest", "windows-latest"],
+            "language": ["node@16", "node@18", "node@20"],
+            "maxSize": 5,
+            "maxParallel": 10,
+            "failFast": false
+          }
+          EOF
+
+          # This should fail with error
+          if bun run cli.ts "$CONFIG_FILE" 2>&1 | grep -q "exceeds maximum matrix size"; then
+            echo "✓ Matrix size validation working"
+          else
+            echo "ERROR: Size validation did not work"
+            exit 1
+          fi
+
+      - name: Test include rules
+        run: |
+          CONFIG_FILE=$(mktemp)
+          cat > "$CONFIG_FILE" << 'EOF'
+          {
+            "os": ["ubuntu-latest"],
+            "language": ["node@18"],
+            "include": [
+              {"os": "windows-latest", "language": "node@20", "experimental": "true"}
+            ],
+            "maxParallel": 10,
+            "failFast": false
+          }
+          EOF
+          OUTPUT=$(bun run cli.ts "$CONFIG_FILE")
+          echo "Matrix with include rules:"
+          echo "$OUTPUT" | jq .
+
+          # Verify include was added
+          INCLUDE_COUNT=$(echo "$OUTPUT" | jq '.include | length')
+          if [ "$INCLUDE_COUNT" -ne 2 ]; then
+            echo "ERROR: Include rule not applied correctly"
+            exit 1
+          fi
+          echo "✓ Include rules working correctly"
+
+      - name: Test JSON output validity
+        run: |
+          CONFIG_FILE=$(mktemp)
+          cat > "$CONFIG_FILE" << 'EOF'
+          {
+            "os": ["ubuntu-latest"],
+            "language": ["node@18", "node@20"],
+            "maxParallel": 10,
+            "failFast": false
+          }
+          EOF
+          OUTPUT=$(bun run cli.ts "$CONFIG_FILE")
+
+          # Verify it's valid JSON
+          if echo "$OUTPUT" | jq empty 2>/dev/null; then
+            echo "✓ Output is valid JSON"
+          else
+            echo "ERROR: Output is not valid JSON"
+            exit 1
+          fi
+
+      - name: Confirm all tests passed
+        run: echo "✅ All matrix generation tests passed successfully"
