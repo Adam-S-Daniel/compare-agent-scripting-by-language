@@ -1,0 +1,321 @@
+[Tool: Bash] ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/
+[Result] total 44
+drwxr-xr-x  4 passp passp  4096 May  7 10:07 .
+drwxr-xr-x 22 passp passp  4096 May  7 10:07 ..
+-rw-r--r--  1 passp passp    40 May  7 10:07 .actrc
+drwxr-xr-x  2 passp passp  4096 May  7 10:07 .claude
+drwxr-xr-x  6 passp passp  4096 May  7 10:07 .git
+-rw-r--r--  1 passp passp 21843 Apr 17 00:12 benchmark-instructions-v4.md
+[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/AGENTS.md 2>/dev/null | head -100
+[Result] # Agent Instructions
+
+All agent-facing instructions live in this file. `CLAUDE.md` contains only a
+reference here. If you are a Claude Code agent, you have already loaded this
+via `CLAUDE.md`. Other agents: read this file directly.
+
+## Build and test
+
+```bash
+# Run unit tests (REQUIRED before every PR)
+pip install pytest  # if not already installed
+python3 -m pytest tests/ -v
+
+# Validate imports
+python3 -c "from runner import main"
+python3 -c "from generate_results import generate_results_md"
+python3 -c "from test_quality import compute_structural_metrics"
+python3 -c "from llm_providers import get_provider"
+
+# Regenerate all reports
+python3 generate_results.py --all
+
+# Run a benchmark (v4, all tasks/modes/models)
+python3 runner.py --tasks 11,12,13,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
+
+# Evaluate test quality (structural metrics only)
+python3 test_quality.py results/2026-04-09_152435
+
+# Evaluate test + deliverable quality with the default panel
+[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/.actrc
+[Result] -P ubuntu-latest=act-ubuntu-pwsh:latest
+[Tool: Bash] which bun && bun --version && which act && act --version && which actionlint && actionlint --version
+[Result] /home/passp/.bun/bin/bun
+1.3.11
+/home/passp/.local/bin/act
+act version 0.2.87
+/home/passp/.local/bin/actionlint
+1.7.12
+installed by downloading from release page
+built with go1.26.1 compiler for linux/amd64
+[Assistant] I'll use TDD to build a dependency license checker. Let me start by creating the project structure with a failing test first.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/package.json", "content": "{\n  \"name\": 
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/package.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/tsconfig.json", "content": "{\n  \"compile
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/tsconfig.json (file state is current in your context — no need to Read it back)
+[Assistant] Now the first failing test (RED): parse a package.json manifest.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/tests/parse.test.ts", "content": "// RED p
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/tests/parse.test.ts (file state is current in your context — no need to Read it back)
+[Tool: Bash] bun test 2>&1 | tail -30
+[Result] bun test v1.3.11 (af24e281)
+
+tests/parse.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '../src/parse.ts' from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/tests/parse.test.ts'
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [15.00ms]
+[Tool: ToolSearch] {"query": "select:TodoWrite", "max_results": 1}
+[Result] {'type': 'tool_reference', 'tool_name': 'TodoWrite'}
+[Tool: TodoWrite] {"todos": [{"content": "Implement parseManifest, parsePackageJson, parseRequirementsTxt (GREEN for parse tests)", "activeForm": "Implementing manifest parsers", "status": "in_progress"}, {"content": "
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Assistant] GREEN: implement parsers.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/src/parse.ts", "content": "// Manifest par
+[Tool: Bash] bun test 2>&1 | tail -20
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/src/parse.ts (file state is current in your context — no need to Read it back)
+[Result] bun test v1.3.11 (af24e281)
+
+ 6 pass
+ 0 fail
+ 7 expect() calls
+Ran 6 tests across 1 file. [31.00ms]
+[Assistant] Parsing is green. Now RED for compliance check.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/tests/compliance.test.ts", "content": "// 
+[Tool: Bash] bun test 2>&1 | tail -15
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/tests/compliance.test.ts (file state is current in your context — no need to Read it back)
+[Result] bun test v1.3.11 (af24e281)
+
+tests/compliance.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '../src/compliance.ts' from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/tests/compliance.test.ts'
+-------------------------------
+
+
+ 6 pass
+ 1 fail
+ 1 error
+ 7 expect() calls
+Ran 7 tests across 2 files. [23.00ms]
+[Assistant] Implement compliance (GREEN).
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/src/compliance.ts", "content": "// Complia
+[Tool: Bash] bun test 2>&1 | tail -10
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/src/compliance.ts (file state is current in your context — no need to Read it back)
+[Result] bun test v1.3.11 (af24e281)
+
+ 10 pass
+ 0 fail
+ 13 expect() calls
+Ran 10 tests across 2 files. [32.00ms]
+[Tool: TodoWrite] {"todos": [{"content": "Implement parseManifest, parsePackageJson, parseRequirementsTxt (GREEN for parse tests)", "activeForm": "Implementing manifest parsers", "status": "completed"}, {"content": "TD
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Assistant] RED: report formatter + CLI tests.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/tests/report.test.ts", "content": "// RED 
+[Tool: Bash] bun test 2>&1 | tail -10
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/tests/report.test.ts (file state is current in your context — no need to Read it back)
+[Result] -------------------------------
+error: Cannot find module '../src/report.ts' from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/tests/report.test.ts'
+-------------------------------
+
+
+ 10 pass
+ 1 fail
+ 1 error
+ 13 expect() calls
+Ran 11 tests across 3 files. [25.00ms]
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/src/report.ts", "content": "// Report form
+[Tool: Bash] bun test 2>&1 | tail -10
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/src/report.ts (file state is current in your context — no need to Read it back)
+[Result] bun test v1.3.11 (af24e281)
+
+ 14 pass
+ 0 fail
+ 20 expect() calls
+Ran 14 tests across 3 files. [62.00ms]
+[Assistant] Now RED for CLI: a small test that runs the CLI as a subprocess against a fixture and a built-in mock-licenses file.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/tests/cli.test.ts", "content": "// RED pha
+[Tool: Bash] bun test tests/cli.test.ts 2>&1 | tail -15
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/tests/cli.test.ts (file state is current in your context — no need to Read it back)
+[Result] 114 |       ], { encoding: "utf8" });
+115 |       expect(r.status).toBe(3);
+                             ^
+error: expect(received).toBe(expected)
+
+Expected: 3
+Received: 1
+
+      at <anonymous> (/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/tests/cli.test.ts:115:24)
+(fail) cli > emits a meaningful error and exit 3 when manifest is missing [13.75ms]
+
+ 0 pass
+ 4 fail
+ 5 expect() calls
+Ran 4 tests across 1 file. [191.00ms]
+[Assistant] RED confirmed. Now implement the CLI.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/src/cli.ts", "content": "// CLI entry poin
+[Tool: Bash] bun test 2>&1 | tail -15
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/src/cli.ts (file state is current in your context — no need to Read it back)
+[Result] bun test v1.3.11 (af24e281)
+
+ 18 pass
+ 0 fail
+ 29 expect() calls
+Ran 18 tests across 4 files. [410.00ms]
+[Assistant] All 18 unit tests pass. Now move to the workflow.
+[Tool: TodoWrite] {"todos": [{"content": "Implement parseManifest, parsePackageJson, parseRequirementsTxt (GREEN for parse tests)", "activeForm": "Implementing manifest parsers", "status": "completed"}, {"content": "TD
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Assistant] Let me check if the act container has bun pre-installed.
+[Tool: Bash] docker run --rm act-ubuntu-pwsh:latest bash -c "which bun || echo 'no bun'; which node || echo 'no node'; which curl"
+[Result] no bun
+/opt/acttoolcache/node/24.15.0/x64/bin/node
+/usr/bin/curl
+[Tool: Bash] mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/.github/workflows /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/tests/fixtures/default
+[Result] (Bash completed with no output)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/tests/fixtures/default/package.json", "con
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/tests/fixtures/default/package.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/tests/fixtures/default/config.json", "cont
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/tests/fixtures/default/config.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/tests/fixtures/default/licenses.json", "co
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/tests/fixtures/default/licenses.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/.github/workflows/dependency-license-check
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/.github/workflows/dependency-license-checker.yml (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/dependency-license-checker.yml 2>&1; echo "exit=$?"
+[Result] exit=0
+[Assistant] Actionlint passes. Now write the workflow structure tests + the act-driven harness.
+[Tool: TodoWrite] {"todos": [{"content": "Implement parseManifest, parsePackageJson, parseRequirementsTxt (GREEN for parse tests)", "activeForm": "Implementing manifest parsers", "status": "completed"}, {"content": "TD
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Assistant] Now write the workflow structure tests and act-driven harness in one file.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/tests/workflow.test.ts", "content": "// Wo
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/tests/workflow.test.ts (file state is current in your context — no need to Read it back)
+[Tool: Bash] echo 'console.log(Bun.YAML?.parse?.("a: 1") ?? "no Bun.YAML"); try { const y = await import("node:yaml"); console.log("node:yaml ok"); } catch (e) { console.log("no node:yaml:", e.message); }' | bun run -
+[Result] {
+  a: 1,
+}
+no node:yaml: No such built-in module: node:yaml
+[Tool: Bash] echo 'console.log(JSON.stringify(Bun.YAML.parse("on:\n  push:\n  pull_request:\njobs: {}"), null, 2));' | bun run -
+[Result] {
+  "on": {
+    "push": null,
+    "pull_request": null
+  },
+  "jobs": {}
+}
+[Assistant] Good — `on` stays as `on` and empty mappings are null. Let me update workflow.test.ts to use Bun.YAML.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/tests/workflow.test.
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/tests/workflow.test.ts has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/tests/workflow.test.
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/tests/workflow.test.ts has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] bun test tests/workflow.test.ts -t "structure" 2>&1 | tail -25
+[Result] bun test v1.3.11 (af24e281)
+
+ 7 pass
+ 3 filtered out
+ 0 fail
+ 12 expect() calls
+Ran 7 tests across 1 file. [239.00ms]
+[Assistant] Structure tests pass. Now run one act case to validate the pipeline. I'll start with the simplest one (approved).
+[Tool: Bash] bun test tests/workflow.test.ts -t "approved" 2>&1 | tail -60
+[Result] bun test v1.3.11 (af24e281)
+
+tests/workflow.test.ts:
+216 |           );
+217 |           const combined = `STDOUT:\n${r.stdout}\nSTDERR:\n${r.stderr}`;
+218 |           appendActResult(spec.name, combined, r.status ?? -1);
+219 | 
+220 |           // 1. act exited successfully.
+221 |           expect(r.status).toBe(0);
+                                 ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/tests/workflow.test.ts:221:28)
+(fail) workflow pipeline (act) > case approved: matches expected output [868.99ms]
+
+ 0 pass
+ 9 filtered out
+ 1 fail
+ 1 expect() calls
+Ran 1 test across 1 file. [966.00ms]
+[Assistant] Failed fast (~900ms). Let me check act-result.txt for the error.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/act-result.txt"}
+[Result] 1	act test run 2026-05-07T14:13:26.501Z
+2	
+3	========================================================================
+4	CASE: approved (act exit=1)
+5	========================================================================
+6	STDOUT:
+7	[Dependency License Checker/Unit tests] ⭐ Run Set up job
+8	[Dependency License Checker/Unit tests] 🚀  Start image=act-ubuntu-pwsh:latest
+9	[Dependency License Checker/Unit tests]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=true
+10	[Dependency License Checker/Unit tests] using DockerAuthConfig authentication for docker pull
+11	[Dependency License Checker/Unit tests] Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+12	[Dependency License Checker/Unit tests]   ❌  Failure - Set up job
+13	[Dependency License Checker/Unit tests] 🏁  Job failed
+14	
+15	STDERR:
+16	time="2026-05-07T10:13:26-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock',
+[Assistant] act is force-pulling. Add `--pull=false` to the args.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/tests/workflow.test.
+[Tool: Bash] bun test tests/workflow.test.ts -t "approved" 2>&1 | tail -40
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/typescript-bun-opus47-1m-high/tests/workflow.test.ts has been updated successfully. (file state is current in your context — no need to Read it back)
+[Result] bun test v1.3.11 (af24e281)
+
+ 1 pass
+ 9 filtered out
+ 0 fail
+ 6 expect() calls
+Ran 1 test across 1 file. [21.46s]
+[Assistant] First act case passes (~21s). Let me check act-result.txt content briefly, then run all 3 cases together.
+[Tool: Bash] grep -E "LICENSE_EXIT_CODE|Job succeeded|APPROVED|DENIED|UNKNOWN|Totals" act-result.txt | head -30
+[Result] [Dependency License Checker/Unit tests] 🏁  Job succeeded
+[Dependency License Checker/License compliance check]   | [APPROVED] left-pad@1.3.0 -> MIT
+[Dependency License Checker/License compliance check]   | [APPROVED] lodash@4.17.21 -> MIT
+[Dependency License Checker/License compliance check]   | Totals: 2 deps, 2 approved, 0 denied, 0 unknown
+[Dependency License Checker/License compliance check]   | LICENSE_EXIT_CODE=0
+[Dependency License Checker/License compliance check] 🏁  Job succeeded
+[Assistant] Output matches expectations. Now run all three act cases plus all unit tests.
+[Tool: Bash] bun test 2>&1 | tail -15
+[Result] bun test v1.3.11 (af24e281)
+
+ 28 pass
+ 0 fail
+ 58 expect() calls
+Ran 28 tests across 5 files. [84.98s]
+[Assistant] All 28 tests pass — 18 unit + 7 structure + 3 act cases.
+[Tool: Bash] grep -c "Job succeeded" act-result.txt; echo "---"; grep -E "CASE:|LICENSE_EXIT_CODE=" act-result.txt; echo "---"; wc -l act-result.txt
+[Result] 6
+---
+CASE: approved (act exit=0)
+[Dependency License Checker/License compliance check]   | LICENSE_EXIT_CODE=0
+CASE: denied (act exit=0)
+[Dependency License Checker/License compliance check]   | LICENSE_EXIT_CODE=1
+CASE: unknown (act exit=0)
+[Dependency License Checker/License compliance check]   | LICENSE_EXIT_CODE=2
+---
+345 act-result.txt
+[Tool: TodoWrite] {"todos": [{"content": "Implement parseManifest, parsePackageJson, parseRequirementsTxt (GREEN for parse tests)", "activeForm": "Implementing manifest parsers", "status": "completed"}, {"content": "TD
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Assistant] All work complete. Summary:
+
+**TDD cycle (RED → GREEN per piece):**
+- `src/parse.ts` — `parsePackageJson`, `parseRequirementsTxt`, `parseManifest`
+- `src/compliance.ts` — `checkCompliance` with injectable `LicenseLookup` (mocked in tests)
+- `src/report.ts` — `formatReport`, `summarize`
+- `src/cli.ts` — argv parsing, JSON loading, exit codes (0 ok / 1 denied / 2 unknown / 3 input error)
+
+**Tests** (28 pass in 85s):
+- 18 unit tests (parse, compliance, report, cli subprocess)
+- 7 workflow structure tests (YAML triggers, jobs, references, actionlint exit 0)
+- 3 act pipeline tests — each spins up a temp git repo with case-specific fixtures and runs `act push --rm`, asserting exact substrings (`[APPROVED] left-pad@1.3.0 -> MIT`, `Totals: ...`, `LICENSE_EXIT_CODE=N`, ≥2 `Job succeeded`)
+
+**Workflow** (`actionlint` exit 0): triggers on push, pull_request, workflow_dispatch, schedule; two jobs (`unit-tests` → `license-check`); installs Bun via curl; reads-only contents permission.
+
+**Artifact**: `act-result.txt` exists (345 lines) with three delimited cases — exit codes 0/1/2 captured, all 6 jobs reported `Job succeeded`.
