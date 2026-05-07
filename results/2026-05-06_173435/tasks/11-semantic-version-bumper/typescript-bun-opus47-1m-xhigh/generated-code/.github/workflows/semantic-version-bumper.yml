@@ -1,0 +1,102 @@
+name: Semantic Version Bumper
+
+# We bump on push and PR to validate, expose a manual trigger so humans can
+# request a bump on demand, and a daily schedule so a stuck/un-bumped main
+# branch surfaces in the Actions tab.
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "If true, do not write the version file or changelog"
+        required: false
+        default: "false"
+  schedule:
+    # 06:30 UTC every day
+    - cron: "30 6 * * *"
+
+# Read-only by default. Bumping the version file in-place lives in this job
+# (we just print it for now); committing back would need contents: write,
+# which we leave off until a release pipeline is wired up.
+permissions:
+  contents: read
+
+jobs:
+  bump:
+    name: Compute next version
+    runs-on: ubuntu-latest
+    env:
+      # The act test harness drops fixture-specific files at the repo root
+      # and the workflow consumes them from these fixed locations.
+      VERSION_FILE: package.json
+      COMMITS_FILE: commits.txt
+      CHANGELOG_FILE: CHANGELOG.md
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL https://bun.sh/install | bash
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+
+      - name: Show Bun version
+        shell: bash
+        run: bun --version
+
+      - name: Run unit tests
+        shell: bash
+        # Restrict to lib + cli tests; the workflow-structure and act tests
+        # depend on actionlint/docker which aren't (and shouldn't be) inside
+        # the workflow's own container.
+        run: bun test tests/lib.test.ts tests/cli.test.ts
+
+      - name: Compute next version
+        id: bump
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -f "$VERSION_FILE" ]; then
+            echo "Version file '$VERSION_FILE' not found in repo root." >&2
+            exit 1
+          fi
+          if [ ! -f "$COMMITS_FILE" ]; then
+            echo "Commits file '$COMMITS_FILE' not found in repo root." >&2
+            exit 1
+          fi
+          DRY_RUN="${{ github.event.inputs.dry_run }}"
+          ARGS=(--version-file "$VERSION_FILE" --commits-file "$COMMITS_FILE" --changelog "$CHANGELOG_FILE" --date "$(date -u +%Y-%m-%d)")
+          if [ "$DRY_RUN" = "true" ]; then
+            ARGS+=(--dry-run)
+          fi
+          OUTPUT=$(bun run src/cli.ts "${ARGS[@]}")
+          echo "$OUTPUT"
+          OLD=$(echo "$OUTPUT" | awk -F= '/^OLD_VERSION=/  {print $2}')
+          NEW=$(echo "$OUTPUT" | awk -F= '/^NEW_VERSION=/  {print $2}')
+          TYPE=$(echo "$OUTPUT" | awk -F= '/^BUMP_TYPE=/   {print $2}')
+          {
+            echo "old_version=$OLD"
+            echo "new_version=$NEW"
+            echo "bump_type=$TYPE"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Write GitHub step summary
+        shell: bash
+        env:
+          OLD_VERSION: ${{ steps.bump.outputs.old_version }}
+          NEW_VERSION: ${{ steps.bump.outputs.new_version }}
+          BUMP_TYPE:   ${{ steps.bump.outputs.bump_type }}
+        run: |
+          {
+            echo "## Semantic Version Bumper"
+            echo ""
+            echo "| Field | Value |"
+            echo "| --- | --- |"
+            echo "| Old version | \`$OLD_VERSION\` |"
+            echo "| New version | \`$NEW_VERSION\` |"
+            echo "| Bump type   | \`$BUMP_TYPE\` |"
+          } >> "$GITHUB_STEP_SUMMARY"
