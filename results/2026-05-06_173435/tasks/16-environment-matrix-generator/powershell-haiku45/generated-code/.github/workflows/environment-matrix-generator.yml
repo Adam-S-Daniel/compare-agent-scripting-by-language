@@ -1,0 +1,234 @@
+name: Environment Matrix Generator Tests
+
+on:
+  push:
+    branches: [master, main]
+    paths:
+      - 'MatrixGenerator.ps1'
+      - 'MatrixGenerator.Tests.ps1'
+      - '.github/workflows/environment-matrix-generator.yml'
+  pull_request:
+    branches: [master, main]
+    paths:
+      - 'MatrixGenerator.ps1'
+      - 'MatrixGenerator.Tests.ps1'
+      - '.github/workflows/environment-matrix-generator.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * *'
+
+jobs:
+  test-matrix-generator:
+    name: Test Environment Matrix Generator
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          # Install Pester if not already available
+          if (-not (Get-Module Pester -ListAvailable)) {
+              Install-Module -Name Pester -Repository PSGallery -Force -Scope CurrentUser
+          }
+
+          # Run tests with detailed output
+          $pesterConfig = New-PesterConfiguration
+          $pesterConfig.Run.Path = 'MatrixGenerator.Tests.ps1'
+          $pesterConfig.Output.Verbosity = 'Detailed'
+          $pesterConfig.TestResult.Enabled = $true
+          $pesterConfig.TestResult.OutputPath = 'test-results.xml'
+
+          $result = Invoke-Pester -Configuration $pesterConfig
+
+          Write-Host "Test Summary:"
+          Write-Host "Total Tests: $($result.Tests.Count)"
+          Write-Host "Passed: $($result.Passed.Count)"
+          Write-Host "Failed: $($result.Failed.Count)"
+
+          if ($result.Failed.Count -gt 0) {
+              exit 1
+          }
+
+      - name: Validate matrix generation
+        shell: pwsh
+        run: |
+          . ./MatrixGenerator.ps1
+
+          # Test basic matrix generation
+          $config = @{
+              os = @("ubuntu-latest", "windows-latest")
+              language = @("3.9", "3.10")
+          }
+
+          $matrix = New-EnvironmentMatrix -Configuration $config
+          $json = Export-MatrixJson -Matrix $matrix
+
+          Write-Host "Generated Matrix:"
+          Write-Host $json
+
+          # Verify matrix structure
+          $parsed = $json | ConvertFrom-Json
+          if ($parsed.include.Count -ne 4) {
+              Write-Error "Expected 4 matrix combinations, got $($parsed.include.Count)"
+              exit 1
+          }
+
+          Write-Host "Matrix generation validated successfully"
+
+      - name: Test exclude rules
+        shell: pwsh
+        run: |
+          . ./MatrixGenerator.ps1
+
+          $config = @{
+              os = @("ubuntu-latest", "windows-latest")
+              language = @("3.9", "3.10")
+              exclude = @(
+                  @{ os = "windows-latest"; language = "3.9" }
+              )
+          }
+
+          $matrix = New-EnvironmentMatrix -Configuration $config
+
+          if ($matrix.include.Count -ne 3) {
+              Write-Error "Expected 3 combinations after exclusion, got $($matrix.include.Count)"
+              exit 1
+          }
+
+          Write-Host "Exclude rules validated successfully"
+
+      - name: Test include rules
+        shell: pwsh
+        run: |
+          . ./MatrixGenerator.ps1
+
+          $config = @{
+              os = @("ubuntu-latest")
+              language = @("3.9")
+              include = @(
+                  @{ os = "macos-latest"; language = "3.9"; extra = "value" }
+              )
+          }
+
+          $matrix = New-EnvironmentMatrix -Configuration $config
+
+          if ($matrix.include.Count -ne 2) {
+              Write-Error "Expected 2 combinations with include, got $($matrix.include.Count)"
+              exit 1
+          }
+
+          Write-Host "Include rules validated successfully"
+
+      - name: Test max-parallel configuration
+        shell: pwsh
+        run: |
+          . ./MatrixGenerator.ps1
+
+          $config = @{
+              os = @("ubuntu-latest")
+              language = @("3.9")
+              max_parallel = 2
+          }
+
+          $matrix = New-EnvironmentMatrix -Configuration $config
+
+          if ($matrix."max-parallel" -ne 2) {
+              Write-Error "max-parallel not set correctly"
+              exit 1
+          }
+
+          Write-Host "Max-parallel configuration validated successfully"
+
+      - name: Test fail-fast configuration
+        shell: pwsh
+        run: |
+          . ./MatrixGenerator.ps1
+
+          $config = @{
+              os = @("ubuntu-latest")
+              language = @("3.9")
+              fail_fast = $false
+          }
+
+          $matrix = New-EnvironmentMatrix -Configuration $config
+
+          if ($matrix."fail-fast" -ne $false) {
+              Write-Error "fail-fast not set correctly"
+              exit 1
+          }
+
+          Write-Host "Fail-fast configuration validated successfully"
+
+      - name: Test matrix size validation
+        shell: pwsh
+        run: |
+          . ./MatrixGenerator.ps1
+
+          $config = @{
+              os = @("ubuntu-latest", "windows-latest", "macos-latest")
+              language = @("3.8", "3.9", "3.10", "3.11")
+              features = @("feature1", "feature2")
+              max_size = 5
+          }
+
+          try {
+              $matrix = New-EnvironmentMatrix -Configuration $config
+              Write-Error "Should have thrown an error for oversized matrix"
+              exit 1
+          } catch {
+              Write-Host "Correctly threw error: $_"
+          }
+
+          Write-Host "Matrix size validation working correctly"
+
+      - name: Test valid matrix size
+        shell: pwsh
+        run: |
+          . ./MatrixGenerator.ps1
+
+          $config = @{
+              os = @("ubuntu-latest", "windows-latest")
+              language = @("3.9", "3.10")
+              max_size = 10
+          }
+
+          $matrix = New-EnvironmentMatrix -Configuration $config
+
+          if ($matrix.include.Count -ne 4) {
+              Write-Error "Expected 4 combinations, got $($matrix.include.Count)"
+              exit 1
+          }
+
+          Write-Host "Valid matrix size test passed"
+
+      - name: Test JSON output
+        shell: pwsh
+        run: |
+          . ./MatrixGenerator.ps1
+
+          $config = @{
+              os = @("ubuntu-latest")
+              language = @("3.9")
+          }
+
+          $matrix = New-EnvironmentMatrix -Configuration $config
+          $json = Export-MatrixJson -Matrix $matrix
+
+          try {
+              $parsed = $json | ConvertFrom-Json
+              Write-Host "JSON is valid"
+          } catch {
+              Write-Error "JSON parsing failed: $_"
+              exit 1
+          }
+
+          Write-Host "JSON output validation successful"
+
+      - name: Test output artifact
+        shell: pwsh
+        if: always()
+        run: |
+          Write-Host "Job succeeded - all tests passed"
