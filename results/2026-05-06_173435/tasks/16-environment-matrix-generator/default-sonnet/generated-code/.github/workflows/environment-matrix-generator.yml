@@ -1,0 +1,126 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Run unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install test dependencies
+        run: pip install pytest pyyaml
+
+      - name: Install actionlint
+        run: |
+          ACTIONLINT_VERSION="1.7.7"
+          curl -sL "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz" \
+            | tar -xz -C /usr/local/bin actionlint
+          actionlint --version
+
+      - name: Run pytest
+        run: pytest tests/test_matrix.py -v
+
+  generate-and-verify:
+    name: Generate matrices from fixtures
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Generate basic matrix
+        run: |
+          echo "=== BASIC MATRIX ==="
+          python3 generate_matrix.py fixtures/basic_config.json | tee /tmp/basic_output.json
+          python3 - <<'EOF'
+          import json, sys
+          with open("/tmp/basic_output.json") as f:
+              d = json.load(f)
+          s = d["strategy"]
+          m = s["matrix"]
+          os_count = len(m["os"])
+          py_count = len(m["python-version"])
+          mp = s["max-parallel"]
+          ff = str(s["fail-fast"]).lower()
+          print(f"BASIC_OS_COUNT: {os_count}")
+          print(f"BASIC_PYTHON_COUNT: {py_count}")
+          print(f"BASIC_MAX_PARALLEL: {mp}")
+          print(f"BASIC_FAIL_FAST: {ff}")
+          print(f"BASIC_MATRIX_SIZE: {os_count * py_count}")
+          EOF
+
+      - name: Generate include matrix
+        run: |
+          echo "=== INCLUDE MATRIX ==="
+          python3 generate_matrix.py fixtures/include_config.json | tee /tmp/include_output.json
+          python3 - <<'EOF'
+          import json
+          with open("/tmp/include_output.json") as f:
+              d = json.load(f)
+          m = d["strategy"]["matrix"]
+          inc = m.get("include", [])
+          print(f"INCLUDE_COUNT: {len(inc)}")
+          # The single include entry should have experimental=true
+          experimental = inc[0].get("experimental") if inc else None
+          print(f"INCLUDE_EXPERIMENTAL: {str(experimental).lower()}")
+          print(f"INCLUDE_FAIL_FAST: {str(d['strategy']['fail-fast']).lower()}")
+          EOF
+
+      - name: Generate exclude matrix
+        run: |
+          echo "=== EXCLUDE MATRIX ==="
+          python3 generate_matrix.py fixtures/exclude_config.json | tee /tmp/exclude_output.json
+          python3 - <<'EOF'
+          import json
+          with open("/tmp/exclude_output.json") as f:
+              d = json.load(f)
+          m = d["strategy"]["matrix"]
+          exc = m.get("exclude", [])
+          print(f"EXCLUDE_COUNT: {len(exc)}")
+          os_count = len(m["os"])
+          print(f"EXCLUDE_OS_COUNT: {os_count}")
+          EOF
+
+      - name: Verify overflow config fails gracefully
+        run: |
+          echo "=== OVERFLOW CONFIG (should fail with non-zero exit) ==="
+          if python3 generate_matrix.py fixtures/overflow_config.json 2>&1; then
+            echo "ERROR: expected non-zero exit for overflow config"
+            exit 1
+          else
+            echo "OVERFLOW_EXIT_CODE: nonzero (correct)"
+          fi
+          # Verify the error message mentions the actual size and limit
+          STDERR=$(python3 generate_matrix.py fixtures/overflow_config.json 2>&1 || true)
+          echo "OVERFLOW_ERROR: $STDERR"
+          if echo "$STDERR" | grep -q "24"; then
+            echo "OVERFLOW_SIZE_IN_MSG: true"
+          else
+            echo "ERROR: expected '24' in error message, got: $STDERR"
+            exit 1
+          fi
+          if echo "$STDERR" | grep -q "10"; then
+            echo "OVERFLOW_LIMIT_IN_MSG: true"
+          else
+            echo "ERROR: expected '10' in error message, got: $STDERR"
+            exit 1
+          fi
