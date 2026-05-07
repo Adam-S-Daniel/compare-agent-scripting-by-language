@@ -1,0 +1,116 @@
+name: semantic-version-bumper
+
+# Triggers cover the realistic CI use cases for a release-prep workflow:
+#   * push   - automatically computes the next version on the default branch
+#   * pull_request - validates the bumper still passes its tests on PRs
+#   * workflow_dispatch - manual invocation (e.g. cutting a release)
+#   * schedule - nightly safety-net so the workflow itself stays green
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Compute the bump but do not write files'
+        required: false
+        default: 'false'
+        type: string
+  schedule:
+    # Run weekly to detect bit-rot in the action references / Pester gallery.
+    - cron: '0 6 * * 1'
+
+# Default permissions are read-only; if you wire in commit/push later you'd
+# bump contents to write here.
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: pwsh
+
+env:
+  # Fix UTF-8 encoding issues seen in some pwsh-on-ubuntu act containers.
+  DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: '1'
+
+jobs:
+  unit-tests:
+    name: Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Show pwsh + Pester versions
+        run: |
+          $PSVersionTable.PSVersion
+          Get-Module -ListAvailable Pester | Select-Object -First 1 Name,Version
+
+      - name: Run module + workflow-structure tests
+        run: |
+          Import-Module Pester -MinimumVersion 5.0
+          $config = New-PesterConfiguration
+          $config.Run.Path = @(
+              './tests/SemverBumper.Tests.ps1',
+              './tests/Workflow.Tests.ps1'
+          )
+          $config.Run.Exit = $true
+          $config.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $config
+
+  bump-version:
+    name: Compute next version
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    outputs:
+      old_version: ${{ steps.bump.outputs.old_version }}
+      new_version: ${{ steps.bump.outputs.new_version }}
+      bump_kind: ${{ steps.bump.outputs.bump_kind }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Need full history so the bumper can read every conventional commit.
+          fetch-depth: 0
+
+      - name: Mark workspace as a safe git directory
+        # In act containers, the bind-mount UID / fs ownership can trip git's
+        # "dubious ownership" check. This is a no-op on real GitHub runners.
+        run: |
+          git config --global --add safe.directory $env:GITHUB_WORKSPACE
+
+      - name: Run semantic version bumper
+        id: bump
+        run: |
+          ./src/bump-version.ps1 -RepoRoot $env:GITHUB_WORKSPACE
+
+      - name: Print resulting version files
+        run: |
+          if (Test-Path ./VERSION) {
+              Write-Host "--- VERSION ---"
+              Get-Content -Raw ./VERSION
+              Write-Host ""
+          }
+          if (Test-Path ./package.json) {
+              Write-Host "--- package.json ---"
+              Get-Content -Raw ./package.json
+          }
+          if (Test-Path ./CHANGELOG.md) {
+              Write-Host "--- CHANGELOG.md ---"
+              Get-Content -Raw ./CHANGELOG.md
+          }
+
+      - name: Summarise the bump
+        # The harness asserts on this exact string in act's stdout, so keep
+        # the format stable: 'NEW_VERSION=x.y.z'.
+        run: |
+          Write-Host "OLD_VERSION=${{ steps.bump.outputs.old_version }}"
+          Write-Host "NEW_VERSION=${{ steps.bump.outputs.new_version }}"
+          Write-Host "BUMP_KIND=${{ steps.bump.outputs.bump_kind }}"
