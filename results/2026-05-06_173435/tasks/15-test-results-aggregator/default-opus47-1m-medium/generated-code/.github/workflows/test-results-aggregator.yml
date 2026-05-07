@@ -1,0 +1,54 @@
+name: Test Results Aggregator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    # Daily at 06:00 UTC — gives a recurring chance to surface drift in flaky tests.
+    - cron: '0 6 * * *'
+
+permissions:
+  contents: read
+
+env:
+  RESULTS_DIR: fixtures
+
+jobs:
+  aggregate:
+    name: Aggregate test results
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Show fixtures
+        run: ls -la "$RESULTS_DIR"
+
+      # Run the aggregator. continue-on-error so a red fixture set doesn't fail
+      # the workflow itself — the job's purpose is to *summarize* test runs, not
+      # gate on them. The exit code is preserved as a step output for downstream
+      # steps that want to act on it.
+      - name: Run aggregator
+        id: agg
+        continue-on-error: true
+        run: |
+          python3 aggregator.py "$RESULTS_DIR" --summary-out summary.md
+          echo "exit_code=$?" >> "$GITHUB_OUTPUT"
+
+      - name: Print markdown summary
+        run: cat summary.md
+
+      - name: Append to job summary
+        if: always()
+        run: cat summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Run unit tests
+        run: |
+          python3 -m pip install --quiet pytest
+          python3 -m pytest test_aggregator.py -v
