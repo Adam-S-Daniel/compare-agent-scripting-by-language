@@ -1,0 +1,319 @@
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/AGENTS.md"}
+[Result] 1	# Agent Instructions
+2	
+3	All agent-facing instructions live in this file. `CLAUDE.md` contains only a
+4	reference here. If you are a Claude Code agent, you have already loaded this
+5	via `CLAUDE.md`. Other agents: read this file directly.
+6	
+7	## Build and test
+8	
+9	```bash
+10	# Run unit tests (REQUIRED before every PR)
+11	pip install pytest  # if not already installed
+12	python3 -m pytest tests/ -v
+13	
+14	# Validate imports
+15	python3 -c "from runner import main"
+16	python3 -c "from generate_results import generate_results_md"
+17	python3 -c "from test_quality import compute_structural_metrics"
+18	python3 -c "from llm_providers import get_provider"
+19	
+20	# Regenerate all reports
+21	python3 generate_results.py --all
+22	
+23	# Run a benchmark (v4, all tasks/modes/models)
+24	python3 runner.py --tasks 11,12,13,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
+25	
+26	# Evaluate test quality (structural metrics only)
+27	python3 test_quality.py results/2026-04
+[Tool: Bash] ls -la
+[Result] total 44
+drwxr-xr-x  4 passp passp  4096 May  6 22:39 .
+drwxr-xr-x 12 passp passp  4096 May  6 22:39 ..
+-rw-r--r--  1 passp passp    40 May  6 22:39 .actrc
+drwxr-xr-x  2 passp passp  4096 May  6 22:39 .claude
+drwxr-xr-x  6 passp passp  4096 May  6 22:39 .git
+-rw-r--r--  1 passp passp 21843 Apr 17 00:12 benchmark-instructions-v4.md
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus/.actrc"}
+[Result] 1	-P ubuntu-latest=act-ubuntu-pwsh:latest
+2	
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus/.claude/settings.json"}
+[Result] 1	{
+2	  "hooks": {
+3	    "PostToolUse": [
+4	      {
+5	        "matcher": "Write|Edit",
+6	        "hooks": [
+7	          {
+8	            "type": "command",
+9	            "command": "python3 /home/passp/repos/compare-agent-scripting-by-language/hooks/syntax-check.py",
+10	            "timeout": 15
+11	          }
+12	        ]
+13	      }
+14	    ]
+15	  }
+16	}
+[Assistant] I'll build a PR label assigner in TypeScript with Bun, using TDD through GitHub Actions via `act`. Let me start by creating the project structure.
+[Tool: Bash] cat .actrc
+[Result] -P ubuntu-latest=act-ubuntu-pwsh:latest
+[Tool: Bash] which actionlint && which act && which bun
+[Result] /home/passp/.local/bin/actionlint
+/home/passp/.local/bin/act
+/home/passp/.bun/bin/bun
+[Assistant] Good, all tools available. Let me start with the core types and implementation, then the workflow and test harness.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus/types.ts", "content": "export interface LabelRule {\n  patter
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus/types.ts (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus/label-assigner.ts", "content": "import type { LabelConfig, La
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus/label-assigner.ts (file state is current in your context — no need to Read it back)
+[Assistant] Now let me create the test fixture config and the GitHub Actions workflow.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus/label-config.json", "content": "{\n  \"rules\": [\n    { \"pa
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus/label-config.json (file state is current in your context — no need to Read it back)
+[Tool: Bash] mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus/.github/workflows
+[Result] (Bash completed with no output)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus/.github/workflows/pr-label-assigner.yml", "content": "name: P
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus/.github/workflows/pr-label-assigner.yml (file state is current in your context — no need to Read it back)
+[Assistant] Let me validate with actionlint first.
+[Tool: Bash] actionlint .github/workflows/pr-label-assigner.yml
+[Result] (Bash completed with no output)
+[Assistant] Actionlint passes. Now let me create the test harness that runs everything through `act`.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus/label-assigner.test.ts", "content": "import { describe, test,
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus/label-assigner.test.ts (file state is current in your context — no need to Read it back)
+[Assistant] I need a `yaml` package for parsing the workflow YAML. Let me initialize the project and install it.
+[Tool: Bash] bun init -y 2>&1 | tail -5
+[Result] + @types/bun@1.3.13
++ typescript@5.9.3 (v6.0.3 available)
+
+5 packages installed [200.00ms]
+[Tool: Bash] bun add yaml 2>&1
+[Result] bun add v1.3.11 (af24e281)
+Resolving dependencies
+Resolved, downloaded and extracted [1]
+Saved lockfile
+
+installed yaml@2.8.4 with binaries:
+ - yaml
+
+1 package installed [80.00ms]
+[Assistant] Good. Now let me run the tests. First, the structure tests should pass, then the integration tests will run through act.
+[Tool: Bash] bun test 2>&1 | head -80
+[Result] bun test v1.3.11 (af24e281)
+
+label-assigner.test.ts:
+160 |     expect(content.length).toBeGreaterThan(0);
+161 |   });
+162 | 
+163 |   test("Test Case 1: API and docs - correct labels", () => {
+164 |     const output = actOutputs[0];
+165 |     expect(output).toContain("Job succeeded");
+                         ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "Job succeeded"
+Received: "[PR Label Assigner/assign-labels] ⭐ Run Set up job\n[PR Label Assigner/assign-labels] 🚀  Start image=act-ubuntu-pwsh:latest\n[PR Label Assigner/assign-labels]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=true\n[PR Label Assigner/assign-labels] using DockerAuthConfig authentication for docker pull\n[PR Label Assigner/assign-labels] Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'\n[PR Label Assigner/assign-labels]   ❌  Failure - Set up job\n[PR Label Assigner/assign-labels] 🏁  Job fail
+[Assistant] The issue is that `act` is trying to pull the image from Docker Hub. The image is local. Let me check and adjust.
+[Tool: Bash] docker images | grep act-ubuntu
+[Result] WARNING: This output is designed for human readability. For machine-readable output, please use --format.
+act-ubuntu-pwsh:latest                          f0ba9895b524       2.55GB          640MB   U
+[Assistant] The image exists locally. The issue is `forcePull=true`. I need to add `--pull=false` to the act command in my test harness.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus/label-assigner.test.ts", "old_string": 
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus/label-assigner.test.ts has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] bun test 2>&1 | tail -40
+[Result] bun test v1.3.11 (af24e281)
+
+label-assigner.test.ts:
+179 |   });
+180 | 
+181 |   test("Test Case 3: Styles and nested tests - correct labels", () => {
+182 |     const output = actOutputs[2];
+183 |     expect(output).toContain("Job succeeded");
+184 |     expect(output).toContain("LABELS: api,core,documentation,styles,tests");
+                         ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "LABELS: api,core,documentation,styles,tests"
+Received: "[PR Label Assigner/assign-labels] ⭐ Run Set up job\n[PR Label Assigner/assign-labels] 🚀  Start image=act-ubuntu-pwsh:latest\n[PR Label Assigner/assign-labels]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false\n[PR Label Assigner/assign-labels]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=[\"tail\" \"-f\" \"/dev/null\"] cmd=[] network=\"host\"\n[PR Label Assigner/assign-labels]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=[\"tail\" \"-f\" \"/de
+[Assistant] Good progress - 7/8 passing. Two issues: my glob pattern `**/*.md` doesn't match root-level files like `README.md`, and the label ordering follows priority (not alphabetical). Let me fix both.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus/label-assigner.ts", "old_string": "func
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus/label-assigner.ts has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Now fix the test expectations to match the actual priority-sorted output order and the corrected `README.md` matching.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus/label-assigner.test.ts", "old_string": 
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus/label-assigner.test.ts has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Let me also verify what exact output the first two test cases produce, since the order of file-level labels matters. Let me quickly check the logic by running the script directly.
+[Tool: Bash] CHANGED_FILES="src/api/routes.ts,docs/readme.md,app.test.ts" bun run label-assigner.ts
+[Result] === PR Label Assignment Results ===
+LABELS: api,core,documentation,tests
+--- File Matches ---
+  src/api/routes.ts: api, core
+  docs/readme.md: documentation, documentation
+  app.test.ts: tests
+=== End Results ===
+[Tool: Bash] CHANGED_FILES="jest.config.ts,.github/workflows/ci.yml,src/utils/helper.ts" bun run label-assigner.ts
+[Result] === PR Label Assignment Results ===
+LABELS: ci,config,core
+--- File Matches ---
+  jest.config.ts: config
+  .github/workflows/ci.yml: ci
+  src/utils/helper.ts: core
+=== End Results ===
+[Tool: Bash] CHANGED_FILES="src/components/button.css,src/api/auth.test.ts,README.md" bun run label-assigner.ts
+[Result] === PR Label Assignment Results ===
+LABELS: api,core,styles,tests
+--- File Matches ---
+  src/components/button.css: core, styles
+  src/api/auth.test.ts: tests, api, core
+=== End Results ===
+[Assistant] Two issues: duplicate labels for `docs/readme.md` and `README.md` not matching. Let me debug.
+[Tool: Bash] bun -e '
+function globToRegex(pattern) {
+  let regex = pattern
+    .replace(/\./g, "\\\\.")
+    .replace(/\*\*\//g, "{{GLOBSTAR_SLASH}}")
+    .replace(/\*\*/g, "{{GLOBSTAR}}")
+    .replace(/\*/g, "[^/]*")
+    .replace(/\{\{GLOBSTAR_SLASH\}\}/g, "(.*/)?")
+    .replace(/\{\{GLOBSTAR\}\}/g, ".*")
+    .replace(/\?/g, "[^/]");
+  return new RegExp("^" + regex + "$");
+}
+console.log(globToRegex("**/*.md"));
+console.log(globToRegex("**/*.md").test("README.md"));
+console.log(globToRegex("**/*.md").test("docs/readme.md"));
+'
+[Result] /^(.*\/)[^/][^/]*\\.md$/
+false
+false
+[Assistant] The `?` replacement is corrupting the regex quantifier in `(.*/)?`. Let me fix the glob conversion order.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus/label-assigner.ts", "old_string": "func
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus/label-assigner.ts has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Now fix the duplicate labels issue — deduplicate labels per file.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus/label-assigner.ts", "old_string": "    
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus/label-assigner.ts has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] CHANGED_FILES="src/api/routes.ts,docs/readme.md,app.test.ts" bun run label-assigner.ts && echo "---" && CHANGED_FILES="jest.config.ts,.github/workflows/ci.yml,src/utils/helper.ts" bun run label-assigner.ts && echo "---" && CHANGED_FILES="src/components/button.css,src/api/auth.test.ts,README.md" bun run label-assigner.ts
+[Result] === PR Label Assignment Results ===
+LABELS: api,core,documentation,tests
+--- File Matches ---
+  src/api/routes.ts: api, core
+  docs/readme.md: documentation
+  app.test.ts: tests
+=== End Results ===
+---
+=== PR Label Assignment Results ===
+LABELS: ci,config,core
+--- File Matches ---
+  jest.config.ts: config
+  .github/workflows/ci.yml: ci
+  src/utils/helper.ts: core
+=== End Results ===
+---
+=== PR Label Assignment Results ===
+LABELS: api,core,documentation,styles,tests
+--- File Matches ---
+  src/components/button.css: core, styles
+  src/api/auth.test.ts: tests, api, core
+  README.md: documentation
+=== End Results ===
+[Assistant] All three cases produce correct output now. Let me update the test expectations to match the exact output, then run the full test suite.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus/label-assigner.test.ts", "old_string": 
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus/label-assigner.test.ts has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Now let me clear the act-result.txt and run the full test suite. This will use 3 act runs.
+[Tool: Bash] rm -f act-result.txt && bun test 2>&1
+[Result] bun test v1.3.11 (af24e281)
+
+ 8 pass
+ 0 fail
+ 30 expect() calls
+Ran 8 tests across 1 file. [35.19s]
+[Assistant] All 8 tests pass. Let me verify the `act-result.txt` was created properly.
+[Tool: Bash] wc -l act-result.txt && head -5 act-result.txt && echo "..." && grep -c "Job succeeded" act-result.txt && grep -c "LABELS:" act-result.txt
+[Result] 153 act-result.txt
+
+============================================================
+TEST CASE: API and docs files
+============================================================
+[PR Label Assigner/assign-labels] ⭐ Run Set up job
+...
+3
+3
+[Assistant] All 3 test cases recorded in `act-result.txt`, each showing "Job succeeded" and correct LABELS output.
+
+Let me do a final review of all files.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus/label-assigner.ts"}
+[Result] 1	import type { LabelConfig, LabelResult, LabelRule } from "./types";
+2	
+3	function globToRegex(pattern: string): RegExp {
+4	  let result = "";
+5	  let i = 0;
+6	  while (i < pattern.length) {
+7	    if (pattern[i] === "*" && pattern[i + 1] === "*" && pattern[i + 2] === "/") {
+8	      result += "(.*/)?";
+9	      i += 3;
+10	    } else if (pattern[i] === "*" && pattern[i + 1] === "*") {
+11	      result += ".*";
+12	      i += 2;
+13	    } else if (pattern[i] === "*") {
+14	      result += "[^/]*";
+15	      i += 1;
+16	    } else if (pattern[i] === "?") {
+17	      result += "[^/]";
+18	      i += 1;
+19	    } else if (".+^${}()|[]\\".includes(pattern[i])) {
+20	      result += "\\" + pattern[i];
+21	      i += 1;
+22	    } else {
+23	      result += pattern[i];
+24	      i += 1;
+25	    }
+26	  }
+27	  return new RegExp(`^${result}$`);
+28	}
+29	
+30	export function matchFile(filePath: string, pattern: string): boolean {
+31	  const regex = globToRegex(pattern);
+32	  return regex.test(filePath);
+33	}
+34	
+35	
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus/label-assigner.test.ts"}
+[Result] 1	import { describe, test, expect, beforeAll } from "bun:test";
+2	import { readFileSync, existsSync, mkdirSync, writeFileSync, cpSync, rmSync } from "fs";
+3	import { execSync } from "child_process";
+4	import { join } from "path";
+5	import { parse } from "yaml";
+6	
+7	const PROJECT_DIR = import.meta.dir;
+8	const WORKFLOW_PATH = join(PROJECT_DIR, ".github/workflows/pr-label-assigner.yml");
+9	const ACT_RESULT_FILE = join(PROJECT_DIR, "act-result.txt");
+10	
+11	// Clear act-result.txt at the start
+12	writeFileSync(ACT_RESULT_FILE, "");
+13	
+14	interface TestCase {
+15	  name: string;
+16	  changedFiles: string;
+17	  expectedLabels: string[];
+18	  expectedFileMatches: Record<string, string[]>;
+19	}
+20	
+21	const TEST_CASES: TestCase[] = [
+22	  {
+23	    name: "API and docs files",
+24	    changedFiles: "src/api/routes.ts,docs/readme.md,app.test.ts",
+25	    expectedLabels: ["api", "core", "documentation", "tests"],
+26	    expectedFileMatches: {
+27	      "src/api/routes.ts": ["api", "core"],
+28	     
+[Assistant] Everything is solid. Here's a summary of what was built:
+
+**Files created:**
+
+- **`types.ts`** — TypeScript interfaces for `LabelRule`, `LabelConfig`, and `LabelResult`
+- **`label-assigner.ts`** — Core logic with glob-to-regex pattern matching, priority-ordered rule evaluation, deduplication, and `maxLabelsPerFile` support. Reads `CHANGED_FILES` env var and `label-config.json` when run as a script.
+- **`label-config.json`** — Configurable rules mapping glob patterns to labels (docs, api, core, tests, config, ci, styles, documentation)
+- **`.github/workflows/pr-label-assigner.yml`** — GitHub Actions workflow with push/PR/dispatch triggers, Bun setup, and label assignment step. Passes actionlint.
+- **`label-assigner.test.ts`** — Test harness with 8 tests:
+  - 4 workflow structure tests (YAML structure, file references, actionlint validation, checkout step)
+  - 4 integration tests running 3 test cases through `act`, asserting exact label values and "Job succeeded"
+- **`act-result.txt`** — Captured output from all 3 act runs
+
+**Results:** 8 tests passing, 30 assertions, 3 act runs (at the limit), all jobs succeeded.
