@@ -1,0 +1,44 @@
+name: PR Label Assigner
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: Fixture file to use
+        required: false
+        default: fixtures/case1.json
+
+permissions:
+  contents: read
+
+env:
+  FIXTURE: ${{ github.event.inputs.fixture || 'fixtures/case1.json' }}
+
+jobs:
+  assign-labels:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Run unit tests
+        run: bun test
+
+      - name: Run labeler on fixture
+        id: labeler
+        run: |
+          echo "Using fixture: $FIXTURE"
+          OUT=$(bun run labeler.ts "$FIXTURE")
+          echo "Labeler output: $OUT"
+          echo "labels_json=$OUT" >> "$GITHUB_OUTPUT"
+
+      - name: Print result
+        run: |
+          echo "Final labels: ${{ steps.labeler.outputs.labels_json }}"
