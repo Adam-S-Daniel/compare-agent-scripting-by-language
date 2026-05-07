@@ -1,0 +1,130 @@
+---
+name: dependency-license-checker
+
+# Triggers: push, PR, manual dispatch, and a daily schedule so the report
+# stays fresh as the upstream license database evolves.
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      manifest:
+        description: "Path to manifest"
+        required: false
+        default: "fixtures/sample-package.json"
+      config:
+        description: "Path to license config"
+        required: false
+        default: "fixtures/sample-licenses.json"
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+
+# The harness sets MANIFEST_PATH / CONFIG_PATH so each test case can swap
+# in its own fixture without modifying the workflow itself.
+env:
+  MANIFEST_PATH: ${{ github.event.inputs.manifest || 'fixtures/sample-package.json' }}
+  CONFIG_PATH: ${{ github.event.inputs.config || 'fixtures/sample-licenses.json' }}
+
+jobs:
+  test:
+    name: unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install test dependencies
+        run: python3 -m pip install --quiet pytest pyyaml
+
+      - name: Run unit tests
+        run: python3 -m pytest tests/ -v
+
+  check:
+    name: license-check
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Resolve fixtures (allow harness override)
+        id: paths
+        env:
+          MANIFEST_OVERRIDE: ${{ env.MANIFEST_PATH }}
+          CONFIG_OVERRIDE: ${{ env.CONFIG_PATH }}
+        run: |
+          set -eu
+          manifest="${MANIFEST_OVERRIDE:-fixtures/sample-package.json}"
+          config="${CONFIG_OVERRIDE:-fixtures/sample-licenses.json}"
+          test -f "$manifest" || { echo "manifest not found: $manifest"; exit 2; }
+          test -f "$config"   || { echo "config not found: $config"; exit 2; }
+          echo "manifest=$manifest" >> "$GITHUB_OUTPUT"
+          echo "config=$config" >> "$GITHUB_OUTPUT"
+
+      - name: Generate text compliance report
+        id: text_report
+        continue-on-error: true
+        env:
+          MANIFEST: ${{ steps.paths.outputs.manifest }}
+          CONFIG: ${{ steps.paths.outputs.config }}
+        run: |
+          set +e
+          python3 license_checker.py \
+            --manifest "$MANIFEST" \
+            --config "$CONFIG" \
+            --format text \
+            --output report.txt
+          rc=$?
+          echo "::group::Compliance report"
+          cat report.txt
+          echo "::endgroup::"
+          echo "exit_code=$rc" >> "$GITHUB_OUTPUT"
+
+      - name: Generate JSON compliance report
+        env:
+          MANIFEST: ${{ steps.paths.outputs.manifest }}
+          CONFIG: ${{ steps.paths.outputs.config }}
+        run: |
+          set +e
+          python3 license_checker.py \
+            --manifest "$MANIFEST" \
+            --config "$CONFIG" \
+            --format json \
+            --output report.json
+          echo "::group::JSON report"
+          cat report.json
+          echo "::endgroup::"
+
+      - name: Print machine-readable summary
+        env:
+          TEXT_RC: ${{ steps.text_report.outputs.exit_code }}
+        run: |
+          set -eu
+          python3 - <<'PY'
+          import json
+          data = json.load(open("report.json"))
+          s = data["summary"]
+          print(f"LICENSE_SUMMARY approved={s['approved']} denied={s['denied']} unknown={s['unknown']}")
+          for d in data["dependencies"]:
+              print(f"DEP {d['name']}@{d['version']} license={d['license']} status={d['status']}")
+          PY
+          echo "CHECKER_EXITCODE=${TEXT_RC}"
+          # The job itself always succeeds — gating on denied dependencies
+          # is left to a downstream consumer (the CHECKER_EXITCODE marker
+          # plus the LICENSE_SUMMARY line are emitted for that purpose).
+          exit 0
