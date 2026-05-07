@@ -1,0 +1,90 @@
+name: PR Label Assigner
+
+# Triggered on push, pull_request, and manual dispatch. The act test harness
+# uses `act push --rm` so the push trigger is the active one in CI.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  test-and-run:
+    name: Unit tests + integration scenario
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install pytest
+        # Ubuntu's system Python is PEP 668-protected; --break-system-packages
+        # is the canonical override for ephemeral CI containers.
+        run: |
+          python3 -m pip install --quiet --disable-pip-version-check \
+            --break-system-packages pytest
+
+      - name: Run unit tests
+        # Scope pytest to the unit-test file only. The act harness lives
+        # next to it (tests/test_workflow_via_act.py) but is host-side
+        # tooling — it imports yaml and shells out to `act`, neither of
+        # which we need (or want to run recursively) inside this container.
+        run: |
+          python3 -m pytest tests/test_pr_label_assigner.py -v
+
+      # ---- Integration scenario ---------------------------------------------
+      # The current test case lives at fixed paths. The act test harness
+      # overwrites these files in the temp working tree before each `act push`.
+      - name: Show current scenario inputs
+        run: |
+          echo "--- CASE NAME ---"
+          cat fixtures/current_case_name.txt
+          echo "--- RULES ---"
+          cat fixtures/current_rules.json
+          echo "--- FILES ---"
+          cat fixtures/current_files.json
+          echo "--- EXPECTED OUTPUT ---"
+          cat fixtures/current_expected.txt
+          echo "--- END INPUTS ---"
+
+      - name: Run script and assert exact expected output
+        run: |
+          set -e
+          python3 pr_label_assigner.py \
+            --rules fixtures/current_rules.json \
+            --files fixtures/current_files.json > /tmp/actual.txt
+          echo "=== CASE OUTPUT BEGIN ==="
+          cat /tmp/actual.txt
+          echo "=== CASE OUTPUT END ==="
+          # Exact-string comparison — any drift fails the step.
+          diff -u fixtures/current_expected.txt /tmp/actual.txt
+          echo "CASE_OK_$(cat fixtures/current_case_name.txt)"
+
+      - name: Run script in JSON output mode and validate it parses
+        run: |
+          set -e
+          python3 pr_label_assigner.py \
+            --rules fixtures/current_rules.json \
+            --files fixtures/current_files.json \
+            --format json > /tmp/actual.json
+          echo "=== CASE JSON BEGIN ==="
+          cat /tmp/actual.json
+          echo "=== CASE JSON END ==="
+          python3 - <<'PY'
+          import json
+          with open("/tmp/actual.json") as fh:
+              payload = json.load(fh)
+          assert "labels" in payload and isinstance(payload["labels"], list), payload
+          with open("fixtures/current_expected.txt") as fh:
+              expected = [ln for ln in fh.read().splitlines() if ln]
+          assert payload["labels"] == expected, (payload["labels"], expected)
+          print("JSON_OK")
+          PY
+
+      - name: Summary
+        run: |
+          echo "All steps passed for case: $(cat fixtures/current_case_name.txt)"
