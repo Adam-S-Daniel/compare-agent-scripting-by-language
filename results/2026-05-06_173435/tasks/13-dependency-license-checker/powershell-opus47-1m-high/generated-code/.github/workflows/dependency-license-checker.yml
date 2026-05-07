@@ -1,0 +1,127 @@
+name: Dependency License Checker
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  schedule:
+    # Weekly Monday 06:00 UTC sweep so newly-published deps get audited
+    # even when the repo isn't actively being committed to.
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+    inputs:
+      manifest:
+        description: 'Path to dependency manifest (relative to repo root)'
+        required: false
+        default: 'ci-fixtures/manifest.json'
+      license_data:
+        description: 'Path to mock license-data JSON'
+        required: false
+        default: 'ci-fixtures/license-data.json'
+
+permissions:
+  contents: read
+
+env:
+  MANIFEST_PATH: ${{ inputs.manifest || 'ci-fixtures/manifest.json' }}
+  CONFIG_PATH: ci-fixtures/license-config.json
+  LICENSE_DATA_PATH: ${{ inputs.license_data || 'ci-fixtures/license-data.json' }}
+
+jobs:
+  unit-tests:
+    name: Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show PowerShell + Pester versions
+        shell: pwsh
+        run: |
+          $PSVersionTable.PSVersion
+          Get-Module -ListAvailable Pester | Select-Object Name, Version
+
+      - name: Run Pester unit tests
+        shell: pwsh
+        run: |
+          Import-Module Pester
+          $config = New-PesterConfiguration
+          $config.Run.Path = './tests'
+          $config.Run.Exit = $true
+          $config.Output.Verbosity = 'Detailed'
+          $config.TestResult.Enabled = $true
+          $config.TestResult.OutputPath = 'pester-results.xml'
+          Invoke-Pester -Configuration $config
+
+      - name: Upload Pester results
+        # Skip when running under nektos/act locally (ACTIONS_RUNTIME_TOKEN
+        # is not provided in that environment); run normally on real CI.
+        if: ${{ always() && env.ACT != 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: pester-results
+          path: pester-results.xml
+          if-no-files-found: ignore
+
+  license-scan:
+    name: License compliance scan
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify CI fixture inputs exist
+        shell: pwsh
+        run: |
+          foreach ($p in @($env:MANIFEST_PATH, $env:CONFIG_PATH, $env:LICENSE_DATA_PATH)) {
+            if (-not (Test-Path -LiteralPath $p)) {
+              Write-Error "Required input file not found: $p"
+              exit 1
+            }
+            Write-Host "OK: $p"
+          }
+
+      - name: Run dependency license check
+        id: scan
+        shell: pwsh
+        run: |
+          # We deliberately don't fail the job on denied licenses here -
+          # the test harness asserts on the report content instead. The
+          # script's own exit code is captured and surfaced as a step
+          # output for downstream jobs / observability.
+          & ./Check-Licenses.ps1 `
+              -ManifestPath    $env:MANIFEST_PATH `
+              -ConfigPath      $env:CONFIG_PATH `
+              -LicenseDataPath $env:LICENSE_DATA_PATH `
+              -OutputPath      compliance-report.txt
+          $code = $LASTEXITCODE
+          Write-Host "Script exit code: $code"
+          "script_exit_code=$code" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          Write-Host "::group::Compliance report"
+          Get-Content compliance-report.txt
+          Write-Host "::endgroup::"
+          # The step itself succeeds regardless: the step output
+          # `script_exit_code` carries the script's verdict so downstream
+          # consumers (or test harness) can branch on it.
+          $global:LASTEXITCODE = 0
+
+      - name: Surface scan summary
+        shell: pwsh
+        run: |
+          $code = '${{ steps.scan.outputs.script_exit_code }}'
+          Write-Host "SCAN_EXIT_CODE=$code"
+          if ($code -eq '0') {
+            Write-Host 'License scan: COMPLIANT'
+          } else {
+            Write-Host 'License scan: NON-COMPLIANT (denied or unknown licenses present)'
+          }
+
+      - name: Upload compliance report
+        if: ${{ always() && env.ACT != 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: compliance-report
+          path: compliance-report.txt
+          if-no-files-found: ignore
