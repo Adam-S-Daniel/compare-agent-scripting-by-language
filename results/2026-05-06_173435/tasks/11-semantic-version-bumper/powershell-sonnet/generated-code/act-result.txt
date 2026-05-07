@@ -1,0 +1,101 @@
+============================================================
+TEST: All scenarios
+EXIT CODE: 0
+============================================================
+time="2026-05-07T02:23:09-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Semantic Version Bumper/test] ⭐ Run Set up job
+[Semantic Version Bumper/test] 🚀  Start image=act-ubuntu-pwsh:latest
+[Semantic Version Bumper/test]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Semantic Version Bumper/test]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Semantic Version Bumper/test]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Semantic Version Bumper/test]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Semantic Version Bumper/test]   ✅  Success - Set up job
+[Semantic Version Bumper/test] ⭐ Run Main Checkout
+[Semantic Version Bumper/test]   🐳  docker cp src=/tmp/semver-act-qk24w4lg.was/. dst=/tmp/semver-act-qk24w4lg.was
+[Semantic Version Bumper/test]   ✅  Success - Main Checkout [42.236683ms]
+[Semantic Version Bumper/test] ⭐ Run Main Install Pester (no-op if already present)
+[Semantic Version Bumper/test]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/1.ps1] user= workdir=
+[Semantic Version Bumper/test]   | Pester version: 5.7.1
+[Semantic Version Bumper/test]   ✅  Success - Main Install Pester (no-op if already present) [953.342213ms]
+[Semantic Version Bumper/test] ⭐ Run Main Run Pester unit tests
+[Semantic Version Bumper/test]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/2.ps1] user= workdir=
+[Semantic Version Bumper/test]   | [95mPester v5.7.1[0m
+[Semantic Version Bumper/test]   | [95m
+[Semantic Version Bumper/test]   | [95mStarting discovery in 1 files.[0m
+[Semantic Version Bumper/test]   | [95mDiscovery found 33 tests in 182ms.[0m
+[Semantic Version Bumper/test]   | [95mRunning tests.[0m
+[Semantic Version Bumper/test]   | [95m
+[Semantic Version Bumper/test]   | [95mRunning tests from '/tmp/semver-act-qk24w4lg.was/SemanticVersionBumper.Tests.ps1'[0m
+[Semantic Version Bumper/test]   | [92mDescribing SemanticVersionBumper[0m
+[Semantic Version Bumper/test]   | [96m Context Get-VersionFromFile - version.txt[0m
+[Semantic Version Bumper/test]   | [32m   [+] parses plain version.txt and returns 1.0.0[0m[90m 93ms (65ms|29ms)[0m
+[Semantic Version Bumper/test]   | [32m   [+] parses version-2.3.1.txt and returns 2.3.1[0m[90m 9ms (6ms|3ms)[0m
+[Semantic Version Bumper/test]   | [32m   [+] throws for a missing file[0m[90m 36ms (34ms|2ms)[0m
+[Semantic Version Bumper/test]   | [32m   [+] throws for invalid semver content[0m[90m 8ms (6ms|1ms)[0m
+[Semantic Version Bumper/test]   | [96m Context Get-VersionFromFile - package.json[0m
+[Semantic Version Bumper/test]   | [32m   [+] parses package.json and returns 3.2.1[0m[90m 33ms (31ms|2ms)[0m
+[Semantic Version Bumper/test]   | [32m   [+] throws when JSON has no version field[0m[90m 8ms (7ms|1ms)[0m
+[Semantic Version Bumper/test]   | [96m Context Get-BumpType - commit type detection[0m
+[Semantic Version Bumper/test]   | [32m   [+] returns patch for a fix commit[0m[90m 10ms (9ms|2ms)[0m
+[Semantic Version Bumper/test]   | [32m   [+] returns minor for a feat commit[0m[90m 4ms (2ms|1ms)[0m
+[Semantic Version Bumper/test]   | [32m   [+] returns major for a commit with breaking=true[0m[90m 4ms (3ms|1ms)[0m
+[Semantic Version Bumper/test]   | [32m   [+] returns major for a commit with BREAKING CHANGE in message[0m[90m 5ms (3ms|1ms)[0m
+[Semantic Version Bumper/test]   | [32m   [+] returns major even when mixed with fix commits[0m[90m 14ms (11ms|3ms)[0m
+[Semantic Version Bumper/test]   | [32m   [+] returns minor when feat and fix are both present (feat wins)[0m[90m 8ms (5ms|2ms)[0m
+[Semantic Version Bumper/test]   | [32m   [+] defaults to patch for non-feat/fix types[0m[90m 9ms (5ms|4ms)[0m
+[Semantic Version Bumper/test]   | [96m Context Get-NextVersion - version arithmetic[0m
+[Semantic Version Bumper/test]   | VERSION-CHECK patch 1.0.0->1.0.1
+[Semantic Version Bumper/test]   | [32m   [+] bumps 1.0.0 with patch to 1.0.1[0m[90m 23ms (19ms|4ms)[0m
+[Semantic Version Bumper/test]   | VERSION-CHECK minor 1.0.0->1.1.0
+[Semantic Version Bumper/test]   | [32m   [+] bumps 1.0.0 with minor to 1.1.0[0m[90m 7ms (5ms|2ms)[0m
+[Semantic Version Bumper/test]   | VERSION-CHECK major 1.0.0->2.0.0
+[Semantic Version Bumper/test]   | [32m   [+] bumps 1.0.0 with major to 2.0.0[0m[90m 7ms (5ms|2ms)[0m
+[Semantic Version Bumper/test]   | [32m   [+] resets minor and patch on major bump: 2.3.1 -> 3.0.0[0m[90m 6ms (4ms|2ms)[0m
+[Semantic Version Bumper/test]   | [32m   [+] resets patch on minor bump: 2.3.1 -> 2.4.0[0m[90m 6ms (4ms|2ms)[0m
+[Semantic Version Bumper/test]   | [96m Context Update-VersionFile[0m
+[Semantic Version Bumper/test]   | [32m   [+] writes the new version to a plain text file[0m[90m 9ms (8ms|2ms)[0m
+[Semantic Version Bumper/test]   | [32m   [+] updates the version field in package.json[0m[90m 12ms (11ms|1ms)[0m
+[Semantic Version Bumper/test]   | [DryRun] Would update TestDrive:/version.txt to 9.9.9
+[Semantic Version Bumper/test]   | [32m   [+] does not modify the file in dry-run mode[0m[90m 8ms (6ms|2ms)[0m
+[Semantic Version Bumper/test]   | [96m Context New-ChangelogEntry[0m
+[Semantic Version Bumper/test]   | [32m   [+] includes the version and date header[0m[90m 17ms (14ms|2ms)[0m
+[Semantic Version Bumper/test]   | [32m   [+] lists feat commits under Features section[0m[90m 8ms (6ms|2ms)[0m
+[Semantic Version Bumper/test]   | [32m   [+] lists fix commits under Bug Fixes section[0m[90m 5ms (4ms|1ms)[0m
+[Semantic Version Bumper/test]   | [32m   [+] lists breaking changes under Breaking Changes section[0m[90m 8ms (7ms|2ms)[0m
+[Semantic Version Bumper/test]   | [96m Context Read-CommitsFile[0m
+[Semantic Version Bumper/test]   | [32m   [+] reads and parses a commits JSON fixture file[0m[90m 13ms (11ms|1ms)[0m
+[Semantic Version Bumper/test]   | [32m   [+] throws for a missing file[0m[90m 7ms (6ms|1ms)[0m
+[Semantic Version Bumper/test]   | [96m Context Integration - full pipeline using fixture files[0m
+[Semantic Version Bumper/test]   | SCENARIO fix: NEW_VERSION=1.0.1
+[Semantic Version Bumper/test]   | [32m   [+] pipeline: 1.0.0 + fix commit -> 1.0.1[0m[90m 12ms (9ms|2ms)[0m
+[Semantic Version Bumper/test]   | SCENARIO feat: NEW_VERSION=1.1.0
+[Semantic Version Bumper/test]   | [32m   [+] pipeline: 1.0.0 + feat commit -> 1.1.0[0m[90m 7ms (6ms|1ms)[0m
+[Semantic Version Bumper/test]   | SCENARIO breaking: NEW_VERSION=2.0.0
+[Semantic Version Bumper/test]   | [32m   [+] pipeline: 1.0.0 + breaking commit -> 2.0.0[0m[90m 6ms (4ms|2ms)[0m
+[Semantic Version Bumper/test]   | SCENARIO mixed: NEW_VERSION=2.4.0
+[Semantic Version Bumper/test]   | [32m   [+] pipeline: 2.3.1 + mixed commits (feat+fix) -> 2.4.0[0m[90m 8ms (7ms|1ms)[0m
+[Semantic Version Bumper/test]   | SCENARIO package-json: NEW_VERSION=3.2.2
+[Semantic Version Bumper/test]   | [32m   [+] pipeline: package.json 3.2.1 + fix commit -> 3.2.2[0m[90m 5ms (4ms|1ms)[0m
+[Semantic Version Bumper/test]   | [32m   [+] changelog entry includes correct version and commit details[0m[90m 16ms (14ms|2ms)[0m
+[Semantic Version Bumper/test]   | [97mTests completed in 1.07s[0m
+[Semantic Version Bumper/test]   | [32mTests Passed: 33, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Semantic Version Bumper/test]   ✅  Success - Main Run Pester unit tests [2.371425002s]
+[Semantic Version Bumper/test] ⭐ Run Main Run integration scenarios
+[Semantic Version Bumper/test]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/3.ps1] user= workdir=
+[Semantic Version Bumper/test]   | SCENARIO fix: NEW_VERSION=1.0.1
+[Semantic Version Bumper/test]   | PASS: fix 1.0.0 -> 1.0.1 (patch)
+[Semantic Version Bumper/test]   | SCENARIO feat: NEW_VERSION=1.1.0
+[Semantic Version Bumper/test]   | PASS: feat 1.0.0 -> 1.1.0 (minor)
+[Semantic Version Bumper/test]   | SCENARIO breaking: NEW_VERSION=2.0.0
+[Semantic Version Bumper/test]   | PASS: breaking 1.0.0 -> 2.0.0 (major)
+[Semantic Version Bumper/test]   | SCENARIO mixed: NEW_VERSION=2.4.0
+[Semantic Version Bumper/test]   | PASS: mixed 2.3.1 -> 2.4.0 (minor)
+[Semantic Version Bumper/test]   | SCENARIO package-json: NEW_VERSION=3.2.2
+[Semantic Version Bumper/test]   | PASS: package-json 3.2.1 -> 3.2.2 (patch)
+[Semantic Version Bumper/test]   | All integration scenarios passed.
+[Semantic Version Bumper/test]   ✅  Success - Main Run integration scenarios [592.832281ms]
+[Semantic Version Bumper/test] ⭐ Run Complete job
+[Semantic Version Bumper/test] Cleaning up container for job test
+[Semantic Version Bumper/test]   ✅  Success - Complete job
+[Semantic Version Bumper/test] 🏁  Job succeeded
+
