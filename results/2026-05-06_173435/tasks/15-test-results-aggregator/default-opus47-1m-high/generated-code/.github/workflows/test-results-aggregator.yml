@@ -1,0 +1,86 @@
+---
+name: Test Results Aggregator
+
+# Run on common CI events plus on-demand triggers. Schedule lets us
+# spot regressions in nightly matrix builds even when nobody pushes.
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+  schedule:
+    - cron: '17 6 * * *'
+
+permissions:
+  contents: read
+
+env:
+  PYTHON_VERSION: '3.12'
+  FIXTURE_DIR: fixtures
+  SUMMARY_FILE: aggregated-summary.md
+
+jobs:
+  unit-tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install pytest
+        run: python3 -m pip install --quiet pytest
+
+      - name: Run aggregator unit tests
+        run: python3 -m pytest tests/ -v
+
+  aggregate:
+    name: Aggregate test results
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Show fixtures available
+        run: ls -la "${FIXTURE_DIR}"
+
+      - name: Run aggregator
+        id: agg
+        # continue-on-error so the workflow always succeeds and produces a
+        # job summary even when fixtures contain failures or invalid files
+        # (we surface the aggregator's intent via the printed status line).
+        continue-on-error: true
+        run: |
+          set +e
+          shopt -s nullglob
+          files=("${FIXTURE_DIR}"/*.xml "${FIXTURE_DIR}"/*.json)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "AGGREGATOR_EXIT=2"
+            echo "aggregator_exit=2" >> "$GITHUB_OUTPUT"
+            echo "error: no .xml or .json fixtures found in ${FIXTURE_DIR}" >&2
+            exit 0
+          fi
+          python3 aggregator.py "${files[@]}" --output "${SUMMARY_FILE}"
+          code=$?
+          echo "aggregator_exit=${code}" >> "$GITHUB_OUTPUT"
+          echo "AGGREGATOR_EXIT=${code}"
+          exit 0
+
+      - name: Publish summary to job summary
+        if: always() && hashFiles(env.SUMMARY_FILE) != ''
+        run: cat "${SUMMARY_FILE}" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Print final result line
+        run: |
+          echo "WORKFLOW_RESULT aggregator_exit=${{ steps.agg.outputs.aggregator_exit }}"
