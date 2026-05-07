@@ -1,0 +1,74 @@
+name: PR Label Assigner
+
+# Triggers: every push and PR (so labels can be computed for real PRs),
+# manual runs (handy for debugging), and the no-arg `act push` invocations
+# that the local test harness uses for fixture-driven verification.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  RULES_FILE: rules.yaml
+  FILES_LIST: files.txt
+  EXPECTED_FILE: expected.json
+
+jobs:
+  unit-tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show Python version
+        run: python3 --version
+
+      - name: Install dependencies
+        run: python3 -m pip install --quiet --break-system-packages pytest pyyaml
+
+      - name: Run pytest
+        run: python3 -m pytest tests/ -v
+
+  assign-labels:
+    name: Assign labels
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: python3 -m pip install --quiet --break-system-packages pyyaml
+
+      - name: Run label assigner
+        run: |
+          python3 label_assigner.py \
+            --rules "${RULES_FILE}" \
+            --files "${FILES_LIST}" \
+            | tee labels.out
+
+      - name: Verify labels match expected.json
+        run: |
+          python3 - <<'PY'
+          import json, os, sys
+          actual_line = next(
+              l for l in open("labels.out") if l.startswith("LABELS_JSON=")
+          )
+          actual = json.loads(actual_line.split("=", 1)[1])
+          expected_path = os.environ["EXPECTED_FILE"]
+          if not os.path.exists(expected_path):
+              print(f"NOTE: {expected_path} not present; skipping comparison")
+              print(f"ACTUAL_LABELS={json.dumps(actual)}")
+              sys.exit(0)
+          expected = json.load(open(expected_path))
+          print(f"EXPECTED={json.dumps(expected)}")
+          print(f"ACTUAL={json.dumps(actual)}")
+          if actual != expected:
+              print("FAIL: labels mismatch", file=sys.stderr)
+              sys.exit(1)
+          print("LABELS_OK")
+          PY

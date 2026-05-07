@@ -1,0 +1,261 @@
+[Tool: Bash] ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/
+[Result] total 44
+drwxr-xr-x  4 passp passp  4096 May  7 08:49 .
+drwxr-xr-x 18 passp passp  4096 May  7 08:49 ..
+-rw-r--r--  1 passp passp    40 May  7 08:49 .actrc
+drwxr-xr-x  2 passp passp  4096 May  7 08:49 .claude
+drwxr-xr-x  6 passp passp  4096 May  7 08:49 .git
+-rw-r--r--  1 passp passp 21843 Apr 17 00:12 benchmark-instructions-v4.md
+[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/.actrc && cat /home/passp/repos/compare-agent-scripting-by-language/AGENTS.md 2>/dev/null | head -100
+[Result] -P ubuntu-latest=act-ubuntu-pwsh:latest
+# Agent Instructions
+
+All agent-facing instructions live in this file. `CLAUDE.md` contains only a
+reference here. If you are a Claude Code agent, you have already loaded this
+via `CLAUDE.md`. Other agents: read this file directly.
+
+## Build and test
+
+```bash
+# Run unit tests (REQUIRED before every PR)
+pip install pytest  # if not already installed
+python3 -m pytest tests/ -v
+
+# Validate imports
+python3 -c "from runner import main"
+python3 -c "from generate_results import generate_results_md"
+python3 -c "from test_quality import compute_structural_metrics"
+python3 -c "from llm_providers import get_provider"
+
+# Regenerate all reports
+python3 generate_results.py --all
+
+# Run a benchmark (v4, all tasks/modes/models)
+python3 runner.py --tasks 11,12,13,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
+
+# Evaluate test quality (structural metrics only)
+python3 test_quality.py results/2026-04-09_152435
+
+# Evaluate test + de
+[Assistant] I'll build this in Python. Let me design the structure first then start TDD.
+[Tool: Bash] python3 --version && which act && which actionlint && docker --version
+[Result] Python 3.12.3
+/home/passp/.local/bin/act
+/home/passp/.local/bin/actionlint
+Docker version 29.4.0, build 9d7ad9f
+[Tool: Bash] python3 -c "import yaml; print(yaml.__version__)" 2>&1; python3 -c "import pytest; print(pytest.__version__)" 2>&1
+[Result] 6.0.1
+9.0.3
+[Tool: Bash] ls .claude/ 2>/dev/null
+[Result] settings.json
+[Assistant] Starting TDD. Writing the first failing test.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/tests/test_label_assigner.py", "content": "\"\"\"Unit test
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/tests/test_label_assigner.py (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 -m pytest tests/ -x 2>&1 | tail -20
+[Result] configfile: pyproject.toml
+plugins: anyio-4.13.0
+collected 0 items / 1 error
+
+==================================== ERRORS ====================================
+_ ERROR collecting workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/tests/test_label_assigner.py _
+ImportError while importing test module '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/tests/test_label_assigner.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_label_assigner.py:11: in <module>
+    from label_assigner import (
+E   ModuleNotFoundError: No module named 'label_assigner'
+=========================== short test summary info ============================
+ERROR tests/test_label_assigner.
+[Assistant] Now writing minimal implementation to make tests pass.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/label_assigner.py", "content": "\"\"\"PR label assigner.\n
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/label_assigner.py (file state is current in your context — no need to Read it back)
+[Tool: ToolSearch] {"query": "select:TodoWrite", "max_results": 1}
+[Result] {'type': 'tool_reference', 'tool_name': 'TodoWrite'}
+[Tool: TodoWrite] {"todos": [{"content": "Write failing pytest tests (red)", "activeForm": "Writing failing pytest tests", "status": "completed"}, {"content": "Implement label_assigner.py to pass tests (green)", "activ
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Bash] python3 -m pytest tests/ -v 2>&1 | tail -30
+[Result] ============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/passp/repos/compare-agent-scripting-by-language
+configfile: pyproject.toml
+plugins: anyio-4.13.0
+collecting ... collected 16 items
+
+tests/test_label_assigner.py::test_single_rule_matches_one_file PASSED   [  6%]
+tests/test_label_assigner.py::test_no_match_returns_empty PASSED         [ 12%]
+tests/test_label_assigner.py::test_multiple_rules_dedup_sorted PASSED    [ 18%]
+tests/test_label_assigner.py::test_one_file_multiple_labels PASSED       [ 25%]
+tests/test_label_assigner.py::test_test_file_glob PASSED                 [ 31%]
+tests/test_label_assigner.py::test_priority_conflict_resolution PASSED   [ 37%]
+tests/test_label_assigner.py::test_priority_only_within_group PASSED     [ 43%]
+tests/test_label_assigner.py::test_load_rules_from_json PASSED           [ 50%]
+tests/test_label_assigner.py
+[Assistant] All 16 tests pass. Now building the workflow and fixtures.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/rules.yaml", "content": "# Default label rules used by the
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/rules.yaml (file state is current in your context — no need to Read it back)
+[Tool: Bash] mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/.github/workflows
+[Result] (Bash completed with no output)
+[Tool: Bash] docker images | grep act-ubuntu-pwsh 2>&1; echo "---"; cat /home/passp/repos/compare-agent-scripting-by-language/Dockerfile.act 2>&1 | head -40
+[Result] WARNING: This output is designed for human readability. For machine-readable output, please use --format.
+act-ubuntu-pwsh:latest                          05bbd1974971        2.6GB          652MB        
+---
+# Custom act container image with PowerShell and Pester pre-installed.
+# Matches what real GitHub-hosted ubuntu-latest runners provide.
+#
+# Build:  docker build -t act-ubuntu-pwsh:latest -f Dockerfile.act .
+# Use:    act push -P ubuntu-latest=act-ubuntu-pwsh:latest
+# Or:     echo '-P ubuntu-latest=act-ubuntu-pwsh:latest' > .actrc
+
+FROM catthehacker/ubuntu:act-latest
+
+# Install PowerShell from Microsoft's APT repo
+RUN apt-get update -qq \
+    && apt-get install -y -qq wget apt-transport-https software-properties-common \
+    && wget -q "https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb" \
+    && dpkg -i packages-microsoft-prod.deb \
+    && apt-get update -qq \
+    && apt-get install -y -qq powershell \
+    && rm -f packages-microsoft-prod.deb \
+    && apt
+[Assistant] Now writing the GitHub Actions workflow.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/.github/workflows/pr-label-assigner.yml", "content": "name
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/.github/workflows/pr-label-assigner.yml (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/pr-label-assigner.yml; echo "exit=$?"
+[Result] exit=0
+[Assistant] Actionlint passes. Now creating fixtures and the test harness.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/files.txt", "content": "docs/intro.md\nsrc/api/users.py\n"
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/files.txt (file state is current in your context — no need to Read it back)
+[Tool: TodoWrite] {"todos": [{"content": "Write failing pytest tests (red)", "activeForm": "Writing failing pytest tests", "status": "completed"}, {"content": "Implement label_assigner.py to pass tests (green)", "activ
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Bash] mkdir -p fixtures/basic-docs fixtures/priority-conflict fixtures/multi-label-mixed fixtures/no-matches
+[Result] (Bash completed with no output)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/basic-docs/rules.yaml", "content": "rules:\n  - p
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/basic-docs/rules.yaml (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/basic-docs/files.txt", "content": "docs/intro.md\
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/basic-docs/files.txt (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/basic-docs/expected.json", "content": "[\"documen
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/basic-docs/expected.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/priority-conflict/rules.yaml", "content": "rules:
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/priority-conflict/rules.yaml (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/priority-conflict/files.txt", "content": "src/api
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/priority-conflict/files.txt (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/priority-conflict/expected.json", "content": "[\"
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/priority-conflict/expected.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/multi-label-mixed/rules.yaml", "content": "rules:
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/multi-label-mixed/rules.yaml (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/multi-label-mixed/files.txt", "content": "docs/in
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/multi-label-mixed/files.txt (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/multi-label-mixed/expected.json", "content": "[\"
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/multi-label-mixed/expected.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/no-matches/rules.yaml", "content": "rules:\n  - p
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/no-matches/rules.yaml (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/no-matches/files.txt", "content": "scripts/build.
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/no-matches/files.txt (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/no-matches/expected.json", "content": "[]\n"}
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/no-matches/expected.json (file state is current in your context — no need to Read it back)
+[Assistant] Let me revise the workflow to skip setup-python (more reliable in act with catthehacker images, which have python3 pre-installed):
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/.github/workflows/pr-label-assigner.yml", "content": "name
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/.github/workflows/pr-label-assigner.yml has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/pr-label-assigner.yml; echo "exit=$?"
+[Result] exit=0
+[Assistant] Now writing the test harness.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/run_act_tests.py", "content": "\"\"\"End-to-end test harne
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/run_act_tests.py (file state is current in your context — no need to Read it back)
+[Assistant] Let me first run pytest one more time and verify the workflow structure-check before invoking act (the expensive part).
+[Tool: Bash] python3 -m pytest tests/ 2>&1 | tail -3 && actionlint .github/workflows/pr-label-assigner.yml && echo "actionlint OK"
+[Result] tests/test_label_assigner.py ................                            [100%]
+
+============================== 16 passed in 0.07s ==============================
+actionlint OK
+[Tool: TodoWrite] {"todos": [{"content": "Write failing pytest tests (red)", "activeForm": "Writing failing pytest tests", "status": "completed"}, {"content": "Implement label_assigner.py to pass tests (green)", "activ
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Assistant] Now running the harness — this fires 3 act runs.
+[Tool: Bash] python3 run_act_tests.py 2>&1 | tail -80
+[Result] === Workflow structure checks ===
+  workflow structure OK
+=== actionlint ===
+  actionlint OK
+
+=== Fixture: basic-docs ===
+  act exit code: 1
+[PR Label Assigner/Unit tests] ⭐ Run Set up job
+[PR Label Assigner/Unit tests] 🚀  Start image=act-ubuntu-pwsh:latest
+[PR Label Assigner/Unit tests]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=true
+[PR Label Assigner/Unit tests] using DockerAuthConfig authentication for docker pull
+[PR Label Assigner/Unit tests] Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+[PR Label Assigner/Unit tests]   ❌  Failure - Set up job
+[PR Label Assigner/Unit tests] 🏁  Job failed
+
+--- STDERR ---
+time="2026-05-07T08:55:21-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+Error: Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker l
+[Assistant] Issue: act force-pulls the image. The custom image is local-only. Need `--pull=false`.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/run_act_tests.py", "old_string": "  
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/run_act_tests.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 run_act_tests.py 2>&1 | tail -150
+[Result] === Workflow structure checks ===
+  workflow structure OK
+=== actionlint ===
+  actionlint OK
+
+=== Fixture: basic-docs ===
+  act exit code: 0
+  labels: ['documentation'] (matches expected)
+
+=== Fixture: priority-conflict ===
+  act exit code: 0
+  labels: ['api', 'backend', 'python'] (matches expected)
+
+=== Fixture: multi-label-mixed ===
+  act exit code: 0
+  labels: ['api', 'backend', 'documentation', 'javascript', 'python', 'tests'] (matches expected)
+
+All 3 fixtures passed via act.
+Output saved to: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/act-result.txt
+[Assistant] All 3 fixtures passed via act. Verifying artifacts.
+[Tool: Bash] ls -la act-result.txt && wc -l act-result.txt && grep -c "Job succeeded" act-result.txt && grep "LABELS_JSON=" act-result.txt
+[Result] -rw-r--r-- 1 passp passp 23599 May  7 08:56 act-result.txt
+265 act-result.txt
+6
+[PR Label Assigner/Assign labels]   | LABELS_JSON=["documentation"]
+[PR Label Assigner/Assign labels]   | LABELS_JSON=["api", "backend", "python"]
+[PR Label Assigner/Assign labels]   | LABELS_JSON=["api", "backend", "documentation", "javascript", "python", "tests"]
+[Assistant] All 3 fixtures: 2 jobs each × "Job succeeded" = 6, and each fixture's exact labels match. Let me update todos and do a final check.
+[Tool: TodoWrite] {"todos": [{"content": "Write failing pytest tests (red)", "activeForm": "Writing failing pytest tests", "status": "completed"}, {"content": "Implement label_assigner.py to pass tests (green)", "activ
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Bash] ls -la && echo "---" && find fixtures tests -type f | sort
+[Result] total 108
+drwxr-xr-x  8 passp passp  4096 May  7 08:55 .
+drwxr-xr-x 18 passp passp  4096 May  7 08:49 ..
+-rw-r--r--  1 passp passp    40 May  7 08:49 .actrc
+drwxr-xr-x  2 passp passp  4096 May  7 08:49 .claude
+drwxr-xr-x  6 passp passp  4096 May  7 08:49 .git
+drwxr-xr-x  3 passp passp  4096 May  7 08:51 .github
+drwxr-xr-x  2 passp passp  4096 May  7 08:55 __pycache__
+-rw-r--r--  1 passp passp 23599 May  7 08:56 act-result.txt
+-rw-r--r--  1 passp passp 21843 Apr 17 00:12 benchmark-instructions-v4.md
+-rw-r--r--  1 passp passp    31 May  7 08:52 files.txt
+drwxr-xr-x  6 passp passp  4096 May  7 08:52 fixtures
+-rw-r--r--  1 passp passp  6826 May  7 08:51 label_assigner.py
+-rw-r--r--  1 passp passp   486 May  7 08:51 rules.yaml
+-rw-r--r--  1 passp passp  7338 May  7 08:55 run_act_tests.py
+drwxr-xr-x  3 passp passp  4096 May  7 08:50 tests
+---
+fixtures/basic-docs/expected.json
+fixtures/basic-docs/files.txt
+fixtures/basic-docs/rules.yaml
+fixtures/multi-label-mixed/expected.json
+fixtures/multi-
+[Assistant] Complete. Summary of deliverables:
+
+**Solution** (`label_assigner.py`): glob→regex matcher, `LabelRule` dataclass with optional `group`/`priority`, `assign_labels()` core that resolves group-based conflicts (highest priority wins per group; ungrouped rules contribute independently), JSON+YAML config loader, CLI emitting `LABELS_JSON=[...]`.
+
+**Tests** (`tests/test_label_assigner.py`): 16 pytest cases written red-first then made green — basic match, dedup/sort, multi-label-per-file, glob `**/*.test.*`, priority within group, group isolation, JSON/YAML loading, error handling, CLI end-to-end.
+
+**Workflow** (`.github/workflows/pr-label-assigner.yml`): two jobs (`unit-tests` → `assign-labels`) on push/PR/dispatch, `permissions: contents: read`, runs pytest then the script + verifies against `expected.json`. `actionlint` clean.
+
+**Harness** (`run_act_tests.py`): static structure checks + actionlint + 3 fixtures (`basic-docs`, `priority-conflict`, `multi-label-mixed`) each driven through `act push --rm` in an isolated temp git repo. All 3 act runs exited 0; output appended to `act-result.txt` with 6 "Job succeeded" markers (2 jobs × 3 fixtures); exact `LABELS_JSON` values matched expected for every case.
