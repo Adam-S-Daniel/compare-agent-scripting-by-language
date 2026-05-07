@@ -1,0 +1,93 @@
+name: Semantic Version Bumper
+
+# Triggers: PRs and pushes drive CI; workflow_dispatch lets a maintainer
+# run a bump from the Actions tab; schedule keeps this exercised even
+# during quiet weeks. The harness exercises `push` via `act push`.
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      release_date:
+        description: "Override release date (YYYY-MM-DD). Leave blank for today."
+        required: false
+        default: ""
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+
+env:
+  RELEASE_DATE: "2026-05-07"
+
+jobs:
+  bump:
+    name: Bump version from conventional commits
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Show working directory
+        shell: pwsh
+        run: |
+          Write-Host "PWD: $(Get-Location)"
+          Get-ChildItem -Force | Select-Object Mode, Length, Name | Format-Table
+
+      - name: Run Pester unit tests
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference = 'Stop'
+          $cfg = New-PesterConfiguration
+          $cfg.Run.Path = './SemanticVersionBumper.Tests.ps1'
+          $cfg.Run.Exit = $true
+          $cfg.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $cfg
+
+      - name: Materialise commits.bin from commits.txt
+        shell: pwsh
+        run: |
+          # Each fixture commits a human-readable commits.txt; the bumper
+          # consumes a NUL-separated commits.bin (the on-disk shape of
+          # `git log -z --format=%B`). Convert here so fixtures stay
+          # readable in a PR diff.
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference = 'Stop'
+          if (-not (Test-Path './commits.txt')) {
+            throw "commits.txt missing - the harness must have failed to materialise the fixture."
+          }
+          $lines = Get-Content -Path ./commits.txt | Where-Object { $_ -and $_.Trim() }
+          $joined = ($lines -join [char]0)
+          $bytes = [System.Text.Encoding]::UTF8.GetBytes($joined)
+          [System.IO.File]::WriteAllBytes('./commits.bin', $bytes)
+          Write-Host "commits.bin bytes: $($bytes.Length)"
+
+      - name: Bump version
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference = 'Stop'
+          ./Bump.ps1 `
+            -VersionFile ./package.json `
+            -CommitsFile ./commits.bin `
+            -ChangelogFile ./CHANGELOG.md `
+            -Date $env:RELEASE_DATE
+
+      - name: Print results
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference = 'Stop'
+          $pkg = Get-Content -Raw ./package.json | ConvertFrom-Json
+          Write-Host "PACKAGE_VERSION=$($pkg.version)"
+          if (Test-Path ./CHANGELOG.md) {
+            Write-Host '----- CHANGELOG -----'
+            Get-Content -Raw ./CHANGELOG.md
+            Write-Host '----- END CHANGELOG -----'
+          } else {
+            Write-Host '----- NO CHANGELOG -----'
+          }
