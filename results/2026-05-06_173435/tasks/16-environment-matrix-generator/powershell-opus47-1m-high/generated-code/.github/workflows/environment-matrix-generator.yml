@@ -1,0 +1,114 @@
+name: environment-matrix-generator
+
+# CI for the Environment Matrix Generator. The workflow has two jobs:
+#   1. unit-tests : runs the Pester suite against MatrixGenerator.psm1.
+#   2. generate   : reads ./fixture.json, runs the generator, prints
+#                   structured markers (MATRIX_OK / MATRIX_FAIL plus values)
+#                   that an external harness asserts on.
+#
+# Both jobs always exit with code 0 so that act exits cleanly and a test
+# harness can compare the printed markers against per-fixture expectations.
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: Name of the fixture file (without .json) under fixtures/
+        required: false
+        default: basic
+  schedule:
+    # Weekly smoke test against the default fixture so drift in pwsh /
+    # Pester / runner images surfaces before someone needs the matrix.
+    - cron: '0 13 * * 1'
+
+permissions:
+  contents: read
+
+env:
+  FIXTURE_PATH: fixture.json
+
+jobs:
+  unit-tests:
+    name: Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Run Pester
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $cfg = New-PesterConfiguration
+          $cfg.Run.Path = './tests'
+          $cfg.Run.Exit = $true
+          $cfg.Output.Verbosity = 'Detailed'
+          $cfg.TestResult.Enabled = $false
+          Invoke-Pester -Configuration $cfg
+
+  generate:
+    name: Generate matrix from fixture
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Resolve fixture
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          # Priority order:
+          #   1. ./fixture.json (placed by harness for the test case)
+          #   2. fixtures/${{ inputs.fixture }}.json (workflow_dispatch)
+          #   3. fixtures/basic.json (default)
+          if (Test-Path './fixture.json') {
+              Write-Host "FIXTURE_SOURCE=root_fixture_json"
+          } else {
+              $name = '${{ github.event.inputs.fixture }}'
+              if ([string]::IsNullOrWhiteSpace($name)) { $name = 'basic' }
+              $candidate = Join-Path 'fixtures' "$name.json"
+              if (-not (Test-Path $candidate)) { $candidate = './fixtures/basic.json' }
+              Copy-Item -LiteralPath $candidate -Destination './fixture.json'
+              Write-Host "FIXTURE_SOURCE=$candidate"
+          }
+          Write-Host '----- fixture content -----'
+          Get-Content -LiteralPath './fixture.json' -Raw | Write-Host
+          Write-Host '----- end fixture ---------'
+
+      - name: Run matrix generator
+        id: gen
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Import-Module ./MatrixGenerator.psm1 -Force
+
+          try {
+              $json = Invoke-MatrixGenerator -ConfigPath './fixture.json' -OutputPath './matrix-out.json'
+              $matrix = Get-Content './matrix-out.json' -Raw | ConvertFrom-Json
+              # Structured markers (consumed by the harness).
+              Write-Host 'MATRIX_OK'
+              Write-Host "MATRIX_SIZE=$($matrix.size)"
+              Write-Host "MATRIX_FAIL_FAST=$($matrix.'fail-fast')"
+              if ($matrix.PSObject.Properties.Name -contains 'max-parallel') {
+                  Write-Host "MATRIX_MAX_PARALLEL=$($matrix.'max-parallel')"
+              } else {
+                  Write-Host "MATRIX_MAX_PARALLEL=unset"
+              }
+              Write-Host 'MATRIX_JSON_BEGIN'
+              Write-Host $json
+              Write-Host 'MATRIX_JSON_END'
+
+              # Also publish to GITHUB_OUTPUT so downstream jobs can fan out.
+              "matrix=$json" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+              "size=$($matrix.size)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          } catch {
+              # Validation errors (max-size, malformed JSON, etc.) are part
+              # of the contract: surface them as a structured marker and
+              # let the job exit cleanly so the harness can assert on the
+              # error message rather than on the exit code.
+              Write-Host 'MATRIX_FAIL'
+              Write-Host "MATRIX_ERROR=$($_.Exception.Message)"
+          }
