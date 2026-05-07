@@ -1,0 +1,51 @@
+name: dependency-license-checker
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+env:
+  MANIFEST_PATH: package.json
+  CONFIG_PATH: license-config.json
+  LOOKUP_PATH: mock-licenses.json
+
+jobs:
+  test:
+    name: Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $cfg = New-PesterConfiguration
+          $cfg.Run.Path = './LicenseChecker.Tests.ps1'
+          $cfg.Run.Exit = $true
+          $cfg.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $cfg
+
+  check:
+    name: License compliance check
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Run license checker
+        shell: pwsh
+        run: |
+          ./Invoke-LicenseChecker.ps1 `
+            -ManifestPath $env:MANIFEST_PATH `
+            -ConfigPath   $env:CONFIG_PATH `
+            -LookupPath   $env:LOOKUP_PATH `
+            -OutputPath   compliance-report.txt
+      - name: Show report
+        shell: pwsh
+        run: Get-Content compliance-report.txt
