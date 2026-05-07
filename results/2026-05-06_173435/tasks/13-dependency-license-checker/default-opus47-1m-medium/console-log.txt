@@ -1,0 +1,297 @@
+[Tool: Bash] ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-medium/
+[Result] total 44
+drwxr-xr-x  4 passp passp  4096 May  7 14:43 .
+drwxr-xr-x 23 passp passp  4096 May  7 14:43 ..
+-rw-r--r--  1 passp passp    40 May  7 14:43 .actrc
+drwxr-xr-x  2 passp passp  4096 May  7 14:43 .claude
+drwxr-xr-x  6 passp passp  4096 May  7 14:43 .git
+-rw-r--r--  1 passp passp 21843 Apr 17 00:12 benchmark-instructions-v4.md
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/AGENTS.md"}
+[Result] 1	# Agent Instructions
+2	
+3	All agent-facing instructions live in this file. `CLAUDE.md` contains only a
+4	reference here. If you are a Claude Code agent, you have already loaded this
+5	via `CLAUDE.md`. Other agents: read this file directly.
+6	
+7	## Build and test
+8	
+9	```bash
+10	# Run unit tests (REQUIRED before every PR)
+11	pip install pytest  # if not already installed
+12	python3 -m pytest tests/ -v
+13	
+14	# Validate imports
+15	python3 -c "from runner import main"
+16	python3 -c "from generate_results import generate_results_md"
+17	python3 -c "from test_quality import compute_structural_metrics"
+18	python3 -c "from llm_providers import get_provider"
+19	
+20	# Regenerate all reports
+21	python3 generate_results.py --all
+22	
+23	# Run a benchmark (v4, all tasks/modes/models)
+24	python3 runner.py --tasks 11,12,13,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
+25	
+26	# Evaluate test quality (structural metrics only)
+27	python3 test_quality.py results/2026-04
+[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-medium/.actrc
+[Result] -P ubuntu-latest=act-ubuntu-pwsh:latest
+[Assistant] I'll build this in Python with TDD. Let me start by creating the test file with the first failing test.
+[Tool: Bash] mkdir -p tests fixtures .github/workflows
+[Result] (Bash completed with no output)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-medium/tests/test_license_checker.py", "content": "\"\
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-medium/tests/test_license_checker.py (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 -m pytest tests/ -v 2>&1 | head -30
+[Result] ============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/passp/repos/compare-agent-scripting-by-language
+configfile: pyproject.toml
+plugins: anyio-4.13.0
+collecting ... collected 0 items / 1 error
+
+==================================== ERRORS ====================================
+_ ERROR collecting workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-medium/tests/test_license_checker.py _
+ImportError while importing test module '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-medium/tests/test_license_checker.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^
+[Assistant] Red. Now let me write the implementation.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-medium/license_checker.py", "content": "\"\"\"Dependen
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-medium/license_checker.py (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 -m pytest tests/ -v 2>&1 | tail -40
+[Result]             "allow": ["MIT", "Apache-2.0"],
+            "deny": ["GPL-3.0"],
+        }))
+        cfg = load_config(str(cfg_path))
+>       assert cfg.allow == {"MIT", "Apache-2.0"}
+E       AssertionError: assert {'APACHE-2.0', 'MIT'} == {'Apache-2.0', 'MIT'}
+E         
+E         Extra items in the left set:
+E         'APACHE-2.0'
+E         Extra items in the right set:
+E         'Apache-2.0'
+E         
+E         Full diff:...
+E         
+E         ...Full output truncated (5 lines hidden), use '-vv' to show
+
+tests/test_license_checker.py:83: AssertionError
+_________________ test_generate_report_includes_summary_counts _________________
+
+    def test_generate_report_includes_summary_counts():
+        from license_checker import Result
+        results = [
+            Result("a", "1", "MIT", Status.APPROVED),
+            Result("b", "1", "MIT", Status.APPROVED),
+            Result("c", "1", "GPL-3.0", Status.DENIED),
+            Result("d", "1", None, Status.UNKNOWN),
+        ]
+        text
+[Tool: Bash] python3 -m pytest tests/test_license_checker.py::test_parse_manifest_requirements_txt -v 2>&1 | tail -25
+[Result]         manifest = tmp_path / "requirements.txt"
+        manifest.write_text(
+            "# comment line\n"
+            "requests==2.31.0\n"
+            "flask>=2.0\n"
+            "\n"
+            "numpy~=1.24\n"
+        )
+        deps = parse_manifest(str(manifest))
+>       assert deps == {"requests": "2.31.0", "flask": ">=2.0", "numpy": "~=1.24"}
+E       AssertionError: assert {'flask': '>=...': '==2.31.0'} == {'flask': '>=...ts': '2.31.0'}
+E         
+E         Omitting 2 identical items, use -vv to show
+E         Differing items:
+E         {'requests': '==2.31.0'} != {'requests': '2.31.0'}
+E         
+E         Full diff:
+E           {...
+E         
+E         ...Full output truncated (6 lines hidden), use '-vv' to show
+
+tests/test_license_checker.py:49: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_license_checker.py::test_parse_manifest_requirements_txt - ...
+============================== 1 failed in 0.05s =======
+[Assistant] I'll fix the small implementation/test mismatches.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-medium/license_checker.py", "old
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-medium/license_checker.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-medium/tests/test_license_checke
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-medium/tests/test_license_checker.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-medium/license_checker.py", "old
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-medium/license_checker.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 -m pytest tests/ -v 2>&1 | tail -30
+[Result] ============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/passp/repos/compare-agent-scripting-by-language
+configfile: pyproject.toml
+plugins: anyio-4.13.0
+collecting ... collected 20 items
+
+tests/test_license_checker.py::test_parse_manifest_package_json PASSED   [  5%]
+tests/test_license_checker.py::test_parse_manifest_requirements_txt PASSED [ 10%]
+tests/test_license_checker.py::test_parse_manifest_missing_file_raises PASSED [ 15%]
+tests/test_license_checker.py::test_parse_manifest_invalid_json_raises PASSED [ 20%]
+tests/test_license_checker.py::test_parse_manifest_unsupported_extension PASSED [ 25%]
+tests/test_license_checker.py::test_load_config_reads_allow_and_deny PASSED [ 30%]
+tests/test_license_checker.py::test_load_config_normalizes_case PASSED   [ 35%]
+tests/test_license_checker.py::test_check_dependency_approved_when_license_in_allow PA
+[Assistant] All 20 tests pass (green). Now let me create the fixtures, GitHub Actions workflow, and act test harness.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-medium/fixtures/policy.json", "content": "{\n  \"allow
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-medium/fixtures/policy.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-medium/fixtures/all-approved.package.json", "content":
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-medium/fixtures/all-approved.package.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-medium/fixtures/all-approved.licenses.json", "content"
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-medium/fixtures/all-approved.licenses.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-medium/fixtures/has-denied.package.json", "content": "
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-medium/fixtures/has-denied.package.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-medium/fixtures/has-denied.licenses.json", "content": 
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-medium/fixtures/has-denied.licenses.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-medium/fixtures/python-app.requirements.txt", "content
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-medium/fixtures/python-app.requirements.txt (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-medium/fixtures/python-app.licenses.json", "content": 
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-medium/fixtures/python-app.licenses.json (file state is current in your context — no need to Read it back)
+[Assistant] Now the workflow:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-medium/.github/workflows/dependency-license-checker.ym
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-medium/.github/workflows/dependency-license-checker.yml (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/dependency-license-checker.yml
+[Result] (Bash completed with no output)
+[Assistant] Actionlint passes. Now the act test harness:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-medium/tests/test_workflow_act.py", "content": "\"\"\"
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-medium/tests/test_workflow_act.py (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 -m pytest tests/test_workflow_act.py -v -k "not act" 2>&1 | tail -20
+[Result] ============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/passp/repos/compare-agent-scripting-by-language
+configfile: pyproject.toml
+plugins: anyio-4.13.0
+collecting ... collected 8 items / 8 deselected / 0 selected
+
+============================ 8 deselected in 0.09s =============================
+[Tool: Bash] python3 -m pytest tests/test_workflow_act.py::test_workflow_yaml_parses tests/test_workflow_act.py::test_workflow_has_expected_triggers tests/test_workflow_act.py::test_workflow_has_expected_jobs tests/test_workflow_act.py::test_workflow_references_existing_script_paths tests/test_workflow_act.py::test_actionlint_passes -v 2>&1 | tail -20
+[Result] ============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/passp/repos/compare-agent-scripting-by-language
+configfile: pyproject.toml
+plugins: anyio-4.13.0
+collecting ... collected 5 items
+
+tests/test_workflow_act.py::test_workflow_yaml_parses PASSED             [ 20%]
+tests/test_workflow_act.py::test_workflow_has_expected_triggers PASSED   [ 40%]
+tests/test_workflow_act.py::test_workflow_has_expected_jobs PASSED       [ 60%]
+tests/test_workflow_act.py::test_workflow_references_existing_script_paths PASSED [ 80%]
+tests/test_workflow_act.py::test_actionlint_passes PASSED                [100%]
+
+============================== 5 passed in 0.21s ===============================
+[Assistant] Structure tests pass. Now run act for the 3 cases. First let me verify Docker is up and run all 3 in one go.
+[Tool: Bash] docker info >/dev/null 2>&1 && echo "docker ok" && which act
+[Result] docker ok
+/home/passp/.local/bin/act
+[Tool: Bash] python3 -m pytest tests/test_workflow_act.py -v 2>&1 | tail -60
+[Result]         # Every case must show the unit-tests job succeeding (license-check job
+        # only succeeds when expect_success).
+        job_succeeded_count = len(re.findall(r"Job succeeded", output))
+        if case["expect_success"]:
+            assert job_succeeded_count >= 2, (
+                f"expected both jobs to succeed; saw {job_succeeded_count} 'Job succeeded' markers"
+            )
+        else:
+>           assert job_succeeded_count >= 1, (
+                "expected unit-tests job to succeed even when license-check fails"
+            )
+E           AssertionError: expected unit-tests job to succeed even when license-check fails
+E           assert 0 >= 1
+
+tests/test_workflow_act.py:248: AssertionError
+__________________ test_workflow_via_act[python-requirements] __________________
+
+tmp_path = PosixPath('/tmp/pytest-of-passp/pytest-47/test_workflow_via_act_python_r0')
+case = {'expect_substrings': ['requests@2.31.0', 'flask@>=2.0', 'numpy@~=1.24', 'approved: 3', 'All dependencies
+[Tool: Bash] docker images | head -20
+[Result] WARNING: This output is designed for human readability. For machine-readable output, please use --format.
+IMAGE                                           ID             DISK USAGE   CONTENT SIZE   EXTRA
+act-ubuntu-pwsh:latest                          05bbd1974971        2.6GB          652MB        
+alpine:latest                                   5b10f432ef3d       13.1MB         3.95MB        
+catthehacker/ubuntu:act-22.04                   754f20d9a184       2.15GB          531MB        
+catthehacker/ubuntu:act-latest                  ee77eaa905d1       2.32GB          572MB        
+catthehacker/ubuntu:full-latest                 9327301aea27       67.7GB         16.8GB   U    
+civic-terraform-mcp:latest                      84776a24bc66       1.28GB          265MB        
+ghcr.io/catthehacker/ubuntu:act-latest          eb153df03ca8       2.04GB          297MB        
+ghcr.io/catthehacker/ubuntu:full-latest         9327301aea27       67.7GB         16.8GB   U    
+ghcr.io/catthehacker/
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-medium/tests/test_workflow_act.p
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-medium/tests/test_workflow_act.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 -m pytest tests/test_workflow_act.py -v 2>&1 | tail -50
+[Result] =================================== FAILURES ===================================
+______________________ test_workflow_via_act[has-denied] _______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-passp/pytest-48/test_workflow_via_act_has_deni0')
+case = {'expect_substrings': ['good-pkg@1.0.0', 'evil-gpl@2.0.0', 'status=DENIED', 'mystery-pkg@0.1.0', 'status=UNKNOWN', 'approved: 1', ...], 'expect_success': False, 'forbid_substrings': [], 'id': 'has-denied', ...}
+
+    @pytest.mark.parametrize("case", ACT_CASES, ids=[c["id"] for c in ACT_CASES])
+    def test_workflow_via_act(tmp_path, case):
+        ok, why = _have_act_and_docker()
+        if not ok:
+            pytest.skip(why)
+    
+        repo = _setup_temp_repo(tmp_path, case)
+        proc = _run_act(repo, case)
+        _append_result(case["id"], proc)
+    
+        output = proc.stdout + proc.stderr
+    
+        # Per spec: "all-approved" must exit 0; "has-denied" lets the policy gate
+        # fail the job, so act exits non-zero. W
+[Assistant] The `bash -e` GitHub Actions runner aborts when python exits 1. I'll disable errexit before the python call.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-medium/.github/workflows/depende
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-medium/.github/workflows/dependency-license-checker.yml has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/dependency-license-checker.yml && echo "actionlint OK"
+[Result] actionlint OK
+[Tool: Bash] python3 -m pytest tests/test_workflow_act.py -v 2>&1 | tail -30
+[Result] ============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/passp/repos/compare-agent-scripting-by-language
+configfile: pyproject.toml
+plugins: anyio-4.13.0
+collecting ... collected 8 items
+
+tests/test_workflow_act.py::test_workflow_yaml_parses PASSED             [ 12%]
+tests/test_workflow_act.py::test_workflow_has_expected_triggers PASSED   [ 25%]
+tests/test_workflow_act.py::test_workflow_has_expected_jobs PASSED       [ 37%]
+tests/test_workflow_act.py::test_workflow_references_existing_script_paths PASSED [ 50%]
+tests/test_workflow_act.py::test_actionlint_passes PASSED                [ 62%]
+tests/test_workflow_act.py::test_workflow_via_act[all-approved] PASSED   [ 75%]
+tests/test_workflow_act.py::test_workflow_via_act[has-denied] PASSED     [ 87%]
+tests/test_workflow_act.py::test_workflow_via_act[python-requirements] PASSED [100%]
+
+==============
+[Assistant] All 8 workflow tests pass. Let me run the complete test suite and verify act-result.txt exists.
+[Tool: Bash] python3 -m pytest tests/ -v 2>&1 | tail -15 && echo "---" && ls -la act-result.txt && wc -l act-result.txt
+[Result] tests/test_license_checker.py::test_generate_report_json_format PASSED   [ 57%]
+tests/test_license_checker.py::test_cli_exits_zero_when_all_approved PASSED [ 60%]
+tests/test_license_checker.py::test_cli_exits_nonzero_when_denied PASSED [ 64%]
+tests/test_license_checker.py::test_cli_json_output PASSED               [ 67%]
+tests/test_license_checker.py::test_cli_friendly_error_for_missing_manifest PASSED [ 71%]
+tests/test_workflow_act.py::test_workflow_yaml_parses PASSED             [ 75%]
+tests/test_workflow_act.py::test_workflow_has_expected_triggers PASSED   [ 78%]
+tests/test_workflow_act.py::test_workflow_has_expected_jobs PASSED       [ 82%]
+tests/test_workflow_act.py::test_workflow_references_existing_script_paths PASSED [ 85%]
+tests/test_workflow_act.py::test_actionlint_passes PASSED                [ 89%]
+tests/test_workflow_act.py::test_workflow_via_act[all-approved] PASSED   [ 92%]
+tests/test_workflow_act.py::test_workflow_via_act[has-denied] PASSED     [ 96%]
+tests/test_workflo
+[Assistant] All 28 tests pass; `act-result.txt` is 591 lines with all 3 cases captured.
+
+Summary:
+- **`license_checker.py`** — TDD-built module: parses package.json/requirements.txt, loads policy (allow/deny), classifies via injected lookup (mock for tests), generates text/JSON reports. Deny precedence over allow; case-insensitive matching; CLI exits 1 on denied.
+- **`tests/test_license_checker.py`** — 20 unit tests (parsing, config, classification, reports, CLI integration).
+- **`tests/test_workflow_act.py`** — 5 structure tests (YAML, triggers, jobs, paths, actionlint) + 3 parametrized end-to-end act cases. Each case stages a temp git repo, runs `act push --rm`, appends to `act-result.txt`, and asserts on exact substrings (e.g. `approved: 3`, `evil-gpl@2.0.0` `status=DENIED`, `License check failed with exit code 1`).
+- **`.github/workflows/dependency-license-checker.yml`** — push/PR/schedule/workflow_dispatch triggers, `unit-tests` → `license-check` job dependency, `permissions: contents: read`, fixture inputs via env. Passes actionlint.
+- **`act-result.txt`** — 62 KB / 591 lines, all 3 cases captured with `Job succeeded` markers.

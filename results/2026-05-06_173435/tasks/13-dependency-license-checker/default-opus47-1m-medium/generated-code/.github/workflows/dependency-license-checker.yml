@@ -1,0 +1,127 @@
+name: Dependency License Checker
+
+# Run on every push and PR, plus a weekly schedule to catch policy drift, plus
+# a manual trigger that lets a maintainer point at any manifest in the repo.
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  schedule:
+    - cron: '0 6 * * 1'  # Mondays 06:00 UTC
+  workflow_dispatch:
+    inputs:
+      manifest:
+        description: 'Path to manifest file (relative to repo root)'
+        required: false
+        default: 'fixtures/all-approved.package.json'
+      licenses:
+        description: 'Path to mock-licenses JSON (relative to repo root)'
+        required: false
+        default: 'fixtures/all-approved.licenses.json'
+
+permissions:
+  contents: read
+
+env:
+  POLICY_FILE: fixtures/policy.json
+
+jobs:
+  unit-tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install pytest
+        run: python -m pip install --upgrade pip pytest
+
+      - name: Run unit tests
+        run: python -m pytest tests/ -v
+
+  license-check:
+    name: License compliance
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Resolve manifest + licenses inputs
+        id: resolve
+        # Pick fixtures from workflow_dispatch inputs when present; otherwise
+        # honor environment overrides ($MANIFEST/$LICENSES) so the act test
+        # harness can swap fixtures per-case without rewriting the workflow.
+        run: |
+          set -euo pipefail
+          manifest="${MANIFEST:-fixtures/all-approved.package.json}"
+          licenses="${LICENSES:-fixtures/all-approved.licenses.json}"
+          if [ -n "${INPUT_MANIFEST:-}" ]; then manifest="$INPUT_MANIFEST"; fi
+          if [ -n "${INPUT_LICENSES:-}" ]; then licenses="$INPUT_LICENSES"; fi
+          echo "manifest=$manifest" >> "$GITHUB_OUTPUT"
+          echo "licenses=$licenses" >> "$GITHUB_OUTPUT"
+          echo "Using manifest=$manifest licenses=$licenses"
+        env:
+          MANIFEST: ${{ env.MANIFEST }}
+          LICENSES: ${{ env.LICENSES }}
+          INPUT_MANIFEST: ${{ inputs.manifest }}
+          INPUT_LICENSES: ${{ inputs.licenses }}
+
+      - name: Run license checker (text report)
+        id: text_report
+        # GitHub runs run-steps with `bash -e`, so a non-zero python exit
+        # aborts the step before we can capture it. We disable errexit here
+        # because exit code 1 is expected (denied deps); the dedicated gate
+        # step below is what actually fails the job.
+        run: |
+          set +e
+          mocks=$(cat "${{ steps.resolve.outputs.licenses }}")
+          python license_checker.py \
+            --manifest "${{ steps.resolve.outputs.manifest }}" \
+            --config "$POLICY_FILE" \
+            --mock-licenses "$mocks" \
+            --format text \
+            --output report.txt
+          rc=$?
+          echo "exit_code=$rc" >> "$GITHUB_OUTPUT"
+          echo "----- report.txt -----"
+          cat report.txt
+          echo "----- end report -----"
+          exit 0
+
+      - name: Run license checker (JSON report)
+        run: |
+          set +e
+          mocks=$(cat "${{ steps.resolve.outputs.licenses }}")
+          python license_checker.py \
+            --manifest "${{ steps.resolve.outputs.manifest }}" \
+            --config "$POLICY_FILE" \
+            --mock-licenses "$mocks" \
+            --format json \
+            --output report.json
+          echo "----- report.json -----"
+          cat report.json
+          echo "----- end json -----"
+          exit 0
+
+      - name: Enforce policy
+        # Final gate: fail the job if the text run already exited non-zero
+        # (i.e. at least one dependency was denied).
+        run: |
+          rc="${{ steps.text_report.outputs.exit_code }}"
+          if [ "$rc" != "0" ]; then
+            echo "License check failed with exit code $rc -- denied dependencies present."
+            exit 1
+          fi
+          echo "All dependencies pass policy."
