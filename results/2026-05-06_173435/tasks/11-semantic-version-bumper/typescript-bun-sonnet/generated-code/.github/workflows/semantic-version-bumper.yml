@@ -1,0 +1,36 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+
+      - name: Run version bumper
+        run: |
+          bun run bumper.ts . commits.txt
+
+      - name: Show updated files
+        run: |
+          echo "=== version.txt ===" || true
+          cat version.txt 2>/dev/null || true
+          echo "=== package.json version ===" || true
+          node -e "try{const p=require('./package.json');console.log(p.version)}catch(e){}" 2>/dev/null || true
+          echo "=== CHANGELOG.md ===" || true
+          cat CHANGELOG.md 2>/dev/null || true
