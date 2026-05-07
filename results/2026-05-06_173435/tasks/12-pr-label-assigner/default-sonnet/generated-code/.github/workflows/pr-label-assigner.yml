@@ -1,0 +1,45 @@
+name: PR Label Assigner
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  test-and-label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Python dependencies
+        run: pip install --break-system-packages pytest pyyaml
+
+      - name: Install actionlint
+        run: |
+          curl -sSfL https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz \
+            -o /tmp/actionlint.tar.gz
+          tar -xzf /tmp/actionlint.tar.gz -C /tmp actionlint
+          mv /tmp/actionlint /usr/local/bin/actionlint
+
+      - name: Validate workflow with actionlint
+        run: actionlint .github/workflows/pr-label-assigner.yml
+
+      - name: Run unit tests
+        run: python3 -m pytest tests/ -v
+
+      - name: Run fixture test cases
+        run: python3 run_fixture_tests.py
+
+      - name: Run label assigner with mock data
+        run: python3 pr_label_assigner.py --config label_config.json
