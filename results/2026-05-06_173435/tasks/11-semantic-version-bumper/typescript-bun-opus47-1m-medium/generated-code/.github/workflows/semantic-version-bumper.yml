@@ -1,0 +1,88 @@
+name: Semantic Version Bumper
+
+# CI pipeline that runs the bumper's unit tests and then exercises the script
+# against a fixture commit log. Test harness drives this via `act push`,
+# passing the fixture path / starting version through env vars.
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      commit_log:
+        description: 'Path to a pipe-delimited commit log fixture'
+        required: false
+        default: 'fixtures/feat.log'
+      start_version:
+        description: 'Starting version to write into package.json before running'
+        required: false
+        default: '1.1.0'
+
+permissions:
+  contents: read
+
+env:
+  COMMIT_LOG: ${{ github.event.inputs.commit_log || 'fixtures/feat.log' }}
+  START_VERSION: ${{ github.event.inputs.start_version || '1.1.0' }}
+
+jobs:
+  test:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.11'
+
+      - name: Run unit tests
+        run: bun test
+
+  bump:
+    name: Run bumper on fixture
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.11'
+
+      - name: Seed package.json with starting version
+        run: |
+          cat > package.json <<EOF
+          {
+            "name": "semantic-version-bumper",
+            "version": "${START_VERSION}",
+            "type": "module",
+            "private": true
+          }
+          EOF
+          echo "--- package.json before bump ---"
+          cat package.json
+
+      - name: Run bumper
+        id: bump
+        env:
+          COMMIT_LOG_FILE: ${{ env.COMMIT_LOG }}
+        run: |
+          bun run bump.ts \
+            --version-file package.json \
+            --changelog CHANGELOG.md \
+            --date 2026-05-07
+
+      - name: Show results
+        run: |
+          echo "BUMP_RESULT_PREVIOUS=${{ steps.bump.outputs.previous_version }}"
+          echo "BUMP_RESULT_NEW=${{ steps.bump.outputs.new_version }}"
+          echo "BUMP_RESULT_TYPE=${{ steps.bump.outputs.bump }}"
+          echo "--- package.json after bump ---"
+          cat package.json
+          echo "--- CHANGELOG.md ---"
+          if [ -f CHANGELOG.md ]; then cat CHANGELOG.md; else echo "(no changelog: bump=none)"; fi
