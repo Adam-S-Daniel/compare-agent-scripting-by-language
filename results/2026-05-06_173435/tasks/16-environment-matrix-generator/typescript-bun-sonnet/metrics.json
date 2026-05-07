@@ -1,0 +1,812 @@
+{
+  "task_id": "16-environment-matrix-generator",
+  "task_name": "Environment Matrix Generator",
+  "task_category": "GitHub Actions / CI Configuration",
+  "language_mode": "typescript-bun",
+  "language_chosen": "typescript",
+  "language_breakdown": {
+    "typescript": 100.0
+  },
+  "interpreter_versions": {},
+  "powershell_version": "",
+  "dotnet_version": "",
+  "model": "claude-sonnet-4-6",
+  "model_short": "sonnet",
+  "variant": "sonnet",
+  "claude_code_version": "2.1.132",
+  "instructions_version": "v4",
+  "timestamp_start": "2026-05-07T10:11:35.373989+00:00",
+  "timestamp_end": "2026-05-07T10:21:45.064002+00:00",
+  "prompt_text": "You are completing a scripting task. You MUST use TypeScript with Bun as your implementation language and runtime.\n\nTASK: Given a configuration describing OS options, language versions, and feature flags, generate a build matrix (as JSON) suitable for GitHub Actions strategy.matrix. Support include/exclude rules, max-parallel limits, and fail-fast configuration. Validate that the matrix doesn't exceed a maximum size. Output the complete matrix JSON.\n\nREQUIREMENTS:\n1. Use red/green TDD methodology: write a failing test FIRST, then write the minimum code to make it pass, then refactor. Repeat for each piece of functionality.\n2. Create mocks and test fixtures as necessary for testability. Use Bun's built-in test runner (`bun test`).\n3. All tests must be runnable with `bun test` and must pass at the end.\n4. Include clear comments explaining your approach.\n5. Handle errors gracefully with meaningful error messages.\n6. Use TypeScript features: explicit types, interfaces, and type annotations. Run scripts with `bun run <file>.ts`.\n\nCreate your solution in the current working directory. Start by writing your first failing test.\n\nGITHUB ACTIONS REQUIREMENT:\nCreate a GitHub Actions workflow file at .github/workflows/environment-matrix-generator.yml that uses\nyour script in a real CI/CD pipeline. The workflow must:\n- Use appropriate trigger events (push, pull_request, schedule, workflow_dispatch, etc.)\n- Reference your script correctly\n- Pass actionlint validation (valid YAML, valid action references, correct syntax)\n- Include appropriate permissions, environment variables, and job dependencies\n- Actually run successfully when executed locally with `act` (nektos/act)\n\nDesign your workflow so its steps work in an isolated Docker container \u2014 use\n`actions/checkout@v4`, install dependencies your script needs, and run it.\nAvoid steps requiring external services or secrets without sensible defaults.\n\nIMPORTANT for PowerShell mode: Use `shell: pwsh` on your workflow run: steps instead\nof invoking `pwsh -Command` or `pwsh -File` from bash. This avoids escaping issues\nand works correctly in act containers. pwsh and Pester are pre-installed in the\ncontainer.\n\nWORKFLOW VALIDATION:\nRun `actionlint .github/workflows/environment-matrix-generator.yml` and fix any errors. actionlint is\npre-installed. Iterate until it passes cleanly. Validate with actionlint BEFORE\nrunning act \u2014 actionlint is instant, act takes 30-90 seconds per run.\n\nALL TESTS MUST RUN THROUGH ACT:\nEvery single test case must execute through the GitHub Actions workflow via `act`.\nDo NOT test your script directly \u2014 all testing goes through the pipeline.\n\nStructure your workflow to accept test fixture data and produce verifiable output.\nYour test harness must:\n1. For each test case: set up a temp git repo with your project files + that case's\n   fixture data, run `act push --rm`, capture the output\n2. Save all act output to `act-result.txt` in the current working directory (append\n   each test case's output, clearly delimited)\n3. Assert that act exited with code 0 for each case\n4. Parse the act output and assert on EXACT EXPECTED VALUES \u2014 not just that output\n   appeared, but that it matches the known-good result for that test case's input.\n   For example: if your workflow bumps version 1.1.0 with a feat commit, assert\n   the output contains exactly \"1.2.0\", not just \"a version number\"\n5. Assert every job shows \"Job succeeded\"\n\nThe `act-result.txt` file MUST exist when done. It is a required artifact.\n`act` and Docker are pre-installed. Limit yourself to at most 3 `act push` runs \u2014\ndiagnose errors from the output rather than re-running blindly.\n\nWORKFLOW STRUCTURE TESTS (also required):\n- Parse the YAML and check expected structure (triggers, jobs, steps)\n- Verify the workflow references your script files correctly (paths exist)\n- Verify actionlint passes (assert exit code 0)\n",
+  "exit_code": 0,
+  "run_success": true,
+  "failure_reason": null,
+  "session": {
+    "session_id": "3f3332f4-f9a7-4fc5-963e-56587180e952",
+    "stop_reason": "end_turn",
+    "terminal_reason": "completed",
+    "fast_mode_state": "off",
+    "service_tier": "standard",
+    "speed": "standard",
+    "inference_geo": "",
+    "context_window": 200000,
+    "max_output_tokens": 32000,
+    "permission_mode": "bypassPermissions",
+    "output_style": "default",
+    "tools_available_count": 28,
+    "mcp_servers": [],
+    "permission_denials": []
+  },
+  "model_usage_detail": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 1284,
+      "outputTokens": 14,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.001354,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    },
+    "claude-sonnet-4-6": {
+      "inputTokens": 42,
+      "outputTokens": 33458,
+      "cacheReadInputTokens": 2369025,
+      "cacheCreationInputTokens": 64955,
+      "webSearchRequests": 0,
+      "costUSD": 1.45628475,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000
+    }
+  },
+  "effort_level": null,
+  "timing": {
+    "grand_total_duration_ms": 609689,
+    "total_api_duration_ms": 570871,
+    "total_execution_duration_ms": 37650,
+    "num_turns": 49
+  },
+  "tokens": {
+    "input_tokens": 42,
+    "output_tokens": 33458,
+    "cache_read_tokens": 2369025,
+    "cache_creation_tokens": 64955,
+    "total_context_consumed": 2434022,
+    "compaction_count": 0
+  },
+  "cost": {
+    "total_cost_usd": 1.4576387499999999,
+    "assumed_input_cost_per_mtok": 3.0,
+    "assumed_output_cost_per_mtok": 15.0,
+    "assumed_cache_read_cost_per_mtok": 0.3,
+    "assumed_cache_write_cost_per_mtok": 3.75
+  },
+  "code_metrics": {
+    "total_lines": 932,
+    "total_tokens_estimate": 11724,
+    "file_count": 12,
+    "files": [
+      "act-result.txt",
+      "bun.lock",
+      "matrix-generator.test.ts",
+      "matrix-generator.ts",
+      "package.json",
+      "fixtures/basic.json",
+      "fixtures/max-parallel.json",
+      "fixtures/max-size-error.json",
+      "fixtures/with-excludes.json",
+      "fixtures/with-flags.json",
+      "fixtures/with-includes.json",
+      ".github/workflows/environment-matrix-generator.yml"
+    ]
+  },
+  "quality": {
+    "tests_pass": null,
+    "error_count": 3,
+    "error_details": [
+      "Exit code 1\nbun test v1.3.11 (af24e281)\nThe following filters did not match any test files in --cwd=\"/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-m",
+      "Exit code 1\nbun test v1.3.11 (af24e281)\nThe following filters did not match any test files in --cwd=\"/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-m",
+      "Exit code 1\nbun test v1.3.11 (af24e281)\n\nmatrix-generator.test.ts:\nRunning act in /tmp/matrix-act-P1BQwN ...\nact exited with code 1\nact output (last 3000 chars):\n [Environment Matrix Generator/generat"
+    ],
+    "actionlint_pass": true,
+    "actionlint_errors": 0,
+    "actionlint_results": [
+      {
+        "file": ".github/workflows/environment-matrix-generator.yml",
+        "passed": true,
+        "errors": ""
+      }
+    ],
+    "act_result_txt_exists": true,
+    "act_result_txt_size": 29242,
+    "areas_of_difficulty": [],
+    "observations": ""
+  },
+  "tool_install": {
+    "tool_install_duration_ms": 0,
+    "tools_installed": [],
+    "install_commands_count": 0
+  },
+  "tool_use_timing": {
+    "total_tool_uses": 48,
+    "total_tool_duration_ms": 45428,
+    "bash_tool_uses": 25,
+    "bash_total_ms": 29746,
+    "slowest_tool_uses": [
+      {
+        "tool_name": "Bash",
+        "command": "bun test 2>&1",
+        "duration_ms": 10769,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test 2>&1",
+        "duration_ms": 10161,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "docker run --rm act-ubuntu-pwsh:latest bash -c \"curl -fsSL https://bun.sh/install | bash && echo 'bun install success'\" 2>&1 | head -20 || echo \"curl failed\"",
+        "duration_ms": 3642,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 2120,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 2084,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 2043,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 2041,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 2013,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 1935,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test 2>&1",
+        "duration_ms": 748,
+        "is_error": true,
+        "is_install": false
+      }
+    ],
+    "all_tool_uses": [
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 133,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Read",
+        "command": "",
+        "duration_ms": 64,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/typescript-bun-sonnet/ && cat /home/passp/repos/compare-agent-scripting-by-lan",
+        "duration_ms": 338,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun --version && which act && act --version 2>/dev/null | head -3",
+        "duration_ms": 71,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "docker images | grep -E \"act-ubuntu|catthehacker\" | head -10",
+        "duration_ms": 231,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "docker run --rm act-ubuntu-pwsh:latest which bun 2>/dev/null && echo \"bun available\" || echo \"bun not in container\"",
+        "duration_ms": 714,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "docker run --rm act-ubuntu-pwsh:latest bash -c \"which jq && jq --version; which python3 && python3 --version\" 2>/dev/null",
+        "duration_ms": 530,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "docker run --rm act-ubuntu-pwsh:latest bash -c \"curl -fsSL https://bun.sh/install | bash && echo 'bun install success'\" 2>&1 | head -20 || echo \"curl failed\"",
+        "duration_ms": 3642,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "ToolSearch",
+        "command": "",
+        "duration_ms": 47,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "TodoWrite",
+        "command": "",
+        "duration_ms": 66,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 2041,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test 2>&1 | head -30",
+        "duration_ms": 131,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 78,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun install 2>&1",
+        "duration_ms": 180,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 395,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "TodoWrite",
+        "command": "",
+        "duration_ms": 65,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test --testNamePattern \"generateMatrix|workflow structure|basic|feature flags|exclude|include|strategy|size\" 2>&1 | grep -v \"act integration\"",
+        "duration_ms": 65,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test --testNamePattern \"2 OS x 2|each entry|multiple language|boolean feature|multiple feature|exclude removes|exclude with no|include adds|include merges|fail-fast defaults|fail-fast=false|maxPar",
+        "duration_ms": 59,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "ls *.test.ts 2>/dev/null; ls *.spec.ts 2>/dev/null; echo \"---\"; bun test --bail 2>&1 | head -60",
+        "duration_ms": 126,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 1935,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test --bail 2>&1 | head -80",
+        "duration_ms": 116,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "TodoWrite",
+        "command": "",
+        "duration_ms": 63,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/typescript-bun-sonnet/fixtures",
+        "duration_ms": 408,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/typescript-bun-sonnet/.github/workflows",
+        "duration_ms": 62,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 405,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 387,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 387,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 395,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 396,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 65,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Write",
+        "command": "",
+        "duration_ms": 115,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "actionlint .github/workflows/environment-matrix-generator.yml 2>&1",
+        "duration_ms": 106,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test --testNamePattern \"generateMatrix|workflow structure|workflow file|workflow has|workflow job|workflow references|actionlint\" 2>&1",
+        "duration_ms": 65,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test 2>&1 | head -60",
+        "duration_ms": 349,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 2120,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 2013,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "grep \"existsSync\" /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/typescript-bun-sonnet/matrix-generator.test.ts",
+        "duration_ms": 66,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 2084,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun run matrix-generator.ts --config fixtures/basic.json 2>&1",
+        "duration_ms": 424,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun run matrix-generator.ts --config fixtures/max-size-error.json 2>&1; echo \"exit: $?\"",
+        "duration_ms": 170,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "TodoWrite",
+        "command": "",
+        "duration_ms": 68,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test 2>&1",
+        "duration_ms": 748,
+        "is_error": true,
+        "is_install": false
+      },
+      {
+        "tool_name": "Edit",
+        "command": "",
+        "duration_ms": 2043,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test 2>&1",
+        "duration_ms": 10769,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "ls -la act-result.txt && echo \"=== First 50 lines ===\" && head -50 act-result.txt",
+        "duration_ms": 62,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "grep -E \"MATRIX_ASSERT_|Job succeeded|Job failed\" act-result.txt",
+        "duration_ms": 153,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "Bash",
+        "command": "bun test 2>&1",
+        "duration_ms": 10161,
+        "is_error": false,
+        "is_install": false
+      },
+      {
+        "tool_name": "TodoWrite",
+        "command": "",
+        "duration_ms": 317,
+        "is_error": false,
+        "is_install": false
+      }
+    ],
+    "install_duration_ms": 3642,
+    "test_duration_ms": 22589,
+    "act_duration_ms": 0
+  },
+  "hooks": {
+    "hook_fires": 16,
+    "hook_errors_caught": 7,
+    "hook_failures": 0,
+    "hook_events": [
+      {
+        "subtype": "hook_started",
+        "hook_id": "ef421546-4dc4-41c9-8c7e-1734dbce39f4",
+        "hook_name": "UserPromptSubmit",
+        "hook_event": "UserPromptSubmit"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "ef421546-4dc4-41c9-8c7e-1734dbce39f4",
+        "hook_name": "UserPromptSubmit",
+        "hook_event": "UserPromptSubmit",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "08596c8c-2459-4596-b121-fd4d745a20c1",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "08596c8c-2459-4596-b121-fd4d745a20c1",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\nmatrix-generator.test.ts(6,51): error TS2307: Cannot find module 'bun:test' or its corresponding type declarations.\\nmatrix-generator.test.ts(7,92): error TS2591: Cannot find name 'fs'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.\\nmatrix-generator.test.ts(8,29): error TS2591: Cannot",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "87b2953b-0482-4c36-880f-d9dc71aadf0b",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "87b2953b-0482-4c36-880f-d9dc71aadf0b",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "f3eaba73-817a-4438-9e92-3ee832d762e3",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "f3eaba73-817a-4438-9e92-3ee832d762e3",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\nmatrix-generator.ts(5,30): error TS2591: Cannot find name 'fs'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.\\nmatrix-generator.ts(123,17): error TS2339: Property 'main' does not exist on type 'ImportMeta'.\\nmatrix-generator.ts(124,16): error TS2591: Cannot find name 'process'. Do you",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "783e68e2-0ee5-4d67-af66-aeca226c3ba8",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "783e68e2-0ee5-4d67-af66-aeca226c3ba8",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\nmatrix-generator.ts(5,30): error TS2591: Cannot find name 'fs'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.\\nmatrix-generator.ts(138,17): error TS2339: Property 'main' does not exist on type 'ImportMeta'.\\nmatrix-generator.ts(139,16): error TS2591: Cannot find name 'process'. Do you",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "25f6b303-2255-437f-b172-6eade6d1487b",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "25f6b303-2255-437f-b172-6eade6d1487b",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "9c43f9c7-6147-434e-bcea-354c331b3126",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "9c43f9c7-6147-434e-bcea-354c331b3126",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "fdbc85d5-e2aa-4598-ba92-7965dc564c10",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "fdbc85d5-e2aa-4598-ba92-7965dc564c10",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "5979917e-ae05-4726-9a35-2cb2ee85bd13",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "5979917e-ae05-4726-9a35-2cb2ee85bd13",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "f541e42b-ee78-4414-87f6-db525f2b9e14",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "f541e42b-ee78-4414-87f6-db525f2b9e14",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "402c833e-2094-40d8-9287-55e79c4b99b6",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "402c833e-2094-40d8-9287-55e79c4b99b6",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "417156d0-667e-483d-b404-267ebde24cd2",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "417156d0-667e-483d-b404-267ebde24cd2",
+        "hook_name": "PostToolUse:Write",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "df31b620-dc03-4dbc-ab18-3ddb1cc76ad4",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "df31b620-dc03-4dbc-ab18-3ddb1cc76ad4",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\nmatrix-generator.test.ts(6,51): error TS2307: Cannot find module 'bun:test' or its corresponding type declarations.\\nmatrix-generator.test.ts(7,92): error TS2591: Cannot find name 'fs'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.\\nmatrix-generator.test.ts(8,29): error TS2591: Cannot",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "32a2c554-0118-4dc9-b6d8-16bf1267b485",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "32a2c554-0118-4dc9-b6d8-16bf1267b485",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\nmatrix-generator.test.ts(6,51): error TS2307: Cannot find module 'bun:test' or its corresponding type declarations.\\nmatrix-generator.test.ts(7,92): error TS2591: Cannot find name 'fs'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.\\nmatrix-generator.test.ts(8,29): error TS2591: Cannot",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "4c233455-8a0d-4000-a13d-c21277d5fa4e",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "4c233455-8a0d-4000-a13d-c21277d5fa4e",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\nmatrix-generator.test.ts(6,51): error TS2307: Cannot find module 'bun:test' or its corresponding type declarations.\\nmatrix-generator.test.ts(7,66): error TS2591: Cannot find name 'fs'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.\\nmatrix-generator.test.ts(8,29): error TS2591: Cannot",
+        "stderr": ""
+      },
+      {
+        "subtype": "hook_started",
+        "hook_id": "9abc7abe-7160-42d2-9011-e9cc604a8243",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse"
+      },
+      {
+        "subtype": "hook_response",
+        "hook_id": "9abc7abe-7160-42d2-9011-e9cc604a8243",
+        "hook_name": "PostToolUse:Edit",
+        "hook_event": "PostToolUse",
+        "exit_code": 0,
+        "outcome": "success",
+        "stdout": "{\"additionalContext\": \"\\u26a0\\ufe0f SYNTAX/TYPE ERRORS detected in the file you just wrote. Fix these before running:\\nmatrix-generator.test.ts(6,51): error TS2307: Cannot find module 'bun:test' or its corresponding type declarations.\\nmatrix-generator.test.ts(7,66): error TS2591: Cannot find name 'fs'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.\\nmatrix-generator.test.ts(8,29): error TS2591: Cannot",
+        "stderr": ""
+      }
+    ]
+  }
+}
