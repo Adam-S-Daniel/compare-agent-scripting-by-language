@@ -1,0 +1,35 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  version-bump:
+    name: Bump Version
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Use shell: pwsh on every run: step to avoid bash escaping issues with
+      # PowerShell syntax (heredocs, $variables, etc.).
+      - name: Bump Version
+        id: bump
+        shell: pwsh
+        run: |
+          # If a commits.txt fixture file is present (test mode) use it;
+          # otherwise fall back to git log for real CI runs.
+          if (Test-Path "commits.txt") {
+            ./Invoke-VersionBumper.ps1 -CommitFile "commits.txt"
+          }
+          else {
+            ./Invoke-VersionBumper.ps1
+          }
