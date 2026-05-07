@@ -1,0 +1,74 @@
+name: Artifact Cleanup Script Tests
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Run Artifact Cleanup Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: bash
+        run: |
+          pwsh << 'EOF'
+          # Install Pester if needed (usually pre-installed, but ensure latest)
+          $PesterModule = Get-Module Pester -ListAvailable | Sort-Object Version -Descending | Select-Object -First 1
+          if ($null -eq $PesterModule) {
+              Write-Host "Installing Pester module..."
+              Install-Module -Name Pester -Repository PSGallery -Force -SkipPublisherCheck
+          }
+
+          # Run tests and capture output
+          $testResults = Invoke-Pester -Path "./ArtifactCleanup.Tests.ps1" -PassThru -OutputFormat NUnitXml -OutputFile "./test-results.xml"
+
+          # Display summary
+          Write-Host "============================================"
+          Write-Host "Test Execution Summary"
+          Write-Host "============================================"
+          Write-Host "Tests Passed: $($testResults.PassedCount)"
+          Write-Host "Tests Failed: $($testResults.FailedCount)"
+          Write-Host "Tests Skipped: $($testResults.SkippedCount)"
+          Write-Host "============================================"
+
+          # Fail the job if any tests failed
+          if ($testResults.FailedCount -gt 0) {
+              Write-Host "::error::$($testResults.FailedCount) test(s) failed"
+              exit 1
+          }
+
+          Write-Host "Job succeeded"
+          EOF
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pester-test-results
+          path: test-results.xml
+
+      - name: Generate test output log
+        if: always()
+        shell: bash
+        run: |
+          pwsh << 'EOF'
+          Write-Host "Detailed Test Results:"
+          Get-Content -Path "./test-results.xml" -ErrorAction SilentlyContinue
+          EOF
