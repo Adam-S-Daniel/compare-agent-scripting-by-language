@@ -1,0 +1,143 @@
+[TEST] === WORKFLOW STRUCTURE TESTS ===
+[TEST] PASS: Workflow has push, pull_request, and workflow_dispatch triggers
+[TEST] PASS: Workflow has test and integration jobs
+[TEST] PASS: Workflow references ArtifactCleanup.Tests.ps1 and file exists
+[TEST] PASS: Workflow references ArtifactCleanup.ps1 and file exists
+[TEST] PASS: Workflow uses shell: pwsh
+[TEST] PASS: Workflow uses actions/checkout@v4
+[TEST] PASS: actionlint validation passes
+[TEST] 
+[TEST] === ACT INTEGRATION TEST ===
+[TEST] Running act push...
+time="2026-05-07T00:58:26-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Artifact Cleanup Script/test] ⭐ Run Set up job
+[Artifact Cleanup Script/test] 🚀  Start image=act-ubuntu-pwsh:latest
+[Artifact Cleanup Script/test]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Artifact Cleanup Script/test]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/test]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/test]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Artifact Cleanup Script/test]   ✅  Success - Set up job
+[Artifact Cleanup Script/test] ⭐ Run Main actions/checkout@v4
+[Artifact Cleanup Script/test]   🐳  docker cp src=/tmp/tmp.ze48Ud9eyS/. dst=/tmp/tmp.ze48Ud9eyS
+[Artifact Cleanup Script/test]   ✅  Success - Main actions/checkout@v4 [40.902177ms]
+[Artifact Cleanup Script/test] ⭐ Run Main Run Pester tests
+[Artifact Cleanup Script/test]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/1.ps1] user= workdir=
+[Artifact Cleanup Script/test]   | [95mPester v5.7.1[0m
+[Artifact Cleanup Script/test]   | [95m
+[Artifact Cleanup Script/test]   | [95mStarting discovery in 1 files.[0m
+[Artifact Cleanup Script/test]   | [95mDiscovery found 21 tests in 163ms.[0m
+[Artifact Cleanup Script/test]   | [95mRunning tests.[0m
+[Artifact Cleanup Script/test]   | [95m
+[Artifact Cleanup Script/test]   | [95mRunning tests from '/tmp/tmp.ze48Ud9eyS/ArtifactCleanup.Tests.ps1'[0m
+[Artifact Cleanup Script/test]   | [92mDescribing Get-DeletionPlan[0m
+[Artifact Cleanup Script/test]   | [96m Context Empty input[0m
+[Artifact Cleanup Script/test]   | [32m   [+] returns empty plan with summary for no artifacts[0m[90m 103ms (75ms|28ms)[0m
+[Artifact Cleanup Script/test]   | [96m Context Validation[0m
+[Artifact Cleanup Script/test]   | [32m   [+] throws on artifact missing required properties[0m[90m 32ms (31ms|2ms)[0m
+[Artifact Cleanup Script/test]   | [96m Context Max age policy[0m
+[Artifact Cleanup Script/test]   | [32m   [+] deletes artifacts older than MaxAgeDays[0m[90m 56ms (53ms|2ms)[0m
+[Artifact Cleanup Script/test]   | [32m   [+] retains all artifacts when none exceed max age[0m[90m 8ms (7ms|1ms)[0m
+[Artifact Cleanup Script/test]   | [32m   [+] deletes all artifacts when all exceed max age[0m[90m 10ms (9ms|1ms)[0m
+[Artifact Cleanup Script/test]   | [96m Context Keep-latest-N per workflow[0m
+[Artifact Cleanup Script/test]   | [32m   [+] keeps only N most recent artifacts per workflow run ID[0m[90m 19ms (17ms|1ms)[0m
+[Artifact Cleanup Script/test]   | [32m   [+] keeps 2 per workflow when KeepLatestN=2[0m[90m 15ms (13ms|2ms)[0m
+[Artifact Cleanup Script/test]   | [96m Context Max total size policy[0m
+[Artifact Cleanup Script/test]   | [32m   [+] deletes oldest retained artifacts to fit under max total size[0m[90m 22ms (20ms|2ms)[0m
+[Artifact Cleanup Script/test]   | [32m   [+] deletes multiple oldest until under limit[0m[90m 16ms (14ms|2ms)[0m
+[Artifact Cleanup Script/test]   | [96m Context Combined policies[0m
+[Artifact Cleanup Script/test]   | [32m   [+] applies max age and keep-latest-N together[0m[90m 25ms (22ms|3ms)[0m
+[Artifact Cleanup Script/test]   | [32m   [+] applies all three policies together[0m[90m 34ms (28ms|6ms)[0m
+[Artifact Cleanup Script/test]   | [96m Context Dry-run mode[0m
+[Artifact Cleanup Script/test]   | [32m   [+] sets DryRun flag in plan[0m[90m 27ms (23ms|3ms)[0m
+[Artifact Cleanup Script/test]   | [32m   [+] sets live mode label when DryRun is false[0m[90m 7ms (6ms|1ms)[0m
+[Artifact Cleanup Script/test]   | [96m Context Summary output[0m
+[Artifact Cleanup Script/test]   | [32m   [+] includes correct counts and sizes in summary[0m[90m 10ms (8ms|1ms)[0m
+[Artifact Cleanup Script/test]   | [96m Context No policies applied[0m
+[Artifact Cleanup Script/test]   | [32m   [+] retains all artifacts when no policies are set[0m[90m 9ms (7ms|1ms)[0m
+[Artifact Cleanup Script/test]   | [96m Context CLI integration[0m
+[Artifact Cleanup Script/test]   | [32m   [+] processes JSON file and produces correct output[0m[90m 448ms (446ms|1ms)[0m
+[Artifact Cleanup Script/test]   | [96m Context Edge cases[0m
+[Artifact Cleanup Script/test]   | [32m   [+] handles KeepLatestN=0 deleting all artifacts in each workflow[0m[90m 10ms (8ms|2ms)[0m
+[Artifact Cleanup Script/test]   | [32m   [+] handles MaxTotalSizeBytes=0 deleting all[0m[90m 9ms (8ms|2ms)[0m
+[Artifact Cleanup Script/test]   | [32m   [+] handles MaxAgeDays=0 deleting everything not created today[0m[90m 16ms (11ms|5ms)[0m
+[Artifact Cleanup Script/test]   | [32m   [+] correctly reports delete reasons in summary[0m[90m 7ms (5ms|1ms)[0m
+[Artifact Cleanup Script/test]   | [32m   [+] handles single artifact with no policies[0m[90m 8ms (7ms|1ms)[0m
+[Artifact Cleanup Script/test]   | [97mTests completed in 1.4s[0m
+[Artifact Cleanup Script/test]   | [32mTests Passed: 21, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Artifact Cleanup Script/test]   ✅  Success - Main Run Pester tests [2.70715376s]
+[Artifact Cleanup Script/test] ⭐ Run Complete job
+[Artifact Cleanup Script/test] Cleaning up container for job test
+[Artifact Cleanup Script/test]   ✅  Success - Complete job
+[Artifact Cleanup Script/test] 🏁  Job succeeded
+[Artifact Cleanup Script/integration] ⭐ Run Set up job
+[Artifact Cleanup Script/integration] 🚀  Start image=act-ubuntu-pwsh:latest
+[Artifact Cleanup Script/integration]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Artifact Cleanup Script/integration]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/integration]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup Script/integration]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Artifact Cleanup Script/integration]   ✅  Success - Set up job
+[Artifact Cleanup Script/integration] ⭐ Run Main actions/checkout@v4
+[Artifact Cleanup Script/integration]   🐳  docker cp src=/tmp/tmp.ze48Ud9eyS/. dst=/tmp/tmp.ze48Ud9eyS
+[Artifact Cleanup Script/integration]   ✅  Success - Main actions/checkout@v4 [38.623582ms]
+[Artifact Cleanup Script/integration] ⭐ Run Main Run cleanup with dry-run on sample data
+[Artifact Cleanup Script/integration]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/1.ps1] user= workdir=
+[Artifact Cleanup Script/integration]   | === DRY RUN: Max age 30 days ===
+[Artifact Cleanup Script/integration]   | === Artifact Cleanup Plan (DRY RUN) ===
+[Artifact Cleanup Script/integration]   | Total artifacts: 5
+[Artifact Cleanup Script/integration]   | Artifacts to delete: 1
+[Artifact Cleanup Script/integration]   | Artifacts to retain: 4
+[Artifact Cleanup Script/integration]   | Space reclaimed: 1048576 bytes
+[Artifact Cleanup Script/integration]   | Space retained: 7077888 bytes
+[Artifact Cleanup Script/integration]   | 
+[Artifact Cleanup Script/integration]   | Deletion list:
+[Artifact Cleanup Script/integration]   |   - build-logs-march (exceeded max age (30 days))
+[Artifact Cleanup Script/integration]   | 
+[Artifact Cleanup Script/integration]   | Retained:
+[Artifact Cleanup Script/integration]   |   - test-results-april
+[Artifact Cleanup Script/integration]   |   - coverage-report
+[Artifact Cleanup Script/integration]   |   - deploy-artifact
+[Artifact Cleanup Script/integration]   |   - nightly-build
+[Artifact Cleanup Script/integration]   | 
+[Artifact Cleanup Script/integration]   | === DRY RUN: Keep latest 1 per workflow, max 3MB total ===
+[Artifact Cleanup Script/integration]   | === Artifact Cleanup Plan (DRY RUN) ===
+[Artifact Cleanup Script/integration]   | Total artifacts: 5
+[Artifact Cleanup Script/integration]   | Artifacts to delete: 5
+[Artifact Cleanup Script/integration]   | Artifacts to retain: 0
+[Artifact Cleanup Script/integration]   | Space reclaimed: 8126464 bytes
+[Artifact Cleanup Script/integration]   | Space retained: 0 bytes
+[Artifact Cleanup Script/integration]   | 
+[Artifact Cleanup Script/integration]   | Deletion list:
+[Artifact Cleanup Script/integration]   |   - build-logs-march (exceeded keep-latest-1 per workflow)
+[Artifact Cleanup Script/integration]   |   - test-results-april (exceeded max total size (3145728 bytes))
+[Artifact Cleanup Script/integration]   |   - coverage-report (exceeded keep-latest-1 per workflow)
+[Artifact Cleanup Script/integration]   |   - deploy-artifact (exceeded max total size (3145728 bytes))
+[Artifact Cleanup Script/integration]   |   - nightly-build (exceeded max total size (3145728 bytes))
+[Artifact Cleanup Script/integration]   ✅  Success - Main Run cleanup with dry-run on sample data [1.464001647s]
+[Artifact Cleanup Script/integration] ⭐ Run Complete job
+[Artifact Cleanup Script/integration] Cleaning up container for job integration
+[Artifact Cleanup Script/integration]   ✅  Success - Complete job
+[Artifact Cleanup Script/integration] 🏁  Job succeeded
+
+[TEST] PASS: act exited with code 0
+[TEST] PASS: At least one job succeeded
+[TEST] PASS: Both jobs succeeded (2 'Job succeeded' found)
+[TEST] 
+[TEST] === PESTER OUTPUT ASSERTIONS ===
+[TEST] PASS: Pester tests completed with passes (alt format)
+[TEST] PASS: Pester reports 0 failed tests
+[TEST] 
+[TEST] === INTEGRATION OUTPUT ASSERTIONS ===
+[TEST] PASS: DRY RUN max-age heading found
+[TEST] PASS: Correct delete count (1) for max-age-30 scenario
+[TEST] PASS: Correct retain count (4) for max-age-30 scenario
+[TEST] PASS: Correct space reclaimed (1048576) for max-age-30 scenario
+[TEST] PASS: DRY RUN keep-latest+max-total heading found
+[TEST] PASS: Correct delete count (5) for keep-latest+max-total scenario
+[TEST] PASS: Correct retain count (0) for keep-latest+max-total scenario
+[TEST] PASS: Correct total space reclaimed (8126464) for keep-latest+max-total scenario
+[TEST] 
+[TEST] === FINAL SUMMARY ===
+[TEST] Passed: 20
+[TEST] Failed: 0
+[TEST] Total: 20
+[TEST] RESULT: ALL TESTS PASSED

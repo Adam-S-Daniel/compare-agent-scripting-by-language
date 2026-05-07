@@ -1,0 +1,52 @@
+name: Artifact Cleanup Script
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = "./ArtifactCleanup.Tests.ps1"
+          $config.Output.Verbosity = "Detailed"
+          $config.Run.Exit = $true
+          Invoke-Pester -Configuration $config
+
+  integration:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run cleanup with dry-run on sample data
+        shell: pwsh
+        run: |
+          $fixtures = @(
+            [PSCustomObject]@{ Name = "build-logs-march"; Size = 1048576; CreationDate = "2026-03-15"; WorkflowRunId = "run-100" }
+            [PSCustomObject]@{ Name = "test-results-april"; Size = 524288; CreationDate = "2026-04-20"; WorkflowRunId = "run-100" }
+            [PSCustomObject]@{ Name = "coverage-report"; Size = 262144; CreationDate = "2026-05-01"; WorkflowRunId = "run-200" }
+            [PSCustomObject]@{ Name = "deploy-artifact"; Size = 2097152; CreationDate = "2026-05-05"; WorkflowRunId = "run-200" }
+            [PSCustomObject]@{ Name = "nightly-build"; Size = 4194304; CreationDate = "2026-05-06"; WorkflowRunId = "run-300" }
+          )
+          $tmpFile = Join-Path $env:RUNNER_TEMP "sample-artifacts.json"
+          $fixtures | ConvertTo-Json -Depth 3 | Set-Content $tmpFile
+
+          Write-Output "=== DRY RUN: Max age 30 days ==="
+          pwsh -NoProfile -File ./ArtifactCleanup.ps1 -ArtifactFile $tmpFile -MaxAgeDays 30 -DryRun -ReferenceDate "2026-05-07"
+
+          Write-Output ""
+          Write-Output "=== DRY RUN: Keep latest 1 per workflow, max 3MB total ==="
+          pwsh -NoProfile -File ./ArtifactCleanup.ps1 -ArtifactFile $tmpFile -KeepLatestN 1 -MaxTotalSizeBytes 3145728 -DryRun -ReferenceDate "2026-05-07"
