@@ -1,0 +1,67 @@
+name: environment-matrix-generator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      config_path:
+        description: Path to the matrix config JSON
+        required: false
+        default: fixtures/basic.json
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  generate:
+    name: Generate matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix_json: ${{ steps.gen.outputs.matrix_json }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Run Pester unit tests
+        shell: pwsh
+        run: |
+          $result = Invoke-Pester -Path ./MatrixGenerator.Tests.ps1 -PassThru -Output Detailed
+          if ($result.FailedCount -gt 0) {
+            Write-Error "Pester failed: $($result.FailedCount) test(s) failed"
+            exit 1
+          }
+
+      - name: Generate matrix JSON
+        id: gen
+        shell: pwsh
+        env:
+          INPUT_CONFIG_PATH: ${{ github.event.inputs.config_path }}
+        run: |
+          # Allow override via either CONFIG_PATH (for act --env) or workflow_dispatch input.
+          $cfg = if ($env:CONFIG_PATH) { $env:CONFIG_PATH }
+                 elseif ($env:INPUT_CONFIG_PATH) { $env:INPUT_CONFIG_PATH }
+                 else { 'fixtures/basic.json' }
+          if (-not (Test-Path $cfg)) {
+            throw "Config not found: $cfg"
+          }
+          Write-Host "Using config: $cfg"
+          $json = pwsh -NoProfile -File ./Generate-Matrix.ps1 -ConfigPath $cfg -Compress
+          if ($LASTEXITCODE -ne 0) { throw "Generate-Matrix.ps1 failed" }
+          Write-Host "MATRIX_JSON_BEGIN"
+          Write-Host $json
+          Write-Host "MATRIX_JSON_END"
+          "matrix_json=$json" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Show matrix summary
+        shell: pwsh
+        run: |
+          $json = '${{ steps.gen.outputs.matrix_json }}'
+          $obj = $json | ConvertFrom-Json
+          Write-Host "Matrix entries: $($obj.matrix.include.Count)"
+          Write-Host "fail-fast: $($obj.'fail-fast')"
+          if ($obj.PSObject.Properties.Name -contains 'max-parallel') {
+            Write-Host "max-parallel: $($obj.'max-parallel')"
+          }
