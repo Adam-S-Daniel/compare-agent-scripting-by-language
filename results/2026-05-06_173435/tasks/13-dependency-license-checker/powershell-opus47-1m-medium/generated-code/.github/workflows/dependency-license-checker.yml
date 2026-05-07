@@ -1,0 +1,94 @@
+name: dependency-license-checker
+
+# Triggered on pushes / PRs that change dependencies, plus a daily cron sweep
+# (catches policy changes without code changes) and manual dispatch.
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  schedule:
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+    inputs:
+      manifest:
+        description: 'Manifest file to check'
+        required: false
+        default: 'fixtures/package.json'
+
+permissions:
+  contents: read
+
+env:
+  MANIFEST_PATH: ${{ inputs.manifest || 'fixtures/package.json' }}
+  CONFIG_PATH:   fixtures/license-policy.json
+  MOCK_DB_PATH:  fixtures/mock-licenses.json
+  REPORT_PATH:   compliance-report.json
+
+jobs:
+  unit-tests:
+    name: Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Pester
+        shell: pwsh
+        run: |
+          $cfg = New-PesterConfiguration
+          $cfg.Run.Path = './LicenseChecker.Tests.ps1'
+          $cfg.Run.Exit = $true
+          $cfg.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $cfg
+
+  license-check:
+    name: Run compliance check
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show inputs
+        shell: pwsh
+        run: |
+          Write-Host "manifest: $env:MANIFEST_PATH"
+          Write-Host "policy:   $env:CONFIG_PATH"
+          Write-Host "mock db:  $env:MOCK_DB_PATH"
+
+      - name: Invoke license checker
+        id: check
+        shell: pwsh
+        # Continue on non-zero so we always upload the report; the final step
+        # decides whether to fail the job based on the report contents.
+        continue-on-error: true
+        run: |
+          ./Invoke-LicenseCheck.ps1 `
+            -ManifestPath $env:MANIFEST_PATH `
+            -ConfigPath   $env:CONFIG_PATH `
+            -MockDatabase $env:MOCK_DB_PATH `
+            -ReportPath   $env:REPORT_PATH
+          "exit_code=$LASTEXITCODE" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Print report
+        shell: pwsh
+        run: |
+          if (Test-Path $env:REPORT_PATH) {
+            Get-Content $env:REPORT_PATH -Raw | Write-Host
+          } else {
+            Write-Host "no report produced"
+          }
+
+      - name: Enforce policy
+        shell: pwsh
+        env:
+          CHECK_EXIT: ${{ steps.check.outputs.exit_code }}
+        run: |
+          $code = [int]$env:CHECK_EXIT
+          Write-Host "checker exit code: $code"
+          # 0 = clean, 1 = unknown only, 2 = denied. Treat denied as a hard fail
+          # but only warn on unknowns so the workflow can still go green for
+          # the "all approved" fixture.
+          if ($code -eq 2) { throw 'denied dependencies present' }
+          if ($code -eq 1) { Write-Host '::warning::unknown licenses present' }
