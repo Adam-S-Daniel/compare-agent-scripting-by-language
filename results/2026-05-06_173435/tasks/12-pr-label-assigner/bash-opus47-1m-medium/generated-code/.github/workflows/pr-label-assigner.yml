@@ -1,0 +1,48 @@
+---
+name: PR Label Assigner
+
+# Triggered on push and pull_request so the assigner can label PRs based
+# on which paths they touch. workflow_dispatch lets a human run it manually.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  assign-labels:
+    name: Compute labels for changed paths
+    runs-on: ubuntu-latest
+    env:
+      RULES_FILE: tests/fixtures/rules.txt
+      # Harness writes the case-under-test to this file before invoking act.
+      CHANGED_FILES: tests/fixtures/active_case.txt
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Make script executable
+        run: chmod +x ./pr-label-assigner.sh
+
+      - name: Show inputs
+        run: |
+          echo "Rules:"
+          cat "$RULES_FILE"
+          echo "---"
+          echo "Changed files:"
+          cat "$CHANGED_FILES"
+
+      - name: Run label assigner
+        id: assign
+        run: |
+          set -euo pipefail
+          # Run the script and capture its labels. We surround the output
+          # with sentinels so the bats harness can extract just the labels.
+          echo "===LABELS-BEGIN==="
+          ./pr-label-assigner.sh \
+            --config "$RULES_FILE" \
+            --files "$CHANGED_FILES"
+          echo "===LABELS-END==="
