@@ -1,0 +1,57 @@
+name: Test Results Aggregator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+env:
+  RESULTS_DIR: fixtures
+  SUMMARY_FILE: summary.md
+
+jobs:
+  aggregate:
+    name: Aggregate test results
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v jq >/dev/null 2>&1; then
+            apt-get update -qq && apt-get install -y -qq jq
+          fi
+          jq --version
+          bash --version | head -n1
+
+      - name: Validate script
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash -n aggregate.sh
+          echo "syntax-ok"
+
+      - name: Run aggregator
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x aggregate.sh
+          ./aggregate.sh "$RESULTS_DIR" "$SUMMARY_FILE"
+          echo "----- BEGIN SUMMARY -----"
+          cat "$SUMMARY_FILE"
+          echo "----- END SUMMARY -----"
+
+      - name: Publish to job summary
+        if: ${{ env.GITHUB_STEP_SUMMARY != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat "$SUMMARY_FILE" >> "$GITHUB_STEP_SUMMARY" || true
