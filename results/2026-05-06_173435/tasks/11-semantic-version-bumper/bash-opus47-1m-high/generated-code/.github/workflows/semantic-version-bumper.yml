@@ -1,0 +1,99 @@
+name: Semantic Version Bumper
+
+# Triggers:
+#   - push / pull_request: run the bumper as a CI sanity check on every change
+#   - workflow_dispatch:   manual trigger, lets you supply a custom commits file
+#   - schedule:            weekly preview of the next version (Mondays 12:00 UTC)
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      version_file:
+        description: "Version file to bump"
+        required: false
+        default: "VERSION"
+      commits_file:
+        description: "Path to commits log fixture"
+        required: false
+        default: "fixtures/feat-commits.txt"
+  schedule:
+    - cron: "0 12 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  bump:
+    name: Compute next semantic version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Resolve configuration
+        id: cfg
+        # Pulls config from (in order): workflow_dispatch input, an
+        # already-set environment variable (used by the act test harness),
+        # then a sensible default. Writing to GITHUB_OUTPUT lets later
+        # steps reference these via steps.cfg.outputs.*.
+        run: |
+          set -euo pipefail
+          version_file="${INPUT_VERSION_FILE:-${VERSION_FILE:-VERSION}}"
+          commits_file="${INPUT_COMMITS_FILE:-${COMMITS_FILE:-fixtures/feat-commits.txt}}"
+          starting_version="${STARTING_VERSION:-1.1.0}"
+          {
+            echo "version_file=${version_file}"
+            echo "commits_file=${commits_file}"
+            echo "starting_version=${starting_version}"
+          } >> "$GITHUB_OUTPUT"
+          echo "Resolved: version_file=${version_file} commits_file=${commits_file} starting_version=${starting_version}"
+        env:
+          INPUT_VERSION_FILE: ${{ github.event.inputs.version_file }}
+          INPUT_COMMITS_FILE: ${{ github.event.inputs.commits_file }}
+
+      - name: Seed VERSION file (if missing)
+        run: |
+          set -euo pipefail
+          vf="${{ steps.cfg.outputs.version_file }}"
+          sv="${{ steps.cfg.outputs.starting_version }}"
+          if [ ! -f "${vf}" ]; then
+            echo "${sv}" > "${vf}"
+          fi
+          echo "Current version file (${vf}):"
+          cat "${vf}"
+
+      - name: Make bumper script executable
+        run: chmod +x ./bump-version.sh
+
+      - name: Install bats (if missing)
+        run: |
+          if ! command -v bats >/dev/null 2>&1; then
+            sudo apt-get update -y
+            sudo apt-get install -y --no-install-recommends bats
+          fi
+          bats --version
+
+      - name: Run unit tests
+        run: bats tests/bump-version.bats
+
+      - name: Bump version and update changelog
+        id: bump
+        run: |
+          set -euo pipefail
+          vf="${{ steps.cfg.outputs.version_file }}"
+          cf="${{ steps.cfg.outputs.commits_file }}"
+          NEW_VERSION="$(./bump-version.sh bump "${vf}" "${cf}" CHANGELOG.md)"
+          echo "new_version=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "NEW_VERSION=${NEW_VERSION}"
+
+      - name: Print results
+        run: |
+          set -euo pipefail
+          vf="${{ steps.cfg.outputs.version_file }}"
+          echo "=== NEW VERSION ==="
+          echo "NEW_VERSION=${{ steps.bump.outputs.new_version }}"
+          echo "=== VERSION FILE ==="
+          cat "${vf}"
+          echo "=== CHANGELOG ==="
+          cat CHANGELOG.md
