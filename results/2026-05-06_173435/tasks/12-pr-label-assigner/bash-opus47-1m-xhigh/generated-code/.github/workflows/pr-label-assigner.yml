@@ -1,0 +1,110 @@
+name: PR Label Assigner
+
+# Runs pr-label-assigner.sh against a fixture-driven mock of a PR's
+# changed-file list. The fixture sub-dir is selected via the
+# LABEL_FIXTURE shell env var so the test harness can drive several
+# scenarios from a single workflow definition with `act push --env`.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: 'Fixture sub-dir under tests/fixtures (e.g. case_basic).'
+        required: false
+        default: 'case_basic'
+
+permissions:
+  contents: read
+
+jobs:
+  assign-labels:
+    name: Assign labels from fixture
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install bats and shellcheck
+        run: |
+          set -euo pipefail
+          if ! command -v bats >/dev/null 2>&1 || ! command -v shellcheck >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq bats shellcheck
+          fi
+          bats --version
+          shellcheck --version | head -2
+
+      - name: Static analysis (shellcheck + bash -n)
+        run: |
+          set -euo pipefail
+          bash -n pr-label-assigner.sh
+          shellcheck pr-label-assigner.sh
+
+      - name: Resolve fixture directory
+        id: resolve
+        env:
+          DISPATCH_FIXTURE: ${{ github.event.inputs.fixture }}
+        run: |
+          set -euo pipefail
+          # Priority: workflow_dispatch input > shell env (act --env) > default.
+          fixture_name="${DISPATCH_FIXTURE:-${LABEL_FIXTURE:-case_basic}}"
+          fixture_dir="tests/fixtures/${fixture_name}"
+          if [ ! -d "$fixture_dir" ]; then
+            echo "ERROR: fixture dir '$fixture_dir' not found" >&2
+            exit 1
+          fi
+          for required in files.txt labels.conf expected.txt; do
+            if [ ! -f "$fixture_dir/$required" ]; then
+              echo "ERROR: missing $fixture_dir/$required" >&2
+              exit 1
+            fi
+          done
+          echo "fixture_name=$fixture_name" >> "$GITHUB_OUTPUT"
+          echo "fixture_dir=$fixture_dir"  >> "$GITHUB_OUTPUT"
+          echo "Resolved fixture: $fixture_name -> $fixture_dir"
+
+      - name: Show fixture contents
+        env:
+          FIXTURE_DIR: ${{ steps.resolve.outputs.fixture_dir }}
+        run: |
+          set -euo pipefail
+          echo "::group::changed files (mock PR file list)"
+          cat "$FIXTURE_DIR/files.txt"
+          echo "::endgroup::"
+          echo "::group::labels.conf rules"
+          cat "$FIXTURE_DIR/labels.conf"
+          echo "::endgroup::"
+          echo "::group::expected labels"
+          cat "$FIXTURE_DIR/expected.txt"
+          echo "::endgroup::"
+
+      - name: Run pr-label-assigner.sh
+        id: assign
+        env:
+          FIXTURE_DIR: ${{ steps.resolve.outputs.fixture_dir }}
+          FIXTURE_NAME: ${{ steps.resolve.outputs.fixture_name }}
+        run: |
+          set -euo pipefail
+          chmod +x pr-label-assigner.sh
+          ./pr-label-assigner.sh \
+              -c "$FIXTURE_DIR/labels.conf" \
+              -f "$FIXTURE_DIR/files.txt" \
+              > labels-actual.txt
+          # Emit clearly-delimited labels so the harness can parse them
+          # back from act's mixed output. Tagging with the fixture name
+          # lets a single act-result.txt cover multiple cases.
+          echo "===PR-LABELS-BEGIN:${FIXTURE_NAME}==="
+          cat labels-actual.txt
+          echo "===PR-LABELS-END:${FIXTURE_NAME}==="
+
+      - name: Verify labels match expected fixture output
+        env:
+          FIXTURE_DIR: ${{ steps.resolve.outputs.fixture_dir }}
+        run: |
+          set -euo pipefail
+          if ! diff -u "$FIXTURE_DIR/expected.txt" labels-actual.txt; then
+            echo "ERROR: actual labels differ from expected for fixture $FIXTURE_DIR" >&2
+            exit 1
+          fi
+          echo "Labels match expected output."
