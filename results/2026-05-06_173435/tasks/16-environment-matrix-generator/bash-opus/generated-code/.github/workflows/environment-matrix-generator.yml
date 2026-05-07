@@ -1,0 +1,76 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate and Test Matrix Generator
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq bats shellcheck jq
+
+      - name: Validate script syntax
+        run: bash -n matrix-generator.sh
+
+      - name: Run shellcheck
+        run: shellcheck matrix-generator.sh
+
+      - name: Run bats tests
+        run: bats test/matrix-generator.bats
+
+      - name: Demo basic matrix
+        run: |
+          echo "=== Basic Matrix ==="
+          bash matrix-generator.sh test/fixtures/basic.json | jq .
+
+      - name: Demo include rules
+        run: |
+          echo "=== Matrix with Include ==="
+          bash matrix-generator.sh test/fixtures/with-include.json | jq .
+
+      - name: Demo exclude rules
+        run: |
+          echo "=== Matrix with Exclude ==="
+          bash matrix-generator.sh test/fixtures/with-exclude.json | jq .
+
+      - name: Demo options
+        run: |
+          echo "=== Matrix with Options ==="
+          bash matrix-generator.sh test/fixtures/with-options.json | jq .
+
+      - name: Demo combined include and exclude
+        run: |
+          echo "=== Combined Include/Exclude ==="
+          bash matrix-generator.sh test/fixtures/include-exclude-combo.json | jq .
+
+      - name: Demo error too large matrix
+        run: |
+          echo "=== Too Large Matrix ==="
+          if bash matrix-generator.sh test/fixtures/too-large.json 2>&1; then
+            echo "ERROR: Should have failed" && exit 1
+          else
+            echo "Correctly rejected oversized matrix"
+          fi
+
+      - name: Demo error empty axis
+        run: |
+          echo "=== Empty Axis ==="
+          if bash matrix-generator.sh test/fixtures/empty-axis.json 2>&1; then
+            echo "ERROR: Should have failed" && exit 1
+          else
+            echo "Correctly rejected empty axis"
+          fi
