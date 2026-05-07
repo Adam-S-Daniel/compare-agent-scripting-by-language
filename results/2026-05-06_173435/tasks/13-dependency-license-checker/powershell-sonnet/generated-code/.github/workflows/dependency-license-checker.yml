@@ -1,0 +1,60 @@
+name: Dependency License Checker
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # ── Job 1: Run Pester unit tests ──────────────────────────────────────────
+  test:
+    name: Pester Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $result = Invoke-Pester -Path "./LicenseChecker.Tests.ps1" -PassThru -Output Detailed
+          $summary = "Tests Passed: $($result.PassedCount), Failed: $($result.FailedCount), Skipped: $($result.SkippedCount) NotRun: $($result.NotRunCount)"
+          Write-Output $summary
+          if ($result.FailedCount -gt 0) {
+            Write-Error "Pester tests failed!"
+            exit 1
+          }
+
+  # ── Job 2: Compliance scan on fixture manifests ───────────────────────────
+  compliance-check:
+    name: Compliance Check
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check package.json compliance
+        shell: pwsh
+        run: |
+          Write-Output "=== CHECKING package.json ==="
+          & ./Invoke-LicenseCheck.ps1 -ManifestPath "./fixtures/package.json" -ConfigPath "./fixtures/license-config.json"
+        continue-on-error: true
+
+      - name: Check requirements.txt compliance
+        shell: pwsh
+        run: |
+          Write-Output "=== CHECKING requirements.txt ==="
+          & ./Invoke-LicenseCheck.ps1 -ManifestPath "./fixtures/requirements.txt" -ConfigPath "./fixtures/license-config.json"
+        continue-on-error: true
+
+      - name: Summarise results
+        shell: pwsh
+        run: |
+          Write-Output "=== COMPLIANCE SCAN COMPLETE ==="
+          Write-Output "Both manifests scanned. Review DENIED and UNKNOWN entries above."
