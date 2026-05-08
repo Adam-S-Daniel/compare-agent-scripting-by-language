@@ -1,0 +1,87 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: Fixture file under fixtures/ to feed the generator.
+        required: false
+        default: basic.json
+
+permissions:
+  contents: read
+
+env:
+  FIXTURE: ${{ github.event.inputs.fixture || 'basic.json' }}
+
+jobs:
+  unit-tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install pytest
+        run: python3 -m pip install --quiet --break-system-packages pytest
+
+      - name: Run pytest
+        run: python3 -m pytest tests/test_matrix.py -v
+
+  generate-matrix:
+    name: Generate matrix from fixture
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    outputs:
+      matrix: ${{ steps.gen.outputs.matrix }}
+      size: ${{ steps.gen.outputs.size }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate basic matrix
+        id: gen
+        run: |
+          set -euo pipefail
+          python3 matrix_gen.py "fixtures/${FIXTURE}" -o /tmp/matrix.json
+          echo "----- BASIC FIXTURE OUTPUT -----"
+          cat /tmp/matrix.json
+          echo "--------------------------------"
+          {
+            echo "matrix<<EOF"
+            cat /tmp/matrix.json
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+          size=$(python3 -c "import json,sys; print(json.load(open('/tmp/matrix.json'))['size'])")
+          echo "size=$size" >> "$GITHUB_OUTPUT"
+          echo "EXPECT size=4 for basic.json"
+          test "$size" = "4"
+
+      - name: Verify oversize fixture is rejected
+        run: |
+          set -eo pipefail
+          if python3 matrix_gen.py fixtures/oversize.json > /tmp/oversize.json 2> /tmp/oversize.err; then
+            echo "ERROR: oversize fixture should have failed validation" >&2
+            cat /tmp/oversize.json
+            exit 1
+          fi
+          echo "----- OVERSIZE FIXTURE STDERR -----"
+          cat /tmp/oversize.err
+          echo "-----------------------------------"
+          grep -q "exceeds max_size" /tmp/oversize.err
+          echo "OVERSIZE_REJECTED=ok"
+
+      - name: Verify minimal fixture
+        run: |
+          set -euo pipefail
+          python3 matrix_gen.py fixtures/minimal.json -o /tmp/minimal.json
+          echo "----- MINIMAL FIXTURE OUTPUT -----"
+          cat /tmp/minimal.json
+          echo "----------------------------------"
+          size=$(python3 -c "import json; print(json.load(open('/tmp/minimal.json'))['size'])")
+          ff=$(python3 -c "import json; print(json.load(open('/tmp/minimal.json'))['fail-fast'])")
+          test "$size" = "2"
+          test "$ff" = "True"
+          echo "MINIMAL_OK size=$size fail-fast=$ff"
