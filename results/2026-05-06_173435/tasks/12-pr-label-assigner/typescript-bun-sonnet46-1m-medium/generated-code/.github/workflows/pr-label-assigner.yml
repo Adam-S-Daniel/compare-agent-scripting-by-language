@@ -1,0 +1,40 @@
+name: PR Label Assigner
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      changed_files_path:
+        description: "Path to file listing changed files (one per line)"
+        required: false
+        default: "changed-files.txt"
+      label_rules_path:
+        description: "Path to JSON file with labeling rules"
+        required: false
+        default: "label-rules.json"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  assign-labels:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run PR Label Assigner
+        env:
+          CHANGED_FILES_PATH: ${{ inputs.changed_files_path || 'changed-files.txt' }}
+          LABEL_RULES_PATH: ${{ inputs.label_rules_path || 'label-rules.json' }}
+        run: bun run pr-label-assigner.ts
