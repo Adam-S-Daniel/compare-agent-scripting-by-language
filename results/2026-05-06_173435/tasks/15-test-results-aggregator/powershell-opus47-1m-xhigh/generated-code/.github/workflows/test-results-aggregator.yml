@@ -1,0 +1,73 @@
+name: Test Results Aggregator
+
+# Run on pushes, PRs, manual dispatch, and a daily schedule (helps catch flaky
+# tests over time). The schedule entry only runs on the default branch on GitHub.
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      fixture_dir:
+        description: Directory of fixture results to aggregate
+        required: false
+        default: fixtures/matrix-mixed
+  schedule:
+    - cron: "17 6 * * *"
+
+permissions:
+  contents: read
+
+env:
+  # Default fixture directory for triggers that can't supply inputs (push/PR/schedule).
+  DEFAULT_FIXTURE_DIR: fixtures/matrix-mixed
+
+jobs:
+  unit-tests:
+    name: Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $config = New-PesterConfiguration
+          $config.Run.Path = 'tests'
+          $config.Run.Exit = $true
+          $config.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $config
+
+  aggregate:
+    name: Aggregate test results
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve fixture directory
+        id: resolve
+        shell: pwsh
+        run: |
+          $dir = if ($env:INPUT_FIXTURE_DIR) { $env:INPUT_FIXTURE_DIR } else { $env:DEFAULT_FIXTURE_DIR }
+          if (-not (Test-Path -LiteralPath $dir)) {
+            throw "Fixture directory '$dir' does not exist in checkout"
+          }
+          "fixture_dir=$dir" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          Write-Output "Resolved fixture directory: $dir"
+        env:
+          INPUT_FIXTURE_DIR: ${{ inputs.fixture_dir }}
+
+      - name: Aggregate results
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          ./src/Aggregate-TestResults.ps1 `
+            -InputDirectory '${{ steps.resolve.outputs.fixture_dir }}' `
+            -SummaryPath summary.md `
+            -AllowFailures
+          Write-Output "---- Markdown summary written to summary.md ----"
+          Get-Content summary.md
