@@ -1,0 +1,37 @@
+name: Test Results Aggregator
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  aggregate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Pester (no-op if pre-installed)
+        shell: pwsh
+        run: |
+          if (-not (Get-Module -ListAvailable -Name Pester | Where-Object Version -ge "5.0")) {
+            Install-Module -Name Pester -Force -Scope CurrentUser -MinimumVersion 5.0
+          }
+          Import-Module Pester -MinimumVersion 5.0
+          Write-Output "Pester version: $((Get-Module Pester).Version)"
+
+      - name: Run test results aggregator on fixtures
+        shell: pwsh
+        run: |
+          ./Invoke-TestAggregator.ps1 -InputPaths fixtures
+
+      - name: Show job summary
+        shell: pwsh
+        run: |
+          Write-Output "Aggregation complete. Check the step above for AGGREGATE_* metrics."
