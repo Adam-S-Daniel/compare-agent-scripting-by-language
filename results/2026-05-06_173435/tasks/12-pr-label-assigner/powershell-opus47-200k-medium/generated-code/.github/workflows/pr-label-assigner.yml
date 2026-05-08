@@ -1,0 +1,61 @@
+name: PR Label Assigner
+
+# Triggered on pushes / PRs and is also invokable manually so the harness
+# (and humans) can dispatch it from `act` or the GitHub UI.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  RULES_FILE: rules.json
+  FILES_FILE: changed-files.txt
+
+jobs:
+  assign-labels:
+    name: Compute labels for changed files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify project files exist
+        shell: pwsh
+        run: |
+          $required = @(
+            'LabelAssigner.psm1',
+            'Invoke-LabelAssigner.ps1',
+            $env:RULES_FILE,
+            $env:FILES_FILE
+          )
+          foreach ($f in $required) {
+            if (-not (Test-Path -LiteralPath $f)) {
+              throw "Missing required file: $f"
+            }
+          }
+          Write-Host "All required project files present."
+
+      - name: Run Pester unit tests
+        shell: pwsh
+        run: |
+          $result = Invoke-Pester -Path . -PassThru -Output Detailed
+          if ($result.FailedCount -gt 0) {
+            throw "Pester reported $($result.FailedCount) failing test(s)."
+          }
+
+      - name: Compute labels
+        id: labels
+        shell: pwsh
+        run: |
+          $out = & ./Invoke-LabelAssigner.ps1 `
+            -RulesFile $env:RULES_FILE `
+            -FilesFile $env:FILES_FILE
+          $out | ForEach-Object { Write-Host $_ }
+          $labelsLine = $out | Where-Object { $_ -like 'LABELS=*' } | Select-Object -First 1
+          if (-not $labelsLine) { throw 'Script did not emit a LABELS= line.' }
+          "$labelsLine"          | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "RESULT=$labelsLine"   | Write-Host
