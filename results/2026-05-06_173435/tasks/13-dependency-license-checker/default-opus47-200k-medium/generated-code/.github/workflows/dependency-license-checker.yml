@@ -1,0 +1,80 @@
+name: Dependency License Checker
+
+# Runs the license-compliance script against a manifest in CI. The harness
+# overrides MANIFEST_PATH per test case to exercise different fixtures.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      manifest_path:
+        description: "Path to manifest file"
+        required: false
+        default: "fixtures/clean/package.json"
+  schedule:
+    # Weekly drift check so a previously-allowed license going copyleft is caught.
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  unit-tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run unit tests
+        shell: bash
+        run: python3 -m unittest test_license_checker -v
+
+  license-check:
+    name: License compliance scan
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show selected manifest
+        shell: bash
+        run: |
+          : "${MANIFEST_PATH:=fixtures/clean/package.json}"
+          : "${CONFIG_PATH:=licenses.json}"
+          echo "MANIFEST_PATH=$MANIFEST_PATH" >> "$GITHUB_ENV"
+          echo "CONFIG_PATH=$CONFIG_PATH"     >> "$GITHUB_ENV"
+          echo "Scanning manifest: $MANIFEST_PATH"
+          test -f "$MANIFEST_PATH" || { echo "missing manifest"; exit 2; }
+          test -f "$CONFIG_PATH"   || { echo "missing config";   exit 2; }
+
+      - name: Run license checker
+        id: scan
+        shell: bash
+        # Capture rc so we can branch on EXPECT_FAIL without aborting the step.
+        run: |
+          set +e
+          python3 license_checker.py \
+            --manifest "$MANIFEST_PATH" \
+            --config   "$CONFIG_PATH" \
+            --mock | tee report.txt
+          rc=${PIPESTATUS[0]}
+          echo "rc=$rc" >> "$GITHUB_OUTPUT"
+          echo "Checker exit code: $rc"
+          set -e
+
+      - name: Enforce policy
+        shell: bash
+        env:
+          RC: ${{ steps.scan.outputs.rc }}
+        run: |
+          : "${EXPECT_FAIL:=false}"
+          if [ "$EXPECT_FAIL" = "true" ]; then
+            if [ "$RC" = "0" ]; then
+              echo "Expected denied deps but checker passed"; exit 1
+            fi
+            echo "POLICY_RESULT: denied-deps-found-as-expected"
+          else
+            if [ "$RC" != "0" ]; then
+              echo "Unexpected denied deps"; exit 1
+            fi
+            echo "POLICY_RESULT: all-clean"
+          fi
