@@ -1,0 +1,180 @@
+name: Test Results Aggregator
+
+# Trigger on push, PR, manual dispatch, and a daily schedule so the
+# aggregator stays exercised by CI even when no code changes ship.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      scenario:
+        description: "Fixture scenario to aggregate"
+        required: false
+        default: "all-pass"
+        type: choice
+        options:
+          - all-pass
+          - with-flake
+          - with-failures
+  schedule:
+    - cron: "0 6 * * *"
+
+# Default to read-only — we never push code or comment from this workflow.
+permissions:
+  contents: read
+
+jobs:
+  aggregate:
+    name: Aggregate test results
+    runs-on: ubuntu-latest
+    env:
+      # Resolve the scenario at job-env time so all steps see the same value.
+      # Order: workflow_dispatch input > scenario.txt in repo > default.
+      SCENARIO_INPUT: ${{ github.event.inputs.scenario }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Show Python version
+        run: |
+          # The ubuntu-latest runner ships with Python 3.10+, and our
+          # container image (act-ubuntu-pwsh) ships 3.12. Skip
+          # setup-python to keep the act runtime fast and dependency-free.
+          python3 --version
+          python3 -m pip --version
+
+      - name: Install test dependencies
+        run: python3 -m pip install --break-system-packages --quiet pytest pyyaml
+
+      - name: Run unit tests
+        run: python3 -m pytest tests/ -v
+
+      - name: Resolve scenario
+        id: scenario
+        shell: bash
+        run: |
+          # Resolve which fixture scenario to run.
+          # Priority: workflow_dispatch input > scenario.txt > all-pass.
+          SCENARIO="${SCENARIO_INPUT:-}"
+          if [ -z "$SCENARIO" ] && [ -f scenario.txt ]; then
+            SCENARIO=$(tr -d '[:space:]' < scenario.txt)
+          fi
+          if [ -z "$SCENARIO" ]; then
+            SCENARIO="all-pass"
+          fi
+          case "$SCENARIO" in
+            all-pass|with-flake|with-failures) ;;
+            *)
+              echo "::error::Unknown scenario '$SCENARIO'"
+              exit 1
+              ;;
+          esac
+          echo "Resolved scenario: $SCENARIO"
+          echo "scenario=$SCENARIO" >> "$GITHUB_OUTPUT"
+
+      - name: Aggregate test results
+        shell: bash
+        env:
+          SCENARIO: ${{ steps.scenario.outputs.scenario }}
+        run: |
+          # Aggregate the matrix of fixture files for the chosen scenario.
+          # The aggregator writes to $GITHUB_STEP_SUMMARY when --output is
+          # left at its default; we point it at summary.md so the
+          # verification step can grep deterministically.
+          python3 aggregator.py \
+            "fixtures/${SCENARIO}-run1.xml" \
+            "fixtures/${SCENARIO}-run2.json" \
+            --output summary.md
+          echo "----- summary.md begin -----"
+          cat summary.md
+          echo "----- summary.md end -----"
+          # Mirror into the GitHub Actions job summary as well, when present.
+          if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
+            cat summary.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Verify aggregator output
+        shell: bash
+        env:
+          SCENARIO: ${{ steps.scenario.outputs.scenario }}
+        run: |
+          # Per-scenario assertions on the aggregator's markdown output.
+          # Each scenario has known-good expected values — see fixtures/.
+          set -e
+          SUMMARY=$(cat summary.md)
+          fail() { echo "::error::$*"; echo "summary was:"; cat summary.md; exit 1; }
+
+          # Universal: the document title must always be present.
+          echo "$SUMMARY" | grep -q "# Test Results Summary" \
+            || fail "missing top-level heading"
+          echo "$SUMMARY" | grep -q "Runs aggregated | 2" \
+            || fail "expected 2 runs aggregated"
+
+          case "$SCENARIO" in
+            all-pass)
+              echo "$SUMMARY" | grep -q "All tests passed across all runs." \
+                || fail "expected 'All tests passed' message"
+              echo "$SUMMARY" | grep -q "\*\*Status:\*\* passed" \
+                || fail "expected status 'passed'"
+              echo "$SUMMARY" | grep -q "Total tests | 6" \
+                || fail "expected total=6"
+              echo "$SUMMARY" | grep -q "Passed | 6" \
+                || fail "expected passed=6"
+              echo "$SUMMARY" | grep -q "Failed | 0" \
+                || fail "expected failed=0"
+              # Negative assertions: no flaky/failure sections in this case.
+              ! echo "$SUMMARY" | grep -q "## Flaky tests" \
+                || fail "did not expect flaky-tests section"
+              ! echo "$SUMMARY" | grep -q "## Failures" \
+                || fail "did not expect failures section"
+              ;;
+            with-flake)
+              echo "$SUMMARY" | grep -q "\*\*Status:\*\* needs attention" \
+                || fail "expected status 'needs attention'"
+              echo "$SUMMARY" | grep -q "## Flaky tests" \
+                || fail "expected flaky-tests section"
+              echo "$SUMMARY" | grep -q "auth.login_rejects_bad_password" \
+                || fail "expected flaky test name in summary"
+              echo "$SUMMARY" | grep -q "Total tests | 8" \
+                || fail "expected total=8"
+              echo "$SUMMARY" | grep -q "Passed | 5" \
+                || fail "expected passed=5"
+              echo "$SUMMARY" | grep -q "Failed | 1" \
+                || fail "expected failed=1"
+              echo "$SUMMARY" | grep -q "Skipped | 2" \
+                || fail "expected skipped=2"
+              # No consistent-failure section — the only failure was a flake.
+              ! echo "$SUMMARY" | grep -q "## Failures" \
+                || fail "did not expect failures section in flake scenario"
+              ;;
+            with-failures)
+              echo "$SUMMARY" | grep -q "\*\*Status:\*\* needs attention" \
+                || fail "expected status 'needs attention'"
+              echo "$SUMMARY" | grep -q "## Failures" \
+                || fail "expected failures section"
+              echo "$SUMMARY" | grep -q "auth.login_rejects_bad_password" \
+                || fail "expected failing test in summary"
+              echo "$SUMMARY" | grep -q "AssertionError: expected 401, got 200" \
+                || fail "expected failure message in summary"
+              echo "$SUMMARY" | grep -q "Total tests | 4" \
+                || fail "expected total=4"
+              echo "$SUMMARY" | grep -q "Passed | 2" \
+                || fail "expected passed=2"
+              echo "$SUMMARY" | grep -q "Failed | 2" \
+                || fail "expected failed=2"
+              # The same test failed in BOTH runs => not flaky.
+              ! echo "$SUMMARY" | grep -q "## Flaky tests" \
+                || fail "did not expect flaky-tests section in consistent-failure scenario"
+              ;;
+          esac
+          echo "Verification passed for scenario=$SCENARIO"
+
+      - name: Upload aggregated summary
+        # Skip when running under act — upload-artifact@v4 needs an
+        # artifact-server, which isn't configured in our local act setup.
+        if: ${{ !env.ACT }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-summary-${{ steps.scenario.outputs.scenario }}
+          path: summary.md
+          if-no-files-found: error
