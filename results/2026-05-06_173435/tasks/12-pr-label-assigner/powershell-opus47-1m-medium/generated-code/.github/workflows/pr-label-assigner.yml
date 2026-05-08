@@ -1,0 +1,30 @@
+name: PR Label Assigner
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  assign-labels:
+    runs-on: ubuntu-latest
+    env:
+      FILES_PATH: fixtures/files.json
+      RULES_PATH: fixtures/rules.json
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Pester unit tests
+        shell: pwsh
+        run: |
+          $r = Invoke-Pester -Path ./PrLabelAssigner.Tests.ps1 -PassThru -Output Detailed
+          if ($r.FailedCount -gt 0) { throw "Pester tests failed: $($r.FailedCount)" }
+
+      - name: Compute labels for fixture
+        shell: pwsh
+        run: |
+          ./Run-Assigner.ps1 -FilesPath $env:FILES_PATH -RulesPath $env:RULES_PATH

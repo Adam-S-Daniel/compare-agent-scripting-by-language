@@ -1,0 +1,51 @@
+name: Artifact Cleanup Script
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 2 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  cleanup:
+    name: Run artifact cleanup
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install actionlint
+        run: |
+          curl -sSf https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash | bash
+          mv ./actionlint /usr/local/bin/actionlint
+
+      - name: Run unit tests
+        run: bun test
+
+      - name: Run cleanup plan - TC1 (max age policy)
+        run: |
+          echo "::group::TC1 — max age (30 days)"
+          bun run artifact-cleanup.ts --fixtures fixtures/tc1-max-age.json --dry-run
+          echo "::endgroup::"
+
+      - name: Run cleanup plan - TC2 (keep latest N)
+        run: |
+          echo "::group::TC2 — keep latest 2 per workflow"
+          bun run artifact-cleanup.ts --fixtures fixtures/tc2-keep-latest.json --dry-run
+          echo "::endgroup::"
+
+      - name: Run cleanup plan - TC3 (max total size)
+        run: |
+          echo "::group::TC3 — max total size (5 MB)"
+          bun run artifact-cleanup.ts --fixtures fixtures/tc3-max-size.json --dry-run
+          echo "::endgroup::"

@@ -1,0 +1,36 @@
+name: Test Results Aggregator
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  aggregate:
+    name: Aggregate Test Results
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+
+      - name: Run unit tests
+        run: |
+          export PATH="$HOME/.bun/bin:$PATH"
+          bun test tests/parsers.test.ts tests/aggregator.test.ts tests/markdown.test.ts
+
+      - name: Run aggregator against fixture files
+        run: |
+          export PATH="$HOME/.bun/bin:$PATH"
+          bun run main.ts fixtures/junit-run1.xml fixtures/junit-run2.xml fixtures/results-run3.json

@@ -1,0 +1,64 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      commits_file:
+        description: Path to the conventional-commits fixture file
+        required: false
+        default: fixtures/commits.txt
+
+permissions:
+  contents: read
+
+jobs:
+  bump-version:
+    name: Bump version from conventional commits
+    runs-on: ubuntu-latest
+    env:
+      BUMP_DATE: "2026-05-07"
+      VERSION_FILE: package.json
+      CHANGELOG_FILE: CHANGELOG.md
+      COMMITS_FILE: ${{ github.event.inputs.commits_file || 'fixtures/commits.txt' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Show fixture inputs
+        shell: bash
+        run: |
+          echo "===PACKAGE_JSON_BEFORE_START==="
+          cat "$VERSION_FILE"
+          echo "===PACKAGE_JSON_BEFORE_END==="
+          echo "===COMMITS_FIXTURE_START==="
+          cat "$COMMITS_FILE"
+          echo "===COMMITS_FIXTURE_END==="
+
+      - name: Run semantic version bumper
+        id: bump
+        shell: bash
+        run: |
+          set -euo pipefail
+          new_version=$(python3 bumper.py \
+            --version-file "$VERSION_FILE" \
+            --commits-file "$COMMITS_FILE" \
+            --changelog-file "$CHANGELOG_FILE" \
+            --date "$BUMP_DATE")
+          echo "===NEW_VERSION_START==="
+          echo "$new_version"
+          echo "===NEW_VERSION_END==="
+          echo "new_version=$new_version" >> "$GITHUB_OUTPUT"
+
+      - name: Verify and report results
+        shell: bash
+        run: |
+          set -euo pipefail
+          pkg_version=$(python3 -c "import json,sys; print(json.load(open('$VERSION_FILE'))['version'])")
+          echo "===PACKAGE_JSON_VERSION_START==="
+          echo "$pkg_version"
+          echo "===PACKAGE_JSON_VERSION_END==="
+          echo "===CHANGELOG_START==="
+          cat "$CHANGELOG_FILE"
+          echo "===CHANGELOG_END==="

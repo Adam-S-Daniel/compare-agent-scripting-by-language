@@ -1,0 +1,90 @@
+# Environment Matrix Generator workflow.
+#
+# The harness runs `act push --rm` once per fixture in a temp git repo where
+# the fixture has been copied to fixture.json at the repo root. This workflow:
+#
+#   1. Checks out the seeded repo (via actions/checkout for fidelity with
+#      real GitHub Actions usage; act provides the same behavior locally).
+#   2. Installs Bun (the catthehacker / custom act image does not ship it).
+#   3. Runs test-runner.ts against fixture.json, which prints the matrix
+#      JSON between MATRIX_OUTPUT_BEGIN/END markers and a TEST_PASS line.
+#   4. Validates fixture.json round-trips through the CLI (matrix.ts) too,
+#      so both the library and CLI entry points are exercised in CI.
+
+name: Environment Matrix Generator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: "Path to the fixture file (relative to repo root)"
+        required: false
+        default: "fixture.json"
+  schedule:
+    # Daily smoke-run at 06:00 UTC. Cheap because the workflow only takes
+    # seconds when its dependencies are already cached.
+    - cron: "0 6 * * *"
+
+permissions:
+  contents: read
+
+env:
+  FIXTURE_PATH: fixture.json
+
+jobs:
+  generate-and-verify:
+    name: Generate matrix and verify against fixture expectations
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show fixture file
+        run: |
+          echo "Fixture path: ${FIXTURE_PATH}"
+          test -f "${FIXTURE_PATH}" || { echo "Missing ${FIXTURE_PATH}"; exit 1; }
+          cat "${FIXTURE_PATH}"
+
+      - name: Install Bun
+        # The act container does not pre-install Bun. Curl-install is faster
+        # and more deterministic in act than oven-sh/setup-bun, which would
+        # require additional action downloads.
+        run: |
+          if ! command -v bun >/dev/null 2>&1; then
+            curl -fsSL https://bun.sh/install | bash
+          fi
+          echo "$HOME/.bun/bin" >> "${GITHUB_PATH}"
+
+      - name: Verify Bun installation
+        run: |
+          bun --version
+          echo "PATH=${PATH}"
+
+      - name: Run library test-runner against fixture
+        run: bun run test-runner.ts "${FIXTURE_PATH}"
+
+      - name: Round-trip fixture through matrix.ts CLI
+        # The fixture wraps the actual MatrixConfig under .config; extract
+        # it with jq and run the CLI to confirm the second entry point works
+        # end-to-end as well. For oversized fixtures the CLI will exit with
+        # code 3 (SIZE_ERROR) — we explicitly accept that for fixtures whose
+        # expectSuccess is false.
+        run: |
+          jq '.config' "${FIXTURE_PATH}" > config.json
+          EXPECT_SUCCESS=$(jq -r '.expectSuccess' "${FIXTURE_PATH}")
+          set +e
+          bun run matrix.ts --input config.json
+          CLI_EXIT=$?
+          set -e
+          echo "CLI exit code: ${CLI_EXIT}"
+          if [ "${EXPECT_SUCCESS}" = "true" ] && [ "${CLI_EXIT}" -ne 0 ]; then
+            echo "FAIL: CLI exited ${CLI_EXIT} but fixture expects success"
+            exit 1
+          fi
+          if [ "${EXPECT_SUCCESS}" = "false" ] && [ "${CLI_EXIT}" -eq 0 ]; then
+            echo "FAIL: CLI exited 0 but fixture expects failure"
+            exit 1
+          fi
+          echo "CLI round-trip matches fixture expectation"

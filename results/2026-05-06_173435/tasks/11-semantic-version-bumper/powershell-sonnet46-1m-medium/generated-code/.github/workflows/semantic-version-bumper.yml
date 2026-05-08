@@ -1,0 +1,79 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Pester if not available
+        shell: pwsh
+        run: |
+          if (-not (Get-Module -ListAvailable -Name Pester | Where-Object { $_.Version -ge [Version]"5.0" })) {
+            Install-Module -Name Pester -Force -SkipPublisherCheck -MinimumVersion 5.0
+          }
+          Import-Module Pester -MinimumVersion 5.0
+
+      - name: Run Pester unit tests
+        shell: pwsh
+        run: |
+          $result = Invoke-Pester ./VersionBumper.Tests.ps1 -Output Detailed -PassThru
+          if ($result.FailedCount -gt 0) {
+            Write-Error "Pester: $($result.FailedCount) test(s) failed"
+            exit 1
+          }
+          Write-Output "All $($result.PassedCount) tests passed"
+
+  version-bump-scenarios:
+    runs-on: ubuntu-latest
+    needs: [unit-tests]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run patch bump scenario (fix commits 1.1.0 to 1.1.1)
+        shell: pwsh
+        run: |
+          $tempDir = Join-Path ([System.IO.Path]::GetTempPath()) "patch-scenario"
+          New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
+          Copy-Item "VersionBumper.ps1" $tempDir
+          Copy-Item "fixtures/patch-bump/version.json" (Join-Path $tempDir "version.json")
+          Copy-Item "fixtures/patch-bump/commits.txt" (Join-Path $tempDir "commits.txt")
+          Push-Location $tempDir
+          ./VersionBumper.ps1
+          Pop-Location
+
+      - name: Run minor bump scenario (feat commit 1.1.0 to 1.2.0)
+        shell: pwsh
+        run: |
+          $tempDir = Join-Path ([System.IO.Path]::GetTempPath()) "minor-scenario"
+          New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
+          Copy-Item "VersionBumper.ps1" $tempDir
+          Copy-Item "fixtures/minor-bump/version.json" (Join-Path $tempDir "version.json")
+          Copy-Item "fixtures/minor-bump/commits.txt" (Join-Path $tempDir "commits.txt")
+          Push-Location $tempDir
+          ./VersionBumper.ps1
+          Pop-Location
+
+      - name: Run major bump scenario (breaking change 1.1.0 to 2.0.0)
+        shell: pwsh
+        run: |
+          $tempDir = Join-Path ([System.IO.Path]::GetTempPath()) "major-scenario"
+          New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
+          Copy-Item "VersionBumper.ps1" $tempDir
+          Copy-Item "fixtures/major-bump/version.json" (Join-Path $tempDir "version.json")
+          Copy-Item "fixtures/major-bump/commits.txt" (Join-Path $tempDir "commits.txt")
+          Push-Location $tempDir
+          ./VersionBumper.ps1
+          Pop-Location

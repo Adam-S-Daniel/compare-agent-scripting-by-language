@@ -1,0 +1,55 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: "Fixture file to run (relative to repo root)"
+        required: false
+        default: "fixtures/basic.json"
+
+permissions:
+  contents: read
+
+env:
+  FIXTURE_FILE: ${{ github.event.inputs.fixture || 'fixtures/basic.json' }}
+
+jobs:
+  generate-matrix:
+    name: Generate Matrix
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        run: |
+          if ! command -v bun >/dev/null 2>&1; then
+            curl -fsSL https://bun.sh/install | bash
+            echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+          fi
+
+      - name: Show Bun version
+        run: bun --version
+
+      - name: Run unit tests
+        run: bun test matrix.test.ts
+
+      - name: Generate matrix
+        id: gen
+        run: |
+          set -euo pipefail
+          echo "Using fixture: $FIXTURE_FILE"
+          bun run cli.ts "$FIXTURE_FILE" > matrix.json
+          echo "----- BEGIN MATRIX JSON -----"
+          cat matrix.json
+          echo "----- END MATRIX JSON -----"
+
+      - name: Upload matrix artifact
+        if: ${{ !env.ACT }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: matrix-json
+          path: matrix.json

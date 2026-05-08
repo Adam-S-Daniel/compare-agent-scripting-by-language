@@ -4,22 +4,22 @@
 
 ## Notes
 
-- **Generated:** 2026-04-21 09:01:25 AM ET
-- **Source:** `/home/user/compare-agent-scripting-by-language/results/2026-04-17_004319`
+- **Generated:** 2026-05-08 01:20:33 PM ET
+- **Source:** `/home/passp/repos/compare-agent-scripting-by-language/results/2026-04-17_004319`
 - **Judges present:** haiku45, gemini31pro
 - **Score conventions:** Scores shown are the `overall` dimension from each judge (1-5). Δ column is the second judge minus the first; positive = second judge is more generous.
 
 ## Quality Analysis
 
-The opus47-1m model at high or xhigh effort produces the best code on both Tests Quality and Workflow Craft, topping both judges' rankings with zero pairwise reversals against any other model. Language choice matters less at that tier — powershell/opus47-1m is the #1 language×model pairing for Workflow Craft across both judges, and opus47 variants dominate the top Tests Quality slots across every language.
+Opus 4.7 at 1M context, run at high or extra-high effort, is the strongest configuration on both axes — both judges place it first on Workflow Craft (ρ = +0.90) and first on Tests Quality (ρ = +0.70), with no reversals near the top of either ranking. PowerShell paired with Opus 4.7-1m leads the Workflow Craft language×model board, while PowerShell-Tool and TypeScript-Bun paired with Opus 4.7-1m share the Tests Quality lead.
 
-- **Top performer**: opus47-1m is #1 for both judges on both axes (Spearman ρ = +0.70 Tests Quality, ρ = +0.90 Workflow Craft), with haiku45 unanimously last.
-- **Effort tier**: opus47-1m-xhigh and opus47-1m-high clear the medium tier on both axes — 3.23/3.12 vs. 2.67 on Tests Quality (haiku45), 3.31/3.17 vs. 2.26 on Workflow Craft, and gemini31pro agrees on the ordering.
-- **Best by language (Workflow Craft)**: powershell/opus47-1m is the top language×model slot for both judges (ρ = +0.75 on this axis), with default/opus47-1m and powershell-tool/opus47-1m tied immediately behind.
-- **Where rankings diverge**: the standalone language axis shows near-zero agreement (ρ = +0.00 Tests Quality, ρ = +0.10 Workflow Craft), with judges flipping on every middle-tier pair except bash-at-bottom on Tests and typescript-bun-at-bottom on Workflow Craft.
-- **Workflow Craft ceiling**: powershell/opus47-1m is the top language×model mean for both judges (5.00 gemini31pro / 3.14 haiku45), while haiku45-produced runs hold the bottom on both (ρ = +0.75 on this axis).
+- **Top performer**: opus47-1m at xhigh and high effort sits at 3.31/4.74 and 3.24/4.94 on Workflow Craft, ahead of every other model+effort cell, and both judges agree on the top three tiers with no reversals among them.
+- **Effort tier**: moving Opus 4.7-1m from medium to high lifts Workflow Craft from 2.26/4.74 to 3.24/4.94 — both judges register the gain, and xhigh shows diminishing returns above high.
+- **Best by language**: powershell/opus47-1m ranks #1 by Gemini and #2 by Haiku on Workflow Craft, with default/opus47-1m and powershell-tool/opus47-1m close behind (ρ = +0.79 across all language×model cells).
+- **Workflow Craft ceiling**: Gemini caps the field at 4.94 for opus47-1m-high, and the +0.90 Spearman across model+effort cells means that ceiling reflects panel agreement, not a single judge's scale.
+- **Where rankings diverge**: language ordering scores ρ = +0.00 on both axes — the panel agrees on which model produces better code but not on which scripting language flatters it; haiku45 still lands last across both judges with no reversal.
 
-*Provenance:* `claude-opus-4-7[1m]` at effort `max` via Claude CLI (from cache); 5 in / 10121 out tokens, $0.4359. Prompt: [`QUALITY_ANALYSIS_SYSTEM_PROMPT`](../../judge_consistency_report.py).
+*Provenance:* `claude-opus-4-7[1m]` at effort `xhigh` via Claude CLI (from cache); 5 in / 2472 out tokens, $0.2484. Prompt: [`QUALITY_ANALYSIS_SYSTEM_PROMPT`](../../judge_consistency_report.py).
 
 ## Campaign summary
 
@@ -33,7 +33,7 @@ The opus47-1m model at high or xhigh effort produces the best code on both Tests
 
 | Scope | n | haiku45 ovr | gemini31pro ovr | Δ(gemini31pro−haiku45) |
 |---|---|---|---|---|
-| all | 236 | 2.44 | 4.46 | +2.02 |
+| all | 230 | 2.48 | 4.45 | +1.97 |
 
 ## By task
 
@@ -53,12 +53,12 @@ The opus47-1m model at high or xhigh effort produces the best code on both Tests
 
 | Task | n | haiku45 ovr | gemini31pro ovr | Δ(gemini31pro−haiku45) |
 |---|---|---|---|---|
-| 11-semantic-version-bumper | 35 | 2.26 | 4.11 | +1.86 |
-| 12-pr-label-assigner | 35 | 2.37 | 3.91 | +1.54 |
+| 11-semantic-version-bumper | 34 | 2.29 | 4.09 | +1.79 |
+| 12-pr-label-assigner | 33 | 2.45 | 3.85 | +1.39 |
 | 13-dependency-license-checker | 35 | 2.54 | 4.43 | +1.89 |
-| 15-test-results-aggregator | 32 | 2.41 | 4.72 | +2.31 |
-| 16-environment-matrix-generator | 31 | 2.39 | 4.81 | +2.42 |
-| 17-artifact-cleanup-script | 34 | 2.47 | 4.56 | +2.09 |
+| 15-test-results-aggregator | 31 | 2.45 | 4.71 | +2.26 |
+| 16-environment-matrix-generator | 30 | 2.43 | 4.80 | +2.37 |
+| 17-artifact-cleanup-script | 33 | 2.52 | 4.55 | +2.03 |
 | 18-secret-rotation-validator | 34 | 2.68 | 4.76 | +2.09 |
 
 ## By language mode
@@ -77,11 +77,11 @@ The opus47-1m model at high or xhigh effort produces the best code on both Tests
 
 | Mode | n | haiku45 ovr | gemini31pro ovr | Δ(gemini31pro−haiku45) |
 |---|---|---|---|---|
-| bash | 47 | 2.55 | 4.40 | +1.85 |
+| bash | 46 | 2.59 | 4.39 | +1.80 |
 | default | 47 | 2.45 | 4.55 | +2.11 |
-| powershell | 49 | 2.43 | 4.51 | +2.08 |
-| powershell-tool | 47 | 2.40 | 4.53 | +2.13 |
-| typescript-bun | 46 | 2.39 | 4.30 | +1.91 |
+| powershell | 47 | 2.49 | 4.49 | +2.00 |
+| powershell-tool | 46 | 2.43 | 4.52 | +2.09 |
+| typescript-bun | 44 | 2.45 | 4.27 | +1.82 |
 
 ## By model + effort
 
@@ -101,12 +101,12 @@ The opus47-1m model at high or xhigh effort produces the best code on both Tests
 
 | Model-Effort | n | haiku45 ovr | gemini31pro ovr | Δ(gemini31pro−haiku45) |
 |---|---|---|---|---|
-| haiku45 | 32 | 1.62 | 3.34 | +1.72 |
-| opus47-1m-high | 35 | 3.17 | 4.94 | +1.77 |
+| haiku45 | 31 | 1.65 | 3.29 | +1.65 |
+| opus47-1m-high | 34 | 3.24 | 4.94 | +1.71 |
 | opus47-1m-medium | 34 | 2.26 | 4.74 | +2.47 |
 | opus47-1m-xhigh | 35 | 3.31 | 4.74 | +1.43 |
-| opus47-200k-medium | 33 | 2.30 | 4.76 | +2.45 |
-| sonnet-medium | 32 | 2.19 | 4.25 | +2.06 |
+| opus47-200k-medium | 30 | 2.43 | 4.73 | +2.30 |
+| sonnet-medium | 31 | 2.23 | 4.23 | +2.00 |
 | sonnet46-1m-medium | 35 | 2.14 | 4.37 | +2.23 |
 
 ## Disagreement hotspots (panel span ≥ 2 on overall)
@@ -146,19 +146,13 @@ The opus47-1m model at high or xhigh effort produces the best code on both Tests
 | Task | Mode | Model | Span | haiku45 ovr | gemini31pro ovr |
 |---|---|---|---|---|---|
 | 11-semantic-version-bumper | powershell | opus47-1m-medium | 4.0 | 1.0 | 5.0 |
-| 11-semantic-version-bumper | powershell | opus47-200k-medium | 4.0 | 1.0 | 5.0 |
 | 11-semantic-version-bumper | powershell-tool | sonnet46-1m-medium | 4.0 | 1.0 | 5.0 |
 | 12-pr-label-assigner | bash | opus47-1m-medium | 4.0 | 1.0 | 5.0 |
-| 12-pr-label-assigner | powershell-tool | sonnet-medium | 4.0 | 1.0 | 5.0 |
-| 12-pr-label-assigner | typescript-bun | opus47-1m-high | 4.0 | 1.0 | 5.0 |
 | 13-dependency-license-checker | powershell-tool | sonnet-medium | 4.0 | 1.0 | 5.0 |
 | 15-test-results-aggregator | default | opus47-1m-medium | 4.0 | 1.0 | 5.0 |
 | 15-test-results-aggregator | default | sonnet46-1m-medium | 4.0 | 1.0 | 5.0 |
-| 15-test-results-aggregator | powershell | haiku45 | 4.0 | 1.0 | 5.0 |
 | 16-environment-matrix-generato | powershell | opus47-1m-xhigh | 4.0 | 1.0 | 5.0 |
-| 16-environment-matrix-generato | typescript-bun | opus47-200k-medium | 4.0 | 1.0 | 5.0 |
 | 17-artifact-cleanup-script | bash | opus47-1m-medium | 4.0 | 1.0 | 5.0 |
-| 17-artifact-cleanup-script | bash | opus47-200k-medium | 4.0 | 1.0 | 5.0 |
 | 11-semantic-version-bumper | bash | opus47-1m-xhigh | 3.0 | 2.0 | 5.0 |
 | 11-semantic-version-bumper | default | opus47-1m-medium | 3.0 | 1.0 | 4.0 |
 | 11-semantic-version-bumper | default | opus47-1m-xhigh | 3.0 | 2.0 | 5.0 |
@@ -170,6 +164,12 @@ The opus47-1m model at high or xhigh effort produces the best code on both Tests
 | 12-pr-label-assigner | bash | sonnet46-1m-medium | 3.0 | 2.0 | 5.0 |
 | 12-pr-label-assigner | default | opus47-1m-medium | 3.0 | 2.0 | 5.0 |
 | 12-pr-label-assigner | default | opus47-1m-xhigh | 3.0 | 2.0 | 5.0 |
+| 12-pr-label-assigner | default | opus47-200k-medium | 3.0 | 2.0 | 5.0 |
+| 12-pr-label-assigner | powershell | opus47-1m-xhigh | 3.0 | 2.0 | 5.0 |
+| 12-pr-label-assigner | powershell | opus47-200k-medium | 3.0 | 1.0 | 4.0 |
+| 12-pr-label-assigner | typescript-bun | opus47-1m-xhigh | 3.0 | 2.0 | 5.0 |
+| 13-dependency-license-checker | bash | opus47-1m-medium | 3.0 | 2.0 | 5.0 |
+| 13-dependency-license-checker | bash | sonnet46-1m-medium | 3.0 | 1.0 | 4.0 |
 
 ## Model rankings by judge
 
@@ -198,11 +198,11 @@ The opus47-1m model at high or xhigh effort produces the best code on both Tests
 
 | Model | haiku45 rank (mean, n) | gemini31pro rank (mean, n) |
 |---|---|---|
-| opus47-1m | 1 (2.92, n=105) | 1 (4.81, n=104) |
-| opus47-200k | 2 (2.31, n=35) | 2 (4.76, n=33) |
-| sonnet | 3 (2.15, n=34) | 4 (4.25, n=32) |
+| opus47-1m | 1 (2.94, n=104) | 1 (4.81, n=104) |
+| opus47-200k | 2 (2.44, n=32) | 2 (4.76, n=33) |
+| sonnet | 3 (2.18, n=33) | 4 (4.25, n=32) |
 | sonnet46-1m | 4 (2.14, n=35) | 3 (4.37, n=35) |
-| haiku45 | 5 (1.60, n=35) | 5 (3.34, n=32) |
+| haiku45 | 5 (1.62, n=34) | 5 (3.34, n=32) |
 
 *Spearman rank correlation between haiku45 and gemini31pro: **+0.90**. (+1.0 = judges agree perfectly on ordering; 0 = no correlation; -1.0 = reversed.)*
 
@@ -243,13 +243,13 @@ The opus47-1m model at high or xhigh effort produces the best code on both Tests
 
 | Language | haiku45 rank (mean, n) | gemini31pro rank (mean, n) |
 |---|---|---|
-| bash | 1 (2.54, n=48) | 4 (4.40, n=47) |
-| powershell | 2 (2.43, n=49) | 3 (4.51, n=49) |
-| default | 3 (2.41, n=49) | 1 (4.55, n=47) |
-| powershell-tool | 4 (2.41, n=49) | 2 (4.53, n=47) |
-| typescript-bun | 5 (2.35, n=49) | 5 (4.30, n=46) |
+| bash | 1 (2.57, n=47) | 4 (4.40, n=47) |
+| powershell | 2 (2.49, n=47) | 3 (4.51, n=49) |
+| powershell-tool | 3 (2.44, n=48) | 2 (4.53, n=47) |
+| default | 4 (2.41, n=49) | 1 (4.55, n=47) |
+| typescript-bun | 5 (2.40, n=47) | 5 (4.30, n=46) |
 
-*Spearman rank correlation between haiku45 and gemini31pro: **+0.10**. (+1.0 = judges agree perfectly on ordering; 0 = no correlation; -1.0 = reversed.)*
+*Spearman rank correlation between haiku45 and gemini31pro: **+0.00**. (+1.0 = judges agree perfectly on ordering; 0 = no correlation; -1.0 = reversed.)*
 
 **Pair-wise reversals** (where the two judges disagree on which language is better):
 
@@ -259,6 +259,7 @@ The opus47-1m model at high or xhigh effort produces the best code on both Tests
 | bash vs powershell | bash | powershell | — |
 | bash vs powershell-tool | bash | powershell-tool | — |
 | default vs powershell | powershell | default | — |
+| default vs powershell-tool | powershell-tool | default | — |
 | powershell vs powershell-tool | powershell | powershell-tool | — |
 
 ## Language×Model rankings by judge
@@ -401,11 +402,11 @@ The opus47-1m model at high or xhigh effort produces the best code on both Tests
 
 | Language / Model | haiku45 rank (mean, n) | gemini31pro rank (mean, n) |
 |---|---|---|
-| powershell / opus47-1m | 1 (3.14, n=21) | 1 (5.00, n=21) |
-| bash / opus47-200k | 2 (3.00, n=7) | 4 (4.86, n=7) |
+| bash / opus47-200k | 1 (3.33, n=6) | 4 (4.86, n=7) |
+| powershell / opus47-1m | 2 (3.14, n=21) | 1 (5.00, n=21) |
 | default / opus47-1m | 3 (2.95, n=21) | 2 (4.90, n=21) |
 | powershell-tool / opus47-1m | 4 (2.95, n=21) | 3 (4.90, n=21) |
-| typescript-bun / opus47-1m | 5 (2.81, n=21) | 8 (4.70, n=20) |
+| typescript-bun / opus47-1m | 5 (2.90, n=20) | 8 (4.70, n=20) |
 | bash / opus47-1m | 6 (2.76, n=21) | 11 (4.52, n=21) |
 | powershell-tool / opus47-200k | 7 (2.57, n=7) | 7 (4.80, n=5) |
 | bash / sonnet | 8 (2.50, n=6) | 14 (4.40, n=5) |
@@ -416,32 +417,31 @@ The opus47-1m model at high or xhigh effort produces the best code on both Tests
 | powershell-tool / sonnet46-1m | 13 (2.29, n=7) | 10 (4.57, n=7) |
 | typescript-bun / sonnet | 14 (2.14, n=7) | 18 (4.17, n=6) |
 | default / sonnet | 15 (2.00, n=7) | 19 (4.14, n=7) |
-| default / sonnet46-1m | 16 (1.86, n=7) | 15 (4.29, n=7) |
-| powershell / opus47-200k | 17 (1.86, n=7) | 6 (4.86, n=7) |
+| powershell / opus47-200k | 16 (2.00, n=6) | 6 (4.86, n=7) |
+| default / sonnet46-1m | 17 (1.86, n=7) | 15 (4.29, n=7) |
 | powershell / sonnet46-1m | 18 (1.86, n=7) | 16 (4.29, n=7) |
-| bash / haiku45 | 19 (1.71, n=7) | 22 (3.57, n=7) |
-| default / haiku45 | 20 (1.71, n=7) | 21 (3.60, n=5) |
-| powershell-tool / sonnet | 21 (1.71, n=7) | 9 (4.57, n=7) |
-| typescript-bun / haiku45 | 22 (1.71, n=7) | 25 (3.00, n=6) |
-| typescript-bun / opus47-200k | 23 (1.71, n=7) | 13 (4.43, n=7) |
-| powershell / haiku45 | 24 (1.43, n=7) | 23 (3.43, n=7) |
+| powershell-tool / sonnet | 19 (1.83, n=6) | 9 (4.57, n=7) |
+| typescript-bun / opus47-200k | 20 (1.83, n=6) | 13 (4.43, n=7) |
+| bash / haiku45 | 21 (1.71, n=7) | 22 (3.57, n=7) |
+| default / haiku45 | 22 (1.71, n=7) | 21 (3.60, n=5) |
+| typescript-bun / haiku45 | 23 (1.71, n=7) | 25 (3.00, n=6) |
+| powershell / haiku45 | 24 (1.50, n=6) | 23 (3.43, n=7) |
 | powershell-tool / haiku45 | 25 (1.43, n=7) | 24 (3.14, n=7) |
 
-*Spearman rank correlation between haiku45 and gemini31pro: **+0.75**. (+1.0 = judges agree perfectly on ordering; 0 = no correlation; -1.0 = reversed.)*
+*Spearman rank correlation between haiku45 and gemini31pro: **+0.79**. (+1.0 = judges agree perfectly on ordering; 0 = no correlation; -1.0 = reversed.)*
 
 **Pair-wise reversals** (where the two judges disagree on which language×model is better):
 
 | Pair | haiku45 prefers | gemini31pro prefers | Own-family signal? |
 |---|---|---|---|
 | bash / haiku45 vs default / haiku45 | bash / haiku45 | default / haiku45 | ⚠️ haiku45 |
-| bash / haiku45 vs powershell-tool / sonnet | bash / haiku45 | powershell-tool / sonnet | ⚠️ haiku45 |
-| bash / haiku45 vs typescript-bun / opus47-200k | bash / haiku45 | typescript-bun / opus47-200k | ⚠️ haiku45 |
 | bash / opus47-1m vs default / opus47-200k | bash / opus47-1m | default / opus47-200k | — |
 | bash / opus47-1m vs powershell / opus47-200k | bash / opus47-1m | powershell / opus47-200k | — |
 | bash / opus47-1m vs powershell-tool / opus47-200k | bash / opus47-1m | powershell-tool / opus47-200k | — |
 | bash / opus47-1m vs powershell-tool / sonnet | bash / opus47-1m | powershell-tool / sonnet | — |
 | bash / opus47-1m vs powershell-tool / sonnet46-1m | bash / opus47-1m | powershell-tool / sonnet46-1m | — |
 | bash / opus47-200k vs default / opus47-1m | bash / opus47-200k | default / opus47-1m | — |
+| bash / opus47-200k vs powershell / opus47-1m | bash / opus47-200k | powershell / opus47-1m | — |
 | bash / opus47-200k vs powershell-tool / opus47-1m | bash / opus47-200k | powershell-tool / opus47-1m | — |
 | bash / sonnet vs bash / sonnet46-1m | bash / sonnet | bash / sonnet46-1m | — |
 | bash / sonnet vs default / opus47-200k | bash / sonnet | default / opus47-200k | — |
@@ -454,8 +454,6 @@ The opus47-1m model at high or xhigh effort produces the best code on both Tests
 | bash / sonnet46-1m vs powershell-tool / sonnet | bash / sonnet46-1m | powershell-tool / sonnet | — |
 | bash / sonnet46-1m vs powershell-tool / sonnet46-1m | bash / sonnet46-1m | powershell-tool / sonnet46-1m | — |
 | bash / sonnet46-1m vs typescript-bun / sonnet46-1m | typescript-bun / sonnet46-1m | bash / sonnet46-1m | — |
-| default / haiku45 vs powershell-tool / sonnet | default / haiku45 | powershell-tool / sonnet | ⚠️ haiku45 |
-| default / haiku45 vs typescript-bun / opus47-200k | default / haiku45 | typescript-bun / opus47-200k | ⚠️ haiku45 |
 | default / opus47-200k vs powershell-tool / opus47-200k | powershell-tool / opus47-200k | default / opus47-200k | — |
 | default / opus47-200k vs typescript-bun / opus47-1m | typescript-bun / opus47-1m | default / opus47-200k | — |
 | default / sonnet vs default / sonnet46-1m | default / sonnet | default / sonnet46-1m | — |
@@ -464,7 +462,6 @@ The opus47-1m model at high or xhigh effort produces the best code on both Tests
 | default / sonnet vs powershell / sonnet46-1m | default / sonnet | powershell / sonnet46-1m | — |
 | default / sonnet vs powershell-tool / sonnet | default / sonnet | powershell-tool / sonnet | — |
 | default / sonnet vs typescript-bun / opus47-200k | default / sonnet | typescript-bun / opus47-200k | — |
-| default / sonnet46-1m vs powershell / opus47-200k | default / sonnet46-1m | powershell / opus47-200k | — |
 | default / sonnet46-1m vs powershell / sonnet | powershell / sonnet | default / sonnet46-1m | — |
 | default / sonnet46-1m vs powershell-tool / sonnet | default / sonnet46-1m | powershell-tool / sonnet | — |
 | default / sonnet46-1m vs typescript-bun / opus47-200k | default / sonnet46-1m | typescript-bun / opus47-200k | — |
@@ -493,7 +490,6 @@ The opus47-1m model at high or xhigh effort produces the best code on both Tests
 | powershell-tool / sonnet vs typescript-bun / sonnet | typescript-bun / sonnet | powershell-tool / sonnet | — |
 | powershell-tool / sonnet vs typescript-bun / sonnet46-1m | typescript-bun / sonnet46-1m | powershell-tool / sonnet | — |
 | powershell-tool / sonnet46-1m vs typescript-bun / sonnet46-1m | typescript-bun / sonnet46-1m | powershell-tool / sonnet46-1m | — |
-| typescript-bun / haiku45 vs typescript-bun / opus47-200k | typescript-bun / haiku45 | typescript-bun / opus47-200k | ⚠️ haiku45 |
 | typescript-bun / opus47-200k vs typescript-bun / sonnet | typescript-bun / sonnet | typescript-bun / opus47-200k | — |
 | typescript-bun / opus47-200k vs typescript-bun / sonnet46-1m | typescript-bun / sonnet46-1m | typescript-bun / opus47-200k | — |
 
@@ -529,28 +525,22 @@ The opus47-1m model at high or xhigh effort produces the best code on both Tests
 
 ### Workflow Craft
 
-*Baseline delta (gemini31pro − haiku45) across the whole dataset: **+2.02**.*
+*Baseline delta (gemini31pro − haiku45) across the whole dataset: **+1.97**.*
 
 | Task | Mode | Model | Self judge | Self score | Other judge | Other score | Row Δ | Deviation |
 |---|---|---|---|---|---|---|---|---|
-| 11-semantic-version-bumper | bash | haiku45 | haiku45 | 2.0 | gemini31pro | 3.0 | +1.0 | -1.0 |
-| 11-semantic-version-bumper | powershell | haiku45 | haiku45 | 1.0 | gemini31pro | 2.0 | +1.0 | -1.0 |
 | 11-semantic-version-bumper | powershell-tool | haiku45 | haiku45 | 2.0 | gemini31pro | 2.0 | +0.0 | -2.0 |
 | 11-semantic-version-bumper | typescript-bun | haiku45 | haiku45 | 2.0 | gemini31pro | 2.0 | +0.0 | -2.0 |
-| 12-pr-label-assigner | bash | haiku45 | haiku45 | 1.0 | gemini31pro | 2.0 | +1.0 | -1.0 |
-| 12-pr-label-assigner | default | haiku45 | haiku45 | 2.0 | gemini31pro | 3.0 | +1.0 | -1.0 |
-| 12-pr-label-assigner | powershell | haiku45 | haiku45 | 1.0 | gemini31pro | 2.0 | +1.0 | -1.0 |
-| 12-pr-label-assigner | powershell-tool | haiku45 | haiku45 | 1.0 | gemini31pro | 2.0 | +1.0 | -1.0 |
 | 12-pr-label-assigner | typescript-bun | haiku45 | haiku45 | 2.0 | gemini31pro | 2.0 | +0.0 | -2.0 |
-| 13-dependency-license-checker | default | haiku45 | haiku45 | 1.0 | gemini31pro | 2.0 | +1.0 | -1.0 |
+| 13-dependency-license-checker | powershell-tool | haiku45 | haiku45 | 1.0 | gemini31pro | 4.0 | +3.0 | +1.0 |
+| 15-test-results-aggregator | bash | haiku45 | haiku45 | 1.0 | gemini31pro | 4.0 | +3.0 | +1.0 |
 | 15-test-results-aggregator | default | haiku45 | haiku45 | 1.0 | — | — | — | — |
-| 15-test-results-aggregator | powershell | haiku45 | haiku45 | 1.0 | gemini31pro | 5.0 | +4.0 | +2.0 |
-| 15-test-results-aggregator | typescript-bun | haiku45 | haiku45 | 2.0 | gemini31pro | 3.0 | +1.0 | -1.0 |
+| 15-test-results-aggregator | powershell-tool | haiku45 | haiku45 | 1.0 | gemini31pro | 4.0 | +3.0 | +1.0 |
+| 16-environment-matrix-generato | bash | haiku45 | haiku45 | 2.0 | gemini31pro | 5.0 | +3.0 | +1.0 |
 | 16-environment-matrix-generato | default | haiku45 | haiku45 | 2.0 | — | — | — | — |
-| 16-environment-matrix-generato | powershell-tool | haiku45 | haiku45 | 2.0 | gemini31pro | 3.0 | +1.0 | -1.0 |
+| 16-environment-matrix-generato | powershell | haiku45 | haiku45 | 2.0 | gemini31pro | 5.0 | +3.0 | +1.0 |
 | 16-environment-matrix-generato | typescript-bun | haiku45 | haiku45 | 1.0 | — | — | — | — |
-| 17-artifact-cleanup-script | bash | haiku45 | haiku45 | 3.0 | gemini31pro | 4.0 | +1.0 | -1.0 |
-| 17-artifact-cleanup-script | powershell | haiku45 | haiku45 | 1.0 | gemini31pro | 2.0 | +1.0 | -1.0 |
-| 17-artifact-cleanup-script | typescript-bun | haiku45 | haiku45 | 2.0 | gemini31pro | 3.0 | +1.0 | -1.0 |
-| 18-secret-rotation-validator | powershell-tool | haiku45 | haiku45 | 2.0 | gemini31pro | 3.0 | +1.0 | -1.0 |
+| 17-artifact-cleanup-script | default | haiku45 | haiku45 | 2.0 | gemini31pro | 5.0 | +3.0 | +1.0 |
+| 17-artifact-cleanup-script | powershell-tool | haiku45 | haiku45 | 1.0 | gemini31pro | 4.0 | +3.0 | +1.0 |
+| 18-secret-rotation-validator | typescript-bun | haiku45 | haiku45 | 2.0 | gemini31pro | 5.0 | +3.0 | +1.0 |
 

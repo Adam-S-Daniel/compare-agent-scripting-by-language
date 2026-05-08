@@ -1,0 +1,86 @@
+name: Artifact Cleanup Script
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate bash syntax
+        run: bash -n artifact-cleanup.sh
+
+      - name: Install shellcheck
+        run: |
+          if ! command -v shellcheck &>/dev/null; then
+            sudo apt-get update && sudo apt-get install -y shellcheck
+          fi
+
+      - name: Run shellcheck
+        run: shellcheck artifact-cleanup.sh
+
+  test:
+    name: Run bats tests
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install bats-core
+        run: |
+          if ! command -v bats &>/dev/null; then
+            git clone --depth 1 https://github.com/bats-core/bats-core.git /tmp/bats-core
+            sudo /tmp/bats-core/install.sh /usr/local
+          fi
+
+      - name: Make script executable
+        run: chmod +x artifact-cleanup.sh
+
+      - name: Run bats test suite
+        run: bats --tap test/artifact-cleanup.bats
+
+  integration:
+    name: Integration test
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Make script executable
+        run: chmod +x artifact-cleanup.sh
+
+      - name: Run dry-run with max-age policy
+        run: |
+          ./artifact-cleanup.sh --dry-run --max-age 3 \
+            --reference-time 1700000000 \
+            test/fixtures/basic-artifacts.txt
+
+      - name: Run dry-run with keep-latest policy
+        run: |
+          ./artifact-cleanup.sh --dry-run --keep-latest 1 \
+            --reference-time 1700000000 \
+            test/fixtures/keep-latest-artifacts.txt
+
+      - name: Run dry-run with max-total-size policy
+        run: |
+          ./artifact-cleanup.sh --dry-run --max-total-size 10000 \
+            --reference-time 1700000000 \
+            test/fixtures/size-limit-artifacts.txt
+
+      - name: Run combined policies
+        run: |
+          ./artifact-cleanup.sh --dry-run --max-age 3 --keep-latest 1 \
+            --reference-time 1700000000 \
+            test/fixtures/basic-artifacts.txt

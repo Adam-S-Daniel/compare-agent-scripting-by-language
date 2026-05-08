@@ -1,0 +1,97 @@
+name: Test Results Aggregator
+
+# Trigger on push (matrix-build CI), PRs (preview the summary), the daily
+# 06:00 UTC schedule (catch flaky-test trends), and manual dispatch.
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      fixture_dir:
+        description: 'Fixture directory to aggregate (default: fixtures/case-mixed)'
+        required: false
+        default: 'fixtures/case-mixed'
+
+# Read-only checkout is enough; the summary is appended to the job's own
+# GITHUB_STEP_SUMMARY, no external API calls.
+permissions:
+  contents: read
+
+# Default to picking up FIXTURE_DIR from a repo env var so individual jobs
+# can override per-step. The act test harness writes this via `act --env`.
+env:
+  FIXTURE_DIR: fixtures/case-mixed
+
+jobs:
+  unit-tests:
+    name: Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show environment
+        shell: pwsh
+        run: |
+          $PSVersionTable | Format-List
+          Get-Module -ListAvailable -Name Pester | Select-Object Name, Version
+
+      - name: Run Pester
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = 'tests/Aggregate-TestResults.Tests.ps1'
+          $config.Run.Exit = $true
+          $config.Output.Verbosity = 'Detailed'
+          $config.TestResult.Enabled = $true
+          $config.TestResult.OutputFormat = 'JUnitXml'
+          $config.TestResult.OutputPath = 'pester-results.xml'
+          Invoke-Pester -Configuration $config
+
+  aggregate:
+    name: Aggregate matrix results
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Resolve the fixture dir: workflow_dispatch input wins over the env
+      # default. Done in pwsh so we can validate the path exists before running.
+      - name: Resolve fixture directory
+        id: resolve
+        shell: pwsh
+        run: |
+          $dir = if ('${{ github.event.inputs.fixture_dir }}') { '${{ github.event.inputs.fixture_dir }}' } else { $env:FIXTURE_DIR }
+          if (-not (Test-Path -LiteralPath $dir -PathType Container)) {
+            Write-Error "Fixture directory '$dir' does not exist"
+            exit 1
+          }
+          Write-Host "Using fixture dir: $dir"
+          "fixture_dir=$dir" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Aggregate results
+        shell: pwsh
+        run: |
+          ./Aggregate-TestResults.ps1 `
+            -InputDir '${{ steps.resolve.outputs.fixture_dir }}' `
+            -OutputPath summary.md `
+            -AppendStepSummary
+          # Echo the rendered markdown so the act log captures it for
+          # downstream assertions.
+          Write-Host '----- BEGIN SUMMARY MARKDOWN -----'
+          Get-Content summary.md
+          Write-Host '----- END SUMMARY MARKDOWN -----'
+
+      - name: Upload summary artifact
+        # Skip under act: the artifact-upload service isn't reachable inside
+        # local act containers (no ACTIONS_RUNTIME_TOKEN). Real CI runs fine.
+        if: ${{ !env.ACT }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-summary
+          path: summary.md
+          if-no-files-found: error

@@ -1,0 +1,98 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: "Path to a JSON config (relative to repo root)"
+        required: false
+        default: "fixture.json"
+
+permissions:
+  contents: read
+
+env:
+  # Default fixture the workflow consumes. The act harness writes the
+  # per-test-case JSON to ./fixture.json in the temp repo before each run.
+  FIXTURE_PATH: fixture.json
+
+jobs:
+  build-matrix:
+    name: Build matrix
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show fixture file
+        shell: pwsh
+        run: |
+          $path = $env:FIXTURE_PATH
+          if (-not (Test-Path -LiteralPath $path)) {
+            Write-Error "Fixture file '$path' not found"
+            exit 1
+          }
+          Write-Host "===BEGIN FIXTURE==="
+          Get-Content -LiteralPath $path -Raw
+          Write-Host "===END FIXTURE==="
+
+      - name: Run Pester unit tests
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Import-Module Pester -MinimumVersion 5.0.0
+          $cfg = New-PesterConfiguration
+          $cfg.Run.Path = './test'
+          $cfg.Run.Exit = $true
+          $cfg.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $cfg
+
+      - name: Generate matrix
+        id: gen
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $path = $env:FIXTURE_PATH
+          $json = pwsh -NoProfile -File ./src/Generate-Matrix.ps1 -ConfigPath $path
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "Generator exited with code $LASTEXITCODE"
+            exit 1
+          }
+          # Print clearly delimited JSON so the act harness can extract it.
+          Write-Host "===BEGIN MATRIX==="
+          Write-Host $json
+          Write-Host "===END MATRIX==="
+
+          # Parse the result and emit a few compact summary lines for assertions.
+          $obj = $json | ConvertFrom-Json
+          $count = @($obj.matrix.include).Count
+          Write-Host "MATRIX_INCLUDE_COUNT=$count"
+          Write-Host "MATRIX_FAIL_FAST=$($obj.'fail-fast')"
+          if ($obj.PSObject.Properties.Name -contains 'max-parallel') {
+            Write-Host "MATRIX_MAX_PARALLEL=$($obj.'max-parallel')"
+          } else {
+            Write-Host "MATRIX_MAX_PARALLEL=unset"
+          }
+
+          # Expose the combo count as a job output so downstream steps/jobs
+          # could fan out off of it in real usage.
+          "include_count=$count" >> $env:GITHUB_OUTPUT
+
+      - name: Validate matrix structure
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $count = '${{ steps.gen.outputs.include_count }}'
+          if ([string]::IsNullOrWhiteSpace($count)) {
+            Write-Error 'No matrix include count was produced.'
+            exit 1
+          }
+          if ([int]$count -lt 1) {
+            Write-Error "Matrix produced no combinations (count=$count)"
+            exit 1
+          }
+          Write-Host "Matrix structure looks valid: $count combination(s)."

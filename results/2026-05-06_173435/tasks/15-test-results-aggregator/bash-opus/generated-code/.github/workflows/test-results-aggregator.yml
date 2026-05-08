@@ -1,0 +1,45 @@
+name: Test Results Aggregator
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  aggregate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq jq python3
+
+      - name: Run aggregator on fixtures
+        run: |
+          chmod +x aggregate-test-results.sh
+          bash aggregate-test-results.sh fixtures/run1 fixtures/run2 fixtures/run3
+
+      - name: Display summary
+        run: |
+          echo "=== MARKDOWN SUMMARY ==="
+          cat test-results-summary.md
+          echo "=== END SUMMARY ==="
+
+      - name: Verify totals
+        run: |
+          output=$(bash aggregate-test-results.sh fixtures/run1 fixtures/run2 fixtures/run3)
+          echo "$output"
+          echo "$output" | grep -q "TOTAL_TESTS=17"
+          echo "$output" | grep -q "TOTAL_PASSED=10"
+          echo "$output" | grep -q "TOTAL_FAILED=5"
+          echo "$output" | grep -q "TOTAL_SKIPPED=2"
+          echo "$output" | grep -q "TOTAL_DURATION=36.600s"
+          echo "$output" | grep -q "FLAKY_TESTS=test_checkout test_create_user test_signup"
+          echo "All assertions passed"

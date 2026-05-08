@@ -1,0 +1,86 @@
+name: Test Results Aggregator
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-aggregator:
+    name: Test Results Aggregation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y bats
+
+      - name: Run bats tests
+        run: |
+          chmod +x test-results-aggregator.sh
+          chmod +x tests/test_aggregator.bats
+          bats tests/test_aggregator.bats
+
+      - name: Run test aggregation on sample fixtures
+        if: success()
+        run: |
+          source test-results-aggregator.sh
+          {
+            echo "## Sample Test Aggregation"
+            echo ""
+            generate_markdown_summary fixtures/build-1-tests.xml fixtures/build-2-tests.xml fixtures/build-3-tests.json
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Verify script passes shellcheck
+        run: |
+          apt-get install -y shellcheck
+          shellcheck test-results-aggregator.sh
+
+      - name: Verify bash syntax
+        run: |
+          bash -n test-results-aggregator.sh
+
+  fixture-validation:
+    name: Validate Test Fixtures
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Verify fixture files exist
+        run: |
+          test -f fixtures/build-1-tests.xml || exit 1
+          test -f fixtures/build-2-tests.xml || exit 1
+          test -f fixtures/build-3-tests.json || exit 1
+          test -f fixtures/build-4-tests.json || exit 1
+          echo "All fixture files present"
+
+      - name: Validate XML fixtures
+        run: |
+          apt-get update
+          apt-get install -y libxml2-utils
+          xmllint fixtures/build-1-tests.xml > /dev/null && echo "build-1-tests.xml: valid"
+          xmllint fixtures/build-2-tests.xml > /dev/null && echo "build-2-tests.xml: valid"
+
+      - name: Validate JSON fixtures
+        run: |
+          apt-get update
+          apt-get install -y jq
+          jq . fixtures/build-3-tests.json > /dev/null && echo "build-3-tests.json: valid"
+          jq . fixtures/build-4-tests.json > /dev/null && echo "build-4-tests.json: valid"

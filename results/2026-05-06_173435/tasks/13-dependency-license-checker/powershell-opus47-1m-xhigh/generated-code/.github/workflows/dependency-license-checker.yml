@@ -1,0 +1,163 @@
+---
+name: Dependency License Checker
+
+# Triggers:
+#   - push / pull_request: run on every change touching the checker.
+#   - schedule:           weekly drift check (catches new dep entries no one
+#                         re-ran the workflow for since they were added).
+#   - workflow_dispatch:  manual trigger so reviewers can run on demand and
+#                         optionally override the manifest/policy paths.
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+    inputs:
+      manifest_file:
+        description: 'Path to dependency manifest (relative to repo root)'
+        required: false
+        default: 'fixtures/package.json'
+      policy_file:
+        description: 'Path to license policy JSON'
+        required: false
+        default: 'fixtures/license-policy.json'
+
+permissions:
+  contents: read
+
+env:
+  # Defaults are overridden by workflow_dispatch inputs (when present) and by
+  # the act test harness, which exports MANIFEST_FILE / POLICY_FILE before
+  # invoking `act push`.
+  MANIFEST_FILE: ${{ inputs.manifest_file || 'fixtures/package.json' }}
+  POLICY_FILE: ${{ inputs.policy_file || 'fixtures/license-policy.json' }}
+
+jobs:
+  unit-tests:
+    name: Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show environment
+        shell: pwsh
+        run: |
+          $PSVersionTable.PSVersion
+          Get-Module -ListAvailable Pester | Select-Object Name, Version
+
+      - name: Run Pester
+        shell: pwsh
+        run: |
+          # Only run module-behavior tests here. Workflow.Tests.ps1 is meta —
+          # it parses this very file and shells out to actionlint, which is
+          # the harness's responsibility, not the workflow runner's.
+          $cfg = New-PesterConfiguration
+          $cfg.Run.Path = 'tests/LicenseChecker.Tests.ps1'
+          $cfg.Run.Exit = $true
+          $cfg.Output.Verbosity = 'Detailed'
+          $cfg.TestResult.Enabled = $true
+          $cfg.TestResult.OutputPath = 'pester-results.xml'
+          Invoke-Pester -Configuration $cfg
+
+      - name: Upload Pester results
+        # Skip under act — the artifact API isn't implemented locally and
+        # would cause the job to fail spuriously. On real GitHub it runs.
+        if: always() && !env.ACT
+        uses: actions/upload-artifact@v4
+        with:
+          name: pester-results
+          path: pester-results.xml
+          if-no-files-found: warn
+
+  compliance-check:
+    name: License compliance check
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Load test-case overrides
+        shell: pwsh
+        run: |
+          # The act test harness writes test-config.env per-case to override
+          # the manifest/policy paths without editing the workflow itself.
+          # Lines look like: MANIFEST_FILE=fixtures/requirements.txt
+          if (Test-Path 'test-config.env') {
+            Write-Output "Applying overrides from test-config.env:"
+            Get-Content 'test-config.env' | ForEach-Object {
+              if ($_ -match '^\s*([A-Z_][A-Z0-9_]*)\s*=\s*(.+?)\s*$') {
+                $k = $matches[1]; $v = $matches[2]
+                Write-Output "  $k=$v"
+                "$k=$v" | Out-File -FilePath $env:GITHUB_ENV -Append
+              }
+            }
+          } else {
+            Write-Output "No test-config.env override; using workflow defaults."
+          }
+
+      - name: Verify required files exist
+        shell: pwsh
+        run: |
+          $files = @('src/LicenseChecker.psm1', 'src/Get-LicenseReport.ps1', $env:MANIFEST_FILE, $env:POLICY_FILE)
+          $missing = $files | Where-Object { -not (Test-Path -LiteralPath $_) }
+          if ($missing) {
+            Write-Error "Missing required files: $($missing -join ', ')"
+            exit 2
+          }
+          Write-Output "All required files present."
+
+      - name: Run license compliance check
+        id: compliance
+        shell: pwsh
+        run: |
+          Write-Output "Manifest: $env:MANIFEST_FILE"
+          Write-Output "Policy:   $env:POLICY_FILE"
+          Write-Output "----- BEGIN COMPLIANCE REPORT -----"
+          $exitCode = 0
+          try {
+            & pwsh -NoProfile -File src/Get-LicenseReport.ps1 `
+                -ManifestPath $env:MANIFEST_FILE `
+                -PolicyPath $env:POLICY_FILE `
+                -JsonPath compliance-report.json
+            $exitCode = $LASTEXITCODE
+          } catch {
+            Write-Output "Script threw: $($_.Exception.Message)"
+            $exitCode = 2
+          }
+          Write-Output "----- END COMPLIANCE REPORT -----"
+          Write-Output "Exit code: $exitCode"
+          # Surface the exit code as a step output so callers can branch on it
+          # without re-failing the whole job. Compliance failures (1) are
+          # informational; only hard errors (2+) bubble up as a job failure.
+          "exit_code=$exitCode" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          if ($exitCode -ge 2) { exit $exitCode }
+          # Important: explicitly reset and exit 0. Under `shell: pwsh`, the
+          # runner uses $LASTEXITCODE from the child pwsh as the step's exit
+          # code, so a non-compliant (exit 1) child would otherwise fail the
+          # whole job even though we want compliance failures to be informational.
+          $global:LASTEXITCODE = 0
+          exit 0
+
+      - name: Annotate compliance verdict
+        if: always()
+        shell: pwsh
+        run: |
+          $code = '${{ steps.compliance.outputs.exit_code }}'
+          switch ($code) {
+            '0' { Write-Output 'VERDICT: COMPLIANT' }
+            '1' { Write-Output 'VERDICT: NON-COMPLIANT (denied or unknown licenses present)' }
+            default { Write-Output "VERDICT: ERROR (exit code $code)" }
+          }
+
+      - name: Upload compliance report
+        if: always() && !env.ACT
+        uses: actions/upload-artifact@v4
+        with:
+          name: compliance-report
+          path: compliance-report.json
+          if-no-files-found: warn

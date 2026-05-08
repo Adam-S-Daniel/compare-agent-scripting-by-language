@@ -1,0 +1,35 @@
+name: Artifact Cleanup
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 0'
+
+permissions:
+  contents: read
+
+jobs:
+  test-cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify script exists
+        run: test -f artifact_cleanup.py && echo "Script found"
+
+      - name: Verify fixtures exist
+        run: find test_fixtures -name '*.json' | wc -l
+
+      - name: Run fixture tests
+        run: python3 run_fixture_tests.py
+
+      - name: Run example cleanup (dry-run)
+        run: |
+          python3 -c "
+          import json
+          d = json.load(open('test_fixtures/test_combined.json'))
+          json.dump(d['input'], open('/tmp/example_input.json', 'w'))
+          "
+          python3 artifact_cleanup.py /tmp/example_input.json

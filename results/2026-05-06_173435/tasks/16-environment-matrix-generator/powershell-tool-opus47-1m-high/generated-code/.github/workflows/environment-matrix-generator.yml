@@ -1,0 +1,111 @@
+name: environment-matrix-generator
+
+# Triggers: standard CI events plus a manual dispatch so an operator can
+# regenerate matrices on demand. Schedule keeps the workflow exercised
+# weekly to catch drift in dependencies (e.g. Pester or pwsh updates).
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: 'Fixture file path relative to repo root'
+        required: false
+        default: 'fixtures/basic.json'
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+env:
+  # Default fixture used when not overridden (push/PR/schedule).
+  DEFAULT_FIXTURE: fixtures/basic.json
+
+jobs:
+  unit-tests:
+    name: Run Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = './tests'
+          $config.Run.Exit = $true
+          $config.Output.Verbosity = 'Detailed'
+          $config.TestResult.Enabled = $true
+          $config.TestResult.OutputFormat = 'NUnitXml'
+          $config.TestResult.OutputPath = './pester-results.xml'
+          Invoke-Pester -Configuration $config
+
+      - name: Upload Pester results
+        # Skip artifact upload when running under nektos/act — there's no
+        # ACTIONS_RUNTIME_TOKEN locally so the upload would fail. On real GitHub
+        # the env.ACT variable is unset and the step runs normally.
+        if: always() && !env.ACT
+        uses: actions/upload-artifact@v4
+        with:
+          name: pester-results
+          path: pester-results.xml
+          if-no-files-found: ignore
+
+  generate-matrix:
+    name: Generate matrix from fixture
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    outputs:
+      matrix: ${{ steps.gen.outputs.matrix }}
+      size: ${{ steps.gen.outputs.size }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve fixture path
+        id: resolve
+        shell: pwsh
+        run: |
+          $fixture = if ($env:INPUT_FIXTURE) { $env:INPUT_FIXTURE } else { $env:DEFAULT_FIXTURE }
+          if (-not (Test-Path -LiteralPath $fixture)) {
+            Write-Error "Fixture not found: $fixture"
+            exit 1
+          }
+          Write-Host "Using fixture: $fixture"
+          "fixture=$fixture" | Add-Content -LiteralPath $env:GITHUB_OUTPUT
+        env:
+          INPUT_FIXTURE: ${{ inputs.fixture }}
+
+      - name: Generate matrix
+        id: gen
+        shell: pwsh
+        run: |
+          $fixture = '${{ steps.resolve.outputs.fixture }}'
+          ./src/Invoke-MatrixGenerator.ps1 -Path $fixture -GitHubOutputName matrix -OutputFile ./matrix.json
+          $obj = Get-Content -LiteralPath ./matrix.json -Raw | ConvertFrom-Json
+          "size=$($obj.size)" | Add-Content -LiteralPath $env:GITHUB_OUTPUT
+
+      - name: Upload matrix artifact
+        if: ${{ !env.ACT }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: matrix
+          path: matrix.json
+
+  summary:
+    name: Print matrix summary
+    runs-on: ubuntu-latest
+    needs: generate-matrix
+    steps:
+      - name: Show generated matrix
+        shell: pwsh
+        run: |
+          $matrix = '${{ needs.generate-matrix.outputs.matrix }}'
+          Write-Host '----- GENERATED MATRIX -----'
+          Write-Host $matrix
+          Write-Host '----- END MATRIX -----'
+          Write-Host "Size: ${{ needs.generate-matrix.outputs.size }}"

@@ -1,0 +1,65 @@
+name: Artifact Cleanup Script
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 2 * * 0"
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-run:
+    name: Test and Run Artifact Cleanup
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Install actionlint
+        run: |
+          curl -fsSL https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_amd64.tar.gz | tar xz actionlint
+          mv actionlint /usr/local/bin/actionlint
+
+      - name: Run unit tests
+        run: bun test tests/cleanup.test.ts tests/workflow.test.ts
+
+      - name: Case 1 - Max Age Policy (delete artifacts older than 1000 days)
+        run: |
+          bun run src/main.ts \
+            --input fixtures/case1-artifacts.json \
+            --policy fixtures/case1-policy.json \
+            --label CASE1
+
+      - name: Case 2 - Keep Latest N Per Workflow (keep 2 most recent per workflow group)
+        run: |
+          bun run src/main.ts \
+            --input fixtures/case2-artifacts.json \
+            --policy fixtures/case2-policy.json \
+            --label CASE2
+
+      - name: Case 3 - Max Total Size Policy (keep total under 30 MB)
+        run: |
+          bun run src/main.ts \
+            --input fixtures/case3-artifacts.json \
+            --policy fixtures/case3-policy.json \
+            --label CASE3
+
+      - name: Case 4 - Dry Run Mode (same as case 1 but dry-run)
+        run: |
+          bun run src/main.ts \
+            --input fixtures/case4-artifacts.json \
+            --policy fixtures/case4-policy.json \
+            --label CASE4 \
+            --dry-run

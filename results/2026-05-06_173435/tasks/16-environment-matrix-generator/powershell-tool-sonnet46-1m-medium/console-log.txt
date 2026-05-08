@@ -1,0 +1,779 @@
+[Assistant] I'll start by reading the project instructions, then implement the solution using TDD with PowerShell and Pester.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/AGENTS.md"}
+[Result] 1	# Agent Instructions
+2	
+3	All agent-facing instructions live in this file. `CLAUDE.md` contains only a
+4	reference here. If you are a Claude Code agent, you have already loaded this
+5	via `CLAUDE.md`. Other agents: read this file directly.
+6	
+7	## Build and test
+8	
+9	```bash
+10	# Run unit tests (REQUIRED before every PR)
+11	pip install pytest  # if not already installed
+12	python3 -m pytest tests/ -v
+13	
+14	# Validate imports
+15	python3 -c "from runner import main"
+16	python3 -c "from generate_results import generate_results_md"
+17	python3 -c "from test_quality import compute_structural_metrics"
+18	python3 -c "from llm_providers import get_provider"
+19	
+20	# Regenerate all reports
+21	python3 generate_results.py --all
+22	
+23	# Run a benchmark (v4, all tasks/modes/models)
+24	python3 runner.py --tasks 11,12,13,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
+25	
+26	# Evaluate test quality (structural metrics only)
+27	python3 test_quality.py results/2026-04
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-tool-sonnet46-1m-medium/benchmark-instructions-v4.md"}
+[Result] 1	# Benchmark Instructions v4 — GitHub Actions
+2	
+3	**Version**: v4
+4	**Date**: 2026-04-09
+5	**Purpose**: Measure how well Claude Code agents perform GitHub Actions workflow authoring tasks across different language constraints, with trap-awareness guidance from v3 findings.
+6	
+7	**Changes from v3**:
+8	- Added "Common Pitfalls" section with guidance derived from v3 trap analysis (115min, 15.8% of v3 time lost to traps)
+9	- Act container now has pwsh and Pester pre-installed (matching real GitHub runners). Agents still need an install step for workflows that will run on vanilla act, but the benchmarking container already has them.
+10	- GHA workflow addendum expanded with `shell: pwsh` guidance for PowerShell mode
+11	- All other methodology, tasks, modes, and models are unchanged from v3
+12	
+13	## Methodology
+14	
+15	### Overview
+16	
+17	Each task is executed by a Claude Code agent under 4 different language constraints ("modes") and with 2 different models, yielding **8 runs per task**. A
+[Assistant] Let me check the `.actrc` file to understand the Docker image setup.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-tool-sonnet46-1m-medium/.actrc"}
+[Result] 1	-P ubuntu-latest=act-ubuntu-pwsh:latest
+2	
+[Tool: Bash] ls /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-tool-sonnet46-1m-medium/
+[Result] benchmark-instructions-v4.md
+[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/Dockerfile.act 2>/dev/null | head -50
+[Result] # Custom act container image with PowerShell and Pester pre-installed.
+# Matches what real GitHub-hosted ubuntu-latest runners provide.
+#
+# Build:  docker build -t act-ubuntu-pwsh:latest -f Dockerfile.act .
+# Use:    act push -P ubuntu-latest=act-ubuntu-pwsh:latest
+# Or:     echo '-P ubuntu-latest=act-ubuntu-pwsh:latest' > .actrc
+
+FROM catthehacker/ubuntu:act-latest
+
+# Install PowerShell from Microsoft's APT repo
+RUN apt-get update -qq \
+    && apt-get install -y -qq wget apt-transport-https software-properties-common \
+    && wget -q "https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb" \
+    && dpkg -i packages-microsoft-prod.deb \
+    && apt-get update -qq \
+    && apt-get install -y -qq powershell \
+    && rm -f packages-microsoft-prod.deb \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Pester 5 (PowerShell testing framework, pre-installed on GitHub runners)
+RUN pwsh -NoProfile -Command " \
+    Set-PSRepository -Name PSGallery -Inst
+[Assistant] Good - the act container has pwsh and Pester pre-installed. Now let me write the solution using TDD. I'll start with the first failing test, then the implementation, then the workflow and test harness.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-tool-sonnet46-1m-medium/New-BuildMatrix.Tests.ps1", "conten
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-tool-sonnet46-1m-medium/New-BuildMatrix.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Now the implementation (GREEN phase):
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-tool-sonnet46-1m-medium/New-BuildMatrix.ps1", "content": "#
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-tool-sonnet46-1m-medium/New-BuildMatrix.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-tool-sonnet46-1m-medium/Invoke-MatrixGenerator.ps1", "conte
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-tool-sonnet46-1m-medium/Invoke-MatrixGenerator.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Now create the test fixtures and directory:
+[Tool: Bash] mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-tool-sonnet46-1m-medium/test-fixtures
+mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-tool-sonnet46-1m-medium/.github/workflows
+[Result] (Bash completed with no output)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-tool-sonnet46-1m-medium/test-fixtures/test1-basic.json", "c
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-tool-sonnet46-1m-medium/test-fixtures/test1-basic.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-tool-sonnet46-1m-medium/test-fixtures/test2-includes.json",
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-tool-sonnet46-1m-medium/test-fixtures/test2-includes.json (file state is current in your context — no need to Read it back)
+[Assistant] Now the GitHub Actions workflow:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-tool-sonnet46-1m-medium/.github/workflows/environment-matri
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-tool-sonnet46-1m-medium/.github/workflows/environment-matrix-generator.yml (file state is current in your context — no need to Read it back)
+[Assistant] Let me validate with actionlint first:
+[Tool: Bash] actionlint .github/workflows/environment-matrix-generator.yml
+[Result] (Bash completed with no output)
+[Assistant] Actionlint passes. Now let me run the local Pester tests to verify the implementation before running act:
+[Tool: Bash] pwsh -NoProfile -Command "Invoke-Pester -Path ./New-BuildMatrix.Tests.ps1 -Output Detailed" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 28 tests in 279ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-tool-sonnet46-1m-medium/New-BuildMatrix.Tests.ps1'[0m
+[92mDescribing Get-MatrixSize[0m
+[32m  [+] Should return 1 for empty dimensions[0m[90m 144ms (103ms|41ms)[0m
+[32m  [+] Should return count for single dimension[0m[90m 12ms (9ms|3ms)[0m
+[32m  [+] Should return cartesian product for multiple dimensions[0m[90m 8ms (5ms|2ms)[0m
+[32m  [+] Should return product for three dimensions[0m[90m 15ms (4ms|11ms)[0m
+[0m
+[92mDescribing New-BuildMatrix - Basic matrix generation[0m
+[32m  [+] Should generate matrix with dimension arrays[0m[90m 52ms (49ms|3ms)[0m
+[32m  [+] Should include matrix-size in result[0m[90m 10ms (8ms|2ms)[0m
+[32m  [+] Should set max-parallel when specified[
+[Assistant] Several issues to fix: `[ordered]@{}` doesn't have `.ContainsKey()`, include/exclude element access doesn't work through OrderedDictionary, and `$PSScriptRoot` in Describe blocks needs `BeforeAll`. Let me fix both:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-tool-sonnet46-1m-medium/New-BuildMatr
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-tool-sonnet46-1m-medium/New-BuildMatrix.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Now fix the workflow structure `Describe` block to use `BeforeAll` for the path variable:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-tool-sonnet46-1m-medium/New-BuildMatr
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-tool-sonnet46-1m-medium/New-BuildMatrix.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -NoProfile -Command "Invoke-Pester -Path ./New-BuildMatrix.Tests.ps1 -Output Detailed" 2>&1
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 28 tests in 241ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-tool-sonnet46-1m-medium/New-BuildMatrix.Tests.ps1'[0m
+[92mDescribing Get-MatrixSize[0m
+[32m  [+] Should return 1 for empty dimensions[0m[90m 133ms (95ms|39ms)[0m
+[32m  [+] Should return count for single dimension[0m[90m 11ms (8ms|2ms)[0m
+[32m  [+] Should return cartesian product for multiple dimensions[0m[90m 8ms (5ms|3ms)[0m
+[32m  [+] Should return product for three dimensions[0m[90m 12ms (10ms|2ms)[0m
+[0m
+[92mDescribing New-BuildMatrix - Basic matrix generation[0m
+[32m  [+] Should generate matrix with dimension arrays[0m[90m 49ms (47ms|3ms)[0m
+[32m  [+] Should include matrix-size in result[0m[90m 12ms (5ms|7ms)[0m
+[32m  [+] Should set max-parallel when specified[0
+[Assistant] Two include/exclude tests still fail. Let me debug the access pattern:
+[Tool: Bash] pwsh -NoProfile -Command '
+$include = @( @{ os = "macos-latest"; extra = "coverage" } )
+$matrix = @{ include = $include }
+$result = @{ matrix = $matrix }
+Write-Host "include type: $($result.matrix.include.GetType())"
+Write-Host "include[0] type: $($result.matrix.include[0].GetType())"
+Write-Host "include[0].os: $($result.matrix.include[0].os)"
+Write-Host "include[0][os]: $($result.matrix.include[0]["os"])"
+'
+[Result] include type: System.Object[]
+include[0] type: hashtable
+include[0].os: macos-latest
+include[0][os]: macos-latest
+[Tool: Bash] pwsh -NoProfile -Command '
+. ./New-BuildMatrix.ps1
+$config = @{
+    dimensions = @{
+        os      = @("ubuntu-latest", "windows-latest")
+        version = @("1.0", "2.0")
+    }
+    include = @(
+        @{ os = "macos-latest"; version = "2.0"; extra = "coverage" }
+    )
+    maxSize = 256
+}
+$result = New-BuildMatrix -Config $config
+Write-Host "result.matrix.include type: $($result.matrix.include.GetType())"
+Write-Host "result.matrix.include[0] type: $($result.matrix.include[0].GetType())"
+Write-Host "result.matrix.include[0].os: $($result.matrix.include[0]["os"])"
+'
+[Result] result.matrix.include type: hashtable
+[31;1mInvalidOperation: [0m
+[31;1m[36;1mLine |[0m
+[31;1m[36;1m[36;1m  15 | [0m … esult.matrix.include[0] type: $([36;1m$result.matrix.include[0].GetType()[0m)"[0m
+[31;1m[36;1m[36;1m[0m[36;1m[0m[36;1m     | [31;1m                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+[31;1m[36;1m[36;1m[0m[36;1m[0m[36;1m[31;1m[31;1m[36;1m     | [31;1mYou cannot call a method on a null-valued expression.[0m
+result.matrix.include[0] type: 
+[31;1mInvalidOperation: [0m
+[31;1m[36;1mLine |[0m
+[31;1m[36;1m[36;1m  16 | [0m … ost "result.matrix.include[0].os: $([36;1m$result.matrix.include[0]["os"][0m)"[0m
+[31;1m[36;1m[36;1m[0m[36;1m[0m[36;1m     | [31;1m                                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+[31;1m[36;1m[36;1m[0m[36;1m[0m[36;1m[31;1m[31;1m[36;1m     | [31;1mCannot index into a null array.[0m
+result.matrix.include[0].os:
+[Tool: Bash] pwsh -NoProfile -Command '
+. ./New-BuildMatrix.ps1
+$config = @{
+    dimensions = @{ os = @("a", "b"); version = @("1.0", "2.0") }
+    include = @( @{ os = "macos-latest"; extra = "coverage" } )
+    maxSize = 256
+}
+Write-Host "config.include type: $($config.include.GetType())"
+Write-Host "config.include count: $($config.include.Count)"
+$include = @($config.include)
+Write-Host "@(config.include) type: $($include.GetType())"
+Write-Host "@(config.include) count: $($include.Count)"
+Write-Host "@(config.include)[0] type: $($include[0].GetType())"
+'
+[Result] config.include type: System.Object[]
+config.include count: 1
+@(config.include) type: System.Object[]
+@(config.include) count: 1
+@(config.include)[0] type: hashtable
+[Tool: Bash] pwsh -NoProfile -Command '
+. ./New-BuildMatrix.ps1
+$config = @{
+    dimensions = @{ os = @("a", "b"); version = @("1.0", "2.0") }
+    include = @( @{ os = "macos-latest"; extra = "coverage" } )
+    maxSize = 256
+}
+$include = @($config.include)
+$matrix = @{}
+foreach ($key in $config.dimensions.Keys) {
+    $matrix[$key] = @($config.dimensions[$key])
+}
+$matrix["include"] = $include
+Write-Host "matrix[include] type: $($matrix["include"].GetType())"
+Write-Host "matrix[include] count: $($matrix["include"].Count)"
+$result = @{ matrix = $matrix }
+Write-Host "result.matrix[include] type: $($result.matrix["include"].GetType())"
+Write-Host "result.matrix.include type: $($result.matrix.include.GetType())"
+'
+[Result] matrix[include] type: System.Object[]
+matrix[include] count: 1
+result.matrix[include] type: System.Object[]
+result.matrix.include type: System.Object[]
+[Tool: Bash] pwsh -NoProfile -Command '
+. ./New-BuildMatrix.ps1
+$config = @{
+    dimensions = @{ os = @("a","b"); version = @("1.0","2.0") }
+    include = @( @{ os = "macos-latest"; extra = "coverage" } )
+    maxSize = 256
+}
+$result = New-BuildMatrix -Config $config
+Write-Host "matrix.include via []: $($result.matrix["include"].GetType())"
+Write-Host "matrix.include via dot: $($result.matrix.include.GetType())"
+Write-Host "matrix type: $($result.matrix.GetType())"
+Write-Host "matrix keys: $($result.matrix.Keys -join ", ")"
+'
+[Result] matrix.include via []: hashtable
+matrix.include via dot: hashtable
+matrix type: hashtable
+matrix keys: os, version, include
+[Tool: Bash] pwsh -NoProfile -Command '
+$arr = @( @{ os = "foo" } )
+$result = if ($true) { @($arr) }
+Write-Host "type: $($result.GetType())"
+Write-Host "count: $($result.Count)"
+
+# What about direct assignment?
+$arr2 = @($arr)
+Write-Host "arr2 type: $($arr2.GetType())"
+Write-Host "arr2 count: $($arr2.Count)"
+'
+[Result] type: hashtable
+count: 1
+arr2 type: System.Object[]
+arr2 count: 1
+[Assistant] Found the bug — PowerShell if-expressions unroll single-element arrays when assigned. Fix the implementation:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-tool-sonnet46-1m-medium/New-BuildMatr
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-tool-sonnet46-1m-medium/New-BuildMatrix.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -NoProfile -Command "Invoke-Pester -Path ./New-BuildMatrix.Tests.ps1 -Output Detailed" 2>&1 | tail -20
+[Result] [0m
+[92mDescribing New-BuildMatrix - Validation[0m
+[32m  [+] Should throw when matrix exceeds maxSize[0m[90m 88ms (81ms|7ms)[0m
+[32m  [+] Should not throw when matrix size equals maxSize[0m[90m 6ms (5ms|2ms)[0m
+[32m  [+] Should use default maxSize of 256[0m[90m 6ms (4ms|1ms)[0m
+[32m  [+] Should throw with descriptive message including actual and max sizes[0m[90m 15ms (13ms|2ms)[0m
+[0m
+[92mDescribing Workflow structure[0m
+[32m  [+] Workflow file should exist[0m[90m 16ms (12ms|5ms)[0m
+[32m  [+] Workflow should have push trigger[0m[90m 12ms (11ms|2ms)[0m
+[32m  [+] Workflow should reference actions/checkout@v4[0m[90m 5ms (4ms|2ms)[0m
+[32m  [+] Workflow should use shell: pwsh[0m[90m 5ms (3ms|1ms)[0m
+[32m  [+] Workflow should reference Invoke-MatrixGenerator.ps1[0m[90m 5ms (3ms|2ms)[0m
+[32m  [+] Workflow should reference New-BuildMatrix.Tests.ps1[0m[90m 5ms (3ms|2ms)[0m
+[32m  [+] New-BuildMatrix.ps1 should exist[0m[90m 6ms (5ms|2ms)[0m
+[32m 
+[Assistant] All 28 tests pass. Now let me write the act test harness and run the workflow through act:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-tool-sonnet46-1m-medium/Run-ActTests.ps1", "content": "# Ru
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-tool-sonnet46-1m-medium/Run-ActTests.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Now run the act tests:
+[Tool: Bash] pwsh -NoProfile -File ./Run-ActTests.ps1 2>&1
+[Result ERROR] Exit code 1
+--- Validating workflow with actionlint ---
+actionlint passed.
+--- Setting up temp git repo ---
+--- Running act push --rm ---
+--- Asserting expected values ---
+FAIL: act exited with code 1 (expected 0)
+FAIL: 'Job succeeded' NOT found in output
+FAIL: PESTER_PASSED marker not found
+FAIL: PESTER_FAILED=0 NOT found (some Pester tests failed)
+FAIL: MATRIX_TEST1_START not found
+FAIL: expected matrix-size 4 in test1 output
+FAIL: expected max-parallel 4 in test1 output
+FAIL: expected fail-fast false in test1 output
+FAIL: ubuntu-latest not found in output
+FAIL: python-version 3.10 not found in test1 output
+FAIL: MATRIX_TEST2_START not found
+FAIL: expected max-parallel 2 in test2 output
+FAIL: expected fail-fast true in test2 output
+FAIL: macos-latest not found in test2 output
+FAIL: coverage not found in test2 output
+
+=== SOME ASSERTIONS FAILED. See act-result.txt for full output. ===
+[Assistant] Let me check the act output to diagnose the failure:
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-tool-sonnet46-1m-medium/act-result.txt"}
+[Result] 1	
+2	
+3	======================================================================
+4	SECTION: actionlint validation
+5	======================================================================
+6	
+7	
+8	EXIT_CODE: 0
+9	======================================================================
+10	
+11	======================================================================
+12	SECTION: act push (all test cases)
+13	======================================================================
+14	time="2026-05-08T06:25:10-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+15	[Environment Matrix Generator/generate-matrix] ⭐ Run Set up job
+16	[Environment Matrix Generator/generate-matrix] 🚀  Start image=act-ubuntu-pwsh:latest
+17	[Environment Matrix Generator/generate-matrix]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=true
+18	[Environment Matrix Generator/generate-matrix] using DockerAuthConfig authentication for doc
+[Tool: Bash] docker images | grep act-ubuntu-pwsh
+[Result] WARNING: This output is designed for human readability. For machine-readable output, please use --format.
+act-ubuntu-pwsh:latest                          b299e185b1bb        2.6GB          652MB
+[Tool: Bash] act --version && act --help 2>&1 | grep -i pull
+[Result] act version 0.2.87
+      --action-offline-mode                               If action contents exists, it will not be fetch and pull again. If turn on this, will turn off force pull
+  -p, --pull                                              pull docker image(s) even if already present (default true)
+[Assistant] Need to add `--pull=false` to prevent act from trying to pull the local image from Docker Hub:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-tool-sonnet46-1m-medium/Run-ActTests.
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-tool-sonnet46-1m-medium/Run-ActTests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -NoProfile -File ./Run-ActTests.ps1 2>&1
+[Result ERROR] Exit code 1
+--- Validating workflow with actionlint ---
+actionlint passed.
+--- Setting up temp git repo ---
+--- Running act push --rm ---
+--- Asserting expected values ---
+FAIL: act exited with code 1 (expected 0)
+FAIL: 'Job succeeded' NOT found in output
+FAIL: PESTER_PASSED marker not found
+FAIL: PESTER_FAILED=0 NOT found (some Pester tests failed)
+FAIL: MATRIX_TEST1_START not found
+FAIL: expected matrix-size 4 in test1 output
+FAIL: expected max-parallel 4 in test1 output
+FAIL: expected fail-fast false in test1 output
+FAIL: ubuntu-latest not found in output
+FAIL: python-version 3.10 not found in test1 output
+FAIL: MATRIX_TEST2_START not found
+FAIL: expected max-parallel 2 in test2 output
+FAIL: expected fail-fast true in test2 output
+FAIL: macos-latest not found in test2 output
+FAIL: coverage not found in test2 output
+
+=== SOME ASSERTIONS FAILED. See act-result.txt for full output. ===
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-tool-sonnet46-1m-medium/act-result.txt"}
+[Result] 1	
+2	
+3	======================================================================
+4	SECTION: actionlint validation
+5	======================================================================
+6	
+7	
+8	EXIT_CODE: 0
+9	======================================================================
+10	
+11	======================================================================
+12	SECTION: act push (all test cases)
+13	======================================================================
+14	time="2026-05-08T06:25:56-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+15	[Environment Matrix Generator/generate-matrix] ⭐ Run Set up job
+16	[Environment Matrix Generator/generate-matrix] 🚀  Start image=act-ubuntu-pwsh:latest
+17	[Environment Matrix Generator/generate-matrix]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+18	[Environment Matrix Generator/generate-matrix]   🐳  docker create image=act-ubuntu-pwsh:lat
+[Assistant] The `[PesterConfiguration]` type isn't available because each workflow step runs a fresh pwsh process. Need to import Pester in that step:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-tool-sonnet46-1m-medium/.github/workf
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-tool-sonnet46-1m-medium/.github/workflows/environment-matrix-generator.yml has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/environment-matrix-generator.yml && echo "actionlint OK"
+[Result] actionlint OK
+[Tool: Bash] pwsh -NoProfile -File ./Run-ActTests.ps1 2>&1
+[Result ERROR] Exit code 1
+--- Validating workflow with actionlint ---
+actionlint passed.
+--- Setting up temp git repo ---
+--- Running act push --rm ---
+--- Asserting expected values ---
+PASS: act exit code 0
+PASS: 'Job succeeded' found in output
+PASS: Pester tests passed count = 28
+PASS: PESTER_FAILED=0
+PASS: MATRIX_TEST1_START marker found
+PASS: matrix-size 4 found (test1 os x python-version)
+PASS: max-parallel 4 found (test1)
+PASS: fail-fast false found (test1)
+FAIL: ubuntu-latest not found in output
+FAIL: python-version 3.10 not found in test1 output
+PASS: MATRIX_TEST2_START marker found
+PASS: max-parallel 2 found (test2)
+PASS: fail-fast true found (test2)
+PASS: macos-latest (include) found in test2 output
+PASS: coverage (include extra field) found in test2 output
+
+=== SOME ASSERTIONS FAILED. See act-result.txt for full output. ===
+[Assistant] Good progress - 13/15 pass. Let me check the act output for what test1 actually outputs:
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-tool-sonnet46-1m-medium/act-result.txt", "offset": 130, "li
+[Result] 130	[Environment Matrix Generator/generate-matrix]   |       {
+131	[Environment Matrix Generator/generate-matrix]   |         "os": "macos-latest",
+132	[Environment Matrix Generator/generate-matrix]   |         "extra": "coverage",
+133	[Environment Matrix Generator/generate-matrix]   |         "version": "2.0"
+134	[Environment Matrix Generator/generate-matrix]   |       }
+135	[Environment Matrix Generator/generate-matrix]   |     ],
+136	[Environment Matrix Generator/generate-matrix]   |     "version": [
+137	[Environment Matrix Generator/generate-matrix]   |       {
+138	[Environment Matrix Generator/generate-matrix]   |         "Length": 3
+139	[Environment Matrix Generator/generate-matrix]   |       },
+140	[Environment Matrix Generator/generate-matrix]   |       {
+141	[Environment Matrix Generator/generate-matrix]   |         "Length": 3
+142	[Environment Matrix Generator/generate-matrix]   |       }
+143	[Environment Matrix Generator/generate-matrix]   |     ]
+144	[Environment Matrix Gen
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-tool-sonnet46-1m-medium/act-result.txt", "offset": 85, "lim
+[Result] 85	[Environment Matrix Generator/generate-matrix]   |   "matrix-size": 4,
+86	[Environment Matrix Generator/generate-matrix]   |   "fail-fast": false,
+87	[Environment Matrix Generator/generate-matrix]   |   "matrix": {
+88	[Environment Matrix Generator/generate-matrix]   |     "os": [
+89	[Environment Matrix Generator/generate-matrix]   |       {
+90	[Environment Matrix Generator/generate-matrix]   |         "Length": 13
+91	[Environment Matrix Generator/generate-matrix]   |       },
+92	[Environment Matrix Generator/generate-matrix]   |       {
+93	[Environment Matrix Generator/generate-matrix]   |         "Length": 14
+94	[Environment Matrix Generator/generate-matrix]   |       }
+95	[Environment Matrix Generator/generate-matrix]   |     ],
+96	[Environment Matrix Generator/generate-matrix]   |     "python-version": [
+97	[Environment Matrix Generator/generate-matrix]   |       {
+98	[Environment Matrix Generator/generate-matrix]   |         "Length": 4
+99	[Environment Matrix Generator/generate-
+[Tool: Bash] pwsh -NoProfile -Command "& ./Invoke-MatrixGenerator.ps1 -ConfigFile ./test-fixtures/test1-basic.json"
+[Result] {
+  "fail-fast": false,
+  "matrix": {
+    "os": [
+      {
+        "Length": 13
+      },
+      {
+        "Length": 14
+      }
+    ],
+    "python-version": [
+      {
+        "Length": 4
+      },
+      {
+        "Length": 4
+      }
+    ]
+  },
+  "max-parallel": 4,
+  "matrix-size": 4
+}
+[Tool: Bash] pwsh -NoProfile -Command '
+$raw = Get-Content -Raw ./test-fixtures/test1-basic.json
+$configObj = $raw | ConvertFrom-Json
+
+function ConvertTo-Hashtable {
+    param([Parameter(ValueFromPipeline)][object]$InputObject)
+    if ($null -eq $InputObject) { return $null }
+    if ($InputObject -is [System.Collections.IEnumerable] -and $InputObject -isnot [string]) {
+        return @($InputObject | ForEach-Object { ConvertTo-Hashtable $_ })
+    }
+    if ($InputObject -is [PSCustomObject]) {
+        $ht = @{}
+        foreach ($prop in $InputObject.PSObject.Properties) {
+            $ht[$prop.Name] = ConvertTo-Hashtable $prop.Value
+        }
+        return $ht
+    }
+    return $InputObject
+}
+
+$config = ConvertTo-Hashtable $configObj
+Write-Host "os type: $($config.dimensions.os.GetType())"
+Write-Host "os[0] type: $($config.dimensions.os[0].GetType())"
+Write-Host "os[0] value: $($config.dimensions.os[0])"
+Write-Host "os as json: $($config.dimensions.os | ConvertTo-Json)"
+'
+[Result] os type: System.Object[]
+os[0] type: hashtable
+os[0] value: System.Collections.Hashtable
+os as json: [
+  {
+    "Length": 13
+  },
+  {
+    "Length": 14
+  }
+]
+[Tool: Bash] pwsh -NoProfile -Command '
+function ConvertTo-Hashtable {
+    param([Parameter(ValueFromPipeline)][object]$InputObject)
+    if ($null -eq $InputObject) { return $null }
+    if ($InputObject -is [System.Collections.IEnumerable] -and $InputObject -isnot [string]) {
+        return @($InputObject | ForEach-Object { ConvertTo-Hashtable $_ })
+    }
+    if ($InputObject -is [PSCustomObject]) {
+        $ht = @{}
+        foreach ($prop in $InputObject.PSObject.Properties) {
+            $ht[$prop.Name] = ConvertTo-Hashtable $prop.Value
+        }
+        return $ht
+    }
+    return $InputObject
+}
+
+$s = "ubuntu-latest"
+Write-Host "Type: $($s.GetType())"
+Write-Host "Is PSCustomObject: $($s -is [PSCustomObject])"
+Write-Host "Is IEnumerable: $($s -is [System.Collections.IEnumerable])"
+$result = ConvertTo-Hashtable $s
+Write-Host "Result type: $($result.GetType())"
+Write-Host "Result: $result"
+'
+[Result] Type: string
+Is PSCustomObject: False
+Is IEnumerable: True
+Result type: string
+Result: ubuntu-latest
+[Tool: Bash] pwsh -NoProfile -Command '
+function ConvertTo-Hashtable {
+    param([Parameter(ValueFromPipeline)][object]$InputObject)
+    if ($null -eq $InputObject) { return $null }
+    if ($InputObject -is [System.Collections.IEnumerable] -and $InputObject -isnot [string]) {
+        return @($InputObject | ForEach-Object { ConvertTo-Hashtable $_ })
+    }
+    if ($InputObject -is [PSCustomObject]) {
+        $ht = @{}
+        foreach ($prop in $InputObject.PSObject.Properties) {
+            $ht[$prop.Name] = ConvertTo-Hashtable $prop.Value
+        }
+        return $ht
+    }
+    return $InputObject
+}
+
+$json = "{\"dimensions\":{\"os\":[\"ubuntu-latest\",\"windows-latest\"]}}"
+$obj = $json | ConvertFrom-Json
+Write-Host "obj.dimensions.os type: $($obj.dimensions.os.GetType())"
+Write-Host "obj.dimensions.os[0] type: $($obj.dimensions.os[0].GetType())"
+Write-Host "obj.dimensions.os[0] is PSCustomObject: $($obj.dimensions.os[0] -is [PSCustomObject])"
+Write-Host "obj.dimensions.os[0] value: $($obj.dimensions.os[0])"
+
+$ht = ConvertTo-Hashtable $obj
+Write-Host "ht.dimensions.os[0] type: $($ht.dimensions.os[0].GetType())"
+Write-Host "ht.dimensions.os[0] value: $($ht.dimensions.os[0])"
+'
+[Result ERROR] Exit code 1
+[31;1mParserError: [0m
+[31;1m[36;1mLine |[0m
+[31;1m[36;1m[36;1m  18 | [0m $json = "{\"[36;1mdimensions\":{\"os\":[\"ubuntu-latest\",\"windows-latest\[0m …[0m
+[31;1m[36;1m[36;1m[0m[36;1m[0m[36;1m     | [31;1m             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+[31;1m[36;1m[36;1m[0m[36;1m[0m[36;1m[31;1m[31;1m[36;1m     | [31;1mUnexpected token[0m
+[31;1m[36;1m[36;1m[0m[36;1m[0m[36;1m[31;1m[31;1m[36;1m[31;1m[36;1m     | [31;1m'dimensions\":{\"os\":[\"ubuntu-latest\",\"windows-latest\"]}}"' in[0m
+[31;1m[36;1m[36;1m[0m[36;1m[0m[36;1m[31;1m[31;1m[36;1m[31;1m[36;1m[31;1m[36;1m     | [31;1mexpression or statement.[0m
+[Tool: Bash] pwsh -NoProfile -Command '
+function ConvertTo-Hashtable {
+    param([Parameter(ValueFromPipeline)][object]$InputObject)
+    if ($null -eq $InputObject) { return $null }
+    if ($InputObject -is [System.Collections.IEnumerable] -and $InputObject -isnot [string]) {
+        return @($InputObject | ForEach-Object { ConvertTo-Hashtable $_ })
+    }
+    if ($InputObject -is [PSCustomObject]) {
+        $ht = @{}
+        foreach ($prop in $InputObject.PSObject.Properties) {
+            $ht[$prop.Name] = ConvertTo-Hashtable $prop.Value
+        }
+        return $ht
+    }
+    return $InputObject
+}
+
+$obj = Get-Content -Raw ./test-fixtures/test1-basic.json | ConvertFrom-Json
+Write-Host "dimensions.os[0] type: $($obj.dimensions.os[0].GetType())"
+Write-Host "dimensions.os[0] is PSCustomObject: $($obj.dimensions.os[0] -is [PSCustomObject])"
+
+$ht = ConvertTo-Hashtable $obj
+Write-Host "dimensions.os[0] after: $($ht.dimensions.os[0].GetType())"
+Write-Host "dimensions.os[0] value: $($ht.dimensions.os[0])"
+' 2>&1
+[Result] dimensions.os[0] type: string
+dimensions.os[0] is PSCustomObject: False
+dimensions.os[0] after: hashtable
+dimensions.os[0] value: System.Collections.Hashtable
+[Tool: Bash] pwsh -NoProfile -Command '
+function ConvertTo-Hashtable {
+    param([Parameter(ValueFromPipeline)][object]$InputObject)
+    if ($null -eq $InputObject) { return $null }
+    if ($InputObject -is [System.Collections.IEnumerable] -and $InputObject -isnot [string]) {
+        Write-Host "  ENUM: processing array of type $($InputObject.GetType()) count=$($InputObject.Count)"
+        $results = @($InputObject | ForEach-Object {
+            Write-Host "    ELEM: $($_.GetType()) = $_"
+            ConvertTo-Hashtable $_
+        })
+        Write-Host "  ENUM result[0] type: $($results[0].GetType())"
+        return $results
+    }
+    if ($InputObject -is [PSCustomObject]) {
+        Write-Host "  PSO: processing PSCustomObject"
+        $ht = @{}
+        foreach ($prop in $InputObject.PSObject.Properties) {
+            Write-Host "    PROP: $($prop.Name) = $($prop.Value.GetType())"
+            $ht[$prop.Name] = ConvertTo-Hashtable $prop.Value
+        }
+        return $ht
+    }
+    Write-Host "  SCALAR: $($InputObject.GetType()) = $InputObject"
+    return $InputObject
+}
+
+$obj = Get-Content -Raw ./test-fixtures/test1-basic.json | ConvertFrom-Json
+$ht = ConvertTo-Hashtable $obj
+' 2>&1 | head -40
+[Result]   PSO: processing PSCustomObject
+    PROP: dimensions = PSCustomObject
+  PSO: processing PSCustomObject
+    PROP: os = System.Object[]
+  ENUM: processing array of type System.Object[] count=2
+    ELEM: string = ubuntu-latest
+  PSO: processing PSCustomObject
+    PROP: Length = int
+  SCALAR: int = 13
+    ELEM: string = windows-latest
+  PSO: processing PSCustomObject
+    PROP: Length = int
+  SCALAR: int = 14
+  ENUM result[0] type: hashtable
+    PROP: python-version = System.Object[]
+  ENUM: processing array of type System.Object[] count=2
+    ELEM: string = 3.10
+  PSO: processing PSCustomObject
+    PROP: Length = int
+  SCALAR: int = 4
+    ELEM: string = 3.11
+  PSO: processing PSCustomObject
+    PROP: Length = int
+  SCALAR: int = 4
+  ENUM result[0] type: hashtable
+    PROP: maxParallel = long
+  SCALAR: long = 4
+    PROP: failFast = bool
+  SCALAR: bool = False
+    PROP: maxSize = long
+  SCALAR: long = 256
+[Tool: Bash] pwsh -NoProfile -Command '
+# Test -is [PSCustomObject] on strings in different contexts
+"ubuntu-latest" -is [PSCustomObject] | Write-Host
+@("ubuntu-latest") | ForEach-Object {
+    Write-Host "In pipe: $($_ -is [PSCustomObject])"
+}
+# How about strings from ConvertFrom-Json?
+$obj = "{""os"":[""ubuntu-latest""]}" | ConvertFrom-Json
+$obj.os | ForEach-Object {
+    Write-Host "From JSON pipe: $($_ -is [PSCustomObject])"
+    Write-Host "Type: $($_.GetType())"
+}
+'
+[Result] False
+In pipe: True
+From JSON pipe: True
+Type: string
+[Assistant] In PowerShell pipelines, `$_ -is [PSCustomObject]` returns `$true` for strings too because they get wrapped in `PSObject`. Fix `ConvertTo-Hashtable` to use `PSObject.BaseObject`:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-tool-sonnet46-1m-medium/Invoke-Matrix
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-tool-sonnet46-1m-medium/Invoke-MatrixGenerator.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -NoProfile -Command "& ./Invoke-MatrixGenerator.ps1 -ConfigFile ./test-fixtures/test1-basic.json"
+[Result] {
+  "max-parallel": 4,
+  "fail-fast": false,
+  "matrix": {
+    "os": [
+      "ubuntu-latest",
+      "windows-latest"
+    ],
+    "python-version": [
+      "3.10",
+      "3.11"
+    ]
+  },
+  "matrix-size": 4
+}
+[Assistant] Now let me verify test2 also works correctly:
+[Tool: Bash] pwsh -NoProfile -Command "& ./Invoke-MatrixGenerator.ps1 -ConfigFile ./test-fixtures/test2-includes.json"
+[Result] {
+  "matrix-size": 4,
+  "fail-fast": true,
+  "matrix": {
+    "version": [
+      "1.0",
+      "2.0"
+    ],
+    "os": [
+      "ubuntu-latest",
+      "windows-latest"
+    ],
+    "exclude": [
+      {
+        "version": "1.0",
+        "os": "windows-latest"
+      }
+    ],
+    "include": [
+      {
+        "version": "2.0",
+        "os": "macos-latest",
+        "extra": "coverage"
+      }
+    ]
+  },
+  "max-parallel": 2
+}
+[Assistant] Both fixtures produce correct JSON. Now run act:
+[Tool: Bash] pwsh -NoProfile -File ./Run-ActTests.ps1 2>&1
+[Result] --- Validating workflow with actionlint ---
+actionlint passed.
+--- Setting up temp git repo ---
+--- Running act push --rm ---
+--- Asserting expected values ---
+PASS: act exit code 0
+PASS: 'Job succeeded' found in output
+PASS: Pester tests passed count = 28
+PASS: PESTER_FAILED=0
+PASS: MATRIX_TEST1_START marker found
+PASS: matrix-size 4 found (test1 os x python-version)
+PASS: max-parallel 4 found (test1)
+PASS: fail-fast false found (test1)
+PASS: ubuntu-latest found in output
+PASS: python-version 3.10 found in output
+PASS: MATRIX_TEST2_START marker found
+PASS: max-parallel 2 found (test2)
+PASS: fail-fast true found (test2)
+PASS: macos-latest (include) found in test2 output
+PASS: coverage (include extra field) found in test2 output
+
+=== All assertions passed! ===
+Results saved to: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-tool-sonnet46-1m-medium/act-result.txt
+[Assistant] All 15 assertions pass. Let me verify the final state - all tests green and act-result.txt exists:
+[Tool: Bash] pwsh -NoProfile -Command "Invoke-Pester -Path ./New-BuildMatrix.Tests.ps1 -Output Normal" 2>&1 | tail -5
+echo "---"
+ls -la act-result.txt
+actionlint .github/workflows/environment-matrix-generator.yml && echo "actionlint OK"
+[Result] [95mDiscovery found 28 tests in 287ms.[0m
+[95mRunning tests.[0m
+[32m[+] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-tool-sonnet46-1m-medium/New-BuildMatrix.Tests.ps1[0m[90m 1.24s (480ms|520ms)[0m
+[97mTests completed in 1.27s[0m
+[32mTests Passed: 28, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+---
+-rw-r--r-- 1 passp passp 12187 May  8 06:30 act-result.txt
+actionlint OK
+[Assistant] Everything is green. Here's a summary of what was built:
+
+**Files created:**
+- `New-BuildMatrix.ps1` — Core library: `Get-MatrixSize` + `New-BuildMatrix` functions
+- `New-BuildMatrix.Tests.ps1` — 28 Pester tests covering matrix generation, include/exclude rules, validation, and workflow structure
+- `Invoke-MatrixGenerator.ps1` — CLI entry point that reads JSON config and outputs matrix JSON (with a fixed `ConvertTo-Hashtable` that handles PowerShell's PSObject pipeline wrapping)
+- `test-fixtures/test1-basic.json` — Basic matrix (2 OS × 2 python-version = 4 combos)
+- `test-fixtures/test2-includes.json` — Matrix with include/exclude rules, max-parallel=2, fail-fast=true
+- `.github/workflows/environment-matrix-generator.yml` — GHA workflow running Pester + both test fixtures; passes actionlint
+- `Run-ActTests.ps1` — Test harness: validates actionlint, runs `act push --rm`, asserts 15 exact expected values, saves to `act-result.txt`
+- `act-result.txt` — Required artifact with full act output
+
+**Key TDD bugs found and fixed:**
+1. `[ordered]@{}` doesn't have `.ContainsKey()` — switched to regular `@{}`
+2. PowerShell if-expression assignment unrolls single-element arrays — fixed with `$arr = @(); if (...) { $arr = @(...) }` pattern
+3. `$_ -is [PSCustomObject]` returns `$true` for strings in pipelines (PSObject wrapping) — fixed by checking `$InputObject.PSObject.BaseObject` type

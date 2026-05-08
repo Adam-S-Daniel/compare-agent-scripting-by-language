@@ -1,0 +1,27 @@
+{
+  "name": "case3-keeplatest-dryrun",
+  "description": "Keep-latest-N policy in dry-run mode. The plan should mark items beyond the top-N for deletion but the mock delete action must NOT be invoked.",
+  "dryRun": true,
+  "policy": {
+    "keepLatestPerWorkflow": 2
+  },
+  "artifacts": [
+    { "name": "wfA-old", "size": 100, "daysAgo": 90,  "workflowRunId": "wfA" },
+    { "name": "wfA-mid", "size": 200, "daysAgo": 30,  "workflowRunId": "wfA" },
+    { "name": "wfA-new", "size": 300, "daysAgo": 1,   "workflowRunId": "wfA" },
+    { "name": "wfB-only","size": 500, "daysAgo": 200, "workflowRunId": "wfB" }
+  ],
+  "expected": {
+    "deletedCount": 1,
+    "retainedCount": 3,
+    "totalReclaimedBytes": 100,
+    "totalRetainedBytes": 1000,
+    "dryRun": true,
+    "mockDeletedActually": 0,
+    "_reasoning": [
+      "wfA: 3 items. Top-2 (newest) = wfA-new + wfA-mid (protected). wfA-old is beyond top-2 -> deleted.",
+      "wfB: 1 item -> top-2 of 1 protects it (even though 200 days old).",
+      "Dry-run: plan reports 1 deletion, but Invoke-CleanupPlan never calls the delete action."
+    ]
+  }
+}

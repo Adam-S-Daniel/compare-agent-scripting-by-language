@@ -1,0 +1,93 @@
+name: Dependency License Checker
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - '**.ps1'
+      - '**.json'
+      - '.github/workflows/dependency-license-checker.yml'
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+  schedule:
+    - cron: '0 9 * * 1'
+
+permissions:
+  contents: read
+  checks: write
+
+jobs:
+  test:
+    name: Test and Check Compliance
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $VerbosePreference = 'Continue'
+          Write-Host "Running Pester tests..."
+          Invoke-Pester -Path './DependencyLicenseChecker.Tests.ps1' -Output Detailed
+
+      - name: Run dependency license check on package.json
+        shell: pwsh
+        run: |
+          Write-Host "Checking license compliance for package.json..."
+
+          # Run the check-dependencies script
+          & ./Check-DependencyLicenses.ps1 `
+            -ManifestPath './test-fixtures/package.json' `
+            -ConfigPath './test-fixtures/license-config.json' `
+            -OutputPath './compliance-report.json' `
+            -Verbose
+
+      - name: Display compliance report
+        shell: pwsh
+        if: always()
+        run: |
+          Write-Host ""
+          Write-Host "=== COMPLIANCE REPORT CONTENT ==="
+
+          if (Test-Path './compliance-report.json') {
+            Get-Content './compliance-report.json' | ConvertFrom-Json | Format-Table -AutoSize
+
+            Write-Host ""
+            Write-Host "=== COMPLIANCE REPORT (Text) ==="
+            Get-Content './compliance-report.txt'
+          } else {
+            Write-Warning "Compliance report not found"
+          }
+
+      - name: Save compliance report for CI
+        shell: pwsh
+        if: always()
+        run: |
+          if (Test-Path './compliance-report.json') {
+            Write-Host "Compliance report saved successfully"
+            Write-Host "JSON size: $(Get-Item './compliance-report.json' | Select-Object -ExpandProperty Length) bytes"
+            Write-Host "Text size: $(Get-Item './compliance-report.txt' | Select-Object -ExpandProperty Length) bytes"
+          }
+
+      - name: Check for denied licenses
+        shell: pwsh
+        if: always()
+        run: |
+          if (Test-Path './compliance-report.json') {
+            $report = Get-Content './compliance-report.json' | ConvertFrom-Json
+            $deniedCount = ($report | Where-Object { $_.Status -eq 'denied' }).Count
+
+            if ($deniedCount -gt 0) {
+              Write-Host "❌ Found $deniedCount denied license(s)"
+              exit 1
+            } else {
+              Write-Host "✓ All licenses approved or unknown"
+              exit 0
+            }
+          }

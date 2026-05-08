@@ -1,0 +1,58 @@
+name: Test Results Aggregator
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  pester:
+    name: Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $result = Invoke-Pester -Path tests/TestResultsAggregator.Tests.ps1 -Output Detailed -PassThru
+          if ($result.FailedCount -gt 0) {
+            Write-Host "::error::Pester reported $($result.FailedCount) failing test(s)."
+            exit 1
+          }
+
+  aggregate:
+    name: Aggregate test fixtures
+    runs-on: ubuntu-latest
+    needs: pester
+    env:
+      FIXTURE_DIR: ${{ github.workspace }}/aggregator-input
+      ALLOW_FAILURES: ${{ vars.ALLOW_FAILURES || 'true' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show fixture inventory
+        shell: pwsh
+        run: |
+          if (-not (Test-Path -LiteralPath $env:FIXTURE_DIR)) {
+            Write-Host "::error::Fixture directory '$env:FIXTURE_DIR' not present. The test harness must seed it before invoking act."
+            exit 1
+          }
+          Get-ChildItem -LiteralPath $env:FIXTURE_DIR -File | ForEach-Object {
+            Write-Host ("FIXTURE: {0} ({1} bytes)" -f $_.Name, $_.Length)
+          }
+
+      - name: Run aggregator
+        shell: pwsh
+        run: |
+          $aggArgs = @{ InputDirectory = $env:FIXTURE_DIR; OutputPath = 'test-summary.md' }
+          if ($env:ALLOW_FAILURES -eq 'true') { $aggArgs['AllowFailures'] = $true }
+          ./scripts/Invoke-Aggregator.ps1 @aggArgs

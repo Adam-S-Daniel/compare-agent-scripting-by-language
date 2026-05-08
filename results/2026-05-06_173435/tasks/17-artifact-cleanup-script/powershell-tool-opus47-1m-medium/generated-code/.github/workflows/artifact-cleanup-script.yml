@@ -1,0 +1,76 @@
+name: Artifact Cleanup
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      max_age_days:
+        description: 'Delete artifacts older than N days'
+        required: false
+        default: '30'
+      max_total_size:
+        description: 'Cap total retained bytes'
+        required: false
+        default: '0'
+      keep_latest_n:
+        description: 'Keep newest N artifacts per workflow run id'
+        required: false
+        default: '0'
+      dry_run:
+        description: 'Compute the plan without acting'
+        required: false
+        default: 'true'
+  schedule:
+    - cron: '0 3 * * *'
+
+permissions:
+  contents: read
+
+env:
+  FIXTURE_PATH: fixtures/artifacts.json
+  REFERENCE_NOW: '2026-05-07T12:00:00Z'
+
+jobs:
+  test:
+    name: Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $cfg = New-PesterConfiguration
+          $cfg.Run.Path = './Invoke-ArtifactCleanup.Tests.ps1'
+          $cfg.Run.Exit = $true
+          $cfg.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $cfg
+
+  cleanup:
+    name: Run cleanup plan
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Generate cleanup plan from fixture
+        shell: pwsh
+        env:
+          MAX_AGE_DAYS: ${{ github.event.inputs.max_age_days || '30' }}
+          MAX_TOTAL_SIZE: ${{ github.event.inputs.max_total_size || '0' }}
+          KEEP_LATEST_N: ${{ github.event.inputs.keep_latest_n || '2' }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'true' }}
+        run: |
+          $dry = ($env:DRY_RUN -eq 'true')
+          $params = @{
+            FixturePath            = $env:FIXTURE_PATH
+            MaxAgeDays             = [int]$env:MAX_AGE_DAYS
+            MaxTotalSize           = [long]$env:MAX_TOTAL_SIZE
+            KeepLatestNPerWorkflow = [int]$env:KEEP_LATEST_N
+            NowIso                 = $env:REFERENCE_NOW
+            DryRun                 = $dry
+          }
+          ./Run-Cleanup.ps1 @params

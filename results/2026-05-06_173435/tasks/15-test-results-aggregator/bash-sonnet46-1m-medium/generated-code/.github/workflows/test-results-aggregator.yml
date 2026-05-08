@@ -1,0 +1,44 @@
+name: Test Results Aggregator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  aggregate-results:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y bats
+          curl -sL "https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_amd64.tar.gz" \
+            | sudo tar xzf - -C /usr/local/bin actionlint
+
+      - name: Run unit tests
+        run: bats tests/aggregator.bats
+
+      - name: Run aggregator on fixtures
+        run: |
+          echo "=== AGGREGATOR OUTPUT START ==="
+          bash test-results-aggregator.sh \
+            fixtures/junit-matrix-ubuntu.xml \
+            fixtures/junit-matrix-windows.xml \
+            fixtures/json-matrix-macos.json
+          echo "=== AGGREGATOR OUTPUT END ==="
+
+      - name: Write job summary
+        run: |
+          bash test-results-aggregator.sh \
+            fixtures/junit-matrix-ubuntu.xml \
+            fixtures/junit-matrix-windows.xml \
+            fixtures/json-matrix-macos.json >> "${GITHUB_STEP_SUMMARY:-/dev/null}"

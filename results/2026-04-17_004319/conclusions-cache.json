@@ -18,22 +18,22 @@
     "effort": "max"
   },
   "judge_consistency_summary": {
-    "hash": "bd04cb3b8747eb057956b9563cc284727ad68083613c0d682ead5d65b4b6993f",
-    "text": "**\ud83d\udfe2 The panel is doing its job:** Model rankings agree strongly (Spearman +0.70 on Tests Quality, +0.90 on Workflow Craft), and haiku45 places its own-model-family runs dead last on both axes \u2014 the opposite of self-preference. The ~2-point absolute gap between judges is calibration, not bias, and the sole model-level reversal (sonnet vs sonnet46-1m) does not favour either judge's family.\n\n- \ud83d\udc40 **Where to look closer:** The language axis barely correlates (+0.00 Tests, +0.10 Workflow) because language means cluster within ~0.3 points and judges flip mid-pack. Spot-check the widest disagreements (a judge scoring 1 vs 5, a 4-point gap on a 1\u20135 scale) on Workflow Craft: 11-semantic-version-bumper / powershell / opus47-1m-medium and 15-test-results-aggregator / powershell / haiku45.\n- \ud83e\udd13 **Surprise finding:** Haiku45 ranks its own model family last on both axes, actively working against the self-preference hypothesis rather than confirming it.\n- \u2139\ufe0f **Recommended next step:** Treat language-only rollups as low-signal in the writeup; lean on model (+0.70/+0.90) and language\u00d7model (+0.49/+0.75) rankings, and footnote the language-axis flattening.",
-    "cost_usd": 0.137,
-    "input_tokens": 0,
-    "output_tokens": 0,
+    "hash": "fca08463169e8d396672b41975d59a628c33e644c898fa57ec0ca3b84207b01d",
+    "text": "**\ud83d\udfe2 The panel is doing its job:** Judges agree strongly on which models and which language\u00d7model combos produce better code (Spearman +0.70 on Tests Quality models, +0.90 on Workflow Craft models, +0.79 on language\u00d7model for Workflow Craft). The reversals that exist sit near the score floor, and Haiku's own-family flags actually run anti-self-preference \u2014 Haiku scores its own model lower than Gemini does, not higher.\n\n- \ud83d\udc40 **Where to look closer:** The widest disagreements (a judge scoring 1 vs 5, a 4-point gap on a 1\u20135 scale) cluster on Opus 4.7-1m at medium effort \u2014 e.g. 11-semantic-version-bumper / powershell / opus47-1m-medium and 15-test-results-aggregator / default / opus47-1m-medium \u2014 and on the **language** axis the two judges have zero correlation about whether bash or default flatters the models best.\n- \ud83e\udd13 **Surprise finding:** Haiku is harsher on its own model family's output than Gemini is \u2014 the opposite of self-preference bias.\n- \u2139\ufe0f **Recommended next step:** Pull the eight Workflow Craft 4-point outliers and have a human adjudicate; that will also tell us whose **language**-axis ordering to trust.",
+    "cost_usd": 0.252,
+    "input_tokens": 5,
+    "output_tokens": 2341,
     "model": "claude-opus-4-7[1m]",
-    "effort": "max"
+    "effort": "xhigh"
   },
   "quality_analysis": {
-    "hash": "e7e478fd33fc78077bb9bb6f4593d1d4b66f4eba8c75fcc2d1d4f26af17a7c6b",
-    "text": "The opus47-1m model at high or xhigh effort produces the best code on both Tests Quality and Workflow Craft, topping both judges' rankings with zero pairwise reversals against any other model. Language choice matters less at that tier \u2014 powershell/opus47-1m is the #1 language\u00d7model pairing for Workflow Craft across both judges, and opus47 variants dominate the top Tests Quality slots across every language.\n\n- **Top performer**: opus47-1m is #1 for both judges on both axes (Spearman \u03c1 = +0.70 Tests Quality, \u03c1 = +0.90 Workflow Craft), with haiku45 unanimously last.\n- **Effort tier**: opus47-1m-xhigh and opus47-1m-high clear the medium tier on both axes \u2014 3.23/3.12 vs. 2.67 on Tests Quality (haiku45), 3.31/3.17 vs. 2.26 on Workflow Craft, and gemini31pro agrees on the ordering.\n- **Best by language (Workflow Craft)**: powershell/opus47-1m is the top language\u00d7model slot for both judges (\u03c1 = +0.75 on this axis), with default/opus47-1m and powershell-tool/opus47-1m tied immediately behind.\n- **Where rankings diverge**: the standalone language axis shows near-zero agreement (\u03c1 = +0.00 Tests Quality, \u03c1 = +0.10 Workflow Craft), with judges flipping on every middle-tier pair except bash-at-bottom on Tests and typescript-bun-at-bottom on Workflow Craft.\n- **Workflow Craft ceiling**: powershell/opus47-1m is the top language\u00d7model mean for both judges (5.00 gemini31pro / 3.14 haiku45), while haiku45-produced runs hold the bottom on both (\u03c1 = +0.75 on this axis).",
-    "cost_usd": 0.4359,
+    "hash": "17f2604793ca33277e8353608eb38af5f59f67a29ec80f18ac1e622d9221e6f0",
+    "text": "Opus 4.7 at 1M context, run at high or extra-high effort, is the strongest configuration on both axes \u2014 both judges place it first on Workflow Craft (\u03c1 = +0.90) and first on Tests Quality (\u03c1 = +0.70), with no reversals near the top of either ranking. PowerShell paired with Opus 4.7-1m leads the Workflow Craft language\u00d7model board, while PowerShell-Tool and TypeScript-Bun paired with Opus 4.7-1m share the Tests Quality lead.\n\n- **Top performer**: opus47-1m at xhigh and high effort sits at 3.31/4.74 and 3.24/4.94 on Workflow Craft, ahead of every other model+effort cell, and both judges agree on the top three tiers with no reversals among them.\n- **Effort tier**: moving Opus 4.7-1m from medium to high lifts Workflow Craft from 2.26/4.74 to 3.24/4.94 \u2014 both judges register the gain, and xhigh shows diminishing returns above high.\n- **Best by language**: powershell/opus47-1m ranks #1 by Gemini and #2 by Haiku on Workflow Craft, with default/opus47-1m and powershell-tool/opus47-1m close behind (\u03c1 = +0.79 across all language\u00d7model cells).\n- **Workflow Craft ceiling**: Gemini caps the field at 4.94 for opus47-1m-high, and the +0.90 Spearman across model+effort cells means that ceiling reflects panel agreement, not a single judge's scale.\n- **Where rankings diverge**: language ordering scores \u03c1 = +0.00 on both axes \u2014 the panel agrees on which model produces better code but not on which scripting language flatters it; haiku45 still lands last across both judges with no reversal.",
+    "cost_usd": 0.2484,
     "input_tokens": 5,
-    "output_tokens": 10121,
+    "output_tokens": 2472,
     "model": "claude-opus-4-7[1m]",
-    "effort": "max"
+    "effort": "xhigh"
   },
   "conclusions": {
     "hash": "6830890150068f0005b08762f3e741b336b18c959895e4f983d1da492f40456c",

@@ -1,0 +1,38 @@
+name: PR Label Assigner
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  assign-labels:
+    runs-on: ubuntu-latest
+    env:
+      RULES_FILE: rules.yml
+      FILES_LIST: changed-files.txt
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show Python version
+        run: python3 --version
+
+      - name: Install pytest
+        run: python3 -m pip install --quiet --break-system-packages pytest
+
+      - name: Run unit tests
+        run: python3 -m pytest test_label_assigner.py -v
+
+      - name: Assign labels for fixture
+        id: assign
+        run: |
+          if [ ! -f "${FILES_LIST}" ]; then
+            echo "ASSIGN_RESULT::SKIPPED::no fixture file"
+            exit 0
+          fi
+          output=$(python3 label_assigner.py --rules "${RULES_FILE}" --files "${FILES_LIST}")
+          echo "ASSIGN_RESULT::${output}"

@@ -1,0 +1,57 @@
+---
+# Run the artifact cleanup script against a fixture in CI. The fixture lives at
+# fixtures/artifacts.tsv and the policy parameters live in env vars below so the
+# test harness can swap fixtures between act runs without editing this file.
+
+name: artifact-cleanup-script
+
+"on":
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+    inputs:
+      max_age:
+        description: "Max age in days"
+        required: false
+        default: "30"
+      keep_latest:
+        description: "Keep N latest per workflow"
+        required: false
+        default: "3"
+      max_total_size:
+        description: "Max total size in bytes"
+        required: false
+        default: "1000000"
+
+permissions:
+  contents: read
+
+jobs:
+  cleanup:
+    name: Run artifact cleanup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show environment
+        run: |
+          echo "bash version: $(bash --version | head -1)"
+          echo "fixture: ${CLEANUP_FIXTURE:-fixtures/case1_max_age.tsv}"
+          echo "now: ${CLEANUP_NOW:-1778457600}"
+
+      - name: Validate script syntax
+        run: bash -n cleanup-artifacts.sh
+
+      - name: Run cleanup (dry-run)
+        run: |
+          chmod +x cleanup-artifacts.sh
+          ./cleanup-artifacts.sh \
+            --input "${CLEANUP_FIXTURE:-fixtures/case1_max_age.tsv}" \
+            --now "${CLEANUP_NOW:-1778457600}" \
+            --max-age "${CLEANUP_MAX_AGE:-14}" \
+            --keep-latest "${CLEANUP_KEEP_LATEST:-2}" \
+            --max-total-size "${CLEANUP_MAX_TOTAL_SIZE:-10000000}" \
+            --dry-run

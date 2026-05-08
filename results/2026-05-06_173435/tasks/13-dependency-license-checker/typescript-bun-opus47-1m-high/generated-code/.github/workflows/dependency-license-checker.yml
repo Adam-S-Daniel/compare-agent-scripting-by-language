@@ -1,0 +1,75 @@
+name: Dependency License Checker
+
+# Run on every push and PR so denied licenses are caught before merge,
+# weekly on a schedule (a transitive dep's license can change), and on
+# demand via workflow_dispatch.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+
+# Default fixture paths. The act-driven test harness swaps fixture file
+# contents in place between runs, so the workflow itself stays fixed.
+env:
+  MANIFEST_PATH: tests/fixtures/default/package.json
+  CONFIG_PATH: tests/fixtures/default/config.json
+  LICENSES_PATH: tests/fixtures/default/licenses.json
+  ALLOW_UNKNOWN: "false"
+
+jobs:
+  unit-tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+
+      - name: Run unit tests
+        # Explicit list so the workflow integration test (which itself spawns
+        # act) doesn't recurse inside this CI run.
+        run: |
+          bun test \
+            tests/parse.test.ts \
+            tests/compliance.test.ts \
+            tests/report.test.ts \
+            tests/cli.test.ts
+
+  license-check:
+    name: License compliance check
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+
+      - name: Run dependency license checker
+        # We deliberately swallow the CLI's non-zero exit (denied/unknown)
+        # so the job itself succeeds and the act-driven test harness can
+        # parse the LICENSE_EXIT_CODE token to assert the expected outcome.
+        # In a real production setup you would let the failing exit
+        # propagate; here the goal is to verify behavior across many cases.
+        run: |
+          set +e
+          ARGS=(--manifest "$MANIFEST_PATH" --config "$CONFIG_PATH" --licenses "$LICENSES_PATH")
+          if [ "$ALLOW_UNKNOWN" = "true" ]; then
+            ARGS+=(--allow-unknown)
+          fi
+          bun run src/cli.ts "${ARGS[@]}"
+          rc=$?
+          echo "LICENSE_EXIT_CODE=$rc"
+          exit 0

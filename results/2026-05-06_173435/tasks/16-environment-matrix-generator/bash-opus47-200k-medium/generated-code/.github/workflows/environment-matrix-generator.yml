@@ -1,0 +1,61 @@
+name: environment-matrix-generator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+env:
+  BATS_VERSION: "1.13.0"
+
+jobs:
+  test:
+    name: Lint and run bats tests through CI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies (jq, bats, shellcheck)
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v jq >/dev/null 2>&1; then
+            apt-get update && apt-get install -y --no-install-recommends jq
+          fi
+          if ! command -v bats >/dev/null 2>&1; then
+            apt-get update && apt-get install -y --no-install-recommends bats
+          fi
+          if ! command -v shellcheck >/dev/null 2>&1; then
+            apt-get update && apt-get install -y --no-install-recommends shellcheck
+          fi
+          jq --version
+          bats --version
+          shellcheck --version | head -1
+
+      - name: Syntax check (bash -n)
+        shell: bash
+        run: bash -n matrix_gen.sh
+
+      - name: ShellCheck
+        shell: bash
+        run: shellcheck matrix_gen.sh
+
+      - name: Run bats test suite
+        shell: bash
+        run: bats tests/matrix_gen.bats
+
+      - name: Demo - simple matrix output
+        shell: bash
+        run: |
+          echo "=== simple.json output ==="
+          ./matrix_gen.sh tests/fixtures/simple.json
+          echo "=== three_dim.json output ==="
+          ./matrix_gen.sh tests/fixtures/three_dim.json
+          echo "=== with_exclude.json output ==="
+          ./matrix_gen.sh tests/fixtures/with_exclude.json

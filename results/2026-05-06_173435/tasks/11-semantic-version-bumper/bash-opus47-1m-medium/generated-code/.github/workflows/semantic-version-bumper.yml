@@ -1,0 +1,75 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: "Optional single fixture to run (default: all)"
+        required: false
+        default: "all"
+
+permissions:
+  contents: read
+
+jobs:
+  bump:
+    name: Compute and apply semantic version bump
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install bats
+        shell: bash
+        run: |
+          if ! command -v bats >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq bats
+          fi
+          bats --version
+
+      - name: Make script executable
+        shell: bash
+        run: chmod +x ./bump-version.sh
+
+      - name: Verify script syntax and lint
+        shell: bash
+        run: |
+          bash -n ./bump-version.sh
+          if command -v shellcheck >/dev/null 2>&1; then
+            shellcheck ./bump-version.sh
+          fi
+
+      - name: Run bats unit tests
+        shell: bash
+        run: bats tests/bump-version.bats
+
+      - name: Run version bumper across all fixtures
+        shell: bash
+        run: |
+          set -euo pipefail
+          # For every fixture/<name>/, copy into a scratch dir, run the bumper,
+          # and emit a clearly delimited block so the harness can assert per case.
+          shopt -s nullglob
+          for dir in fixtures/*/; do
+            name="$(basename "$dir")"
+            echo "===== FIXTURE_BEGIN ${name} ====="
+            scratch="$(mktemp -d)"
+            cp -r "$dir"/. "$scratch/"
+            version_file="VERSION"
+            [[ -f "$scratch/package.json" ]] && version_file="package.json"
+            new_version=$(./bump-version.sh \
+              --version-file "$scratch/$version_file" \
+              --commits "$scratch/commits.txt" \
+              --changelog "$scratch/CHANGELOG.md")
+            echo "FIXTURE_NAME=${name}"
+            echo "NEW_VERSION=${new_version}"
+            echo "----- updated version file -----"
+            cat "$scratch/$version_file"
+            echo
+            echo "----- changelog -----"
+            cat "$scratch/CHANGELOG.md"
+            echo "===== FIXTURE_END ${name} ====="
+          done

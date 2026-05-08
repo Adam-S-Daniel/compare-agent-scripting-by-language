@@ -1,0 +1,85 @@
+name: Artifact Cleanup Script
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 2 * * 0"
+
+permissions:
+  contents: read
+
+jobs:
+  test-artifact-cleanup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          apt-get update -qq
+          apt-get install -y -qq jq shellcheck
+
+      - name: Validate script syntax
+        run: |
+          bash -n artifact-cleanup.sh
+          echo "bash -n: OK"
+
+      - name: Run shellcheck
+        run: |
+          shellcheck artifact-cleanup.sh
+          echo "shellcheck: OK"
+
+      - name: "Scenario: age-policy-test"
+        env:
+          REFERENCE_DATE: "2024-03-01"
+        run: |
+          echo "=== TEST SCENARIO: age-policy-test ==="
+          bash artifact-cleanup.sh \
+            --artifacts fixtures/artifacts-age-test.json \
+            --policy    fixtures/policy-age-test.json
+          echo "=== END SCENARIO: age-policy-test ==="
+
+      - name: "Scenario: keep-n-test"
+        env:
+          REFERENCE_DATE: "2024-03-01"
+        run: |
+          echo "=== TEST SCENARIO: keep-n-test ==="
+          bash artifact-cleanup.sh \
+            --artifacts fixtures/artifacts-keep-n-test.json \
+            --policy    fixtures/policy-keep-n-test.json
+          echo "=== END SCENARIO: keep-n-test ==="
+
+      - name: "Scenario: size-test"
+        env:
+          REFERENCE_DATE: "2024-03-01"
+        run: |
+          echo "=== TEST SCENARIO: size-test ==="
+          bash artifact-cleanup.sh \
+            --artifacts fixtures/artifacts-size-test.json \
+            --policy    fixtures/policy-size-test.json
+          echo "=== END SCENARIO: size-test ==="
+
+      - name: "Scenario: combined-test"
+        env:
+          REFERENCE_DATE: "2024-03-01"
+        run: |
+          echo "=== TEST SCENARIO: combined-test ==="
+          bash artifact-cleanup.sh \
+            --artifacts fixtures/artifacts-combined-test.json \
+            --policy    fixtures/policy-combined-test.json
+          echo "=== END SCENARIO: combined-test ==="
+
+      - name: "Scenario: dry-run-test"
+        env:
+          REFERENCE_DATE: "2024-03-01"
+        run: |
+          echo "=== TEST SCENARIO: dry-run-test ==="
+          bash artifact-cleanup.sh \
+            --artifacts fixtures/artifacts-age-test.json \
+            --policy    fixtures/policy-age-test.json \
+            --dry-run
+          echo "=== END SCENARIO: dry-run-test ==="

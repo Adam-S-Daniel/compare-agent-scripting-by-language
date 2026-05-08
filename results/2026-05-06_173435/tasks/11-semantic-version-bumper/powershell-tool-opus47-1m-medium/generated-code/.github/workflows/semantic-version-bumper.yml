@@ -1,0 +1,54 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      version_file:
+        description: Path to version file
+        required: false
+        default: VERSION
+      commits_file:
+        description: Path to commits fixture file
+        required: false
+        default: commits.txt
+
+permissions:
+  contents: read
+
+env:
+  VERSION_FILE: VERSION
+  COMMITS_FILE: commits.txt
+  CHANGELOG_FILE: CHANGELOG.md
+
+jobs:
+  bump:
+    name: Compute next version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Pester unit tests
+        shell: pwsh
+        run: |
+          $r = Invoke-Pester -Path ./SemanticVersionBumper.Tests.ps1 -Output Detailed -PassThru
+          if ($r.FailedCount -gt 0) { throw "Pester: $($r.FailedCount) failed" }
+
+      - name: Bump version
+        id: bump
+        shell: pwsh
+        run: |
+          $vf = if ($env:INPUT_VERSION_FILE) { $env:INPUT_VERSION_FILE } else { $env:VERSION_FILE }
+          $cf = if ($env:INPUT_COMMITS_FILE) { $env:INPUT_COMMITS_FILE } else { $env:COMMITS_FILE }
+          ./Invoke-Bump.ps1 -VersionFile $vf -CommitsFile $cf -ChangelogFile $env:CHANGELOG_FILE
+
+      - name: Show resulting files
+        shell: pwsh
+        run: |
+          Write-Host "=== VERSION ==="
+          Get-Content $env:VERSION_FILE
+          Write-Host ""
+          Write-Host "=== CHANGELOG.md (head) ==="
+          Get-Content $env:CHANGELOG_FILE -TotalCount 30

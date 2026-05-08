@@ -1,0 +1,100 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-version-bumper:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify script is executable
+        run: chmod +x version-bumper.sh
+
+      - name: Test patch bump (fix commits 1.0.0 -> 1.0.1)
+        run: |
+          echo "1.0.0" > /tmp/test-version.txt
+          output=$(bash version-bumper.sh /tmp/test-version.txt fixtures/patch-commits.txt)
+          echo "$output"
+          result=$(cat /tmp/test-version.txt)
+          if [[ "$result" == "1.0.1" ]]; then
+            echo "PASS: patch bump 1.0.0 -> 1.0.1"
+            echo "NEW_VERSION=1.0.1"
+          else
+            echo "FAIL: expected 1.0.1, got $result"
+            exit 1
+          fi
+
+      - name: Test minor bump (feat commits 1.1.0 -> 1.2.0)
+        run: |
+          echo "1.1.0" > /tmp/test-version.txt
+          output=$(bash version-bumper.sh /tmp/test-version.txt fixtures/minor-commits.txt)
+          echo "$output"
+          result=$(cat /tmp/test-version.txt)
+          if [[ "$result" == "1.2.0" ]]; then
+            echo "PASS: minor bump 1.1.0 -> 1.2.0"
+            echo "NEW_VERSION=1.2.0"
+          else
+            echo "FAIL: expected 1.2.0, got $result"
+            exit 1
+          fi
+
+      - name: Test major bump (breaking commits 2.0.0 -> 3.0.0)
+        run: |
+          echo "2.0.0" > /tmp/test-version.txt
+          output=$(bash version-bumper.sh /tmp/test-version.txt fixtures/major-commits.txt)
+          echo "$output"
+          result=$(cat /tmp/test-version.txt)
+          if [[ "$result" == "3.0.0" ]]; then
+            echo "PASS: major bump 2.0.0 -> 3.0.0"
+            echo "NEW_VERSION=3.0.0"
+          else
+            echo "FAIL: expected 3.0.0, got $result"
+            exit 1
+          fi
+
+      - name: Test package.json bump (fix commits 1.5.0 -> 1.5.1)
+        run: |
+          cat > /tmp/test-package.json << 'PKGJSON'
+          {
+            "name": "my-app",
+            "version": "1.5.0",
+            "description": "Test application"
+          }
+          PKGJSON
+          output=$(bash version-bumper.sh /tmp/test-package.json fixtures/patch-commits.txt)
+          echo "$output"
+          result=$(grep '"version"' /tmp/test-package.json | sed 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/' | tr -d '[:space:]')
+          if [[ "$result" == "1.5.1" ]]; then
+            echo "PASS: package.json bump 1.5.0 -> 1.5.1"
+            echo "NEW_VERSION=1.5.1"
+          else
+            echo "FAIL: expected 1.5.1, got $result"
+            exit 1
+          fi
+
+      - name: Test mixed commits resolve to minor (feat wins over fix)
+        run: |
+          echo "3.2.1" > /tmp/test-version.txt
+          output=$(bash version-bumper.sh /tmp/test-version.txt fixtures/mixed-commits.txt)
+          echo "$output"
+          result=$(cat /tmp/test-version.txt)
+          if [[ "$result" == "3.3.0" ]]; then
+            echo "PASS: mixed bump 3.2.1 -> 3.3.0 (feat beats fix)"
+          else
+            echo "FAIL: expected 3.3.0, got $result"
+            exit 1
+          fi
+
+      - name: Show changelog sample
+        run: |
+          echo "1.0.0" > /tmp/changelog-test.txt
+          bash version-bumper.sh /tmp/changelog-test.txt fixtures/minor-commits.txt
+          echo "=== CHANGELOG section appeared above ==="

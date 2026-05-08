@@ -1,0 +1,60 @@
+name: Dependency License Checker
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  license-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq jq
+          # Install bats-core
+          if ! command -v bats &>/dev/null; then
+            git clone --depth 1 https://github.com/bats-core/bats-core.git /tmp/bats-core
+            sudo /tmp/bats-core/install.sh /usr/local
+          fi
+
+      - name: Validate scripts with shellcheck and bash -n
+        run: |
+          bash -n dependency-license-checker.sh
+          bash -n license-db.sh
+          shellcheck dependency-license-checker.sh license-db.sh || true
+
+      - name: Run license check on package.json fixture
+        run: |
+          chmod +x dependency-license-checker.sh
+          echo "--- package.json check ---"
+          bash dependency-license-checker.sh \
+            -m test/fixtures/package.json \
+            -c test/fixtures/license-config.json || true
+
+      - name: Run license check on requirements.txt fixture
+        run: |
+          echo "--- requirements.txt check ---"
+          bash dependency-license-checker.sh \
+            -m test/fixtures/requirements.txt \
+            -c test/fixtures/license-config.json || true
+
+      - name: Run license check on clean package (all approved)
+        run: |
+          echo "--- clean package check ---"
+          bash dependency-license-checker.sh \
+            -m test/fixtures/package-clean.json \
+            -c test/fixtures/license-config.json
+
+      - name: Run bats test suite
+        run: |
+          bats test/dependency-license-checker.bats

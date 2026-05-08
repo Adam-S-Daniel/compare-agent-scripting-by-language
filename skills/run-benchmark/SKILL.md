@@ -6,7 +6,7 @@ compatibility: Requires claude CLI, actionlint, act, docker, pwsh, bun, bats, sh
 
 # Run Benchmark
 
-Ask the user which tasks (11-18, default: all), modes (default/powershell/bash/typescript-bun, default: all), and models (opus/sonnet, default: both) unless they already specified.
+Ask the user which tasks (11,12,13,15,16,17,18 — task 14 archived; default: all 7), language modes (default/powershell/powershell-tool/bash/typescript-bun; default: all 5), and models (opus, sonnet, opus47-1m, opus47-200k, sonnet46-1m, haiku45 — see `models.py`; default: opus,sonnet) unless they already specified. For multi-effort matrices (e.g. opus47-1m at high+medium+xhigh), use a wrapper script that runs `runner.py` once per (model, effort) combo with `--resume` after the first call — see `run-fresh-matrix-2026-05-06.sh` for the canonical pattern.
 
 ## Steps
 
@@ -22,11 +22,14 @@ Ask the user which tasks (11-18, default: all), modes (default/powershell/bash/t
    Runner.py auto-detects this image and injects `.actrc` into workspaces.
 
 3. **Build and run the command:**
+   Single (model, effort) combo:
    ```bash
-   python3 runner.py --tasks 11,12,13,14,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
+   python3 runner.py --tasks 11,12,13,15,16,17,18 --modes default,powershell,powershell-tool,bash,typescript-bun --models opus,sonnet
    ```
-   - To resume: add `--resume <timestamp-dir>`
-   - To change timeout: add `--timeout <minutes>` (0 = unlimited)
+   - To resume: add `--resume <timestamp-dir>` (subsequent invocations writing to the same dir).
+   - To set a non-default reasoning effort: add `--effort {low,medium,high,xhigh,max}` (variant dir name then carries the effort suffix).
+   - To change timeout: add `--timeout <minutes>` (0 = unlimited).
+   For multi-(model,effort) matrices, drive sequential invocations from a wrapper script (one per combo, first creates dir, rest `--resume`); never run `runner.py` invocations in parallel.
 
 4. **Monitor progress** — periodically check:
    ```bash
@@ -34,9 +37,10 @@ Ask the user which tasks (11-18, default: all), modes (default/powershell/bash/t
    tail -3 /tmp/benchmark-*.log  # current activity
    ```
 
-5. **After completion**, regenerate reports:
+5. **After completion**, regenerate reports and per-CC-version docs:
    ```bash
    python3 generate_results.py --all
+   python3 version_docs.py results/<run-dir>
    ```
 
 6. **Anomaly scan** — check all metrics.json for:

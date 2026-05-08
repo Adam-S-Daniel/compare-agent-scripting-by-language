@@ -1,0 +1,61 @@
+name: environment-matrix-generator
+
+# Triggered on every push, on PR review, on manual dispatch, and weekly
+# so the matrix-validation logic stays exercised.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+  PIP_DISABLE_PIP_VERSION_CHECK: '1'
+
+jobs:
+  unit-tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install test dependencies
+        shell: bash
+        run: |
+          python3 -m pip install --quiet --break-system-packages pytest pyyaml
+
+      - name: Run unit tests
+        shell: bash
+        run: |
+          python3 -m pytest tests/ -v
+
+  generate-matrix:
+    name: Generate strategy matrix
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Wraps the script so a validation error (non-zero exit from the
+      # generator) doesn't fail the job — we still need to surface its
+      # output to the harness so it can assert on the error message.
+      - name: Generate matrix from config.json
+        shell: bash
+        run: |
+          set +e
+          python3 matrix_generator.py config.json > matrix.json 2> matrix.err
+          RC=$?
+          set -e
+          echo "<<<RC>>>${RC}<<<RC>>>"
+          echo "<<<MATRIX_BEGIN>>>"
+          cat matrix.json || true
+          echo "<<<MATRIX_END>>>"
+          echo "<<<ERROR_BEGIN>>>"
+          cat matrix.err || true
+          echo "<<<ERROR_END>>>"

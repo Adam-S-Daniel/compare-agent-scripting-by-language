@@ -1,0 +1,323 @@
+[Tool: Bash] pwd && ls -la
+[Result] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-opus47-1m-high
+total 44
+drwxr-xr-x  4 passp passp  4096 May  7 11:30 .
+drwxr-xr-x 19 passp passp  4096 May  7 11:30 ..
+-rw-r--r--  1 passp passp    40 May  7 11:30 .actrc
+drwxr-xr-x  2 passp passp  4096 May  7 11:30 .claude
+drwxr-xr-x  6 passp passp  4096 May  7 11:30 .git
+-rw-r--r--  1 passp passp 21843 Apr 17 00:12 benchmark-instructions-v4.md
+[Tool: Bash] cat .actrc && ls -la .claude/ 2>/dev/null && which pwsh && pwsh -c '$PSVersionTable.PSVersion'
+[Result] -P ubuntu-latest=act-ubuntu-pwsh:latest
+total 12
+drwxr-xr-x 2 passp passp 4096 May  7 11:30 .
+drwxr-xr-x 4 passp passp 4096 May  7 11:30 ..
+-rw-r--r-- 1 passp passp  316 May  7 11:30 settings.json
+/snap/bin/pwsh
+
+[32;1mMajor [0m[32;1m Minor [0m[32;1m Patch [0m[32;1m PreReleaseLabel[0m[32;1m BuildLabel[0m
+[32;1m----- [0m [32;1m----- [0m [32;1m----- [0m [32;1m---------------[0m [32;1m----------[0m
+7      6      1
+[Tool: Bash] which actionlint && actionlint --version && which act && act --version && pwsh -c 'Get-Module -ListAvailable Pester | Select-Object Name, Version | Format-Table'
+[Result] /home/passp/.local/bin/actionlint
+1.7.12
+installed by downloading from release page
+built with go1.26.1 compiler for linux/amd64
+/home/passp/.local/bin/act
+act version 0.2.87
+
+[32;1mName  [0m[32;1m Version[0m
+[32;1m----  [0m [32;1m-------[0m
+Pester 5.7.1
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/AGENTS.md"}
+[Result] 1	# Agent Instructions
+2	
+3	All agent-facing instructions live in this file. `CLAUDE.md` contains only a
+4	reference here. If you are a Claude Code agent, you have already loaded this
+5	via `CLAUDE.md`. Other agents: read this file directly.
+6	
+7	## Build and test
+8	
+9	```bash
+10	# Run unit tests (REQUIRED before every PR)
+11	pip install pytest  # if not already installed
+12	python3 -m pytest tests/ -v
+13	
+14	# Validate imports
+15	python3 -c "from runner import main"
+16	python3 -c "from generate_results import generate_results_md"
+17	python3 -c "from test_quality import compute_structural_metrics"
+18	python3 -c "from llm_providers import get_provider"
+19	
+20	# Regenerate all reports
+21	python3 generate_results.py --all
+22	
+23	# Run a benchmark (v4, all tasks/modes/models)
+24	python3 runner.py --tasks 11,12,13,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
+25	
+26	# Evaluate test quality (structural metrics only)
+27	python3 test_quality.py results/2026-04
+[Assistant] Let me check the existing reference Dockerfile and a similar workspace layout to understand patterns.
+[Tool: Bash] ls /home/passp/repos/compare-agent-scripting-by-language/Dockerfile.act 2>/dev/null && cat /home/passp/repos/compare-agent-scripting-by-language/Dockerfile.act 2>/dev/null | head -30
+[Result] /home/passp/repos/compare-agent-scripting-by-language/Dockerfile.act
+# Custom act container image with PowerShell and Pester pre-installed.
+# Matches what real GitHub-hosted ubuntu-latest runners provide.
+#
+# Build:  docker build -t act-ubuntu-pwsh:latest -f Dockerfile.act .
+# Use:    act push -P ubuntu-latest=act-ubuntu-pwsh:latest
+# Or:     echo '-P ubuntu-latest=act-ubuntu-pwsh:latest' > .actrc
+
+FROM catthehacker/ubuntu:act-latest
+
+# Install PowerShell from Microsoft's APT repo
+RUN apt-get update -qq \
+    && apt-get install -y -qq wget apt-transport-https software-properties-common \
+    && wget -q "https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb" \
+    && dpkg -i packages-microsoft-prod.deb \
+    && apt-get update -qq \
+    && apt-get install -y -qq powershell \
+    && rm -f packages-microsoft-prod.deb \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Pester 5 (PowerShell testing framework, pre-installed on GitHub runners)
+RUN pw
+[Assistant] Now I have a clear picture. Let me start TDD by writing the first failing test.
+
+**Plan:**
+- `MatrixGenerator.psm1` — module with `New-BuildMatrix` function
+- `tests/MatrixGenerator.Tests.ps1` — Pester tests
+- `fixtures/` — three test fixtures (basic, with-excludes-includes, max-size validation)
+- `.github/workflows/environment-matrix-generator.yml` — workflow
+- `harness.ps1` — runs `act push` once per fixture, appends to `act-result.txt`
+
+Let me start with the first failing test (red).
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-opus47-1m-high/tests/MatrixGenerator.Tests.ps1", "content":
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-opus47-1m-high/tests/MatrixGenerator.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Now run the tests to confirm red:
+[Tool: Bash] pwsh -NoProfile -Command "Invoke-Pester -Path tests/ -Output Detailed 2>&1 | Select-Object -Last 25"
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 16 tests in 302ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-opus47-1m-high/tests/MatrixGenerator.Tests.ps1'[0m
+[91m[-] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-opus47-1m-high/tests/MatrixGenerator.Tests.ps1 failed with:[0m
+[91mParameterBindingValidationException: Cannot bind argument to parameter 'Name' because it is null.
+[91mat <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-opus47-1m-high/tests/MatrixGenerator.Tests.ps1:9[0m
+[97mTests completed in 839ms[0m
+[97mTests Passed: 0, [0m[91mFailed: 16, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 
+[Tool: ToolSearch] {"query": "select:TodoWrite", "max_results": 1}
+[Result] {'type': 'tool_reference', 'tool_name': 'TodoWrite'}
+[Tool: TodoWrite] {"todos": [{"content": "Write failing Pester tests (red)", "status": "completed", "activeForm": "Writing failing Pester tests"}, {"content": "Implement MatrixGenerator.psm1 to make tests pass (green)"
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Assistant] Tests fail because the module doesn't exist (red confirmed). Now write the minimum implementation to go green.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-opus47-1m-high/MatrixGenerator.psm1", "content": "# MatrixG
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-opus47-1m-high/MatrixGenerator.psm1 (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -NoProfile -Command "Invoke-Pester -Path tests/ -Output Detailed 2>&1 | Select-Object -Last 60"
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 16 tests in 341ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-opus47-1m-high/tests/MatrixGenerator.Tests.ps1'[0m
+[92mDescribing New-BuildMatrix - cartesian product over base axes[0m
+[91m  [-] expands a 2x2 matrix into 4 combinations[0m[90m 155ms (110ms|46ms)[0m
+[91m   PropertyNotFoundException: The property 'Count' cannot be found on this object. Verify that the property exists.
+[91m   at New-BuildMatrix, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-opus47-1m-high/MatrixGenerator.psm1:145
+[91m   at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-opus47-1m-high/tests/MatrixGener
+[Assistant] Strict mode is unwrapping single-item lists. Let me debug:
+[Tool: Bash] pwsh -NoProfile -Command "
+Set-StrictMode -Version Latest
+Import-Module ./MatrixGenerator.psm1 -Force
+\$config = @{ axes = @{ os = @('ubuntu-latest','macos-latest'); node = @('18','20') } }
+try { \$r = New-BuildMatrix -Config \$config; \$r | ConvertTo-Json -Depth 5 } catch { Write-Host 'CAUGHT:' \$_.Exception.Message; Write-Host \$_.ScriptStackTrace }
+"
+[Result] CAUGHT: The property 'Count' cannot be found on this object. Verify that the property exists.
+at New-BuildMatrix, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-opus47-1m-high/MatrixGenerator.psm1: line 145
+at <ScriptBlock>, <No file>: line 5
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-opus47-1m-high/MatrixGenerator.psm1", "offset": 140, "limit
+[Result] 140	    # --- exclude rules ---
+141	    $excludeRules = if ($Config -is [psobject] -and -not ($Config -is [hashtable])) {
+142	        $Config.PSObject.Properties['exclude']?.Value
+143	    } else { $Config['exclude'] }
+144	    $excludes = _Get-ListOfMaps -List $excludeRules
+145	    if ($excludes.Count -gt 0) {
+146	        $kept = New-Object System.Collections.Generic.List[hashtable]
+147	        foreach ($c in $combos) {
+148	            $skip = $false
+149	            foreach ($r in $excludes) { if (_Test-ExcludeMatch -Combination $c -Rule $r) { $skip = $true; break } }
+150	            if (-not $skip) { $kept.Add($c) | Out-Null }
+151	        }
+152	        $combos = $kept
+153	    }
+154	
+[Assistant] The PowerShell pipeline unrolling is causing issues. Let me fix `_Get-ListOfMaps` and similar helpers to return without unrolling.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-opus47-1m-high/MatrixGenerator.psm1",
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-opus47-1m-high/MatrixGenerator.psm1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -NoProfile -Command "Invoke-Pester -Path tests/ -Output Detailed 2>&1 | Select-Object -Last 50"
+[Result] [95mPester v5.7.1[0m
+[95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 16 tests in 304ms.[0m
+[95mRunning tests.[0m
+[95m
+[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-opus47-1m-high/tests/MatrixGenerator.Tests.ps1'[0m
+[92mDescribing New-BuildMatrix - cartesian product over base axes[0m
+[32m  [+] expands a 2x2 matrix into 4 combinations[0m[90m 242ms (199ms|43ms)[0m
+[32m  [+] expands a 3-axis matrix into the full cartesian product[0m[90m 46ms (44ms|2ms)[0m
+[32m  [+] produces an empty include array when an axis is empty[0m[90m 9ms (7ms|2ms)[0m
+[0m
+[92mDescribing New-BuildMatrix - exclude rules[0m
+[32m  [+] removes combinations matching an exclude rule (all keys must match)[0m[90m 46ms (43ms|4ms)[0m
+[32m  [+] supports exclude rules that match a partial subset of axes[0m[90m 19ms (17ms|2ms)[0m
+[0m
+[92mDescribing New-BuildMatrix - include 
+[Assistant] All 16 tests pass (green). Now create fixtures, workflow, and harness.
+[Tool: TodoWrite] {"todos": [{"content": "Write failing Pester tests (red)", "status": "completed", "activeForm": "Writing failing Pester tests"}, {"content": "Implement MatrixGenerator.psm1 to make tests pass (green)"
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-opus47-1m-high/fixtures/basic.json", "content": "{\n  \"axe
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-opus47-1m-high/fixtures/basic.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-opus47-1m-high/fixtures/with-excludes-includes.json", "cont
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-opus47-1m-high/fixtures/with-excludes-includes.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-opus47-1m-high/fixtures/oversized.json", "content": "{\n  \
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-opus47-1m-high/fixtures/oversized.json (file state is current in your context — no need to Read it back)
+[Assistant] Now the workflow. Design: 2 jobs (`unit-tests` runs Pester; `generate` runs the script with `fixture.json` and emits structured markers). Both always exit 0 — the harness asserts on markers per fixture.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-opus47-1m-high/.github/workflows/environment-matrix-generat
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-opus47-1m-high/.github/workflows/environment-matrix-generator.yml (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/environment-matrix-generator.yml; echo "exit=$?"
+[Result] exit=0
+[Assistant] actionlint passes. Now write the test harness.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-opus47-1m-high/harness.ps1", "content": "#!/usr/bin/env pws
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-opus47-1m-high/harness.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Let me do a quick syntax check on the harness before running act:
+[Tool: Bash] pwsh -NoProfile -c "[System.Management.Automation.PSParser]::Tokenize((Get-Content -Raw harness.ps1), [ref]\$null) | Out-Null; Write-Host 'syntax OK'"
+[Result] syntax OK
+[Tool: TodoWrite] {"todos": [{"content": "Write failing Pester tests (red)", "status": "completed", "activeForm": "Writing failing Pester tests"}, {"content": "Implement MatrixGenerator.psm1 to make tests pass (green)"
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Assistant] Now run the harness — it will spend 3 act runs on the 3 fixtures.
+[Tool: Bash] pwsh -NoProfile -File ./harness.ps1 2>&1 | tail -200
+[Result] ===== running case: basic =====
+  workdir: /tmp/matrix-gen-act-af8b8eee
+  FAIL (7 errors):
+    - act exited 1, expected 0
+    - expected at least 2 'Job succeeded' lines (unit-tests + generate); saw 0
+    - missing MATRIX_OK marker
+    - missing MATRIX_SIZE marker
+    - missing MATRIX_FAIL_FAST marker
+    - missing MATRIX_MAX_PARALLEL marker
+    - could not extract MATRIX_JSON_BEGIN..END block
+===== running case: with-excludes-includes =====
+  workdir: /tmp/matrix-gen-act-8cb0c87c
+  FAIL (7 errors):
+    - act exited 1, expected 0
+    - expected at least 2 'Job succeeded' lines (unit-tests + generate); saw 0
+    - missing MATRIX_OK marker
+    - missing MATRIX_SIZE marker
+    - missing MATRIX_FAIL_FAST marker
+    - missing MATRIX_MAX_PARALLEL marker
+    - could not extract MATRIX_JSON_BEGIN..END block
+===== running case: oversized =====
+  workdir: /tmp/matrix-gen-act-2cd3f6f7
+  FAIL (4 errors):
+    - act exited 1, expected 0
+    - expected at least 2 'Job succeeded' lines (unit-tests + g
+[Assistant] All 3 cases failed. Let me look at the act output to diagnose:
+[Tool: Bash] head -120 act-result.txt
+[Result] Environment Matrix Generator — act test harness
+
+
+========== CASE: basic | exit=1 ==========
+
+time="2026-05-07T11:38:48-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[environment-matrix-generator/Pester unit tests] ⭐ Run Set up job
+[environment-matrix-generator/Pester unit tests] 🚀  Start image=act-ubuntu-pwsh:latest
+[environment-matrix-generator/Pester unit tests]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=true
+[environment-matrix-generator/Pester unit tests] using DockerAuthConfig authentication for docker pull
+[environment-matrix-generator/Pester unit tests] Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+[environment-matrix-generator/Pester unit tests]   ❌  Failure - Set up job
+[environment-matrix-generator/Pester unit tests] 🏁  Job failed
+Error: Error response from daemon: pull access denied for act-
+[Tool: Bash] docker images | head -10
+[Result] WARNING: This output is designed for human readability. For machine-readable output, please use --format.
+IMAGE                                           ID             DISK USAGE   CONTENT SIZE   EXTRA
+act-ubuntu-pwsh:latest                          05bbd1974971        2.6GB          652MB        
+alpine:latest                                   5b10f432ef3d       13.1MB         3.95MB        
+catthehacker/ubuntu:act-22.04                   754f20d9a184       2.15GB          531MB        
+catthehacker/ubuntu:act-latest                  ee77eaa905d1       2.32GB          572MB        
+catthehacker/ubuntu:full-latest                 9327301aea27       67.7GB         16.8GB   U    
+civic-terraform-mcp:latest                      84776a24bc66       1.28GB          265MB        
+ghcr.io/catthehacker/ubuntu:act-latest          eb153df03ca8       2.04GB          297MB        
+ghcr.io/catthehacker/ubuntu:full-latest         9327301aea27       67.7GB         16.8GB   U    
+ghcr.io/catthehacker/
+[Assistant] The image is local but act force-pulls by default. Add `--pull=false` and also `--rm`:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-opus47-1m-high/harness.ps1", "old_str
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-opus47-1m-high/harness.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -NoProfile -File ./harness.ps1 2>&1 | tail -120
+[Result] ===== running case: basic =====
+  workdir: /tmp/matrix-gen-act-89666cd4
+  PASS
+===== running case: with-excludes-includes =====
+  workdir: /tmp/matrix-gen-act-73102274
+  PASS
+===== running case: oversized =====
+  workdir: /tmp/matrix-gen-act-0a86f9e6
+  PASS
+===== workflow structure assertions =====
+  PASS: actionlint clean
+  PASS: workflow structure
+
+===== HARNESS SUMMARY =====
+  act cases: 3 / 3 passed
+  workflow-structure failures: 0
+[Assistant] All 3 cases pass. Let me verify the act-result.txt looks good:
+[Tool: Bash] wc -l act-result.txt && echo '---HEAD---' && head -25 act-result.txt && echo '---TAIL---' && tail -15 act-result.txt
+[Result] 306 act-result.txt
+---HEAD---
+Environment Matrix Generator — act test harness
+
+
+========== CASE: basic | exit=0 ==========
+
+time="2026-05-07T11:39:34-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[environment-matrix-generator/Pester unit tests] ⭐ Run Set up job
+[environment-matrix-generator/Pester unit tests] 🚀  Start image=act-ubuntu-pwsh:latest
+[environment-matrix-generator/Pester unit tests]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[environment-matrix-generator/Pester unit tests]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[environment-matrix-generator/Pester unit tests]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[environment-matrix-generator/Pester unit tests]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.exe
+[Tool: TodoWrite] {"todos": [{"content": "Write failing Pester tests (red)", "status": "completed", "activeForm": "Writing failing Pester tests"}, {"content": "Implement MatrixGenerator.psm1 to make tests pass (green)"
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Bash] grep -c "Job succeeded" act-result.txt && grep -c "RESULT: PASS" act-result.txt && grep -c "MATRIX_OK\|MATRIX_FAIL" act-result.txt && ls -la
+[Result] 6
+3
+5
+total 116
+drwxr-xr-x  7 passp passp  4096 May  7 11:39 .
+drwxr-xr-x 19 passp passp  4096 May  7 11:30 ..
+-rw-r--r--  1 passp passp    40 May  7 11:30 .actrc
+drwxr-xr-x  2 passp passp  4096 May  7 11:30 .claude
+drwxr-xr-x  6 passp passp  4096 May  7 11:30 .git
+drwxr-xr-x  3 passp passp  4096 May  7 11:36 .github
+-rw-r--r--  1 passp passp  8930 May  7 11:34 MatrixGenerator.psm1
+-rw-r--r--  1 passp passp 33038 May  7 11:40 act-result.txt
+-rw-r--r--  1 passp passp 21843 Apr 17 00:12 benchmark-instructions-v4.md
+drwxr-xr-x  2 passp passp  4096 May  7 11:35 fixtures
+-rw-r--r--  1 passp passp 11043 May  7 11:39 harness.ps1
+drwxr-xr-x  2 passp passp  4096 May  7 11:32 tests
+[Assistant] Six "Job succeeded" lines (2 jobs × 3 cases), three "RESULT: PASS", and five matrix marker hits — exactly what's expected.
+
+**Summary**
+
+Built the Environment Matrix Generator in PowerShell with TDD:
+
+- `MatrixGenerator.psm1` — module exposing `New-BuildMatrix`, `ConvertTo-MatrixJson`, `Invoke-MatrixGenerator`. Computes cartesian product over axes, applies exclude (partial-match) and include (append) rules, propagates `max-parallel` / `fail-fast`, and validates size against `max-size` (default 256, GitHub's hard cap).
+- `tests/MatrixGenerator.Tests.ps1` — 16 Pester tests, written red-first; all pass with `Invoke-Pester`.
+- `fixtures/{basic,with-excludes-includes,oversized}.json` — three test cases.
+- `.github/workflows/environment-matrix-generator.yml` — passes `actionlint`. Two jobs (`unit-tests` runs Pester; `generate` produces the matrix from `fixture.json` and prints structured `MATRIX_OK` / `MATRIX_FAIL` markers).
+- `harness.ps1` — for each fixture: builds an isolated git workdir, runs `act push --rm --pull=false`, appends output to `act-result.txt` with delimiters, and asserts exit code 0, ≥2 "Job succeeded" lines, and exact expected values (size 4 / 9; fail-fast True/False; max-parallel 4/6; specific JSON substrings present and absent; for oversized, error message matches `exceeds max-size (10)`). Also runs structure tests against the YAML.
+- `act-result.txt` — present (33 KB), 6 "Job succeeded" lines, 3 "RESULT: PASS".
+
+Final harness result: **3/3 act cases passed, 0 workflow-structure failures**.

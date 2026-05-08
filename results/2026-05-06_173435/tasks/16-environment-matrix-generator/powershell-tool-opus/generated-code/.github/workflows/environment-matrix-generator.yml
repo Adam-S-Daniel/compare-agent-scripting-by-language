@@ -1,0 +1,88 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $result = Invoke-Pester -Path './New-EnvironmentMatrix.Tests.ps1' -Output Detailed -PassThru
+          if ($result.FailedCount -gt 0) { exit 1 }
+
+      - name: Generate matrix from basic config
+        shell: pwsh
+        run: |
+          . ./New-EnvironmentMatrix.ps1
+          $config = @{
+            os       = @('ubuntu-latest', 'windows-latest', 'macos-latest')
+            language = @('3.9', '3.10', '3.11')
+            feature  = @('standard', 'experimental')
+          }
+          $json = New-EnvironmentMatrix -Config $config
+          Write-Output "=== BASIC MATRIX ==="
+          Write-Output $json
+          Write-Output "=== END BASIC MATRIX ==="
+
+      - name: Generate matrix with include and exclude rules
+        shell: pwsh
+        run: |
+          . ./New-EnvironmentMatrix.ps1
+          $config = @{
+            os           = @('ubuntu-latest', 'windows-latest')
+            language     = @('3.9', '3.10')
+            include      = @(@{ os = 'macos-latest'; language = '3.11' })
+            exclude      = @(@{ os = 'windows-latest'; language = '3.9' })
+            'fail-fast'  = $false
+            'max-parallel' = 4
+          }
+          $json = New-EnvironmentMatrix -Config $config
+          Write-Output "=== ADVANCED MATRIX ==="
+          Write-Output $json
+          Write-Output "=== END ADVANCED MATRIX ==="
+
+      - name: Generate matrix from JSON file
+        shell: pwsh
+        run: |
+          . ./New-EnvironmentMatrix.ps1
+          $configObj = @{
+            os       = @('ubuntu-latest')
+            language = @('18', '20', '22')
+          }
+          $configObj | ConvertTo-Json -Depth 5 | Set-Content -Path 'test-config.json'
+          $json = New-EnvironmentMatrix -ConfigPath 'test-config.json'
+          Write-Output "=== JSON FILE MATRIX ==="
+          Write-Output $json
+          Write-Output "=== END JSON FILE MATRIX ==="
+
+      - name: Validate matrix size enforcement
+        shell: pwsh
+        run: |
+          . ./New-EnvironmentMatrix.ps1
+          try {
+            $config = @{
+              os                 = 1..20 | ForEach-Object { "os-$_" }
+              language           = 1..20 | ForEach-Object { "lang-$_" }
+              'max-combinations' = 10
+            }
+            New-EnvironmentMatrix -Config $config
+            Write-Output "ERROR: Should have thrown"
+            exit 1
+          } catch {
+            Write-Output "=== SIZE VALIDATION ==="
+            Write-Output "Correctly rejected oversized matrix: $($_.Exception.Message)"
+            Write-Output "=== END SIZE VALIDATION ==="
+          }

@@ -1,0 +1,134 @@
+name: Artifact Cleanup Script
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 2 * * 0"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install pytest pyyaml
+
+      - name: Install actionlint
+        run: |
+          if [ -f bin/actionlint ]; then
+            install -m 755 bin/actionlint /usr/local/bin/actionlint
+          else
+            ACTIONLINT_VERSION="1.7.12"
+            curl -sSfL \
+              "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz" \
+              | tar -xz -C /usr/local/bin actionlint
+          fi
+
+      - name: Run unit tests
+        run: python3 -m pytest test_artifact_cleanup.py -v
+
+  run-cleanup:
+    name: Run Artifact Cleanup with Fixtures
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: python3 -m pip install --upgrade pip
+
+      - name: Generate fixtures with current dates
+        run: python3 generate_fixtures.py
+
+      - name: TC1 - Age policy (dry-run)
+        run: |
+          python3 artifact_cleanup.py \
+            --input fixtures/tc1_age_policy.json \
+            --policy fixtures/policy_age.json \
+            --dry-run
+
+      - name: TC2 - Keep-latest-N per workflow
+        run: |
+          python3 artifact_cleanup.py \
+            --input fixtures/tc2_keep_latest.json \
+            --policy fixtures/policy_keep_latest.json \
+            --dry-run
+
+      - name: TC3 - Max total size
+        run: |
+          python3 artifact_cleanup.py \
+            --input fixtures/tc3_max_size.json \
+            --policy fixtures/policy_max_size.json \
+            --dry-run
+
+      - name: TC4 - Combined policies
+        run: |
+          python3 artifact_cleanup.py \
+            --input fixtures/tc4_combined.json \
+            --policy fixtures/policy_combined.json \
+            --dry-run
+
+      - name: Assert exact expected values
+        run: |
+          python3 - <<'PYEOF'
+          import subprocess, sys
+
+          def run_cleanup(input_f, policy_f, dry_run=False):
+              cmd = ["python3", "artifact_cleanup.py", "--input", input_f, "--policy", policy_f]
+              if dry_run:
+                  cmd.append("--dry-run")
+              result = subprocess.run(cmd, capture_output=True, text=True)
+              if result.returncode != 0:
+                  print(result.stderr, file=sys.stderr)
+                  raise AssertionError(f"Script failed with rc={result.returncode}")
+              return result.stdout
+
+          # TC1: age policy — 2 old artifacts deleted (10MB + 20MB = 30MB = 31457280 bytes)
+          out = run_cleanup("fixtures/tc1_age_policy.json", "fixtures/policy_age.json", dry_run=True)
+          assert "ARTIFACTS_TO_DELETE=2" in out, f"TC1 delete count wrong:\n{out}"
+          assert "ARTIFACTS_TO_KEEP=2" in out, f"TC1 keep count wrong:\n{out}"
+          assert "SPACE_RECLAIMED_BYTES=31457280" in out, f"TC1 space wrong:\n{out}"
+          assert "DRY_RUN=True" in out, f"TC1 dry-run flag wrong:\n{out}"
+          print("TC1 ASSERTION PASSED: artifacts_to_delete=2 artifacts_to_keep=2 space_reclaimed=31457280 dry_run=True")
+
+          # TC2: keep-latest-2 — 2 oldest from workflow-A deleted
+          out = run_cleanup("fixtures/tc2_keep_latest.json", "fixtures/policy_keep_latest.json", dry_run=True)
+          assert "ARTIFACTS_TO_DELETE=2" in out, f"TC2 delete count wrong:\n{out}"
+          assert "ARTIFACTS_TO_KEEP=3" in out, f"TC2 keep count wrong:\n{out}"
+          print("TC2 ASSERTION PASSED: artifacts_to_delete=2 artifacts_to_keep=3")
+
+          # TC3: max total size 150MB — 2 oldest deleted (100+80=180MB), 2 kept (60+40=100MB)
+          out = run_cleanup("fixtures/tc3_max_size.json", "fixtures/policy_max_size.json", dry_run=True)
+          assert "ARTIFACTS_TO_DELETE=2" in out, f"TC3 delete count wrong:\n{out}"
+          assert "ARTIFACTS_TO_KEEP=2" in out, f"TC3 keep count wrong:\n{out}"
+          print("TC3 ASSERTION PASSED: artifacts_to_delete=2 artifacts_to_keep=2")
+
+          # TC4: combined age+keep-N — 3 deleted (2 by age + 1 by keep-N), 2 kept
+          out = run_cleanup("fixtures/tc4_combined.json", "fixtures/policy_combined.json", dry_run=True)
+          assert "ARTIFACTS_TO_DELETE=3" in out, f"TC4 delete count wrong:\n{out}"
+          assert "ARTIFACTS_TO_KEEP=2" in out, f"TC4 keep count wrong:\n{out}"
+          print("TC4 ASSERTION PASSED: artifacts_to_delete=3 artifacts_to_keep=2")
+
+          print("ALL ASSERTIONS PASSED")
+          PYEOF

@@ -1,0 +1,87 @@
+name: PR Label Assigner
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-label:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Pester Tests
+        shell: pwsh
+        run: |
+          $result = Invoke-Pester -Path ./Invoke-PRLabelAssigner.Tests.ps1 -Output Detailed -PassThru
+          Write-Output "PESTER_PASSED: $($result.PassedCount)"
+          Write-Output "PESTER_FAILED: $($result.FailedCount)"
+          if ($result.FailedCount -gt 0) { exit 1 }
+
+      - name: Scenario 1 - Documentation files
+        shell: pwsh
+        run: |
+          . ./Invoke-PRLabelAssigner.ps1
+          $rules = @([PSCustomObject]@{ Pattern = "docs/**"; Label = "documentation"; Priority = 1 })
+          $labels = Get-PRLabels -ChangedFiles @("docs/readme.md", "docs/api/guide.md") -Rules $rules
+          $out = if ($labels.Count -eq 0) { "(none)" } else { $labels -join ", " }
+          Write-Output "RESULT_1: $out"
+
+      - name: Scenario 2 - Multiple labels from different rules
+        shell: pwsh
+        run: |
+          . ./Invoke-PRLabelAssigner.ps1
+          $rules = @(
+            [PSCustomObject]@{ Pattern = "docs/**"; Label = "documentation"; Priority = 1 },
+            [PSCustomObject]@{ Pattern = "src/api/**"; Label = "api"; Priority = 2 }
+          )
+          $labels = Get-PRLabels -ChangedFiles @("src/api/controller.js", "docs/readme.md") -Rules $rules
+          $out = if ($labels.Count -eq 0) { "(none)" } else { $labels -join ", " }
+          Write-Output "RESULT_2: $out"
+
+      - name: Scenario 3 - Test file pattern
+        shell: pwsh
+        run: |
+          . ./Invoke-PRLabelAssigner.ps1
+          $rules = @([PSCustomObject]@{ Pattern = "**/*.test.*"; Label = "tests"; Priority = 1 })
+          $labels = Get-PRLabels -ChangedFiles @("app.test.js", "src/utils.test.ts") -Rules $rules
+          $out = if ($labels.Count -eq 0) { "(none)" } else { $labels -join ", " }
+          Write-Output "RESULT_3: $out"
+
+      - name: Scenario 4 - Priority with exclusive groups
+        shell: pwsh
+        run: |
+          . ./Invoke-PRLabelAssigner.ps1
+          $rules = @(
+            [PSCustomObject]@{ Pattern = "src/**"; Label = "backend"; Priority = 1; ExclusiveGroup = "scope" },
+            [PSCustomObject]@{ Pattern = "src/api/**"; Label = "api"; Priority = 2; ExclusiveGroup = "scope" }
+          )
+          $labels = Get-PRLabels -ChangedFiles @("src/api/controller.js") -Rules $rules
+          $out = if ($labels.Count -eq 0) { "(none)" } else { $labels -join ", " }
+          Write-Output "RESULT_4: $out"
+
+      - name: Scenario 5 - No matches
+        shell: pwsh
+        run: |
+          . ./Invoke-PRLabelAssigner.ps1
+          $rules = @([PSCustomObject]@{ Pattern = "docs/**"; Label = "documentation"; Priority = 1 })
+          $labels = Get-PRLabels -ChangedFiles @("random/file.txt") -Rules $rules
+          $out = if ($labels.Count -eq 0) { "(none)" } else { $labels -join ", " }
+          Write-Output "RESULT_5: $out"
+
+      - name: Scenario 6 - Multiple labels per single file
+        shell: pwsh
+        run: |
+          . ./Invoke-PRLabelAssigner.ps1
+          $rules = @(
+            [PSCustomObject]@{ Pattern = "src/api/**"; Label = "api"; Priority = 1 },
+            [PSCustomObject]@{ Pattern = "**/*.test.*"; Label = "tests"; Priority = 2 }
+          )
+          $labels = Get-PRLabels -ChangedFiles @("src/api/handler.test.js") -Rules $rules
+          $out = if ($labels.Count -eq 0) { "(none)" } else { $labels -join ", " }
+          Write-Output "RESULT_6: $out"

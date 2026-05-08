@@ -1,0 +1,71 @@
+name: Test Results Aggregator
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  aggregate:
+    name: Aggregate Test Results
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install pytest pyyaml
+
+      - name: Run unit tests
+        run: |
+          pytest tests/test_aggregator.py -v -k "not TestWorkflowStructure"
+
+      - name: Run aggregator on fixtures
+        run: |
+          python3 aggregator.py \
+            fixtures/junit_run1.xml \
+            fixtures/junit_run2.xml \
+            fixtures/json_run1.json \
+            fixtures/json_run2.json || true
+
+      - name: Print verifiable output
+        run: |
+          python3 - <<'EOF'
+          import sys
+          sys.path.insert(0, '.')
+          from aggregator import (
+              parse_junit_xml, parse_json_results, aggregate_results, generate_markdown
+          )
+
+          run1 = parse_junit_xml('fixtures/junit_run1.xml', run_name='ubuntu-py39')
+          run2 = parse_junit_xml('fixtures/junit_run2.xml', run_name='ubuntu-py311')
+          run3 = parse_json_results('fixtures/json_run1.json')
+          run4 = parse_json_results('fixtures/json_run2.json')
+          result = aggregate_results([run1, run2, run3, run4])
+          md = generate_markdown(result)
+          print(md)
+
+          print("---VERIFICATION---")
+          print(f"TOTAL_TESTS={result.total}")
+          print(f"PASSED={result.passed}")
+          print(f"FAILED={result.failed}")
+          print(f"SKIPPED={result.skipped}")
+          print(f"DURATION={result.duration:.2f}")
+          print(f"FLAKY_COUNT={len(result.flaky_tests)}")
+          print(f"CONSISTENTLY_FAILING_COUNT={len(result.consistently_failing)}")
+          for t in result.flaky_tests:
+              print(f"FLAKY={t}")
+          for t in result.consistently_failing:
+              print(f"CONSISTENTLY_FAILING={t}")
+          print("AGGREGATION_COMPLETE")
+          EOF

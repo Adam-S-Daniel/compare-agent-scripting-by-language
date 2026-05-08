@@ -1,0 +1,260 @@
+[Tool: Bash] ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/default-opus47-1m-high/
+[Result] total 44
+drwxr-xr-x  4 passp passp  4096 May  7 11:22 .
+drwxr-xr-x 18 passp passp  4096 May  7 11:22 ..
+-rw-r--r--  1 passp passp    40 May  7 11:22 .actrc
+drwxr-xr-x  2 passp passp  4096 May  7 11:22 .claude
+drwxr-xr-x  6 passp passp  4096 May  7 11:22 .git
+-rw-r--r--  1 passp passp 21843 Apr 17 00:12 benchmark-instructions-v4.md
+[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/AGENTS.md 2>/dev/null | head -100
+[Result] # Agent Instructions
+
+All agent-facing instructions live in this file. `CLAUDE.md` contains only a
+reference here. If you are a Claude Code agent, you have already loaded this
+via `CLAUDE.md`. Other agents: read this file directly.
+
+## Build and test
+
+```bash
+# Run unit tests (REQUIRED before every PR)
+pip install pytest  # if not already installed
+python3 -m pytest tests/ -v
+
+# Validate imports
+python3 -c "from runner import main"
+python3 -c "from generate_results import generate_results_md"
+python3 -c "from test_quality import compute_structural_metrics"
+python3 -c "from llm_providers import get_provider"
+
+# Regenerate all reports
+python3 generate_results.py --all
+
+# Run a benchmark (v4, all tasks/modes/models)
+python3 runner.py --tasks 11,12,13,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
+
+# Evaluate test quality (structural metrics only)
+python3 test_quality.py results/2026-04-09_152435
+
+# Evaluate test + deliverable quality with the default panel
+[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/default-opus47-1m-high/.actrc
+[Result] -P ubuntu-latest=act-ubuntu-pwsh:latest
+[Assistant] I'll build this in Python (default language for this benchmark). Starting with TDD: write a failing test first.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/default-opus47-1m-high/tests/__init__.py", "content": ""}
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/default-opus47-1m-high/tests/__init__.py (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/default-opus47-1m-high/tests/test_matrix.py", "content": "\"\"\"Tests 
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/default-opus47-1m-high/tests/test_matrix.py (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 -m pytest tests/ -v 2>&1 | tail -20
+[Result] rootdir: /home/passp/repos/compare-agent-scripting-by-language
+configfile: pyproject.toml
+plugins: anyio-4.13.0
+collecting ... collected 0 items / 1 error
+
+==================================== ERRORS ====================================
+_ ERROR collecting workspaces/2026-05-06_173435/16-environment-matrix-generator/default-opus47-1m-high/tests/test_matrix.py _
+ImportError while importing test module '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/default-opus47-1m-high/tests/test_matrix.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_matrix.py:18: in <module>
+    from matrix import (  # noqa: E402
+E   ModuleNotFoundError: No module named 'matrix'
+=========================== short test 
+[Assistant] Red phase confirmed. Now writing the implementation.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/default-opus47-1m-high/matrix.py", "content": "\"\"\"Generate a GitHub
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/default-opus47-1m-high/matrix.py (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 -m pytest tests/ -v 2>&1 | tail -40
+[Result] ============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/passp/repos/compare-agent-scripting-by-language
+configfile: pyproject.toml
+plugins: anyio-4.13.0
+collecting ... collected 19 items
+
+tests/test_matrix.py::test_expand_combinations_simple_cartesian_product PASSED [  5%]
+tests/test_matrix.py::test_expand_combinations_exclude_removes_matching PASSED [ 10%]
+tests/test_matrix.py::test_expand_combinations_include_adds_new_combo PASSED [ 15%]
+tests/test_matrix.py::test_expand_combinations_include_extends_existing_combo PASSED [ 21%]
+tests/test_matrix.py::test_build_matrix_feature_flags_become_axes PASSED [ 26%]
+tests/test_matrix.py::test_build_matrix_includes_max_parallel_and_fail_fast PASSED [ 31%]
+tests/test_matrix.py::test_build_matrix_omits_strategy_keys_when_unset PASSED [ 36%]
+tests/test_matrix.py::test_build_matrix_passes_through_include_ex
+[Assistant] All 19 tests pass. Now I'll set up the workflow, fixtures, and test harness for act.
+[Tool: ToolSearch] {"query": "select:TodoWrite", "max_results": 1}
+[Result] {'type': 'tool_reference', 'tool_name': 'TodoWrite'}
+[Tool: TodoWrite] {"todos": [{"content": "Write failing unit tests for matrix.py", "activeForm": "Writing failing unit tests", "status": "completed"}, {"content": "Implement matrix.py to pass unit tests", "activeForm":
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/default-opus47-1m-high/fixtures/simple.json", "content": "{\n  \"os\":
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/default-opus47-1m-high/fixtures/simple.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/default-opus47-1m-high/fixtures/with_flags.json", "content": "{\n  \"o
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/default-opus47-1m-high/fixtures/with_flags.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/default-opus47-1m-high/fixtures/include_exclude.json", "content": "{\n
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/default-opus47-1m-high/fixtures/include_exclude.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/default-opus47-1m-high/fixtures/max_size_violation.json", "content": "
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/default-opus47-1m-high/fixtures/max_size_violation.json (file state is current in your context — no need to Read it back)
+[Assistant] Now writing the workflow. To make every test case (including the "violation") show a successful job, I capture the script's exit code into output rather than letting it fail the step.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/default-opus47-1m-high/.github/workflows/environment-matrix-generator.
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/default-opus47-1m-high/.github/workflows/environment-matrix-generator.yml (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/environment-matrix-generator.yml 2>&1
+[Result] (Bash completed with no output)
+[Assistant] actionlint passes cleanly. Now I'll build the act-based test harness.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/default-opus47-1m-high/tests/test_workflow.py", "content": "\"\"\"End-
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/default-opus47-1m-high/tests/test_workflow.py (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 -c "import yaml" 2>&1; which act 2>&1; which docker 2>&1; docker info >/dev/null 2>&1 && echo "docker ok" || echo "docker NOT ok"
+[Result] /home/passp/.local/bin/act
+/usr/bin/docker
+docker ok
+[Tool: TodoWrite] {"todos": [{"content": "Write failing unit tests for matrix.py", "activeForm": "Writing failing unit tests", "status": "completed"}, {"content": "Implement matrix.py to pass unit tests", "activeForm":
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Assistant] Let me refine the workflow to ensure pytest is available in the act container and only run the unit tests there:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/default-opus47-1m-high/.github/workflows/environ
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/default-opus47-1m-high/.github/workflows/environment-matrix-generator.yml has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/environment-matrix-generator.yml 2>&1; echo "---"; python3 -m pytest tests/test_matrix.py -v 2>&1 | tail -8
+[Result] ---
+tests/test_matrix.py::test_load_config_reads_json_file PASSED            [ 73%]
+tests/test_matrix.py::test_load_config_missing_file_raises PASSED        [ 78%]
+tests/test_matrix.py::test_load_config_invalid_json_raises PASSED        [ 84%]
+tests/test_matrix.py::test_generate_returns_json_string_with_strategy_block PASSED [ 89%]
+tests/test_matrix.py::test_cli_emits_matrix_json_for_valid_config PASSED [ 94%]
+tests/test_matrix.py::test_cli_exits_nonzero_on_error PASSED             [100%]
+
+============================== 19 passed in 0.13s ==============================
+[Assistant] Let me do a single manual act run first to validate the workflow before running the full 4-case harness.
+[Tool: Bash] cd /tmp && rm -rf act_smoke && mkdir act_smoke && cd act_smoke && \
+  cp -r /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/default-opus47-1m-high/{matrix.py,fixtures,tests,.github,.actrc} . && \
+  cp fixtures/simple.json current-config.json && \
+  git init -q -b main && git config user.email h@x && git config user.name h && \
+  git add . && git commit -q -m init && \
+  echo "--- repo ready ---" && ls -la
+[Result] --- repo ready ---
+total 84
+drwxr-xr-x   6 passp passp  4096 May  7 11:27 .
+drwxrwxrwt 120 root  root  45056 May  7 11:27 ..
+-rw-r--r--   1 passp passp    40 May  7 11:27 .actrc
+drwxr-xr-x   7 passp passp  4096 May  7 11:27 .git
+drwxr-xr-x   3 passp passp  4096 May  7 11:27 .github
+-rw-r--r--   1 passp passp   131 May  7 11:27 current-config.json
+drwxr-xr-x   2 passp passp  4096 May  7 11:27 fixtures
+-rw-r--r--   1 passp passp  7259 May  7 11:27 matrix.py
+drwxr-xr-x   3 passp passp  4096 May  7 11:27 tests
+Shell cwd was reset to /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/default-opus47-1m-high
+[Tool: Bash] cd /tmp/act_smoke && act push --rm 2>&1 | tee /tmp/act_smoke/act_run.log | tail -80
+[Result] time="2026-05-07T11:27:12-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[environment-matrix-generator/Generate matrix] ⭐ Run Set up job
+[environment-matrix-generator/Generate matrix] 🚀  Start image=act-ubuntu-pwsh:latest
+[environment-matrix-generator/Generate matrix]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=true
+[environment-matrix-generator/Generate matrix] using DockerAuthConfig authentication for docker pull
+[environment-matrix-generator/Generate matrix] Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+[environment-matrix-generator/Generate matrix]   ❌  Failure - Set up job
+[environment-matrix-generator/Generate matrix] 🏁  Job failed
+Error: Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+Shell cwd was reset to /home/passp/repo
+[Tool: Bash] docker images | grep -E "act-ubuntu|catthehacker" 2>&1; echo "---"; cat /tmp/act_smoke/.actrc
+[Result] WARNING: This output is designed for human readability. For machine-readable output, please use --format.
+act-ubuntu-pwsh:latest                          05bbd1974971        2.6GB          652MB        
+catthehacker/ubuntu:act-22.04                   754f20d9a184       2.15GB          531MB        
+catthehacker/ubuntu:act-latest                  ee77eaa905d1       2.32GB          572MB        
+catthehacker/ubuntu:full-latest                 9327301aea27       67.7GB         16.8GB   U    
+ghcr.io/catthehacker/ubuntu:act-latest          eb153df03ca8       2.04GB          297MB        
+ghcr.io/catthehacker/ubuntu:full-latest         9327301aea27       67.7GB         16.8GB   U    
+ghcr.io/catthehacker/ubuntu:pwsh-latest         593e0c99d8f0       2.64GB          397MB        
+---
+-P ubuntu-latest=act-ubuntu-pwsh:latest
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/default-opus47-1m-high/.actrc", "content": "-P ubuntu-latest=act-ubunt
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/default-opus47-1m-high/.actrc has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] cp /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/default-opus47-1m-high/.actrc /tmp/act_smoke/.actrc && cd /tmp/act_smoke && git add .actrc && git commit -q -m actrc && \
+  act push --rm 2>&1 | tee /tmp/act_smoke/act_run.log | tail -60
+[Result] [environment-matrix-generator/Generate matrix]   | tests/test_matrix.py::test_build_matrix_within_max_size_succeeds PASSED  [ 52%]
+[environment-matrix-generator/Generate matrix]   | tests/test_matrix.py::test_build_matrix_excludes_count_against_max_size PASSED [ 57%]
+[environment-matrix-generator/Generate matrix]   | tests/test_matrix.py::test_build_matrix_rejects_empty_axis PASSED        [ 63%]
+[environment-matrix-generator/Generate matrix]   | tests/test_matrix.py::test_build_matrix_requires_os_and_language_version PASSED [ 68%]
+[environment-matrix-generator/Generate matrix]   | tests/test_matrix.py::test_load_config_reads_json_file PASSED            [ 73%]
+[environment-matrix-generator/Generate matrix]   | tests/test_matrix.py::test_load_config_missing_file_raises PASSED        [ 78%]
+[environment-matrix-generator/Generate matrix]   | tests/test_matrix.py::test_load_config_invalid_json_raises PASSED        [ 84%]
+[environment-matrix-generator/Generate matrix]   | tests/test_matrix.p
+[Assistant] Smoke run passed. Now let me trim to 3 fixtures (the smoke covered the simple case) so the harness stays within budget.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/default-opus47-1m-high/tests/test_workflow.py", 
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/default-opus47-1m-high/tests/test_workflow.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/default-opus47-1m-high/tests/test_workflow.py", 
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/default-opus47-1m-high/tests/test_workflow.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Now running the full harness — 3 act invocations, one per fixture.
+[Tool: Bash] python3 -m pytest tests/test_workflow.py -v -s 2>&1 | tail -80
+[Result] ============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/passp/repos/compare-agent-scripting-by-language
+configfile: pyproject.toml
+plugins: anyio-4.13.0
+collecting ... collected 6 items
+
+tests/test_workflow.py::test_workflow_file_exists PASSED
+tests/test_workflow.py::test_workflow_has_required_triggers PASSED
+tests/test_workflow.py::test_workflow_has_generate_matrix_job PASSED
+tests/test_workflow.py::test_workflow_references_existing_files PASSED
+tests/test_workflow.py::test_actionlint_passes PASSED
+tests/test_workflow.py::test_act_runs_all_cases PASSED
+
+============================== 6 passed in 45.89s ==============================
+[Assistant] All 6 tests pass — 5 workflow-structure tests plus the act-driven test that exercises all 3 fixtures end-to-end.
+[Tool: Bash] ls -la act-result.txt && echo "---HEAD---" && head -20 act-result.txt && echo "---TAIL---" && tail -25 act-result.txt && echo "---CASE_BANNERS---" && grep -E "^CASE: |Job succeeded|EXIT_CODE=|EXPANDED_SIZE=|VALIDATION_FAILED" act-result.txt
+[Result] -rw-r--r-- 1 passp passp 32578 May  7 11:29 act-result.txt
+---HEAD---
+
+================================================================================
+CASE: feature_flags_become_axes
+FIXTURE: fixtures/with_flags.json
+ACT_EXIT_CODE: 0
+================================================================================
+[environment-matrix-generator/Generate matrix] ⭐ Run Set up job
+[environment-matrix-generator/Generate matrix] 🚀  Start image=act-ubuntu-pwsh:latest
+[environment-matrix-generator/Generate matrix]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[environment-matrix-generator/Generate matrix]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[environment-matrix-generator/Generate matrix]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[environment-matrix-generator/Generate matrix]   🐳  docker exec cmd=[node --no-wa
+[Assistant] All three cases ran through act successfully:
+- `feature_flags_become_axes`: EXIT_CODE=0, EXPANDED_SIZE=12, Job succeeded
+- `include_exclude`: EXIT_CODE=0, EXPANDED_SIZE=8, Job succeeded  
+- `max_size_violation`: EXIT_CODE=1 (script-level), VALIDATION_FAILED, Job succeeded (workflow level)
+[Tool: TodoWrite] {"todos": [{"content": "Write failing unit tests for matrix.py", "activeForm": "Writing failing unit tests", "status": "completed"}, {"content": "Implement matrix.py to pass unit tests", "activeForm":
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Bash] ls -la && echo "---" && python3 -m pytest tests/ -v 2>&1 | tail -15
+[Result] total 100
+drwxr-xr-x  8 passp passp  4096 May  7 11:28 .
+drwxr-xr-x 18 passp passp  4096 May  7 11:22 ..
+-rw-r--r--  1 passp passp    53 May  7 11:27 .actrc
+drwxr-xr-x  2 passp passp  4096 May  7 11:22 .claude
+drwxr-xr-x  6 passp passp  4096 May  7 11:22 .git
+drwxr-xr-x  3 passp passp  4096 May  7 11:25 .github
+drwxr-xr-x  2 passp passp  4096 May  7 11:24 __pycache__
+-rw-r--r--  1 passp passp 32578 May  7 11:29 act-result.txt
+-rw-r--r--  1 passp passp 21843 Apr 17 00:12 benchmark-instructions-v4.md
+drwxr-xr-x  2 passp passp  4096 May  7 11:24 fixtures
+-rw-r--r--  1 passp passp  7259 May  7 11:24 matrix.py
+drwxr-xr-x  3 passp passp  4096 May  7 11:28 tests
+---
+tests/test_matrix.py::test_build_matrix_requires_os_and_language_version PASSED [ 52%]
+tests/test_matrix.py::test_load_config_reads_json_file PASSED            [ 56%]
+tests/test_matrix.py::test_load_config_missing_file_raises PASSED        [ 60%]
+tests/test_matrix.py::test_load_config_invalid_json_raises PASSED        [ 64%]
+tests
+[Assistant] All 25 tests pass.
+
+## Summary
+
+Built a GitHub Actions matrix generator in Python via TDD:
+
+**Files**
+- `matrix.py` — script with `MatrixError`, `load_config`, `expand_combinations`, `build_matrix`, `generate`, CLI entrypoint
+- `tests/test_matrix.py` — 19 unit tests covering cartesian product, include/exclude semantics, feature flags as axes, max-parallel/fail-fast, max_size validation, JSON/CLI errors
+- `tests/test_workflow.py` — 6 tests: 5 workflow-structure (YAML triggers, jobs, file references, actionlint clean) + 1 act harness driving 3 fixtures
+- `fixtures/{simple,with_flags,include_exclude,max_size_violation}.json`
+- `.github/workflows/environment-matrix-generator.yml` — push/PR/dispatch/schedule triggers, least-privilege `contents: read`, captures script exit code into step output so the workflow always succeeds and the harness asserts on captured values
+- `.actrc` — pinned to local `act-ubuntu-pwsh:latest`, `--pull=false`
+- `act-result.txt` — required artifact, ~32 KB, 3 delimited case sections
+
+**Verification**
+- `actionlint` clean (exit 0)
+- All 25 tests pass (~44s including 3 act runs)
+- Each act run shows `Job succeeded`; assertions on exact `EXPANDED_SIZE` (12, 8) and validation message (`produced 48 jobs`, `max_size=10`)

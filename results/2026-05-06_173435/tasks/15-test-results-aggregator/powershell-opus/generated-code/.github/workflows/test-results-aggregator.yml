@@ -1,0 +1,48 @@
+name: Test Results Aggregator
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-aggregate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install actionlint
+        run: |
+          curl -sL "https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz" \
+            | tar xz -C /usr/local/bin actionlint
+          chmod +x /usr/local/bin/actionlint
+
+      - name: Run Pester Tests
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = './tests'
+          $config.Output.Verbosity = 'Detailed'
+          $config.Run.Exit = $true
+          Invoke-Pester -Configuration $config
+
+      - name: Run Aggregation on Fixtures
+        shell: pwsh
+        run: |
+          . ./src/Aggregate-TestResults.ps1
+          $results = @()
+          Get-ChildItem ./fixtures -Filter '*.xml' | Sort-Object Name | ForEach-Object {
+              $results += Import-JUnitResults -Path $_.FullName
+          }
+          Get-ChildItem ./fixtures -Filter '*.json' | Sort-Object Name | ForEach-Object {
+              $results += Import-JsonResults -Path $_.FullName
+          }
+          $summary = Merge-TestResults -Results $results
+          $markdown = Export-MarkdownSummary -Summary $summary
+          Write-Output $markdown

@@ -1,0 +1,41 @@
+{
+  "results_root": "2026-05-06_173435",
+  "task_id": "12-pr-label-assigner",
+  "variant_subdir": "powershell-tool-sonnet46-1m-medium",
+  "kind": "test-quality",
+  "scores": {
+    "haiku45": 1,
+    "gemini31pro": 5
+  },
+  "span": 4.0,
+  "verdicts": {
+    "haiku45": {
+      "judge_short": "haiku45",
+      "overall": 1,
+      "verdict": "contradicted",
+      "contradicted_paths": [
+        "fixtures/rules.json",
+        "Run-ActTests.ps1",
+        "github/workflows/pr-label-assigner.yml"
+      ],
+      "confirmed_missing_paths": [],
+      "claimed_missing_raw": [
+        "fixtures/rules.json",
+        "Run-ActTests.ps1",
+        "github/workflows/pr-label-assigner.yml"
+      ],
+      "summary_excerpt": "CRITICAL FAILURES: The test suite is non-functional due to missing required files. The implementation references fixtures/rules.json (default parameter) and the test code loads it, but this fixture file is NOT provided. More critically, the task explicitly requires a GitHub Actions workflow file at .github/workflows/pr-label-assigner.yml \u2014 this is completely absent from the implementation code. The Run-ActTests.ps1 harness expects to validate exact TC*_LABELS output patterns, but there is no wor"
+    },
+    "gemini31pro": {
+      "judge_short": "gemini31pro",
+      "overall": 5,
+      "verdict": "no_testable_claims",
+      "contradicted_paths": [],
+      "confirmed_missing_paths": [],
+      "claimed_missing_raw": [],
+      "summary_excerpt": "An exceptional test suite that thoroughly covers both unit testing (via Pester) and integration testing (via a custom `act` harness). The tests handle edge cases like backslash normalization, priority tie-breaking, and empty inputs gracefully, while the harness ensures the GitHub Actions workflow meets all structural and execution requirements."
+    }
+  },
+  "panel_decision": "drop_haiku45",
+  "adjusted_mean": 5.0
+}

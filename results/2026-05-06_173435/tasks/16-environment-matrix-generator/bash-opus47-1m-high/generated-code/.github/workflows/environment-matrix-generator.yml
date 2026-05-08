@@ -1,0 +1,83 @@
+name: environment-matrix-generator
+
+# Triggers: run on push and pull-request to validate the matrix generator,
+# and allow manual dispatch so the harness can re-run a specific fixture.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: Path (relative to repo root) of the fixture JSON to feed in
+        required: false
+        default: fixture.json
+
+permissions:
+  contents: read
+
+env:
+  # Fixture path defaults to ./fixture.json. The act harness writes that file
+  # to the temp repo before each run; manual dispatch can override it.
+  FIXTURE: ${{ github.event.inputs.fixture || 'fixture.json' }}
+
+jobs:
+  matrix:
+    name: Generate and validate matrix
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install jq and bats
+        run: |
+          set -e
+          # Use sudo only when not already root (GitHub-hosted runners run as
+          # a non-root user; the act-ubuntu-pwsh container runs as root, where
+          # sudo would strip PATH and break the npm lookup).
+          SUDO=""
+          if [[ "$(id -u)" -ne 0 ]] && command -v sudo >/dev/null 2>&1; then
+            SUDO="sudo"
+          fi
+          if ! command -v jq >/dev/null 2>&1; then
+            $SUDO apt-get update
+            $SUDO apt-get install -y jq
+          fi
+          if ! command -v bats >/dev/null 2>&1; then
+            # bats-core isn't in Ubuntu's default apt repos in older suites;
+            # install from npm, which is preinstalled both on the GitHub
+            # runner and in the act-ubuntu-pwsh container.
+            $SUDO npm install -g bats
+          fi
+          jq --version
+          bats --version
+
+      - name: Show fixture
+        run: |
+          echo "===FIXTURE==="
+          cat "$FIXTURE"
+          echo "===FIXTURE_END==="
+
+      - name: Run generator
+        id: gen
+        # Capture stdout, stderr, and the exit code of the script. We don't
+        # `set -e` over the script call because some test cases intentionally
+        # exercise the failure path (e.g. matrix size exceeds max-size); the
+        # harness asserts on the captured exit code rather than on the
+        # workflow's exit code.
+        run: |
+          set +e
+          out="$(./generate-matrix.sh --config "$FIXTURE" 2> stderr.txt)"
+          ec=$?
+          set -e
+          {
+            echo "===STDOUT==="
+            printf '%s\n' "$out"
+            echo "===STDERR==="
+            cat stderr.txt
+            echo "===EXITCODE==="
+            echo "$ec"
+            echo "===END==="
+          }
+
+      - name: Run bats unit tests
+        run: bats tests/matrix.bats

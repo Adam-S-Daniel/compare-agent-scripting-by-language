@@ -1,0 +1,111 @@
+name: PR Label Assigner
+
+# The workflow has two responsibilities:
+#   1. Run the Pester suite for the script (unit + integration tests).
+#   2. Drive the script end-to-end against fixture data and emit the
+#      computed labels in a parseable form so the act-based test harness
+#      can assert exact expected values.
+#
+# The fixture path is parameterised via the FIXTURE_DIR env var so the
+# harness can rotate through several fixture sets without rewriting
+# workflow files.
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      fixture_dir:
+        description: 'Fixture directory under fixtures/ (e.g. case-basic)'
+        required: false
+        default: 'case-basic'
+
+permissions:
+  contents: read
+
+# Note: FIXTURE_DIR is intentionally NOT declared at the workflow/job level.
+# Doing so would shadow the env value injected by `act --env FIXTURE_DIR=...`
+# in the test harness. Instead, each step that needs it reads
+# $env:FIXTURE_DIR directly, falling back to the workflow_dispatch input or
+# 'case-basic' as a safe default.
+
+jobs:
+  test:
+    name: Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Run Pester
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Import-Module Pester -MinimumVersion 5.0
+          $config = New-PesterConfiguration
+          $config.Run.Path = './tests'
+          $config.Run.Throw = $true
+          $config.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $config
+
+  assign-labels:
+    name: Assign labels from fixture
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Resolve fixture
+        id: fixture
+        shell: pwsh
+        env:
+          INPUT_FIXTURE: ${{ github.event.inputs.fixture_dir }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          # Resolution order: act --env > workflow_dispatch input > default.
+          $fixtureDir = $env:FIXTURE_DIR
+          if ([string]::IsNullOrWhiteSpace($fixtureDir)) {
+            $fixtureDir = $env:INPUT_FIXTURE
+          }
+          if ([string]::IsNullOrWhiteSpace($fixtureDir)) {
+            $fixtureDir = 'case-basic'
+          }
+          $dir = Join-Path 'fixtures' $fixtureDir
+          if (-not (Test-Path -LiteralPath $dir)) {
+            throw "Fixture directory not found: $dir"
+          }
+          $files = Join-Path $dir 'changed-files.json'
+          $rules = Join-Path $dir 'rules.json'
+          if (-not (Test-Path -LiteralPath $files)) {
+            throw "Missing changed-files.json in $dir"
+          }
+          if (-not (Test-Path -LiteralPath $rules)) {
+            throw "Missing rules.json in $dir"
+          }
+          "files=$files" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "rules=$rules" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          Write-Host "Using fixture: $fixtureDir"
+
+      - name: Compute labels
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          . ./src/Get-PRLabels.ps1
+          $labels = Invoke-PRLabelAssignerFromJson `
+            -ChangedFilesJsonPath '${{ steps.fixture.outputs.files }}' `
+            -RulesJsonPath        '${{ steps.fixture.outputs.rules }}'
+
+          # Emit two parseable forms so the harness can assert on either:
+          #   1. One label per line, framed by sentinels.
+          #   2. A single JSON line, also framed.
+          Write-Host '---LABELS-BEGIN---'
+          if ($null -ne $labels) {
+            foreach ($l in $labels) { Write-Host $l }
+          }
+          Write-Host '---LABELS-END---'
+
+          $json = if ($null -eq $labels) { '[]' } else { ($labels | ConvertTo-Json -Compress -AsArray) }
+          Write-Host '---LABELS-JSON-BEGIN---'
+          Write-Host $json
+          Write-Host '---LABELS-JSON-END---'

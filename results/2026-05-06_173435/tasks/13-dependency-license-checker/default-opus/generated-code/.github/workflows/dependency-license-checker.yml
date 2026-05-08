@@ -1,0 +1,46 @@
+name: Dependency License Checker
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  license-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install pytest
+
+      - name: Run unit tests
+        run: python -m pytest test_license_checker.py -v
+
+      - name: Check package.json licenses
+        run: python license_checker.py test_fixtures/package.json license-config.json || true
+
+      - name: Check requirements.txt licenses
+        run: python license_checker.py test_fixtures/requirements.txt license-config.json || true
+
+      - name: Run compliance check (strict mode)
+        run: |
+          echo "=== Package.json Compliance ==="
+          python license_checker.py test_fixtures/package.json license-config.json || EXIT_PKG=$?
+          echo ""
+          echo "=== Requirements.txt Compliance ==="
+          python license_checker.py test_fixtures/requirements.txt license-config.json || EXIT_REQ=$?
+          echo ""
+          echo "Package.json exit code: ${EXIT_PKG:-0}"
+          echo "Requirements.txt exit code: ${EXIT_REQ:-0}"
+          echo "Note: exit code 2 means denied licenses were found (expected for test fixture)"

@@ -1,0 +1,65 @@
+name: Artifact Cleanup Script
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Run in dry-run mode (no actual deletions)"
+        required: false
+        default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
+      fixture:
+        description: "Test fixture file to use"
+        required: false
+        default: "tests/fixtures/combined-policy.json"
+        type: string
+
+permissions:
+  contents: read
+  actions: write
+
+env:
+  DRY_RUN: ${{ inputs.dry_run || 'true' }}
+  FIXTURE_FILE: ${{ inputs.fixture || 'tests/fixtures/combined-policy.json' }}
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run unit tests
+        run: bun test tests/cleanup.test.ts
+
+      - name: Run cleanup with max-age fixture
+        run: bun run src/index.ts tests/fixtures/max-age.json
+
+      - name: Run cleanup with keep-latest-n fixture
+        run: bun run src/index.ts tests/fixtures/keep-latest-n.json
+
+      - name: Run cleanup with max-size fixture
+        run: bun run src/index.ts tests/fixtures/max-size.json
+
+      - name: Run cleanup with combined-policy fixture
+        run: bun run src/index.ts tests/fixtures/combined-policy.json
+
+      - name: Run cleanup with configured fixture
+        run: bun run src/index.ts "${{ env.FIXTURE_FILE }}"

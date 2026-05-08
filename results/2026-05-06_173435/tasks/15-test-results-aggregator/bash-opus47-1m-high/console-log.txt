@@ -1,0 +1,658 @@
+[Tool: Bash] ls -la && pwd
+[Result] total 44
+drwxr-xr-x  4 passp passp  4096 May  7 10:34 .
+drwxr-xr-x 20 passp passp  4096 May  7 10:34 ..
+-rw-r--r--  1 passp passp    40 May  7 10:34 .actrc
+drwxr-xr-x  2 passp passp  4096 May  7 10:34 .claude
+drwxr-xr-x  6 passp passp  4096 May  7 10:34 .git
+-rw-r--r--  1 passp passp 21843 Apr 17 00:12 benchmark-instructions-v4.md
+/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high
+[Tool: Bash] cat .actrc && ls .claude/ && which bats shellcheck actionlint act docker jq 2>&1
+[Result] -P ubuntu-latest=act-ubuntu-pwsh:latest
+settings.json
+/home/passp/.npm-global/bin/bats
+/home/passp/.local/bin/shellcheck
+/home/passp/.local/bin/actionlint
+/home/passp/.local/bin/act
+/usr/bin/docker
+/home/passp/.local/bin/jq
+[Tool: Bash] bats --version && actionlint -version 2>&1 | head -3 && act --version
+[Result] Bats 1.13.0
+1.7.12
+installed by downloading from release page
+built with go1.26.1 compiler for linux/amd64
+act version 0.2.87
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/AGENTS.md"}
+[Result] 1	# Agent Instructions
+2	
+3	All agent-facing instructions live in this file. `CLAUDE.md` contains only a
+4	reference here. If you are a Claude Code agent, you have already loaded this
+5	via `CLAUDE.md`. Other agents: read this file directly.
+6	
+7	## Build and test
+8	
+9	```bash
+10	# Run unit tests (REQUIRED before every PR)
+11	pip install pytest  # if not already installed
+12	python3 -m pytest tests/ -v
+13	
+14	# Validate imports
+15	python3 -c "from runner import main"
+16	python3 -c "from generate_results import generate_results_md"
+17	python3 -c "from test_quality import compute_structural_metrics"
+18	python3 -c "from llm_providers import get_provider"
+19	
+20	# Regenerate all reports
+21	python3 generate_results.py --all
+22	
+23	# Run a benchmark (v4, all tasks/modes/models)
+24	python3 runner.py --tasks 11,12,13,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
+25	
+26	# Evaluate test quality (structural metrics only)
+27	python3 test_quality.py results/2026-04
+[Assistant] Now I have enough context. Let me load the deferred tools I need and start with TDD.
+[Tool: ToolSearch] {"query": "select:TodoWrite", "max_results": 1}
+[Result] {'type': 'tool_reference', 'tool_name': 'TodoWrite'}
+[Tool: TodoWrite] {"todos": [{"content": "Write first failing bats test", "activeForm": "Writing first failing bats test", "status": "in_progress"}, {"content": "Implement aggregate.sh script via TDD", "activeForm": "I
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Bash] mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/{tests,fixtures,.github/workflows}
+[Result] (Bash completed with no output)
+[Assistant] I'll start by writing the first failing test for the aggregate script.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/tests/aggregate.bats", "content": "#!/usr/bin/env bats\
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/tests/aggregate.bats (file state is current in your context — no need to Read it back)
+[Tool: Bash] bats tests/aggregate.bats 2>&1 | head -30
+[Result] 1..23
+not ok 1 aggregate.sh exists and is executable
+# (in test file tests/aggregate.bats, line 23)
+#   `[ -x "${SCRIPT}" ]' failed
+not ok 2 aggregate.sh --help prints usage
+# (in test file tests/aggregate.bats, line 28)
+#   `[ "$status" -eq 0 ]' failed
+not ok 3 aggregate.sh fails with no inputs
+# (in test file tests/aggregate.bats, line 35)
+#   `[[ "$output" == *"error"* || "$output" == *"Error"* || "$output" == *"Usage"* ]]' failed
+not ok 4 parse_junit_file extracts testcase records from a single suite
+# (in test file tests/aggregate.bats, line 42)
+#   `AGGREGATE_LIB=1 source "${SCRIPT}"' failed
+# /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/tests/aggregate.bats: line 42: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/tests/../aggregate.sh: No such file or directory
+not ok 5 parse_junit_file handles testsuites root ele
+[Assistant] Tests fail as expected. Now let me create fixtures and implement the script.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/fixtures/run1.xml", "content": "<?xml version=\"1.0\" e
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/fixtures/run1.xml (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/fixtures/run2.xml", "content": "<?xml version=\"1.0\" e
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/fixtures/run2.xml (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/fixtures/run3.json", "content": "{\n  \"tests\": [\n   
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/fixtures/run3.json (file state is current in your context — no need to Read it back)
+[Assistant] Now I'll implement the aggregate script.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/aggregate.sh", "content": "#!/usr/bin/env bash\n#\n# ag
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/aggregate.sh (file state is current in your context — no need to Read it back)
+[Tool: Bash] chmod +x aggregate.sh && bash -n aggregate.sh && shellcheck aggregate.sh && echo OK-LINT
+[Result ERROR] Exit code 1
+
+In aggregate.sh line 211:
+            printf -- '- `%s`\n' "$t"
+                      ^--------^ SC2016 (info): Expressions don't expand in single quotes, use double quotes for that.
+
+For more information:
+  https://www.shellcheck.net/wiki/SC2016 -- Expressions don't expand in singl...
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/aggregate.sh", "old_string": "   
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/aggregate.sh has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] shellcheck aggregate.sh && bash -n aggregate.sh && echo OK
+[Result] OK
+[Tool: Bash] bats tests/aggregate.bats 2>&1 | tail -50
+[Result] 1..23
+ok 1 aggregate.sh exists and is executable
+ok 2 aggregate.sh --help prints usage
+ok 3 aggregate.sh fails with no inputs
+ok 4 parse_junit_file extracts testcase records from a single suite
+ok 5 parse_junit_file handles testsuites root element
+ok 6 parse_junit_file rejects malformed input
+ok 7 parse_junit_file errors when file missing
+not ok 8 parse_json_file extracts testcase records
+# (in test file tests/aggregate.bats, line 119)
+#   `[[ "$output" == *$'skipped\t0\tJson::gamma'* ]]' failed
+ok 9 parse_json_file rejects invalid json
+ok 10 detect_format identifies xml by extension
+ok 11 detect_format identifies json by extension
+ok 12 detect_format errors on unknown extension
+ok 13 compute_totals sums passed/failed/skipped and duration
+ok 14 detect_flaky finds tests with mixed pass/fail outcomes
+ok 15 render_markdown emits a summary table with totals
+ok 16 render_markdown shows flaky tests when present
+ok 17 render_markdown omits flaky section when none
+ok 18 aggregate.sh produces e
+[Tool: Bash] echo '{"tests":[{"name":"gamma","suite":"Json","status":"skipped","duration":0.0}]}' | jq -r '.tests[] | "\(.status)\t\(.duration // 0)\t\((.suite // ""))::\(.name)"'
+[Result] skipped	0.0	Json::gamma
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/tests/aggregate.bats", "old_strin
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/tests/aggregate.bats has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] bats tests/aggregate.bats 2>&1 | tail -10
+[Result] ok 14 detect_flaky finds tests with mixed pass/fail outcomes
+ok 15 render_markdown emits a summary table with totals
+ok 16 render_markdown shows flaky tests when present
+ok 17 render_markdown omits flaky section when none
+ok 18 aggregate.sh produces expected markdown for sample fixtures
+ok 19 aggregate.sh accepts a directory and discovers files
+ok 20 aggregate.sh writes to GITHUB_STEP_SUMMARY when set
+ok 21 aggregate.sh exits non-zero when there are failed tests and --fail-on-failures is set
+ok 22 aggregate.sh passes shellcheck
+ok 23 aggregate.sh passes bash -n syntax check
+[Assistant] All 23 tests pass. Let me verify the actual output looks good:
+[Tool: Bash] ./aggregate.sh fixtures/
+[Result] # Test Results
+
+**Status:** FAIL
+
+| Metric    | Value         |
+|-----------|---------------|
+| Passed    | 11     |
+| Failed    | 2     |
+| Skipped   | 2    |
+| **Total** | **15**  |
+| Duration  | 2.43s  |
+
+## Flaky Tests
+
+These tests passed in some runs and failed in others:
+
+- `Calc::test_divide`
+- `String::test_lower`
+[Tool: TodoWrite] {"todos": [{"content": "Write first failing bats test", "activeForm": "Writing first failing bats test", "status": "completed"}, {"content": "Implement aggregate.sh script via TDD", "activeForm": "Imp
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/.github/workflows/test-results-aggregator.yml", "conten
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/.github/workflows/test-results-aggregator.yml (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/test-results-aggregator.yml && echo OK
+[Result ERROR] Exit code 1
+.github/workflows/test-results-aggregator.yml:67:9: shellcheck reported issue in this script: SC2129:style:21:1: Consider using { cmd1; cmd2; } >> file instead of individual redirects [shellcheck]
+   |
+67 |         run: |
+   |         ^~~~
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/.github/workflows/test-results-ag
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/.github/workflows/test-results-aggregator.yml has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/test-results-aggregator.yml && echo OK
+[Result] OK
+[Tool: Bash] docker image ls | head -10
+[Result] WARNING: This output is designed for human readability. For machine-readable output, please use --format.
+IMAGE                                           ID             DISK USAGE   CONTENT SIZE   EXTRA
+act-ubuntu-pwsh:latest                          05bbd1974971        2.6GB          652MB        
+alpine:latest                                   5b10f432ef3d       13.1MB         3.95MB        
+catthehacker/ubuntu:act-22.04                   754f20d9a184       2.15GB          531MB        
+catthehacker/ubuntu:act-latest                  ee77eaa905d1       2.32GB          572MB        
+catthehacker/ubuntu:full-latest                 9327301aea27       67.7GB         16.8GB   U    
+civic-terraform-mcp:latest                      84776a24bc66       1.28GB          265MB        
+ghcr.io/catthehacker/ubuntu:act-latest          eb153df03ca8       2.04GB          297MB        
+ghcr.io/catthehacker/ubuntu:full-latest         9327301aea27       67.7GB         16.8GB   U    
+ghcr.io/catthehacker/
+[Tool: Bash] docker run --rm act-ubuntu-pwsh:latest bash -c "which bats jq shellcheck 2>&1; echo ---; bats --version 2>&1 || echo no-bats"
+[Result] /usr/bin/jq
+---
+bash: line 1: bats: command not found
+no-bats
+[Tool: Bash] mkdir -p tests/cases/default tests/cases/all-pass tests/cases/mixed-no-flaky
+[Result] (Bash completed with no output)
+[Tool: Bash] cp fixtures/run1.xml fixtures/run2.xml fixtures/run3.json tests/cases/default/
+[Result] (Bash completed with no output)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/tests/cases/all-pass/run1.xml", "content": "<?xml versi
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/tests/cases/all-pass/run1.xml (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/tests/cases/all-pass/run2.json", "content": "{\n  \"tes
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/tests/cases/all-pass/run2.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/tests/cases/mixed-no-flaky/run1.xml", "content": "<?xml
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/tests/cases/mixed-no-flaky/run1.xml (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/tests/cases/mixed-no-flaky/run2.json", "content": "{\n 
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/tests/cases/mixed-no-flaky/run2.json (file state is current in your context — no need to Read it back)
+[Tool: Bash] echo "=== ALL-PASS ===" && ./aggregate.sh tests/cases/all-pass; echo; echo "=== MIXED-NO-FLAKY ===" && ./aggregate.sh tests/cases/mixed-no-flaky
+[Result] === ALL-PASS ===
+# Test Results
+
+**Status:** PASS
+
+| Metric    | Value         |
+|-----------|---------------|
+| Passed    | 5     |
+| Failed    | 0     |
+| Skipped   | 0    |
+| **Total** | **5**  |
+| Duration  | 0.77s  |
+
+=== MIXED-NO-FLAKY ===
+# Test Results
+
+**Status:** FAIL
+
+| Metric    | Value         |
+|-----------|---------------|
+| Passed    | 2     |
+| Failed    | 2     |
+| Skipped   | 2    |
+| **Total** | **6**  |
+| Duration  | 1.63s  |
+[Assistant] Expected counts confirmed. Now let me write the workflow structure tests and act harness.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/tests/workflow_structure.bats", "content": "#!/usr/bin/
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/tests/workflow_structure.bats (file state is current in your context — no need to Read it back)
+[Tool: Bash] bats tests/workflow_structure.bats 2>&1 | tail -25
+[Result] 1..11
+ok 1 workflow file exists
+ok 2 workflow defines name, on, jobs
+ok 3 workflow includes push, pull_request, workflow_dispatch, schedule triggers
+ok 4 workflow declares lint, unit-tests, aggregate jobs
+ok 5 workflow uses actions/checkout@v4
+ok 6 workflow references aggregate.sh
+ok 7 workflow references tests/aggregate.bats
+ok 8 every referenced script path exists
+ok 9 workflow declares job dependencies (needs)
+ok 10 workflow has read-only permissions
+ok 11 actionlint passes on the workflow
+[Assistant] All structure tests pass. Now let me build the act harness.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/tests/act_harness.bats", "content": "#!/usr/bin/env bat
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/tests/act_harness.bats (file state is current in your context — no need to Read it back)
+[Tool: Bash] git init -q 2>/dev/null; git -c user.email=t@t -c user.name=t add -A 2>/dev/null; git -c user.email=t@t -c user.name=t commit -q -m init 2>/dev/null; act -l 2>&1 | head -20
+[Result] time="2026-05-07T10:42:25-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+Stage  Job ID      Job name                          Workflow name            Workflow file                Events                                      
+0      lint        Lint shell script                 Test Results Aggregator  test-results-aggregator.yml  push,pull_request,workflow_dispatch,schedule
+1      unit-tests  Bats unit tests                   Test Results Aggregator  test-results-aggregator.yml  push,pull_request,workflow_dispatch,schedule
+2      aggregate   Aggregate fixtures and summarize  Test Results Aggregator  test-results-aggregator.yml  push,pull_request,workflow_dispatch,schedule
+[Tool: Bash] docker run --rm act-ubuntu-pwsh:latest bash -c "command -v sudo; command -v apt-get; whoami; id"
+[Result] /usr/bin/sudo
+/usr/bin/apt-get
+root
+uid=0(root) gid=0(root) groups=0(root)
+[Tool: TodoWrite] {"todos": [{"content": "Write first failing bats test", "activeForm": "Writing first failing bats test", "status": "completed"}, {"content": "Implement aggregate.sh script via TDD", "activeForm": "Imp
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Bash] bats tests/act_harness.bats 2>&1 | tail -120
+[Result] 1..23
+ok 1 act-result.txt was created
+not ok 2 [default] act exited 0
+# (in test file tests/act_harness.bats, line 94)
+#   `[ "$(_case_exit default)" = "0" ]' failed
+not ok 3 [default] every job reported success
+# (in test file tests/act_harness.bats, line 102)
+#   `[ "$count" -ge 3 ]' failed
+not ok 4 [default] aggregator counted 11 passed
+# (in test file tests/act_harness.bats, line 106)
+#   `_case_output default | grep -q 'AGG_PASSED=11'' failed
+not ok 5 [default] aggregator counted 2 failed
+# (in test file tests/act_harness.bats, line 110)
+#   `_case_output default | grep -q 'AGG_FAILED=2'' failed
+not ok 6 [default] aggregator counted 2 skipped
+# (in test file tests/act_harness.bats, line 114)
+#   `_case_output default | grep -q 'AGG_SKIPPED=2'' failed
+not ok 7 [default] aggregator total is 15
+# (in test file tests/act_harness.bats, line 118)
+#   `_case_output default | grep -q 'AGG_TOTAL=15'' failed
+not ok 8 [default] aggregator detected 2 flaky tests
+# (in test file tests/act_harn
+[Tool: Bash] head -100 act-result.txt
+[Result] =========================================================
+CASE: default
+FIXTURES: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/tests/cases/default
+EXIT: 1
+=========================================================
+time="2026-05-07T10:42:53-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Test Results Aggregator/Lint shell script] ⭐ Run Set up job
+[Test Results Aggregator/Lint shell script] 🚀  Start image=act-ubuntu-pwsh:latest
+[Test Results Aggregator/Lint shell script]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=true
+[Test Results Aggregator/Lint shell script] using DockerAuthConfig authentication for docker pull
+[Test Results Aggregator/Lint shell script] Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+[Test Results Aggrega
+[Assistant] The act runs all failed at Docker pull — the image is local. I need to disable forcePull. Let me fix the `.actrc` and harness.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/.actrc"}
+[Result] 1	-P ubuntu-latest=act-ubuntu-pwsh:latest
+2	
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/.actrc", "content": "-P ubuntu-latest=act-ubuntu-pwsh:l
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/.actrc has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] act --help 2>&1 | grep -E -- "--pull|--action-offline" | head -5
+[Result]       --action-offline-mode                               If action contents exists, it will not be fetch and pull again. If turn on this, will turn off force pull
+  -p, --pull                                              pull docker image(s) even if already present (default true)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/.actrc", "content": "-P ubuntu-latest=act-ubuntu-pwsh:l
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/.actrc has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] cat ~/.actrc 2>/dev/null || echo "no ~/.actrc"
+[Result] -P ubuntu-latest=ghcr.io/catthehacker/ubuntu:pwsh-latest
+[Tool: Bash] ls -la ~/.cache/act/ 2>&1 | head -20; echo ---; ls ~/.cache/actcache/ 2>&1 | head -10
+[Result] total 56
+drwxr-xr-x 13 passp passp 4096 May  6 21:13 .
+drwx------ 21 passp passp 4096 Apr 28 17:45 ..
+-rw-------  1 passp passp   36 May  7 10:42 .notices.etag
+drwxr-xr-x 10 passp passp 4096 Apr  9 01:13 actions-checkout@v4
+drwxr-xr-x 10 passp passp 4096 May  6 20:02 actions-download-artifact@v4
+drwxr-xr-x 11 passp passp 4096 Apr 19 00:11 actions-setup-node@v4
+drwxr-xr-x  9 passp passp 4096 May  6 21:13 actions-setup-python@61a6322f88396a6271a6ee3cb4d175c0dc4ef479
+drwxr-xr-x  9 passp passp 4096 Apr 19 02:00 actions-setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+drwxr-xr-x  9 passp passp 4096 May  6 20:47 actions-setup-python@f677139bbe7f9c59b41e7462f120eb1989c08947
+drwxr-xr-x  9 passp passp 4096 Apr 10 01:58 actions-setup-python@v5
+drwxr-xr-x  9 passp passp 4096 May  6 19:17 actions-setup-python@v5.0.0
+drwxr-xr-x 12 passp passp 4096 Apr 24 18:54 actions-upload-artifact@v4
+drwxr-xr-x  6 passp passp 4096 Apr 20 01:56 oven-sh-setup-bun@v1
+drwxr-xr-x  9 passp passp 4096 Apr 25 01:57
+[Tool: Bash] bats tests/act_harness.bats 2>&1 | tail -50
+[Result] not ok 6 [default] aggregator counted 2 skipped
+# (in test file tests/act_harness.bats, line 114)
+#   `_case_output default | grep -q 'AGG_SKIPPED=2'' failed
+not ok 7 [default] aggregator total is 15
+# (in test file tests/act_harness.bats, line 118)
+#   `_case_output default | grep -q 'AGG_TOTAL=15'' failed
+not ok 8 [default] aggregator detected 2 flaky tests
+# (in test file tests/act_harness.bats, line 122)
+#   `_case_output default | grep -q 'AGG_FLAKY_COUNT=2'' failed
+ok 9 [default] flaky list contains Calc::test_divide
+ok 10 [default] flaky list contains String::test_lower
+not ok 11 [all-pass] act exited 0
+# (in test file tests/act_harness.bats, line 136)
+#   `[ "$(_case_exit all-pass)" = "0" ]' failed
+not ok 12 [all-pass] every job reported success
+# (in test file tests/act_harness.bats, line 142)
+#   `[ "$count" -ge 3 ]' failed
+not ok 13 [all-pass] aggregator counted 5 passed
+# (in test file tests/act_harness.bats, line 146)
+#   `_case_output all-pass | grep -q 'AGG_PASSED=5'' fa
+[Tool: Bash] grep -n "AGG_\|Job succeeded\|Job failed\|exit code\|Error" act-result.txt | head -50
+[Result] 76:[Test Results Aggregator/Lint shell script] 🏁  Job succeeded
+231:[Test Results Aggregator/Bats unit tests  ] 🏁  Job failed
+232:Error: Job 'Bats unit tests' failed
+310:[Test Results Aggregator/Lint shell script] 🏁  Job succeeded
+437:[Test Results Aggregator/Bats unit tests  ] 🏁  Job failed
+438:Error: Job 'Bats unit tests' failed
+516:[Test Results Aggregator/Lint shell script] 🏁  Job succeeded
+641:[Test Results Aggregator/Bats unit tests  ] 🏁  Job failed
+642:Error: Job 'Bats unit tests' failed
+[Tool: Bash] sed -n '180,232p' act-result.txt
+[Result] | Failed    | 2     |
+| Skipped   | 2    |
+| **Total** | **15**  |
+| Duration  | 2.43s  |
+
+## Flaky Tests
+
+These tests passed in some runs and failed in others:
+
+- `Calc::test_divide`
+- `String::test_lower`
+# Test Results
+
+**Status:** FAIL
+
+| Metric    | Value         |
+|-----------|---------------|
+| Passed    | 11     |
+| Failed    | 2     |
+| Skipped   | 2    |
+| **Total** | **15**  |
+| Duration  | 2.43s  |
+
+## Flaky Tests
+
+These tests passed in some runs and failed in others:
+
+- `Calc::test_divide`
+- `String::test_lower`
+# Test Results
+
+**Status:** FAIL
+
+| Metric    | Value         |
+|-----------|---------------|
+| Passed    | 11     |
+| Failed    | 2     |
+| Skipped   | 2    |
+| **Total** | **15**  |
+| Duration  | 2.43s  |
+
+## Flaky Tests
+
+These tests passed in some runs and failed in others:
+
+- `Calc::test_divide`
+- `String::test_lower`
+[Test Results Aggregator/Bats unit tests  ] exitcode '1': failure
+[Test Results Aggregator/Bats unit tests  ] ⭐ Run Complete job
+[Test Results Ag
+[Tool: Bash] sed -n '120,180p' act-result.txt
+[Result] [Test Results Aggregator/Bats unit tests  ]   | Building dependency tree...
+[Test Results Aggregator/Bats unit tests  ]   | Reading state information...
+[Test Results Aggregator/Bats unit tests  ]   | jq is already the newest version (1.7.1-3ubuntu0.24.04.2).
+[Test Results Aggregator/Bats unit tests  ]   | Recommended packages:
+[Test Results Aggregator/Bats unit tests  ]   |   parallel
+[Test Results Aggregator/Bats unit tests  ]   | The following NEW packages will be installed:
+[Test Results Aggregator/Bats unit tests  ]   |   bats
+[Test Results Aggregator/Bats unit tests  ]   | 0 upgraded, 1 newly installed, 0 to remove and 25 not upgraded.
+[Test Results Aggregator/Bats unit tests  ]   | Need to get 45.5 kB of archives.
+[Test Results Aggregator/Bats unit tests  ]   | After this operation, 166 kB of additional disk space will be used.
+[Test Results Aggregator/Bats unit tests  ]   | Get:1 http://archive.ubuntu.com/ubuntu noble/universe amd64 bats all 1.10.0-1 [45.5 kB]
+[Test Results Agg
+[Assistant] The unit-tests job fails because shellcheck isn't installed there. Let me fix the workflow.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/.github/workflows/test-results-ag
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/.github/workflows/test-results-aggregator.yml has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/test-results-aggregator.yml && echo OK
+[Result ERROR] Exit code 1
+.github/workflows/test-results-aggregator.yml:43:9: shellcheck reported issue in this script: SC1072:error:3:13:  Fix any mentioned problems and try again [shellcheck]
+   |
+43 |         run: |
+   |         ^~~~
+.github/workflows/test-results-aggregator.yml:43:9: shellcheck reported issue in this script: SC1073:error:3:1: Couldn't parse this shellcheck directive. Fix to allow more checks [shellcheck]
+   |
+43 |         run: |
+   |         ^~~~
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/.github/workflows/test-results-ag
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/.github/workflows/test-results-aggregator.yml has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/test-results-aggregator.yml && echo OK
+[Result] OK
+[Tool: Bash] : > act-result.txt; bats tests/act_harness.bats 2>&1 | tail -50
+[Result] #   `[ "$(_case_exit default)" = "0" ]' failed
+not ok 3 [default] every job reported success
+# (in test file tests/act_harness.bats, line 102)
+#   `[ "$count" -ge 3 ]' failed
+ok 4 [default] aggregator counted 11 passed
+ok 5 [default] aggregator counted 2 failed
+ok 6 [default] aggregator counted 2 skipped
+ok 7 [default] aggregator total is 15
+ok 8 [default] aggregator detected 2 flaky tests
+ok 9 [default] flaky list contains Calc::test_divide
+ok 10 [default] flaky list contains String::test_lower
+not ok 11 [all-pass] act exited 0
+# (in test file tests/act_harness.bats, line 136)
+#   `[ "$(_case_exit all-pass)" = "0" ]' failed
+not ok 12 [all-pass] every job reported success
+# (in test file tests/act_harness.bats, line 142)
+#   `[ "$count" -ge 3 ]' failed
+not ok 13 [all-pass] aggregator counted 5 passed
+# (in test file tests/act_harness.bats, line 146)
+#   `_case_output all-pass | grep -q 'AGG_PASSED=5'' failed
+not ok 14 [all-pass] aggregator counted 0 failed
+# (in test file tests/act_har
+[Tool: Bash] grep -nE "Job succeeded|Job failed|Failure|Error:|exit code" act-result.txt | head -30
+[Result] 76:[Test Results Aggregator/Lint shell script] 🏁  Job succeeded
+227:[Test Results Aggregator/Bats unit tests  ] 🏁  Job succeeded
+295:[Test Results Aggregator/Aggregate fixtures and summarize]   ❌  Failure - Main Show step summary [310.086801ms]
+300:[Test Results Aggregator/Aggregate fixtures and summarize] 🏁  Job failed
+301:Error: Job 'Aggregate fixtures and summarize' failed
+379:[Test Results Aggregator/Lint shell script] 🏁  Job succeeded
+476:[Test Results Aggregator/Bats unit tests  ]   ❌  Failure - Main Run bats tests [2.121089315s]
+503:[Test Results Aggregator/Bats unit tests  ] 🏁  Job failed
+504:Error: Job 'Bats unit tests' failed
+582:[Test Results Aggregator/Lint shell script] 🏁  Job succeeded
+677:[Test Results Aggregator/Bats unit tests  ]   ❌  Failure - Main Run bats tests [2.115344781s]
+704:[Test Results Aggregator/Bats unit tests  ] 🏁  Job failed
+705:Error: Job 'Bats unit tests' failed
+[Tool: Bash] sed -n '275,300p' act-result.txt
+[Result] **Status:** FAIL
+
+| Metric    | Value         |
+|-----------|---------------|
+| Passed    | 11     |
+| Failed    | 2     |
+| Skipped   | 2    |
+| **Total** | **15**  |
+| Duration  | 2.43s  |
+
+## Flaky Tests
+
+These tests passed in some runs and failed in others:
+
+- `Calc::test_divide`
+- `String::test_lower`
+[Test Results Aggregator/Aggregate fixtures and summarize] ⭐ Run Main Show step summary
+[Test Results Aggregator/Aggregate fixtures and summarize]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/3] user= workdir=
+[Test Results Aggregator/Aggregate fixtures and summarize]   | Job summary written to GITHUB_STEP_SUMMARY:
+[Test Results Aggregator/Aggregate fixtures and summarize]   | cat: /tmp/step-summary.md: No such file or directory
+[Test Results Aggregator/Aggregate fixtures and summarize]   ❌  Failure - Main Show step summary [310.086801ms]
+[Test Results Aggregator/Aggregate fixtures and summarize] exitcode '1': failure
+[Test Results Aggregator/Aggregate fixtures and summarize] 
+[Tool: Bash] sed -n '430,480p' act-result.txt
+[Result] [Test Results Aggregator/Bats unit tests  ]   | Need to get 2891 kB of archives.
+[Test Results Aggregator/Bats unit tests  ]   | After this operation, 19.6 MB of additional disk space will be used.
+[Test Results Aggregator/Bats unit tests  ]   | Get:1 http://archive.ubuntu.com/ubuntu noble/universe amd64 bats all 1.10.0-1 [45.5 kB]
+[Test Results Aggregator/Bats unit tests  ]   | Get:2 http://archive.ubuntu.com/ubuntu noble/universe amd64 shellcheck amd64 0.9.0-1 [2845 kB]
+[Test Results Aggregator/Bats unit tests  ]   | debconf: delaying package configuration, since apt-utils is not installed
+[Test Results Aggregator/Bats unit tests  ]   | Fetched 2891 kB in 0s (8811 kB/s)
+[Test Results Aggregator/Bats unit tests  ]   | Selecting previously unselected package bats.
+[Test Results Aggregator/Bats unit tests  ]   | (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30
+[Tool: Bash] act --help 2>&1 | grep -E "env" | head -10
+[Result]       --env stringArray                                   env to make available to actions with optional value (e.g. --env myenv=foo or --env myenv)
+      --env-file string                                   environment file to read and use as env in the containers (default ".env")
+  -P, --platform stringArray                              custom image to use per platform (e.g. -P ubuntu-18.04=nektos/act-environments-ubuntu:18.04)
+[Assistant] Restructure approach: harness will pass `FIXTURES_DIR` via `act --env`, leave the project fixtures/ intact so bats unit tests pass.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/.github/workflows/test-results-ag
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/.github/workflows/test-results-aggregator.yml has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/.github/workflows/test-results-ag
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/.github/workflows/test-results-aggregator.yml has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/.github/workflows/test-results-ag
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/.github/workflows/test-results-aggregator.yml has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/test-results-aggregator.yml && echo OK
+[Result] OK
+[Assistant] Now update the harness to pass `FIXTURES_DIR` via act env, and stop swapping fixtures.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/tests/act_harness.bats", "old_str
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/tests/act_harness.bats has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/15-test-results-aggregator/bash-opus47-1m-high/.github/workflows/test-results-aggregator.yml"}
+[Result] 1	name: Test Results Aggregator
+2	
+3	# Triggers: run on every push and PR, and allow manual + scheduled runs so
+4	# the aggregator can be exercised against fresh fixtures.
+5	on:
+6	  push:
+7	  pull_request:
+8	  workflow_dispatch:
+9	  schedule:
+10	    # Daily smoke run at 06:00 UTC.
+11	    - cron: '0 6 * * *'
+12	
+13	permissions:
+14	  contents: read
+15	
+16	# FIXTURES_DIR (defaulted in the aggregate step) lets the act-based test
+17	# harness point the aggregator at different fixture sets without editing the
+18	# workflow file. Default is the in-repo fixtures/ directory.
+19	
+20	jobs:
+21	  lint:
+22	    name: Lint shell script
+23	    runs-on: ubuntu-latest
+24	    steps:
+25	      - uses: actions/checkout@v4
+26	      - name: Install shellcheck
+27	        run: |
+28	          if ! command -v shellcheck >/dev/null 2>&1; then
+29	            sudo apt-get update
+30	            sudo apt-get install -y --no-install-recommends shellcheck
+31	          fi
+32	      - name: Run shellcheck
+33	        run: sh
+[Tool: Bash] bats tests/aggregate.bats tests/workflow_structure.bats 2>&1 | tail -40
+[Result] 1..34
+ok 1 aggregate.sh exists and is executable
+ok 2 aggregate.sh --help prints usage
+ok 3 aggregate.sh fails with no inputs
+ok 4 parse_junit_file extracts testcase records from a single suite
+ok 5 parse_junit_file handles testsuites root element
+ok 6 parse_junit_file rejects malformed input
+ok 7 parse_junit_file errors when file missing
+ok 8 parse_json_file extracts testcase records
+ok 9 parse_json_file rejects invalid json
+ok 10 detect_format identifies xml by extension
+ok 11 detect_format identifies json by extension
+ok 12 detect_format errors on unknown extension
+ok 13 compute_totals sums passed/failed/skipped and duration
+ok 14 detect_flaky finds tests with mixed pass/fail outcomes
+ok 15 render_markdown emits a summary table with totals
+ok 16 render_markdown shows flaky tests when present
+ok 17 render_markdown omits flaky section when none
+ok 18 aggregate.sh produces expected markdown for sample fixtures
+ok 19 aggregate.sh accepts a directory and discovers files
+ok 20 aggregate.s
+[Tool: Bash] : > act-result.txt; bats tests/act_harness.bats 2>&1 | tail -50
+[Result] 1..23
+ok 1 act-result.txt was created
+ok 2 [default] act exited 0
+ok 3 [default] every job reported success
+ok 4 [default] aggregator counted 11 passed
+ok 5 [default] aggregator counted 2 failed
+ok 6 [default] aggregator counted 2 skipped
+ok 7 [default] aggregator total is 15
+ok 8 [default] aggregator detected 2 flaky tests
+ok 9 [default] flaky list contains Calc::test_divide
+ok 10 [default] flaky list contains String::test_lower
+ok 11 [all-pass] act exited 0
+ok 12 [all-pass] every job reported success
+ok 13 [all-pass] aggregator counted 5 passed
+ok 14 [all-pass] aggregator counted 0 failed
+ok 15 [all-pass] aggregator total is 5
+ok 16 [all-pass] aggregator detected 0 flaky tests
+ok 17 [mixed-no-flaky] act exited 0
+ok 18 [mixed-no-flaky] every job reported success
+ok 19 [mixed-no-flaky] aggregator counted 2 passed
+ok 20 [mixed-no-flaky] aggregator counted 2 failed
+ok 21 [mixed-no-flaky] aggregator counted 2 skipped
+ok 22 [mixed-no-flaky] aggregator total is 6
+ok 23 [mixed-no-flaky] no f
+[Assistant] All 23 act-driven tests pass. Let me run the full test suite together and verify final state.
+[Tool: Bash] bats tests/ 2>&1 | tail -10 && echo --- && wc -l act-result.txt && echo --- && grep -c "Job succeeded" act-result.txt
+[Result] ok 48 workflow defines name, on, jobs
+ok 49 workflow includes push, pull_request, workflow_dispatch, schedule triggers
+ok 50 workflow declares lint, unit-tests, aggregate jobs
+ok 51 workflow uses actions/checkout@v4
+ok 52 workflow references aggregate.sh
+ok 53 workflow references tests/aggregate.bats
+ok 54 every referenced script path exists
+ok 55 workflow declares job dependencies (needs)
+ok 56 workflow has read-only permissions
+ok 57 actionlint passes on the workflow
+---
+909 act-result.txt
+---
+9
+[Tool: Bash] ls -la
+[Result] total 244
+drwxr-xr-x  7 passp passp  4096 May  7 10:43 .
+drwxr-xr-x 20 passp passp  4096 May  7 10:34 ..
+-rw-r--r--  1 passp passp     2 May  7 10:53 .act-exit-all-pass.txt
+-rw-r--r--  1 passp passp     2 May  7 10:53 .act-exit-default.txt
+-rw-r--r--  1 passp passp     2 May  7 10:54 .act-exit-mixed-no-flaky.txt
+-rw-r--r--  1 passp passp 25882 May  7 10:53 .act-out-all-pass.txt
+-rw-r--r--  1 passp passp 27125 May  7 10:53 .act-out-default.txt
+-rw-r--r--  1 passp passp 25888 May  7 10:54 .act-out-mixed-no-flaky.txt
+-rw-r--r--  1 passp passp    53 May  7 10:43 .actrc
+drwxr-xr-x  2 passp passp  4096 May  7 10:34 .claude
+drwxr-xr-x  7 passp passp  4096 May  7 10:42 .git
+drwxr-xr-x  3 passp passp  4096 May  7 10:35 .github
+-rw-r--r--  1 passp passp 79537 May  7 10:54 act-result.txt
+-rwxr-xr-x  1 passp passp  9468 May  7 10:38 aggregate.sh
+-rw-r--r--  1 passp passp 21843 Apr 17 00:12 benchmark-instructions-v4.md
+drwxr-xr-x  2 passp passp  4096 May  7 10:36 fixtures
+drwxr-xr-x  3 passp passp 
+[Tool: TodoWrite] {"todos": [{"content": "Write first failing bats test", "activeForm": "Writing first failing bats test", "status": "completed"}, {"content": "Implement aggregate.sh script via TDD", "activeForm": "Imp
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Assistant] All deliverables are in place and green:
+
+**Implementation** (`aggregate.sh`)
+- Library-style: each unit (`parse_junit_file`, `parse_json_file`, `detect_format`, `compute_totals`, `detect_flaky`, `render_markdown`) is independently testable.
+- TSV pipeline (`status⇥duration⇥suite::name`) keeps format-specific logic out of the aggregation/reporting code.
+- jq for JSON; `sed` + `awk` state machine for JUnit (no `xmllint`/Python dependency). Passes `shellcheck` + `bash -n`.
+
+**Tests** — 57 bats tests, all passing
+- `tests/aggregate.bats` (23): unit tests for every function + CLI behaviour, written red→green per requirement.
+- `tests/workflow_structure.bats` (11): YAML structure, references, `actionlint` exit-0.
+- `tests/act_harness.bats` (23): runs the workflow through `act` for three fixture scenarios (`default`, `all-pass`, `mixed-no-flaky`), asserts exact counters (`AGG_PASSED=11`, `AGG_FAILED=2`, `AGG_FLAKY_COUNT=2`, etc.) plus three `Job succeeded` markers per case.
+
+**Workflow** (`.github/workflows/test-results-aggregator.yml`)
+- Triggers: `push`, `pull_request`, `workflow_dispatch`, daily cron.
+- Three jobs with `needs:` chain — `lint` → `unit-tests` → `aggregate`.
+- `actionlint` clean. `FIXTURES_DIR` env override lets the harness point the aggregate job at different fixtures without editing the file.
+
+**Artifact** — `act-result.txt` (909 lines, 9 `Job succeeded` markers = 3 cases × 3 jobs) captures all three delimited `act push --rm` runs.

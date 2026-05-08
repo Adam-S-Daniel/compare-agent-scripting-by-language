@@ -1,0 +1,64 @@
+name: artifact-cleanup-script
+
+# Triggered on push, pull_request, a nightly schedule, and on-demand via
+# workflow_dispatch. The on-demand path lets operators run the cleanup
+# planner against fresh data without merging anything.
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+    inputs:
+      case:
+        description: Fixture case folder under fixtures-cases/
+        required: false
+        default: case-combined
+
+# Read-only by default - the script just produces a plan, it never deletes
+# anything itself, so no write scopes are needed.
+permissions:
+  contents: read
+
+# Workflow-wide deterministic clock so the planner's output is reproducible
+# against committed fixtures regardless of when the workflow runs.
+env:
+  ARTIFACT_CLEANUP_NOW: '2026-05-07T12:00:00Z'
+  FIXTURE_CASE: ${{ github.event.inputs.case || 'case-combined' }}
+
+jobs:
+  unit-tests:
+    name: Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Pester
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = './Invoke-ArtifactCleanup.Tests.ps1'
+          $config.Run.Exit = $true
+          $config.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $config
+
+  end-to-end:
+    name: End-to-end fixture run
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run artifact cleanup planner against fixture
+        shell: pwsh
+        run: |
+          $case = $env:FIXTURE_CASE
+          $artifacts = "fixtures-cases/$case/artifacts.json"
+          $policy = "fixtures-cases/$case/policy.json"
+          if (-not (Test-Path $artifacts)) { throw "Fixture artifacts file not found: $artifacts" }
+          if (-not (Test-Path $policy))    { throw "Fixture policy file not found: $policy" }
+          Write-Host "::group::Planner output for $case"
+          ./Invoke-ArtifactCleanup.ps1 -ArtifactsPath $artifacts -PolicyPath $policy
+          Write-Host "::endgroup::"

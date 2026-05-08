@@ -1,0 +1,93 @@
+name: Dependency License Checker
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  license-check:
+    name: License Compliance Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install actionlint
+        shell: bash
+        run: |
+          # Install actionlint for workflow validation test
+          ACTIONLINT_VER="1.7.7"
+          curl -sSfL \
+            "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VER}/actionlint_${ACTIONLINT_VER}_linux_amd64.tar.gz" \
+            | tar -xz actionlint
+          sudo mv actionlint /usr/local/bin/actionlint
+          actionlint --version
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference = 'Stop'
+
+          Write-Host "=== Installing Pester ==="
+          if (-not (Get-Module -ListAvailable -Name Pester | Where-Object { $_.Version -ge '5.0' })) {
+            Install-Module -Name Pester -MinimumVersion 5.0 -Force -Scope CurrentUser
+          }
+          Import-Module Pester -MinimumVersion 5.0
+
+          Write-Host "=== Running Pester Tests ==="
+          $config = New-PesterConfiguration
+          $config.Run.Path = './tests'
+          $config.Output.Verbosity = 'Detailed'
+          $config.TestResult.Enabled = $true
+          $config.TestResult.OutputPath = 'test-results.xml'
+          $config.Run.Exit = $true
+
+          Invoke-Pester -Configuration $config
+
+      - name: Run license checker on package.json fixture
+        shell: pwsh
+        run: |
+          . ./src/Invoke-LicenseCheck.ps1
+
+          $report = Invoke-LicenseCheck `
+            -ManifestPath ./fixtures/package.json `
+            -ConfigPath   ./fixtures/license-config.json `
+            -MockData $true
+
+          # Run report (don't propagate exit code — this step is informational)
+          Write-LicenseReport -Report $report -Title "package.json Compliance" | Out-Null
+
+          Write-Host ""
+          Write-Host "=== STRUCTURED OUTPUT ==="
+          foreach ($entry in $report) {
+            Write-Host "DEPENDENCY: name=$($entry.Name) version=$($entry.Version) license=$($entry.License) status=$($entry.Status)"
+          }
+
+      - name: Run license checker on requirements.txt fixture
+        shell: pwsh
+        run: |
+          . ./src/Invoke-LicenseCheck.ps1
+
+          $report = Invoke-LicenseCheck `
+            -ManifestPath ./fixtures/requirements.txt `
+            -ConfigPath   ./fixtures/license-config.json `
+            -MockData $true
+
+          # Run report (don't propagate exit code — this step is informational)
+          Write-LicenseReport -Report $report -Title "requirements.txt Compliance" | Out-Null
+
+          Write-Host ""
+          Write-Host "=== STRUCTURED OUTPUT ==="
+          foreach ($entry in $report) {
+            Write-Host "DEPENDENCY: name=$($entry.Name) version=$($entry.Version) license=$($entry.License) status=$($entry.Status)"
+          }

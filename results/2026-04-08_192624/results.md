@@ -1,10 +1,12 @@
 # Benchmark Results: Language Comparison
 
-**Last updated:** 2026-04-21 08:40:28 AM ET — 64/64 runs completed, 0 remaining; total cost $84.25; total agent time 726.1 min.
+**Last updated:** 2026-05-08 01:19:53 PM ET — 64/64 runs completed, 0 remaining; total cost $84.25; total agent time 726.1 min.
+**Claude Code versions used:** [v2.1.97](claude-code-2.1.97.md) (64 runs). Each link goes to a per-version snapshot of the system prompt, default-tool descriptions, and the chronological Anthropic changelog up to that version. Regenerate with `python3 version_docs.py`.
 
 ## Table of Contents
 
 - [Scoring](#scoring)
+  - [Duration columns](#duration-columns)
 - [Tiers by Language/Model/Effort](#tiers-by-languagemodeleffort)
 - [Comparison by Language/Model/Effort](#comparison-by-languagemodeleffort)
 - [Savings Analysis](#savings-analysis)
@@ -49,6 +51,15 @@ Properties:
 - **Scale:** ratios, not raw seconds or dollars
 - **Band calibration:** auto-calibrated to the data's best-to-worst spread via log-equal division (`boundary_i = max_ratio^(i/12)`), so the best observed ratio lands at A+ and the worst at D-
 - **F band:** reserved for ratios beyond the observed worst
+
+### Duration columns
+
+Every Duration figure in this report derives from `timing.grand_total_duration_ms` in `metrics.json` — wall-clock seconds from CLI invocation to the final assistant turn (agent thinking + tool execution + hooks).
+
+- **Duration** (single run): that one run's wall clock. Appears in the [Failed / Timed-Out Runs](#failed--timed-out-runs) and per-run detail tables.
+- **Avg Duration** (in the [Comparison by Language/Model/Effort](#comparison-by-languagemodeleffort) table; also drives the [Tiers](#tiers-by-languagemodeleffort) Duration column): arithmetic mean of `Duration` over the runs in that combo, excluding failed/timed-out runs.
+- **Avg Duration Net of Traps** (in the Comparison table only): mean of (per-run `Duration` − that run's `Time Lost`), where `Time Lost` is the trap detector's estimate of seconds spent on detected anti-patterns (see [Trap Descriptions](#trap-descriptions) and the trap-table [Column Definitions](#column-definitions) for the trap list and how Time Lost is computed). Reads as a counterfactual: roughly how fast each combo would have been without the detected traps.
+- The **Tier table's Duration column** shows the tier letter (A+..F) for the combo's gross **Avg Duration** ratio. Net of Traps does not feed the tier band.
 ## Tiers by Language/Model/Effort
 
 *Default sort: weighted composite of tiers (40% Tests, 25% Workflow Craft, 35% split between Duration & Cost). See [Notes](#notes) for tier-band definitions and scoring rubric.*
@@ -533,7 +544,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 |------|-------|-----------|----------------|-----------------|---------------------|
 | bash | opus46-200k | 18.5 | 28.2 | 1.5 | 1.45 |
 | bash | sonnet46-200k | 16.8 | 33.9 | 2.0 | 0.67 |
-| default | opus46-200k | 10.5 | 26.2 | 2.5 | 1.64 |
+| default | opus46-200k | 9.0 | 24.6 | 2.7 | 1.64 |
 | default | sonnet46-200k | 33.1 | 49.8 | 1.5 | 1.10 |
 | powershell | opus46-200k | 32.6 | 48.0 | 1.5 | 0.96 |
 | powershell | sonnet46-200k | 40.0 | 57.9 | 1.4 | 1.34 |
@@ -552,8 +563,8 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | powershell | opus46-200k | 32.6 | 48.0 | 1.5 | 0.96 |
 | bash | opus46-200k | 18.5 | 28.2 | 1.5 | 1.45 |
 | bash | sonnet46-200k | 16.8 | 33.9 | 2.0 | 0.67 |
-| default | opus46-200k | 10.5 | 26.2 | 2.5 | 1.64 |
 | typescript-bun | opus46-200k | 10.1 | 40.2 | 4.0 | 1.02 |
+| default | opus46-200k | 9.0 | 24.6 | 2.7 | 1.64 |
 
 </details>
 
@@ -569,7 +580,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | typescript-bun | opus46-200k | 10.1 | 40.2 | 4.0 | 1.02 |
 | bash | sonnet46-200k | 16.8 | 33.9 | 2.0 | 0.67 |
 | bash | opus46-200k | 18.5 | 28.2 | 1.5 | 1.45 |
-| default | opus46-200k | 10.5 | 26.2 | 2.5 | 1.64 |
+| default | opus46-200k | 9.0 | 24.6 | 2.7 | 1.64 |
 
 </details>
 
@@ -578,7 +589,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 
 | Language | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
 |------|-------|-----------|----------------|-----------------|---------------------|
-| default | opus46-200k | 10.5 | 26.2 | 2.5 | 1.64 |
+| default | opus46-200k | 9.0 | 24.6 | 2.7 | 1.64 |
 | typescript-bun | sonnet46-200k | 34.6 | 60.1 | 1.7 | 1.55 |
 | bash | opus46-200k | 18.5 | 28.2 | 1.5 | 1.45 |
 | powershell | sonnet46-200k | 40.0 | 57.9 | 1.4 | 1.34 |
@@ -637,7 +648,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Test Results Aggregator | typescript-bun | sonnet46-200k | 45 | 94 | 2.1 | 685 | 585 | 1.17 |
 | Environment Matrix Generator | bash | opus46-200k | 17 | 24 | 1.4 | 327 | 166 | 1.97 |
 | Environment Matrix Generator | bash | sonnet46-200k | 18 | 29 | 1.6 | 291 | 323 | 0.90 |
-| Environment Matrix Generator | default | opus46-200k | 12 | 13 | 1.1 | 241 | 0 | 0.00 |
+| Environment Matrix Generator | default | opus46-200k | 0 | 0 | 0.0 | 0 | 235 | 0.00 |
 | Environment Matrix Generator | default | sonnet46-200k | 38 | 46 | 1.2 | 352 | 165 | 2.13 |
 | Environment Matrix Generator | powershell | opus46-200k | 43 | 62 | 1.4 | 324 | 286 | 1.13 |
 | Environment Matrix Generator | powershell | sonnet46-200k | 36 | 37 | 1.0 | 403 | 170 | 2.37 |
@@ -828,8 +839,8 @@ Values near +1.0 indicate the LLM agrees with the structural signal; near 0 mean
 
 | Structural Metric | vs Coverage | vs Rigor | vs Design | vs Overall |
 |-------------------|------------|---------|----------|-----------|
-| Test count | 0.23 | 0.31 | 0.26 | 0.31 |
-| Assertion count | 0.17 | 0.18 | 0.25 | 0.26 |
+| Test count | 0.24 | 0.31 | 0.27 | 0.32 |
+| Assertion count | 0.18 | 0.18 | 0.25 | 0.27 |
 | Test:code ratio | -0.09 | -0.2 | -0.16 | -0.04 |
 
 *Based on 64 runs with both structural and LLM scores.*

@@ -1,0 +1,79 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Run semantic version bumper tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install bats-core
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y bats
+
+      - name: Validate script syntax
+        run: |
+          bash -n bump-version.sh
+          echo "Syntax check passed"
+
+      - name: Run unit tests (bats)
+        run: bats test-version-bumper.bats
+
+      - name: Integration - patch bump (fix commits)
+        run: |
+          cp fixtures/version-1.0.0.txt /tmp/patch-test.txt
+          bash bump-version.sh /tmp/patch-test.txt fixtures/commits-fix.txt
+          NEW_VER="$(cat /tmp/patch-test.txt)"
+          echo "PATCH_RESULT: ${NEW_VER}"
+          [ "${NEW_VER}" = "1.0.1" ] || { echo "Expected 1.0.1, got ${NEW_VER}"; exit 1; }
+
+      - name: Integration - minor bump (feat commits)
+        run: |
+          cp fixtures/version-1.0.0.txt /tmp/minor-test.txt
+          bash bump-version.sh /tmp/minor-test.txt fixtures/commits-feat.txt
+          NEW_VER="$(cat /tmp/minor-test.txt)"
+          echo "MINOR_RESULT: ${NEW_VER}"
+          [ "${NEW_VER}" = "1.1.0" ] || { echo "Expected 1.1.0, got ${NEW_VER}"; exit 1; }
+
+      - name: Integration - major bump (breaking change)
+        run: |
+          cp fixtures/version-1.0.0.txt /tmp/major-test.txt
+          bash bump-version.sh /tmp/major-test.txt fixtures/commits-breaking.txt
+          NEW_VER="$(cat /tmp/major-test.txt)"
+          echo "MAJOR_RESULT: ${NEW_VER}"
+          [ "${NEW_VER}" = "2.0.0" ] || { echo "Expected 2.0.0, got ${NEW_VER}"; exit 1; }
+
+      - name: Integration - minor beats patch in mixed commits
+        run: |
+          cp fixtures/version-1.0.0.txt /tmp/mixed-test.txt
+          bash bump-version.sh /tmp/mixed-test.txt fixtures/commits-mixed.txt
+          NEW_VER="$(cat /tmp/mixed-test.txt)"
+          echo "MIXED_RESULT: ${NEW_VER}"
+          [ "${NEW_VER}" = "1.1.0" ] || { echo "Expected 1.1.0, got ${NEW_VER}"; exit 1; }
+
+      - name: Integration - package.json version bump
+        run: |
+          cp fixtures/package-1.0.0.json /tmp/pkg-test.json
+          bash bump-version.sh /tmp/pkg-test.json fixtures/commits-feat.txt
+          NEW_VER="$(grep '"version"' /tmp/pkg-test.json | sed 's/.*"version": *"\([^"]*\)".*/\1/')"
+          echo "PKG_RESULT: ${NEW_VER}"
+          [ "${NEW_VER}" = "1.1.0" ] || { echo "Expected 1.1.0, got ${NEW_VER}"; exit 1; }
+
+      - name: Integration - non-semantic commits leave version unchanged
+        run: |
+          cp fixtures/version-1.0.0.txt /tmp/none-test.txt
+          bash bump-version.sh /tmp/none-test.txt fixtures/commits-none.txt
+          NEW_VER="$(cat /tmp/none-test.txt)"
+          echo "NONE_RESULT: ${NEW_VER}"
+          [ "${NEW_VER}" = "1.0.0" ] || { echo "Expected 1.0.0, got ${NEW_VER}"; exit 1; }

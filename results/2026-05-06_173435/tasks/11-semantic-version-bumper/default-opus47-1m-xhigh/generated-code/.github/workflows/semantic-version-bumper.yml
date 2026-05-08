@@ -1,0 +1,79 @@
+# Semantic version bumper — runs unit tests, then the bumper itself,
+# producing a new version and changelog from the fixture committed at the
+# repo root (`package.json` + `commits.txt`).
+#
+# The act test harness drops a chosen fixture into the temp repo before
+# invoking `act push --rm`, so this workflow always reads the same paths
+# and the output is deterministic per test case.
+name: semantic-version-bumper
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    # Daily at 03:17 UTC — picks up commits accumulated overnight.
+    - cron: "17 3 * * *"
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  unit-tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show python version
+        run: python3 --version
+
+      - name: Run unit tests
+        run: python3 -m unittest tests.test_bumper -v
+
+  bump:
+    name: Bump version from commits
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    env:
+      VERSION_FILE: package.json
+      COMMITS_FILE: commits.txt
+      CHANGELOG_FILE: CHANGELOG.md
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify fixture files are present
+        run: |
+          test -f "$VERSION_FILE" || { echo "missing $VERSION_FILE"; exit 1; }
+          test -f "$COMMITS_FILE" || { echo "missing $COMMITS_FILE"; exit 1; }
+
+      - name: Run semantic version bumper
+        id: bump
+        run: |
+          # Tee stdout so we both see the result in logs and capture for parsing.
+          python3 bumper.py \
+            --version-file "$VERSION_FILE" \
+            --commits-file "$COMMITS_FILE" \
+            --changelog-file "$CHANGELOG_FILE" \
+            --date 2026-05-07 \
+            | tee bumper-output.txt
+          # Promote parsed values to step outputs for downstream consumers.
+          new_version=$(grep -E '^NEW_VERSION=' bumper-output.txt | head -n1 | cut -d= -f2)
+          bump_type=$(grep -E '^BUMP_TYPE=' bumper-output.txt | head -n1 | cut -d= -f2)
+          echo "new_version=$new_version" >> "$GITHUB_OUTPUT"
+          echo "bump_type=$bump_type" >> "$GITHUB_OUTPUT"
+
+      - name: Print summary
+        run: |
+          echo "RESULT_NEW_VERSION=${{ steps.bump.outputs.new_version }}"
+          echo "RESULT_BUMP_TYPE=${{ steps.bump.outputs.bump_type }}"
+          echo "----- updated package.json -----"
+          cat "$VERSION_FILE"
+          echo "----- changelog -----"
+          cat "$CHANGELOG_FILE" || true

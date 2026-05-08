@@ -1,0 +1,81 @@
+name: Test Results Aggregator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  aggregate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q jq python3
+
+      - name: Make script executable
+        run: chmod +x aggregate.sh
+
+      - name: Run aggregation on all fixtures
+        run: |
+          echo "=== Full aggregation ==="
+          ./aggregate.sh fixtures/
+
+      - name: Run aggregation on single JUnit XML file
+        run: |
+          echo "=== Single file: junit-run1.xml ==="
+          ./aggregate.sh fixtures/junit-run1.xml
+
+      - name: Run aggregation on single JSON file
+        run: |
+          echo "=== Single file: json-run1.json ==="
+          ./aggregate.sh fixtures/json-run1.json
+
+      - name: Verify exact totals from full aggregation
+        run: |
+          output=$(./aggregate.sh fixtures/)
+          echo "$output"
+          # Assert exact expected values
+          echo "$output" | grep -q "TOTAL:10"   || { echo "FAIL: expected TOTAL:10"; exit 1; }
+          echo "$output" | grep -q "PASSED:5"   || { echo "FAIL: expected PASSED:5"; exit 1; }
+          echo "$output" | grep -q "FAILED:3"   || { echo "FAIL: expected FAILED:3"; exit 1; }
+          echo "$output" | grep -q "SKIPPED:2"  || { echo "FAIL: expected SKIPPED:2"; exit 1; }
+          echo "$output" | grep -q "FLAKY:TestSuite1::test_alpha" || { echo "FAIL: expected FLAKY:TestSuite1::test_alpha"; exit 1; }
+          echo "All assertions passed."
+          echo "TOTAL:10 PASSED:5 FAILED:3 SKIPPED:2 verified"
+          echo "FLAKY:TestSuite1::test_alpha verified"
+
+      - name: Write job summary
+        run: |
+          ./aggregate.sh fixtures/ >> "$GITHUB_STEP_SUMMARY" || true
+
+  bats-tests:
+    runs-on: ubuntu-latest
+    needs: aggregate
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q jq python3
+          # Install bats-core
+          npm install -g bats
+
+      - name: Make script executable
+        run: chmod +x aggregate.sh
+
+      - name: Run bats unit tests (excluding act test)
+        run: |
+          # Run all tests except the act integration test (test 16)
+          bats tests/aggregate.bats --filter "aggregate.sh exists|parse JUnit|parse JSON|aggregate all|flaky|markdown|duration|error" 2>&1

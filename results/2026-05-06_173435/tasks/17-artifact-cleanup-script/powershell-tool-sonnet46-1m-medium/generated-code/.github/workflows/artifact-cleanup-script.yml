@@ -1,0 +1,133 @@
+name: Artifact Cleanup Script
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install actionlint
+        run: |
+          ACTIONLINT_VERSION=1.7.7
+          curl -sSfL \
+            "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz" \
+            | tar -xz -C /usr/local/bin actionlint
+          actionlint --version
+
+      - name: Show PowerShell and Pester versions
+        shell: pwsh
+        run: |
+          $PSVersionTable.PSVersion | Out-String
+          Get-Module -ListAvailable Pester | Select-Object Name, Version | Out-String
+
+      - name: Run Pester unit tests
+        shell: pwsh
+        run: |
+          $result = Invoke-Pester -Path ./tests/ArtifactCleanup.Tests.ps1 -PassThru -Output Detailed
+          if ($result.FailedCount -gt 0) {
+            throw "Pester tests failed: $($result.FailedCount) failure(s)"
+          }
+          Write-Host "All $($result.PassedCount) tests passed."
+
+      - name: "Case 1: max-age policy (reference date 2024-03-01)"
+        shell: pwsh
+        env:
+          REFERENCE_DATE: "2024-03-01"
+        run: |
+          Write-Host "=== TEST CASE: case1-max-age ==="
+          ./Invoke-Cleanup.ps1 `
+            -FixturePath fixtures/case1-max-age.json `
+            -MaxAgeDays 30
+          Write-Host "=== END CASE: case1-max-age ==="
+
+      - name: "Case 2: keep-latest-per-workflow policy"
+        shell: pwsh
+        env:
+          REFERENCE_DATE: "2024-03-01"
+        run: |
+          Write-Host "=== TEST CASE: case2-keep-latest ==="
+          ./Invoke-Cleanup.ps1 `
+            -FixturePath fixtures/case2-keep-latest.json `
+            -KeepLatestPerWorkflow 1
+          Write-Host "=== END CASE: case2-keep-latest ==="
+
+      - name: "Case 3: combined policies dry-run"
+        shell: pwsh
+        env:
+          REFERENCE_DATE: "2024-03-01"
+        run: |
+          Write-Host "=== TEST CASE: case3-dry-run-combined ==="
+          ./Invoke-Cleanup.ps1 `
+            -FixturePath fixtures/case3-dry-run-combined.json `
+            -MaxAgeDays 30 `
+            -KeepLatestPerWorkflow 1 `
+            -DryRun
+          Write-Host "=== END CASE: case3-dry-run-combined ==="
+
+      - name: Verify expected outputs
+        shell: pwsh
+        env:
+          REFERENCE_DATE: "2024-03-01"
+        run: |
+          # Case 1: artifacts from Jan 2024 are >30 days before 2024-03-01
+          # build-artifacts-old and test-results-old should be deleted (both from Jan)
+          # coverage-report-recent and deploy-package-recent should be retained (both from late Feb)
+          #
+          # We run the script again and capture output for assertion.
+          # *>&1 merges all streams (including Write-Host's info stream) into stdout.
+          $out1 = (./Invoke-Cleanup.ps1 -FixturePath fixtures/case1-max-age.json -MaxAgeDays 30 *>&1) | Out-String
+          Write-Host "Case 1 output:`n$out1"
+          if ($out1 -notmatch 'Artifacts to delete\s*:\s*2') {
+            throw "Case 1 FAILED: expected 2 deletions. Output was: $out1"
+          }
+          if ($out1 -notmatch 'Artifacts retained\s*:\s*2') {
+            throw "Case 1 FAILED: expected 2 retained. Output was: $out1"
+          }
+          Write-Host "Case 1 assertions PASSED"
+
+          # Case 2: keep only 1 latest per workflow
+          # wf-A: 3 artifacts → keep wf-A-run3-artifact (newest), delete run1 and run2
+          # wf-B: 2 artifacts → keep wf-B-run2-artifact (newest), delete run1
+          $out2 = (./Invoke-Cleanup.ps1 -FixturePath fixtures/case2-keep-latest.json -KeepLatestPerWorkflow 1 *>&1) | Out-String
+          Write-Host "Case 2 output:`n$out2"
+          if ($out2 -notmatch 'Artifacts to delete\s*:\s*3') {
+            throw "Case 2 FAILED: expected 3 deletions. Output was: $out2"
+          }
+          if ($out2 -notmatch 'Artifacts retained\s*:\s*2') {
+            throw "Case 2 FAILED: expected 2 retained. Output was: $out2"
+          }
+          Write-Host "Case 2 assertions PASSED"
+
+          # Case 3: combined age + keep-latest, dry run
+          # expired-large-build (Jan 1): older than 30 days → delete
+          # wf-X-old-run (Jan 20): older than 30 days → delete
+          # wf-X-new-run (Feb 15): within 30 days, newest in wf-X → keep
+          # wf-Y-only (Feb 25): within 30 days, only in wf-Y → keep
+          $out3 = (./Invoke-Cleanup.ps1 -FixturePath fixtures/case3-dry-run-combined.json `
+                    -MaxAgeDays 30 -KeepLatestPerWorkflow 1 -DryRun *>&1) | Out-String
+          Write-Host "Case 3 output:`n$out3"
+          if ($out3 -notmatch 'DRY RUN') {
+            throw "Case 3 FAILED: expected DRY RUN label. Output was: $out3"
+          }
+          if ($out3 -notmatch 'Artifacts to delete\s*:\s*2') {
+            throw "Case 3 FAILED: expected 2 deletions. Output was: $out3"
+          }
+          if ($out3 -notmatch 'Artifacts retained\s*:\s*2') {
+            throw "Case 3 FAILED: expected 2 retained. Output was: $out3"
+          }
+          Write-Host "Case 3 assertions PASSED"
+
+          Write-Host ""
+          Write-Host "All verification assertions PASSED."

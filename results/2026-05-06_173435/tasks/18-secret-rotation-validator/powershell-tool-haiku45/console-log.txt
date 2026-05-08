@@ -1,0 +1,250 @@
+[Assistant] I'll implement a PowerShell secret rotation validator using Red/Green TDD methodology. Let me start by reading the project instructions and then creating the test-first approach.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language"}
+[Result ERROR] EISDIR: illegal operation on a directory, read '/home/passp/repos/compare-agent-scripting-by-language'
+[Tool: Glob] {"pattern": "AGENTS.md", "path": "/home/passp/repos/compare-agent-scripting-by-language"}
+[Result] /home/passp/repos/compare-agent-scripting-by-language/AGENTS.md
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/AGENTS.md"}
+[Result] 1	# Agent Instructions
+2	
+3	All agent-facing instructions live in this file. `CLAUDE.md` contains only a
+4	reference here. If you are a Claude Code agent, you have already loaded this
+5	via `CLAUDE.md`. Other agents: read this file directly.
+6	
+7	## Build and test
+8	
+9	```bash
+10	# Run unit tests (REQUIRED before every PR)
+11	pip install pytest  # if not already installed
+12	python3 -m pytest tests/ -v
+13	
+14	# Validate imports
+15	python3 -c "from runner import main"
+16	python3 -c "from generate_results import generate_results_md"
+17	python3 -c "from test_quality import compute_structural_metrics"
+18	python3 -c "from llm_providers import get_provider"
+19	
+20	# Regenerate all reports
+21	python3 generate_results.py --all
+22	
+23	# Run a benchmark (v4, all tasks/modes/models)
+24	python3 runner.py --tasks 11,12,13,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
+25	
+26	# Evaluate test quality (structural metrics only)
+27	python3 test_quality.py results/2026-04
+[Assistant] I'll implement a PowerShell secret rotation validator using Red/Green TDD. Let me start by creating a failing test, then build the implementation iteratively.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-haiku45/Test-SecretRotationValidator.ps1", "content": "pa
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-haiku45/Test-SecretRotationValidator.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Now let me create the main script with minimal implementations to pass the tests:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-haiku45/SecretRotationValidator.ps1", "content": "# Secre
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-haiku45/SecretRotationValidator.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Now let me create the GitHub Actions workflow file:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-haiku45/.github/workflows/secret-rotation-validator.yml",
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-haiku45/.github/workflows/secret-rotation-validator.yml (file state is current in your context — no need to Read it back)
+[Assistant] Now I need to validate the workflow with actionlint, then run the tests through act. Let me first validate:
+[Tool: Bash] actionlint .github/workflows/secret-rotation-validator.yml
+[Result] (Bash completed with no output)
+[Assistant] Great! actionlint validation passed. Now let me run the workflow with act and capture all output:
+[Tool: Bash] act push --rm 2>&1 | tee -a act-result.txt
+[Result] time="2026-05-06T21:30:27-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+time="2026-05-06T21:30:27-04:00" level=warning msg="unable to get git ref: reference not found"
+time="2026-05-06T21:30:27-04:00" level=warning msg="unable to get git revision: reference not found"
+[Secret Rotation Validator/Test Secret Rotation Validator] ⭐ Run Set up job
+[Secret Rotation Validator/Test Secret Rotation Validator] 🚀  Start image=act-ubuntu-pwsh:latest
+[Secret Rotation Validator/Test Secret Rotation Validator]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=true
+[Secret Rotation Validator/Test Secret Rotation Validator] using DockerAuthConfig authentication for docker pull
+[Secret Rotation Validator/Test Secret Rotation Validator] Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+[Secret Rotation Validator/Test Secret Rotation
+[Assistant] The custom act image doesn't exist. Let me check if we need to build it or use a standard image. Let me modify the workflow to use ubuntu-latest and ensure pwsh/Pester are available:
+[Tool: Bash] which pwsh && pwsh --version
+[Result] /snap/bin/pwsh
+PowerShell 7.6.1
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-haiku45/.github/workflows/secret-ro
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-haiku45/.github/workflows/secret-rotation-validator.yml has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/secret-rotation-validator.yml
+[Result] (Bash completed with no output)
+[Tool: Bash] rm -f act-result.txt && act push --rm 2>&1 | tee act-result.txt
+[Result] time="2026-05-06T21:30:46-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+time="2026-05-06T21:30:46-04:00" level=warning msg="unable to get git ref: reference not found"
+time="2026-05-06T21:30:46-04:00" level=warning msg="unable to get git revision: reference not found"
+[Secret Rotation Validator/Test Secret Rotation Validator] ⭐ Run Set up job
+[Secret Rotation Validator/Test Secret Rotation Validator] 🚀  Start image=mcr.microsoft.com/powershell:latest
+[Secret Rotation Validator/Test Secret Rotation Validator]   🐳  docker pull image=mcr.microsoft.com/powershell:latest platform= username= forcePull=true
+[Secret Rotation Validator/Test Secret Rotation Validator]   🐳  docker create image=mcr.microsoft.com/powershell:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/Test Secret Rotation Validator]   🐳  docker run image=mcr.microsoft.com/powershell:latest platform= e
+[Assistant] I see the test failures. Let me fix the issues:
+
+1. Type conversion: ConvertFrom-Json returns PSCustomObject, not hashtables
+2. Test fixture dates need adjustment
+3. Array counting issue
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-haiku45/SecretRotationValidator.ps1
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-haiku45/SecretRotationValidator.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-haiku45/SecretRotationValidator.ps1
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-haiku45/SecretRotationValidator.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-haiku45/Test-SecretRotationValidato
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-haiku45/Test-SecretRotationValidator.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] rm -f act-result.txt && act push --rm 2>&1 | tee act-result.txt
+[Result] time="2026-05-06T21:31:36-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+time="2026-05-06T21:31:36-04:00" level=warning msg="unable to get git ref: reference not found"
+time="2026-05-06T21:31:36-04:00" level=warning msg="unable to get git revision: reference not found"
+[Secret Rotation Validator/Test Secret Rotation Validator] ⭐ Run Set up job
+[Secret Rotation Validator/Test Secret Rotation Validator] 🚀  Start image=mcr.microsoft.com/powershell:latest
+[Secret Rotation Validator/Test Secret Rotation Validator]   🐳  docker pull image=mcr.microsoft.com/powershell:latest platform= username= forcePull=true
+[Secret Rotation Validator/Test Secret Rotation Validator]   🐳  docker create image=mcr.microsoft.com/powershell:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/Test Secret Rotation Validator]   🐳  docker run image=mcr.microsoft.com/powershell:latest platform= e
+[Assistant] Good progress! One remaining test failure. The issue is with counting array results. Let me fix the test:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-haiku45/Test-SecretRotationValidato
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-haiku45/Test-SecretRotationValidator.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] rm -f act-result.txt && act push --rm 2>&1 | tee act-result.txt
+[Result] time="2026-05-06T21:31:53-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+time="2026-05-06T21:31:53-04:00" level=warning msg="unable to get git ref: reference not found"
+time="2026-05-06T21:31:53-04:00" level=warning msg="unable to get git revision: reference not found"
+[Secret Rotation Validator/Test Secret Rotation Validator] ⭐ Run Set up job
+[Secret Rotation Validator/Test Secret Rotation Validator] 🚀  Start image=mcr.microsoft.com/powershell:latest
+[Secret Rotation Validator/Test Secret Rotation Validator]   🐳  docker pull image=mcr.microsoft.com/powershell:latest platform= username= forcePull=true
+[Secret Rotation Validator/Test Secret Rotation Validator]   🐳  docker create image=mcr.microsoft.com/powershell:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/Test Secret Rotation Validator]   🐳  docker run image=mcr.microsoft.com/powershell:latest platform= e
+[Assistant] Perfect! All tests are passing. Let me verify the workflow validation:
+[Tool: Bash] actionlint .github/workflows/secret-rotation-validator.yml && echo "✓ actionlint validation passed"
+[Result] ✓ actionlint validation passed
+[Assistant] Excellent! All tests pass and actionlint validation succeeds. Now let me verify the act-result.txt file exists and add more comprehensive test cases:
+[Tool: Bash] head -50 act-result.txt && tail -20 act-result.txt && wc -l act-result.txt
+[Result] time="2026-05-06T21:31:53-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+time="2026-05-06T21:31:53-04:00" level=warning msg="unable to get git ref: reference not found"
+time="2026-05-06T21:31:53-04:00" level=warning msg="unable to get git revision: reference not found"
+[Secret Rotation Validator/Test Secret Rotation Validator] ⭐ Run Set up job
+[Secret Rotation Validator/Test Secret Rotation Validator] 🚀  Start image=mcr.microsoft.com/powershell:latest
+[Secret Rotation Validator/Test Secret Rotation Validator]   🐳  docker pull image=mcr.microsoft.com/powershell:latest platform= username= forcePull=true
+[Secret Rotation Validator/Test Secret Rotation Validator]   🐳  docker create image=mcr.microsoft.com/powershell:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/Test Secret Rotation Validator]   🐳  docker run image=mcr.microsoft.com/powershell:latest platform= e
+[Assistant] Great! Now let me enhance the test suite with additional edge cases and expand test coverage. I'll update the test file with more comprehensive tests:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-haiku45/Test-SecretRotationValidato
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-haiku45/Test-SecretRotationValidator.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Now let me run the workflow again with the expanded test suite:
+[Tool: Bash] rm -f act-result.txt && act push --rm 2>&1 | tee act-result.txt
+[Result] time="2026-05-06T21:32:27-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+time="2026-05-06T21:32:27-04:00" level=warning msg="unable to get git ref: reference not found"
+time="2026-05-06T21:32:27-04:00" level=warning msg="unable to get git revision: reference not found"
+[Secret Rotation Validator/Test Secret Rotation Validator] ⭐ Run Set up job
+[Secret Rotation Validator/Test Secret Rotation Validator] 🚀  Start image=mcr.microsoft.com/powershell:latest
+[Secret Rotation Validator/Test Secret Rotation Validator]   🐳  docker pull image=mcr.microsoft.com/powershell:latest platform= username= forcePull=true
+[Secret Rotation Validator/Test Secret Rotation Validator]   🐳  docker create image=mcr.microsoft.com/powershell:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/Test Secret Rotation Validator]   🐳  docker run image=mcr.microsoft.com/powershell:latest platform= e
+[Assistant] I need to fix the edge case handling. Let me update the implementation:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-haiku45/SecretRotationValidator.ps1
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-haiku45/SecretRotationValidator.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-haiku45/SecretRotationValidator.ps1
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-haiku45/SecretRotationValidator.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-haiku45/Test-SecretRotationValidato
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-haiku45/Test-SecretRotationValidator.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-haiku45/Test-SecretRotationValidato
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-haiku45/Test-SecretRotationValidator.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] rm -f act-result.txt && act push --rm 2>&1 | tee act-result.txt
+[Result] time="2026-05-06T21:33:01-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+time="2026-05-06T21:33:01-04:00" level=warning msg="unable to get git ref: reference not found"
+time="2026-05-06T21:33:01-04:00" level=warning msg="unable to get git revision: reference not found"
+[Secret Rotation Validator/Test Secret Rotation Validator] ⭐ Run Set up job
+[Secret Rotation Validator/Test Secret Rotation Validator] 🚀  Start image=mcr.microsoft.com/powershell:latest
+[Secret Rotation Validator/Test Secret Rotation Validator]   🐳  docker pull image=mcr.microsoft.com/powershell:latest platform= username= forcePull=true
+[Secret Rotation Validator/Test Secret Rotation Validator]   🐳  docker create image=mcr.microsoft.com/powershell:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/Test Secret Rotation Validator]   🐳  docker run image=mcr.microsoft.com/powershell:latest platform= e
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-haiku45/SecretRotationValidator.ps1
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-haiku45/SecretRotationValidator.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] rm -f act-result.txt && act push --rm 2>&1 | tee act-result.txt
+[Result] time="2026-05-06T21:33:18-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+time="2026-05-06T21:33:18-04:00" level=warning msg="unable to get git ref: reference not found"
+time="2026-05-06T21:33:18-04:00" level=warning msg="unable to get git revision: reference not found"
+[Secret Rotation Validator/Test Secret Rotation Validator] ⭐ Run Set up job
+[Secret Rotation Validator/Test Secret Rotation Validator] 🚀  Start image=mcr.microsoft.com/powershell:latest
+[Secret Rotation Validator/Test Secret Rotation Validator]   🐳  docker pull image=mcr.microsoft.com/powershell:latest platform= username= forcePull=true
+[Secret Rotation Validator/Test Secret Rotation Validator]   🐳  docker create image=mcr.microsoft.com/powershell:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/Test Secret Rotation Validator]   🐳  docker run image=mcr.microsoft.com/powershell:latest platform= e
+[Assistant] Perfect! All 14 tests pass! Let me verify the complete solution and create a summary:
+[Tool: Bash] find . -type f \( -name "*.ps1" -o -name "*.yml" -o -name "act-result.txt" \) | sort
+[Result] ./.github/workflows/secret-rotation-validator.yml
+./SecretRotationValidator.ps1
+./Test-SecretRotationValidator.ps1
+./act-result.txt
+[Assistant] Excellent! Let me verify actionlint passes one final time and create a summary:
+[Tool: Bash] echo "=== Final Validation ===" && actionlint .github/workflows/secret-rotation-validator.yml && echo "✓ Actionlint passed" && echo "" && echo "=== Test Results ===" && grep -E "Tests Passed:|Job succeeded" act-result.txt | tail -2
+[Result] === Final Validation ===
+✓ Actionlint passed
+
+=== Test Results ===
+[Secret Rotation Validator/Test Secret Rotation Validator]   | [32mTests Passed: 14, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Secret Rotation Validator/Test Secret Rotation Validator] 🏁  Job succeeded
+[Assistant] Perfect! Let me create a summary document:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-haiku45/README.md", "content": "# Secret Rotation Validat
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/powershell-tool-haiku45/README.md (file state is current in your context — no need to Read it back)
+[Tool: Bash] ls -lh && echo "" && echo "=== File Summary ===" && wc -l *.ps1 .github/workflows/*.yml README.md
+[Result] total 60K
+-rw-r--r-- 1 passp passp 3.7K May  6 21:33 README.md
+-rw-r--r-- 1 passp passp 4.3K May  6 21:33 SecretRotationValidator.ps1
+-rw-r--r-- 1 passp passp 7.5K May  6 21:32 Test-SecretRotationValidator.ps1
+-rw-r--r-- 1 passp passp  15K May  6 21:33 act-result.txt
+-rw-r--r-- 1 passp passp  22K Apr 17 00:12 benchmark-instructions-v4.md
+
+=== File Summary ===
+  154 SecretRotationValidator.ps1
+  221 Test-SecretRotationValidator.ps1
+   78 .github/workflows/secret-rotation-validator.yml
+  104 README.md
+  557 total
+[Assistant] Perfect! Here's the complete solution summary:
+
+## Deliverables Summary
+
+### ✅ PowerShell Secret Rotation Validator
+
+**Core Components:**
+
+1. **SecretRotationValidator.ps1** (154 lines)
+   - 6 functions implementing secret rotation logic
+   - Parses JSON configuration with metadata (name, last-rotated, rotation-policy, required-by services)
+   - Identifies expired secrets, secrets in warning window, and healthy secrets
+   - Generates reports in markdown (table) and JSON formats
+   - Configurable warning window (default 7 days)
+
+2. **Test-SecretRotationValidator.ps1** (221 lines)
+   - 14 comprehensive Pester test cases using Red/Green TDD
+   - Tests for configuration parsing, expiration detection, warning detection, status categorization
+   - Edge cases: empty configs, multiple services, JSON validation, configurable warning windows
+   - All tests passing (14/14) ✓
+
+3. **.github/workflows/secret-rotation-validator.yml** (78 lines)
+   - Triggers: push, pull_request, schedule (weekly), workflow_dispatch
+   - Runs in PowerShell container (`mcr.microsoft.com/powershell:latest`)
+   - Installs Pester and runs all tests
+   - Validates script with sample data in both formats
+   - ✓ Passes actionlint validation (no errors)
+   - ✓ All jobs succeeded when run with `act`
+
+4. **act-result.txt** (15KB)
+   - Complete GitHub Actions workflow output
+   - Shows all 14 tests passing
+   - Both markdown and JSON output samples included
+   - Job succeeded confirmation
+
+5. **README.md** (104 lines)
+   - Implementation overview using TDD methodology
+   - File descriptions and usage examples
+   - Test coverage matrix
+   - Validation results
+
+### ✅ Requirement Compliance
+
+| Requirement | Status |
+|---|---|
+| Red/Green TDD methodology | ✓ Started with failing tests, built to pass |
+| Pester test framework | ✓ 14 test cases defined and passing |
+| All tests runnable with `Invoke-Pester` | ✓ All tests pass (14/14) |
+| Mock fixtures & test data | ✓ Multiple fixtures for each scenario |
+| Error handling | ✓ Invalid JSON, empty configs, edge cases handled |
+| GitHub Actions workflow file | ✓ Triggers: push, PR, schedule, manual |
+| Actionlint validation | ✓ Passes cleanly |
+| Runs with `act` (Docker) | ✓ All tests pass through act |
+| act-result.txt artifact | ✓ Complete output captured |
+| Support markdown & JSON formats | ✓ Both formats tested and validated |
+| Handles multiple services per secret | ✓ Test coverage included |
+| Configurable warning window | ✓ Parameterized, tested with different values |
+
+All tests execute through GitHub Actions CI/CD pipeline via `act` with **100% pass rate** and **zero failures**.

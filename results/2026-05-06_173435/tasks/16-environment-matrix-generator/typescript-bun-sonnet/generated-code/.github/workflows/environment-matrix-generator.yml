@@ -1,0 +1,86 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  generate-matrix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      # ── Test: basic matrix (2 OS x 2 node = 4 entries, fail-fast=false) ──────
+      - name: Test basic matrix generation
+        run: |
+          bun run matrix-generator.ts --config fixtures/basic.json > /tmp/basic.json
+          echo "=== basic matrix output ==="
+          cat /tmp/basic.json
+          count=$(jq '.matrix.include | length' /tmp/basic.json)
+          failfast=$(jq -r '.["fail-fast"]' /tmp/basic.json)
+          echo "MATRIX_ASSERT_BASIC_COUNT=$count"
+          echo "MATRIX_ASSERT_BASIC_FAILFAST=$failfast"
+          [ "$count" = "4" ] || { echo "FAIL: expected 4 entries, got $count"; exit 1; }
+          [ "$failfast" = "false" ] || { echo "FAIL: expected fail-fast=false, got $failfast"; exit 1; }
+
+      # ── Test: feature flags (1 OS x 1 node x 2 flags = 2 entries) ────────────
+      - name: Test matrix with feature flags
+        run: |
+          bun run matrix-generator.ts --config fixtures/with-flags.json > /tmp/flags.json
+          echo "=== feature flags output ==="
+          cat /tmp/flags.json
+          count=$(jq '.matrix.include | length' /tmp/flags.json)
+          echo "MATRIX_ASSERT_FLAGS_COUNT=$count"
+          [ "$count" = "2" ] || { echo "FAIL: expected 2 entries, got $count"; exit 1; }
+
+      # ── Test: exclude rules (4 base - 1 excluded = 3 entries) ─────────────────
+      - name: Test matrix with exclude rules
+        run: |
+          bun run matrix-generator.ts --config fixtures/with-excludes.json > /tmp/excludes.json
+          echo "=== excludes output ==="
+          cat /tmp/excludes.json
+          count=$(jq '.matrix.include | length' /tmp/excludes.json)
+          echo "MATRIX_ASSERT_EXCLUDES_COUNT=$count"
+          [ "$count" = "3" ] || { echo "FAIL: expected 3 entries, got $count"; exit 1; }
+
+      # ── Test: include rules (2 base + 1 new = 3 entries) ─────────────────────
+      - name: Test matrix with include rules
+        run: |
+          bun run matrix-generator.ts --config fixtures/with-includes.json > /tmp/includes.json
+          echo "=== includes output ==="
+          cat /tmp/includes.json
+          count=$(jq '.matrix.include | length' /tmp/includes.json)
+          echo "MATRIX_ASSERT_INCLUDES_COUNT=$count"
+          [ "$count" = "3" ] || { echo "FAIL: expected 3 entries, got $count"; exit 1; }
+
+      # ── Test: max-parallel setting ────────────────────────────────────────────
+      - name: Test max-parallel configuration
+        run: |
+          bun run matrix-generator.ts --config fixtures/max-parallel.json > /tmp/maxparallel.json
+          echo "=== max-parallel output ==="
+          cat /tmp/maxparallel.json
+          mp=$(jq '.["max-parallel"]' /tmp/maxparallel.json)
+          echo "MATRIX_ASSERT_MAXPARALLEL=$mp"
+          [ "$mp" = "3" ] || { echo "FAIL: expected max-parallel=3, got $mp"; exit 1; }
+
+      # ── Test: max-size validation error ──────────────────────────────────────
+      - name: Test max-size validation
+        run: |
+          if bun run matrix-generator.ts --config fixtures/max-size-error.json 2>/dev/null; then
+            echo "FAIL: expected error for oversized matrix but command succeeded"
+            exit 1
+          else
+            echo "MATRIX_ASSERT_MAXSIZE_ERROR=PASS"
+          fi

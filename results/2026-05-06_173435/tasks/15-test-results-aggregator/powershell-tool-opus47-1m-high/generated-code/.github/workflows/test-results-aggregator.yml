@@ -1,0 +1,91 @@
+name: Test Results Aggregator
+
+# Runs on every push and pull request, plus on a daily schedule (UTC) and
+# on demand via workflow_dispatch. The schedule keeps the daily aggregation
+# job warm even when there are no commits.
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  schedule:
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+    inputs:
+      fixtures-path:
+        description: 'Directory containing test result fixtures'
+        required: false
+        default: 'aggregate-input'
+        type: string
+
+# Least-privilege defaults. We only need to read the repo and write the job
+# summary; nothing else is required.
+permissions:
+  contents: read
+
+# Cancel any in-flight run for the same branch when a new commit lands.
+concurrency:
+  group: test-results-aggregator-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # The Pester unit tests treat ./fixtures as their canonical, never-modified
+  # test data. The aggregator reads from a separate ./aggregate-input dir so
+  # callers can swap the input data per CI matrix leg without disturbing the
+  # files Pester expects. Override via workflow_dispatch input if needed.
+  FIXTURES_PATH: ${{ inputs.fixtures-path || 'aggregate-input' }}
+  SUMMARY_FILE: test-summary.md
+
+jobs:
+
+  # Job 1: run the Pester tests that prove the aggregator behaves correctly.
+  pester:
+    name: Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Pester
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = './tests'
+          $config.Run.Exit = $true
+          $config.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $config
+
+  # Job 2: actually aggregate the fixture data and publish the summary.
+  # Depends on `pester` so we never publish a summary built by a broken script.
+  aggregate:
+    name: Aggregate test results
+    needs: pester
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show fixtures being aggregated
+        shell: pwsh
+        run: |
+          Write-Host "Fixtures path: $env:FIXTURES_PATH"
+          Get-ChildItem -Path $env:FIXTURES_PATH -File | ForEach-Object {
+            Write-Host "  - $($_.Name) ($([math]::Round($_.Length/1KB,2)) KB)"
+          }
+
+      - name: Run aggregator
+        shell: pwsh
+        # FailOnTestFailure:$false so the workflow always finishes cleanly even
+        # when input fixtures contain failed tests — the failures are reported
+        # in the markdown summary, which is the whole point of the aggregator.
+        run: |
+          ./Aggregate-TestResults.ps1 `
+            -InputPath $env:FIXTURES_PATH `
+            -OutputPath $env:SUMMARY_FILE `
+            -FailOnTestFailure:$false
+
+      - name: Show summary file
+        shell: pwsh
+        run: |
+          Write-Host "=== Generated $env:SUMMARY_FILE ==="
+          Get-Content -LiteralPath $env:SUMMARY_FILE | ForEach-Object { Write-Host $_ }

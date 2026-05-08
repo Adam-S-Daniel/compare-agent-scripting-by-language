@@ -1,0 +1,54 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install jq
+        shell: bash
+        run: |
+          if ! command -v jq >/dev/null 2>&1; then
+            apt-get update -qq && apt-get install -y -qq jq
+          fi
+          jq --version
+      - name: Generate matrix
+        shell: bash
+        # FIXTURE and EXPECT_FAILURE come from `act --env` so each test case
+        # can drive a different fixture through the same workflow without
+        # editing files.
+        run: |
+          set -euo pipefail
+          fixture="${FIXTURE:-test/fixtures/basic.json}"
+          expect_failure="${EXPECT_FAILURE:-0}"
+          echo "Using fixture: $fixture (expect_failure=$expect_failure)"
+          if [ ! -f "$fixture" ]; then
+            echo "Fixture not found: $fixture" >&2
+            exit 1
+          fi
+          if out="$(./generate-matrix.sh "$fixture" 2>&1)"; then
+            echo "GENERATE_STATUS=ok"
+            echo "----- MATRIX BEGIN -----"
+            echo "$out"
+            echo "----- MATRIX END -----"
+            if [ "$expect_failure" = "1" ]; then
+              echo "Expected failure but generation succeeded" >&2
+              exit 1
+            fi
+          else
+            echo "GENERATE_STATUS=err"
+            echo "----- MATRIX ERROR BEGIN -----"
+            echo "$out"
+            echo "----- MATRIX ERROR END -----"
+            if [ "$expect_failure" != "1" ]; then
+              exit 1
+            fi
+          fi

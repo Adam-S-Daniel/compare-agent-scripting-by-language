@@ -1,0 +1,47 @@
+name: Test Results Aggregator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  # Path the workflow reads test result files from. The act harness writes a
+  # specific test-case fixture into this directory before running `act push`.
+  TEST_INPUT_DIR: ./test-input
+  # Markdown summary the aggregator emits (also appended to the job summary).
+  SUMMARY_OUTPUT: ./summary.md
+  # Skip the act-harness tests when running `bun test` inside the workflow,
+  # otherwise we would recursively spawn act.
+  SKIP_ACT_TESTS: "1"
+
+jobs:
+  aggregate:
+    name: Aggregate test results
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+
+      - name: Run unit tests
+        run: bun test tests/parser.test.ts tests/aggregator.test.ts tests/markdown.test.ts
+
+      - name: Aggregate test results
+        run: bun run src/main.ts "$TEST_INPUT_DIR" --out "$SUMMARY_OUTPUT"
+
+      - name: Print summary to stdout
+        run: |
+          echo "===AGGREGATOR_SUMMARY_BEGIN==="
+          cat "$SUMMARY_OUTPUT"
+          echo "===AGGREGATOR_SUMMARY_END==="
+
+      - name: Append summary to GitHub job summary
+        run: cat "$SUMMARY_OUTPUT" >> "$GITHUB_STEP_SUMMARY"

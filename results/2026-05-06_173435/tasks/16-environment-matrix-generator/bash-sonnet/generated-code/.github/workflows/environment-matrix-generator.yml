@@ -1,0 +1,68 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test Matrix Generator
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq jq shellcheck curl
+          git clone --depth 1 https://github.com/bats-core/bats-core.git /tmp/bats-core
+          sudo /tmp/bats-core/install.sh /usr/local
+          curl -sSfL https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz \
+            | sudo tar xzf - -C /usr/local/bin actionlint
+
+      - name: Validate script syntax and lint
+        run: |
+          bash -n generate-matrix.sh
+          shellcheck generate-matrix.sh
+
+      - name: Run bats test suite
+        run: bats tests/matrix.bats
+
+      - name: Generate matrix from basic fixture (output verification)
+        run: |
+          echo "=== Basic fixture matrix ==="
+          ./generate-matrix.sh tests/fixtures/basic.json | jq .
+          COUNT=$(./generate-matrix.sh tests/fixtures/basic.json | jq '.matrix.include | length')
+          echo "MATRIX_ENTRY_COUNT=$COUNT"
+
+      - name: Generate matrix with settings fixture (output verification)
+        run: |
+          echo "=== Settings fixture matrix ==="
+          ./generate-matrix.sh tests/fixtures/with-settings.json | jq .
+          MP=$(./generate-matrix.sh tests/fixtures/with-settings.json | jq '.["max-parallel"]')
+          FF=$(./generate-matrix.sh tests/fixtures/with-settings.json | jq '.["fail-fast"]')
+          echo "MATRIX_MAX_PARALLEL=$MP"
+          echo "MATRIX_FAIL_FAST=$FF"
+
+      - name: Generate matrix from three-dimensions fixture
+        run: |
+          echo "=== Three-dimensions fixture matrix ==="
+          ./generate-matrix.sh tests/fixtures/three-dimensions.json | jq .
+          COUNT=$(./generate-matrix.sh tests/fixtures/three-dimensions.json | jq '.matrix.include | length')
+          echo "MATRIX_3D_COUNT=$COUNT"
+
+      - name: Verify max_size validation rejects oversized matrix
+        run: |
+          if ./generate-matrix.sh tests/fixtures/too-large.json 2>/dev/null; then
+            echo "ERROR: expected failure for oversized matrix but got success"
+            exit 1
+          fi
+          echo "OVERSIZED_MATRIX_REJECTED=yes"

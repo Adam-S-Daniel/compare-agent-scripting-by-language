@@ -1,0 +1,287 @@
+[Tool: Bash] ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-high/
+[Result] total 44
+drwxr-xr-x  4 passp passp  4096 May  7 09:34 .
+drwxr-xr-x 18 passp passp  4096 May  7 09:34 ..
+-rw-r--r--  1 passp passp    40 May  7 09:34 .actrc
+drwxr-xr-x  2 passp passp  4096 May  7 09:34 .claude
+drwxr-xr-x  6 passp passp  4096 May  7 09:34 .git
+-rw-r--r--  1 passp passp 21843 Apr 17 00:12 benchmark-instructions-v4.md
+[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/AGENTS.md 2>/dev/null | head -100
+[Result] # Agent Instructions
+
+All agent-facing instructions live in this file. `CLAUDE.md` contains only a
+reference here. If you are a Claude Code agent, you have already loaded this
+via `CLAUDE.md`. Other agents: read this file directly.
+
+## Build and test
+
+```bash
+# Run unit tests (REQUIRED before every PR)
+pip install pytest  # if not already installed
+python3 -m pytest tests/ -v
+
+# Validate imports
+python3 -c "from runner import main"
+python3 -c "from generate_results import generate_results_md"
+python3 -c "from test_quality import compute_structural_metrics"
+python3 -c "from llm_providers import get_provider"
+
+# Regenerate all reports
+python3 generate_results.py --all
+
+# Run a benchmark (v4, all tasks/modes/models)
+python3 runner.py --tasks 11,12,13,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
+
+# Evaluate test quality (structural metrics only)
+python3 test_quality.py results/2026-04-09_152435
+
+# Evaluate test + deliverable quality with the default panel
+[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-high/.actrc
+[Result] -P ubuntu-latest=act-ubuntu-pwsh:latest
+[Tool: Bash] which act actionlint docker python3 pytest && python3 --version
+[Result] /home/passp/.local/bin/act
+/home/passp/.local/bin/actionlint
+/usr/bin/docker
+/usr/bin/python3
+/home/passp/.local/bin/pytest
+Python 3.12.3
+[Assistant] Starting with the TDD cycle. I'll create a Python project with pytest, then iterate.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-high/tests/test_license_checker.py", "content": "\"\"\
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-high/tests/test_license_checker.py (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 -m pytest tests/ -v 2>&1 | head -30
+[Result] ============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/passp/repos/compare-agent-scripting-by-language
+configfile: pyproject.toml
+plugins: anyio-4.13.0
+collecting ... collected 0 items / 1 error
+
+==================================== ERRORS ====================================
+_ ERROR collecting workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-high/tests/test_license_checker.py _
+ImportError while importing test module '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-high/tests/test_license_checker.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^
+[Assistant] Red. Now writing the minimum implementation to make tests pass.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-high/license_checker.py", "content": "\"\"\"Dependency
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-high/license_checker.py (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 -m pytest tests/ -v 2>&1 | tail -40
+[Result] tests/test_license_checker.py::test_cli_main_returns_zero_when_all_approved PASSED [100%]
+
+=================================== FAILURES ===================================
+____________ test_parse_requirements_txt_handles_pinned_and_ranged _____________
+
+tmp_path = PosixPath('/tmp/pytest-of-passp/pytest-27/test_parse_requirements_txt_ha0')
+
+    def test_parse_requirements_txt_handles_pinned_and_ranged(tmp_path: Path) -> None:
+        manifest = tmp_path / "requirements.txt"
+        manifest.write_text(
+            "# top-level deps\n"
+            "requests==2.31.0\n"
+            "flask>=2.0.0\n"
+            "numpy~=1.26.0\n"
+            "\n"
+            "  # indented comment\n"
+            "click  # has trailing comment\n"
+        )
+        deps = parse_manifest(str(manifest))
+>       assert deps == {
+            "requests": "2.31.0",
+            "flask": ">=2.0.0",
+            "numpy": "~=1.26.0",
+            "click": "*",  # unpinned -> "*"
+        }
+E       AssertionError: assert {'c
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-high/license_checker.py", "old_s
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-high/license_checker.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 -m pytest tests/ -v 2>&1 | tail -25
+[Result] platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/passp/repos/compare-agent-scripting-by-language
+configfile: pyproject.toml
+plugins: anyio-4.13.0
+collecting ... collected 16 items
+
+tests/test_license_checker.py::test_parse_package_json_extracts_deps_and_versions PASSED [  6%]
+tests/test_license_checker.py::test_parse_package_json_with_no_deps_returns_empty PASSED [ 12%]
+tests/test_license_checker.py::test_parse_requirements_txt_handles_pinned_and_ranged PASSED [ 18%]
+tests/test_license_checker.py::test_parse_manifest_missing_file_raises PASSED [ 25%]
+tests/test_license_checker.py::test_parse_manifest_unsupported_extension PASSED [ 31%]
+tests/test_license_checker.py::test_parse_manifest_malformed_json PASSED [ 37%]
+tests/test_license_checker.py::test_check_compliance_classifies_approved_denied_unknown PASSED [ 43%]
+tests/test_license_checker.py::test_check_compliance_license_not_in_allow_or_deny_is_unknown PASSED [ 50
+[Assistant] All 16 tests pass. Now creating the GitHub Actions workflow + fixtures + workflow structure tests + act harness.
+[Tool: ToolSearch] {"query": "select:TodoWrite", "max_results": 1}
+[Result] {'type': 'tool_reference', 'tool_name': 'TodoWrite'}
+[Tool: TodoWrite] {"todos": [{"content": "Write failing unit tests (TDD red)", "activeForm": "Writing failing unit tests", "status": "completed"}, {"content": "Implement license_checker module to pass tests (green)", "
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-high/fixtures/sample-package.json", "content": "{\n  \
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-high/fixtures/sample-package.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-high/fixtures/sample-licenses.json", "content": "{\n  
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-high/fixtures/sample-licenses.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-high/fixtures/all-clean-requirements.txt", "content": 
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-high/fixtures/all-clean-requirements.txt (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-high/fixtures/all-clean-licenses.json", "content": "{\
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-high/fixtures/all-clean-licenses.json (file state is current in your context — no need to Read it back)
+[Assistant] Now the GitHub Actions workflow. It accepts the manifest + config paths via env vars (defaults to fixtures), runs pytest, then runs the script.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-high/.github/workflows/dependency-license-checker.yml"
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-high/.github/workflows/dependency-license-checker.yml (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/dependency-license-checker.yml; echo "EXIT=$?"
+[Result] EXIT=0
+[Assistant] Actionlint passes. Now build the act harness with workflow structure tests + multiple fixture cases.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-high/tests/test_workflow_structure.py", "content": "\"
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-high/tests/test_workflow_structure.py (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 -c "import yaml" 2>&1 || pip install pyyaml --quiet 2>&1 | tail -3
+[Result] (Bash completed with no output)
+[Tool: TodoWrite] {"todos": [{"content": "Write failing unit tests (TDD red)", "activeForm": "Writing failing unit tests", "status": "completed"}, {"content": "Implement license_checker module to pass tests (green)", "
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Tool: Bash] python3 -m pytest tests/ -v 2>&1 | tail -30
+[Result] rootdir: /home/passp/repos/compare-agent-scripting-by-language
+configfile: pyproject.toml
+plugins: anyio-4.13.0
+collecting ... collected 23 items
+
+tests/test_license_checker.py::test_parse_package_json_extracts_deps_and_versions PASSED [  4%]
+tests/test_license_checker.py::test_parse_package_json_with_no_deps_returns_empty PASSED [  8%]
+tests/test_license_checker.py::test_parse_requirements_txt_handles_pinned_and_ranged PASSED [ 13%]
+tests/test_license_checker.py::test_parse_manifest_missing_file_raises PASSED [ 17%]
+tests/test_license_checker.py::test_parse_manifest_unsupported_extension PASSED [ 21%]
+tests/test_license_checker.py::test_parse_manifest_malformed_json PASSED [ 26%]
+tests/test_license_checker.py::test_check_compliance_classifies_approved_denied_unknown PASSED [ 30%]
+tests/test_license_checker.py::test_check_compliance_license_not_in_allow_or_deny_is_unknown PASSED [ 34%]
+tests/test_license_checker.py::test_check_compliance_deny_takes_precedence_over_allow PASSED [ 39%]
+t
+[Assistant] All 23 tests pass. Now build the act harness — it sets up an isolated repo per case, runs `act push`, captures output, and asserts exact values.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-high/run_act_tests.py", "content": "#!/usr/bin/env pyt
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-high/run_act_tests.py (file state is current in your context — no need to Read it back)
+[Assistant] Adding pyyaml to the workflow's pytest install step so the structure tests don't skip in CI.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-high/.github/workflows/dependenc
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-high/.github/workflows/dependency-license-checker.yml has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] act --version && docker ps -q | head -1 && echo "docker ok"
+[Result] act version 0.2.87
+8bcc4d78693e
+docker ok
+[Tool: Bash] python3 run_act_tests.py 2>&1 | tail -60
+[Result] === Running case: mixed-mit-gpl-unknown ===
+FAIL: mixed-mit-gpl-unknown: act exited 1 (expected 0)
+FAIL: mixed-mit-gpl-unknown: expected >=2 'Job succeeded' lines, found 0
+FAIL: mixed-mit-gpl-unknown: missing expected output: 'Job succeeded'
+FAIL: mixed-mit-gpl-unknown: missing expected output: 'LICENSE_SUMMARY approved=3 denied=1 unknown=1'
+FAIL: mixed-mit-gpl-unknown: missing expected output: 'DEP lodash@4.17.21 license=MIT status=approved'
+FAIL: mixed-mit-gpl-unknown: missing expected output: 'DEP express@4.18.2 license=MIT status=approved'
+FAIL: mixed-mit-gpl-unknown: missing expected output: 'DEP evil-pkg@1.0.0 license=GPL-3.0 status=denied'
+FAIL: mixed-mit-gpl-unknown: missing expected output: 'DEP obscure-lib@0.1.0 license=WTFPL status=unknown'
+FAIL: mixed-mit-gpl-unknown: missing expected output: 'DEP jest@29.7.0 license=MIT status=approved'
+=== Running case: all-approved ===
+FAIL: all-approved: act exited 1 (expected 0)
+FAIL: all-approved: expected >=2 'Job succeeded' lines, f
+[Tool: Bash] head -120 act-result.txt
+[Result] Act test run: 3 cases
+
+================================================================================
+CASE: mixed-mit-gpl-unknown
+act exit code: 1
+--------------------------------------------------------------------------------
+STDOUT:
+[dependency-license-checker/unit-tests] ⭐ Run Set up job
+[dependency-license-checker/unit-tests] 🚀  Start image=act-ubuntu-pwsh:latest
+[dependency-license-checker/unit-tests]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=true
+[dependency-license-checker/unit-tests] using DockerAuthConfig authentication for docker pull
+[dependency-license-checker/unit-tests] Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+[dependency-license-checker/unit-tests]   ❌  Failure - Set up job
+[dependency-license-checker/unit-tests] 🏁  Job failed
+
+--------------------------------------------------------------------------------
+STDERR:
+time="2026-05-07T09:38:14-04:00" level
+[Tool: Bash] docker images | head -10
+[Result] WARNING: This output is designed for human readability. For machine-readable output, please use --format.
+IMAGE                                           ID             DISK USAGE   CONTENT SIZE   EXTRA
+act-ubuntu-pwsh:latest                          05bbd1974971        2.6GB          652MB        
+alpine:latest                                   5b10f432ef3d       13.1MB         3.95MB        
+catthehacker/ubuntu:act-22.04                   754f20d9a184       2.15GB          531MB        
+catthehacker/ubuntu:act-latest                  ee77eaa905d1       2.32GB          572MB        
+catthehacker/ubuntu:full-latest                 9327301aea27       67.7GB         16.8GB   U    
+civic-terraform-mcp:latest                      84776a24bc66       1.28GB          265MB        
+ghcr.io/catthehacker/ubuntu:act-latest          eb153df03ca8       2.04GB          297MB        
+ghcr.io/catthehacker/ubuntu:full-latest         9327301aea27       67.7GB         16.8GB   U    
+ghcr.io/catthehacker/
+[Assistant] The image is local-only but act force-pulls by default. Updating harness to disable pull.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-high/run_act_tests.py", "old_str
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-high/run_act_tests.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 run_act_tests.py 2>&1 | tail -40
+[Result] === Running case: mixed-mit-gpl-unknown ===
+FAIL: mixed-mit-gpl-unknown: act exited 1 (expected 0)
+FAIL: mixed-mit-gpl-unknown: expected >=2 'Job succeeded' lines, found 1
+=== Running case: all-approved ===
+=== Running case: empty-manifest ===
+
+2 assertion failure(s):
+  - mixed-mit-gpl-unknown: act exited 1 (expected 0)
+  - mixed-mit-gpl-unknown: expected >=2 'Job succeeded' lines, found 1
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-high/.github/workflows/dependenc
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-high/.github/workflows/dependency-license-checker.yml has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/dependency-license-checker.yml; echo EXIT=$?
+[Result] EXIT=0
+[Assistant] Now also update the harness expected check — for case A I should still expect `CHECKER_EXITCODE=1` to verify the script correctly detected the deny.
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-high/run_act_tests.py", "old_str
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/13-dependency-license-checker/default-opus47-1m-high/run_act_tests.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] python3 run_act_tests.py 2>&1 | tail -15
+[Result] === Running case: mixed-mit-gpl-unknown ===
+=== Running case: all-approved ===
+=== Running case: empty-manifest ===
+
+All 3 cases passed.
+[Assistant] All 3 cases pass via act. Let me verify the artifact and run all unit tests one final time.
+[Tool: Bash] ls -la act-result.txt && wc -l act-result.txt && python3 -m pytest tests/ -v 2>&1 | tail -10
+[Result] -rw-r--r-- 1 passp passp 55859 May  7 09:40 act-result.txt
+553 act-result.txt
+tests/test_license_checker.py::test_cli_main_returns_zero_when_all_approved PASSED [ 69%]
+tests/test_workflow_structure.py::test_workflow_file_exists PASSED       [ 73%]
+tests/test_workflow_structure.py::test_workflow_yaml_is_valid_and_has_expected_top_level_keys PASSED [ 78%]
+tests/test_workflow_structure.py::test_workflow_has_required_triggers PASSED [ 82%]
+tests/test_workflow_structure.py::test_workflow_jobs_reference_real_files PASSED [ 86%]
+tests/test_workflow_structure.py::test_workflow_uses_pinned_action_versions PASSED [ 91%]
+tests/test_workflow_structure.py::test_workflow_has_two_jobs_with_dependency PASSED [ 95%]
+tests/test_workflow_structure.py::test_actionlint_passes_on_workflow PASSED [100%]
+
+============================== 23 passed in 0.18s ==============================
+[Tool: Bash] grep -E "Job succeeded|CHECKER_EXITCODE|LICENSE_SUMMARY|DEP " act-result.txt | head -25
+[Result] [dependency-license-checker/unit-tests] 🏁  Job succeeded
+[dependency-license-checker/license-check]   | LICENSE_SUMMARY approved=3 denied=1 unknown=1
+[dependency-license-checker/license-check]   | DEP lodash@4.17.21 license=MIT status=approved
+[dependency-license-checker/license-check]   | DEP express@4.18.2 license=MIT status=approved
+[dependency-license-checker/license-check]   | DEP evil-pkg@1.0.0 license=GPL-3.0 status=denied
+[dependency-license-checker/license-check]   | DEP obscure-lib@0.1.0 license=WTFPL status=unknown
+[dependency-license-checker/license-check]   | DEP jest@29.7.0 license=MIT status=approved
+[dependency-license-checker/license-check]   | CHECKER_EXITCODE=1
+[dependency-license-checker/license-check] 🏁  Job succeeded
+[dependency-license-checker/unit-tests] 🏁  Job succeeded
+[dependency-license-checker/license-check]   | LICENSE_SUMMARY approved=3 denied=0 unknown=0
+[dependency-license-checker/license-check]   | DEP requests@2.31.0 license=Apache-2.0 status=approved
+[Tool: TodoWrite] {"todos": [{"content": "Write failing unit tests (TDD red)", "activeForm": "Writing failing unit tests", "status": "completed"}, {"content": "Implement license_checker module to pass tests (green)", "
+[Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
+[Assistant] Done. Here's what was built:
+
+**TDD cycle (red → green):**
+- Wrote `tests/test_license_checker.py` with 16 unit tests first (red — `ModuleNotFoundError`)
+- Implemented `license_checker.py` to satisfy them (green) — manifest parsing for `package.json`/`requirements.txt`, allow/deny classification with deny precedence, mockable license lookup, JSON+text reports, CLI
+
+**Files:**
+- `license_checker.py` — main module + CLI
+- `tests/test_license_checker.py` — 16 unit tests (parsing, compliance, report generation, CLI integration)
+- `tests/test_workflow_structure.py` — 7 static workflow tests (YAML structure, triggers, file references, actionlint)
+- `fixtures/sample-package.json` + `sample-licenses.json` + `all-clean-*` — test fixtures with mocked licenses
+- `.github/workflows/dependency-license-checker.yml` — push/PR/dispatch/schedule triggers, 2 jobs (`test` → `check`), passes actionlint
+- `run_act_tests.py` — act harness covering 3 cases
+
+**Verification:**
+- 23/23 unit tests pass
+- `actionlint` exit 0
+- 3 act cases pass (mixed deny/unknown, all-approved, empty manifest) with exact value assertions on `LICENSE_SUMMARY`, every `DEP` line, `CHECKER_EXITCODE`, and ≥2 `Job succeeded` lines per case
+- `act-result.txt` (55 KB, 553 lines) captures all 3 case outputs
+
+Run with: `python3 -m pytest tests/ -v` for unit tests, `python3 run_act_tests.py` for the full pipeline harness.

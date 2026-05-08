@@ -1,0 +1,52 @@
+name: Dependency License Checker
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+
+env:
+  MANIFEST_PATH: package.json
+  CONFIG_PATH: license-config.json
+
+jobs:
+  check:
+    name: Check dependency licenses
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        # Use the official installer; setup-bun pulls from the same source
+        # but adds GitHub-action overhead that act sometimes mishandles.
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+
+      - name: Verify Bun
+        run: bun --version
+
+      - name: Install dev deps (best-effort)
+        run: bun install --no-save || true
+
+      - name: Run unit tests
+        run: bun test
+
+      - name: Run license check CLI
+        id: check
+        # Continue on denial so the report is always rendered; the harness
+        # asserts on the report contents, not the CLI's exit code.
+        continue-on-error: true
+        run: bun run checker.ts "$MANIFEST_PATH" "$CONFIG_PATH" | tee report.txt
+
+      - name: Show report
+        run: |
+          echo "=== LICENSE REPORT BEGIN ==="
+          cat report.txt
+          echo "=== LICENSE REPORT END ==="

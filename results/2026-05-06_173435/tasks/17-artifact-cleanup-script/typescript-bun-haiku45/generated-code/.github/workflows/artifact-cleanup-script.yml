@@ -1,0 +1,85 @@
+name: Artifact Cleanup Script Tests
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run unit tests
+        run: bun test
+
+      - name: Run artifact cleanup script tests
+        run: |
+          # Create test fixture data
+          cat > /tmp/test-artifacts.json << 'EOF'
+          {
+            "artifacts": [
+              {
+                "name": "build-artifact-1",
+                "size": 1024000,
+                "createdAt": "2026-04-01T10:00:00Z",
+                "workflowRunId": "workflow-1"
+              },
+              {
+                "name": "build-artifact-2",
+                "size": 2048000,
+                "createdAt": "2026-04-15T10:00:00Z",
+                "workflowRunId": "workflow-1"
+              },
+              {
+                "name": "build-artifact-3",
+                "size": 512000,
+                "createdAt": "2026-05-01T10:00:00Z",
+                "workflowRunId": "workflow-2"
+              }
+            ]
+          }
+          EOF
+
+          # Run cleanup with max age policy
+          bun run artifact-cleanup.ts --input /tmp/test-artifacts.json --max-age $((30 * 24 * 60 * 60 * 1000)) --output /tmp/cleanup-result.json
+
+          # Verify output
+          if [ ! -f /tmp/cleanup-result.json ]; then
+            echo "Error: cleanup result file not generated"
+            exit 1
+          fi
+
+          # Check for expected deletions
+          RESULT=$(cat /tmp/cleanup-result.json)
+          if echo "$RESULT" | grep -q "build-artifact-1"; then
+            echo "✓ Cleanup script executed successfully"
+          else
+            echo "Error: Cleanup script did not process artifacts"
+            exit 1
+          fi
+
+          echo "Cleanup test results:"
+          cat /tmp/cleanup-result.json
+
+      - name: Verify workflow structure
+        run: |
+          # Verify workflow file exists and has expected structure
+          if [ -f .github/workflows/artifact-cleanup-script.yml ]; then
+            echo "✓ Workflow file exists"
+            grep -q "name: Artifact Cleanup" .github/workflows/artifact-cleanup-script.yml && echo "✓ Workflow name is correct"
+            grep -q "bun test" .github/workflows/artifact-cleanup-script.yml && echo "✓ Test command configured"
+            grep -q "artifact-cleanup" .github/workflows/artifact-cleanup-script.yml && echo "✓ Cleanup script configured"
+          fi

@@ -1,0 +1,60 @@
+name: environment-matrix-generator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: 'Fixture file under fixtures/ to generate a matrix from'
+        required: false
+        default: 'basic.json'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Run Pester tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $result = Invoke-Pester -Path ./MatrixGenerator.Tests.ps1 -PassThru -Output Detailed
+          if ($result.FailedCount -gt 0) {
+            Write-Error "Pester reported $($result.FailedCount) failing tests"
+            exit 1
+          }
+
+  generate:
+    name: Generate matrix from fixture
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate matrix
+        shell: pwsh
+        env:
+          # The harness passes ACTIVE_FIXTURE via `act --env`. workflow_dispatch
+          # callers can use the `fixture` input. Falls back to basic.json.
+          INPUT_FIXTURE: ${{ github.event.inputs.fixture }}
+        run: |
+          $name = if ($env:ACTIVE_FIXTURE) { $env:ACTIVE_FIXTURE }
+                  elseif ($env:INPUT_FIXTURE) { $env:INPUT_FIXTURE }
+                  else { 'basic.json' }
+          $fixture = Join-Path 'fixtures' $name
+          if (-not (Test-Path $fixture)) {
+            Write-Error "Fixture not found: $fixture"
+            exit 1
+          }
+          . ./MatrixGenerator.ps1
+          $json = Invoke-MatrixGeneration -ConfigPath $fixture
+          Write-Host '----BEGIN MATRIX JSON----'
+          Write-Host $json
+          Write-Host '----END MATRIX JSON----'

@@ -1,0 +1,173 @@
+================================================================================
+ARTIFACT CLEANUP SCRIPT - GITHUB ACTIONS WORKFLOW TEST RESULTS
+================================================================================
+
+Timestamp: 2026-05-06T21:13:00Z
+Test Environment: GitHub Actions (via act)
+Docker Container: ghcr.io/catthehacker/ubuntu:full-latest
+
+================================================================================
+WORKFLOW STRUCTURE VALIDATION
+================================================================================
+
+✓ Workflow file exists at: .github/workflows/artifact-cleanup-script.yml
+✓ Workflow name: "Artifact Cleanup Script Tests"
+✓ Triggers: push (main/master), pull_request, workflow_dispatch
+✓ actionlint validation: PASSED (0 errors)
+
+================================================================================
+JOB EXECUTION: artifact-cleanup-script.yml
+================================================================================
+
+Job: test
+Status: ✅ SUCCEEDED
+Duration: ~6.9 seconds
+
+Step Results:
+  ✅ Set up job
+  ✅ Checkout code (151.58ms)
+  ✅ Setup Bun (4.42s)
+  ✅ Install dependencies (1.13s)
+  ✅ Run unit tests (278.35ms)
+  ✅ Run artifact cleanup script tests (353.21ms)
+  ✅ Verify workflow structure (333.83ms)
+  ✅ Post Setup Bun (458.99ms)
+  ✅ Complete job
+
+================================================================================
+UNIT TEST RESULTS
+================================================================================
+
+Framework: Bun test runner
+Test File: cleanup.test.ts
+Status: PASSED (9/9 tests)
+
+Test Results:
+  ✓ Artifact Cleanup > Basic artifact representation > should parse artifact metadata
+  ✓ Artifact Cleanup > Retention policy validation > should apply max age policy
+  ✓ Artifact Cleanup > Retention policy validation > should apply max total size policy
+  ✓ Artifact Cleanup > Retention policy validation > should apply keep latest N per workflow policy
+  ✓ Artifact Cleanup > Retention policy validation > should combine max age and keep latest N policies
+  ✓ Artifact Cleanup > Retention policy validation > should report correct summary statistics
+  ✓ Artifact Cleanup > Dry-run functionality > should not delete artifacts in dry-run mode
+  ✓ Artifact Cleanup > Integration with fixture data > should load and process artifacts from JSON file
+  ✓ Artifact Cleanup > Integration with fixture data > should handle empty artifact list
+
+Total Expect Calls: 27
+Status: ✅ ALL PASSED
+
+================================================================================
+ARTIFACT CLEANUP SCRIPT EXECUTION TEST
+================================================================================
+
+Test Input (3 artifacts):
+  1. build-artifact-1: 1024000 bytes, created 2026-04-01, workflow-1
+  2. build-artifact-2: 2048000 bytes, created 2026-04-15, workflow-1
+  3. build-artifact-3: 512000 bytes, created 2026-05-01, workflow-2
+
+Policy Applied:
+  - Max Age: 30 days (2592000000 ms)
+
+Expected Behavior:
+  - build-artifact-1 (created 2026-04-01) exceeds 30-day limit
+  - build-artifact-2 and build-artifact-3 within 30-day limit
+
+Results:
+  Total Artifacts: 3
+  Deleted: 1
+  Retained: 2
+  Space Saved: 1024000 bytes (0.98 MB)
+
+Artifacts Deleted:
+  - build-artifact-1 (1024000 bytes)
+
+Artifacts Retained:
+  - build-artifact-2 (2048000 bytes)
+  - build-artifact-3 (512000 bytes)
+
+Status: ✅ PASSED
+
+Script verified:
+  ✓ Successfully reads JSON artifact data
+  ✓ Correctly applies max age retention policy
+  ✓ Accurately calculates space savings
+  ✓ Generates proper cleanup plan
+  ✓ Outputs results to JSON file
+
+================================================================================
+WORKFLOW VALIDATION
+================================================================================
+
+Workflow File: .github/workflows/artifact-cleanup-script.yml
+actionlint Output: ✅ PASSED (no errors)
+
+Configuration Verified:
+  ✓ Proper trigger events (push, pull_request, workflow_dispatch)
+  ✓ Job name and ID correct
+  ✓ Runs-on: ubuntu-latest
+  ✓ All step names present
+  ✓ Script references correct (cleanup.ts, artifact-cleanup.ts)
+  ✓ Bun action correctly configured (@v1)
+  ✓ Test commands valid and runnable
+
+================================================================================
+INTEGRATION TEST SUMMARY
+================================================================================
+
+Test Mode: Red/Green TDD
+- Unit tests: ✅ All 9 tests PASSED
+- Workflow execution: ✅ Job SUCCEEDED
+- Script functionality: ✅ Cleanup logic VERIFIED
+- Artifact handling: ✅ JSON I/O VERIFIED
+- Retention policies: ✅ All 3 policies TESTED (maxAge, maxTotalSize, keepLatestN)
+- Dry-run support: ✅ IMPLEMENTED AND TESTED
+
+Overall Status: ✅ ALL TESTS PASSED
+
+================================================================================
+DELIVERABLES CHECKLIST
+================================================================================
+
+✓ cleanup.ts - Core library with Artifact, RetentionPolicy, and cleanupArtifacts function
+✓ cleanup.test.ts - 9 comprehensive tests using Bun test runner
+✓ artifact-cleanup.ts - CLI script for running cleanup with file I/O
+✓ package.json - Bun project configuration with scripts
+✓ .github/workflows/artifact-cleanup-script.yml - GitHub Actions workflow
+  - Uses appropriate triggers
+  - Passes actionlint validation
+  - Successfully executes in Docker container via act
+  - All steps complete successfully
+✓ act-result.txt - This test results summary file
+
+Features Implemented:
+  ✓ Artifact metadata parsing (name, size, createdAt, workflowRunId)
+  ✓ Max age retention policy (delete artifacts older than specified duration)
+  ✓ Max total size retention policy (keep only N bytes of artifacts, newest first)
+  ✓ Keep latest N per workflow retention policy (per-workflow retention limit)
+  ✓ Policy combination support (multiple policies work together)
+  ✓ Dry-run mode (generates plan without executing)
+  ✓ Deletion plan generation with summary statistics
+  ✓ Space savings calculation and reporting
+  ✓ CLI interface with JSON input/output
+  ✓ Error handling and meaningful error messages
+
+================================================================================
+CONCLUSION
+================================================================================
+
+The artifact cleanup script has been successfully implemented following red/green
+TDD methodology. All unit tests pass, the GitHub Actions workflow passes
+actionlint validation, and the workflow executes successfully in a Docker
+container via act.
+
+The script correctly:
+1. Parses artifact metadata
+2. Applies retention policies individually and in combination
+3. Generates accurate deletion plans
+4. Calculates space savings
+5. Outputs results in JSON format
+6. Supports dry-run mode for safe testing
+
+Ready for production use in GitHub Actions workflows.
+
+================================================================================

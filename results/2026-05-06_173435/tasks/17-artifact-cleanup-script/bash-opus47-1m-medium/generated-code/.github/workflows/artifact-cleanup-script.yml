@@ -1,0 +1,74 @@
+name: artifact-cleanup-script
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      max_age_days:
+        description: "Max artifact age in days"
+        required: false
+        default: "30"
+  schedule:
+    - cron: "0 3 * * *"
+
+permissions:
+  contents: read
+
+env:
+  INPUT_FILE: tests/fixtures/basic.tsv
+  NOW: "2026-05-07T00:00:00Z"
+  MAX_AGE_DAYS: "30"
+  KEEP_LATEST: "1"
+  KEEP_LATEST_INPUT: tests/fixtures/multi.tsv
+
+jobs:
+  lint:
+    name: Lint script
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install shellcheck
+        run: |
+          if ! command -v shellcheck >/dev/null 2>&1; then
+            sudo apt-get update && sudo apt-get install -y shellcheck
+          fi
+      - name: bash -n
+        run: bash -n cleanup.sh
+      - name: shellcheck
+        run: shellcheck cleanup.sh
+
+  test:
+    name: Run cleanup script
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install bats
+        run: |
+          if ! command -v bats >/dev/null 2>&1; then
+            sudo apt-get update && sudo apt-get install -y bats
+          fi
+
+      - name: Run bats unit tests
+        run: bats tests/cleanup.bats
+
+      - name: Run cleanup with max-age policy
+        run: |
+          chmod +x ./cleanup.sh
+          echo "===AGE-POLICY-OUTPUT==="
+          ./cleanup.sh --input "$INPUT_FILE" --now "$NOW" --max-age-days "$MAX_AGE_DAYS"
+          echo "===END-AGE-POLICY-OUTPUT==="
+
+      - name: Run cleanup with keep-latest policy
+        run: |
+          echo "===KEEP-LATEST-OUTPUT==="
+          ./cleanup.sh --input "$KEEP_LATEST_INPUT" --now "$NOW" --keep-latest "$KEEP_LATEST"
+          echo "===END-KEEP-LATEST-OUTPUT==="
+
+      - name: Run cleanup in dry-run mode
+        run: |
+          echo "===DRY-RUN-OUTPUT==="
+          ./cleanup.sh --input "$INPUT_FILE" --now "$NOW" --max-age-days "$MAX_AGE_DAYS" --dry-run
+          echo "===END-DRY-RUN-OUTPUT==="

@@ -1,0 +1,60 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Pester (no-op if already present)
+        shell: pwsh
+        run: |
+          if (-not (Get-Module -ListAvailable -Name Pester)) {
+            Install-Module -Name Pester -Force -Scope CurrentUser -SkipPublisherCheck
+          }
+          Import-Module Pester -Force
+          Write-Host "Pester version: $((Get-Module Pester).Version)"
+
+      - name: Run Pester unit tests
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path       = './SemanticVersionBumper.Tests.ps1'
+          $config.Output.Verbosity = 'Detailed'
+          $config.Run.Throw      = $true
+          Invoke-Pester -Configuration $config
+
+      - name: Run integration scenarios
+        shell: pwsh
+        run: |
+          Import-Module ./SemanticVersionBumper.psm1 -Force
+
+          function Run-Scenario {
+            param($Label, $VersionFile, $CommitsFile, $Expected)
+            $ver    = Get-VersionFromFile -FilePath $VersionFile
+            $commits = Read-CommitsFile  -FilePath $CommitsFile
+            $bump   = Get-BumpType       -Commits $commits
+            $new    = Get-NextVersion    -CurrentVersion $ver -BumpType $bump
+            Write-Host "SCENARIO $Label`: NEW_VERSION=$new"
+            if ($new -ne $Expected) {
+              Write-Error "FAIL: expected $Expected but got $new"
+              exit 1
+            }
+            Write-Host "PASS: $Label $ver -> $new ($bump)"
+          }
+
+          Run-Scenario -Label "fix"          -VersionFile "./fixtures/version-1.0.0.txt" -CommitsFile "./fixtures/commits-fix.json"      -Expected "1.0.1"
+          Run-Scenario -Label "feat"         -VersionFile "./fixtures/version-1.0.0.txt" -CommitsFile "./fixtures/commits-feat.json"     -Expected "1.1.0"
+          Run-Scenario -Label "breaking"     -VersionFile "./fixtures/version-1.0.0.txt" -CommitsFile "./fixtures/commits-breaking.json" -Expected "2.0.0"
+          Run-Scenario -Label "mixed"        -VersionFile "./fixtures/version-2.3.1.txt" -CommitsFile "./fixtures/commits-mixed.json"    -Expected "2.4.0"
+          Run-Scenario -Label "package-json" -VersionFile "./fixtures/package-3.2.1.json" -CommitsFile "./fixtures/commits-fix.json"    -Expected "3.2.2"
+
+          Write-Host "All integration scenarios passed."

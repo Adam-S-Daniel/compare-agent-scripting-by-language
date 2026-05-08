@@ -1,0 +1,82 @@
+name: Test Results Aggregator
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  schedule:
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  checks: write
+
+jobs:
+  test:
+    name: Run Tests and Aggregate Results
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          # Run Pester tests and capture results
+          $TestResults = Invoke-Pester -Path tests/test-aggregator.ps1 -PassThru -Output Detailed
+
+          # Exit with error if tests failed
+          if ($TestResults.FailedCount -gt 0) {
+            exit 1
+          }
+
+      - name: Run test result aggregation
+        shell: pwsh
+        run: |
+          # Source the aggregator script
+          . ./Aggregate-TestResults.ps1
+
+          # Aggregate test results from fixture files
+          $inputFiles = @(
+            "tests/fixtures/junit/test-results-1.xml",
+            "tests/fixtures/junit/test-results-2.xml",
+            "tests/fixtures/json/test-results-1.json",
+            "tests/fixtures/json/test-results-2.json"
+          )
+
+          # Aggregate results
+          $results = Invoke-TestAggregation -InputPaths $inputFiles
+
+          # Generate markdown summary
+          $markdown = ConvertTo-TestResultsMarkdown -AggregationResult $results
+
+          # Export to GitHub Actions job summary
+          if ($env:GITHUB_STEP_SUMMARY) {
+            "## Test Results Summary`n" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding UTF8
+            $markdown | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding UTF8 -Append
+          }
+
+          # Display summary to console
+          Write-Host "=== Test Aggregation Results ==="
+          Write-Host $markdown
+
+          # Verify we have expected stats
+          if ($results.TotalTests -eq 0) {
+            Write-Error "No tests were aggregated!"
+            exit 1
+          }
+
+          Write-Host "✅ Successfully aggregated $($results.TotalTests) tests"
+
+      - name: Archive test results
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            tests/fixtures/junit/*.xml
+            tests/fixtures/json/*.json
+          retention-days: 30

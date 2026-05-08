@@ -1,0 +1,98 @@
+name: environment-matrix-generator
+
+# Triggers cover normal CI usage plus an on-demand path so the harness
+# can drive this workflow with `act push` regardless of branch state.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      config_path:
+        description: Path to the JSON config file
+        required: false
+        default: current-config.json
+  schedule:
+    # Re-run nightly to surface drift in dependencies the script relies on.
+    - cron: '17 5 * * *'
+
+# Principle of least privilege: the script only reads files.
+permissions:
+  contents: read
+
+env:
+  # Single source of truth for the config path. The harness writes the
+  # active fixture to this filename inside the temp repo before each
+  # `act push`. workflow_dispatch can override via inputs.config_path.
+  CONFIG_PATH: ${{ github.event.inputs.config_path || 'current-config.json' }}
+
+jobs:
+  generate-matrix:
+    name: Generate matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix_exit_code: ${{ steps.gen.outputs.exit_code }}
+      expanded_size: ${{ steps.parse.outputs.expanded_size }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Show Python version
+        run: python3 --version
+
+      - name: Install pytest
+        # The custom act image already has Python 3 from the Ubuntu base.
+        # Install pytest if missing so the unit tests can run inside act.
+        run: |
+          python3 -m pip install --quiet --break-system-packages pytest \
+            || python3 -m pip install --quiet --user pytest \
+            || true
+          python3 -m pytest --version
+
+      - name: Run unit tests for matrix.py (red/green TDD safeguard)
+        # Only the unit tests for the script run here; the workflow-structure
+        # tests live in the harness that drives act and cannot run inside it.
+        run: python3 -m pytest tests/test_matrix.py -v
+
+      - name: Display active config
+        run: |
+          echo "Using CONFIG_PATH=$CONFIG_PATH"
+          if [ ! -f "$CONFIG_PATH" ]; then
+            echo "Config file not found, falling back to fixtures/simple.json"
+            cp fixtures/simple.json "$CONFIG_PATH"
+          fi
+          echo "::group::config-content"
+          cat "$CONFIG_PATH"
+          echo "::endgroup::"
+
+      - name: Generate matrix
+        id: gen
+        # We capture the script's exit code into a step output instead of
+        # failing the job, so the harness can assert on validation errors
+        # (e.g. max_size violations) without the workflow itself failing.
+        run: |
+          set +e
+          python3 matrix.py "$CONFIG_PATH" > matrix-output.json 2> matrix-error.log
+          rc=$?
+          set -e
+          echo "exit_code=$rc" >> "$GITHUB_OUTPUT"
+          echo "===BEGIN_MATRIX_JSON==="
+          cat matrix-output.json || true
+          echo "===END_MATRIX_JSON==="
+          echo "===BEGIN_ERROR_LOG==="
+          cat matrix-error.log || true
+          echo "===END_ERROR_LOG==="
+          echo "===EXIT_CODE=$rc==="
+
+      - name: Parse expanded size on success
+        id: parse
+        if: steps.gen.outputs.exit_code == '0'
+        run: |
+          size=$(python3 -c "import json; print(json.load(open('matrix-output.json'))['expanded_size'])")
+          echo "expanded_size=$size" >> "$GITHUB_OUTPUT"
+          echo "===EXPANDED_SIZE=$size==="
+
+      - name: Surface validation error on failure
+        if: steps.gen.outputs.exit_code != '0'
+        run: |
+          echo "===VALIDATION_FAILED==="
+          cat matrix-error.log

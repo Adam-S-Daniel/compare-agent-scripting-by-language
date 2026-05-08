@@ -1,0 +1,70 @@
+name: Dependency License Checker
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  license-check:
+    runs-on: ubuntu-latest
+    env:
+      LICENSE_LOOKUP_FILE: ${{ github.workspace }}/fixtures/licenses.tsv
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show environment
+        run: |
+          bash --version
+          ls -la
+
+      - name: Run unit tests
+        run: |
+          if ! command -v bats >/dev/null 2>&1; then
+            echo "Installing bats..."
+            sudo apt-get update -y >/dev/null 2>&1 || true
+            sudo apt-get install -y bats >/dev/null 2>&1 || {
+              echo "apt install failed, falling back to git clone"
+              git clone --depth 1 https://github.com/bats-core/bats-core /tmp/bats-core
+              sudo /tmp/bats-core/install.sh /usr/local
+            }
+          fi
+          bats --tap test/license-checker.bats
+
+      - name: Run license check on manifest
+        id: licensecheck
+        env:
+          MANIFEST: ${{ env.MANIFEST_FILE }}
+          CONFIG: ${{ env.CONFIG_FILE }}
+        run: |
+          set +e
+          MANIFEST="${MANIFEST:-fixtures/package.json}"
+          CONFIG="${CONFIG:-fixtures/config.json}"
+          echo "Manifest: $MANIFEST"
+          echo "Config:   $CONFIG"
+          ./license-checker.sh --manifest "$MANIFEST" --config "$CONFIG" --output report.txt
+          rc=$?
+          echo "exit_code=$rc" >> "$GITHUB_OUTPUT"
+          echo "License checker exited with $rc"
+          # Fail the job only on real errors (rc=1). rc=2 (denied found) is reported but
+          # we still let downstream steps inspect the report. To make CI strict, change
+          # the trailing line to `exit $rc`.
+          if [ "$rc" -eq 1 ]; then exit 1; fi
+
+      - name: Show report
+        run: |
+          echo "----- report.txt -----"
+          cat report.txt
+          echo "----------------------"
+
+      - name: Fail on denied licenses
+        if: ${{ env.STRICT == '1' && steps.licensecheck.outputs.exit_code == '2' }}
+        run: |
+          echo "Denied licenses found. Failing build per STRICT=1."
+          exit 1

@@ -1,0 +1,62 @@
+name: Environment Matrix Generator
+
+# Triggered on push, PRs, manual runs, and weekly to catch upstream tooling drift.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+
+env:
+  FIXTURE: fixtures/config.json
+
+jobs:
+  unit-tests:
+    name: Unit tests (bun test)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+
+      - name: Run unit tests
+        run: bun test tests/matrix.test.ts tests/cli.test.ts
+
+  generate-matrix:
+    name: Generate matrix from fixture
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+
+      - name: Generate matrix JSON
+        run: |
+          set -euo pipefail
+          bun run src/cli.ts "$FIXTURE" > matrix.json
+          echo "---MATRIX-OUTPUT-START---"
+          cat matrix.json
+          echo "---MATRIX-OUTPUT-END---"
+          # Compact single-line marker for downstream parsing.
+          echo "MATRIX_JSON_LINE:$(jq -c . matrix.json)"
+
+      - name: Print summary line
+        run: |
+          set -euo pipefail
+          count=$(jq '.strategy.matrix.include | length' matrix.json)
+          ff=$(jq -r '.strategy["fail-fast"]' matrix.json)
+          mp=$(jq -r '.strategy["max-parallel"] // "unset"' matrix.json)
+          echo "MATRIX_SUMMARY combinations=${count} fail-fast=${ff} max-parallel=${mp}"

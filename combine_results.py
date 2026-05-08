@@ -868,6 +868,15 @@ def _build_markdown(
         "- **Band calibration:** auto-calibrated to the data's best-to-worst spread via log-equal division (`boundary_i = max_ratio^(i/12)`), so the best observed ratio lands at A+ and the worst at D-",
         "- **F band:** reserved for ratios beyond the observed worst",
         "",
+        "### Duration columns",
+        "",
+        "Every Duration figure in this report derives from `timing.grand_total_duration_ms` in `metrics.json` — wall-clock seconds from CLI invocation to the final assistant turn (agent thinking + tool execution + hooks).",
+        "",
+        "- **Duration** (single run): that one run's wall clock. Appears in the [Failed / Timed-Out Runs](#failed--timed-out-runs) and per-run detail tables.",
+        "- **Avg Duration** (in the [Comparison by Language/Model/Effort](#comparison-by-languagemodeleffort) table; also drives the [Tiers](#tiers-by-languagemodeleffort) Duration column): arithmetic mean of `Duration` over the runs in that combo, excluding failed/timed-out runs.",
+        "- **Avg Duration Net of Traps** is intentionally absent from this combined report — trap detection isn't yet threaded through `combine_results.py`. See each contributing source run's per-run `results.md` for trap-adjusted Duration figures.",
+        "- The **Tier table's Duration column** shows the tier letter (A+..F) for the combo's gross **Avg Duration** ratio.",
+        "",
     ]
     scoring_md = "\n".join(scoring_block)
 

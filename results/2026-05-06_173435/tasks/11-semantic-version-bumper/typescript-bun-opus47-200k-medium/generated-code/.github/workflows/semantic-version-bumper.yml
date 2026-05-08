@@ -1,0 +1,64 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: "Fixture directory under ./fixtures to use"
+        required: false
+        default: "feat-only"
+
+permissions:
+  contents: read
+
+env:
+  FIXTURE_DIR: ${{ github.event.inputs.fixture || 'feat-only' }}
+
+jobs:
+  bump:
+    name: Bump version from conventional commits
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        run: |
+          if ! command -v bun >/dev/null 2>&1; then
+            curl -fsSL https://bun.sh/install | bash
+            echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+          fi
+          bun --version || "$HOME/.bun/bin/bun" --version
+
+      - name: Show fixture being used
+        run: |
+          echo "Using fixture: $FIXTURE_DIR"
+          ls -la "fixtures/$FIXTURE_DIR"
+
+      - name: Stage fixture into a temp working dir
+        run: |
+          mkdir -p work
+          cp "fixtures/$FIXTURE_DIR/version.txt" work/VERSION
+          cp "fixtures/$FIXTURE_DIR/commits.txt" work/commits.txt
+
+      - name: Run version bumper
+        id: bump
+        run: |
+          bun run src/cli.ts \
+            --version-file work/VERSION \
+            --commits-file work/commits.txt \
+            --changelog-file work/CHANGELOG.md \
+            --date 2026-05-08
+
+      - name: Show updated artifacts
+        run: |
+          echo "--- Updated VERSION ---"
+          cat work/VERSION
+          echo "--- Generated CHANGELOG ---"
+          cat work/CHANGELOG.md || true
+
+      - name: Job succeeded
+        run: echo "Job succeeded"

@@ -1,0 +1,489 @@
+
+===== CASE: 3-run-mixed =====
+[stdout]
+[test-results-aggregator/aggregate] ⭐ Run Set up job
+[test-results-aggregator/aggregate] 🚀  Start image=act-ubuntu-pwsh:latest
+[test-results-aggregator/aggregate]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[test-results-aggregator/aggregate]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[test-results-aggregator/aggregate]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[test-results-aggregator/aggregate]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[test-results-aggregator/aggregate]   ✅  Success - Set up job
+[test-results-aggregator/aggregate]   ☁  git clone 'https://github.com/oven-sh/setup-bun' # ref=v2
+[test-results-aggregator/aggregate] Non-terminating error while running 'git clone': some refs were not updated
+[test-results-aggregator/aggregate]   ☁  git clone 'https://github.com/actions/upload-artifact' # ref=v4
+[test-results-aggregator/aggregate] Non-terminating error while running 'git clone': some refs were not updated
+[test-results-aggregator/aggregate] ⭐ Run Main Checkout
+[test-results-aggregator/aggregate]   🐳  docker cp src=/tmp/act-agg-T7A63o/. dst=/tmp/act-agg-T7A63o
+[test-results-aggregator/aggregate]   ✅  Success - Main Checkout [60.721189ms]
+[test-results-aggregator/aggregate] ⭐ Run Main Install Bun
+[test-results-aggregator/aggregate]   🐳  docker cp src=/home/passp/.cache/act/oven-sh-setup-bun@v2/ dst=/var/run/act/actions/oven-sh-setup-bun@v2/
+[test-results-aggregator/aggregate]   🐳  docker exec cmd=[/opt/acttoolcache/node/24.15.0/x64/bin/node /var/run/act/actions/oven-sh-setup-bun@v2/dist/setup/index.js] user= workdir=
+[test-results-aggregator/aggregate]   | Downloading a new version of Bun: https://github.com/oven-sh/bun/releases/download/bun-v1.3.13/bun-linux-x64.zip
+[test-results-aggregator/aggregate]   | [command]/usr/bin/unzip -o -q /tmp/b8d00a13-7f82-475b-808b-4d3510c3c23d.zip
+[test-results-aggregator/aggregate]   | [command]/root/.bun/bin/bun --revision
+[test-results-aggregator/aggregate]   | 1.3.13+bf2e2cecf
+[test-results-aggregator/aggregate]   ✅  Success - Main Install Bun [5.008354469s]
+[test-results-aggregator/aggregate]   ⚙  ::set-output:: cache-hit=false
+[test-results-aggregator/aggregate]   ⚙  ::set-output:: bun-version=1.3.13
+[test-results-aggregator/aggregate]   ⚙  ::set-output:: bun-revision=1.3.13+bf2e2cecf
+[test-results-aggregator/aggregate]   ⚙  ::set-output:: bun-path=/root/.bun/bin/bun
+[test-results-aggregator/aggregate]   ⚙  ::set-output:: bun-download-url=https://github.com/oven-sh/bun/releases/download/bun-v1.3.13/bun-linux-x64.zip
+[test-results-aggregator/aggregate]   ⚙  ::add-path:: /root/.bun/bin
+[test-results-aggregator/aggregate] ⭐ Run Main Install dependencies
+[test-results-aggregator/aggregate]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[test-results-aggregator/aggregate]   | bun install v1.3.13 (bf2e2cec)
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   | + @types/bun@1.3.13
+[test-results-aggregator/aggregate]   | + typescript@5.9.3
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   | 5 packages installed [547.00ms]
+[test-results-aggregator/aggregate]   ✅  Success - Main Install dependencies [878.280342ms]
+[test-results-aggregator/aggregate] ⭐ Run Main Run unit tests (TDD suite)
+[test-results-aggregator/aggregate]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/3] user= workdir=
+[test-results-aggregator/aggregate]   | bun test v1.3.13 (bf2e2cec)
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   ❓  ::group::src/aggregator.test.ts:
+[test-results-aggregator/aggregate]   | (pass) parseJUnitXml > parses a basic JUnit XML report [1.06ms]
+[test-results-aggregator/aggregate]   | (pass) parseJUnitXml > throws a clear error on malformed XML [0.15ms]
+[test-results-aggregator/aggregate]   | (pass) parseJsonResults > parses our internal JSON shape [0.46ms]
+[test-results-aggregator/aggregate]   | (pass) parseJsonResults > rejects missing tests array with a useful message [0.13ms]
+[test-results-aggregator/aggregate]   | (pass) aggregate > computes totals across runs [0.77ms]
+[test-results-aggregator/aggregate]   | (pass) aggregate > identifies flaky tests (passed in some, failed in others) [0.14ms]
+[test-results-aggregator/aggregate]   | (pass) aggregate > does not flag consistently-failing tests as flaky [0.08ms]
+[test-results-aggregator/aggregate]   | (pass) renderMarkdown > includes totals, flaky list, and per-suite table [0.64ms]
+[test-results-aggregator/aggregate]   | (pass) renderMarkdown > renders a clean message when no failures and no flakies [0.26ms]
+[test-results-aggregator/aggregate]   | (pass) loadFile (auto-detect format) > dispatches to the right parser by extension and content [2.06ms]
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   ❓  ::endgroup::
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   |  10 pass
+[test-results-aggregator/aggregate]   |  0 fail
+[test-results-aggregator/aggregate]   |  26 expect() calls
+[test-results-aggregator/aggregate]   | Ran 10 tests across 1 file. [55.00ms]
+[test-results-aggregator/aggregate]   ✅  Success - Main Run unit tests (TDD suite) [441.753276ms]
+[test-results-aggregator/aggregate] ⭐ Run Main Aggregate test results across runs
+[test-results-aggregator/aggregate]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/agg] user= workdir=
+[test-results-aggregator/aggregate]   | # Test Results
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   | Aggregated across **3** run(s).
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   | ## Totals
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   | | Passed | Failed | Skipped | Total | Duration (s) |
+[test-results-aggregator/aggregate]   | |-------:|-------:|--------:|------:|-------------:|
+[test-results-aggregator/aggregate]   | | 10 | 2 | 3 | 15 | 6.20 |
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   | ## By suite
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   | | Suite | Passed | Failed | Skipped | Duration (s) |
+[test-results-aggregator/aggregate]   | |-------|-------:|-------:|--------:|-------------:|
+[test-results-aggregator/aggregate]   | | auth | 8 | 1 | 0 | 3.77 |
+[test-results-aggregator/aggregate]   | | billing | 2 | 1 | 3 | 2.43 |
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   | ## Flaky tests
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   | | Suite | Test | Passed | Failed |
+[test-results-aggregator/aggregate]   | |-------|------|-------:|-------:|
+[test-results-aggregator/aggregate]   | | auth | login_invalid_password | 2 | 1 |
+[test-results-aggregator/aggregate]   | | billing | charge_card | 2 | 1 |
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   | ## Failures
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   | - **billing / charge_card** (from `fixtures/run-3-results.json`): timeout
+[test-results-aggregator/aggregate]   | - **auth / login_invalid_password** (from `fixtures/run-1-junit.xml`): Expected 401 got 500
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   ❓  ::AGG:: passed=10 failed=2 skipped=3 flaky=2 runs=3
+[test-results-aggregator/aggregate]   ❓  ::AGG:: passed=10 failed=2 skipped=3 flaky=2 runs=3
+[test-results-aggregator/aggregate]   ✅  Success - Main Aggregate test results across runs [436.058267ms]
+[test-results-aggregator/aggregate]   ⚙  Summary - # Test Results
+
+Aggregated across **3** run(s).
+
+## Totals
+
+| Passed | Failed | Skipped | Total | Duration (s) |
+|-------:|-------:|--------:|------:|-------------:|
+| 10 | 2 | 3 | 15 | 6.20 |
+
+## By suite
+
+| Suite | Passed | Failed | Skipped | Duration (s) |
+|-------|-------:|-------:|--------:|-------------:|
+| auth | 8 | 1 | 0 | 3.77 |
+| billing | 2 | 1 | 3 | 2.43 |
+
+## Flaky tests
+
+| Suite | Test | Passed | Failed |
+|-------|------|-------:|-------:|
+| auth | login_invalid_password | 2 | 1 |
+| billing | charge_card | 2 | 1 |
+
+## Failures
+
+- **billing / charge_card** (from `fixtures/run-3-results.json`): timeout
+- **auth / login_invalid_password** (from `fixtures/run-1-junit.xml`): Expected 401 got 500
+
+[test-results-aggregator/aggregate] ⭐ Run Main Publish job summary
+[test-results-aggregator/aggregate]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/5] user= workdir=
+[test-results-aggregator/aggregate]   ✅  Success - Main Publish job summary [350.694047ms]
+[test-results-aggregator/aggregate]   ⚙  Summary - # Test Results
+
+Aggregated across **3** run(s).
+
+## Totals
+
+| Passed | Failed | Skipped | Total | Duration (s) |
+|-------:|-------:|--------:|------:|-------------:|
+| 10 | 2 | 3 | 15 | 6.20 |
+
+## By suite
+
+| Suite | Passed | Failed | Skipped | Duration (s) |
+|-------|-------:|-------:|--------:|-------------:|
+| auth | 8 | 1 | 0 | 3.77 |
+| billing | 2 | 1 | 3 | 2.43 |
+
+## Flaky tests
+
+| Suite | Test | Passed | Failed |
+|-------|------|-------:|-------:|
+| auth | login_invalid_password | 2 | 1 |
+| billing | charge_card | 2 | 1 |
+
+## Failures
+
+- **billing / charge_card** (from `fixtures/run-3-results.json`): timeout
+- **auth / login_invalid_password** (from `fixtures/run-1-junit.xml`): Expected 401 got 500
+[test-results-aggregator/aggregate] ⭐ Run Post Install Bun
+[test-results-aggregator/aggregate]   🐳  docker exec cmd=[/opt/acttoolcache/node/24.15.0/x64/bin/node /var/run/act/actions/oven-sh-setup-bun@v2/dist/cache-save/index.js] user= workdir=
+[test-results-aggregator/aggregate]   ✅  Success - Post Install Bun [566.602932ms]
+[test-results-aggregator/aggregate] ⭐ Run Complete job
+[test-results-aggregator/aggregate] Cleaning up container for job aggregate
+[test-results-aggregator/aggregate]   ✅  Success - Complete job
+[test-results-aggregator/aggregate] 🏁  Job succeeded
+
+[stderr]
+time="2026-05-08T02:09:24-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+
+[exit] 0
+
+===== CASE: single-all-green =====
+[stdout]
+[test-results-aggregator/aggregate] ⭐ Run Set up job
+[test-results-aggregator/aggregate] 🚀  Start image=act-ubuntu-pwsh:latest
+[test-results-aggregator/aggregate]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[test-results-aggregator/aggregate]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[test-results-aggregator/aggregate]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[test-results-aggregator/aggregate]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[test-results-aggregator/aggregate]   ✅  Success - Set up job
+[test-results-aggregator/aggregate]   ☁  git clone 'https://github.com/oven-sh/setup-bun' # ref=v2
+[test-results-aggregator/aggregate] Non-terminating error while running 'git clone': some refs were not updated
+[test-results-aggregator/aggregate]   ☁  git clone 'https://github.com/actions/upload-artifact' # ref=v4
+[test-results-aggregator/aggregate] Non-terminating error while running 'git clone': some refs were not updated
+[test-results-aggregator/aggregate] ⭐ Run Main Checkout
+[test-results-aggregator/aggregate]   🐳  docker cp src=/tmp/act-agg-AD5lus/. dst=/tmp/act-agg-AD5lus
+[test-results-aggregator/aggregate]   ✅  Success - Main Checkout [79.555331ms]
+[test-results-aggregator/aggregate] ⭐ Run Main Install Bun
+[test-results-aggregator/aggregate]   🐳  docker cp src=/home/passp/.cache/act/oven-sh-setup-bun@v2/ dst=/var/run/act/actions/oven-sh-setup-bun@v2/
+[test-results-aggregator/aggregate]   🐳  docker exec cmd=[/opt/acttoolcache/node/24.15.0/x64/bin/node /var/run/act/actions/oven-sh-setup-bun@v2/dist/setup/index.js] user= workdir=
+[test-results-aggregator/aggregate]   | Downloading a new version of Bun: https://github.com/oven-sh/bun/releases/download/bun-v1.3.13/bun-linux-x64.zip
+[test-results-aggregator/aggregate]   | [command]/usr/bin/unzip -o -q /tmp/9da2c7d4-ac40-4c30-99fd-146b0c93f04f.zip
+[test-results-aggregator/aggregate]   | [command]/root/.bun/bin/bun --revision
+[test-results-aggregator/aggregate]   | 1.3.13+bf2e2cecf
+[test-results-aggregator/aggregate]   ✅  Success - Main Install Bun [5.459559982s]
+[test-results-aggregator/aggregate]   ⚙  ::set-output:: cache-hit=false
+[test-results-aggregator/aggregate]   ⚙  ::set-output:: bun-version=1.3.13
+[test-results-aggregator/aggregate]   ⚙  ::set-output:: bun-revision=1.3.13+bf2e2cecf
+[test-results-aggregator/aggregate]   ⚙  ::set-output:: bun-path=/root/.bun/bin/bun
+[test-results-aggregator/aggregate]   ⚙  ::set-output:: bun-download-url=https://github.com/oven-sh/bun/releases/download/bun-v1.3.13/bun-linux-x64.zip
+[test-results-aggregator/aggregate]   ⚙  ::add-path:: /root/.bun/bin
+[test-results-aggregator/aggregate] ⭐ Run Main Install dependencies
+[test-results-aggregator/aggregate]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[test-results-aggregator/aggregate]   | bun install v1.3.13 (bf2e2cec)
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   | + @types/bun@1.3.13
+[test-results-aggregator/aggregate]   | + typescript@5.9.3
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   | 5 packages installed [551.00ms]
+[test-results-aggregator/aggregate]   ✅  Success - Main Install dependencies [836.629881ms]
+[test-results-aggregator/aggregate] ⭐ Run Main Run unit tests (TDD suite)
+[test-results-aggregator/aggregate]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/3] user= workdir=
+[test-results-aggregator/aggregate]   | bun test v1.3.13 (bf2e2cec)
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   ❓  ::group::src/aggregator.test.ts:
+[test-results-aggregator/aggregate]   | (pass) parseJUnitXml > parses a basic JUnit XML report [1.48ms]
+[test-results-aggregator/aggregate]   | (pass) parseJUnitXml > throws a clear error on malformed XML [0.16ms]
+[test-results-aggregator/aggregate]   | (pass) parseJsonResults > parses our internal JSON shape [0.54ms]
+[test-results-aggregator/aggregate]   | (pass) parseJsonResults > rejects missing tests array with a useful message [0.15ms]
+[test-results-aggregator/aggregate]   | (pass) aggregate > computes totals across runs [0.84ms]
+[test-results-aggregator/aggregate]   | (pass) aggregate > identifies flaky tests (passed in some, failed in others) [0.18ms]
+[test-results-aggregator/aggregate]   | (pass) aggregate > does not flag consistently-failing tests as flaky [0.17ms]
+[test-results-aggregator/aggregate]   | (pass) renderMarkdown > includes totals, flaky list, and per-suite table [0.56ms]
+[test-results-aggregator/aggregate]   | (pass) renderMarkdown > renders a clean message when no failures and no flakies [0.25ms]
+[test-results-aggregator/aggregate]   | (pass) loadFile (auto-detect format) > dispatches to the right parser by extension and content [1.91ms]
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   ❓  ::endgroup::
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   |  10 pass
+[test-results-aggregator/aggregate]   |  0 fail
+[test-results-aggregator/aggregate]   |  26 expect() calls
+[test-results-aggregator/aggregate]   | Ran 10 tests across 1 file. [58.00ms]
+[test-results-aggregator/aggregate]   ✅  Success - Main Run unit tests (TDD suite) [444.595128ms]
+[test-results-aggregator/aggregate] ⭐ Run Main Aggregate test results across runs
+[test-results-aggregator/aggregate]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/agg] user= workdir=
+[test-results-aggregator/aggregate]   | # Test Results
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   | Aggregated across **1** run(s).
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   | ## Totals
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   | | Passed | Failed | Skipped | Total | Duration (s) |
+[test-results-aggregator/aggregate]   | |-------:|-------:|--------:|------:|-------------:|
+[test-results-aggregator/aggregate]   | | 4 | 0 | 0 | 4 | 1.00 |
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   | All 4 tests passed cleanly.
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   | ## By suite
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   | | Suite | Passed | Failed | Skipped | Duration (s) |
+[test-results-aggregator/aggregate]   | |-------|-------:|-------:|--------:|-------------:|
+[test-results-aggregator/aggregate]   | | core | 3 | 0 | 0 | 0.60 |
+[test-results-aggregator/aggregate]   | | ext | 1 | 0 | 0 | 0.40 |
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   | ## Flaky tests
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   | _None detected._
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   ❓  ::AGG:: passed=4 failed=0 skipped=0 flaky=0 runs=1
+[test-results-aggregator/aggregate]   ❓  ::AGG:: passed=4 failed=0 skipped=0 flaky=0 runs=1
+[test-results-aggregator/aggregate]   ✅  Success - Main Aggregate test results across runs [500.50648ms]
+[test-results-aggregator/aggregate]   ⚙  Summary - # Test Results
+
+Aggregated across **1** run(s).
+
+## Totals
+
+| Passed | Failed | Skipped | Total | Duration (s) |
+|-------:|-------:|--------:|------:|-------------:|
+| 4 | 0 | 0 | 4 | 1.00 |
+
+All 4 tests passed cleanly.
+
+## By suite
+
+| Suite | Passed | Failed | Skipped | Duration (s) |
+|-------|-------:|-------:|--------:|-------------:|
+| core | 3 | 0 | 0 | 0.60 |
+| ext | 1 | 0 | 0 | 0.40 |
+
+## Flaky tests
+
+_None detected._
+
+[test-results-aggregator/aggregate] ⭐ Run Main Publish job summary
+[test-results-aggregator/aggregate]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/5] user= workdir=
+[test-results-aggregator/aggregate]   ✅  Success - Main Publish job summary [445.080673ms]
+[test-results-aggregator/aggregate]   ⚙  Summary - # Test Results
+
+Aggregated across **1** run(s).
+
+## Totals
+
+| Passed | Failed | Skipped | Total | Duration (s) |
+|-------:|-------:|--------:|------:|-------------:|
+| 4 | 0 | 0 | 4 | 1.00 |
+
+All 4 tests passed cleanly.
+
+## By suite
+
+| Suite | Passed | Failed | Skipped | Duration (s) |
+|-------|-------:|-------:|--------:|-------------:|
+| core | 3 | 0 | 0 | 0.60 |
+| ext | 1 | 0 | 0 | 0.40 |
+
+## Flaky tests
+
+_None detected._
+[test-results-aggregator/aggregate] ⭐ Run Post Install Bun
+[test-results-aggregator/aggregate]   🐳  docker exec cmd=[/opt/acttoolcache/node/24.15.0/x64/bin/node /var/run/act/actions/oven-sh-setup-bun@v2/dist/cache-save/index.js] user= workdir=
+[test-results-aggregator/aggregate]   ✅  Success - Post Install Bun [715.944551ms]
+[test-results-aggregator/aggregate] ⭐ Run Complete job
+[test-results-aggregator/aggregate] Cleaning up container for job aggregate
+[test-results-aggregator/aggregate]   ✅  Success - Complete job
+[test-results-aggregator/aggregate] 🏁  Job succeeded
+
+[stderr]
+time="2026-05-08T02:09:36-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+
+[exit] 0
+
+===== CASE: flaky-vs-consistent =====
+[stdout]
+[test-results-aggregator/aggregate] ⭐ Run Set up job
+[test-results-aggregator/aggregate] 🚀  Start image=act-ubuntu-pwsh:latest
+[test-results-aggregator/aggregate]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[test-results-aggregator/aggregate]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[test-results-aggregator/aggregate]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[test-results-aggregator/aggregate]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[test-results-aggregator/aggregate]   ✅  Success - Set up job
+[test-results-aggregator/aggregate]   ☁  git clone 'https://github.com/oven-sh/setup-bun' # ref=v2
+[test-results-aggregator/aggregate] Non-terminating error while running 'git clone': some refs were not updated
+[test-results-aggregator/aggregate]   ☁  git clone 'https://github.com/actions/upload-artifact' # ref=v4
+[test-results-aggregator/aggregate] Non-terminating error while running 'git clone': some refs were not updated
+[test-results-aggregator/aggregate] ⭐ Run Main Checkout
+[test-results-aggregator/aggregate]   🐳  docker cp src=/tmp/act-agg-Ux0NS5/. dst=/tmp/act-agg-Ux0NS5
+[test-results-aggregator/aggregate]   ✅  Success - Main Checkout [117.435208ms]
+[test-results-aggregator/aggregate] ⭐ Run Main Install Bun
+[test-results-aggregator/aggregate]   🐳  docker cp src=/home/passp/.cache/act/oven-sh-setup-bun@v2/ dst=/var/run/act/actions/oven-sh-setup-bun@v2/
+[test-results-aggregator/aggregate]   🐳  docker exec cmd=[/opt/acttoolcache/node/24.15.0/x64/bin/node /var/run/act/actions/oven-sh-setup-bun@v2/dist/setup/index.js] user= workdir=
+[test-results-aggregator/aggregate]   | Downloading a new version of Bun: https://github.com/oven-sh/bun/releases/download/bun-v1.3.13/bun-linux-x64.zip
+[test-results-aggregator/aggregate]   | [command]/usr/bin/unzip -o -q /tmp/47cd826a-bb87-4053-858e-280d7fd41ad8.zip
+[test-results-aggregator/aggregate]   | [command]/root/.bun/bin/bun --revision
+[test-results-aggregator/aggregate]   | 1.3.13+bf2e2cecf
+[test-results-aggregator/aggregate]   ✅  Success - Main Install Bun [8.187711557s]
+[test-results-aggregator/aggregate]   ⚙  ::set-output:: bun-version=1.3.13
+[test-results-aggregator/aggregate]   ⚙  ::set-output:: bun-revision=1.3.13+bf2e2cecf
+[test-results-aggregator/aggregate]   ⚙  ::set-output:: bun-path=/root/.bun/bin/bun
+[test-results-aggregator/aggregate]   ⚙  ::set-output:: bun-download-url=https://github.com/oven-sh/bun/releases/download/bun-v1.3.13/bun-linux-x64.zip
+[test-results-aggregator/aggregate]   ⚙  ::set-output:: cache-hit=false
+[test-results-aggregator/aggregate]   ⚙  ::add-path:: /root/.bun/bin
+[test-results-aggregator/aggregate] ⭐ Run Main Install dependencies
+[test-results-aggregator/aggregate]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[test-results-aggregator/aggregate]   | bun install v1.3.13 (bf2e2cec)
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   | + @types/bun@1.3.13
+[test-results-aggregator/aggregate]   | + typescript@5.9.3
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   | 5 packages installed [549.00ms]
+[test-results-aggregator/aggregate]   ✅  Success - Main Install dependencies [841.317273ms]
+[test-results-aggregator/aggregate] ⭐ Run Main Run unit tests (TDD suite)
+[test-results-aggregator/aggregate]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/3] user= workdir=
+[test-results-aggregator/aggregate]   | bun test v1.3.13 (bf2e2cec)
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   ❓  ::group::src/aggregator.test.ts:
+[test-results-aggregator/aggregate]   | (pass) parseJUnitXml > parses a basic JUnit XML report [1.27ms]
+[test-results-aggregator/aggregate]   | (pass) parseJUnitXml > throws a clear error on malformed XML [0.13ms]
+[test-results-aggregator/aggregate]   | (pass) parseJsonResults > parses our internal JSON shape [0.35ms]
+[test-results-aggregator/aggregate]   | (pass) parseJsonResults > rejects missing tests array with a useful message [0.12ms]
+[test-results-aggregator/aggregate]   | (pass) aggregate > computes totals across runs [0.69ms]
+[test-results-aggregator/aggregate]   | (pass) aggregate > identifies flaky tests (passed in some, failed in others) [0.12ms]
+[test-results-aggregator/aggregate]   | (pass) aggregate > does not flag consistently-failing tests as flaky [0.14ms]
+[test-results-aggregator/aggregate]   | (pass) renderMarkdown > includes totals, flaky list, and per-suite table [0.43ms]
+[test-results-aggregator/aggregate]   | (pass) renderMarkdown > renders a clean message when no failures and no flakies [0.15ms]
+[test-results-aggregator/aggregate]   | (pass) loadFile (auto-detect format) > dispatches to the right parser by extension and content [1.44ms]
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   ❓  ::endgroup::
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   |  10 pass
+[test-results-aggregator/aggregate]   |  0 fail
+[test-results-aggregator/aggregate]   |  26 expect() calls
+[test-results-aggregator/aggregate]   | Ran 10 tests across 1 file. [48.00ms]
+[test-results-aggregator/aggregate]   ✅  Success - Main Run unit tests (TDD suite) [369.460999ms]
+[test-results-aggregator/aggregate] ⭐ Run Main Aggregate test results across runs
+[test-results-aggregator/aggregate]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/agg] user= workdir=
+[test-results-aggregator/aggregate]   | # Test Results
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   | Aggregated across **2** run(s).
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   | ## Totals
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   | | Passed | Failed | Skipped | Total | Duration (s) |
+[test-results-aggregator/aggregate]   | |-------:|-------:|--------:|------:|-------------:|
+[test-results-aggregator/aggregate]   | | 1 | 3 | 0 | 4 | 0.60 |
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   | ## By suite
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   | | Suite | Passed | Failed | Skipped | Duration (s) |
+[test-results-aggregator/aggregate]   | |-------|-------:|-------:|--------:|-------------:|
+[test-results-aggregator/aggregate]   | | t | 1 | 3 | 0 | 0.60 |
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   | ## Flaky tests
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   | | Suite | Test | Passed | Failed |
+[test-results-aggregator/aggregate]   | |-------|------|-------:|-------:|
+[test-results-aggregator/aggregate]   | | t | flaky | 1 | 1 |
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   | ## Failures
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   | - **t / flaky** (from `fixtures/a.xml`): x
+[test-results-aggregator/aggregate]   | - **t / always_bad** (from `fixtures/a.xml`): y
+[test-results-aggregator/aggregate]   | - **t / always_bad** (from `fixtures/b.xml`): y
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   | 
+[test-results-aggregator/aggregate]   ❓  ::AGG:: passed=1 failed=3 skipped=0 flaky=1 runs=2
+[test-results-aggregator/aggregate]   ❓  ::AGG:: passed=1 failed=3 skipped=0 flaky=1 runs=2
+[test-results-aggregator/aggregate]   ✅  Success - Main Aggregate test results across runs [371.326714ms]
+[test-results-aggregator/aggregate]   ⚙  Summary - # Test Results
+
+Aggregated across **2** run(s).
+
+## Totals
+
+| Passed | Failed | Skipped | Total | Duration (s) |
+|-------:|-------:|--------:|------:|-------------:|
+| 1 | 3 | 0 | 4 | 0.60 |
+
+## By suite
+
+| Suite | Passed | Failed | Skipped | Duration (s) |
+|-------|-------:|-------:|--------:|-------------:|
+| t | 1 | 3 | 0 | 0.60 |
+
+## Flaky tests
+
+| Suite | Test | Passed | Failed |
+|-------|------|-------:|-------:|
+| t | flaky | 1 | 1 |
+
+## Failures
+
+- **t / flaky** (from `fixtures/a.xml`): x
+- **t / always_bad** (from `fixtures/a.xml`): y
+- **t / always_bad** (from `fixtures/b.xml`): y
+
+[test-results-aggregator/aggregate] ⭐ Run Main Publish job summary
+[test-results-aggregator/aggregate]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/5] user= workdir=
+[test-results-aggregator/aggregate]   ✅  Success - Main Publish job summary [315.163876ms]
+[test-results-aggregator/aggregate]   ⚙  Summary - # Test Results
+
+Aggregated across **2** run(s).
+
+## Totals
+
+| Passed | Failed | Skipped | Total | Duration (s) |
+|-------:|-------:|--------:|------:|-------------:|
+| 1 | 3 | 0 | 4 | 0.60 |
+
+## By suite
+
+| Suite | Passed | Failed | Skipped | Duration (s) |
+|-------|-------:|-------:|--------:|-------------:|
+| t | 1 | 3 | 0 | 0.60 |
+
+## Flaky tests
+
+| Suite | Test | Passed | Failed |
+|-------|------|-------:|-------:|
+| t | flaky | 1 | 1 |
+
+## Failures
+
+- **t / flaky** (from `fixtures/a.xml`): x
+- **t / always_bad** (from `fixtures/a.xml`): y
+- **t / always_bad** (from `fixtures/b.xml`): y
+[test-results-aggregator/aggregate] ⭐ Run Post Install Bun
+[test-results-aggregator/aggregate]   🐳  docker exec cmd=[/opt/acttoolcache/node/24.15.0/x64/bin/node /var/run/act/actions/oven-sh-setup-bun@v2/dist/cache-save/index.js] user= workdir=
+[test-results-aggregator/aggregate]   ✅  Success - Post Install Bun [489.932583ms]
+[test-results-aggregator/aggregate] ⭐ Run Complete job
+[test-results-aggregator/aggregate] Cleaning up container for job aggregate
+[test-results-aggregator/aggregate]   ✅  Success - Complete job
+[test-results-aggregator/aggregate] 🏁  Job succeeded
+
+[stderr]
+time="2026-05-08T02:09:49-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+
+[exit] 0

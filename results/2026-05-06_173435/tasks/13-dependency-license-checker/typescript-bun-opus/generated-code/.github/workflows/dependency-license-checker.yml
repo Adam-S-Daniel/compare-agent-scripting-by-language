@@ -1,0 +1,63 @@
+name: Dependency License Checker
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  license-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --no-save 2>/dev/null || true
+
+      - name: Run unit tests
+        run: bun test
+
+      - name: Create test fixtures
+        run: |
+          cat > test-package.json << 'FIXTURE'
+          {
+            "name": "test-app",
+            "dependencies": {
+              "lodash": "^4.17.21",
+              "express": "~4.18.2"
+            },
+            "devDependencies": {
+              "typescript": "^5.0.0"
+            }
+          }
+          FIXTURE
+
+          cat > test-requirements.txt << 'FIXTURE'
+          requests==2.31.0
+          flask==3.0.0
+          numpy>=1.24.0
+          FIXTURE
+
+          cat > license-config.json << 'FIXTURE'
+          {
+            "allowList": ["MIT", "Apache-2.0", "BSD-3-Clause"],
+            "denyList": ["GPL-3.0", "AGPL-3.0"]
+          }
+          FIXTURE
+
+      - name: Check package.json licenses
+        run: bun run license-checker.ts test-package.json license-config.json
+
+      - name: Check requirements.txt licenses
+        run: bun run license-checker.ts test-requirements.txt license-config.json

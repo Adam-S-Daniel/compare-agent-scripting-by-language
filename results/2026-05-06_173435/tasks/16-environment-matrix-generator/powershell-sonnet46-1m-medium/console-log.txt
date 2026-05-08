@@ -1,0 +1,293 @@
+[Assistant] Let me read the project instructions first.
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/AGENTS.md"}
+[Result] 1	# Agent Instructions
+2	
+3	All agent-facing instructions live in this file. `CLAUDE.md` contains only a
+4	reference here. If you are a Claude Code agent, you have already loaded this
+5	via `CLAUDE.md`. Other agents: read this file directly.
+6	
+7	## Build and test
+8	
+9	```bash
+10	# Run unit tests (REQUIRED before every PR)
+11	pip install pytest  # if not already installed
+12	python3 -m pytest tests/ -v
+13	
+14	# Validate imports
+15	python3 -c "from runner import main"
+16	python3 -c "from generate_results import generate_results_md"
+17	python3 -c "from test_quality import compute_structural_metrics"
+18	python3 -c "from llm_providers import get_provider"
+19	
+20	# Regenerate all reports
+21	python3 generate_results.py --all
+22	
+23	# Run a benchmark (v4, all tasks/modes/models)
+24	python3 runner.py --tasks 11,12,13,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
+25	
+26	# Evaluate test quality (structural metrics only)
+27	python3 test_quality.py results/2026-04
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-sonnet46-1m-medium"}
+[Result ERROR] EISDIR: illegal operation on a directory, read '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-sonnet46-1m-medium'
+[Assistant] Let me check the current directory and the actrc file.
+[Tool: Bash] ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-sonnet46-1m-medium/ && cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-sonnet46-1m-medium/.actrc 2>/dev/null || echo "no .actrc"
+[Result] total 44
+drwxr-xr-x  4 passp passp  4096 May  8 06:03 .
+drwxr-xr-x 39 passp passp  4096 May  8 06:03 ..
+-rw-r--r--  1 passp passp    40 May  8 06:03 .actrc
+drwxr-xr-x  2 passp passp  4096 May  8 06:03 .claude
+drwxr-xr-x  6 passp passp  4096 May  8 06:03 .git
+-rw-r--r--  1 passp passp 21843 Apr 17 00:12 benchmark-instructions-v4.md
+-P ubuntu-latest=act-ubuntu-pwsh:latest
+[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-sonnet46-1m-medium/benchmark-instructions-v4.md"}
+[Result] 1	# Benchmark Instructions v4 — GitHub Actions
+2	
+3	**Version**: v4
+4	**Date**: 2026-04-09
+5	**Purpose**: Measure how well Claude Code agents perform GitHub Actions workflow authoring tasks across different language constraints, with trap-awareness guidance from v3 findings.
+6	
+7	**Changes from v3**:
+8	- Added "Common Pitfalls" section with guidance derived from v3 trap analysis (115min, 15.8% of v3 time lost to traps)
+9	- Act container now has pwsh and Pester pre-installed (matching real GitHub runners). Agents still need an install step for workflows that will run on vanilla act, but the benchmarking container already has them.
+10	- GHA workflow addendum expanded with `shell: pwsh` guidance for PowerShell mode
+11	- All other methodology, tasks, modes, and models are unchanged from v3
+12	
+13	## Methodology
+14	
+15	### Overview
+16	
+17	Each task is executed by a Claude Code agent under 4 different language constraints ("modes") and with 2 different models, yielding **8 runs per task**. A
+[Assistant] Now I have all the context I need. Let me implement the solution using TDD with PowerShell and Pester. I'll start with the first failing test.
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-sonnet46-1m-medium/New-BuildMatrix.Tests.ps1", "content": "
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-sonnet46-1m-medium/New-BuildMatrix.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Now let me verify the test fails (no implementation yet), then write the implementation:
+[Tool: Bash] pwsh -NoProfile -Command "Invoke-Pester ./New-BuildMatrix.Tests.ps1 -Output Minimal 2>&1 | head -30"
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 32 tests in 294ms.[0m
+[95mRunning tests.[0m
+[91m[-] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-sonnet46-1m-medium/New-BuildMatrix.Tests.ps1 failed with:[0m
+[91mCommandNotFoundException: The term '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-sonnet46-1m-medium/New-BuildMatrix.ps1' is not recognized as a name of a cmdlet, function, script file, or executable program.
+[91mCheck the spelling of the name, or if a path was included, verify that the path is correct and try again.
+[91mat <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-sonnet46-1m-medium/New-BuildMatrix.Tests.ps1:7[0m
+[97mTests completed in 665ms[0m
+[97mTests Passed: 0, [0m[91mFailed: 32, [0m[9
+[Assistant] Tests fail as expected (no implementation). Now let me write the main script:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-sonnet46-1m-medium/New-BuildMatrix.ps1", "content": "# New-
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-sonnet46-1m-medium/New-BuildMatrix.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Bash] pwsh -NoProfile -Command "Invoke-Pester ./New-BuildMatrix.Tests.ps1 -Output Minimal 2>&1"
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 32 tests in 324ms.[0m
+[95mRunning tests.[0m
+[91m[-] ConvertTo-BuildMatrix.MaxParallel and FailFast configuration.Does not include fail-fast when not configured[0m[90m 15ms (11ms|4ms)[0m
+[91m RuntimeException: Method invocation failed because [System.Collections.Specialized.OrderedDictionary] does not contain a method named 'ContainsKey'.
+[91m at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-sonnet46-1m-medium/New-BuildMatrix.Tests.ps1:151[0m
+[91m[-] Workflow Structure Tests.Workflow file exists[0m[90m 27ms (25ms|2ms)[0m
+[91m Expected path '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-sonnet46-1m-medium/.github/workflows/environment-matrix-generator.yml' to exist, but it did not exist.
+[91m at $script:workflowPath | Should -Exist, /
+[Assistant] Good, 23/32 tests pass. Two issues: `ContainsKey` doesn't exist on `OrderedDictionary`, and the workflow file doesn't exist yet. Let me fix both:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-sonnet46-1m-medium/New-BuildMatrix.Te
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-sonnet46-1m-medium/New-BuildMatrix.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Assistant] Now create the fixtures directory and fixture files, then the workflow:
+[Tool: Bash] mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-sonnet46-1m-medium/fixtures
+mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-sonnet46-1m-medium/.github/workflows
+[Result] (Bash completed with no output)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-sonnet46-1m-medium/fixtures/basic-matrix.json", "content": 
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-sonnet46-1m-medium/fixtures/basic-matrix.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-sonnet46-1m-medium/fixtures/advanced-matrix.json", "content
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-sonnet46-1m-medium/fixtures/advanced-matrix.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-sonnet46-1m-medium/fixtures/example-matrix.json", "content"
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-sonnet46-1m-medium/fixtures/example-matrix.json (file state is current in your context — no need to Read it back)
+[Assistant] Now write the GitHub Actions workflow:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-sonnet46-1m-medium/.github/workflows/environment-matrix-gen
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-sonnet46-1m-medium/.github/workflows/environment-matrix-generator.yml (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/environment-matrix-generator.yml
+[Result] (Bash completed with no output)
+[Assistant] actionlint passes cleanly. Now run all Pester tests to verify everything passes:
+[Tool: Bash] pwsh -NoProfile -Command "Invoke-Pester ./New-BuildMatrix.Tests.ps1 -Output Minimal 2>&1"
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 32 tests in 307ms.[0m
+[95mRunning tests.[0m
+[32m[+] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-sonnet46-1m-medium/New-BuildMatrix.Tests.ps1[0m[90m 1.47s (639ms|574ms)[0m
+[97mTests completed in 1.5s[0m
+[32mTests Passed: 32, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Assistant] All 32 tests pass. Now write the act test harness:
+[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-sonnet46-1m-medium/Run-ActTests.ps1", "content": "# Run-Act
+[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-sonnet46-1m-medium/Run-ActTests.ps1 (file state is current in your context — no need to Read it back)
+[Assistant] Now run the act tests (this will take a few minutes):
+[Tool: Bash] pwsh -NoProfile -File ./Run-ActTests.ps1 2>&1; echo "EXIT:$?"
+[Result] ======================================================================
+TEST CASE: Basic Matrix (2x2, max-parallel=4, fail-fast=false)
+======================================================================
+Running: act push --rm
+[31;1mInvoke-ActTestCase: [0m/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-sonnet46-1m-medium/Run-ActTests.ps1:119[0m
+[31;1m[0m[36;1mLine |[0m
+[31;1m[0m[36;1m[36;1m 119 | [0m [36;1mInvoke-ActTestCase -Name "Basic Matrix (2x2, max-parallel=4, fail-fas[0m …[0m
+[31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m     | [31;1m ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+[31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m[31;1m[31;1m[36;1m     | [31;1mFAIL [Basic Matrix (2x2, max-parallel=4, fail-fast=false)]: act exited[0m
+[31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m[31;1m[31;1m[36;1m[31;1m[36;1m     | [31;1mwith code 1[0m
+EXIT:1
+[Assistant] Let me check the act output to diagnose the failure:
+[Tool: Bash] cat ./act-result.txt 2>/dev/null || echo "no file"
+[Result] Act Integration Test Results
+2026-05-08 06:09:58
+
+
+======================================================================
+TEST CASE: Basic Matrix (2x2, max-parallel=4, fail-fast=false)
+======================================================================
+Exit code: 1
+
+time="2026-05-08T06:09:59-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Environment Matrix Generator/test-and-generate] ⭐ Run Set up job
+[Environment Matrix Generator/test-and-generate] 🚀  Start image=act-ubuntu-pwsh:latest
+[Environment Matrix Generator/test-and-generate]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=true
+[Environment Matrix Generator/test-and-generate] using DockerAuthConfig authentication for docker pull
+[Environment Matrix Generator/test-and-generate] Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
+[Environment Matrix Gene
+[Tool: Bash] docker images act-ubuntu-pwsh 2>&1
+[Result] WARNING: This output is designed for human readability. For machine-readable output, please use --format.
+IMAGE                    ID             DISK USAGE   CONTENT SIZE   EXTRA
+act-ubuntu-pwsh:latest   b299e185b1bb        2.6GB          652MB
+[Assistant] The image exists. Let me test act from the project root directly to diagnose:
+[Tool: Bash] cat .actrc && echo "---" && ls -la .actrc
+[Result] -P ubuntu-latest=act-ubuntu-pwsh:latest
+---
+-rw-r--r-- 1 passp passp 40 May  8 06:03 .actrc
+[Tool: Bash] git init -b main /tmp/act-direct-test 2>&1 && cd /tmp/act-direct-test && cp -r /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-sonnet46-1m-medium/. . && git config user.email "test@test.com" && git config user.name "Test" && git add -A && git commit -m "test" 2>&1 && echo "--- .actrc content ---" && cat .actrc && echo "--- running act ---" && act push --rm 2>&1 | tail -40
+[Result] Initialized empty Git repository in /tmp/act-direct-test/.git/
+[master (root-commit) 201d199] test
+ 11 files changed, 1080 insertions(+)
+ create mode 100644 .actrc
+ create mode 100644 .claude/settings.json
+ create mode 100644 .github/workflows/environment-matrix-generator.yml
+ create mode 100644 New-BuildMatrix.Tests.ps1
+ create mode 100644 New-BuildMatrix.ps1
+ create mode 100644 Run-ActTests.ps1
+ create mode 100644 act-result.txt
+ create mode 100644 benchmark-instructions-v4.md
+ create mode 100644 fixtures/advanced-matrix.json
+ create mode 100644 fixtures/basic-matrix.json
+ create mode 100644 fixtures/example-matrix.json
+--- .actrc content ---
+-P ubuntu-latest=act-ubuntu-pwsh:latest
+--- running act ---
+time="2026-05-08T06:10:24-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Environment Matrix Generator/test-and-generate] ⭐ Run Set up job
+[Environment Matrix Generator/test-and-generate] 🚀  Start image=act-ubuntu
+[Tool: Bash] act --help 2>&1 | grep -i pull
+[Result]       --action-offline-mode                               If action contents exists, it will not be fetch and pull again. If turn on this, will turn off force pull
+  -p, --pull                                              pull docker image(s) even if already present (default true)
+[Tool: Bash] cd /tmp/act-direct-test && act push --rm --pull=false 2>&1 | tail -50
+[Result] time="2026-05-08T06:10:30-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Environment Matrix Generator/test-and-generate] ⭐ Run Set up job
+[Environment Matrix Generator/test-and-generate] 🚀  Start image=act-ubuntu-pwsh:latest
+[Environment Matrix Generator/test-and-generate]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Environment Matrix Generator/test-and-generate]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Environment Matrix Generator/test-and-generate]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Environment Matrix Generator/test-and-generate]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Environment Matrix Generator/test-and-generate]   ✅  Success - Set up job
+[Environment Matrix Genera
+[Assistant] The Pester configuration approach has an issue - `-PassThru` can't be used with `-Configuration`. Let me fix the workflow:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-sonnet46-1m-medium/.github/workflows/
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-sonnet46-1m-medium/.github/workflows/environment-matrix-generator.yml has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/environment-matrix-generator.yml && echo "actionlint OK"
+[Result] actionlint OK
+[Assistant] Also add `--pull=false` to the act invocations in the harness:
+[Tool: Edit] {"replace_all": true, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-sonnet46-1m-medium/Run-ActTests.ps1", 
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-sonnet46-1m-medium/Run-ActTests.ps1 has been updated. All occurrences were successfully replaced. (file state is current in your context — no need to Read it back)
+[Assistant] Now verify the updated workflow works in the act container before running the full harness:
+[Tool: Bash] cd /tmp/act-direct-test && cp /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-sonnet46-1m-medium/.github/workflows/environment-matrix-generator.yml .github/workflows/environment-matrix-generator.yml && act push --rm --pull=false 2>&1
+[Result ERROR] Exit code 1
+time="2026-05-08T06:10:55-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Environment Matrix Generator/test-and-generate] ⭐ Run Set up job
+[Environment Matrix Generator/test-and-generate] 🚀  Start image=act-ubuntu-pwsh:latest
+[Environment Matrix Generator/test-and-generate]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Environment Matrix Generator/test-and-generate]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Environment Matrix Generator/test-and-generate]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Environment Matrix Generator/test-and-generate]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Environment Matrix Generator/test-and-generate]   ✅  Success - Set up job
+[Environment M
+[Assistant] The only failure is `actionlint` not being in the act container. Let me check if it can be found, and update the test to skip gracefully if unavailable:
+[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/Dockerfile.act 2>/dev/null | grep -i actionlint || echo "not in Dockerfile"
+[Result] not in Dockerfile
+[Tool: Bash] which actionlint && actionlint --version
+[Result] /home/passp/.local/bin/actionlint
+1.7.12
+installed by downloading from release page
+built with go1.26.1 compiler for linux/amd64
+[Assistant] Let me check network access in the act container and add actionlint installation:
+[Tool: Bash] docker run --rm --network host act-ubuntu-pwsh:latest curl -s --max-time 5 https://httpbin.org/ip 2>&1 | head -5 || echo "no network/curl"
+[Result] {
+  "origin": "74.96.142.49"
+}
+[Assistant] Network is available. Let me add actionlint installation to the workflow before the Pester tests:
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-sonnet46-1m-medium/.github/workflows/
+[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-sonnet46-1m-medium/.github/workflows/environment-matrix-generator.yml has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint .github/workflows/environment-matrix-generator.yml && echo "actionlint OK"
+[Result] actionlint OK
+[Assistant] Now run the full act test harness:
+[Tool: Bash] pwsh -NoProfile -File ./Run-ActTests.ps1 2>&1; echo "HARNESS_EXIT:$?"
+[Result] ======================================================================
+TEST CASE: Basic Matrix (2x2, max-parallel=4, fail-fast=false)
+======================================================================
+Running: act push --rm --pull=false
+RESULT: PASSED — Basic Matrix (2x2, max-parallel=4, fail-fast=false)
+
+======================================================================
+TEST CASE: Advanced Matrix (2x2x2 + include, fail-fast=true)
+======================================================================
+Running: act push --rm --pull=false
+RESULT: PASSED — Advanced Matrix (2x2x2 + include, fail-fast=true)
+
+All act integration tests passed!
+HARNESS_EXIT:0
+[Assistant] Both act test cases pass. Let me verify the `act-result.txt` artifact exists and check the full Pester test run:
+[Tool: Bash] ls -la act-result.txt && echo "---" && grep -E "(TEST CASE|RESULT|total-combinations|max-parallel|fail-fast|Job succeeded)" act-result.txt
+[Result] -rw-r--r-- 1 passp passp 24154 May  8 06:12 act-result.txt
+---
+TEST CASE: Basic Matrix (2x2, max-parallel=4, fail-fast=false)
+[Environment Matrix Generator/test-and-generate]   | [32m   [+] Sets max-parallel in output[0m[90m 20ms (16ms|4ms)[0m
+[Environment Matrix Generator/test-and-generate]   | [32m   [+] Sets fail-fast to true in output[0m[90m 25ms (20ms|5ms)[0m
+[Environment Matrix Generator/test-and-generate]   | [32m   [+] Sets fail-fast to false in output[0m[90m 6ms (5ms|2ms)[0m
+[Environment Matrix Generator/test-and-generate]   | [32m   [+] Does not include fail-fast when not configured[0m[90m 12ms (10ms|3ms)[0m
+[Environment Matrix Generator/test-and-generate]   | MATRIX_RESULT_START
+[Environment Matrix Generator/test-and-generate]   |   "total-combinations": 4,
+[Environment Matrix Generator/test-and-generate]   |   "max-parallel": 4,
+[Environment Matrix Generator/test-and-generate]   |   "fail-fast": false
+[Environment Matrix Generator/test-and-generate]   | MATR
+[Assistant] Both act runs show "Job succeeded" with exact expected values. Final Pester check:
+[Tool: Bash] pwsh -NoProfile -Command "Invoke-Pester ./New-BuildMatrix.Tests.ps1 -Output Minimal 2>&1"
+[Result] [95m
+[95mStarting discovery in 1 files.[0m
+[95mDiscovery found 32 tests in 328ms.[0m
+[95mRunning tests.[0m
+[32m[+] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-sonnet46-1m-medium/New-BuildMatrix.Tests.ps1[0m[90m 1.52s (679ms|564ms)[0m
+[97mTests completed in 1.54s[0m
+[32mTests Passed: 32, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Assistant] All 32 tests pass locally. Let me verify the final file structure:
+[Tool: Bash] ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/powershell-sonnet46-1m-medium/
+[Result] total 100
+drwxr-xr-x  6 passp passp  4096 May  8 06:10 .
+drwxr-xr-x 39 passp passp  4096 May  8 06:03 ..
+-rw-r--r--  1 passp passp    40 May  8 06:03 .actrc
+drwxr-xr-x  2 passp passp  4096 May  8 06:03 .claude
+drwxr-xr-x  6 passp passp  4096 May  8 06:03 .git
+drwxr-xr-x  3 passp passp  4096 May  8 06:09 .github
+-rw-r--r--  1 passp passp 11285 May  8 06:09 New-BuildMatrix.Tests.ps1
+-rw-r--r--  1 passp passp  3635 May  8 06:08 New-BuildMatrix.ps1
+-rw-r--r--  1 passp passp  6450 May  8 06:10 Run-ActTests.ps1
+-rw-r--r--  1 passp passp 24154 May  8 06:12 act-result.txt
+-rw-r--r--  1 passp passp 21843 Apr 17 00:12 benchmark-instructions-v4.md
+drwxr-xr-x  2 passp passp  4096 May  8 06:09 fixtures
+[Assistant] Everything is in place. Here's a summary of what was built:
+
+**Files created:**
+- `New-BuildMatrix.ps1` — main script defining `ConvertTo-BuildMatrix` and `Get-CartesianProductCount` functions; reads a JSON config and outputs the strategy matrix JSON
+- `New-BuildMatrix.Tests.ps1` — 32 Pester tests (all pass): cartesian product counting, basic/include/exclude matrix generation, max-parallel/fail-fast configuration, max-size validation, feature flags, and workflow structure checks including actionlint
+- `fixtures/` — 3 JSON fixture files (basic, advanced, example)
+- `.github/workflows/environment-matrix-generator.yml` — GHA workflow that installs Pester + actionlint, runs all 32 Pester tests, then generates a matrix from `test-fixture.json` and prints the result with exact labeled output
+- `Run-ActTests.ps1` — integration test harness that runs 2 `act push --rm` invocations with different fixtures and asserts on exact expected values (`total-combinations: 4`, `max-parallel: 4`, `fail-fast: False` for test 1; `total-combinations: 9`, `max-parallel: 3`, `fail-fast: True` for test 2)
+- `act-result.txt` — generated artifact with both act runs showing `🏁 Job succeeded`

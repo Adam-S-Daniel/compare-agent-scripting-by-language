@@ -1,0 +1,56 @@
+name: PR Label Assigner
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      files_path:
+        description: Path to JSON file containing changed file list
+        required: false
+        default: fixtures/files.json
+      rules_path:
+        description: Path to JSON file containing label rules
+        required: false
+        default: rules.json
+
+permissions:
+  contents: read
+
+jobs:
+  assign-labels:
+    runs-on: ubuntu-latest
+    env:
+      FILES_PATH: ${{ github.event.inputs.files_path || 'fixtures/files.json' }}
+      RULES_PATH: ${{ github.event.inputs.rules_path || 'rules.json' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        run: |
+          set -euo pipefail
+          curl -fsSL https://bun.sh/install | bash
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+
+      - name: Show Bun version
+        run: bun --version
+
+      - name: Run labeler tests
+        run: bun test
+
+      - name: Assign labels
+        id: labels
+        run: |
+          set -euo pipefail
+          echo "Files input: $FILES_PATH"
+          echo "Rules input: $RULES_PATH"
+          OUTPUT=$(bun run index.ts --files "$FILES_PATH" --rules "$RULES_PATH" --format json)
+          echo "Raw output: $OUTPUT"
+          echo "result=$OUTPUT" >> "$GITHUB_OUTPUT"
+          echo "LABELS_JSON=$OUTPUT"
+          echo "::notice::LABELS_JSON=$OUTPUT"
+
+      - name: Print summary
+        run: |
+          echo "Labeler produced: ${{ steps.labels.outputs.result }}"

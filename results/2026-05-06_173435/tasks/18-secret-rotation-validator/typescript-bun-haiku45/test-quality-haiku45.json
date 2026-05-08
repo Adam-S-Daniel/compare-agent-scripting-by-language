@@ -1,0 +1,13 @@
+{
+  "coverage": 2,
+  "rigor": 2,
+  "design": 3,
+  "overall": 1,
+  "summary": "The test suite provides reasonable coverage of core validator and CLI logic with clear organization (validator.test.ts covers status detection and report generation; fixtures.test.ts tests CLI I/O; workflow.test.ts validates workflow structure). However, it completely violates the critical task requirement: 'ALL TESTS MUST RUN THROUGH ACT' and 'Do NOT test your script directly \u2014 all testing goes through the pipeline.' The task explicitly mandates that tests execute via 'act push --rm', capture output to 'act-result.txt', verify job success, and parse exact expected values. The provided suite ignores this entirely, instead running fixtures.test.ts directly with spawnSync. Additionally, edge cases are undertested (boundary conditions like daysUntilExpiry===0, empty secrets arrays, invalid JSON, malformed dates, negative warning windows). The workflow.test.ts file references .github/workflows/secret-rotation-validator.yml and secrets-config.json, but these files are not present in the implementation. Without act-based integration testing, this suite cannot verify CI/CD pipeline execution\u2014a core requirement. Would not catch workflow execution failures or the full end-to-end secret rotation validation in a real pipeline.",
+  "judge_cost_usd": 0.0393,
+  "judge_input_tokens": 10,
+  "judge_output_tokens": 2894,
+  "judge_provider": "claude-cli",
+  "judge_model": "haiku",
+  "judge_short": "haiku45"
+}

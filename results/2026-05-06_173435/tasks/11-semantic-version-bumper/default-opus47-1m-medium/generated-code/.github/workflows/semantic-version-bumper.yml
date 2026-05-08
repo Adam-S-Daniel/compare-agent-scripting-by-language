@@ -1,0 +1,60 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: Commit fixture file under fixtures/
+        required: false
+        default: feat-commits.txt
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+env:
+  # Default fixture used when nothing is supplied via workflow_dispatch / env.
+  FIXTURE: ${{ github.event.inputs.fixture || 'feat-commits.txt' }}
+
+jobs:
+  bump:
+    name: Compute next version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Show Python version
+        run: python3 --version
+
+      - name: Run unit tests
+        run: python3 -m unittest test_bumper.py -v
+
+      - name: Run version bumper
+        id: bump
+        run: |
+          set -eu
+          # Allow overriding the fixture via the FIXTURE env var (used by the
+          # test harness through `act --env FIXTURE=...`); otherwise fall back
+          # to the workflow-level default.
+          fixture_name="${FIXTURE:-feat-commits.txt}"
+          fixture_path="fixtures/${fixture_name}"
+          if [ ! -f "$fixture_path" ]; then
+            echo "fixture not found: $fixture_path" >&2
+            exit 1
+          fi
+          python3 bumper.py \
+            --package package.json \
+            --commits "$fixture_path" \
+            --changelog CHANGELOG.md \
+            --date 2026-05-07
+
+      - name: Show resulting files
+        run: |
+          echo "--- package.json ---"
+          cat package.json
+          echo "--- CHANGELOG.md ---"
+          cat CHANGELOG.md || true

@@ -1,0 +1,79 @@
+---
+# Runs the dependency license compliance checker on the repo.
+#
+# The test harness drops fixture files at:
+#   fixtures/manifest.txt  (or fixtures/manifest.json)
+#   fixtures/config.txt
+#   fixtures/mock-licenses.txt
+#
+# The job always succeeds (so act exits 0); the script's exit code is
+# captured into checker_exit so the harness can assert on the compliance
+# verdict.
+name: Dependency License Checker
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    # Re-check licenses weekly to catch upstream changes.
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+env:
+  ALLOW_LIST_DEFAULT: "MIT,Apache-2.0,BSD-3-Clause,ISC"
+  DENY_LIST_DEFAULT: "GPL-3.0,GPL-2.0,AGPL-3.0"
+
+jobs:
+  check-licenses:
+    name: Check dependency licenses
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify required tools are present
+        run: |
+          set -e
+          command -v bash
+          command -v jq
+          bash --version | head -n 1
+          jq --version
+
+      - name: Make license checker executable
+        run: chmod +x license-checker.sh
+
+      - name: Detect manifest file
+        id: detect
+        run: |
+          set -e
+          if [ -f fixtures/manifest.json ]; then
+            echo "path=fixtures/manifest.json" >> "$GITHUB_OUTPUT"
+          elif [ -f fixtures/manifest.txt ]; then
+            echo "path=fixtures/manifest.txt" >> "$GITHUB_OUTPUT"
+          else
+            echo "ERROR: no fixtures/manifest.{json,txt} found" >&2
+            exit 1
+          fi
+
+      - name: Run license compliance check
+        id: check
+        run: |
+          set +e
+          ./license-checker.sh \
+            --manifest "${{ steps.detect.outputs.path }}" \
+            --config fixtures/config.txt \
+            --mock fixtures/mock-licenses.txt \
+            --output report.txt
+          code=$?
+          set -e
+          echo "checker_exit=${code}" >> "$GITHUB_OUTPUT"
+          echo "checker_exit=${code}"
+
+      - name: Print compliance report
+        run: |
+          echo "===BEGIN REPORT==="
+          cat report.txt
+          echo "===END REPORT==="

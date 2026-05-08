@@ -1,0 +1,184 @@
+name: Artifact Cleanup Script Tests
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'Invoke-ArtifactCleanup.ps1'
+      - 'Invoke-ArtifactCleanup.Tests.ps1'
+      - '.github/workflows/artifact-cleanup-script.yml'
+  pull_request:
+    branches:
+      - main
+      - master
+    paths:
+      - 'Invoke-ArtifactCleanup.ps1'
+      - 'Invoke-ArtifactCleanup.Tests.ps1'
+      - '.github/workflows/artifact-cleanup-script.yml'
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Run Pester Tests
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/powershell:lts-ubuntu-22.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Pester module
+        shell: pwsh
+        run: |
+          Write-Host "Installing Pester module..."
+          Install-Module -Name Pester -Force -SkipPublisherCheck -Verbose
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          Write-Host "Running Artifact Cleanup Script Tests..."
+          Invoke-Pester -Path ./Invoke-ArtifactCleanup.Tests.ps1 -PassThru | Tee-Object -FilePath test-results.txt
+
+      - name: Verify test results
+        shell: pwsh
+        run: |
+          Write-Host "Verifying all tests passed..."
+          # Pester was already installed in previous step
+          $results = Invoke-Pester -Path ./Invoke-ArtifactCleanup.Tests.ps1 -PassThru
+          if ($results.FailedCount -gt 0) {
+            Write-Error "Tests failed: $($results.FailedCount) failure(s)"
+            exit 1
+          }
+          Write-Host "All tests passed! ✓"
+          Write-Host "Total tests: $($results.TotalCount), Passed: $($results.PassedCount), Failed: $($results.FailedCount)"
+
+  validate:
+    name: Validate Script Functionality
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/powershell:lts-ubuntu-22.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Test basic script functionality
+        shell: pwsh
+        run: |
+          Write-Host "Testing artifact cleanup script functionality..."
+
+          # Source the script
+          . ./Invoke-ArtifactCleanup.ps1
+
+          # Test 1: Empty input
+          Write-Host "Test 1: Empty input"
+          $result = Invoke-ArtifactCleanup -Artifacts @() -MaxAgeInDays 30 -MaxTotalSizeInMB 500 -KeepLatestPerWorkflow 2
+          if ($result.DeletionPlan.Count -ne 0) {
+            Write-Error "Expected empty deletion plan for empty artifacts"
+            exit 1
+          }
+          Write-Host "  ✓ Empty input handled correctly"
+
+          # Test 2: Single artifact, under age limit
+          Write-Host "Test 2: Single artifact under age limit"
+          $artifacts = @(
+            @{ Name = "artifact1"; Size = 100; CreatedDate = (Get-Date).AddDays(-5); WorkflowRunId = "run1" }
+          )
+          $result = Invoke-ArtifactCleanup -Artifacts $artifacts -MaxAgeInDays 30 -MaxTotalSizeInMB 500 -KeepLatestPerWorkflow 2
+          if ($result.Summary.ArtifactsToRetain -ne 1) {
+            Write-Error "Expected 1 retained artifact"
+            exit 1
+          }
+          Write-Host "  ✓ Young artifact retained correctly"
+
+          # Test 3: Old artifact over age limit
+          Write-Host "Test 3: Old artifact over age limit"
+          $artifacts = @(
+            @{ Name = "old_artifact"; Size = 100; CreatedDate = (Get-Date).AddDays(-40); WorkflowRunId = "run1" }
+          )
+          $result = Invoke-ArtifactCleanup -Artifacts $artifacts -MaxAgeInDays 30 -MaxTotalSizeInMB 500 -KeepLatestPerWorkflow 2
+          if ($result.Summary.ArtifactsToDelete -ne 1) {
+            Write-Error "Expected 1 artifact to delete (old)"
+            exit 1
+          }
+          if ($result.Summary.SpaceReclaimedMB -ne 100) {
+            Write-Error "Expected 100 MB to be reclaimed"
+            exit 1
+          }
+          Write-Host "  ✓ Old artifact marked for deletion correctly"
+
+          # Test 4: Size limit enforcement
+          Write-Host "Test 4: Size limit enforcement"
+          $artifacts = @(
+            @{ Name = "a1"; Size = 200; CreatedDate = (Get-Date).AddDays(-10); WorkflowRunId = "run1" },
+            @{ Name = "a2"; Size = 200; CreatedDate = (Get-Date).AddDays(-5); WorkflowRunId = "run1" },
+            @{ Name = "a3"; Size = 200; CreatedDate = (Get-Date).AddDays(-2); WorkflowRunId = "run1" }
+          )
+          # Total 600 MB, limit 400 MB -> must delete oldest (200 MB)
+          $result = Invoke-ArtifactCleanup -Artifacts $artifacts -MaxAgeInDays 365 -MaxTotalSizeInMB 400 -KeepLatestPerWorkflow 10
+          if ($result.Summary.SpaceReclaimedMB -ne 200) {
+            Write-Error "Expected 200 MB reclaimed from size limit (got $($result.Summary.SpaceReclaimedMB))"
+            exit 1
+          }
+          Write-Host "  ✓ Size limit enforced correctly"
+
+          # Test 5: Dry-run mode
+          Write-Host "Test 5: Dry-run mode"
+          $artifacts = @(
+            @{ Name = "old"; Size = 100; CreatedDate = (Get-Date).AddDays(-40); WorkflowRunId = "run1" }
+          )
+          $result = Invoke-ArtifactCleanup -Artifacts $artifacts -MaxAgeInDays 30 -MaxTotalSizeInMB 500 -KeepLatestPerWorkflow 2 -DryRun
+          if ($result.DryRun -ne $true) {
+            Write-Error "Expected DryRun flag to be true"
+            exit 1
+          }
+          Write-Host "  ✓ Dry-run mode indicated correctly"
+
+          Write-Host ""
+          Write-Host "All validation tests passed! ✓"
+
+  structure:
+    name: Validate Workflow Structure
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/powershell:lts-ubuntu-22.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Verify script files exist
+        shell: pwsh
+        run: |
+          Write-Host "Checking required script files..."
+          $files = @(
+            "Invoke-ArtifactCleanup.ps1",
+            "Invoke-ArtifactCleanup.Tests.ps1",
+            ".github/workflows/artifact-cleanup-script.yml"
+          )
+          foreach ($file in $files) {
+            if (!(Test-Path $file)) {
+              Write-Error "Missing required file: $file"
+              exit 1
+            }
+            Write-Host "  ✓ $file exists"
+          }
+          Write-Host "All required files present! ✓"
+
+      - name: Validate PowerShell syntax
+        shell: pwsh
+        run: |
+          Write-Host "Validating PowerShell syntax..."
+          $psFiles = @("Invoke-ArtifactCleanup.ps1", "Invoke-ArtifactCleanup.Tests.ps1")
+          foreach ($file in $psFiles) {
+            Write-Host "  Checking $file..."
+            $tokens = @()
+            $errors = @()
+            $null = [System.Management.Automation.PSParser]::Tokenize((Get-Content $file -Raw), [ref]$errors)
+            if ($errors.Count -gt 0) {
+              Write-Error "Syntax errors in $file : $($errors[0].Message)"
+              exit 1
+            }
+            Write-Host "    ✓ Valid syntax"
+          }
+          Write-Host "All scripts have valid syntax! ✓"

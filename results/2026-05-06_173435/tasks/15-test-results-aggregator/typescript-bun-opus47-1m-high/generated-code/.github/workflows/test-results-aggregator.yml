@@ -1,0 +1,60 @@
+name: Test Results Aggregator
+
+# Triggered on every push, every PR, and manually. The manual trigger lets
+# operators re-run aggregation against an arbitrary directory of result files.
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      input-dir:
+        description: Directory of test result files (relative to repo root)
+        default: fixtures
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  # Default to the bundled `fixtures/` so the workflow is self-contained:
+  # cloning the repo and running this workflow produces a useful summary
+  # without the caller wiring anything up.
+  INPUT_DIR: ${{ inputs.input-dir || 'fixtures' }}
+
+jobs:
+  aggregate:
+    name: Aggregate test results
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+
+      - name: Show Bun version
+        run: bun --version
+
+      - name: Run unit tests
+        run: bun test
+
+      - name: Aggregate test results
+        # --no-fail keeps the workflow green even when the parsed fixtures
+        # contain failing tests — the aggregator is informational here, and
+        # downstream steps (or other workflows) decide policy.
+        run: |
+          bun run src/cli.ts \
+            --input "$INPUT_DIR" \
+            --summary "$GITHUB_STEP_SUMMARY" \
+            --no-fail
+
+      - name: Echo step summary to logs
+        # Surfaces the rendered markdown in the action log so operators
+        # without summary access still see the results inline.
+        run: |
+          echo '----- BEGIN SUMMARY -----'
+          cat "$GITHUB_STEP_SUMMARY"
+          echo '----- END SUMMARY -----'

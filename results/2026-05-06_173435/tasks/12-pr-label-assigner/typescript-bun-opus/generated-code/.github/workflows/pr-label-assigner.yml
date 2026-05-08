@@ -1,0 +1,38 @@
+name: PR Label Assigner
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      changed_files:
+        description: "Comma-separated list of changed file paths"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  assign-labels:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --no-save 2>/dev/null || true
+
+      - name: Run label assigner
+        env:
+          CHANGED_FILES: ${{ inputs.changed_files || env.CHANGED_FILES || 'src/api/routes.ts,docs/readme.md,app.test.ts' }}
+          LABEL_CONFIG_PATH: label-config.json
+        run: bun run label-assigner.ts

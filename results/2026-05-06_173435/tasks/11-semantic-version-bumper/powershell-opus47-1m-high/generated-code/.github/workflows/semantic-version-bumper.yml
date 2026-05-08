@@ -1,0 +1,123 @@
+name: semantic-version-bumper
+
+# Triggers:
+#   - push / pull_request : run on every change so we always bump correctly.
+#   - workflow_dispatch   : let humans run it ad-hoc with custom fixtures.
+#   - schedule            : a weekly sanity-check that the bumper still works.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: 'Commit fixture file under fixtures/ to use'
+        required: false
+        default: 'commits-feat.txt'
+  schedule:
+    - cron: '0 6 * * 1'  # 06:00 UTC every Monday
+
+permissions:
+  contents: read
+
+env:
+  # Defaults used by the workflow; the test harness overrides via committed
+  # files (VERSION + commits.txt at repo root) which take precedence.
+  RELEASE_DATE: '2026-05-07'
+
+jobs:
+  test:
+    name: pester-unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $cfg = New-PesterConfiguration
+          $cfg.Run.Path = './Bumper.Tests.ps1'
+          $cfg.Run.Exit = $true
+          $cfg.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $cfg
+
+  bump:
+    name: bump-version
+    needs: test
+    runs-on: ubuntu-latest
+    outputs:
+      new_version: ${{ steps.bump.outputs.new_version }}
+      bump_type:   ${{ steps.bump.outputs.bump_type }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve fixture and version inputs
+        id: prep
+        shell: pwsh
+        run: |
+          # The test harness drops VERSION + commits.txt at the repo root.
+          # If they are absent (e.g. a fresh manual run), fall back to the
+          # bundled fixture and a seed version of 1.0.0.
+          $versionFile = if (Test-Path 'VERSION') { 'VERSION' } else { 'package.json' }
+
+          if (Test-Path 'commits.txt') {
+              $commitsFile = 'commits.txt'
+          } else {
+              $name = '${{ github.event.inputs.fixture }}'
+              if ([string]::IsNullOrWhiteSpace($name)) { $name = 'commits-feat.txt' }
+              $commitsFile = Join-Path 'fixtures' $name
+          }
+
+          if (-not (Test-Path $versionFile)) {
+              Set-Content -LiteralPath 'VERSION' -Value '1.0.0' -NoNewline
+              $versionFile = 'VERSION'
+          }
+
+          "version_file=$versionFile"  | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "commits_file=$commitsFile"  | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+          Write-Host "Using version file: $versionFile"
+          Write-Host "Using commits file: $commitsFile"
+          Write-Host "--- VERSION ---"
+          Get-Content -LiteralPath $versionFile
+          Write-Host ""
+          Write-Host "--- COMMITS ---"
+          Get-Content -LiteralPath $commitsFile
+
+      - name: Bump version
+        id: bump
+        shell: pwsh
+        env:
+          VERSION_FILE:  ${{ steps.prep.outputs.version_file }}
+          COMMITS_FILE:  ${{ steps.prep.outputs.commits_file }}
+        run: |
+          $out = & ./bump-version.ps1 `
+              -VersionFile $env:VERSION_FILE `
+              -CommitsFile $env:COMMITS_FILE `
+              -ChangelogFile 'CHANGELOG.md' `
+              -Date $env:RELEASE_DATE
+          if ($LASTEXITCODE -ne 0) { throw "bump-version.ps1 failed with exit $LASTEXITCODE" }
+
+          $out | ForEach-Object { Write-Host $_ }
+
+          # Forward NEW_VERSION / BUMP_TYPE to step outputs and to a stable
+          # marker line that the test harness can grep for in act output.
+          foreach ($line in $out) {
+              if ($line -match '^(NEW_VERSION|BUMP_TYPE|PREVIOUS_VERSION)=(.+)$') {
+                  $key = $Matches[1].ToLower()
+                  $val = $Matches[2]
+                  "$key=$val" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+              }
+          }
+
+          Write-Host "::notice::SEMVER_RESULT new_version=$(($out | Where-Object { $_ -like 'NEW_VERSION=*' }) -replace 'NEW_VERSION=','')"
+
+      - name: Print resulting changelog and version
+        shell: pwsh
+        run: |
+          Write-Host "=== FINAL VERSION FILE ==="
+          Get-Content -LiteralPath '${{ steps.prep.outputs.version_file }}'
+          Write-Host ""
+          Write-Host "=== CHANGELOG.md ==="
+          if (Test-Path 'CHANGELOG.md') { Get-Content -LiteralPath 'CHANGELOG.md' }

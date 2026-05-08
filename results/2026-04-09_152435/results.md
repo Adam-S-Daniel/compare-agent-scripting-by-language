@@ -1,10 +1,12 @@
 # Benchmark Results: Language Comparison
 
-**Last updated:** 2026-04-21 09:00:35 AM ET — 64/64 runs completed, 0 remaining; total cost $86.90; total agent time 550.6 min.
+**Last updated:** 2026-05-08 01:19:53 PM ET — 64/64 runs completed, 0 remaining; total cost $86.90; total agent time 550.6 min.
+**Claude Code versions used:** [v2.1.97](claude-code-2.1.97.md) (1 run), [v2.1.98](claude-code-2.1.98.md) (57 runs), [v2.1.100](claude-code-2.1.100.md) (6 runs). Each link goes to a per-version snapshot of the system prompt, default-tool descriptions, and the chronological Anthropic changelog up to that version. Regenerate with `python3 version_docs.py`.
 
 ## Table of Contents
 
 - [Scoring](#scoring)
+  - [Duration columns](#duration-columns)
 - [Tiers by Language/Model/Effort](#tiers-by-languagemodeleffort)
 - [Comparison by Language/Model/Effort](#comparison-by-languagemodeleffort)
 - [Savings Analysis](#savings-analysis)
@@ -49,20 +51,29 @@ Properties:
 - **Scale:** ratios, not raw seconds or dollars
 - **Band calibration:** auto-calibrated to the data's best-to-worst spread via log-equal division (`boundary_i = max_ratio^(i/12)`), so the best observed ratio lands at A+ and the worst at D-
 - **F band:** reserved for ratios beyond the observed worst
+
+### Duration columns
+
+Every Duration figure in this report derives from `timing.grand_total_duration_ms` in `metrics.json` — wall-clock seconds from CLI invocation to the final assistant turn (agent thinking + tool execution + hooks).
+
+- **Duration** (single run): that one run's wall clock. Appears in the [Failed / Timed-Out Runs](#failed--timed-out-runs) and per-run detail tables.
+- **Avg Duration** (in the [Comparison by Language/Model/Effort](#comparison-by-languagemodeleffort) table; also drives the [Tiers](#tiers-by-languagemodeleffort) Duration column): arithmetic mean of `Duration` over the runs in that combo, excluding failed/timed-out runs.
+- **Avg Duration Net of Traps** (in the Comparison table only): mean of (per-run `Duration` − that run's `Time Lost`), where `Time Lost` is the trap detector's estimate of seconds spent on detected anti-patterns (see [Trap Descriptions](#trap-descriptions) and the trap-table [Column Definitions](#column-definitions) for the trap list and how Time Lost is computed). Reads as a counterfactual: roughly how fast each combo would have been without the detected traps.
+- The **Tier table's Duration column** shows the tier letter (A+..F) for the combo's gross **Avg Duration** ratio. Net of Traps does not feed the tier band.
 ## Tiers by Language/Model/Effort
 
 *Default sort: weighted composite of tiers (40% Tests, 25% Workflow Craft, 35% split between Duration & Cost). See [Notes](#notes) for tier-band definitions and scoring rubric.*
 
 | Language | Model | Duration | Cost | Tests Quality | Workflow Craft |
 |----------|-------|----------|------|-----------|-------------|
-| default | sonnet46-200k | B (8.3min) | A+ ($1.14) | B (3.6) | B (3.5) |
-| typescript-bun | opus46-200k | A+ (6.9min) | B- ($1.32) | B- (3.2) | B- (3.4) |
+| default | sonnet46-200k | B (8.3min) | A+ ($1.14) | B (3.6) | A- (4.1) |
+| typescript-bun | opus46-200k | A+ (6.9min) | B- ($1.32) | B- (3.2) | B- (3.5) |
 | typescript-bun | sonnet46-200k | C- (9.5min) | A ($1.17) | B (3.7) | B- (3.4) |
-| default | opus46-200k | A+ (6.9min) | D+ ($1.45) | B- (3.3) | B- (3.5) |
+| default | opus46-200k | A+ (6.9min) | D+ ($1.45) | B- (3.5) | B- (3.5) |
+| bash | sonnet46-200k | D (10.4min) | C- ($1.40) | B (3.8) | A- (4.1) |
 | powershell | sonnet46-200k | D- (11.0min) | B- ($1.30) | B (3.7) | B- (3.5) |
-| bash | sonnet46-200k | D (10.4min) | C- ($1.40) | B (3.8) | B (3.8) |
-| powershell | opus46-200k | B (8.2min) | D- ($1.55) | C+ (3.2) | B- (3.2) |
-| bash | opus46-200k | B+ (7.7min) | D- ($1.52) | C+ (3.2) | C+ (3.1) |
+| bash | opus46-200k | B+ (7.7min) | D- ($1.52) | B- (3.3) | B- (3.3) |
+| powershell | opus46-200k | B (8.2min) | D- ($1.55) | C+ (3.2) | B- (3.5) |
 
 
 <details>
@@ -70,13 +81,13 @@ Properties:
 
 | Language | Model | Duration | Cost | Tests Quality | Workflow Craft |
 |----------|-------|----------|------|-----------|-------------|
-| typescript-bun | opus46-200k | A+ (6.9min) | B- ($1.32) | B- (3.2) | B- (3.4) |
-| default | opus46-200k | A+ (6.9min) | D+ ($1.45) | B- (3.3) | B- (3.5) |
-| bash | opus46-200k | B+ (7.7min) | D- ($1.52) | C+ (3.2) | C+ (3.1) |
-| default | sonnet46-200k | B (8.3min) | A+ ($1.14) | B (3.6) | B (3.5) |
-| powershell | opus46-200k | B (8.2min) | D- ($1.55) | C+ (3.2) | B- (3.2) |
+| typescript-bun | opus46-200k | A+ (6.9min) | B- ($1.32) | B- (3.2) | B- (3.5) |
+| default | opus46-200k | A+ (6.9min) | D+ ($1.45) | B- (3.5) | B- (3.5) |
+| bash | opus46-200k | B+ (7.7min) | D- ($1.52) | B- (3.3) | B- (3.3) |
+| default | sonnet46-200k | B (8.3min) | A+ ($1.14) | B (3.6) | A- (4.1) |
+| powershell | opus46-200k | B (8.2min) | D- ($1.55) | C+ (3.2) | B- (3.5) |
 | typescript-bun | sonnet46-200k | C- (9.5min) | A ($1.17) | B (3.7) | B- (3.4) |
-| bash | sonnet46-200k | D (10.4min) | C- ($1.40) | B (3.8) | B (3.8) |
+| bash | sonnet46-200k | D (10.4min) | C- ($1.40) | B (3.8) | A- (4.1) |
 | powershell | sonnet46-200k | D- (11.0min) | B- ($1.30) | B (3.7) | B- (3.5) |
 
 </details>
@@ -86,14 +97,14 @@ Properties:
 
 | Language | Model | Duration | Cost | Tests Quality | Workflow Craft |
 |----------|-------|----------|------|-----------|-------------|
-| default | sonnet46-200k | B (8.3min) | A+ ($1.14) | B (3.6) | B (3.5) |
+| default | sonnet46-200k | B (8.3min) | A+ ($1.14) | B (3.6) | A- (4.1) |
 | typescript-bun | sonnet46-200k | C- (9.5min) | A ($1.17) | B (3.7) | B- (3.4) |
-| typescript-bun | opus46-200k | A+ (6.9min) | B- ($1.32) | B- (3.2) | B- (3.4) |
+| typescript-bun | opus46-200k | A+ (6.9min) | B- ($1.32) | B- (3.2) | B- (3.5) |
 | powershell | sonnet46-200k | D- (11.0min) | B- ($1.30) | B (3.7) | B- (3.5) |
-| bash | sonnet46-200k | D (10.4min) | C- ($1.40) | B (3.8) | B (3.8) |
-| default | opus46-200k | A+ (6.9min) | D+ ($1.45) | B- (3.3) | B- (3.5) |
-| bash | opus46-200k | B+ (7.7min) | D- ($1.52) | C+ (3.2) | C+ (3.1) |
-| powershell | opus46-200k | B (8.2min) | D- ($1.55) | C+ (3.2) | B- (3.2) |
+| bash | sonnet46-200k | D (10.4min) | C- ($1.40) | B (3.8) | A- (4.1) |
+| default | opus46-200k | A+ (6.9min) | D+ ($1.45) | B- (3.5) | B- (3.5) |
+| bash | opus46-200k | B+ (7.7min) | D- ($1.52) | B- (3.3) | B- (3.3) |
+| powershell | opus46-200k | B (8.2min) | D- ($1.55) | C+ (3.2) | B- (3.5) |
 
 </details>
 
@@ -102,14 +113,14 @@ Properties:
 
 | Language | Model | Duration | Cost | Tests Quality | Workflow Craft |
 |----------|-------|----------|------|-----------|-------------|
-| default | sonnet46-200k | B (8.3min) | A+ ($1.14) | B (3.6) | B (3.5) |
+| default | sonnet46-200k | B (8.3min) | A+ ($1.14) | B (3.6) | A- (4.1) |
 | typescript-bun | sonnet46-200k | C- (9.5min) | A ($1.17) | B (3.7) | B- (3.4) |
+| bash | sonnet46-200k | D (10.4min) | C- ($1.40) | B (3.8) | A- (4.1) |
 | powershell | sonnet46-200k | D- (11.0min) | B- ($1.30) | B (3.7) | B- (3.5) |
-| bash | sonnet46-200k | D (10.4min) | C- ($1.40) | B (3.8) | B (3.8) |
-| typescript-bun | opus46-200k | A+ (6.9min) | B- ($1.32) | B- (3.2) | B- (3.4) |
-| default | opus46-200k | A+ (6.9min) | D+ ($1.45) | B- (3.3) | B- (3.5) |
-| bash | opus46-200k | B+ (7.7min) | D- ($1.52) | C+ (3.2) | C+ (3.1) |
-| powershell | opus46-200k | B (8.2min) | D- ($1.55) | C+ (3.2) | B- (3.2) |
+| typescript-bun | opus46-200k | A+ (6.9min) | B- ($1.32) | B- (3.2) | B- (3.5) |
+| default | opus46-200k | A+ (6.9min) | D+ ($1.45) | B- (3.5) | B- (3.5) |
+| bash | opus46-200k | B+ (7.7min) | D- ($1.52) | B- (3.3) | B- (3.3) |
+| powershell | opus46-200k | B (8.2min) | D- ($1.55) | C+ (3.2) | B- (3.5) |
 
 </details>
 
@@ -118,14 +129,14 @@ Properties:
 
 | Language | Model | Duration | Cost | Tests Quality | Workflow Craft |
 |----------|-------|----------|------|-----------|-------------|
-| default | sonnet46-200k | B (8.3min) | A+ ($1.14) | B (3.6) | B (3.5) |
-| bash | sonnet46-200k | D (10.4min) | C- ($1.40) | B (3.8) | B (3.8) |
-| typescript-bun | opus46-200k | A+ (6.9min) | B- ($1.32) | B- (3.2) | B- (3.4) |
+| default | sonnet46-200k | B (8.3min) | A+ ($1.14) | B (3.6) | A- (4.1) |
+| bash | sonnet46-200k | D (10.4min) | C- ($1.40) | B (3.8) | A- (4.1) |
+| typescript-bun | opus46-200k | A+ (6.9min) | B- ($1.32) | B- (3.2) | B- (3.5) |
 | typescript-bun | sonnet46-200k | C- (9.5min) | A ($1.17) | B (3.7) | B- (3.4) |
-| default | opus46-200k | A+ (6.9min) | D+ ($1.45) | B- (3.3) | B- (3.5) |
+| default | opus46-200k | A+ (6.9min) | D+ ($1.45) | B- (3.5) | B- (3.5) |
+| bash | opus46-200k | B+ (7.7min) | D- ($1.52) | B- (3.3) | B- (3.3) |
 | powershell | sonnet46-200k | D- (11.0min) | B- ($1.30) | B (3.7) | B- (3.5) |
-| powershell | opus46-200k | B (8.2min) | D- ($1.55) | C+ (3.2) | B- (3.2) |
-| bash | opus46-200k | B+ (7.7min) | D- ($1.52) | C+ (3.2) | C+ (3.1) |
+| powershell | opus46-200k | B (8.2min) | D- ($1.55) | C+ (3.2) | B- (3.5) |
 
 </details>
 
@@ -134,13 +145,13 @@ Properties:
 
 | Language | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost | Avg Tests Quality | Avg Workflow Craft |
 |----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|-----------------|
-| bash | opus46-200k | 8 | 7.7min | 7.7min | 1.6 | 43 | $1.52 | $12.19 | 3.2 | 3.1 |
-| bash | sonnet46-200k | 8 | 10.4min | 10.4min | 4.0 | 42 | $1.40 | $11.21 | 3.8 | 3.8 |
-| default | opus46-200k | 8 | 6.9min | 6.9min | 1.5 | 34 | $1.45 | $11.57 | 3.3 | 3.5 |
-| default | sonnet46-200k | 8 | 8.3min | 8.3min | 2.8 | 38 | $1.14 | $9.14 | 3.6 | 3.5 |
-| powershell | opus46-200k | 8 | 8.2min | 8.0min | 1.5 | 34 | $1.55 | $12.37 | 3.2 | 3.2 |
+| bash | opus46-200k | 8 | 7.7min | 7.7min | 1.6 | 43 | $1.52 | $12.19 | 3.3 | 3.3 |
+| bash | sonnet46-200k | 8 | 10.4min | 10.4min | 4.0 | 42 | $1.40 | $11.21 | 3.8 | 4.1 |
+| default | opus46-200k | 8 | 6.9min | 6.9min | 1.5 | 34 | $1.45 | $11.57 | 3.5 | 3.5 |
+| default | sonnet46-200k | 8 | 8.3min | 8.3min | 2.8 | 38 | $1.14 | $9.14 | 3.6 | 4.1 |
+| powershell | opus46-200k | 8 | 8.2min | 8.0min | 1.5 | 34 | $1.55 | $12.37 | 3.2 | 3.5 |
 | powershell | sonnet46-200k | 8 | 11.0min | 11.0min | 1.6 | 38 | $1.30 | $10.43 | 3.7 | 3.5 |
-| typescript-bun | opus46-200k | 8 | 6.9min | 6.9min | 2.0 | 39 | $1.32 | $10.60 | 3.2 | 3.4 |
+| typescript-bun | opus46-200k | 8 | 6.9min | 6.9min | 2.0 | 39 | $1.32 | $10.60 | 3.2 | 3.5 |
 | typescript-bun | sonnet46-200k | 8 | 9.5min | 9.5min | 1.6 | 37 | $1.17 | $9.39 | 3.7 | 3.4 |
 
 
@@ -149,14 +160,14 @@ Properties:
 
 | Language | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost | Avg Tests Quality | Avg Workflow Craft |
 |----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|-----------------|
-| default | sonnet46-200k | 8 | 8.3min | 8.3min | 2.8 | 38 | $1.14 | $9.14 | 3.6 | 3.5 |
+| default | sonnet46-200k | 8 | 8.3min | 8.3min | 2.8 | 38 | $1.14 | $9.14 | 3.6 | 4.1 |
 | typescript-bun | sonnet46-200k | 8 | 9.5min | 9.5min | 1.6 | 37 | $1.17 | $9.39 | 3.7 | 3.4 |
 | powershell | sonnet46-200k | 8 | 11.0min | 11.0min | 1.6 | 38 | $1.30 | $10.43 | 3.7 | 3.5 |
-| typescript-bun | opus46-200k | 8 | 6.9min | 6.9min | 2.0 | 39 | $1.32 | $10.60 | 3.2 | 3.4 |
-| bash | sonnet46-200k | 8 | 10.4min | 10.4min | 4.0 | 42 | $1.40 | $11.21 | 3.8 | 3.8 |
-| default | opus46-200k | 8 | 6.9min | 6.9min | 1.5 | 34 | $1.45 | $11.57 | 3.3 | 3.5 |
-| bash | opus46-200k | 8 | 7.7min | 7.7min | 1.6 | 43 | $1.52 | $12.19 | 3.2 | 3.1 |
-| powershell | opus46-200k | 8 | 8.2min | 8.0min | 1.5 | 34 | $1.55 | $12.37 | 3.2 | 3.2 |
+| typescript-bun | opus46-200k | 8 | 6.9min | 6.9min | 2.0 | 39 | $1.32 | $10.60 | 3.2 | 3.5 |
+| bash | sonnet46-200k | 8 | 10.4min | 10.4min | 4.0 | 42 | $1.40 | $11.21 | 3.8 | 4.1 |
+| default | opus46-200k | 8 | 6.9min | 6.9min | 1.5 | 34 | $1.45 | $11.57 | 3.5 | 3.5 |
+| bash | opus46-200k | 8 | 7.7min | 7.7min | 1.6 | 43 | $1.52 | $12.19 | 3.3 | 3.3 |
+| powershell | opus46-200k | 8 | 8.2min | 8.0min | 1.5 | 34 | $1.55 | $12.37 | 3.2 | 3.5 |
 
 </details>
 
@@ -165,13 +176,13 @@ Properties:
 
 | Language | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost | Avg Tests Quality | Avg Workflow Craft |
 |----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|-----------------|
-| typescript-bun | opus46-200k | 8 | 6.9min | 6.9min | 2.0 | 39 | $1.32 | $10.60 | 3.2 | 3.4 |
-| default | opus46-200k | 8 | 6.9min | 6.9min | 1.5 | 34 | $1.45 | $11.57 | 3.3 | 3.5 |
-| bash | opus46-200k | 8 | 7.7min | 7.7min | 1.6 | 43 | $1.52 | $12.19 | 3.2 | 3.1 |
-| powershell | opus46-200k | 8 | 8.2min | 8.0min | 1.5 | 34 | $1.55 | $12.37 | 3.2 | 3.2 |
-| default | sonnet46-200k | 8 | 8.3min | 8.3min | 2.8 | 38 | $1.14 | $9.14 | 3.6 | 3.5 |
+| typescript-bun | opus46-200k | 8 | 6.9min | 6.9min | 2.0 | 39 | $1.32 | $10.60 | 3.2 | 3.5 |
+| default | opus46-200k | 8 | 6.9min | 6.9min | 1.5 | 34 | $1.45 | $11.57 | 3.5 | 3.5 |
+| bash | opus46-200k | 8 | 7.7min | 7.7min | 1.6 | 43 | $1.52 | $12.19 | 3.3 | 3.3 |
+| powershell | opus46-200k | 8 | 8.2min | 8.0min | 1.5 | 34 | $1.55 | $12.37 | 3.2 | 3.5 |
+| default | sonnet46-200k | 8 | 8.3min | 8.3min | 2.8 | 38 | $1.14 | $9.14 | 3.6 | 4.1 |
 | typescript-bun | sonnet46-200k | 8 | 9.5min | 9.5min | 1.6 | 37 | $1.17 | $9.39 | 3.7 | 3.4 |
-| bash | sonnet46-200k | 8 | 10.4min | 10.4min | 4.0 | 42 | $1.40 | $11.21 | 3.8 | 3.8 |
+| bash | sonnet46-200k | 8 | 10.4min | 10.4min | 4.0 | 42 | $1.40 | $11.21 | 3.8 | 4.1 |
 | powershell | sonnet46-200k | 8 | 11.0min | 11.0min | 1.6 | 38 | $1.30 | $10.43 | 3.7 | 3.5 |
 
 </details>
@@ -181,13 +192,13 @@ Properties:
 
 | Language | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost | Avg Tests Quality | Avg Workflow Craft |
 |----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|-----------------|
-| typescript-bun | opus46-200k | 8 | 6.9min | 6.9min | 2.0 | 39 | $1.32 | $10.60 | 3.2 | 3.4 |
-| default | opus46-200k | 8 | 6.9min | 6.9min | 1.5 | 34 | $1.45 | $11.57 | 3.3 | 3.5 |
-| bash | opus46-200k | 8 | 7.7min | 7.7min | 1.6 | 43 | $1.52 | $12.19 | 3.2 | 3.1 |
-| powershell | opus46-200k | 8 | 8.2min | 8.0min | 1.5 | 34 | $1.55 | $12.37 | 3.2 | 3.2 |
-| default | sonnet46-200k | 8 | 8.3min | 8.3min | 2.8 | 38 | $1.14 | $9.14 | 3.6 | 3.5 |
+| typescript-bun | opus46-200k | 8 | 6.9min | 6.9min | 2.0 | 39 | $1.32 | $10.60 | 3.2 | 3.5 |
+| default | opus46-200k | 8 | 6.9min | 6.9min | 1.5 | 34 | $1.45 | $11.57 | 3.5 | 3.5 |
+| bash | opus46-200k | 8 | 7.7min | 7.7min | 1.6 | 43 | $1.52 | $12.19 | 3.3 | 3.3 |
+| powershell | opus46-200k | 8 | 8.2min | 8.0min | 1.5 | 34 | $1.55 | $12.37 | 3.2 | 3.5 |
+| default | sonnet46-200k | 8 | 8.3min | 8.3min | 2.8 | 38 | $1.14 | $9.14 | 3.6 | 4.1 |
 | typescript-bun | sonnet46-200k | 8 | 9.5min | 9.5min | 1.6 | 37 | $1.17 | $9.39 | 3.7 | 3.4 |
-| bash | sonnet46-200k | 8 | 10.4min | 10.4min | 4.0 | 42 | $1.40 | $11.21 | 3.8 | 3.8 |
+| bash | sonnet46-200k | 8 | 10.4min | 10.4min | 4.0 | 42 | $1.40 | $11.21 | 3.8 | 4.1 |
 | powershell | sonnet46-200k | 8 | 11.0min | 11.0min | 1.6 | 38 | $1.30 | $10.43 | 3.7 | 3.5 |
 
 </details>
@@ -197,14 +208,14 @@ Properties:
 
 | Language | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost | Avg Tests Quality | Avg Workflow Craft |
 |----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|-----------------|
-| default | opus46-200k | 8 | 6.9min | 6.9min | 1.5 | 34 | $1.45 | $11.57 | 3.3 | 3.5 |
-| powershell | opus46-200k | 8 | 8.2min | 8.0min | 1.5 | 34 | $1.55 | $12.37 | 3.2 | 3.2 |
-| bash | opus46-200k | 8 | 7.7min | 7.7min | 1.6 | 43 | $1.52 | $12.19 | 3.2 | 3.1 |
+| default | opus46-200k | 8 | 6.9min | 6.9min | 1.5 | 34 | $1.45 | $11.57 | 3.5 | 3.5 |
+| powershell | opus46-200k | 8 | 8.2min | 8.0min | 1.5 | 34 | $1.55 | $12.37 | 3.2 | 3.5 |
+| bash | opus46-200k | 8 | 7.7min | 7.7min | 1.6 | 43 | $1.52 | $12.19 | 3.3 | 3.3 |
 | powershell | sonnet46-200k | 8 | 11.0min | 11.0min | 1.6 | 38 | $1.30 | $10.43 | 3.7 | 3.5 |
 | typescript-bun | sonnet46-200k | 8 | 9.5min | 9.5min | 1.6 | 37 | $1.17 | $9.39 | 3.7 | 3.4 |
-| typescript-bun | opus46-200k | 8 | 6.9min | 6.9min | 2.0 | 39 | $1.32 | $10.60 | 3.2 | 3.4 |
-| default | sonnet46-200k | 8 | 8.3min | 8.3min | 2.8 | 38 | $1.14 | $9.14 | 3.6 | 3.5 |
-| bash | sonnet46-200k | 8 | 10.4min | 10.4min | 4.0 | 42 | $1.40 | $11.21 | 3.8 | 3.8 |
+| typescript-bun | opus46-200k | 8 | 6.9min | 6.9min | 2.0 | 39 | $1.32 | $10.60 | 3.2 | 3.5 |
+| default | sonnet46-200k | 8 | 8.3min | 8.3min | 2.8 | 38 | $1.14 | $9.14 | 3.6 | 4.1 |
+| bash | sonnet46-200k | 8 | 10.4min | 10.4min | 4.0 | 42 | $1.40 | $11.21 | 3.8 | 4.1 |
 
 </details>
 
@@ -213,14 +224,14 @@ Properties:
 
 | Language | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost | Avg Tests Quality | Avg Workflow Craft |
 |----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|-----------------|
-| powershell | opus46-200k | 8 | 8.2min | 8.0min | 1.5 | 34 | $1.55 | $12.37 | 3.2 | 3.2 |
-| default | opus46-200k | 8 | 6.9min | 6.9min | 1.5 | 34 | $1.45 | $11.57 | 3.3 | 3.5 |
+| powershell | opus46-200k | 8 | 8.2min | 8.0min | 1.5 | 34 | $1.55 | $12.37 | 3.2 | 3.5 |
+| default | opus46-200k | 8 | 6.9min | 6.9min | 1.5 | 34 | $1.45 | $11.57 | 3.5 | 3.5 |
 | typescript-bun | sonnet46-200k | 8 | 9.5min | 9.5min | 1.6 | 37 | $1.17 | $9.39 | 3.7 | 3.4 |
-| default | sonnet46-200k | 8 | 8.3min | 8.3min | 2.8 | 38 | $1.14 | $9.14 | 3.6 | 3.5 |
+| default | sonnet46-200k | 8 | 8.3min | 8.3min | 2.8 | 38 | $1.14 | $9.14 | 3.6 | 4.1 |
 | powershell | sonnet46-200k | 8 | 11.0min | 11.0min | 1.6 | 38 | $1.30 | $10.43 | 3.7 | 3.5 |
-| typescript-bun | opus46-200k | 8 | 6.9min | 6.9min | 2.0 | 39 | $1.32 | $10.60 | 3.2 | 3.4 |
-| bash | sonnet46-200k | 8 | 10.4min | 10.4min | 4.0 | 42 | $1.40 | $11.21 | 3.8 | 3.8 |
-| bash | opus46-200k | 8 | 7.7min | 7.7min | 1.6 | 43 | $1.52 | $12.19 | 3.2 | 3.1 |
+| typescript-bun | opus46-200k | 8 | 6.9min | 6.9min | 2.0 | 39 | $1.32 | $10.60 | 3.2 | 3.5 |
+| bash | sonnet46-200k | 8 | 10.4min | 10.4min | 4.0 | 42 | $1.40 | $11.21 | 3.8 | 4.1 |
+| bash | opus46-200k | 8 | 7.7min | 7.7min | 1.6 | 43 | $1.52 | $12.19 | 3.3 | 3.3 |
 
 </details>
 
@@ -229,14 +240,14 @@ Properties:
 
 | Language | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost | Avg Tests Quality | Avg Workflow Craft |
 |----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|-----------------|
-| bash | sonnet46-200k | 8 | 10.4min | 10.4min | 4.0 | 42 | $1.40 | $11.21 | 3.8 | 3.8 |
-| typescript-bun | sonnet46-200k | 8 | 9.5min | 9.5min | 1.6 | 37 | $1.17 | $9.39 | 3.7 | 3.4 |
+| bash | sonnet46-200k | 8 | 10.4min | 10.4min | 4.0 | 42 | $1.40 | $11.21 | 3.8 | 4.1 |
 | powershell | sonnet46-200k | 8 | 11.0min | 11.0min | 1.6 | 38 | $1.30 | $10.43 | 3.7 | 3.5 |
-| default | sonnet46-200k | 8 | 8.3min | 8.3min | 2.8 | 38 | $1.14 | $9.14 | 3.6 | 3.5 |
-| default | opus46-200k | 8 | 6.9min | 6.9min | 1.5 | 34 | $1.45 | $11.57 | 3.3 | 3.5 |
-| typescript-bun | opus46-200k | 8 | 6.9min | 6.9min | 2.0 | 39 | $1.32 | $10.60 | 3.2 | 3.4 |
-| powershell | opus46-200k | 8 | 8.2min | 8.0min | 1.5 | 34 | $1.55 | $12.37 | 3.2 | 3.2 |
-| bash | opus46-200k | 8 | 7.7min | 7.7min | 1.6 | 43 | $1.52 | $12.19 | 3.2 | 3.1 |
+| typescript-bun | sonnet46-200k | 8 | 9.5min | 9.5min | 1.6 | 37 | $1.17 | $9.39 | 3.7 | 3.4 |
+| default | sonnet46-200k | 8 | 8.3min | 8.3min | 2.8 | 38 | $1.14 | $9.14 | 3.6 | 4.1 |
+| default | opus46-200k | 8 | 6.9min | 6.9min | 1.5 | 34 | $1.45 | $11.57 | 3.5 | 3.5 |
+| bash | opus46-200k | 8 | 7.7min | 7.7min | 1.6 | 43 | $1.52 | $12.19 | 3.3 | 3.3 |
+| typescript-bun | opus46-200k | 8 | 6.9min | 6.9min | 2.0 | 39 | $1.32 | $10.60 | 3.2 | 3.5 |
+| powershell | opus46-200k | 8 | 8.2min | 8.0min | 1.5 | 34 | $1.55 | $12.37 | 3.2 | 3.5 |
 
 </details>
 
@@ -245,14 +256,14 @@ Properties:
 
 | Language | Model | Runs | Avg Duration | Avg Duration Net of Traps | Avg Errors | Avg Turns | Avg Cost | Total Cost | Avg Tests Quality | Avg Workflow Craft |
 |----------|-------|------|--------------|---------------------------|------------|-----------|----------|------------|---------------|-----------------|
-| bash | sonnet46-200k | 8 | 10.4min | 10.4min | 4.0 | 42 | $1.40 | $11.21 | 3.8 | 3.8 |
-| default | sonnet46-200k | 8 | 8.3min | 8.3min | 2.8 | 38 | $1.14 | $9.14 | 3.6 | 3.5 |
-| default | opus46-200k | 8 | 6.9min | 6.9min | 1.5 | 34 | $1.45 | $11.57 | 3.3 | 3.5 |
+| bash | sonnet46-200k | 8 | 10.4min | 10.4min | 4.0 | 42 | $1.40 | $11.21 | 3.8 | 4.1 |
+| default | sonnet46-200k | 8 | 8.3min | 8.3min | 2.8 | 38 | $1.14 | $9.14 | 3.6 | 4.1 |
+| default | opus46-200k | 8 | 6.9min | 6.9min | 1.5 | 34 | $1.45 | $11.57 | 3.5 | 3.5 |
 | powershell | sonnet46-200k | 8 | 11.0min | 11.0min | 1.6 | 38 | $1.30 | $10.43 | 3.7 | 3.5 |
+| typescript-bun | opus46-200k | 8 | 6.9min | 6.9min | 2.0 | 39 | $1.32 | $10.60 | 3.2 | 3.5 |
+| powershell | opus46-200k | 8 | 8.2min | 8.0min | 1.5 | 34 | $1.55 | $12.37 | 3.2 | 3.5 |
 | typescript-bun | sonnet46-200k | 8 | 9.5min | 9.5min | 1.6 | 37 | $1.17 | $9.39 | 3.7 | 3.4 |
-| typescript-bun | opus46-200k | 8 | 6.9min | 6.9min | 2.0 | 39 | $1.32 | $10.60 | 3.2 | 3.4 |
-| powershell | opus46-200k | 8 | 8.2min | 8.0min | 1.5 | 34 | $1.55 | $12.37 | 3.2 | 3.2 |
-| bash | opus46-200k | 8 | 7.7min | 7.7min | 1.6 | 43 | $1.52 | $12.19 | 3.2 | 3.1 |
+| bash | opus46-200k | 8 | 7.7min | 7.7min | 1.6 | 43 | $1.52 | $12.19 | 3.3 | 3.3 |
 
 </details>
 
@@ -732,15 +743,15 @@ An LLM evaluates each test suite on four dimensions (1-5 scale):
 
 | Language | Model | Avg Overall | Avg Coverage | Avg Rigor | Avg Design | Judge Cost |
 |------|-------|-------------|-------------|-----------|------------|------------|
-| bash | opus46-200k | **3.2** | 3.7 | 3.0 | 3.0 | $0.9320 |
+| bash | opus46-200k | **3.3** | 3.8 | 3.1 | 3.1 | $0.9027 |
 | bash | sonnet46-200k | **3.8** | 4.1 | 3.5 | 4.0 | $0.9950 |
-| default | opus46-200k | **3.3** | 3.7 | 3.2 | 3.7 | $1.0198 |
+| default | opus46-200k | **3.5** | 3.8 | 3.3 | 3.8 | $0.9879 |
 | default | sonnet46-200k | **3.6** | 4.0 | 3.5 | 4.1 | $1.0423 |
 | powershell | opus46-200k | **3.2** | 3.5 | 3.0 | 3.5 | $0.8562 |
 | powershell | sonnet46-200k | **3.7** | 4.0 | 3.5 | 4.1 | $1.1350 |
 | typescript-bun | opus46-200k | **3.2** | 3.5 | 3.0 | 3.7 | $0.9769 |
 | typescript-bun | sonnet46-200k | **3.7** | 3.8 | 3.7 | 4.0 | $1.0105 |
-| **Total** | | | | | | **$7.9677** |
+| **Total** | | | | | | **$7.9065** |
 
 
 <details>
@@ -749,13 +760,13 @@ An LLM evaluates each test suite on four dimensions (1-5 scale):
 | Language | Model | Avg Overall | Avg Coverage | Avg Rigor | Avg Design | Judge Cost |
 |------|-------|-------------|-------------|-----------|------------|------------|
 | bash | sonnet46-200k | **3.8** | 4.1 | 3.5 | 4.0 | $0.9950 |
-| typescript-bun | sonnet46-200k | **3.7** | 3.8 | 3.7 | 4.0 | $1.0105 |
 | powershell | sonnet46-200k | **3.7** | 4.0 | 3.5 | 4.1 | $1.1350 |
+| typescript-bun | sonnet46-200k | **3.7** | 3.8 | 3.7 | 4.0 | $1.0105 |
 | default | sonnet46-200k | **3.6** | 4.0 | 3.5 | 4.1 | $1.0423 |
-| default | opus46-200k | **3.3** | 3.7 | 3.2 | 3.7 | $1.0198 |
+| default | opus46-200k | **3.5** | 3.8 | 3.3 | 3.8 | $0.9879 |
+| bash | opus46-200k | **3.3** | 3.8 | 3.1 | 3.1 | $0.9027 |
 | typescript-bun | opus46-200k | **3.2** | 3.5 | 3.0 | 3.7 | $0.9769 |
 | powershell | opus46-200k | **3.2** | 3.5 | 3.0 | 3.5 | $0.8562 |
-| bash | opus46-200k | **3.2** | 3.7 | 3.0 | 3.0 | $0.9320 |
 
 </details>
 
@@ -765,11 +776,11 @@ An LLM evaluates each test suite on four dimensions (1-5 scale):
 | Language | Model | Avg Overall | Avg Coverage | Avg Rigor | Avg Design | Judge Cost |
 |------|-------|-------------|-------------|-----------|------------|------------|
 | bash | sonnet46-200k | **3.8** | 4.1 | 3.5 | 4.0 | $0.9950 |
-| powershell | sonnet46-200k | **3.7** | 4.0 | 3.5 | 4.1 | $1.1350 |
 | default | sonnet46-200k | **3.6** | 4.0 | 3.5 | 4.1 | $1.0423 |
+| powershell | sonnet46-200k | **3.7** | 4.0 | 3.5 | 4.1 | $1.1350 |
 | typescript-bun | sonnet46-200k | **3.7** | 3.8 | 3.7 | 4.0 | $1.0105 |
-| bash | opus46-200k | **3.2** | 3.7 | 3.0 | 3.0 | $0.9320 |
-| default | opus46-200k | **3.3** | 3.7 | 3.2 | 3.7 | $1.0198 |
+| default | opus46-200k | **3.5** | 3.8 | 3.3 | 3.8 | $0.9879 |
+| bash | opus46-200k | **3.3** | 3.8 | 3.1 | 3.1 | $0.9027 |
 | typescript-bun | opus46-200k | **3.2** | 3.5 | 3.0 | 3.7 | $0.9769 |
 | powershell | opus46-200k | **3.2** | 3.5 | 3.0 | 3.5 | $0.8562 |
 
@@ -782,11 +793,11 @@ An LLM evaluates each test suite on four dimensions (1-5 scale):
 |------|-------|-------------|-------------|-----------|------------|------------|
 | typescript-bun | sonnet46-200k | **3.7** | 3.8 | 3.7 | 4.0 | $1.0105 |
 | powershell | sonnet46-200k | **3.7** | 4.0 | 3.5 | 4.1 | $1.1350 |
-| default | sonnet46-200k | **3.6** | 4.0 | 3.5 | 4.1 | $1.0423 |
 | bash | sonnet46-200k | **3.8** | 4.1 | 3.5 | 4.0 | $0.9950 |
-| default | opus46-200k | **3.3** | 3.7 | 3.2 | 3.7 | $1.0198 |
+| default | sonnet46-200k | **3.6** | 4.0 | 3.5 | 4.1 | $1.0423 |
+| default | opus46-200k | **3.5** | 3.8 | 3.3 | 3.8 | $0.9879 |
+| bash | opus46-200k | **3.3** | 3.8 | 3.1 | 3.1 | $0.9027 |
 | typescript-bun | opus46-200k | **3.2** | 3.5 | 3.0 | 3.7 | $0.9769 |
-| bash | opus46-200k | **3.2** | 3.7 | 3.0 | 3.0 | $0.9320 |
 | powershell | opus46-200k | **3.2** | 3.5 | 3.0 | 3.5 | $0.8562 |
 
 </details>
@@ -798,12 +809,12 @@ An LLM evaluates each test suite on four dimensions (1-5 scale):
 |------|-------|-------------|-------------|-----------|------------|------------|
 | default | sonnet46-200k | **3.6** | 4.0 | 3.5 | 4.1 | $1.0423 |
 | powershell | sonnet46-200k | **3.7** | 4.0 | 3.5 | 4.1 | $1.1350 |
-| typescript-bun | sonnet46-200k | **3.7** | 3.8 | 3.7 | 4.0 | $1.0105 |
 | bash | sonnet46-200k | **3.8** | 4.1 | 3.5 | 4.0 | $0.9950 |
+| typescript-bun | sonnet46-200k | **3.7** | 3.8 | 3.7 | 4.0 | $1.0105 |
+| default | opus46-200k | **3.5** | 3.8 | 3.3 | 3.8 | $0.9879 |
 | typescript-bun | opus46-200k | **3.2** | 3.5 | 3.0 | 3.7 | $0.9769 |
-| default | opus46-200k | **3.3** | 3.7 | 3.2 | 3.7 | $1.0198 |
 | powershell | opus46-200k | **3.2** | 3.5 | 3.0 | 3.5 | $0.8562 |
-| bash | opus46-200k | **3.2** | 3.7 | 3.0 | 3.0 | $0.9320 |
+| bash | opus46-200k | **3.3** | 3.8 | 3.1 | 3.1 | $0.9027 |
 
 </details>
 
@@ -839,7 +850,7 @@ An LLM evaluates each test suite on four dimensions (1-5 scale):
 | Dependency License Checker | typescript-bun | sonnet46-200k | 2.3333333333333335 | 2.6666666666666665 | 3.0 | 2.3333333333333335 |  |
 | Docker Image Tag Generator | bash | opus46-200k | 3.6666666666666665 | 3.0 | 2.3333333333333335 | 2.6666666666666665 |  |
 | Docker Image Tag Generator | bash | sonnet46-200k | 4.666666666666667 | 4.0 | 4.666666666666667 | 4.333333333333333 |  |
-| Docker Image Tag Generator | default | opus46-200k | 3.3333333333333335 | 3.3333333333333335 | 3.3333333333333335 | 3.0 |  |
+| Docker Image Tag Generator | default | opus46-200k | 4.5 | 4.0 | 4.0 | 4.0 |  |
 | Docker Image Tag Generator | default | sonnet46-200k | 4.333333333333333 | 3.6666666666666665 | 4.333333333333333 | 3.6666666666666665 |  |
 | Docker Image Tag Generator | powershell | opus46-200k | 3.6666666666666665 | 2.6666666666666665 | 3.0 | 3.3333333333333335 |  |
 | Docker Image Tag Generator | powershell | sonnet46-200k | 4.0 | 3.3333333333333335 | 4.333333333333333 | 4.0 |  |
@@ -853,7 +864,7 @@ An LLM evaluates each test suite on four dimensions (1-5 scale):
 | Test Results Aggregator | powershell | sonnet46-200k | 4.666666666666667 | 4.0 | 3.6666666666666665 | 3.6666666666666665 |  |
 | Test Results Aggregator | typescript-bun | opus46-200k | 3.6666666666666665 | 3.0 | 3.3333333333333335 | 3.3333333333333335 |  |
 | Test Results Aggregator | typescript-bun | sonnet46-200k | 4.666666666666667 | 4.333333333333333 | 4.666666666666667 | 4.666666666666667 |  |
-| Environment Matrix Generator | bash | opus46-200k | 3.3333333333333335 | 3.0 | 2.6666666666666665 | 2.6666666666666665 |  |
+| Environment Matrix Generator | bash | opus46-200k | 4.0 | 3.5 | 3.5 | 3.5 |  |
 | Environment Matrix Generator | bash | sonnet46-200k | 4.0 | 3.6666666666666665 | 3.6666666666666665 | 4.0 |  |
 | Environment Matrix Generator | default | opus46-200k | 4.0 | 3.3333333333333335 | 3.6666666666666665 | 3.6666666666666665 |  |
 | Environment Matrix Generator | default | sonnet46-200k | 4.333333333333333 | 3.6666666666666665 | 4.333333333333333 | 3.6666666666666665 |  |
@@ -887,9 +898,9 @@ Values near +1.0 indicate the LLM agrees with the structural signal; near 0 mean
 
 | Structural Metric | vs Coverage | vs Rigor | vs Design | vs Overall |
 |-------------------|------------|---------|----------|-----------|
-| Test count | 0.32 | 0.35 | 0.2 | 0.2 |
-| Assertion count | 0.3 | 0.44 | 0.36 | 0.26 |
-| Test:code ratio | -0.08 | -0.03 | -0.13 | -0.23 |
+| Test count | 0.32 | 0.34 | 0.21 | 0.19 |
+| Assertion count | 0.24 | 0.39 | 0.33 | 0.21 |
+| Test:code ratio | -0.01 | 0.02 | -0.1 | -0.17 |
 
 *Based on 64 runs with both structural and LLM scores.*
 
@@ -917,13 +928,13 @@ Values near +1.0 indicate the LLM agrees with the structural signal; near 0 mean
 | Dependency License Checker | typescript-bun | sonnet46-200k | 9.5min | 43 | 2 | $1.47 | 2.3 | typescript | ok |
 | Docker Image Tag Generator | bash | opus46-200k | 3.7min | 28 | 1 | $0.78 | 2.7 | bash | ok |
 | Docker Image Tag Generator | bash | sonnet46-200k | 4.5min | 26 | 2 | $0.61 | 4.3 | bash | ok |
-| Docker Image Tag Generator | default | opus46-200k | 5.5min | 27 | 2 | $1.25 | 3.0 | python | ok |
+| Docker Image Tag Generator | default | opus46-200k | 5.5min | 27 | 2 | $1.25 | 4.0 | python | ok |
 | Docker Image Tag Generator | default | sonnet46-200k | 8.4min | 35 | 1 | $1.00 | 3.7 | python | ok |
 | Docker Image Tag Generator | powershell | opus46-200k | 7.9min | 24 | 0 | $1.39 | 3.3 | powershell | ok |
 | Docker Image Tag Generator | powershell | sonnet46-200k | 9.2min | 35 | 2 | $1.13 | 4.0 | powershell | ok |
 | Docker Image Tag Generator | typescript-bun | opus46-200k | 8.6min | 38 | 1 | $1.53 | 3.0 | typescript | ok |
 | Docker Image Tag Generator | typescript-bun | sonnet46-200k | 12.0min | 25 | 3 | $0.98 | 4.0 | typescript | ok |
-| Environment Matrix Generator | bash | opus46-200k | 4.1min | 42 | 1 | $0.98 | 2.7 | bash | ok |
+| Environment Matrix Generator | bash | opus46-200k | 4.1min | 42 | 1 | $0.98 | 3.5 | bash | ok |
 | Environment Matrix Generator | bash | sonnet46-200k | 10.5min | 25 | 3 | $1.22 | 4.0 | bash | ok |
 | Environment Matrix Generator | default | opus46-200k | 6.4min | 29 | 1 | $1.21 | 3.7 | python | ok |
 | Environment Matrix Generator | default | sonnet46-200k | 7.8min | 36 | 5 | $1.05 | 3.7 | python | ok |
@@ -978,7 +989,7 @@ Values near +1.0 indicate the LLM agrees with the structural signal; near 0 mean
 | PR Label Assigner | typescript-bun | sonnet46-200k | 8.1min | 43 | 1 | $0.89 | 4.7 | typescript | ok |
 | Semantic Version Bumper | powershell | sonnet46-200k | 11.4min | 43 | 3 | $0.92 | 4.0 | powershell | ok |
 | Semantic Version Bumper | typescript-bun | sonnet46-200k | 8.1min | 30 | 1 | $0.97 | 3.7 | typescript | ok |
-| Environment Matrix Generator | bash | opus46-200k | 4.1min | 42 | 1 | $0.98 | 2.7 | bash | ok |
+| Environment Matrix Generator | bash | opus46-200k | 4.1min | 42 | 1 | $0.98 | 3.5 | bash | ok |
 | Docker Image Tag Generator | typescript-bun | sonnet46-200k | 12.0min | 25 | 3 | $0.98 | 4.0 | typescript | ok |
 | Semantic Version Bumper | default | sonnet46-200k | 7.3min | 46 | 1 | $0.99 | 3.0 | python | ok |
 | Artifact Cleanup Script | powershell | sonnet46-200k | 12.0min | 15 | 0 | $0.99 | 2.3 | powershell | ok |
@@ -1001,7 +1012,7 @@ Values near +1.0 indicate the LLM agrees with the structural signal; near 0 mean
 | Dependency License Checker | default | opus46-200k | 5.9min | 39 | 0 | $1.24 | 3.0 | python | ok |
 | Secret Rotation Validator | default | sonnet46-200k | 7.1min | 47 | 4 | $1.25 | 3.7 | python | ok |
 | Environment Matrix Generator | powershell | opus46-200k | 5.3min | 38 | 3 | $1.25 | 2.7 | powershell | ok |
-| Docker Image Tag Generator | default | opus46-200k | 5.5min | 27 | 2 | $1.25 | 3.0 | python | ok |
+| Docker Image Tag Generator | default | opus46-200k | 5.5min | 27 | 2 | $1.25 | 4.0 | python | ok |
 | Test Results Aggregator | default | opus46-200k | 5.7min | 35 | 3 | $1.27 | 3.0 | python | ok |
 | Secret Rotation Validator | typescript-bun | sonnet46-200k | 10.1min | 32 | 0 | $1.28 | 4.0 | typescript | ok |
 | Dependency License Checker | default | sonnet46-200k | 9.2min | 39 | 3 | $1.30 | 4.3 | python | ok |
@@ -1044,12 +1055,12 @@ Values near +1.0 indicate the LLM agrees with the structural signal; near 0 mean
 |------|----------|-------|----------|-------|--------|------|-----------|--------|--------|
 | Test Results Aggregator | typescript-bun | opus46-200k | 2.3min | 29 | 1 | $0.61 | 3.3 | typescript | ok |
 | Docker Image Tag Generator | bash | opus46-200k | 3.7min | 28 | 1 | $0.78 | 2.7 | bash | ok |
-| Environment Matrix Generator | bash | opus46-200k | 4.1min | 42 | 1 | $0.98 | 2.7 | bash | ok |
+| Environment Matrix Generator | bash | opus46-200k | 4.1min | 42 | 1 | $0.98 | 3.5 | bash | ok |
 | Docker Image Tag Generator | bash | sonnet46-200k | 4.5min | 26 | 2 | $0.61 | 4.3 | bash | ok |
 | PR Label Assigner | typescript-bun | opus46-200k | 5.1min | 33 | 2 | $1.01 | 3.0 | typescript | ok |
 | Environment Matrix Generator | powershell | opus46-200k | 5.3min | 38 | 3 | $1.25 | 2.7 | powershell | ok |
 | Artifact Cleanup Script | powershell | opus46-200k | 5.4min | 29 | 2 | $1.07 | 4.0 | powershell | ok |
-| Docker Image Tag Generator | default | opus46-200k | 5.5min | 27 | 2 | $1.25 | 3.0 | python | ok |
+| Docker Image Tag Generator | default | opus46-200k | 5.5min | 27 | 2 | $1.25 | 4.0 | python | ok |
 | PR Label Assigner | bash | opus46-200k | 5.6min | 42 | 2 | $1.16 | 2.0 | bash | ok |
 | Artifact Cleanup Script | bash | opus46-200k | 5.7min | 50 | 2 | $1.50 | 3.3 | bash | ok |
 | Test Results Aggregator | default | opus46-200k | 5.7min | 35 | 3 | $1.27 | 3.0 | python | ok |
@@ -1133,7 +1144,7 @@ Values near +1.0 indicate the LLM agrees with the structural signal; near 0 mean
 | Test Results Aggregator | powershell | sonnet46-200k | 11.8min | 29 | 1 | $1.36 | 3.7 | powershell | ok |
 | Test Results Aggregator | typescript-bun | opus46-200k | 2.3min | 29 | 1 | $0.61 | 3.3 | typescript | ok |
 | Test Results Aggregator | typescript-bun | sonnet46-200k | 10.9min | 35 | 1 | $1.41 | 4.7 | typescript | ok |
-| Environment Matrix Generator | bash | opus46-200k | 4.1min | 42 | 1 | $0.98 | 2.7 | bash | ok |
+| Environment Matrix Generator | bash | opus46-200k | 4.1min | 42 | 1 | $0.98 | 3.5 | bash | ok |
 | Environment Matrix Generator | default | opus46-200k | 6.4min | 29 | 1 | $1.21 | 3.7 | python | ok |
 | Environment Matrix Generator | powershell | sonnet46-200k | 11.5min | 54 | 1 | $1.46 | 4.0 | powershell | ok |
 | Artifact Cleanup Script | bash | sonnet46-200k | 7.2min | 35 | 1 | $0.77 | 3.3 | bash | ok |
@@ -1147,7 +1158,7 @@ Values near +1.0 indicate the LLM agrees with the structural signal; near 0 mean
 | Dependency License Checker | powershell | sonnet46-200k | 12.3min | 58 | 2 | $1.93 | 4.0 | powershell | ok |
 | Dependency License Checker | typescript-bun | sonnet46-200k | 9.5min | 43 | 2 | $1.47 | 2.3 | typescript | ok |
 | Docker Image Tag Generator | bash | sonnet46-200k | 4.5min | 26 | 2 | $0.61 | 4.3 | bash | ok |
-| Docker Image Tag Generator | default | opus46-200k | 5.5min | 27 | 2 | $1.25 | 3.0 | python | ok |
+| Docker Image Tag Generator | default | opus46-200k | 5.5min | 27 | 2 | $1.25 | 4.0 | python | ok |
 | Docker Image Tag Generator | powershell | sonnet46-200k | 9.2min | 35 | 2 | $1.13 | 4.0 | powershell | ok |
 | Test Results Aggregator | bash | opus46-200k | 15.8min | 42 | 2 | $2.85 | 3.7 | bash | ok |
 | Test Results Aggregator | default | sonnet46-200k | 9.9min | 24 | 2 | $1.20 | 3.3 | python | ok |
@@ -1193,7 +1204,7 @@ Values near +1.0 indicate the LLM agrees with the structural signal; near 0 mean
 | Environment Matrix Generator | bash | sonnet46-200k | 10.5min | 25 | 3 | $1.22 | 4.0 | bash | ok |
 | Docker Image Tag Generator | bash | sonnet46-200k | 4.5min | 26 | 2 | $0.61 | 4.3 | bash | ok |
 | Semantic Version Bumper | powershell | opus46-200k | 6.9min | 27 | 0 | $1.04 | 2.3 | powershell | ok |
-| Docker Image Tag Generator | default | opus46-200k | 5.5min | 27 | 2 | $1.25 | 3.0 | python | ok |
+| Docker Image Tag Generator | default | opus46-200k | 5.5min | 27 | 2 | $1.25 | 4.0 | python | ok |
 | Semantic Version Bumper | default | opus46-200k | 7.1min | 28 | 1 | $1.33 | 3.3 | python | ok |
 | Docker Image Tag Generator | bash | opus46-200k | 3.7min | 28 | 1 | $0.78 | 2.7 | bash | ok |
 | PR Label Assigner | default | opus46-200k | 7.7min | 29 | 2 | $1.57 | 4.3 | python | ok |
@@ -1230,7 +1241,7 @@ Values near +1.0 indicate the LLM agrees with the structural signal; near 0 mean
 | PR Label Assigner | bash | opus46-200k | 5.6min | 42 | 2 | $1.16 | 2.0 | bash | ok |
 | Dependency License Checker | bash | sonnet46-200k | 14.1min | 42 | 3 | $1.68 | 3.7 | bash | ok |
 | Test Results Aggregator | bash | opus46-200k | 15.8min | 42 | 2 | $2.85 | 3.7 | bash | ok |
-| Environment Matrix Generator | bash | opus46-200k | 4.1min | 42 | 1 | $0.98 | 2.7 | bash | ok |
+| Environment Matrix Generator | bash | opus46-200k | 4.1min | 42 | 1 | $0.98 | 3.5 | bash | ok |
 | Environment Matrix Generator | typescript-bun | opus46-200k | 6.0min | 42 | 3 | $1.10 | 3.0 | typescript | ok |
 | Semantic Version Bumper | powershell | sonnet46-200k | 11.4min | 43 | 3 | $0.92 | 4.0 | powershell | ok |
 | PR Label Assigner | default | sonnet46-200k | 10.3min | 43 | 4 | $1.52 | 3.7 | python | ok |
@@ -1269,6 +1280,7 @@ Values near +1.0 indicate the LLM agrees with the structural signal; near 0 mean
 | Dependency License Checker | bash | opus46-200k | 6.9min | 55 | 3 | $1.50 | 4.0 | bash | ok |
 | Dependency License Checker | powershell | opus46-200k | 6.0min | 38 | 3 | $1.24 | 4.0 | powershell | ok |
 | Dependency License Checker | powershell | sonnet46-200k | 12.3min | 58 | 2 | $1.93 | 4.0 | powershell | ok |
+| Docker Image Tag Generator | default | opus46-200k | 5.5min | 27 | 2 | $1.25 | 4.0 | python | ok |
 | Docker Image Tag Generator | powershell | sonnet46-200k | 9.2min | 35 | 2 | $1.13 | 4.0 | powershell | ok |
 | Docker Image Tag Generator | typescript-bun | sonnet46-200k | 12.0min | 25 | 3 | $0.98 | 4.0 | typescript | ok |
 | Environment Matrix Generator | bash | sonnet46-200k | 10.5min | 25 | 3 | $1.22 | 4.0 | bash | ok |
@@ -1294,6 +1306,7 @@ Values near +1.0 indicate the LLM agrees with the structural signal; near 0 mean
 | Secret Rotation Validator | default | sonnet46-200k | 7.1min | 47 | 4 | $1.25 | 3.7 | python | ok |
 | Secret Rotation Validator | powershell | sonnet46-200k | 10.8min | 40 | 3 | $1.55 | 3.7 | powershell | ok |
 | Secret Rotation Validator | typescript-bun | opus46-200k | 8.1min | 56 | 4 | $1.79 | 3.7 | typescript | ok |
+| Environment Matrix Generator | bash | opus46-200k | 4.1min | 42 | 1 | $0.98 | 3.5 | bash | ok |
 | Semantic Version Bumper | default | opus46-200k | 7.1min | 28 | 1 | $1.33 | 3.3 | python | ok |
 | Docker Image Tag Generator | powershell | opus46-200k | 7.9min | 24 | 0 | $1.39 | 3.3 | powershell | ok |
 | Test Results Aggregator | default | sonnet46-200k | 9.9min | 24 | 2 | $1.20 | 3.3 | python | ok |
@@ -1306,7 +1319,6 @@ Values near +1.0 indicate the LLM agrees with the structural signal; near 0 mean
 | Semantic Version Bumper | default | sonnet46-200k | 7.3min | 46 | 1 | $0.99 | 3.0 | python | ok |
 | PR Label Assigner | typescript-bun | opus46-200k | 5.1min | 33 | 2 | $1.01 | 3.0 | typescript | ok |
 | Dependency License Checker | default | opus46-200k | 5.9min | 39 | 0 | $1.24 | 3.0 | python | ok |
-| Docker Image Tag Generator | default | opus46-200k | 5.5min | 27 | 2 | $1.25 | 3.0 | python | ok |
 | Docker Image Tag Generator | typescript-bun | opus46-200k | 8.6min | 38 | 1 | $1.53 | 3.0 | typescript | ok |
 | Test Results Aggregator | default | opus46-200k | 5.7min | 35 | 3 | $1.27 | 3.0 | python | ok |
 | Test Results Aggregator | powershell | opus46-200k | 10.0min | 48 | 2 | $2.45 | 3.0 | powershell | ok |
@@ -1314,7 +1326,6 @@ Values near +1.0 indicate the LLM agrees with the structural signal; near 0 mean
 | Semantic Version Bumper | typescript-bun | opus46-200k | 10.3min | 32 | 1 | $1.54 | 2.7 | typescript | ok |
 | PR Label Assigner | powershell | opus46-200k | 11.4min | 35 | 2 | $1.93 | 2.7 | powershell | ok |
 | Docker Image Tag Generator | bash | opus46-200k | 3.7min | 28 | 1 | $0.78 | 2.7 | bash | ok |
-| Environment Matrix Generator | bash | opus46-200k | 4.1min | 42 | 1 | $0.98 | 2.7 | bash | ok |
 | Environment Matrix Generator | powershell | opus46-200k | 5.3min | 38 | 3 | $1.25 | 2.7 | powershell | ok |
 | Artifact Cleanup Script | default | opus46-200k | 9.2min | 49 | 2 | $2.19 | 2.7 | python | ok |
 | Artifact Cleanup Script | typescript-bun | sonnet46-200k | 9.2min | 38 | 2 | $1.17 | 2.7 | typescript | ok |
@@ -1346,19 +1357,19 @@ Values near +1.0 indicate the LLM agrees with the structural signal; near 0 mean
 
 ### Judge Consistency Summary
 
-**🟡 The panel is doing its job on the main question:** Both judges agree perfectly on model ordering (sonnet > opus, ρ = +1.00 on Tests Quality and Workflow Craft) and co-sign bash / sonnet as the top Workflow Craft pairing. Haiku shows no self-preference on in-family runs. But the language-level Tests Quality ordering is fully reversed between judges (ρ = -1.00), so language-only claims on that axis are judge-dependent.
+**🟡 The panel agrees on what matters most:** Both judges put Sonnet ahead of Opus on every model comparison (ρ = +1.00) with zero own-model reversals, and no pairwise comparison shows a self-preference signal. The language ranking on Tests Quality is fully reversed though (ρ = -1.00), so language alone is unreliable without conditioning on model.
 
-- 👀 **Where to look closer:** The widest disagreements (one judge scoring 1, the other 5 — a 4-point gap on a 1–5 scale) all show Haiku floored and Gemini ceilinged: 14-docker-image-tag-generator / default / opus and 16-environment-matrix-generator / bash / opus on Tests Quality; 11-semantic-version-bumper / bash / sonnet and 12-pr-label-assigner / default / sonnet on Workflow Craft.
-- 🤓 **Surprise finding:** bash / sonnet is Gemini's clear Workflow Craft winner yet only Haiku's 3rd-place Tests Quality combo — the judges still co-sign the top Workflow Craft slot despite that split.
-- ℹ️ **Recommended next step:** Human spot-check those 4-point-gap runs before publishing any language-level Tests Quality claim; Haiku's floor (1.81 mean on Workflow Craft) and Gemini's ceiling (4.62) likely drive the reversal.
+- 👀 **Where to look closer:** Bash test suites — Haiku ranks them last (mean 2.47) while Gemini ranks them first (4.62, partly compressed against Gemini's 5-ceiling); the widest disagreements (a 3-point gap on a 1–5 scale) include 11-semantic-version-bumper / bash / opus (Haiku 2, Gemini 5) and 18-secret-rotation-validator / bash / sonnet (Haiku 2, Gemini 5), both worth a human spot-check.
+- 🤓 **Surprise finding:** Haiku — the only judge with own-family runs in scope — never elevated its own-model relative rank, even though Haiku scores roughly 1.7 points harsher overall.
+- ℹ️ **Recommended next step:** Hand-grade three or four of those bash test files to settle whether Haiku is over-penalising thin shell harnesses or Gemini is over-rewarding them against its compressed top end.
 
 #### Provenance
 
-- **Model:** `claude-opus-4-7[1m]` at effort `max` via the Claude CLI.
+- **Model:** `claude-opus-4-7[1m]` at effort `xhigh` via the Claude CLI.
 - **Inputs:** the [`judge-consistency-data.md`](judge-consistency-data.md) tables plus benchmark context (rubrics, task list, experiment setup).
 - **Script:** [`conclusions_report.py`](../../conclusions_report.py) — regenerate with `python3 generate_results.py <run_dir>`.
 - **Instruction:** [`JUDGE_CONSISTENCY_SUMMARY_SYSTEM_PROMPT`](../../judge_consistency_report.py) in that script.
-- **Usage:** 5 input + 3597 output tokens, $0.1804.
+- **Usage:** 5 input + 2321 output tokens, $0.1667.
 
 *Full breakdown with per-model / per-language / per-language×model ranking tables and disagreement hotspots in [judge-consistency-data.md](judge-consistency-data.md).*
 

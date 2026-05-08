@@ -1,0 +1,50 @@
+name: Artifact Cleanup
+
+# Run on push, PRs, manual dispatch, and on a daily schedule to actually
+# garbage-collect old artifacts in real life.
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 3 * * *"
+
+permissions:
+  contents: read
+  actions: write  # would be needed by the real cleanup; harmless in dry-run
+
+jobs:
+  unit-tests:
+    name: Unit tests (bun test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Bun
+        run: npm install -g bun@1.3.13
+      - name: Run unit tests
+        run: bun test src/cleanup.test.ts
+
+  cleanup-fixtures:
+    name: "Cleanup: ${{ matrix.fixture }}"
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    strategy:
+      fail-fast: false
+      matrix:
+        fixture: [basic-age, size-cap, keep-latest]
+    env:
+      FIXTURE_FILE: fixtures/${{ matrix.fixture }}.json
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Bun
+        run: npm install -g bun@1.3.13
+      - name: Verify fixture exists
+        run: test -f "$FIXTURE_FILE"
+      - name: Run cleanup (dry run, JSON output)
+        run: |
+          echo "=== FIXTURE-START:${{ matrix.fixture }} ==="
+          bun run src/cli.ts --input "$FIXTURE_FILE" --dry-run --json
+          echo "=== FIXTURE-END:${{ matrix.fixture }} ==="
+      - name: Run cleanup (human-readable)
+        run: bun run src/cli.ts --input "$FIXTURE_FILE" --dry-run

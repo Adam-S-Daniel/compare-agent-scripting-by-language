@@ -1,0 +1,98 @@
+name: Environment Matrix Generator
+
+# Triggers:
+#   - push / pull_request: build the matrix on every change so a bad config is
+#     caught before it lands.
+#   - workflow_dispatch:   let an operator generate the matrix on demand from a
+#     custom config path. The harness in Run-ActTests.ps1 drives the workflow
+#     by dropping a per-case fixture as `matrix-config.json` in the repo root,
+#     which the resolver below picks up automatically.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      config:
+        description: Optional path to a matrix config JSON file
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+env:
+  DEFAULT_CONFIG: fixtures/basic.json
+
+jobs:
+  unit-tests:
+    name: Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Pester
+        shell: pwsh
+        run: |
+          $cfg = New-PesterConfiguration
+          $cfg.Run.Path = './Generate-Matrix.Tests.ps1'
+          $cfg.Run.Exit = $true
+          $cfg.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $cfg
+
+  generate-matrix:
+    name: Generate matrix
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    outputs:
+      matrix: ${{ steps.gen.outputs.matrix }}
+      size:   ${{ steps.gen.outputs.size }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Resolve which config file to use:
+      #   1. matrix-config.json at repo root (used by the act harness)
+      #   2. workflow_dispatch input
+      #   3. fall back to fixtures/basic.json
+      - name: Resolve config path
+        id: config
+        shell: pwsh
+        env:
+          CONFIG_INPUT: ${{ github.event.inputs.config }}
+        run: |
+          if (Test-Path 'matrix-config.json') {
+            $cfg = 'matrix-config.json'
+          } elseif ($env:CONFIG_INPUT) {
+            $cfg = $env:CONFIG_INPUT
+          } else {
+            $cfg = $env:DEFAULT_CONFIG
+          }
+          Write-Host "Using config: $cfg"
+          "config_path=$cfg" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Generate matrix JSON
+        id: gen
+        shell: pwsh
+        env:
+          CFG_PATH: ${{ steps.config.outputs.config_path }}
+        run: |
+          $cfg = $env:CFG_PATH
+          if (-not (Test-Path $cfg)) {
+            throw "Config file not found at '$cfg'"
+          }
+          ./Generate-Matrix.ps1 -ConfigPath $cfg -OutputPath matrix.json | Out-Null
+          $obj     = Get-Content -Raw -LiteralPath matrix.json | ConvertFrom-Json
+          $compact = $obj | ConvertTo-Json -Depth 32 -Compress
+          # Delimited markers so the act test harness can grep deterministically.
+          Write-Host "===MATRIX_SIZE===$($obj.size)==="
+          Write-Host "===MATRIX_JSON===$compact==="
+          "matrix=$compact"      | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "size=$($obj.size)"    | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Echo matrix summary
+        shell: pwsh
+        env:
+          SIZE: ${{ steps.gen.outputs.size }}
+        run: |
+          Write-Host "Matrix size: $env:SIZE"

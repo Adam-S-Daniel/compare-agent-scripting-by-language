@@ -1,0 +1,86 @@
+name: Test Results Aggregator
+
+# Runs on every push, PR, manual dispatch, and a daily schedule (so flaky-test
+# trends surface even on quiet branches). The schedule is a no-op when the
+# default branch already aggregates fresh results, but it is the conventional
+# trigger pattern for matrix-build summaries.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 4 * * *'
+
+permissions:
+  contents: read
+
+env:
+  # Where the workflow expects matrix shards to land. The unit tests use
+  # tests/fixtures/; CI runs read from the top-level fixtures/ directory
+  # (populated by upstream matrix jobs in real use).
+  FIXTURES_DIR: fixtures
+
+jobs:
+  aggregate:
+    name: Aggregate test results
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies (jq, shellcheck)
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v jq >/dev/null 2>&1 \
+            || ! command -v shellcheck >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y --no-install-recommends jq shellcheck
+          fi
+          jq --version
+          shellcheck --version | head -2
+
+      - name: Validate aggregate.sh (bash -n + shellcheck)
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash -n aggregate.sh
+          shellcheck aggregate.sh
+          echo "aggregate.sh validated"
+
+      - name: Aggregate test results into markdown summary
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Collect any XML/JSON shards present. nullglob keeps an empty
+          # directory from blowing up the glob.
+          shopt -s nullglob
+          inputs=("$FIXTURES_DIR"/*.xml "$FIXTURES_DIR"/*.json)
+          shopt -u nullglob
+
+          if [ "${#inputs[@]}" -eq 0 ]; then
+            echo "No test result shards found in $FIXTURES_DIR" >&2
+            exit 1
+          fi
+
+          echo "Aggregating ${#inputs[@]} shard file(s):"
+          printf '  - %s\n' "${inputs[@]}"
+
+          # Write the markdown summary to disk and the workflow log so the
+          # act-based test harness can grep specific values from the output.
+          ./aggregate.sh summary "${inputs[@]}" | tee summary.md
+          # Append to the real GH Actions job summary too — no-op under act
+          # if GITHUB_STEP_SUMMARY is unset.
+          if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
+            cat summary.md >>"$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload markdown summary artifact
+        # Skip under act (no artifact server) — the upload step still
+        # exercises in real GitHub Actions. ACT is set automatically by act.
+        if: ${{ always() && env.ACT != 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-summary
+          path: summary.md
+          if-no-files-found: warn

@@ -1,0 +1,109 @@
+name: PR Label Assigner
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      files:
+        description: "Newline-delimited list of changed file paths to label"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  RULES_FILE: rules.json
+  # FIXTURE_FILE points at a multi-case fixture file driven by the test
+  # harness. When set, the assign-labels job runs the labeler once per case
+  # and prints a clearly-delimited LABELS-BEGIN/END block for each. When
+  # unset, the workflow falls back to a single run over the PR's files (or
+  # `git ls-files` under push).
+
+jobs:
+  unit-tests:
+    name: Unit tests (bun test)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        run: |
+          if ! command -v bun >/dev/null 2>&1; then
+            curl -fsSL https://bun.sh/install | bash
+            echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+          fi
+          "$HOME/.bun/bin/bun" --version || bun --version
+
+      - name: Run unit tests (excluding act-driven workflow tests)
+        # We exclude tests/workflow.test.ts here because that file *drives*
+        # `act` from the host. Inside the act container we only want the
+        # pure-logic unit tests to run.
+        run: bun test tests/labeler.test.ts
+
+  assign-labels:
+    name: Assign labels
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        run: |
+          if ! command -v bun >/dev/null 2>&1; then
+            curl -fsSL https://bun.sh/install | bash
+            echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+          fi
+          "$HOME/.bun/bin/bun" --version || bun --version
+
+      - name: Run label assigner
+        env:
+          FIXTURE_FILE: ${{ env.FIXTURE_FILE }}
+        run: |
+          set -euo pipefail
+
+          run_one_case() {
+            local case_name="$1"
+            local files_path="$2"
+            echo "----- CASE-BEGIN: ${case_name} -----"
+            echo "----- LABELS-BEGIN: ${case_name} -----"
+            bun run src/cli.ts --rules "${RULES_FILE}" --files "${files_path}"
+            echo "----- LABELS-END: ${case_name} -----"
+            echo "----- CASE-END: ${case_name} -----"
+          }
+
+          if [ -n "${FIXTURE_FILE:-}" ] && [ -f "${FIXTURE_FILE}" ]; then
+            # Parse multi-case fixture: lines beginning with "--- CASE: <name> ---"
+            # delimit per-case file lists. A trailing case is implicitly
+            # terminated by EOF.
+            current_case=""
+            current_tmp=""
+            while IFS= read -r line || [ -n "$line" ]; do
+              if [[ "$line" =~ ^---\ CASE:\ (.+)\ ---$ ]]; then
+                if [ -n "${current_case}" ]; then
+                  run_one_case "${current_case}" "${current_tmp}"
+                fi
+                current_case="${BASH_REMATCH[1]}"
+                current_tmp=$(mktemp)
+              else
+                if [ -n "${current_case}" ]; then
+                  printf '%s\n' "$line" >> "${current_tmp}"
+                fi
+              fi
+            done < "${FIXTURE_FILE}"
+            if [ -n "${current_case}" ]; then
+              run_one_case "${current_case}" "${current_tmp}"
+            fi
+          else
+            # Default fall-back: label every tracked file. Useful for `push`
+            # events on the real repo and as a sane default under `act push`
+            # when no fixture is supplied.
+            git ls-files > changed-files.txt
+            run_one_case "default" changed-files.txt
+          fi

@@ -1,0 +1,90 @@
+# Runs the dependency-license compliance check in CI.
+#
+# Triggers cover the typical lifecycle: PRs, mainline pushes, a weekly cron to
+# re-evaluate against any policy drift, and manual dispatch. The job consumes
+# fixture inputs from the checkout (configurable via env vars) so the same
+# workflow drives both real CI use and the act-based test harness.
+
+name: Dependency License Checker
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+    inputs:
+      manifest:
+        description: Path to manifest file
+        required: false
+        default: fixtures/package.json
+      policy:
+        description: Path to policy file
+        required: false
+        default: fixtures/policy.json
+      mock_licenses:
+        description: Path to mock licenses file
+        required: false
+        default: fixtures/licenses.json
+
+permissions:
+  contents: read
+
+env:
+  # The act harness drives different scenarios by overwriting these files
+  # in a temp git repo before each `act push` run.
+  MANIFEST: fixtures/package.json
+  POLICY: fixtures/policy.json
+  MOCK_LICENSES: fixtures/licenses.json
+
+jobs:
+  license-check:
+    name: License compliance check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        run: npm install -g bun@1.3.11
+
+      - name: Show versions
+        run: |
+          bun --version
+          node --version
+
+      - name: Run license compliance check
+        id: check
+        run: |
+          set +e
+          bun run src/cli.ts \
+            --manifest "$MANIFEST" \
+            --policy "$POLICY" \
+            --mock-licenses "$MOCK_LICENSES" \
+            | tee report.txt
+          echo "exit_code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload report
+        # Skipped under act because the local runner has no artifact backend
+        # (no ACTIONS_RUNTIME_TOKEN). On real GitHub-hosted runners this runs.
+        if: always() && env.ACT != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: license-report
+          path: report.txt
+          if-no-files-found: warn
+
+      - name: Report compliance result
+        # The check exit code is surfaced as a step output so consumers (or the
+        # act test harness) can assert on it without failing the whole job.
+        # Set ALLOW_VIOLATIONS=true to keep the job green even when the check
+        # finds denied/unknown licenses (used by tests).
+        run: |
+          echo "compliance_exit=${{ steps.check.outputs.exit_code }}"
+          if [ "${{ steps.check.outputs.exit_code }}" != "0" ] && [ "${ALLOW_VIOLATIONS:-false}" != "true" ]; then
+            echo "License compliance check failed"
+            exit 1
+          fi
+          echo "License compliance: OK"

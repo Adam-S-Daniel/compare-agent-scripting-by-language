@@ -1,0 +1,46 @@
+name: Artifact Cleanup Script
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Run artifact cleanup tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y jq
+          npm install -g bats
+          curl -Lo /tmp/actionlint.tar.gz \
+            "https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz"
+          tar -xzf /tmp/actionlint.tar.gz -C /usr/local/bin actionlint
+          actionlint --version
+
+      - name: Make script executable
+        run: chmod +x artifact-cleanup.sh
+
+      - name: Validate script syntax
+        run: bash -n artifact-cleanup.sh
+
+      - name: Run bats tests
+        run: bats tests/artifact-cleanup.bats
+
+      - name: Run artifact-cleanup.sh dry-run demo
+        run: |
+          echo "=== Dry-run demo: max-age-days=30 ==="
+          ./artifact-cleanup.sh --dry-run --max-age-days 30 tests/fixtures/max-age-artifacts.json
+          echo "=== Dry-run demo: keep-latest-n=2 ==="
+          ./artifact-cleanup.sh --dry-run --keep-latest-n 2 tests/fixtures/keep-latest-artifacts.json
+          echo "=== Dry-run demo: max-total-size-bytes=52428800 ==="
+          ./artifact-cleanup.sh --dry-run --max-total-size-bytes 52428800 tests/fixtures/max-size-artifacts.json

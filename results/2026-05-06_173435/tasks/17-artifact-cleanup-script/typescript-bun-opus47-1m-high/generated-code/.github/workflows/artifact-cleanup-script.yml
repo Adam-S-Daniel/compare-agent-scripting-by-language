@@ -1,0 +1,72 @@
+name: Artifact cleanup
+
+# Triggers:
+#   - push/pull_request: run unit + fixture checks on every change.
+#   - schedule: nightly dry-run sweep so the planner is exercised against
+#     whatever fixture is checked in (real deployments would point this at a
+#     live artifact list).
+#   - workflow_dispatch: lets an operator kick off a one-off plan.
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '17 4 * * *'
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: 'Fixture directory under fixtures/ to plan against'
+        required: false
+        default: 'combined'
+
+# Read-only by default; this script only emits a plan, never deletes.
+permissions:
+  contents: read
+
+env:
+  BUN_VERSION: '1.3.11'
+  FIXTURE_DIR: ${{ github.event.inputs.fixture || 'combined' }}
+
+jobs:
+  unit-tests:
+    name: Unit tests (bun test)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash -s "bun-v${BUN_VERSION}"
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+
+      - name: Run unit tests
+        # Scope to cleanup.test.ts so we don't recursively invoke act (harness)
+        # or require actionlint (workflow-structure) inside the container.
+        run: bun test cleanup.test.ts
+
+  cleanup-plan:
+    name: Cleanup plan (${{ github.event.inputs.fixture || 'combined' }})
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash -s "bun-v${BUN_VERSION}"
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+
+      - name: Validate fixture exists
+        run: |
+          test -f "fixtures/${FIXTURE_DIR}/artifacts.json" || {
+            echo "Missing fixtures/${FIXTURE_DIR}/artifacts.json"; exit 1; }
+          test -f "fixtures/${FIXTURE_DIR}/cli-args.txt" || {
+            echo "Missing fixtures/${FIXTURE_DIR}/cli-args.txt"; exit 1; }
+
+      - name: Run cleanup planner (dry-run)
+        run: |
+          # shellcheck disable=SC2046  # word-splitting flags from cli-args.txt is intentional.
+          bun run cli.ts \
+            --input "fixtures/${FIXTURE_DIR}/artifacts.json" \
+            $(cat "fixtures/${FIXTURE_DIR}/cli-args.txt")

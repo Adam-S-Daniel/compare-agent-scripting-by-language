@@ -1,0 +1,49 @@
+name: Test Results Aggregator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unit-tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pytest
+        run: pip install pytest
+      - name: Run unit tests
+        run: python3 -m pytest tests/ -v
+
+  aggregate:
+    name: Aggregate matrix results
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    env:
+      FIXTURES_DIR: fixtures
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Aggregate results from fixtures
+        run: |
+          python3 aggregate_cli.py "$FIXTURES_DIR" --output summary.md --no-fail
+      - name: Show summary
+        run: cat summary.md
+      - name: Sanity-check summary structure
+        run: |
+          set -eu
+          grep -q "# Test Results Summary" summary.md
+          grep -q "## Totals" summary.md
+          grep -q "## Flaky Tests" summary.md
+          echo "Summary structure OK."

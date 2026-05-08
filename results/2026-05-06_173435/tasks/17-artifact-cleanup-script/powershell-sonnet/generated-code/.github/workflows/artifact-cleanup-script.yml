@@ -1,0 +1,80 @@
+name: Artifact Cleanup Script
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - "**"
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify Pester is available
+        shell: pwsh
+        run: |
+          Import-Module Pester -ErrorAction Stop
+          $ver = (Get-Module Pester).Version
+          Write-Host "Pester $ver is ready"
+
+      - name: Run artifact cleanup tests
+        shell: pwsh
+        run: |
+          . ./ArtifactCleanup.ps1
+
+          $config = New-PesterConfiguration
+          $config.Run.Path = './ArtifactCleanup.Tests.ps1'
+          $config.Output.Verbosity = 'Detailed'
+          $config.Run.PassThru = $true
+
+          $result = Invoke-Pester -Configuration $config
+
+          Write-Host ("PESTER_SUMMARY: Passed={0} Failed={1} Total={2}" -f
+              $result.PassedCount, $result.FailedCount, $result.TotalCount)
+
+          if ($result.FailedCount -gt 0) {
+            Write-Error "Pester tests failed: $($result.FailedCount) test(s) did not pass"
+            exit 1
+          }
+
+      - name: Demo dry-run cleanup with sample data
+        shell: pwsh
+        run: |
+          . ./ArtifactCleanup.ps1
+
+          $artifacts = @(
+            New-Artifact -Name "build-v1.0" -SizeMB 250 `
+              -CreatedAt ([DateTime]::Parse("2026-03-01")) -WorkflowRunId "run-100"
+            New-Artifact -Name "build-v1.1" -SizeMB 300 `
+              -CreatedAt ([DateTime]::Parse("2026-04-15")) -WorkflowRunId "run-101"
+            New-Artifact -Name "build-v1.2" -SizeMB 275 `
+              -CreatedAt ([DateTime]::Parse("2026-05-06")) -WorkflowRunId "run-102"
+            New-Artifact -Name "test-results-v1.0" -SizeMB 80 `
+              -CreatedAt ([DateTime]::Parse("2026-03-01")) -WorkflowRunId "run-100"
+            New-Artifact -Name "test-results-v1.1" -SizeMB 90 `
+              -CreatedAt ([DateTime]::Parse("2026-04-15")) -WorkflowRunId "run-101"
+          )
+
+          $policy = @{
+            MaxAgeDays             = 60
+            MaxTotalSizeMB         = 500
+            KeepLatestNPerWorkflow = 1
+          }
+
+          $refDate = [DateTime]::Parse("2026-05-07")
+          $plan = Invoke-ArtifactCleanup -Artifacts $artifacts -Policy $policy `
+            -ReferenceDate $refDate -DryRun
+
+          Write-Host (Format-DeletionPlanSummary -Plan $plan)

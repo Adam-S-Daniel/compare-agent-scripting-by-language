@@ -1,0 +1,79 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CHANGELOG_DATE: "2026-05-06"
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run version bumper - patch scenario
+        run: |
+          cp VERSION VERSION.bak
+          python3 version_bumper.py --version-file VERSION --commits-file fixtures/case_patch.txt --changelog-file CHANGELOG_patch.md
+          echo "---PATCH RESULT---"
+          cat VERSION
+          echo "---END PATCH---"
+          cp VERSION.bak VERSION
+
+      - name: Run version bumper - minor scenario
+        run: |
+          cp VERSION VERSION.bak
+          python3 version_bumper.py --version-file VERSION --commits-file fixtures/case_minor.txt --changelog-file CHANGELOG_minor.md
+          echo "---MINOR RESULT---"
+          cat VERSION
+          echo "---END MINOR---"
+          cp VERSION.bak VERSION
+
+      - name: Run version bumper - major scenario
+        run: |
+          cp VERSION VERSION.bak
+          python3 version_bumper.py --version-file VERSION --commits-file fixtures/case_major.txt --changelog-file CHANGELOG_major.md
+          echo "---MAJOR RESULT---"
+          cat VERSION
+          echo "---END MAJOR---"
+          cp VERSION.bak VERSION
+
+      - name: Run version bumper - breaking footer scenario
+        run: |
+          cp VERSION VERSION.bak
+          python3 version_bumper.py --version-file VERSION --commits-file fixtures/case_breaking_footer.txt --changelog-file CHANGELOG_breaking.md
+          echo "---BREAKING FOOTER RESULT---"
+          cat VERSION
+          echo "---END BREAKING FOOTER---"
+          cp VERSION.bak VERSION
+
+      - name: Verify changelog generation
+        run: |
+          python3 version_bumper.py --version-file VERSION --commits-file fixtures/case_minor.txt --changelog-file CHANGELOG_verify.md
+          echo "---CHANGELOG---"
+          cat CHANGELOG_verify.md
+          echo "---END CHANGELOG---"
+
+      - name: Test error handling - invalid version
+        run: |
+          echo "not-a-version" > BAD_VERSION
+          python3 version_bumper.py --version-file BAD_VERSION --commits-file fixtures/case_patch.txt 2>&1 && exit 1 || echo "ERROR_HANDLED: invalid version correctly rejected"
+
+      - name: Test error handling - missing file
+        run: |
+          python3 version_bumper.py --version-file NONEXISTENT --commits-file fixtures/case_patch.txt 2>&1 && exit 1 || echo "ERROR_HANDLED: missing file correctly rejected"

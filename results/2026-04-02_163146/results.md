@@ -1,10 +1,12 @@
 # Benchmark Results: Language Comparison
 
-**Last updated:** 2026-04-21 08:40:27 AM ET — 144/144 runs completed, 0 remaining; total cost $436.67; total agent time 5098.1 min.
+**Last updated:** 2026-05-08 01:19:50 PM ET — 144/144 runs completed, 0 remaining; total cost $436.67; total agent time 5098.1 min.
+**Claude Code versions used:** [v2.1.81](claude-code-2.1.81.md) (139 runs). Each link goes to a per-version snapshot of the system prompt, default-tool descriptions, and the chronological Anthropic changelog up to that version. Regenerate with `python3 version_docs.py`.
 
 ## Table of Contents
 
 - [Scoring](#scoring)
+  - [Duration columns](#duration-columns)
 - [Tiers by Language/Model/Effort](#tiers-by-languagemodeleffort)
 - [Failed / Timed-Out Runs](#failed-timed-out-runs)
 - [Comparison by Language/Model/Effort](#comparison-by-languagemodeleffort)
@@ -49,6 +51,15 @@ Properties:
 - **Scale:** ratios, not raw seconds or dollars
 - **Band calibration:** auto-calibrated to the data's best-to-worst spread via log-equal division (`boundary_i = max_ratio^(i/12)`), so the best observed ratio lands at A+ and the worst at D-
 - **F band:** reserved for ratios beyond the observed worst
+
+### Duration columns
+
+Every Duration figure in this report derives from `timing.grand_total_duration_ms` in `metrics.json` — wall-clock seconds from CLI invocation to the final assistant turn (agent thinking + tool execution + hooks).
+
+- **Duration** (single run): that one run's wall clock. Appears in the [Failed / Timed-Out Runs](#failed--timed-out-runs) and per-run detail tables.
+- **Avg Duration** (in the [Comparison by Language/Model/Effort](#comparison-by-languagemodeleffort) table; also drives the [Tiers](#tiers-by-languagemodeleffort) Duration column): arithmetic mean of `Duration` over the runs in that combo, excluding failed/timed-out runs.
+- **Avg Duration Net of Traps** (in the Comparison table only): mean of (per-run `Duration` − that run's `Time Lost`), where `Time Lost` is the trap detector's estimate of seconds spent on detected anti-patterns (see [Trap Descriptions](#trap-descriptions) and the trap-table [Column Definitions](#column-definitions) for the trap list and how Time Lost is computed). Reads as a counterfactual: roughly how fast each combo would have been without the detected traps.
+- The **Tier table's Duration column** shows the tier letter (A+..F) for the combo's gross **Avg Duration** ratio. Net of Traps does not feed the tier band.
 ## Tiers by Language/Model/Effort
 
 *Default sort: weighted composite of tiers (40% Tests, 25% Workflow Craft, 35% split between Duration & Cost). See [Notes](#notes) for tier-band definitions and scoring rubric.*
@@ -515,7 +526,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 
 | Language | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
 |------|-------|-----------|----------------|-----------------|---------------------|
-| csharp-script | opus46-200k | 32.0 | 71.4 | 2.2 | 1.40 |
+| csharp-script | opus46-200k | 32.0 | 71.4 | 2.2 | 1.41 |
 | csharp-script | sonnet46-200k | 23.5 | 55.1 | 2.3 | 0.77 |
 | default | opus46-200k | 32.6 | 54.9 | 1.7 | 1.27 |
 | default | sonnet46-200k | 31.7 | 55.8 | 1.8 | 1.30 |
@@ -533,7 +544,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | powershell | opus46-200k | 39.1 | 66.8 | 1.7 | 38.36 |
 | powershell-strict | opus46-200k | 37.5 | 71.0 | 1.9 | 76.19 |
 | default | opus46-200k | 32.6 | 54.9 | 1.7 | 1.27 |
-| csharp-script | opus46-200k | 32.0 | 71.4 | 2.2 | 1.40 |
+| csharp-script | opus46-200k | 32.0 | 71.4 | 2.2 | 1.41 |
 | default | sonnet46-200k | 31.7 | 55.8 | 1.8 | 1.30 |
 | powershell-strict | sonnet46-200k | 27.0 | 48.9 | 1.8 | 13.65 |
 | powershell | sonnet46-200k | 25.7 | 45.3 | 1.8 | 2.47 |
@@ -546,7 +557,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 
 | Language | Model | Avg Tests | Avg Assertions | Avg Assert/Test | Avg Test:Code Ratio |
 |------|-------|-----------|----------------|-----------------|---------------------|
-| csharp-script | opus46-200k | 32.0 | 71.4 | 2.2 | 1.40 |
+| csharp-script | opus46-200k | 32.0 | 71.4 | 2.2 | 1.41 |
 | powershell-strict | opus46-200k | 37.5 | 71.0 | 1.9 | 76.19 |
 | powershell | opus46-200k | 39.1 | 66.8 | 1.7 | 38.36 |
 | default | sonnet46-200k | 31.7 | 55.8 | 1.8 | 1.30 |
@@ -566,7 +577,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | powershell | opus46-200k | 39.1 | 66.8 | 1.7 | 38.36 |
 | powershell-strict | sonnet46-200k | 27.0 | 48.9 | 1.8 | 13.65 |
 | powershell | sonnet46-200k | 25.7 | 45.3 | 1.8 | 2.47 |
-| csharp-script | opus46-200k | 32.0 | 71.4 | 2.2 | 1.40 |
+| csharp-script | opus46-200k | 32.0 | 71.4 | 2.2 | 1.41 |
 | default | sonnet46-200k | 31.7 | 55.8 | 1.8 | 1.30 |
 | default | opus46-200k | 32.6 | 54.9 | 1.7 | 1.27 |
 | csharp-script | sonnet46-200k | 23.5 | 55.1 | 2.3 | 0.77 |

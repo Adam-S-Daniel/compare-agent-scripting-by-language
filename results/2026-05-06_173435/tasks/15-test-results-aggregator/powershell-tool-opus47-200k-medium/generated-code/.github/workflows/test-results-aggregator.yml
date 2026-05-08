@@ -1,0 +1,50 @@
+name: Test Results Aggregator
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+env:
+  FIXTURES_DIR: fixtures
+
+jobs:
+  pester-tests:
+    name: Run Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Pester
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = './TestResultsAggregator.Tests.ps1'
+          $config.Run.Exit = $true
+          $config.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $config
+
+  aggregate:
+    name: Aggregate test results
+    needs: pester-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Aggregate results and generate summary
+        shell: pwsh
+        run: |
+          ./Invoke-Aggregator.ps1 -InputDir $env:FIXTURES_DIR -OutputFile summary.md
+      - name: Upload summary artifact
+        # act sets ACT=true and has no artifact server; skip in local act runs.
+        if: ${{ !env.ACT }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-summary
+          path: summary.md
+          if-no-files-found: error

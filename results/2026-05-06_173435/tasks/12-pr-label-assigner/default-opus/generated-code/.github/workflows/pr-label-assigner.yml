@@ -1,0 +1,39 @@
+name: PR Label Assigner
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  assign-labels:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        fixture:
+          - case1_docs_only
+          - case2_mixed_changes
+          - case3_test_files
+          - case4_frontend
+          - case5_ci_changes
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run label assigner
+        run: |
+          echo "=== Test Case: ${{ matrix.fixture }} ==="
+          python3 pr_label_assigner.py \
+            --rules label_rules.json \
+            --files "test_fixtures/${{ matrix.fixture }}.txt" \
+            --output-format json
+          echo "=== End Case: ${{ matrix.fixture }} ==="

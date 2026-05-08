@@ -1,0 +1,49 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      commits_file:
+        description: "Path to commits fixture file"
+        required: false
+        default: "commits.txt"
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-bump:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install Python dependencies
+        run: pip install pytest pyyaml
+
+      - name: Run unit tests
+        run: pytest tests/ -v
+
+      - name: Run version bump
+        id: bump
+        env:
+          COMMITS_FILE: ${{ github.event.inputs.commits_file || 'commits.txt' }}
+        run: |
+          python3 bump_version.py
+          NEW_VER=$(cat VERSION)
+          echo "new_version=${NEW_VER}" >> "$GITHUB_OUTPUT"
+          echo "NEW_VERSION=${NEW_VER}"
+
+      - name: Show changelog
+        run: |
+          echo "=== CHANGELOG ==="
+          cat CHANGELOG.md

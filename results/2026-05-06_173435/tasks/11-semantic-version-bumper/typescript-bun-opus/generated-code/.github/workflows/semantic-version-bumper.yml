@@ -1,0 +1,47 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  CHANGELOG_DATE: "2026-05-06"
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile || bun install
+
+      - name: Run unit tests
+        run: bun test
+
+      - name: Run version bumper
+        run: bun run bump-version.ts
+        env:
+          COMMIT_LOG_FILE: ${{ github.workspace }}/commit-log.txt
+          VERSION_FILE: ${{ github.workspace }}/VERSION
+
+      - name: Show results
+        run: |
+          echo "=== VERSION ==="
+          cat VERSION
+          echo "=== CHANGELOG ==="
+          cat CHANGELOG.md

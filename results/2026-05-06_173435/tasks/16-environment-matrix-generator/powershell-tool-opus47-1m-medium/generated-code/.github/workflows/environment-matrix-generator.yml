@@ -1,0 +1,72 @@
+name: environment-matrix-generator
+
+# Trigger on the usual events, plus workflow_dispatch so the harness can pick
+# the fixture file at runtime via the MATRIX_FIXTURE env var.
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: "Path to a fixture JSON file under fixtures/"
+        required: false
+        default: "fixtures/basic.json"
+
+permissions:
+  contents: read
+
+env:
+  # MATRIX_FIXTURE lets the act harness override the fixture per test case.
+  MATRIX_FIXTURE: ${{ github.event.inputs.fixture || 'fixtures/basic.json' }}
+
+jobs:
+  pester:
+    name: Run Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Pester
+        shell: pwsh
+        run: |
+          $r = Invoke-Pester -Path ./New-BuildMatrix.Tests.ps1 -Output Detailed -PassThru
+          if ($r.FailedCount -gt 0) { throw "Pester failures: $($r.FailedCount)" }
+
+  generate:
+    name: Generate matrix from fixture
+    needs: pester
+    runs-on: ubuntu-latest
+    outputs:
+      size: ${{ steps.gen.outputs.size }}
+      strategy: ${{ steps.gen.outputs.strategy }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show fixture
+        shell: pwsh
+        run: |
+          Write-Host "Using fixture: $env:MATRIX_FIXTURE"
+          if (-not (Test-Path $env:MATRIX_FIXTURE)) {
+            throw "Fixture file not found: $env:MATRIX_FIXTURE"
+          }
+          Get-Content $env:MATRIX_FIXTURE -Raw | Write-Host
+
+      - name: Generate matrix
+        id: gen
+        shell: pwsh
+        run: |
+          . ./New-BuildMatrix.ps1
+          $cfg = Get-Content $env:MATRIX_FIXTURE -Raw
+          $strategy = New-BuildMatrix -Config $cfg
+          $json = $strategy | ConvertTo-Json -Depth 20 -Compress
+          Write-Host "MATRIX_JSON=$json"
+          Write-Host "MATRIX_SIZE=$($strategy.size)"
+          # Emit a clearly-delimited block the harness can grep for.
+          Write-Host "::group::strategy"
+          Write-Host "BEGIN_STRATEGY"
+          Write-Host $json
+          Write-Host "END_STRATEGY"
+          Write-Host "::endgroup::"
+          "size=$($strategy.size)"     | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "strategy=$json"             | Out-File -FilePath $env:GITHUB_OUTPUT -Append

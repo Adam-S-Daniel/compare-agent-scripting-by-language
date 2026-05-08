@@ -1,0 +1,101 @@
+name: PR Label Assigner
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      rules_path:
+        description: Path to the rules JSON file relative to the repo root.
+        required: false
+        default: ''
+      files_path:
+        description: Path to the changed-files list relative to the repo root.
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  assign-labels:
+    name: Assign labels
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify pwsh is available
+        shell: bash
+        run: |
+          if ! command -v pwsh >/dev/null 2>&1; then
+            echo "pwsh missing from runner; cannot proceed"
+            exit 1
+          fi
+          pwsh --version
+
+      - name: Resolve fixture inputs
+        id: inputs
+        # Resolution order:
+        #   1. workflow_dispatch input (rules_path / files_path) when non-empty.
+        #   2. Runner env vars PR_LABEL_RULES / PR_LABEL_FILES (set by the
+        #      act harness via --env-file).
+        #   3. Hard-coded defaults pointing at fixtures/default/.
+        shell: pwsh
+        env:
+          INPUT_RULES: ${{ inputs.rules_path }}
+          INPUT_FILES: ${{ inputs.files_path }}
+        run: |
+          function Resolve-Path-First([string[]]$Candidates, [string]$Default) {
+              foreach ($c in $Candidates) {
+                  if (-not [string]::IsNullOrWhiteSpace($c)) { return $c }
+              }
+              return $Default
+          }
+          $rules = Resolve-Path-First @($env:INPUT_RULES, $env:PR_LABEL_RULES) 'fixtures/default/rules.json'
+          $files = Resolve-Path-First @($env:INPUT_FILES, $env:PR_LABEL_FILES) 'fixtures/default/changed.txt'
+          Write-Host "Using rules='$rules' files='$files'"
+          if (-not (Test-Path -LiteralPath $rules)) { throw "Rules file not found: $rules" }
+          if (-not (Test-Path -LiteralPath $files)) { throw "Files list not found: $files" }
+          Add-Content -Path $env:GITHUB_OUTPUT -Value "rules=$rules"
+          Add-Content -Path $env:GITHUB_OUTPUT -Value "files=$files"
+
+      - name: Run PR label assigner
+        id: assign
+        shell: pwsh
+        env:
+          RULES_PATH: ${{ steps.inputs.outputs.rules }}
+          FILES_PATH: ${{ steps.inputs.outputs.files }}
+        run: |
+          $csv = & ./Invoke-PrLabelAssigner.ps1 `
+              -FilesPath $env:FILES_PATH `
+              -ConfigPath $env:RULES_PATH `
+              -Format csv `
+              -GitHubOutput $env:GITHUB_OUTPUT
+          # Print a clearly delimited summary that the act harness greps for.
+          Write-Host "::group::PR Label Assigner result"
+          Write-Host "BEGIN_LABELS"
+          Write-Host $csv
+          Write-Host "END_LABELS"
+          Write-Host "::endgroup::"
+
+      - name: Run Pester unit tests
+        shell: pwsh
+        run: |
+          Import-Module Pester -MinimumVersion 5.0
+          $config = New-PesterConfiguration
+          $config.Run.Path = './Invoke-PrLabelAssigner.tests.ps1'
+          $config.Run.Exit = $true
+          $config.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $config
+
+      - name: Echo final label set
+        shell: pwsh
+        env:
+          LABELS: ${{ steps.assign.outputs.labels }}
+          COUNT:  ${{ steps.assign.outputs.count }}
+        run: |
+          Write-Host "Final labels (count=$env:COUNT): [$env:LABELS]"

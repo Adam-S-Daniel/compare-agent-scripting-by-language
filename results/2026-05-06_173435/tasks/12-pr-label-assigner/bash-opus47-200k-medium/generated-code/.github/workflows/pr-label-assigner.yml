@@ -1,0 +1,66 @@
+name: pr-label-assigner
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-run:
+    name: Test and run pr-label-assigner
+    runs-on: ubuntu-latest
+    env:
+      SCRIPT: ./pr-label-assigner.sh
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install bats and shellcheck
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v bats >/dev/null 2>&1; then
+            sudo apt-get update -y
+            sudo apt-get install -y bats shellcheck
+          fi
+          bats --version
+          shellcheck --version | head -n1
+
+      - name: Static checks (shellcheck + bash -n)
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash -n "$SCRIPT"
+          shellcheck "$SCRIPT"
+
+      - name: Run bats unit tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x "$SCRIPT"
+          bats tests/pr-label-assigner.bats
+
+      - name: Run pr-label-assigner against fixture cases
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x "$SCRIPT"
+          # Iterate every fixture case directory; each must contain
+          # rules.cfg and files.txt. Print a clearly-delimited block
+          # so the test harness can parse case names + labels.
+          shopt -s nullglob
+          cases=(fixtures/cases/*/)
+          if [ "${#cases[@]}" -eq 0 ]; then
+            echo "no fixture cases found under fixtures/cases/" >&2
+            exit 1
+          fi
+          for dir in "${cases[@]}"; do
+            name="$(basename "$dir")"
+            echo "=== CASE: ${name} ==="
+            "$SCRIPT" --config "${dir}rules.cfg" --files "${dir}files.txt" \
+              | sed 's/^/LABEL: /'
+            echo "=== END: ${name} ==="
+          done

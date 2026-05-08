@@ -1,0 +1,241 @@
+=== WORKFLOW STRUCTURE TESTS ===
+--- Test: YAML structure validation ---
+PASS: Workflow file exists at expected path
+--- Test: Script file references ---
+PASS: SecretRotationValidator.ps1 exists
+PASS: SecretRotationValidator.Tests.ps1 exists
+PASS: fixtures/mixed-secrets.json exists
+PASS: fixtures/all-expired.json exists
+PASS: fixtures/all-ok.json exists
+--- Test: actionlint validation ---
+PASS: actionlint passed with exit code 0
+--- Test: Workflow triggers ---
+PASS: All expected triggers present (push, pull_request, schedule, workflow_dispatch)
+--- Test: pwsh shell usage ---
+PASS: Workflow uses shell: pwsh
+--- Test: actions/checkout reference ---
+PASS: Workflow uses actions/checkout@v4
+
+=== ACT INTEGRATION TEST ===
+--- Running act push ---
+time="2026-05-07T01:42:33-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+[Secret Rotation Validator/validate-secrets] ⭐ Run Set up job
+[Secret Rotation Validator/validate-secrets] 🚀  Start image=act-ubuntu-pwsh:latest
+[Secret Rotation Validator/validate-secrets]   🐳  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=false
+[Secret Rotation Validator/validate-secrets]   🐳  docker create image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/validate-secrets]   🐳  docker run image=act-ubuntu-pwsh:latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Secret Rotation Validator/validate-secrets]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Secret Rotation Validator/validate-secrets]   ✅  Success - Set up job
+[Secret Rotation Validator/validate-secrets] ⭐ Run Main actions/checkout@v4
+[Secret Rotation Validator/validate-secrets]   🐳  docker cp src=/tmp/tmp.3xIGeFe2B8/. dst=/tmp/tmp.3xIGeFe2B8
+[Secret Rotation Validator/validate-secrets]   ✅  Success - Main actions/checkout@v4 [43.365693ms]
+[Secret Rotation Validator/validate-secrets] ⭐ Run Main Run Pester Tests
+[Secret Rotation Validator/validate-secrets]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/1.ps1] user= workdir=
+[Secret Rotation Validator/validate-secrets]   | [95mPester v5.7.1[0m
+[Secret Rotation Validator/validate-secrets]   | [95m
+[Secret Rotation Validator/validate-secrets]   | [95mStarting discovery in 1 files.[0m
+[Secret Rotation Validator/validate-secrets]   | [95mDiscovery found 23 tests in 167ms.[0m
+[Secret Rotation Validator/validate-secrets]   | [95mRunning tests.[0m
+[Secret Rotation Validator/validate-secrets]   | [95m
+[Secret Rotation Validator/validate-secrets]   | [95mRunning tests from '/tmp/tmp.3xIGeFe2B8/SecretRotationValidator.Tests.ps1'[0m
+[Secret Rotation Validator/validate-secrets]   | [92mDescribing Get-SecretConfig[0m
+[Secret Rotation Validator/validate-secrets]   | [32m  [+] throws when file does not exist[0m[90m 97ms (67ms|30ms)[0m
+[Secret Rotation Validator/validate-secrets]   | [32m  [+] throws when file is empty[0m[90m 5ms (4ms|1ms)[0m
+[Secret Rotation Validator/validate-secrets]   | [32m  [+] throws when file has invalid JSON[0m[90m 8ms (6ms|1ms)[0m
+[Secret Rotation Validator/validate-secrets]   | [32m  [+] throws when secrets key is missing[0m[90m 27ms (26ms|1ms)[0m
+[Secret Rotation Validator/validate-secrets]   | [32m  [+] parses valid config successfully[0m[90m 35ms (31ms|4ms)[0m
+[Secret Rotation Validator/validate-secrets]   | [0m
+[Secret Rotation Validator/validate-secrets]   | [92mDescribing Get-SecretStatus[0m
+[Secret Rotation Validator/validate-secrets]   | [96m Context expired secret[0m
+[Secret Rotation Validator/validate-secrets]   | [32m   [+] returns expired status when past rotation policy[0m[90m 32ms (27ms|5ms)[0m
+[Secret Rotation Validator/validate-secrets]   | [96m Context warning secret[0m
+[Secret Rotation Validator/validate-secrets]   | [32m   [+] returns warning status when within warning window[0m[90m 5ms (4ms|1ms)[0m
+[Secret Rotation Validator/validate-secrets]   | [96m Context ok secret[0m
+[Secret Rotation Validator/validate-secrets]   | [32m   [+] returns ok status when well within policy[0m[90m 12ms (9ms|2ms)[0m
+[Secret Rotation Validator/validate-secrets]   | [96m Context boundary conditions[0m
+[Secret Rotation Validator/validate-secrets]   | [32m   [+] returns warning when exactly on warning boundary[0m[90m 8ms (6ms|2ms)[0m
+[Secret Rotation Validator/validate-secrets]   | [32m   [+] returns expired when exactly on expiration day[0m[90m 17ms (15ms|2ms)[0m
+[Secret Rotation Validator/validate-secrets]   | [0m
+[Secret Rotation Validator/validate-secrets]   | [92mDescribing Get-RotationReport[0m
+[Secret Rotation Validator/validate-secrets]   | [32m  [+] processes mixed secrets correctly[0m[90m 31ms (28ms|4ms)[0m
+[Secret Rotation Validator/validate-secrets]   | [32m  [+] identifies all secrets as expired in all-expired fixture[0m[90m 15ms (14ms|1ms)[0m
+[Secret Rotation Validator/validate-secrets]   | [32m  [+] identifies all secrets as ok in all-ok fixture[0m[90m 8ms (7ms|1ms)[0m
+[Secret Rotation Validator/validate-secrets]   | [32m  [+] respects custom warning window[0m[90m 6ms (5ms|1ms)[0m
+[Secret Rotation Validator/validate-secrets]   | [0m
+[Secret Rotation Validator/validate-secrets]   | [92mDescribing Format-ReportAsJson[0m
+[Secret Rotation Validator/validate-secrets]   | [32m  [+] produces valid JSON with correct structure[0m[90m 46ms (42ms|4ms)[0m
+[Secret Rotation Validator/validate-secrets]   | [32m  [+] includes secret details in each category[0m[90m 22ms (21ms|1ms)[0m
+[Secret Rotation Validator/validate-secrets]   | [0m
+[Secret Rotation Validator/validate-secrets]   | [92mDescribing Format-ReportAsMarkdown[0m
+[Secret Rotation Validator/validate-secrets]   | [32m  [+] produces markdown with header and summary table[0m[90m 16ms (14ms|2ms)[0m
+[Secret Rotation Validator/validate-secrets]   | [32m  [+] includes expired section when secrets are expired[0m[90m 11ms (10ms|1ms)[0m
+[Secret Rotation Validator/validate-secrets]   | [32m  [+] omits expired section when no secrets are expired[0m[90m 8ms (7ms|1ms)[0m
+[Secret Rotation Validator/validate-secrets]   | [0m
+[Secret Rotation Validator/validate-secrets]   | [92mDescribing Script execution[0m
+[Secret Rotation Validator/validate-secrets]   | [32m  [+] exits with code 1 when expired secrets exist[0m[90m 470ms (468ms|2ms)[0m
+[Secret Rotation Validator/validate-secrets]   | [32m  [+] exits with code 0 when no expired secrets exist[0m[90m 431ms (430ms|1ms)[0m
+[Secret Rotation Validator/validate-secrets]   | [32m  [+] produces valid JSON output in json mode[0m[90m 453ms (450ms|3ms)[0m
+[Secret Rotation Validator/validate-secrets]   | [32m  [+] produces markdown output in markdown mode[0m[90m 431ms (430ms|1ms)[0m
+[Secret Rotation Validator/validate-secrets]   | [97mTests completed in 2.65s[0m
+[Secret Rotation Validator/validate-secrets]   | [32mTests Passed: 23, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
+[Secret Rotation Validator/validate-secrets]   ✅  Success - Main Run Pester Tests [3.970159562s]
+[Secret Rotation Validator/validate-secrets] ⭐ Run Main Validate mixed secrets (JSON output)
+[Secret Rotation Validator/validate-secrets]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/2.ps1] user= workdir=
+[Secret Rotation Validator/validate-secrets]   | === JSON Report ===
+[Secret Rotation Validator/validate-secrets]   | {
+[Secret Rotation Validator/validate-secrets]   |   "warning_days": 7,
+[Secret Rotation Validator/validate-secrets]   |   "secrets": {
+[Secret Rotation Validator/validate-secrets]   |     "ok": [
+[Secret Rotation Validator/validate-secrets]   |       {
+[Secret Rotation Validator/validate-secrets]   |         "last_rotated": "2026-05-01",
+[Secret Rotation Validator/validate-secrets]   |         "expiration_date": "2026-07-30",
+[Secret Rotation Validator/validate-secrets]   |         "rotation_policy_days": 90,
+[Secret Rotation Validator/validate-secrets]   |         "days_until_expiry": 84,
+[Secret Rotation Validator/validate-secrets]   |         "name": "JWT_SECRET",
+[Secret Rotation Validator/validate-secrets]   |         "required_by": [
+[Secret Rotation Validator/validate-secrets]   |           "auth-service",
+[Secret Rotation Validator/validate-secrets]   |           "api-gateway"
+[Secret Rotation Validator/validate-secrets]   |         ]
+[Secret Rotation Validator/validate-secrets]   |       },
+[Secret Rotation Validator/validate-secrets]   |       {
+[Secret Rotation Validator/validate-secrets]   |         "last_rotated": "2026-05-05",
+[Secret Rotation Validator/validate-secrets]   |         "expiration_date": "2026-07-04",
+[Secret Rotation Validator/validate-secrets]   |         "rotation_policy_days": 60,
+[Secret Rotation Validator/validate-secrets]   |         "days_until_expiry": 58,
+[Secret Rotation Validator/validate-secrets]   |         "name": "REDIS_PASSWORD",
+[Secret Rotation Validator/validate-secrets]   |         "required_by": [
+[Secret Rotation Validator/validate-secrets]   |           "cache-service",
+[Secret Rotation Validator/validate-secrets]   |           "session-store"
+[Secret Rotation Validator/validate-secrets]   |         ]
+[Secret Rotation Validator/validate-secrets]   |       }
+[Secret Rotation Validator/validate-secrets]   |     ],
+[Secret Rotation Validator/validate-secrets]   |     "expired": [
+[Secret Rotation Validator/validate-secrets]   |       {
+[Secret Rotation Validator/validate-secrets]   |         "last_rotated": "2026-03-01",
+[Secret Rotation Validator/validate-secrets]   |         "expiration_date": "2026-03-31",
+[Secret Rotation Validator/validate-secrets]   |         "rotation_policy_days": 30,
+[Secret Rotation Validator/validate-secrets]   |         "days_until_expiry": -37,
+[Secret Rotation Validator/validate-secrets]   |         "name": "DB_PASSWORD",
+[Secret Rotation Validator/validate-secrets]   |         "required_by": [
+[Secret Rotation Validator/validate-secrets]   |           "api-service",
+[Secret Rotation Validator/validate-secrets]   |           "worker-service"
+[Secret Rotation Validator/validate-secrets]   |         ]
+[Secret Rotation Validator/validate-secrets]   |       },
+[Secret Rotation Validator/validate-secrets]   |       {
+[Secret Rotation Validator/validate-secrets]   |         "last_rotated": "2026-04-20",
+[Secret Rotation Validator/validate-secrets]   |         "expiration_date": "2026-05-04",
+[Secret Rotation Validator/validate-secrets]   |         "rotation_policy_days": 14,
+[Secret Rotation Validator/validate-secrets]   |         "days_until_expiry": -3,
+[Secret Rotation Validator/validate-secrets]   |         "name": "AWS_ACCESS_KEY",
+[Secret Rotation Validator/validate-secrets]   |         "required_by": [
+[Secret Rotation Validator/validate-secrets]   |           "deploy-pipeline"
+[Secret Rotation Validator/validate-secrets]   |         ]
+[Secret Rotation Validator/validate-secrets]   |       }
+[Secret Rotation Validator/validate-secrets]   |     ],
+[Secret Rotation Validator/validate-secrets]   |     "warning": [
+[Secret Rotation Validator/validate-secrets]   |       {
+[Secret Rotation Validator/validate-secrets]   |         "last_rotated": "2026-05-03",
+[Secret Rotation Validator/validate-secrets]   |         "expiration_date": "2026-05-10",
+[Secret Rotation Validator/validate-secrets]   |         "rotation_policy_days": 7,
+[Secret Rotation Validator/validate-secrets]   |         "days_until_expiry": 3,
+[Secret Rotation Validator/validate-secrets]   |         "name": "API_KEY_STRIPE",
+[Secret Rotation Validator/validate-secrets]   |         "required_by": [
+[Secret Rotation Validator/validate-secrets]   |           "payment-service"
+[Secret Rotation Validator/validate-secrets]   |         ]
+[Secret Rotation Validator/validate-secrets]   |       }
+[Secret Rotation Validator/validate-secrets]   |     ]
+[Secret Rotation Validator/validate-secrets]   |   },
+[Secret Rotation Validator/validate-secrets]   |   "reference_date": "2026-05-07",
+[Secret Rotation Validator/validate-secrets]   |   "total_secrets": 5,
+[Secret Rotation Validator/validate-secrets]   |   "summary": {
+[Secret Rotation Validator/validate-secrets]   |     "ok": 2,
+[Secret Rotation Validator/validate-secrets]   |     "expired": 2,
+[Secret Rotation Validator/validate-secrets]   |     "warning": 1
+[Secret Rotation Validator/validate-secrets]   |   }
+[Secret Rotation Validator/validate-secrets]   | }
+[Secret Rotation Validator/validate-secrets]   | Total secrets: 5
+[Secret Rotation Validator/validate-secrets]   | Expired: 2
+[Secret Rotation Validator/validate-secrets]   | Warning: 1
+[Secret Rotation Validator/validate-secrets]   | OK: 2
+[Secret Rotation Validator/validate-secrets]   ✅  Success - Main Validate mixed secrets (JSON output) [1.010883285s]
+[Secret Rotation Validator/validate-secrets] ⭐ Run Main Validate all-ok secrets
+[Secret Rotation Validator/validate-secrets]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/3.ps1] user= workdir=
+[Secret Rotation Validator/validate-secrets]   | === All OK Report ===
+[Secret Rotation Validator/validate-secrets]   | Total: 2, Expired: 0, Warning: 0, OK: 2
+[Secret Rotation Validator/validate-secrets]   ✅  Success - Main Validate all-ok secrets [636.257657ms]
+[Secret Rotation Validator/validate-secrets] ⭐ Run Main Validate all-expired secrets (expect failure)
+[Secret Rotation Validator/validate-secrets]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/4.ps1] user= workdir=
+[Secret Rotation Validator/validate-secrets]   | === All Expired Report ===
+[Secret Rotation Validator/validate-secrets]   | Total: 2, Expired: 2
+[Secret Rotation Validator/validate-secrets]   | Exit code was 1 (expected 1 for expired secrets)
+[Secret Rotation Validator/validate-secrets]   ✅  Success - Main Validate all-expired secrets (expect failure) [1.011787853s]
+[Secret Rotation Validator/validate-secrets] ⭐ Run Main Validate markdown output
+[Secret Rotation Validator/validate-secrets]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/5.ps1] user= workdir=
+[Secret Rotation Validator/validate-secrets]   | === Markdown Report ===
+[Secret Rotation Validator/validate-secrets]   | # Secret Rotation Report
+[Secret Rotation Validator/validate-secrets]   | 
+[Secret Rotation Validator/validate-secrets]   | **Reference Date:** 2026-05-07
+[Secret Rotation Validator/validate-secrets]   | **Warning Window:** 7 days
+[Secret Rotation Validator/validate-secrets]   | **Total Secrets:** 5
+[Secret Rotation Validator/validate-secrets]   | 
+[Secret Rotation Validator/validate-secrets]   | ## Summary
+[Secret Rotation Validator/validate-secrets]   | 
+[Secret Rotation Validator/validate-secrets]   | | Status | Count |
+[Secret Rotation Validator/validate-secrets]   | |--------|-------|
+[Secret Rotation Validator/validate-secrets]   | | Expired | 2 |
+[Secret Rotation Validator/validate-secrets]   | | Warning | 1 |
+[Secret Rotation Validator/validate-secrets]   | | OK | 2 |
+[Secret Rotation Validator/validate-secrets]   | 
+[Secret Rotation Validator/validate-secrets]   | ## Expired Secrets
+[Secret Rotation Validator/validate-secrets]   | 
+[Secret Rotation Validator/validate-secrets]   | | Name | Last Rotated | Policy (days) | Expired On | Days Overdue | Required By |
+[Secret Rotation Validator/validate-secrets]   | |------|-------------|---------------|------------|--------------|-------------|
+[Secret Rotation Validator/validate-secrets]   | | DB_PASSWORD | 2026-03-01 | 30 | 2026-03-31 | 37 | api-service, worker-service |
+[Secret Rotation Validator/validate-secrets]   | | AWS_ACCESS_KEY | 2026-04-20 | 14 | 2026-05-04 | 3 | deploy-pipeline |
+[Secret Rotation Validator/validate-secrets]   | 
+[Secret Rotation Validator/validate-secrets]   | ## Warning Secrets
+[Secret Rotation Validator/validate-secrets]   | 
+[Secret Rotation Validator/validate-secrets]   | | Name | Last Rotated | Policy (days) | Expires On | Days Remaining | Required By |
+[Secret Rotation Validator/validate-secrets]   | |------|-------------|---------------|------------|----------------|-------------|
+[Secret Rotation Validator/validate-secrets]   | | API_KEY_STRIPE | 2026-05-03 | 7 | 2026-05-10 | 3 | payment-service |
+[Secret Rotation Validator/validate-secrets]   | 
+[Secret Rotation Validator/validate-secrets]   | ## OK Secrets
+[Secret Rotation Validator/validate-secrets]   | 
+[Secret Rotation Validator/validate-secrets]   | | Name | Last Rotated | Policy (days) | Expires On | Days Remaining | Required By |
+[Secret Rotation Validator/validate-secrets]   | |------|-------------|---------------|------------|----------------|-------------|
+[Secret Rotation Validator/validate-secrets]   | | JWT_SECRET | 2026-05-01 | 90 | 2026-07-30 | 84 | auth-service, api-gateway |
+[Secret Rotation Validator/validate-secrets]   | | REDIS_PASSWORD | 2026-05-05 | 60 | 2026-07-04 | 58 | cache-service, session-store |
+[Secret Rotation Validator/validate-secrets]   | 
+[Secret Rotation Validator/validate-secrets]   ✅  Success - Main Validate markdown output [934.738224ms]
+[Secret Rotation Validator/validate-secrets] ⭐ Run Main Validate custom warning window
+[Secret Rotation Validator/validate-secrets]   🐳  docker exec cmd=[pwsh -command . /var/run/act/workflow/6.ps1] user= workdir=
+[Secret Rotation Validator/validate-secrets]   | === Custom Warning Window (30 days) ===
+[Secret Rotation Validator/validate-secrets]   | Total: 5, Expired: 2, Warning: 1, OK: 2
+[Secret Rotation Validator/validate-secrets]   ✅  Success - Main Validate custom warning window [984.98016ms]
+[Secret Rotation Validator/validate-secrets] ⭐ Run Complete job
+[Secret Rotation Validator/validate-secrets] Cleaning up container for job validate-secrets
+[Secret Rotation Validator/validate-secrets]   ✅  Success - Complete job
+[Secret Rotation Validator/validate-secrets] 🏁  Job succeeded
+
+--- Test: act exit code ---
+PASS: act exited with code 0
+--- Test: Job succeeded ---
+PASS: Job succeeded message found
+--- Test: Pester tests passed in act ---
+PASS: All 23 Pester tests passed in act
+--- Test: JSON report total_secrets value ---
+PASS: JSON report shows total_secrets=5
+--- Test: All-ok validation ---
+PASS: All-ok fixture step executed successfully
+--- Test: All-expired validation ---
+PASS: All-expired fixture step executed successfully
+--- Test: Markdown output validation ---
+PASS: Markdown report header present in output
+--- Test: DB_PASSWORD in markdown report ---
+PASS: DB_PASSWORD present in markdown report
+--- Test: Custom warning window validation ---
+PASS: Custom 30-day warning window step executed
+
+=== TEST SUMMARY ===
+Passed: 19, Failed: 0
+OVERALL: ALL TESTS PASSED

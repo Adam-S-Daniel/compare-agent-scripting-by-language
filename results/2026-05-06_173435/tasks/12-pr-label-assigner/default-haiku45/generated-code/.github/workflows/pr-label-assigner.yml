@@ -1,0 +1,102 @@
+name: PR Label Assigner Tests
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Run Label Assigner Tests
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install pytest
+
+      - name: Run tests and capture output
+        run: |
+          echo "=== PR Label Assigner Test Suite ===" > act-result.txt
+          echo "Test run started at $(date)" >> act-result.txt
+          echo "" >> act-result.txt
+          python3 -m pytest test_pr_label_assigner.py -v --tb=short 2>&1 | tee -a act-result.txt
+          TEST_EXIT_CODE="${PIPESTATUS[0]}"
+          echo "" >> act-result.txt
+          echo "Test exit code: $TEST_EXIT_CODE" >> act-result.txt
+          exit "$TEST_EXIT_CODE"
+
+      - name: Run main demo script
+        if: success()
+        run: |
+          echo "" >> act-result.txt
+          echo "=== Running Demo Script ===" >> act-result.txt
+          python3 pr_label_assigner.py 2>&1 | tee -a act-result.txt
+
+      - name: Verify test results file exists
+        if: always()
+        run: |
+          if [ -f act-result.txt ]; then
+            echo "✓ act-result.txt created successfully"
+            echo "File size: $(wc -c < act-result.txt) bytes"
+            head -20 act-result.txt
+          else
+            echo "✗ ERROR: act-result.txt not found!"
+            exit 1
+          fi
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: test-results
+          path: act-result.txt
+
+      - name: Check all tests passed
+        if: always()
+        run: |
+          if grep -q "14 passed" act-result.txt; then
+            echo "✓ All 14 tests passed!"
+            exit 0
+          else
+            echo "✗ Not all tests passed. Check act-result.txt for details."
+            exit 1
+          fi
+
+  validate-workflow:
+    runs-on: ubuntu-latest
+    name: Validate workflow structure
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate YAML syntax
+        run: |
+          python3 -c "import yaml; yaml.safe_load(open('.github/workflows/pr-label-assigner.yml'))"
+          echo "✓ YAML syntax valid"
+
+      - name: Check script files exist
+        run: |
+          test -f pr_label_assigner.py && echo "✓ pr_label_assigner.py exists"
+          test -f test_pr_label_assigner.py && echo "✓ test_pr_label_assigner.py exists"
+
+      - name: Verify imports work
+        run: |
+          python3 -c "from pr_label_assigner import LabelAssigner; print('✓ LabelAssigner imported successfully')"

@@ -1,0 +1,57 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-matrix-generator:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+
+      - name: Test basic matrix
+        run: |
+          echo "===FIXTURE:basic==="
+          bun run matrix-generator.ts fixtures/basic.json
+          echo "===END:basic==="
+
+      - name: Test include-exclude rules
+        run: |
+          echo "===FIXTURE:include-exclude==="
+          bun run matrix-generator.ts fixtures/include-exclude.json
+          echo "===END:include-exclude==="
+
+      - name: Test fail-fast and max-parallel options
+        run: |
+          echo "===FIXTURE:options==="
+          bun run matrix-generator.ts fixtures/options.json
+          echo "===END:options==="
+
+      - name: Test max-combinations validation error
+        run: |
+          echo "===FIXTURE:too-large==="
+          if bun run matrix-generator.ts fixtures/too-large.json 2>&1; then
+            echo "UNEXPECTED_SUCCESS"
+            exit 1
+          else
+            echo "EXPECTED_ERROR"
+          fi
+          echo "===END:too-large==="
+
+      - name: Test complex matrix
+        run: |
+          echo "===FIXTURE:complex==="
+          bun run matrix-generator.ts fixtures/complex.json
+          echo "===END:complex==="
