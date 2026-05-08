@@ -1,0 +1,260 @@
+act-result.txt — generated 2026-05-08T06:59:43.347Z
+
+========== TEST CASE: case-1-dry-run ==========
+EXIT: 0
+VARS: {"ARTIFACTS_FILE":"fixtures/artifacts.json","MAX_AGE_DAYS":"30","MAX_TOTAL_BYTES":"5000","KEEP_LATEST":"2","NOW_OVERRIDE":"2026-05-08T00:00:00Z"}
+--- STDOUT ---
+[Artifact Cleanup/Run artifact cleanup] ⭐ Run Set up job
+[Artifact Cleanup/Run artifact cleanup] 🚀  Start image=ghcr.io/catthehacker/ubuntu:pwsh-latest
+[Artifact Cleanup/Run artifact cleanup]   🐳  docker pull image=ghcr.io/catthehacker/ubuntu:pwsh-latest platform= username= forcePull=false
+[Artifact Cleanup/Run artifact cleanup]   🐳  docker create image=ghcr.io/catthehacker/ubuntu:pwsh-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup/Run artifact cleanup]   🐳  docker run image=ghcr.io/catthehacker/ubuntu:pwsh-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup/Run artifact cleanup]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Artifact Cleanup/Run artifact cleanup]   ✅  Success - Set up job
+[Artifact Cleanup/Run artifact cleanup]   ☁  git clone 'https://github.com/oven-sh/setup-bun' # ref=v2
+[Artifact Cleanup/Run artifact cleanup] Non-terminating error while running 'git clone': some refs were not updated
+[Artifact Cleanup/Run artifact cleanup] ⭐ Run Main Checkout repository
+[Artifact Cleanup/Run artifact cleanup]   🐳  docker cp src=/tmp/act-cleanup-twAiI7/. dst=/tmp/act-cleanup-twAiI7
+[Artifact Cleanup/Run artifact cleanup]   ✅  Success - Main Checkout repository [62.255754ms]
+[Artifact Cleanup/Run artifact cleanup] ⭐ Run Main Set up Bun
+[Artifact Cleanup/Run artifact cleanup]   🐳  docker cp src=/home/passp/.cache/act/oven-sh-setup-bun@v2/ dst=/var/run/act/actions/oven-sh-setup-bun@v2/
+[Artifact Cleanup/Run artifact cleanup]   🐳  docker exec cmd=[/opt/acttoolcache/node/24.15.0/x64/bin/node /var/run/act/actions/oven-sh-setup-bun@v2/dist/setup/index.js] user= workdir=
+[Artifact Cleanup/Run artifact cleanup]   | Downloading a new version of Bun: https://github.com/oven-sh/bun/releases/download/bun-v1.3.13/bun-linux-x64.zip
+[Artifact Cleanup/Run artifact cleanup]   | [command]/usr/bin/unzip -o -q /tmp/22879c30-ffa3-40bd-85bb-ce7546503ddb.zip
+[Artifact Cleanup/Run artifact cleanup]   | [command]/root/.bun/bin/bun --revision
+[Artifact Cleanup/Run artifact cleanup]   | 1.3.13+bf2e2cecf
+[Artifact Cleanup/Run artifact cleanup]   ✅  Success - Main Set up Bun [5.33373872s]
+[Artifact Cleanup/Run artifact cleanup]   ⚙  ::set-output:: bun-path=/root/.bun/bin/bun
+[Artifact Cleanup/Run artifact cleanup]   ⚙  ::set-output:: bun-download-url=https://github.com/oven-sh/bun/releases/download/bun-v1.3.13/bun-linux-x64.zip
+[Artifact Cleanup/Run artifact cleanup]   ⚙  ::set-output:: cache-hit=false
+[Artifact Cleanup/Run artifact cleanup]   ⚙  ::set-output:: bun-version=1.3.13
+[Artifact Cleanup/Run artifact cleanup]   ⚙  ::set-output:: bun-revision=1.3.13+bf2e2cecf
+[Artifact Cleanup/Run artifact cleanup]   ⚙  ::add-path:: /root/.bun/bin
+[Artifact Cleanup/Run artifact cleanup] ⭐ Run Main Run unit tests
+[Artifact Cleanup/Run artifact cleanup]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Artifact Cleanup/Run artifact cleanup]   | bun test v1.3.13 (bf2e2cec)
+[Artifact Cleanup/Run artifact cleanup]   | 
+[Artifact Cleanup/Run artifact cleanup]   ❓  ::group::cleanup.test.ts:
+[Artifact Cleanup/Run artifact cleanup]   | (pass) buildDeletionPlan — empty/no-policy > returns empty plan when no artifacts [0.57ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) buildDeletionPlan — empty/no-policy > retains all artifacts when no policy is given [0.19ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) buildDeletionPlan — maxAgeDays > deletes artifacts older than maxAgeDays [0.16ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) buildDeletionPlan — maxAgeDays > boundary: artifact exactly at maxAgeDays is kept [0.10ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) buildDeletionPlan — keepLatestPerWorkflow > keeps the N newest artifacts per workflow run [0.35ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) buildDeletionPlan — keepLatestPerWorkflow > keepLatestPerWorkflow=0 deletes all in each group via that policy [0.07ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) buildDeletionPlan — maxTotalBytes > deletes oldest first to bring total under cap [0.23ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) buildDeletionPlan — maxTotalBytes > does nothing when total is already under cap [0.10ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) buildDeletionPlan — combined policies > age policy is applied before size cap [0.15ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) buildDeletionPlan — combined policies > all three policies together [0.24ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) dry-run flag > plan reflects dryRun=true [0.09ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) dry-run flag > dryRun defaults to false [0.07ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) validation / error handling > rejects negative maxAgeDays [0.13ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) validation / error handling > rejects non-integer keepLatestPerWorkflow [0.08ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) validation / error handling > rejects artifact with negative size [0.20ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) validation / error handling > rejects artifact with invalid date [0.14ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) formatPlan output > includes summary lines and DRY RUN marker [0.24ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) loadArtifactsFromFile > loads JSON and parses createdAt to Date [1.21ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) loadArtifactsFromFile > rejects malformed JSON [0.60ms]
+[Artifact Cleanup/Run artifact cleanup]   | 
+[Artifact Cleanup/Run artifact cleanup]   ❓  ::endgroup::
+[Artifact Cleanup/Run artifact cleanup]   | 
+[Artifact Cleanup/Run artifact cleanup]   |  19 pass
+[Artifact Cleanup/Run artifact cleanup]   |  0 fail
+[Artifact Cleanup/Run artifact cleanup]   |  38 expect() calls
+[Artifact Cleanup/Run artifact cleanup]   | Ran 19 tests across 1 file. [26.00ms]
+[Artifact Cleanup/Run artifact cleanup]   ✅  Success - Main Run unit tests [292.070373ms]
+[Artifact Cleanup/Run artifact cleanup] ⭐ Run Main Run cleanup script
+[Artifact Cleanup/Run artifact cleanup]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/3] user= workdir=
+[Artifact Cleanup/Run artifact cleanup]   | === Artifact Cleanup Plan (DRY RUN) ===
+[Artifact Cleanup/Run artifact cleanup]   | Total artifacts: 5
+[Artifact Cleanup/Run artifact cleanup]   | To delete:       2
+[Artifact Cleanup/Run artifact cleanup]   | To retain:       3
+[Artifact Cleanup/Run artifact cleanup]   | Bytes reclaimed: 3000
+[Artifact Cleanup/Run artifact cleanup]   | Bytes retained:  4500
+[Artifact Cleanup/Run artifact cleanup]   | 
+[Artifact Cleanup/Run artifact cleanup]   | Deletions:
+[Artifact Cleanup/Run artifact cleanup]   |   - build-old-1 (run=wf-101, 1000B) reason=age
+[Artifact Cleanup/Run artifact cleanup]   |   - build-recent-1 (run=wf-200, 2000B) reason=keep-latest
+[Artifact Cleanup/Run artifact cleanup]   ✅  Success - Main Run cleanup script [320.88484ms]
+[Artifact Cleanup/Run artifact cleanup] ⭐ Run Post Set up Bun
+[Artifact Cleanup/Run artifact cleanup]   🐳  docker exec cmd=[/opt/acttoolcache/node/24.15.0/x64/bin/node /var/run/act/actions/oven-sh-setup-bun@v2/dist/cache-save/index.js] user= workdir=
+[Artifact Cleanup/Run artifact cleanup]   ✅  Success - Post Set up Bun [501.745326ms]
+[Artifact Cleanup/Run artifact cleanup] ⭐ Run Complete job
+[Artifact Cleanup/Run artifact cleanup] Cleaning up container for job Run artifact cleanup
+[Artifact Cleanup/Run artifact cleanup]   ✅  Success - Complete job
+[Artifact Cleanup/Run artifact cleanup] 🏁  Job succeeded
+
+--- STDERR ---
+time="2026-05-08T02:59:43-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+
+
+========== TEST CASE: case-2-no-deletions ==========
+EXIT: 0
+VARS: {"ARTIFACTS_FILE":"fixtures/artifacts.json","MAX_AGE_DAYS":"1000","MAX_TOTAL_BYTES":"100000","KEEP_LATEST":"10","NOW_OVERRIDE":"2026-05-08T00:00:00Z"}
+--- STDOUT ---
+[Artifact Cleanup/Run artifact cleanup] ⭐ Run Set up job
+[Artifact Cleanup/Run artifact cleanup] 🚀  Start image=ghcr.io/catthehacker/ubuntu:pwsh-latest
+[Artifact Cleanup/Run artifact cleanup]   🐳  docker pull image=ghcr.io/catthehacker/ubuntu:pwsh-latest platform= username= forcePull=false
+[Artifact Cleanup/Run artifact cleanup]   🐳  docker create image=ghcr.io/catthehacker/ubuntu:pwsh-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup/Run artifact cleanup]   🐳  docker run image=ghcr.io/catthehacker/ubuntu:pwsh-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup/Run artifact cleanup]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Artifact Cleanup/Run artifact cleanup]   ✅  Success - Set up job
+[Artifact Cleanup/Run artifact cleanup]   ☁  git clone 'https://github.com/oven-sh/setup-bun' # ref=v2
+[Artifact Cleanup/Run artifact cleanup] Non-terminating error while running 'git clone': some refs were not updated
+[Artifact Cleanup/Run artifact cleanup] ⭐ Run Main Checkout repository
+[Artifact Cleanup/Run artifact cleanup]   🐳  docker cp src=/tmp/act-cleanup-tceVg0/. dst=/tmp/act-cleanup-tceVg0
+[Artifact Cleanup/Run artifact cleanup]   ✅  Success - Main Checkout repository [75.85054ms]
+[Artifact Cleanup/Run artifact cleanup] ⭐ Run Main Set up Bun
+[Artifact Cleanup/Run artifact cleanup]   🐳  docker cp src=/home/passp/.cache/act/oven-sh-setup-bun@v2/ dst=/var/run/act/actions/oven-sh-setup-bun@v2/
+[Artifact Cleanup/Run artifact cleanup]   🐳  docker exec cmd=[/opt/acttoolcache/node/24.15.0/x64/bin/node /var/run/act/actions/oven-sh-setup-bun@v2/dist/setup/index.js] user= workdir=
+[Artifact Cleanup/Run artifact cleanup]   | Downloading a new version of Bun: https://github.com/oven-sh/bun/releases/download/bun-v1.3.13/bun-linux-x64.zip
+[Artifact Cleanup/Run artifact cleanup]   | [command]/usr/bin/unzip -o -q /tmp/2d28fe4d-4f92-4cf3-bd78-40631c5e24ab.zip
+[Artifact Cleanup/Run artifact cleanup]   | [command]/root/.bun/bin/bun --revision
+[Artifact Cleanup/Run artifact cleanup]   | 1.3.13+bf2e2cecf
+[Artifact Cleanup/Run artifact cleanup]   ✅  Success - Main Set up Bun [5.21673066s]
+[Artifact Cleanup/Run artifact cleanup]   ⚙  ::set-output:: bun-version=1.3.13
+[Artifact Cleanup/Run artifact cleanup]   ⚙  ::set-output:: bun-revision=1.3.13+bf2e2cecf
+[Artifact Cleanup/Run artifact cleanup]   ⚙  ::set-output:: bun-path=/root/.bun/bin/bun
+[Artifact Cleanup/Run artifact cleanup]   ⚙  ::set-output:: bun-download-url=https://github.com/oven-sh/bun/releases/download/bun-v1.3.13/bun-linux-x64.zip
+[Artifact Cleanup/Run artifact cleanup]   ⚙  ::set-output:: cache-hit=false
+[Artifact Cleanup/Run artifact cleanup]   ⚙  ::add-path:: /root/.bun/bin
+[Artifact Cleanup/Run artifact cleanup] ⭐ Run Main Run unit tests
+[Artifact Cleanup/Run artifact cleanup]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Artifact Cleanup/Run artifact cleanup]   | bun test v1.3.13 (bf2e2cec)
+[Artifact Cleanup/Run artifact cleanup]   | 
+[Artifact Cleanup/Run artifact cleanup]   ❓  ::group::cleanup.test.ts:
+[Artifact Cleanup/Run artifact cleanup]   | (pass) buildDeletionPlan — empty/no-policy > returns empty plan when no artifacts [0.70ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) buildDeletionPlan — empty/no-policy > retains all artifacts when no policy is given [0.17ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) buildDeletionPlan — maxAgeDays > deletes artifacts older than maxAgeDays [0.15ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) buildDeletionPlan — maxAgeDays > boundary: artifact exactly at maxAgeDays is kept [0.13ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) buildDeletionPlan — keepLatestPerWorkflow > keeps the N newest artifacts per workflow run [0.30ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) buildDeletionPlan — keepLatestPerWorkflow > keepLatestPerWorkflow=0 deletes all in each group via that policy [0.06ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) buildDeletionPlan — maxTotalBytes > deletes oldest first to bring total under cap [0.25ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) buildDeletionPlan — maxTotalBytes > does nothing when total is already under cap [0.10ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) buildDeletionPlan — combined policies > age policy is applied before size cap [0.13ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) buildDeletionPlan — combined policies > all three policies together [0.24ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) dry-run flag > plan reflects dryRun=true [0.09ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) dry-run flag > dryRun defaults to false [0.05ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) validation / error handling > rejects negative maxAgeDays [0.25ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) validation / error handling > rejects non-integer keepLatestPerWorkflow [0.22ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) validation / error handling > rejects artifact with negative size [0.21ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) validation / error handling > rejects artifact with invalid date [0.11ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) formatPlan output > includes summary lines and DRY RUN marker [0.22ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) loadArtifactsFromFile > loads JSON and parses createdAt to Date [1.34ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) loadArtifactsFromFile > rejects malformed JSON [0.58ms]
+[Artifact Cleanup/Run artifact cleanup]   | 
+[Artifact Cleanup/Run artifact cleanup]   ❓  ::endgroup::
+[Artifact Cleanup/Run artifact cleanup]   | 
+[Artifact Cleanup/Run artifact cleanup]   |  19 pass
+[Artifact Cleanup/Run artifact cleanup]   |  0 fail
+[Artifact Cleanup/Run artifact cleanup]   |  38 expect() calls
+[Artifact Cleanup/Run artifact cleanup]   | Ran 19 tests across 1 file. [25.00ms]
+[Artifact Cleanup/Run artifact cleanup]   ✅  Success - Main Run unit tests [295.156438ms]
+[Artifact Cleanup/Run artifact cleanup] ⭐ Run Main Run cleanup script
+[Artifact Cleanup/Run artifact cleanup]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/3] user= workdir=
+[Artifact Cleanup/Run artifact cleanup]   | === Artifact Cleanup Plan (DRY RUN) ===
+[Artifact Cleanup/Run artifact cleanup]   | Total artifacts: 5
+[Artifact Cleanup/Run artifact cleanup]   | To delete:       0
+[Artifact Cleanup/Run artifact cleanup]   | To retain:       5
+[Artifact Cleanup/Run artifact cleanup]   | Bytes reclaimed: 0
+[Artifact Cleanup/Run artifact cleanup]   | Bytes retained:  7500
+[Artifact Cleanup/Run artifact cleanup]   ✅  Success - Main Run cleanup script [304.480759ms]
+[Artifact Cleanup/Run artifact cleanup] ⭐ Run Post Set up Bun
+[Artifact Cleanup/Run artifact cleanup]   🐳  docker exec cmd=[/opt/acttoolcache/node/24.15.0/x64/bin/node /var/run/act/actions/oven-sh-setup-bun@v2/dist/cache-save/index.js] user= workdir=
+[Artifact Cleanup/Run artifact cleanup]   ✅  Success - Post Set up Bun [466.405956ms]
+[Artifact Cleanup/Run artifact cleanup] ⭐ Run Complete job
+[Artifact Cleanup/Run artifact cleanup] Cleaning up container for job Run artifact cleanup
+[Artifact Cleanup/Run artifact cleanup]   ✅  Success - Complete job
+[Artifact Cleanup/Run artifact cleanup] 🏁  Job succeeded
+
+--- STDERR ---
+time="2026-05-08T02:59:52-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+
+
+========== TEST CASE: case-3-size-cap ==========
+EXIT: 0
+VARS: {"ARTIFACTS_FILE":"fixtures/artifacts.json","MAX_AGE_DAYS":"10","MAX_TOTAL_BYTES":"2000","KEEP_LATEST":"10","NOW_OVERRIDE":"2026-05-08T00:00:00Z"}
+--- STDOUT ---
+[Artifact Cleanup/Run artifact cleanup] ⭐ Run Set up job
+[Artifact Cleanup/Run artifact cleanup] 🚀  Start image=ghcr.io/catthehacker/ubuntu:pwsh-latest
+[Artifact Cleanup/Run artifact cleanup]   🐳  docker pull image=ghcr.io/catthehacker/ubuntu:pwsh-latest platform= username= forcePull=false
+[Artifact Cleanup/Run artifact cleanup]   🐳  docker create image=ghcr.io/catthehacker/ubuntu:pwsh-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup/Run artifact cleanup]   🐳  docker run image=ghcr.io/catthehacker/ubuntu:pwsh-latest platform= entrypoint=["tail" "-f" "/dev/null"] cmd=[] network="host"
+[Artifact Cleanup/Run artifact cleanup]   🐳  docker exec cmd=[node --no-warnings -e console.log(process.execPath)] user= workdir=
+[Artifact Cleanup/Run artifact cleanup]   ✅  Success - Set up job
+[Artifact Cleanup/Run artifact cleanup]   ☁  git clone 'https://github.com/oven-sh/setup-bun' # ref=v2
+[Artifact Cleanup/Run artifact cleanup] Non-terminating error while running 'git clone': some refs were not updated
+[Artifact Cleanup/Run artifact cleanup] ⭐ Run Main Checkout repository
+[Artifact Cleanup/Run artifact cleanup]   🐳  docker cp src=/tmp/act-cleanup-5QyY3c/. dst=/tmp/act-cleanup-5QyY3c
+[Artifact Cleanup/Run artifact cleanup]   ✅  Success - Main Checkout repository [53.851594ms]
+[Artifact Cleanup/Run artifact cleanup] ⭐ Run Main Set up Bun
+[Artifact Cleanup/Run artifact cleanup]   🐳  docker cp src=/home/passp/.cache/act/oven-sh-setup-bun@v2/ dst=/var/run/act/actions/oven-sh-setup-bun@v2/
+[Artifact Cleanup/Run artifact cleanup]   🐳  docker exec cmd=[/opt/acttoolcache/node/24.15.0/x64/bin/node /var/run/act/actions/oven-sh-setup-bun@v2/dist/setup/index.js] user= workdir=
+[Artifact Cleanup/Run artifact cleanup]   | Downloading a new version of Bun: https://github.com/oven-sh/bun/releases/download/bun-v1.3.13/bun-linux-x64.zip
+[Artifact Cleanup/Run artifact cleanup]   | [command]/usr/bin/unzip -o -q /tmp/31980329-9f43-46ba-9f78-828781d4c352.zip
+[Artifact Cleanup/Run artifact cleanup]   | [command]/root/.bun/bin/bun --revision
+[Artifact Cleanup/Run artifact cleanup]   | 1.3.13+bf2e2cecf
+[Artifact Cleanup/Run artifact cleanup]   ✅  Success - Main Set up Bun [5.619482157s]
+[Artifact Cleanup/Run artifact cleanup]   ⚙  ::set-output:: bun-revision=1.3.13+bf2e2cecf
+[Artifact Cleanup/Run artifact cleanup]   ⚙  ::set-output:: bun-path=/root/.bun/bin/bun
+[Artifact Cleanup/Run artifact cleanup]   ⚙  ::set-output:: bun-download-url=https://github.com/oven-sh/bun/releases/download/bun-v1.3.13/bun-linux-x64.zip
+[Artifact Cleanup/Run artifact cleanup]   ⚙  ::set-output:: cache-hit=false
+[Artifact Cleanup/Run artifact cleanup]   ⚙  ::set-output:: bun-version=1.3.13
+[Artifact Cleanup/Run artifact cleanup]   ⚙  ::add-path:: /root/.bun/bin
+[Artifact Cleanup/Run artifact cleanup] ⭐ Run Main Run unit tests
+[Artifact Cleanup/Run artifact cleanup]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/2] user= workdir=
+[Artifact Cleanup/Run artifact cleanup]   | bun test v1.3.13 (bf2e2cec)
+[Artifact Cleanup/Run artifact cleanup]   | 
+[Artifact Cleanup/Run artifact cleanup]   ❓  ::group::cleanup.test.ts:
+[Artifact Cleanup/Run artifact cleanup]   | (pass) buildDeletionPlan — empty/no-policy > returns empty plan when no artifacts [0.57ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) buildDeletionPlan — empty/no-policy > retains all artifacts when no policy is given [0.16ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) buildDeletionPlan — maxAgeDays > deletes artifacts older than maxAgeDays [0.13ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) buildDeletionPlan — maxAgeDays > boundary: artifact exactly at maxAgeDays is kept [0.09ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) buildDeletionPlan — keepLatestPerWorkflow > keeps the N newest artifacts per workflow run [0.34ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) buildDeletionPlan — keepLatestPerWorkflow > keepLatestPerWorkflow=0 deletes all in each group via that policy [0.08ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) buildDeletionPlan — maxTotalBytes > deletes oldest first to bring total under cap [0.25ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) buildDeletionPlan — maxTotalBytes > does nothing when total is already under cap [0.10ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) buildDeletionPlan — combined policies > age policy is applied before size cap [0.14ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) buildDeletionPlan — combined policies > all three policies together [0.31ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) dry-run flag > plan reflects dryRun=true [0.08ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) dry-run flag > dryRun defaults to false [0.04ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) validation / error handling > rejects negative maxAgeDays [0.12ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) validation / error handling > rejects non-integer keepLatestPerWorkflow [0.05ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) validation / error handling > rejects artifact with negative size [0.17ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) validation / error handling > rejects artifact with invalid date [0.10ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) formatPlan output > includes summary lines and DRY RUN marker [0.24ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) loadArtifactsFromFile > loads JSON and parses createdAt to Date [1.15ms]
+[Artifact Cleanup/Run artifact cleanup]   | (pass) loadArtifactsFromFile > rejects malformed JSON [0.45ms]
+[Artifact Cleanup/Run artifact cleanup]   | 
+[Artifact Cleanup/Run artifact cleanup]   ❓  ::endgroup::
+[Artifact Cleanup/Run artifact cleanup]   | 
+[Artifact Cleanup/Run artifact cleanup]   |  19 pass
+[Artifact Cleanup/Run artifact cleanup]   |  0 fail
+[Artifact Cleanup/Run artifact cleanup]   |  38 expect() calls
+[Artifact Cleanup/Run artifact cleanup]   | Ran 19 tests across 1 file. [22.00ms]
+[Artifact Cleanup/Run artifact cleanup]   ✅  Success - Main Run unit tests [283.108888ms]
+[Artifact Cleanup/Run artifact cleanup] ⭐ Run Main Run cleanup script
+[Artifact Cleanup/Run artifact cleanup]   🐳  docker exec cmd=[bash -e /var/run/act/workflow/3] user= workdir=
+[Artifact Cleanup/Run artifact cleanup]   | === Artifact Cleanup Plan (DRY RUN) ===
+[Artifact Cleanup/Run artifact cleanup]   | Total artifacts: 5
+[Artifact Cleanup/Run artifact cleanup]   | To delete:       4
+[Artifact Cleanup/Run artifact cleanup]   | To retain:       1
+[Artifact Cleanup/Run artifact cleanup]   | Bytes reclaimed: 7000
+[Artifact Cleanup/Run artifact cleanup]   | Bytes retained:  500
+[Artifact Cleanup/Run artifact cleanup]   | 
+[Artifact Cleanup/Run artifact cleanup]   | Deletions:
+[Artifact Cleanup/Run artifact cleanup]   |   - build-old-1 (run=wf-101, 1000B) reason=age
+[Artifact Cleanup/Run artifact cleanup]   |   - build-recent-1 (run=wf-200, 2000B) reason=size
+[Artifact Cleanup/Run artifact cleanup]   |   - build-recent-2 (run=wf-200, 2000B) reason=size
+[Artifact Cleanup/Run artifact cleanup]   |   - build-recent-3 (run=wf-200, 2000B) reason=size
+[Artifact Cleanup/Run artifact cleanup]   ✅  Success - Main Run cleanup script [309.701084ms]
+[Artifact Cleanup/Run artifact cleanup] ⭐ Run Post Set up Bun
+[Artifact Cleanup/Run artifact cleanup]   🐳  docker exec cmd=[/opt/acttoolcache/node/24.15.0/x64/bin/node /var/run/act/actions/oven-sh-setup-bun@v2/dist/cache-save/index.js] user= workdir=
+[Artifact Cleanup/Run artifact cleanup]   ✅  Success - Post Set up Bun [420.187287ms]
+[Artifact Cleanup/Run artifact cleanup] ⭐ Run Complete job
+[Artifact Cleanup/Run artifact cleanup] Cleaning up container for job Run artifact cleanup
+[Artifact Cleanup/Run artifact cleanup]   ✅  Success - Complete job
+[Artifact Cleanup/Run artifact cleanup] 🏁  Job succeeded
+
+--- STDERR ---
+time="2026-05-08T03:00:02-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
+

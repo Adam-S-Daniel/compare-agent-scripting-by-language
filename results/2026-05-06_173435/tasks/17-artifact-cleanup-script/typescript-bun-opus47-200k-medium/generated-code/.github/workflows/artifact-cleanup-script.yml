@@ -1,0 +1,46 @@
+name: Artifact Cleanup
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: "Dry run mode"
+        required: false
+        default: "true"
+  schedule:
+    - cron: "0 3 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  cleanup:
+    name: Run artifact cleanup
+    runs-on: ubuntu-latest
+    env:
+      ARTIFACTS_FILE: ${{ vars.ARTIFACTS_FILE || 'fixtures/artifacts.json' }}
+      MAX_AGE_DAYS: ${{ vars.MAX_AGE_DAYS || '30' }}
+      MAX_TOTAL_BYTES: ${{ vars.MAX_TOTAL_BYTES || '5000' }}
+      KEEP_LATEST: ${{ vars.KEEP_LATEST || '2' }}
+      DRY_RUN: ${{ github.event.inputs.dry-run || 'true' }}
+      NOW_OVERRIDE: ${{ vars.NOW_OVERRIDE || '' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Run unit tests
+        run: bun test
+
+      - name: Run cleanup script
+        run: |
+          ARGS=("$ARTIFACTS_FILE" "--max-age-days=$MAX_AGE_DAYS" "--max-total-bytes=$MAX_TOTAL_BYTES" "--keep-latest=$KEEP_LATEST")
+          if [ "$DRY_RUN" = "true" ]; then ARGS+=("--dry-run"); fi
+          if [ -n "$NOW_OVERRIDE" ]; then ARGS+=("--now=$NOW_OVERRIDE"); fi
+          bun run cleanup.ts "${ARGS[@]}"
