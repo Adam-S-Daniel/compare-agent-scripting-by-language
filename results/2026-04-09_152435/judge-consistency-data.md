@@ -4,7 +4,7 @@
 
 ## Notes
 
-- **Generated:** 2026-05-08 08:16:58 AM ET
+- **Generated:** 2026-05-08 12:59:13 PM ET
 - **Source:** `/home/passp/repos/compare-agent-scripting-by-language/results/2026-04-09_152435`
 - **Judges present:** haiku45, gemini31pro, sonnet-legacy
 - **Score conventions:** Scores shown are the `overall` dimension from each judge (1-5). Δ column is the second judge minus the first; positive = second judge is more generous.
@@ -19,7 +19,7 @@ The strongest signal is that Sonnet outranks Opus on both Tests Quality and Work
 - **Where rankings diverge**: Language ordering on Tests Quality is fully reversed between judges (ρ = -1.00) — gemini ranks bash first while haiku ranks it last — so language alone is an unreliable signal without conditioning on the model.
 - **Workflow Craft ceiling**: Workflow Craft averages run below Tests Quality on haiku's scale (2.00 vs 2.68) but slightly above on gemini's (4.54 vs 4.37), and gemini's only perfect 5.00 average is bash/sonnet.
 
-*Provenance:* `claude-opus-4-7[1m]` at effort `xhigh` via Claude CLI; 5 in / 4788 out tokens, $0.3134. Prompt: [`QUALITY_ANALYSIS_SYSTEM_PROMPT`](../../judge_consistency_report.py).
+*Provenance:* `claude-opus-4-7[1m]` at effort `xhigh` via Claude CLI (from cache); 5 in / 4788 out tokens, $0.3134. Prompt: [`QUALITY_ANALYSIS_SYSTEM_PROMPT`](../../judge_consistency_report.py).
 
 ## Campaign summary
 

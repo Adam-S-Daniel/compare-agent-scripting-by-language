@@ -1,6 +1,6 @@
 # Benchmark Results: Language Comparison
 
-**Last updated:** 2026-05-08 08:17:33 AM ET — 245/245 runs completed, 0 remaining; total cost $360.74; total agent time 2265.0 min.
+**Last updated:** 2026-05-08 12:59:53 PM ET — 245/245 runs completed, 0 remaining; total cost $360.74; total agent time 2265.0 min.
 
 ## Table of Contents
 
@@ -3774,11 +3774,11 @@ Values near +1.0 indicate the LLM agrees with the structural signal; near 0 mean
 
 ### Judge Consistency Summary
 
-**🟢 The panel is doing its job:** model rankings agree strongly (Spearman +0.70 on Tests Quality, +0.90 on Workflow Craft), language×model ordering tracks (+0.49 / +0.79), and Haiku rates its own family last on both axes — the opposite of self-preference. The flat ρ=+0.00 on language-only ordering is a calibration disagreement (Haiku favours default/PowerShell, Gemini favours PowerShell-Tool/default), not a bias signal.
+**🟢 The panel is doing its job:** Both judges agree strongly on which model+effort configurations produce better code (Spearman +0.70 on Tests Quality, +0.90 on Workflow Craft), and no own-model reversal tilts in Haiku's favor — in fact Haiku grades its own family harder than Gemini does (e.g., 15-test-results-aggregator / default / haiku45: Haiku 1 vs Gemini 4 on Tests). The +1.6–2.0 absolute gap between judges is calibration, not bias.
 
-- 👀 **Where to look closer:** the widest disagreements (a judge scoring 1 vs 5, a 4-point gap on a 1–5 scale) on Workflow Craft — 11-semantic-version-bumper / powershell / opus47-1m-medium, 17-artifact-cleanup-script / bash / opus47-1m-medium, and 15-test-results-aggregator / default / opus47-1m-medium — all show Haiku at 1 and Gemini at 5, suggesting Haiku may be hitting a floor where Gemini sees a ceiling.
-- 🤓 **Surprise finding:** Haiku, the intra-family judge, places haiku45 dead last on both axes and is consistently harsher than Gemini on its own family in the per-run rows — the reverse of the bias we were checking for.
-- ℹ️ **Recommended next step:** read those three 4-point-gap workflow files and decide which scorer is closer to truth; that calibrates how much weight to give Haiku's floor scoring elsewhere.
+- 👀 **Where to look closer:** the widest disagreements (a judge scoring 1 vs 5, a 4-point gap on a 1–5 scale) cluster on Workflow Craft for 15-test-results-aggregator / default / opus47-1m-medium and 16-environment-matrix-generator / powershell / opus47-1m-xhigh — Haiku sits at the floor while Gemini sits at the ceiling, so a human read of those triples would tell us which judge to trust there.
+- 🤓 **Surprise finding:** language rankings are completely uncorrelated (ρ = 0.00 on both axes) — the panel agrees on which model wins but not on which language flatters its output.
+- ℹ️ **Recommended next step:** manually adjudicate four or five of the 1-vs-5 rows on tasks 15 and 16 to confirm whether Haiku is under-scoring or Gemini is ceiling-bound.
 
 #### Provenance
 
@@ -3786,7 +3786,7 @@ Values near +1.0 indicate the LLM agrees with the structural signal; near 0 mean
 - **Inputs:** the [`judge-consistency-data.md`](judge-consistency-data.md) tables plus benchmark context (rubrics, task list, experiment setup).
 - **Script:** [`conclusions_report.py`](../../conclusions_report.py) — regenerate with `python3 generate_results.py <run_dir>`.
 - **Instruction:** [`JUDGE_CONSISTENCY_SUMMARY_SYSTEM_PROMPT`](../../judge_consistency_report.py) in that script.
-- **Usage:** 5 input + 2794 output tokens, $0.2633.
+- **Usage:** 0 input + 0 output tokens, $0.2518.
 
 *Full breakdown with per-model / per-language / per-language×model ranking tables and disagreement hotspots in [judge-consistency-data.md](judge-consistency-data.md).*
 

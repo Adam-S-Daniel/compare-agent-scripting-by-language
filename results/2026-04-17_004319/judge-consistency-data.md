@@ -4,7 +4,7 @@
 
 ## Notes
 
-- **Generated:** 2026-05-08 08:18:15 AM ET
+- **Generated:** 2026-05-08 12:59:58 PM ET
 - **Source:** `/home/passp/repos/compare-agent-scripting-by-language/results/2026-04-17_004319`
 - **Judges present:** haiku45, gemini31pro
 - **Score conventions:** Scores shown are the `overall` dimension from each judge (1-5). Δ column is the second judge minus the first; positive = second judge is more generous.
@@ -19,7 +19,7 @@ Opus 4.7 at 1M context, run at high or extra-high effort, is the strongest confi
 - **Workflow Craft ceiling**: Gemini caps the field at 4.94 for opus47-1m-high, and the +0.90 Spearman across model+effort cells means that ceiling reflects panel agreement, not a single judge's scale.
 - **Where rankings diverge**: language ordering scores ρ = +0.00 on both axes — the panel agrees on which model produces better code but not on which scripting language flatters it; haiku45 still lands last across both judges with no reversal.
 
-*Provenance:* `claude-opus-4-7[1m]` at effort `xhigh` via Claude CLI; 5 in / 2472 out tokens, $0.2484. Prompt: [`QUALITY_ANALYSIS_SYSTEM_PROMPT`](../../judge_consistency_report.py).
+*Provenance:* `claude-opus-4-7[1m]` at effort `xhigh` via Claude CLI (from cache); 5 in / 2472 out tokens, $0.2484. Prompt: [`QUALITY_ANALYSIS_SYSTEM_PROMPT`](../../judge_consistency_report.py).
 
 ## Campaign summary
 

@@ -1,0 +1,13 @@
+{
+  "coverage": 3,
+  "rigor": 3,
+  "design": 2,
+  "overall": 2,
+  "summary": "The test suite demonstrates good structural organization with proper separation of unit tests (unit.bats) and integration tests via act (workflow.bats). It covers core functionality: argument validation, output formats (markdown/JSON), fixture-based scenarios, and workflow structure validation via actionlint. However, there is a critical issue: workflow.bats asserts on 'ROTATION_SUMMARY expired=2 warning=1 ok=1' output (lines checking for exact counts), but this string never appears in the provided validate-rotation.sh script output. The script outputs markdown tables or JSON objects, not a 'ROTATION_SUMMARY' line. This is either a test/implementation mismatch or evidence the workflow file (not provided) should add post-processing to generate this summary\u2014but without that workflow file, these assertions will fail. Coverage gaps include boundary conditions (dte exactly at 0 or warning_days threshold), date validation edge cases, empty secrets arrays, and zero rotation_days. Rigor is moderate: happy path well-exercised, basic error paths tested (missing --config, bad --format), but missing edge cases like negative age or invalid date formats. Design is reasonable\u2014proper fixtures, temp dir cleanup, helper functions\u2014but the 'ROTATION_SUMMARY' assertions undermine confidence that these tests will actually pass.",
+  "judge_cost_usd": 0.0494,
+  "judge_input_tokens": 10,
+  "judge_output_tokens": 5679,
+  "judge_provider": "claude-cli",
+  "judge_model": "haiku",
+  "judge_short": "haiku45"
+}
