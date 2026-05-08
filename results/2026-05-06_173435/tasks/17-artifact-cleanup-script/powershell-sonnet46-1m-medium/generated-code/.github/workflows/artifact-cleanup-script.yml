@@ -1,0 +1,50 @@
+name: Artifact Cleanup Script
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Pester
+        shell: pwsh
+        run: |
+          if (-not (Get-Module -ListAvailable -Name Pester | Where-Object { $_.Version -ge '5.0' })) {
+            Install-Module -Name Pester -MinimumVersion 5.0 -Force -Scope CurrentUser -SkipPublisherCheck
+          }
+          Import-Module Pester -MinimumVersion 5.0
+
+      - name: Run Unit Tests
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = './ArtifactCleanup.Tests.ps1'
+          $config.Output.Verbosity = 'Detailed'
+          $config.Run.Exit = $true
+          Invoke-Pester -Configuration $config
+
+      - name: Run Integration Test - Dry Run
+        shell: pwsh
+        run: |
+          ./ArtifactCleanup.ps1 -ArtifactsFile './fixtures/artifacts.json' -PolicyFile './fixtures/policy.json' -ReferenceDate '2026-05-01' -DryRun
+
+      - name: Run Integration Test - Standard Mode
+        shell: pwsh
+        run: |
+          ./ArtifactCleanup.ps1 -ArtifactsFile './fixtures/artifacts.json' -PolicyFile './fixtures/policy.json' -ReferenceDate '2026-05-01'
+
+      - name: Run Integration Test - JSON Output
+        shell: pwsh
+        run: |
+          ./ArtifactCleanup.ps1 -ArtifactsFile './fixtures/artifacts.json' -PolicyFile './fixtures/policy.json' -ReferenceDate '2026-05-01' -OutputFormat json
