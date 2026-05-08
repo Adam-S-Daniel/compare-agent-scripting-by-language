@@ -1,0 +1,73 @@
+name: Dependency License Checker
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+    inputs:
+      manifest:
+        description: 'Path to dependency manifest'
+        required: false
+        default: 'fixtures/case-clean/package.json'
+
+permissions:
+  contents: read
+
+env:
+  # Allow the test harness (and workflow_dispatch) to override the manifest
+  # under inspection; default keeps a local push happy.
+  MANIFEST: ${{ github.event.inputs.manifest || 'fixtures/case-clean/package.json' }}
+  CONFIG: licenses.config.json
+  LICENSE_DB: fixtures/licenses-db.json
+
+jobs:
+  unit-tests:
+    name: Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if (-not (Get-Module -ListAvailable -Name Pester)) {
+            Install-Module Pester -Force -SkipPublisherCheck -Scope CurrentUser
+          }
+          $result = Invoke-Pester -Path ./LicenseChecker.Tests.ps1 -PassThru -Output Detailed
+          if ($result.FailedCount -gt 0) {
+            Write-Error "$($result.FailedCount) Pester test(s) failed."
+            exit 1
+          }
+          Write-Output "PESTER passed=$($result.PassedCount) failed=$($result.FailedCount)"
+
+  license-check:
+    name: License compliance scan
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run license checker
+        id: check
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          $ErrorActionPreference = 'Continue'
+          Write-Output "===== MANIFEST: $env:MANIFEST ====="
+          ./Invoke-LicenseChecker.ps1 `
+            -Manifest $env:MANIFEST `
+            -Config   $env:CONFIG `
+            -LicenseDb $env:LICENSE_DB
+          Write-Output "EXIT_CODE=$LASTEXITCODE"
+
+      - name: Summarize
+        shell: pwsh
+        run: |
+          Write-Output "License check step outcome: ${{ steps.check.outcome }}"
