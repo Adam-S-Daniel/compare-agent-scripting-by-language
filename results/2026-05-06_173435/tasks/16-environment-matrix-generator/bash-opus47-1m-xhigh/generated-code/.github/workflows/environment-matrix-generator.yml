@@ -1,0 +1,72 @@
+name: Environment Matrix Generator
+
+# Triggers chosen so the workflow can run in CI under both push and PR events,
+# can be invoked on demand for one-off matrix generation, and can run on a
+# weekly schedule to detect drift in dependencies (e.g. jq behaviour changes).
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  workflow_dispatch:
+    inputs:
+      config_file:
+        description: "Path to the matrix config JSON, relative to repo root."
+        required: false
+        default: "config.json"
+  schedule:
+    - cron: "0 6 * * 1"
+
+# The workflow only reads repo contents.
+permissions:
+  contents: read
+
+env:
+  CONFIG_FILE: ${{ github.event.inputs.config_file || 'config.json' }}
+
+jobs:
+  generate-matrix:
+    name: Generate matrix
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Ensure jq is available
+        shell: bash
+        run: |
+          if ! command -v jq >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq jq
+          fi
+          jq --version
+
+      - name: Verify matrix-gen.sh exists and is executable
+        shell: bash
+        run: |
+          test -f bin/matrix-gen.sh
+          chmod +x bin/matrix-gen.sh
+          bash -n bin/matrix-gen.sh
+
+      - name: Generate matrix from "${{ env.CONFIG_FILE }}"
+        id: matrix
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -f "${CONFIG_FILE}" ]; then
+            echo "matrix-gen: config file '${CONFIG_FILE}' not found in repo root" >&2
+            exit 2
+          fi
+          # Sentinels let the test harness slice our JSON out of act's stream.
+          echo "BEGIN_MATRIX_JSON"
+          ./bin/matrix-gen.sh "${CONFIG_FILE}"
+          echo "END_MATRIX_JSON"
+
+      - name: Show config used
+        if: always()
+        shell: bash
+        run: |
+          echo "Config file: ${CONFIG_FILE}"
+          if [ -f "${CONFIG_FILE}" ]; then
+            cat "${CONFIG_FILE}"
+          fi
