@@ -1,0 +1,58 @@
+name: test-results-aggregator
+
+# Runs the PowerShell test-results aggregator over fixture data committed to
+# the repo. The fixture directory is parameterized so the act harness can
+# point each test case at a different set of inputs without editing this file.
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      fixtures:
+        description: Path (relative to repo root) to a directory of test result files.
+        required: false
+        default: tests/fixtures
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+env:
+  FIXTURES_DIR: ${{ github.event.inputs.fixtures || 'tests/fixtures' }}
+
+jobs:
+  aggregate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show PowerShell + Pester versions
+        shell: pwsh
+        run: |
+          $PSVersionTable.PSVersion
+          Get-Module -ListAvailable Pester | Select-Object Name, Version
+
+      - name: Run unit tests (Pester)
+        shell: pwsh
+        run: |
+          $r = Invoke-Pester -Path tests/TestResultsAggregator.Tests.ps1 -PassThru -Output Detailed
+          if ($r.FailedCount -gt 0) { exit 1 }
+
+      - name: Aggregate fixture results
+        id: aggregate
+        shell: pwsh
+        env:
+          FIXTURES_DIR: ${{ env.FIXTURES_DIR }}
+        run: |
+          $out = Join-Path $env:RUNNER_TEMP 'summary.md'
+          $line = ./scripts/Aggregate-TestResults.ps1 -InputPath $env:FIXTURES_DIR -OutputPath $out
+          Write-Host $line
+          # Re-emit the AGGREGATE line with a stable prefix so `act` log parsing is easy.
+          Write-Host "RESULT_LINE: $line"
+
+      - name: Print summary
+        shell: pwsh
+        run: Get-Content $env:RUNNER_TEMP/summary.md
