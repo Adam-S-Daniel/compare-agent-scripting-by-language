@@ -1,6 +1,7 @@
 # Benchmark Results: Language Comparison
 
-**Last updated:** 2026-05-08 12:59:12 PM ET — 64/64 runs completed, 0 remaining; total cost $86.90; total agent time 550.6 min.
+**Last updated:** 2026-05-08 01:19:53 PM ET — 64/64 runs completed, 0 remaining; total cost $86.90; total agent time 550.6 min.
+**Claude Code versions used:** [v2.1.97](claude-code-2.1.97.md) (1 run), [v2.1.98](claude-code-2.1.98.md) (57 runs), [v2.1.100](claude-code-2.1.100.md) (6 runs). Each link goes to a per-version snapshot of the system prompt, default-tool descriptions, and the chronological Anthropic changelog up to that version. Regenerate with `python3 version_docs.py`.
 
 ## Table of Contents
 
@@ -1356,11 +1357,11 @@ Values near +1.0 indicate the LLM agrees with the structural signal; near 0 mean
 
 ### Judge Consistency Summary
 
-**🟡 The panel agrees on what matters but disagrees on language taste:** Both judges put Sonnet ahead of Opus on every aggregation (Spearman +1.00, zero pair-wise reversals) and none of the language or language×model reversals favor a judge's own model family — so the model-selection signal is trustworthy. But the Tests Quality language ordering is fully reversed (ρ = −1.00): Haiku ranks **bash** last, Gemini ranks it first.
+**🟡 The panel agrees on what matters most:** Both judges put Sonnet ahead of Opus on every model comparison (ρ = +1.00) with zero own-model reversals, and no pairwise comparison shows a self-preference signal. The language ranking on Tests Quality is fully reversed though (ρ = -1.00), so language alone is unreliable without conditioning on model.
 
-- 👀 **Where to look closer:** The widest disagreements (a judge scoring 2 vs 5, a 3-point gap on the 1–5 scale) cluster on bash tests — eyeball `11-semantic-version-bumper / bash / opus`, `18-secret-rotation-validator / bash / sonnet`, and `17-artifact-cleanup-script / bash / opus` to decide whose calibration is right.
-- 🤓 **Surprise finding:** Haiku's Workflow Craft averages sit near the floor (2.00) while Gemini's sit near the ceiling (4.54), yet model ordering still matches perfectly — compression didn't erase the signal.
-- ℹ️ **Recommended next step:** Hand-review three bash test suites and lock in whichever judge's bash calibration matches reviewer judgment before publishing language rankings.
+- 👀 **Where to look closer:** Bash test suites — Haiku ranks them last (mean 2.47) while Gemini ranks them first (4.62, partly compressed against Gemini's 5-ceiling); the widest disagreements (a 3-point gap on a 1–5 scale) include 11-semantic-version-bumper / bash / opus (Haiku 2, Gemini 5) and 18-secret-rotation-validator / bash / sonnet (Haiku 2, Gemini 5), both worth a human spot-check.
+- 🤓 **Surprise finding:** Haiku — the only judge with own-family runs in scope — never elevated its own-model relative rank, even though Haiku scores roughly 1.7 points harsher overall.
+- ℹ️ **Recommended next step:** Hand-grade three or four of those bash test files to settle whether Haiku is over-penalising thin shell harnesses or Gemini is over-rewarding them against its compressed top end.
 
 #### Provenance
 
@@ -1368,7 +1369,7 @@ Values near +1.0 indicate the LLM agrees with the structural signal; near 0 mean
 - **Inputs:** the [`judge-consistency-data.md`](judge-consistency-data.md) tables plus benchmark context (rubrics, task list, experiment setup).
 - **Script:** [`conclusions_report.py`](../../conclusions_report.py) — regenerate with `python3 generate_results.py <run_dir>`.
 - **Instruction:** [`JUDGE_CONSISTENCY_SUMMARY_SYSTEM_PROMPT`](../../judge_consistency_report.py) in that script.
-- **Usage:** 0 input + 0 output tokens, $0.2369.
+- **Usage:** 5 input + 2321 output tokens, $0.1667.
 
 *Full breakdown with per-model / per-language / per-language×model ranking tables and disagreement hotspots in [judge-consistency-data.md](judge-consistency-data.md).*
 
