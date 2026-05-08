@@ -1,0 +1,48 @@
+---
+name: Test Results Aggregator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  aggregate:
+    name: Aggregate test results
+    runs-on: ubuntu-latest
+    env:
+      FIXTURES_DIR: fixtures
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          set -euo pipefail
+          if ! command -v jq >/dev/null; then
+            apt-get update && apt-get install -y --no-install-recommends jq
+          fi
+          jq --version
+          bash --version | head -1
+
+      - name: Validate script syntax
+        run: bash -n aggregate.sh
+
+      - name: Run aggregator on fixtures
+        run: |
+          set -euo pipefail
+          chmod +x aggregate.sh
+          ./aggregate.sh "${FIXTURES_DIR}" | tee aggregate-output.md
+          echo "---END-OF-SUMMARY---"
+
+      - name: Assert key counts in summary
+        run: |
+          set -euo pipefail
+          out="aggregate-output.md"
+          test -s "$out"
+          grep -Eq '^\| Total \| [0-9]+ \|' "$out"
+          grep -q "Test Results" "$out"
+          echo "OK: summary contains expected sections"
