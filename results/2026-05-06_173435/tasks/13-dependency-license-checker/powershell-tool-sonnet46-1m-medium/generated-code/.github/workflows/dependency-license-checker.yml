@@ -1,0 +1,52 @@
+name: Dependency License Checker
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  license-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Pester (no-op if pre-installed)
+        shell: pwsh
+        run: |
+          if (-not (Get-Module -ListAvailable -Name Pester | Where-Object { $_.Version -ge '5.0.0' })) {
+            Install-Module -Name Pester -MinimumVersion 5.0.0 -Force -SkipPublisherCheck -Scope CurrentUser
+          }
+          Import-Module Pester -MinimumVersion 5.0.0
+
+      - name: Run unit tests
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = './DependencyLicenseChecker.Tests.ps1'
+          $config.Output.Verbosity = 'Detailed'
+          $config.Run.Exit = $true
+          Invoke-Pester -Configuration $config
+
+      - name: Check package-mixed.json compliance
+        shell: pwsh
+        run: |
+          ./DependencyLicenseChecker.ps1 `
+            -ManifestPath './fixtures/package-mixed.json' `
+            -ConfigPath   './fixtures/license-config.json' `
+            -MockDataPath './fixtures/license-mock-data.json'
+
+      - name: Check requirements-basic.txt compliance
+        shell: pwsh
+        run: |
+          ./DependencyLicenseChecker.ps1 `
+            -ManifestPath './fixtures/requirements-basic.txt' `
+            -ConfigPath   './fixtures/license-config.json' `
+            -MockDataPath './fixtures/license-mock-data.json'
