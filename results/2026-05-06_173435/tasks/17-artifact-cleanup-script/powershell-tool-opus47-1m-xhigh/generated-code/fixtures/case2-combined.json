@@ -1,0 +1,29 @@
+{
+  "name": "case2-combined",
+  "description": "Max age + max total size together, dry-run OFF (commit mode). Age cleans the very old items, size eviction trims the oldest of what remains.",
+  "dryRun": false,
+  "policy": {
+    "maxAgeDays": 30,
+    "maxTotalSize": 5000
+  },
+  "artifacts": [
+    { "name": "a1-old",    "size": 2000, "daysAgo": 50, "workflowRunId": "wfA" },
+    { "name": "a3-medium", "size": 2500, "daysAgo": 10, "workflowRunId": "wfA" },
+    { "name": "a2-small",  "size": 1500, "daysAgo": 5,  "workflowRunId": "wfB" },
+    { "name": "a4-fresh",  "size": 2000, "daysAgo": 2,  "workflowRunId": "wfB" },
+    { "name": "a5-newest", "size": 1000, "daysAgo": 1,  "workflowRunId": "wfB" }
+  ],
+  "expected": {
+    "deletedCount": 2,
+    "retainedCount": 3,
+    "totalReclaimedBytes": 4500,
+    "totalRetainedBytes": 4500,
+    "dryRun": false,
+    "mockDeletedActually": 2,
+    "_reasoning": [
+      "maxAge=30: deletes a1-old (50d). Retained = a3(2500) + a2(1500) + a4(2000) + a5(1000) = 7000 bytes.",
+      "maxTotalSize=5000: must shed 2000. Evict oldest first: a3(10d, 2500B). Retained = 4500 (under cap, stop).",
+      "Final deleted = {a1-old, a3-medium} = 2000+2500 = 4500. Retained = {a2-small, a4-fresh, a5-newest} = 4500."
+    ]
+  }
+}
