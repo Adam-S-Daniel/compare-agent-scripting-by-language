@@ -1,0 +1,35 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  generate-matrix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Generate matrix (success path)
+        id: generate
+        continue-on-error: true
+        run: |
+          python generate_matrix.py matrix-config.json 2>matrix-error.txt
+        env:
+          PYTHONUNBUFFERED: "1"
+
+      - name: Show error output (if any)
+        if: steps.generate.outcome == 'failure'
+        run: |
+          if [ -s matrix-error.txt ]; then
+            cat matrix-error.txt
+          fi
