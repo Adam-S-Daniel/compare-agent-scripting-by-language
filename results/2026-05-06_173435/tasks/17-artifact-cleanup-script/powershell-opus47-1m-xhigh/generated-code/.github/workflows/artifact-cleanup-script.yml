@@ -1,0 +1,56 @@
+name: artifact-cleanup-script
+
+# Triggers: push and pull_request for CI on every change, schedule for a
+# weekly dry-run sanity check, workflow_dispatch for ad-hoc runs.
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: 'Path to the fixture JSON to process'
+        required: false
+        default: 'fixtures/active.json'
+
+permissions:
+  contents: read
+
+env:
+  FIXTURE_PATH: fixtures/active.json
+
+jobs:
+  test-and-run:
+    name: Run Pester tests and the cleanup script
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Show PowerShell + Pester versions
+        shell: pwsh
+        run: |
+          $PSVersionTable.PSVersion
+          Get-Module -ListAvailable Pester | Select-Object Name, Version | Format-Table
+
+      - name: Run Pester unit tests
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = 'tests/ArtifactCleanup.Tests.ps1'
+          $config.Run.Throw = $true
+          $config.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $config
+
+      - name: Run cleanup script against active fixture
+        shell: pwsh
+        env:
+          FIXTURE: ${{ github.event.inputs.fixture || 'fixtures/active.json' }}
+        run: |
+          if (-not (Test-Path -LiteralPath $env:FIXTURE)) {
+            throw "Fixture not found at $env:FIXTURE"
+          }
+          ./Invoke-Cleanup.ps1 -InputPath $env:FIXTURE
