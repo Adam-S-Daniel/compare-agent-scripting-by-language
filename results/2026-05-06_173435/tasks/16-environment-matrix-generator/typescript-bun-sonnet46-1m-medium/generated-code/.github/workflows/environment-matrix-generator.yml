@@ -1,0 +1,123 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  workflow_dispatch:
+  schedule:
+    - cron: "0 2 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Run unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Run unit tests
+        run: bun test
+
+  generate-matrix:
+    name: Generate build matrices
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Generate matrix from basic config
+        run: |
+          OUTPUT=$(bun run src/main.ts fixtures/basic.json)
+          echo "MATRIX_RESULT[basic]: $OUTPUT"
+
+      - name: Generate matrix with excludes
+        run: |
+          OUTPUT=$(bun run src/main.ts fixtures/with-excludes.json)
+          echo "MATRIX_RESULT[with-excludes]: $OUTPUT"
+
+      - name: Generate matrix with includes
+        run: |
+          OUTPUT=$(bun run src/main.ts fixtures/with-includes.json)
+          echo "MATRIX_RESULT[with-includes]: $OUTPUT"
+
+      - name: Generate matrix with max-parallel and fail-fast
+        run: |
+          OUTPUT=$(bun run src/main.ts fixtures/max-parallel.json)
+          echo "MATRIX_RESULT[max-parallel]: $OUTPUT"
+
+      - name: Validate basic matrix size
+        run: |
+          OUTPUT=$(bun run src/main.ts fixtures/basic.json)
+          EFFECTIVE=$(echo "$OUTPUT" | bun -e "const d=await new Response(process.stdin).json(); process.stdout.write(String(d.effectiveCombinations))")
+          echo "Basic matrix effective combinations: $EFFECTIVE"
+          if [ "$EFFECTIVE" != "4" ]; then
+            echo "ERROR: expected 4 effective combinations, got $EFFECTIVE"
+            exit 1
+          fi
+          echo "Matrix size validation passed"
+
+      - name: Validate excludes reduce combination count
+        run: |
+          OUTPUT=$(bun run src/main.ts fixtures/with-excludes.json)
+          EFFECTIVE=$(echo "$OUTPUT" | bun -e "const d=await new Response(process.stdin).json(); process.stdout.write(String(d.effectiveCombinations))")
+          echo "With-excludes matrix effective combinations: $EFFECTIVE"
+          if [ "$EFFECTIVE" != "3" ]; then
+            echo "ERROR: expected 3 effective combinations, got $EFFECTIVE"
+            exit 1
+          fi
+          echo "Exclude validation passed"
+
+      - name: Validate includes add new combinations
+        run: |
+          OUTPUT=$(bun run src/main.ts fixtures/with-includes.json)
+          EFFECTIVE=$(echo "$OUTPUT" | bun -e "const d=await new Response(process.stdin).json(); process.stdout.write(String(d.effectiveCombinations))")
+          echo "With-includes matrix effective combinations: $EFFECTIVE"
+          if [ "$EFFECTIVE" != "2" ]; then
+            echo "ERROR: expected 2 effective combinations, got $EFFECTIVE"
+            exit 1
+          fi
+          echo "Include validation passed"
+
+      - name: Validate max-parallel and fail-fast settings
+        run: |
+          OUTPUT=$(bun run src/main.ts fixtures/max-parallel.json)
+          MAX_PARALLEL=$(echo "$OUTPUT" | bun -e "const d=await new Response(process.stdin).json(); process.stdout.write(String(d['max-parallel']))")
+          FAIL_FAST=$(echo "$OUTPUT" | bun -e "const d=await new Response(process.stdin).json(); process.stdout.write(String(d['fail-fast']))")
+          echo "max-parallel: $MAX_PARALLEL, fail-fast: $FAIL_FAST"
+          if [ "$MAX_PARALLEL" != "2" ]; then
+            echo "ERROR: expected max-parallel=2, got $MAX_PARALLEL"
+            exit 1
+          fi
+          if [ "$FAIL_FAST" != "false" ]; then
+            echo "ERROR: expected fail-fast=false, got $FAIL_FAST"
+            exit 1
+          fi
+          echo "max-parallel and fail-fast validation passed"
+
+      - name: Test max-size validation error
+        run: |
+          TOO_LARGE=$(cat <<'EOF'
+          {"dimensions":{"os":["ubuntu-latest","windows-latest","macos-latest"],"node-version":["16","18","20"],"python-version":["3.9","3.10","3.11"]},"maxSize":10}
+          EOF
+          )
+          echo "$TOO_LARGE" > /tmp/too-large.json
+          if bun run src/main.ts /tmp/too-large.json 2>&1 | grep -q "exceeds maximum allowed size"; then
+            echo "Max-size error validation passed"
+          else
+            echo "ERROR: expected 'exceeds maximum allowed size' error"
+            exit 1
+          fi
