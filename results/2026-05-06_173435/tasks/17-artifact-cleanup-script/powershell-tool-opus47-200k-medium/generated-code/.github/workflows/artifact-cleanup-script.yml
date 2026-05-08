@@ -1,0 +1,68 @@
+name: Artifact Cleanup
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    inputs:
+      fixture:
+        description: Path to fixture JSON
+        required: false
+        default: fixtures/sample.json
+      max_age_days:
+        description: Max age in days
+        required: false
+        default: '30'
+      max_total_bytes:
+        description: Max total bytes
+        required: false
+        default: ''
+      keep_latest_per_workflow:
+        description: Keep latest N per workflow run
+        required: false
+        default: ''
+      dry_run:
+        description: Dry-run mode
+        required: false
+        default: 'true'
+permissions:
+  contents: read
+jobs:
+  test:
+    name: Run Pester tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $r = Invoke-Pester -Path ./ArtifactCleanup.Tests.ps1 -Output Detailed -PassThru
+          if ($r.FailedCount -gt 0) { exit 1 }
+  cleanup:
+    name: Run cleanup
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Execute artifact cleanup
+        shell: pwsh
+        run: |
+          . ./ArtifactCleanup.ps1
+          $fixture = if ($env:FIXTURE) { $env:FIXTURE } else { 'fixtures/sample.json' }
+          $nowStr  = if ($env:NOW_UTC) { $env:NOW_UTC } else { '2026-05-08T00:00:00Z' }
+          $params = @{
+            FixturePath = $fixture
+            Now         = [DateTime]::Parse($nowStr, $null,
+                            [System.Globalization.DateTimeStyles]::AssumeUniversal -bor
+                            [System.Globalization.DateTimeStyles]::AdjustToUniversal)
+          }
+          if ($env:MAX_AGE_DAYS)    { $params.MaxAgeDays = [int]$env:MAX_AGE_DAYS }
+          if ($env:MAX_TOTAL_BYTES) { $params.MaxTotalBytes = [long]$env:MAX_TOTAL_BYTES }
+          if ($env:KEEP_LATEST)     { $params.KeepLatestPerWorkflow = [int]$env:KEEP_LATEST }
+          if ($env:DRY_RUN -ne 'false') { $params.DryRun = $true }
+          $plan = Invoke-ArtifactCleanup @params
+          Write-Host "PLAN_DELETED=$($plan.DeletedCount)"
+          Write-Host "PLAN_RETAINED=$($plan.RetainedCount)"
+          Write-Host "PLAN_RECLAIMED=$($plan.BytesReclaimed)"
+          Write-Host "PLAN_DRYRUN=$($plan.DryRun)"
