@@ -16,6 +16,8 @@ python3 -c "from runner import main"
 python3 -c "from generate_results import generate_results_md"
 python3 -c "from test_quality import compute_structural_metrics"
 python3 -c "from llm_providers import get_provider"
+python3 -c "from version_docs import build_doc, main"
+python3 -c "from combine_results import combine"
 
 # Regenerate all reports
 python3 generate_results.py --all
