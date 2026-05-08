@@ -1,0 +1,74 @@
+name: Artifact Cleanup
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+    inputs:
+      input_file:
+        description: "Path to artifacts JSON"
+        required: false
+        default: "fixtures/artifacts.json"
+      max_age_days:
+        description: "Max age in days"
+        required: false
+        default: "30"
+      keep_latest_n:
+        description: "Keep latest N per workflow"
+        required: false
+        default: "2"
+      now:
+        description: "Override 'now' as ISO 8601 timestamp"
+        required: false
+        default: "2026-05-08T12:00:00Z"
+
+permissions:
+  contents: read
+
+env:
+  PYTHON_VERSION: "3.12"
+  INPUT_FILE: ${{ github.event.inputs.input_file || 'fixtures/artifacts.json' }}
+  MAX_AGE_DAYS: ${{ github.event.inputs.max_age_days || '30' }}
+  KEEP_LATEST_N: ${{ github.event.inputs.keep_latest_n || '2' }}
+  NOW_OVERRIDE: ${{ github.event.inputs.now || '2026-05-08T12:00:00Z' }}
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        run: |
+          python3 --version
+          python3 -m pip install --quiet --break-system-packages pytest
+
+      - name: Run unit tests
+        run: python3 -m pytest test_cleanup.py -v
+
+  cleanup-plan:
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify Python
+        run: python3 --version
+
+      - name: Run cleanup planner (dry-run)
+        run: |
+          python3 cleanup.py \
+            --input "$INPUT_FILE" \
+            --max-age-days "$MAX_AGE_DAYS" \
+            --keep-latest-n "$KEEP_LATEST_N" \
+            --now "$NOW_OVERRIDE" \
+            --dry-run | tee plan-output.txt
+
+      - name: Show summary
+        run: |
+          echo "=== CLEANUP PLAN SUMMARY ==="
+          grep -E '"(total_count|deleted_count|retained_count|bytes_reclaimed)"' plan-output.txt || true
