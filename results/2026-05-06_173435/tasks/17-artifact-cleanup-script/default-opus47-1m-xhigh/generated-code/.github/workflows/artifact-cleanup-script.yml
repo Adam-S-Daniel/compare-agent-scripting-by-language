@@ -1,0 +1,147 @@
+name: Artifact Cleanup
+
+# Runs the cleanup planner. The active fixture under fixtures/active/ controls
+# which input + flags + reference-now the script consumes; the local act
+# harness rewrites those files per test case before invoking this workflow.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      max_age_days:
+        description: "Override --max-age-days (optional)"
+        required: false
+        default: ""
+      max_total_size:
+        description: "Override --max-total-size in bytes (optional)"
+        required: false
+        default: ""
+      keep_latest:
+        description: "Override --keep-latest (optional)"
+        required: false
+        default: ""
+      dry_run:
+        description: "Dry-run mode"
+        required: false
+        type: boolean
+        default: true
+  schedule:
+    # Weekly housekeeping pass — Mondays at 04:00 UTC.
+    - cron: "0 4 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  unit-tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify Python version
+        run: python3 --version
+
+      - name: Install pytest
+        run: python3 -m pip install --quiet --break-system-packages pytest
+
+      - name: Run unit tests
+        # Only the engine's unit tests run here; the workflow-structure tests
+        # under tests/test_workflow.py are local-only (they need PyYAML and
+        # actionlint, which aren't part of the runner image's contract).
+        run: python3 -m pytest tests/test_cleanup.py -v
+
+  cleanup-plan:
+    name: Generate cleanup plan
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    env:
+      ACTIVE_DIR: fixtures/active
+      PLAN_PATH: plan.json
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify Python version
+        run: python3 --version
+
+      - name: Show active fixture
+        run: |
+          set -euo pipefail
+          if [ ! -d "$ACTIVE_DIR" ]; then
+            echo "::error::No active fixture directory at $ACTIVE_DIR"
+            exit 1
+          fi
+          echo "::group::Active fixture contents"
+          ls -la "$ACTIVE_DIR"
+          for f in input.json flags.txt now.txt; do
+            if [ -f "$ACTIVE_DIR/$f" ]; then
+              echo "--- $f ---"
+              cat "$ACTIVE_DIR/$f"
+              echo
+            fi
+          done
+          echo "::endgroup::"
+
+      - name: Run cleanup planner
+        run: |
+          set -euo pipefail
+          INPUT_FILE="$ACTIVE_DIR/input.json"
+          FLAGS_FILE="$ACTIVE_DIR/flags.txt"
+          NOW_FILE="$ACTIVE_DIR/now.txt"
+
+          if [ ! -f "$INPUT_FILE" ]; then
+            echo "::error::Active fixture missing input.json"
+            exit 1
+          fi
+
+          # workflow_dispatch overrides take precedence; otherwise read
+          # flags from the fixture (a single-line file).
+          if [ -n "${INPUT_OVERRIDE_FLAGS:-}" ]; then
+            FLAGS="$INPUT_OVERRIDE_FLAGS"
+          elif [ -f "$FLAGS_FILE" ]; then
+            FLAGS="$(cat "$FLAGS_FILE")"
+          else
+            FLAGS=""
+          fi
+
+          if [ -f "$NOW_FILE" ]; then
+            NOW_ARG="--now $(cat "$NOW_FILE")"
+          else
+            NOW_ARG=""
+          fi
+
+          # shellcheck disable=SC2086
+          python3 cleanup.py \
+            --input "$INPUT_FILE" \
+            $NOW_ARG \
+            $FLAGS \
+            --output "$PLAN_PATH"
+
+          echo "::group::Plan JSON"
+          cat "$PLAN_PATH"
+          echo "::endgroup::"
+        env:
+          INPUT_OVERRIDE_FLAGS: ${{ github.event_name == 'workflow_dispatch' && format('{0} {1} {2} {3}',
+            inputs.max_age_days != '' && format('--max-age-days {0}', inputs.max_age_days) || '',
+            inputs.max_total_size != '' && format('--max-total-size {0}', inputs.max_total_size) || '',
+            inputs.keep_latest != '' && format('--keep-latest {0}', inputs.keep_latest) || '',
+            inputs.dry_run && '--dry-run' || '') || '' }}
+
+      - name: Emit machine-checkable assertions
+        run: |
+          set -euo pipefail
+          python3 -c "
+          import json, sys
+          p = json.load(open('$PLAN_PATH'))
+          s = p['summary']
+          print(f\"CLEANUP::DELETED_COUNT={s['deleted_count']}\")
+          print(f\"CLEANUP::RETAINED_COUNT={s['retained_count']}\")
+          print(f\"CLEANUP::SPACE_RECLAIMED={s['space_reclaimed_bytes']}\")
+          print(f\"CLEANUP::SPACE_RETAINED={s['space_retained_bytes']}\")
+          print(f\"CLEANUP::TOTAL={s['total_artifacts']}\")
+          print(f\"CLEANUP::DRY_RUN={s['dry_run']}\")
+          for d in p['deletions']:
+              print(f\"CLEANUP::DELETION={d['id']}:{d['reason']}\")
+          "
