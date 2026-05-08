@@ -1,0 +1,36 @@
+name: Test Results Aggregator
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  aggregate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+
+      - name: Install actionlint
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash | bash
+          mv ./actionlint /usr/local/bin/actionlint
+
+      - name: Run unit tests
+        run: bun test
+
+      - name: Aggregate test results
+        run: bun run aggregate.ts
+
+      - name: Aggregate with explicit fixture paths
+        run: |
+          bun run aggregate.ts fixtures/matrix-linux.xml fixtures/matrix-windows.xml fixtures/unit-tests.json
