@@ -1,0 +1,116 @@
+---
+# CI/CD pipeline for the artifact cleanup script.
+#
+# `validate` runs static checks (bash -n, shellcheck) and the bats suite.
+# `cleanup` exercises the script end-to-end against the committed `fixture.tsv`
+# using policy flags loaded from an optional `case.env` file. The test harness
+# rewrites `fixture.tsv` and `case.env` per test case before each `act push`,
+# so the same workflow handles multiple scenarios.
+
+name: artifact-cleanup-script
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    # Daily at 03:00 UTC: a real cleanup pipeline would run on a cron and
+    # feed the DELETE rows into the GitHub artifact-delete API.
+    - cron: '0 3 * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: validate (lint + bats)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install bats and shellcheck
+        run: |
+          set -eux
+          if ! command -v apt-get >/dev/null; then
+            echo "apt-get unavailable; cannot install dependencies" >&2
+            exit 1
+          fi
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update -qq
+          apt-get install -y --no-install-recommends bats shellcheck
+
+      - name: Static syntax check
+        run: |
+          set -eux
+          bash -n cleanup_artifacts.sh
+
+      - name: Shellcheck
+        run: |
+          set -eux
+          shellcheck cleanup_artifacts.sh
+
+      - name: Run bats test suite
+        run: |
+          set -eux
+          chmod +x cleanup_artifacts.sh
+          bats tests/cleanup_artifacts.bats
+
+  cleanup:
+    name: cleanup (run policy against fixture)
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Show inputs
+        run: |
+          set -eux
+          echo "--- fixture.tsv ---"
+          cat fixture.tsv
+          if [ -f case.env ]; then
+            echo "--- case.env ---"
+            cat case.env
+          else
+            echo "(no case.env present; running with defaults)"
+          fi
+
+      - name: Load case config into environment
+        run: |
+          set -eux
+          if [ -f case.env ]; then
+            # case.env uses KEY=VALUE shell-syntax; copy whitelisted keys to
+            # GITHUB_ENV so the next step can read them as env variables.
+            grep -E '^CFG_[A-Z_]+=.*$' case.env >> "$GITHUB_ENV" || true
+          fi
+
+      - name: Run cleanup_artifacts.sh against fixture
+        env:
+          CFG_MAX_AGE_DAYS: ${{ env.CFG_MAX_AGE_DAYS }}
+          CFG_MAX_TOTAL_SIZE: ${{ env.CFG_MAX_TOTAL_SIZE }}
+          CFG_KEEP_LATEST: ${{ env.CFG_KEEP_LATEST }}
+          CFG_DRY_RUN: ${{ env.CFG_DRY_RUN }}
+          CFG_NOW: ${{ env.CFG_NOW }}
+        run: |
+          set -euo pipefail
+          chmod +x cleanup_artifacts.sh
+          flags=()
+          if [ -n "${CFG_MAX_AGE_DAYS:-}" ]; then
+            flags+=(--max-age-days "$CFG_MAX_AGE_DAYS")
+          fi
+          if [ -n "${CFG_MAX_TOTAL_SIZE:-}" ]; then
+            flags+=(--max-total-size "$CFG_MAX_TOTAL_SIZE")
+          fi
+          if [ -n "${CFG_KEEP_LATEST:-}" ]; then
+            flags+=(--keep-latest-per-workflow "$CFG_KEEP_LATEST")
+          fi
+          if [ "${CFG_DRY_RUN:-0}" = "1" ]; then
+            flags+=(--dry-run)
+          fi
+          if [ -n "${CFG_NOW:-}" ]; then
+            flags+=(--now "$CFG_NOW")
+          fi
+          echo '=== PLAN-BEGIN ==='
+          ./cleanup_artifacts.sh --input fixture.tsv ${flags[@]+"${flags[@]}"}
+          echo '=== PLAN-END ==='
