@@ -1,0 +1,63 @@
+name: Dependency License Checker
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  schedule:
+    - cron: "0 8 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  license-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies
+        run: pip install pytest pyyaml
+
+      - name: Run unit tests
+        run: pytest tests/test_license_checker.py -v
+
+      - name: Run license checker on package.json fixture
+        run: |
+          python license_checker.py \
+            --manifest fixtures/package.json \
+            --config fixtures/license_config.json \
+            --mock-db fixtures/mock_licenses.json
+
+      - name: Run license checker on requirements.txt fixture
+        run: |
+          python license_checker.py \
+            --manifest fixtures/requirements.txt \
+            --config fixtures/license_config.json \
+            --mock-db fixtures/mock_licenses.json
+
+      - name: Run license checker with JSON output
+        run: |
+          python license_checker.py \
+            --manifest fixtures/package.json \
+            --config fixtures/license_config.json \
+            --mock-db fixtures/mock_licenses.json \
+            --format json
+
+      - name: Validate workflow with actionlint
+        run: |
+          if command -v actionlint >/dev/null 2>&1; then
+            actionlint .github/workflows/dependency-license-checker.yml
+            echo "actionlint: PASSED"
+          else
+            echo "actionlint not available in this environment, skipping"
+          fi
