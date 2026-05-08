@@ -1,10 +1,11 @@
 # Benchmark Results: Language Comparison
 
-**Last updated:** 2026-05-08 08:11:56 AM ET — 280/280 runs completed, 0 remaining; total cost $493.46; total agent time 2315.5 min.
+**Last updated:** 2026-05-08 08:18:58 AM ET — 280/280 runs completed, 0 remaining; total cost $493.46; total agent time 2315.5 min.
 
 ## Table of Contents
 
 - [Scoring](#scoring)
+  - [Duration columns](#duration-columns)
 - [Tiers by Language/Model/Effort](#tiers-by-languagemodeleffort)
 - [Failed / Timed-Out Runs](#failed-timed-out-runs)
 - [Comparison by Language/Model/Effort](#comparison-by-languagemodeleffort)
@@ -47,6 +48,15 @@ Properties:
 - **Scale:** ratios, not raw seconds or dollars
 - **Band calibration:** auto-calibrated to the data's best-to-worst spread via log-equal division (`boundary_i = max_ratio^(i/12)`), so the best observed ratio lands at A+ and the worst at D-
 - **F band:** reserved for ratios beyond the observed worst
+
+### Duration columns
+
+Every Duration figure in this report derives from `timing.grand_total_duration_ms` in `metrics.json` — wall-clock seconds from CLI invocation to the final assistant turn (agent thinking + tool execution + hooks).
+
+- **Duration** (single run): that one run's wall clock. Appears in the [Failed / Timed-Out Runs](#failed--timed-out-runs) and per-run detail tables.
+- **Avg Duration** (in the [Comparison by Language/Model/Effort](#comparison-by-languagemodeleffort) table; also drives the [Tiers](#tiers-by-languagemodeleffort) Duration column): arithmetic mean of `Duration` over the runs in that combo, excluding failed/timed-out runs.
+- **Avg Duration Net of Traps** (in the Comparison table only): mean of (per-run `Duration` − that run's `Time Lost`), where `Time Lost` is the trap detector's estimate of seconds spent on detected anti-patterns (see [Trap Descriptions](#trap-descriptions) and the trap-table [Column Definitions](#column-definitions) for the trap list and how Time Lost is computed). Reads as a counterfactual: roughly how fast each combo would have been without the detected traps.
+- The **Tier table's Duration column** shows the tier letter (A+..F) for the combo's gross **Avg Duration** ratio. Net of Traps does not feed the tier band.
 ## Tiers by Language/Model/Effort
 
 *Default sort: weighted composite of tiers (40% Tests, 25% Workflow Craft, 35% split between Duration & Cost). See [Notes](#notes) for tier-band definitions and scoring rubric.*
@@ -1718,6 +1728,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Semantic Version Bumper | bash | opus47-1m-xhigh | 38 | 65 | 1.7 | 440 | 319 | 1.38 |
 | Semantic Version Bumper | bash | opus47-200k-medium | 11 | 7 | 0.6 | 112 | 130 | 0.86 |
 | Semantic Version Bumper | bash | sonnet46-200k | 24 | 18 | 0.8 | 156 | 189 | 0.83 |
+| Semantic Version Bumper | bash | sonnet46-1m-medium | 31 | 54 | 1.7 | 286 | 210 | 1.36 |
 | Semantic Version Bumper | default | haiku45-200k | 0 | 0 | 0.0 | 0 | 17 | 0.00 |
 | Semantic Version Bumper | default | opus46-200k | 8 | 11 | 1.4 | 392 | 227 | 1.73 |
 | Semantic Version Bumper | default | opus47-1m-high | 4 | 22 | 5.5 | 333 | 275 | 1.21 |
@@ -1725,6 +1736,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Semantic Version Bumper | default | opus47-1m-xhigh | 40 | 70 | 1.8 | 514 | 288 | 1.78 |
 | Semantic Version Bumper | default | opus47-200k-medium | 30 | 52 | 1.7 | 353 | 184 | 1.92 |
 | Semantic Version Bumper | default | sonnet46-200k | 51 | 53 | 1.0 | 498 | 230 | 2.17 |
+| Semantic Version Bumper | default | sonnet46-1m-medium | 59 | 62 | 1.1 | 347 | 372 | 0.93 |
 | Semantic Version Bumper | powershell | haiku45-200k | 18 | 22 | 1.2 | 197 | 333 | 0.59 |
 | Semantic Version Bumper | powershell | opus46-200k | 26 | 51 | 2.0 | 196 | 442 | 0.44 |
 | Semantic Version Bumper | powershell | opus47-1m-high | 47 | 85 | 1.8 | 498 | 47 | 10.60 |
@@ -1732,6 +1744,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Semantic Version Bumper | powershell | opus47-1m-xhigh | 46 | 74 | 1.6 | 352 | 455 | 0.77 |
 | Semantic Version Bumper | powershell | opus47-200k-medium | 28 | 49 | 1.8 | 252 | 30 | 8.40 |
 | Semantic Version Bumper | powershell | sonnet46-200k | 33 | 40 | 1.2 | 251 | 194 | 1.29 |
+| Semantic Version Bumper | powershell | sonnet46-1m-medium | 47 | 70 | 1.5 | 400 | 194 | 2.06 |
 | Semantic Version Bumper | powershell-tool | haiku45-200k | 20 | 44 | 2.2 | 227 | 599 | 0.38 |
 | Semantic Version Bumper | powershell-tool | opus46-200k | 24 | 34 | 1.4 | 197 | 345 | 0.57 |
 | Semantic Version Bumper | powershell-tool | opus47-1m-high | 35 | 68 | 1.9 | 471 | 263 | 1.79 |
@@ -1739,6 +1752,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Semantic Version Bumper | powershell-tool | opus47-1m-xhigh | 51 | 86 | 1.7 | 592 | 62 | 9.55 |
 | Semantic Version Bumper | powershell-tool | opus47-200k-medium | 22 | 33 | 1.5 | 127 | 349 | 0.36 |
 | Semantic Version Bumper | powershell-tool | sonnet46-200k | 20 | 20 | 1.0 | 279 | 278 | 1.00 |
+| Semantic Version Bumper | powershell-tool | sonnet46-1m-medium | 25 | 30 | 1.2 | 185 | 203 | 0.91 |
 | Semantic Version Bumper | typescript-bun | haiku45-200k | 38 | 76 | 2.0 | 503 | 585 | 0.86 |
 | Semantic Version Bumper | typescript-bun | opus46-200k | 44 | 62 | 1.4 | 300 | 540 | 0.56 |
 | Semantic Version Bumper | typescript-bun | opus47-1m-high | 46 | 87 | 1.9 | 713 | 391 | 1.82 |
@@ -1746,6 +1760,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Semantic Version Bumper | typescript-bun | opus47-1m-xhigh | 33 | 70 | 2.1 | 523 | 284 | 1.84 |
 | Semantic Version Bumper | typescript-bun | opus47-200k-medium | 23 | 50 | 2.2 | 272 | 280 | 0.97 |
 | Semantic Version Bumper | typescript-bun | sonnet46-200k | 51 | 93 | 1.8 | 567 | 205 | 2.77 |
+| Semantic Version Bumper | typescript-bun | sonnet46-1m-medium | 37 | 49 | 1.3 | 259 | 533 | 0.49 |
 | PR Label Assigner | bash | haiku45-200k | 15 | 13 | 0.9 | 145 | 163 | 0.89 |
 | PR Label Assigner | bash | opus46-200k | 0 | 0 | 0.0 | 0 | 405 | 0.00 |
 | PR Label Assigner | bash | opus47-1m-high | 14 | 28 | 2.0 | 104 | 274 | 0.38 |
@@ -1753,6 +1768,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | PR Label Assigner | bash | opus47-1m-xhigh | 10 | 21 | 2.1 | 210 | 156 | 1.35 |
 | PR Label Assigner | bash | opus47-200k-medium | 20 | 34 | 1.7 | 200 | 279 | 0.72 |
 | PR Label Assigner | bash | sonnet46-200k | 25 | 47 | 1.9 | 222 | 266 | 0.83 |
+| PR Label Assigner | bash | sonnet46-1m-medium | 28 | 49 | 1.8 | 273 | 113 | 2.42 |
 | PR Label Assigner | default | haiku45-200k | 14 | 19 | 1.4 | 302 | 121 | 2.50 |
 | PR Label Assigner | default | opus46-200k | 0 | 16 | 0.0 | 252 | 120 | 2.10 |
 | PR Label Assigner | default | opus47-1m-high | 16 | 24 | 1.5 | 199 | 406 | 0.49 |
@@ -1760,6 +1776,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | PR Label Assigner | default | opus47-1m-xhigh | 35 | 45 | 1.3 | 572 | 242 | 2.36 |
 | PR Label Assigner | default | opus47-200k-medium | 15 | 24 | 1.6 | 240 | 165 | 1.45 |
 | PR Label Assigner | default | sonnet46-200k | 36 | 55 | 1.5 | 579 | 260 | 2.23 |
+| PR Label Assigner | default | sonnet46-1m-medium | 31 | 30 | 1.0 | 471 | 186 | 2.53 |
 | PR Label Assigner | powershell | haiku45-200k | 13 | 22 | 1.7 | 253 | 317 | 0.80 |
 | PR Label Assigner | powershell | opus46-200k | 30 | 42 | 1.4 | 263 | 217 | 1.21 |
 | PR Label Assigner | powershell | opus47-1m-high | 27 | 39 | 1.4 | 286 | 487 | 0.59 |
@@ -1767,6 +1784,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | PR Label Assigner | powershell | opus47-1m-xhigh | 0 | 0 | 0.0 | 0 | 634 | 0.00 |
 | PR Label Assigner | powershell | opus47-200k-medium | 16 | 23 | 1.4 | 139 | 200 | 0.69 |
 | PR Label Assigner | powershell | sonnet46-200k | 63 | 73 | 1.2 | 499 | 190 | 2.63 |
+| PR Label Assigner | powershell | sonnet46-1m-medium | 45 | 51 | 1.1 | 298 | 262 | 1.14 |
 | PR Label Assigner | powershell-tool | haiku45-200k | 9 | 17 | 1.9 | 140 | 470 | 0.30 |
 | PR Label Assigner | powershell-tool | opus46-200k | 20 | 36 | 1.8 | 157 | 127 | 1.24 |
 | PR Label Assigner | powershell-tool | opus47-1m-high | 18 | 24 | 1.3 | 230 | 394 | 0.58 |
@@ -1774,6 +1792,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | PR Label Assigner | powershell-tool | opus47-1m-xhigh | 24 | 37 | 1.5 | 210 | 480 | 0.44 |
 | PR Label Assigner | powershell-tool | opus47-200k-medium | 17 | 21 | 1.2 | 125 | 290 | 0.43 |
 | PR Label Assigner | powershell-tool | sonnet46-200k | 50 | 64 | 1.3 | 348 | 320 | 1.09 |
+| PR Label Assigner | powershell-tool | sonnet46-1m-medium | 38 | 49 | 1.3 | 249 | 291 | 0.86 |
 | PR Label Assigner | typescript-bun | haiku45-200k | 11 | 15 | 1.4 | 151 | 121 | 1.25 |
 | PR Label Assigner | typescript-bun | opus46-200k | 8 | 30 | 3.8 | 189 | 121 | 1.56 |
 | PR Label Assigner | typescript-bun | opus47-1m-high | 27 | 45 | 1.7 | 422 | 231 | 1.83 |
@@ -1781,6 +1800,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | PR Label Assigner | typescript-bun | opus47-1m-xhigh | 18 | 33 | 1.8 | 466 | 272 | 1.71 |
 | PR Label Assigner | typescript-bun | opus47-200k-medium | 13 | 28 | 2.2 | 256 | 137 | 1.87 |
 | PR Label Assigner | typescript-bun | sonnet46-200k | 23 | 24 | 1.0 | 235 | 230 | 1.02 |
+| PR Label Assigner | typescript-bun | sonnet46-1m-medium | 34 | 48 | 1.4 | 391 | 122 | 3.20 |
 | Dependency License Checker | bash | haiku45-200k | 15 | 32 | 2.1 | 983 | 340 | 2.89 |
 | Dependency License Checker | bash | opus46-200k | 21 | 52 | 2.5 | 168 | 456 | 0.37 |
 | Dependency License Checker | bash | opus47-1m-high | 14 | 10 | 0.7 | 165 | 0 | 0.00 |
@@ -1788,6 +1808,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Dependency License Checker | bash | opus47-1m-xhigh | 13 | 32 | 2.5 | 158 | 232 | 0.68 |
 | Dependency License Checker | bash | opus47-200k-medium | 25 | 54 | 2.2 | 272 | 176 | 1.55 |
 | Dependency License Checker | bash | sonnet46-200k | 18 | 55 | 3.1 | 269 | 211 | 1.27 |
+| Dependency License Checker | bash | sonnet46-1m-medium | 18 | 29 | 1.6 | 139 | 271 | 0.51 |
 | Dependency License Checker | default | haiku45-200k | 21 | 49 | 2.3 | 337 | 666 | 0.51 |
 | Dependency License Checker | default | opus46-200k | 12 | 52 | 4.3 | 420 | 166 | 2.53 |
 | Dependency License Checker | default | opus47-1m-high | 23 | 43 | 1.9 | 342 | 474 | 0.72 |
@@ -1795,6 +1816,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Dependency License Checker | default | opus47-1m-xhigh | 31 | 47 | 1.5 | 483 | 662 | 0.73 |
 | Dependency License Checker | default | opus47-200k-medium | 24 | 49 | 2.0 | 425 | 227 | 1.87 |
 | Dependency License Checker | default | sonnet46-200k | 36 | 57 | 1.6 | 386 | 492 | 0.78 |
+| Dependency License Checker | default | sonnet46-1m-medium | 47 | 69 | 1.5 | 718 | 329 | 2.18 |
 | Dependency License Checker | powershell | haiku45-200k | 12 | 30 | 2.5 | 240 | 347 | 0.69 |
 | Dependency License Checker | powershell | opus46-200k | 29 | 42 | 1.4 | 205 | 450 | 0.46 |
 | Dependency License Checker | powershell | opus47-1m-high | 20 | 46 | 2.3 | 189 | 363 | 0.52 |
@@ -1802,6 +1824,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Dependency License Checker | powershell | opus47-1m-xhigh | 44 | 66 | 1.5 | 336 | 372 | 0.90 |
 | Dependency License Checker | powershell | opus47-200k-medium | 33 | 59 | 1.8 | 421 | 271 | 1.55 |
 | Dependency License Checker | powershell | sonnet46-200k | 32 | 49 | 1.5 | 284 | 370 | 0.77 |
+| Dependency License Checker | powershell | sonnet46-1m-medium | 45 | 58 | 1.3 | 357 | 168 | 2.12 |
 | Dependency License Checker | powershell-tool | haiku45-200k | 10 | 31 | 3.1 | 187 | 414 | 0.45 |
 | Dependency License Checker | powershell-tool | opus46-200k | 31 | 62 | 2.0 | 219 | 275 | 0.80 |
 | Dependency License Checker | powershell-tool | opus47-1m-high | 40 | 65 | 1.6 | 419 | 283 | 1.48 |
@@ -1809,6 +1832,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Dependency License Checker | powershell-tool | opus47-1m-xhigh | 46 | 80 | 1.7 | 591 | 26 | 22.73 |
 | Dependency License Checker | powershell-tool | opus47-200k-medium | 22 | 44 | 2.0 | 245 | 224 | 1.09 |
 | Dependency License Checker | powershell-tool | sonnet46-200k | 33 | 43 | 1.3 | 232 | 287 | 0.81 |
+| Dependency License Checker | powershell-tool | sonnet46-1m-medium | 49 | 69 | 1.4 | 418 | 468 | 0.89 |
 | Dependency License Checker | typescript-bun | haiku45-200k | 14 | 33 | 2.4 | 227 | 346 | 0.66 |
 | Dependency License Checker | typescript-bun | opus46-200k | 19 | 46 | 2.4 | 206 | 442 | 0.47 |
 | Dependency License Checker | typescript-bun | opus47-1m-high | 26 | 42 | 1.6 | 547 | 271 | 2.02 |
@@ -1816,6 +1840,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Dependency License Checker | typescript-bun | opus47-1m-xhigh | 21 | 35 | 1.7 | 556 | 353 | 1.58 |
 | Dependency License Checker | typescript-bun | opus47-200k-medium | 20 | 44 | 2.2 | 412 | 232 | 1.78 |
 | Dependency License Checker | typescript-bun | sonnet46-200k | 29 | 68 | 2.3 | 362 | 186 | 1.95 |
+| Dependency License Checker | typescript-bun | sonnet46-1m-medium | 23 | 54 | 2.3 | 292 | 162 | 1.80 |
 | Test Results Aggregator | bash | haiku45-200k | 8 | 8 | 1.0 | 117 | 173 | 0.68 |
 | Test Results Aggregator | bash | opus46-200k | 12 | 26 | 2.2 | 187 | 243 | 0.77 |
 | Test Results Aggregator | bash | opus47-1m-high | 57 | 76 | 1.3 | 557 | 319 | 1.75 |
@@ -1823,6 +1848,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Test Results Aggregator | bash | opus47-1m-xhigh | 28 | 106 | 3.8 | 306 | 400 | 0.77 |
 | Test Results Aggregator | bash | opus47-200k-medium | 14 | 29 | 2.1 | 220 | 192 | 1.15 |
 | Test Results Aggregator | bash | sonnet46-200k | 16 | 17 | 1.1 | 149 | 317 | 0.47 |
+| Test Results Aggregator | bash | sonnet46-1m-medium | 32 | 53 | 1.7 | 268 | 309 | 0.87 |
 | Test Results Aggregator | default | haiku45-200k | 5 | 26 | 5.2 | 176 | 257 | 0.68 |
 | Test Results Aggregator | default | opus46-200k | 2 | 0 | 0.0 | 389 | 261 | 1.49 |
 | Test Results Aggregator | default | opus47-1m-high | 29 | 62 | 2.1 | 628 | 339 | 1.85 |
@@ -1830,6 +1856,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Test Results Aggregator | default | opus47-1m-xhigh | 24 | 64 | 2.7 | 391 | 669 | 0.58 |
 | Test Results Aggregator | default | opus47-200k-medium | 11 | 37 | 3.4 | 313 | 278 | 1.13 |
 | Test Results Aggregator | default | sonnet46-200k | 45 | 60 | 1.3 | 454 | 248 | 1.83 |
+| Test Results Aggregator | default | sonnet46-1m-medium | 49 | 98 | 2.0 | 676 | 368 | 1.84 |
 | Test Results Aggregator | powershell | haiku45-200k | 0 | 0 | 0.0 | 0 | 541 | 0.00 |
 | Test Results Aggregator | powershell | opus46-200k | 59 | 63 | 1.1 | 358 | 412 | 0.87 |
 | Test Results Aggregator | powershell | opus47-1m-high | 35 | 37 | 1.1 | 290 | 71 | 4.08 |
@@ -1837,6 +1864,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Test Results Aggregator | powershell | opus47-1m-xhigh | 27 | 69 | 2.6 | 358 | 241 | 1.49 |
 | Test Results Aggregator | powershell | opus47-200k-medium | 16 | 58 | 3.6 | 367 | 31 | 11.84 |
 | Test Results Aggregator | powershell | sonnet46-200k | 47 | 53 | 1.1 | 311 | 209 | 1.49 |
+| Test Results Aggregator | powershell | sonnet46-1m-medium | 0 | 0 | 0.0 | 0 | 558 | 0.00 |
 | Test Results Aggregator | powershell-tool | haiku45-200k | 22 | 54 | 2.5 | 238 | 319 | 0.75 |
 | Test Results Aggregator | powershell-tool | opus46-200k | 18 | 55 | 3.1 | 175 | 457 | 0.38 |
 | Test Results Aggregator | powershell-tool | opus47-1m-high | 29 | 50 | 1.7 | 294 | 439 | 0.67 |
@@ -1844,6 +1872,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Test Results Aggregator | powershell-tool | opus47-1m-xhigh | 45 | 84 | 1.9 | 552 | 370 | 1.49 |
 | Test Results Aggregator | powershell-tool | opus47-200k-medium | 11 | 22 | 2.0 | 117 | 213 | 0.55 |
 | Test Results Aggregator | powershell-tool | sonnet46-200k | 43 | 67 | 1.6 | 353 | 285 | 1.24 |
+| Test Results Aggregator | powershell-tool | sonnet46-1m-medium | 35 | 54 | 1.5 | 390 | 560 | 0.70 |
 | Test Results Aggregator | typescript-bun | haiku45-200k | 31 | 69 | 2.2 | 398 | 442 | 0.90 |
 | Test Results Aggregator | typescript-bun | opus46-200k | 26 | 62 | 2.4 | 344 | 559 | 0.62 |
 | Test Results Aggregator | typescript-bun | opus47-1m-high | 34 | 72 | 2.1 | 546 | 765 | 0.71 |
@@ -1851,6 +1880,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Test Results Aggregator | typescript-bun | opus47-1m-xhigh | 26 | 68 | 2.6 | 597 | 480 | 1.24 |
 | Test Results Aggregator | typescript-bun | opus47-200k-medium | 16 | 42 | 2.6 | 382 | 357 | 1.07 |
 | Test Results Aggregator | typescript-bun | sonnet46-200k | 61 | 87 | 1.4 | 625 | 453 | 1.38 |
+| Test Results Aggregator | typescript-bun | sonnet46-1m-medium | 29 | 52 | 1.8 | 288 | 522 | 0.55 |
 | Environment Matrix Generator | bash | haiku45-200k | 14 | 3 | 0.2 | 212 | 130 | 1.63 |
 | Environment Matrix Generator | bash | opus46-200k | 61 | 58 | 1.0 | 460 | 181 | 2.54 |
 | Environment Matrix Generator | bash | opus47-1m-high | 22 | 36 | 1.6 | 271 | 315 | 0.86 |
@@ -1858,6 +1888,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Environment Matrix Generator | bash | opus47-1m-xhigh | 13 | 35 | 2.7 | 260 | 0 | 0.00 |
 | Environment Matrix Generator | bash | opus47-200k-medium | 11 | 21 | 1.9 | 110 | 231 | 0.48 |
 | Environment Matrix Generator | bash | sonnet46-200k | 21 | 37 | 1.8 | 162 | 266 | 0.61 |
+| Environment Matrix Generator | bash | sonnet46-1m-medium | 40 | 76 | 1.9 | 364 | 324 | 1.12 |
 | Environment Matrix Generator | default | haiku45-200k | 19 | 41 | 2.2 | 522 | 184 | 2.84 |
 | Environment Matrix Generator | default | opus46-200k | 4 | 29 | 7.2 | 301 | 349 | 0.86 |
 | Environment Matrix Generator | default | opus47-1m-high | 25 | 53 | 2.1 | 526 | 194 | 2.71 |
@@ -1865,6 +1896,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Environment Matrix Generator | default | opus47-1m-xhigh | 27 | 49 | 1.8 | 342 | 434 | 0.79 |
 | Environment Matrix Generator | default | opus47-200k-medium | 13 | 27 | 2.1 | 274 | 127 | 2.16 |
 | Environment Matrix Generator | default | sonnet46-200k | 36 | 46 | 1.3 | 566 | 120 | 4.72 |
+| Environment Matrix Generator | default | sonnet46-1m-medium | 15 | 38 | 2.5 | 293 | 119 | 2.46 |
 | Environment Matrix Generator | powershell | haiku45-200k | 8 | 15 | 1.9 | 146 | 179 | 0.82 |
 | Environment Matrix Generator | powershell | opus46-200k | 66 | 69 | 1.0 | 452 | 115 | 3.93 |
 | Environment Matrix Generator | powershell | opus47-1m-high | 16 | 25 | 1.6 | 218 | 260 | 0.84 |
@@ -1872,6 +1904,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Environment Matrix Generator | powershell | opus47-1m-xhigh | 26 | 29 | 1.1 | 228 | 453 | 0.50 |
 | Environment Matrix Generator | powershell | opus47-200k-medium | 8 | 16 | 2.0 | 86 | 314 | 0.27 |
 | Environment Matrix Generator | powershell | sonnet46-200k | 37 | 58 | 1.6 | 377 | 394 | 0.96 |
+| Environment Matrix Generator | powershell | sonnet46-1m-medium | 32 | 47 | 1.5 | 287 | 269 | 1.07 |
 | Environment Matrix Generator | powershell-tool | haiku45-200k | 12 | 25 | 2.1 | 193 | 137 | 1.41 |
 | Environment Matrix Generator | powershell-tool | opus46-200k | 14 | 24 | 1.7 | 165 | 328 | 0.50 |
 | Environment Matrix Generator | powershell-tool | opus47-1m-high | 30 | 53 | 1.8 | 320 | 549 | 0.58 |
@@ -1879,6 +1912,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Environment Matrix Generator | powershell-tool | opus47-1m-xhigh | 22 | 31 | 1.4 | 258 | 524 | 0.49 |
 | Environment Matrix Generator | powershell-tool | opus47-200k-medium | 23 | 37 | 1.6 | 196 | 348 | 0.56 |
 | Environment Matrix Generator | powershell-tool | sonnet46-200k | 31 | 42 | 1.4 | 322 | 389 | 0.83 |
+| Environment Matrix Generator | powershell-tool | sonnet46-1m-medium | 28 | 36 | 1.3 | 280 | 367 | 0.76 |
 | Environment Matrix Generator | typescript-bun | haiku45-200k | 10 | 25 | 2.5 | 201 | 319 | 0.63 |
 | Environment Matrix Generator | typescript-bun | opus46-200k | 14 | 40 | 2.9 | 266 | 176 | 1.51 |
 | Environment Matrix Generator | typescript-bun | opus47-1m-high | 25 | 64 | 2.6 | 590 | 194 | 3.04 |
@@ -1886,6 +1920,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Environment Matrix Generator | typescript-bun | opus47-1m-xhigh | 8 | 31 | 3.9 | 233 | 554 | 0.42 |
 | Environment Matrix Generator | typescript-bun | opus47-200k-medium | 15 | 40 | 2.7 | 310 | 148 | 2.09 |
 | Environment Matrix Generator | typescript-bun | sonnet46-200k | 32 | 41 | 1.3 | 333 | 171 | 1.95 |
+| Environment Matrix Generator | typescript-bun | sonnet46-1m-medium | 29 | 42 | 1.4 | 308 | 393 | 0.78 |
 | Artifact Cleanup Script | bash | haiku45-200k | 12 | 28 | 2.3 | 166 | 369 | 0.45 |
 | Artifact Cleanup Script | bash | opus46-200k | 23 | 86 | 3.7 | 216 | 546 | 0.40 |
 | Artifact Cleanup Script | bash | opus47-1m-high | 27 | 76 | 2.8 | 275 | 363 | 0.76 |
@@ -1893,6 +1928,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Artifact Cleanup Script | bash | opus47-1m-xhigh | 17 | 73 | 4.3 | 245 | 447 | 0.55 |
 | Artifact Cleanup Script | bash | opus47-200k-medium | 20 | 87 | 4.3 | 311 | 207 | 1.50 |
 | Artifact Cleanup Script | bash | sonnet46-200k | 26 | 44 | 1.7 | 181 | 319 | 0.57 |
+| Artifact Cleanup Script | bash | sonnet46-1m-medium | 12 | 28 | 2.3 | 178 | 197 | 0.90 |
 | Artifact Cleanup Script | default | haiku45-200k | 31 | 26 | 0.8 | 411 | 321 | 1.28 |
 | Artifact Cleanup Script | default | opus46-200k | 2 | 0 | 0.0 | 420 | 335 | 1.25 |
 | Artifact Cleanup Script | default | opus47-1m-high | 24 | 55 | 2.3 | 343 | 500 | 0.69 |
@@ -1900,6 +1936,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Artifact Cleanup Script | default | opus47-1m-xhigh | 23 | 57 | 2.5 | 357 | 579 | 0.62 |
 | Artifact Cleanup Script | default | opus47-200k-medium | 23 | 48 | 2.1 | 449 | 224 | 2.00 |
 | Artifact Cleanup Script | default | sonnet46-200k | 13 | 44 | 3.4 | 359 | 283 | 1.27 |
+| Artifact Cleanup Script | default | sonnet46-1m-medium | 8 | 38 | 4.8 | 194 | 368 | 0.53 |
 | Artifact Cleanup Script | powershell | haiku45-200k | 11 | 24 | 2.2 | 185 | 279 | 0.66 |
 | Artifact Cleanup Script | powershell | opus46-200k | 21 | 69 | 3.3 | 307 | 197 | 1.56 |
 | Artifact Cleanup Script | powershell | opus47-1m-high | 11 | 38 | 3.5 | 210 | 557 | 0.38 |
@@ -1907,6 +1944,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Artifact Cleanup Script | powershell | opus47-1m-xhigh | 23 | 50 | 2.2 | 243 | 259 | 0.94 |
 | Artifact Cleanup Script | powershell | opus47-200k-medium | 12 | 28 | 2.3 | 143 | 361 | 0.40 |
 | Artifact Cleanup Script | powershell | sonnet46-200k | 49 | 68 | 1.4 | 473 | 246 | 1.92 |
+| Artifact Cleanup Script | powershell | sonnet46-1m-medium | 35 | 57 | 1.6 | 430 | 188 | 2.29 |
 | Artifact Cleanup Script | powershell-tool | haiku45-200k | 17 | 30 | 1.8 | 220 | 181 | 1.22 |
 | Artifact Cleanup Script | powershell-tool | opus46-200k | 21 | 67 | 3.2 | 257 | 216 | 1.19 |
 | Artifact Cleanup Script | powershell-tool | opus47-1m-high | 27 | 67 | 2.5 | 312 | 471 | 0.66 |
@@ -1914,6 +1952,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Artifact Cleanup Script | powershell-tool | opus47-1m-xhigh | 26 | 63 | 2.4 | 356 | 289 | 1.23 |
 | Artifact Cleanup Script | powershell-tool | opus47-200k-medium | 12 | 20 | 1.7 | 119 | 283 | 0.42 |
 | Artifact Cleanup Script | powershell-tool | sonnet46-200k | 13 | 33 | 2.5 | 194 | 258 | 0.75 |
+| Artifact Cleanup Script | powershell-tool | sonnet46-1m-medium | 19 | 39 | 2.1 | 225 | 91 | 2.47 |
 | Artifact Cleanup Script | typescript-bun | haiku45-200k | 9 | 27 | 3.0 | 276 | 380 | 0.73 |
 | Artifact Cleanup Script | typescript-bun | opus46-200k | 21 | 67 | 3.2 | 290 | 245 | 1.18 |
 | Artifact Cleanup Script | typescript-bun | opus47-1m-high | 20 | 55 | 2.8 | 418 | 368 | 1.14 |
@@ -1921,6 +1960,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Artifact Cleanup Script | typescript-bun | opus47-1m-xhigh | 29 | 77 | 2.7 | 479 | 889 | 0.54 |
 | Artifact Cleanup Script | typescript-bun | opus47-200k-medium | 25 | 79 | 3.2 | 437 | 245 | 1.78 |
 | Artifact Cleanup Script | typescript-bun | sonnet46-200k | 23 | 55 | 2.4 | 259 | 452 | 0.57 |
+| Artifact Cleanup Script | typescript-bun | sonnet46-1m-medium | 26 | 67 | 2.6 | 507 | 283 | 1.79 |
 | Secret Rotation Validator | bash | haiku45-200k | 15 | 32 | 2.1 | 134 | 453 | 0.30 |
 | Secret Rotation Validator | bash | opus46-200k | 28 | 42 | 1.5 | 250 | 515 | 0.49 |
 | Secret Rotation Validator | bash | opus47-1m-high | 26 | 3 | 0.1 | 140 | 49 | 2.86 |
@@ -1928,6 +1968,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Secret Rotation Validator | bash | opus47-1m-xhigh | 19 | 59 | 3.1 | 204 | 323 | 0.63 |
 | Secret Rotation Validator | bash | opus47-200k-medium | 22 | 57 | 2.6 | 239 | 210 | 1.14 |
 | Secret Rotation Validator | bash | sonnet46-200k | 31 | 76 | 2.5 | 300 | 399 | 0.75 |
+| Secret Rotation Validator | bash | sonnet46-1m-medium | 24 | 54 | 2.2 | 259 | 229 | 1.13 |
 | Secret Rotation Validator | default | haiku45-200k | 13 | 38 | 2.9 | 270 | 505 | 0.53 |
 | Secret Rotation Validator | default | opus46-200k | 44 | 86 | 2.0 | 816 | 255 | 3.20 |
 | Secret Rotation Validator | default | opus47-1m-high | 25 | 59 | 2.4 | 577 | 304 | 1.90 |
@@ -1935,6 +1976,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Secret Rotation Validator | default | opus47-1m-xhigh | 28 | 38 | 1.4 | 317 | 611 | 0.52 |
 | Secret Rotation Validator | default | opus47-200k-medium | 19 | 60 | 3.2 | 367 | 177 | 2.07 |
 | Secret Rotation Validator | default | sonnet46-200k | 36 | 46 | 1.3 | 450 | 252 | 1.79 |
+| Secret Rotation Validator | default | sonnet46-1m-medium | 41 | 64 | 1.6 | 375 | 396 | 0.95 |
 | Secret Rotation Validator | powershell | haiku45-200k | 0 | 0 | 0.0 | 0 | 590 | 0.00 |
 | Secret Rotation Validator | powershell | opus46-200k | 23 | 46 | 2.0 | 215 | 231 | 0.93 |
 | Secret Rotation Validator | powershell | opus47-1m-high | 29 | 63 | 2.2 | 327 | 235 | 1.39 |
@@ -1942,6 +1984,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Secret Rotation Validator | powershell | opus47-1m-xhigh | 43 | 123 | 2.9 | 578 | 294 | 1.97 |
 | Secret Rotation Validator | powershell | opus47-200k-medium | 21 | 46 | 2.2 | 224 | 221 | 1.01 |
 | Secret Rotation Validator | powershell | sonnet46-200k | 42 | 77 | 1.8 | 464 | 58 | 8.00 |
+| Secret Rotation Validator | powershell | sonnet46-1m-medium | 43 | 54 | 1.3 | 409 | 198 | 2.07 |
 | Secret Rotation Validator | powershell-tool | haiku45-200k | 0 | 0 | 0.0 | 0 | 375 | 0.00 |
 | Secret Rotation Validator | powershell-tool | opus46-200k | 14 | 33 | 2.4 | 143 | 315 | 0.45 |
 | Secret Rotation Validator | powershell-tool | opus47-1m-high | 18 | 47 | 2.6 | 229 | 302 | 0.76 |
@@ -1949,6 +1992,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Secret Rotation Validator | powershell-tool | opus47-1m-xhigh | 10 | 23 | 2.3 | 224 | 261 | 0.86 |
 | Secret Rotation Validator | powershell-tool | opus47-200k-medium | 30 | 69 | 2.3 | 351 | 199 | 1.76 |
 | Secret Rotation Validator | powershell-tool | sonnet46-200k | 34 | 64 | 1.9 | 321 | 311 | 1.03 |
+| Secret Rotation Validator | powershell-tool | sonnet46-1m-medium | 51 | 58 | 1.1 | 411 | 232 | 1.77 |
 | Secret Rotation Validator | typescript-bun | haiku45-200k | 38 | 84 | 2.2 | 560 | 205 | 2.73 |
 | Secret Rotation Validator | typescript-bun | opus46-200k | 27 | 79 | 2.9 | 305 | 583 | 0.52 |
 | Secret Rotation Validator | typescript-bun | opus47-1m-high | 15 | 69 | 4.6 | 578 | 367 | 1.57 |
@@ -1956,40 +2000,6 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Secret Rotation Validator | typescript-bun | opus47-1m-xhigh | 11 | 66 | 6.0 | 499 | 375 | 1.33 |
 | Secret Rotation Validator | typescript-bun | opus47-200k-medium | 14 | 35 | 2.5 | 263 | 327 | 0.80 |
 | Secret Rotation Validator | typescript-bun | sonnet46-200k | 52 | 87 | 1.7 | 515 | 289 | 1.78 |
-| Semantic Version Bumper | default | sonnet46-1m-medium | 59 | 62 | 1.1 | 347 | 372 | 0.93 |
-| Semantic Version Bumper | powershell | sonnet46-1m-medium | 47 | 70 | 1.5 | 400 | 194 | 2.06 |
-| Semantic Version Bumper | bash | sonnet46-1m-medium | 31 | 54 | 1.7 | 286 | 210 | 1.36 |
-| Semantic Version Bumper | powershell-tool | sonnet46-1m-medium | 25 | 30 | 1.2 | 185 | 203 | 0.91 |
-| Semantic Version Bumper | typescript-bun | sonnet46-1m-medium | 37 | 49 | 1.3 | 259 | 533 | 0.49 |
-| PR Label Assigner | default | sonnet46-1m-medium | 31 | 30 | 1.0 | 471 | 186 | 2.53 |
-| PR Label Assigner | powershell | sonnet46-1m-medium | 45 | 51 | 1.1 | 298 | 262 | 1.14 |
-| PR Label Assigner | bash | sonnet46-1m-medium | 28 | 49 | 1.8 | 273 | 113 | 2.42 |
-| PR Label Assigner | powershell-tool | sonnet46-1m-medium | 38 | 49 | 1.3 | 249 | 291 | 0.86 |
-| PR Label Assigner | typescript-bun | sonnet46-1m-medium | 34 | 48 | 1.4 | 391 | 122 | 3.20 |
-| Dependency License Checker | default | sonnet46-1m-medium | 47 | 69 | 1.5 | 718 | 329 | 2.18 |
-| Dependency License Checker | powershell | sonnet46-1m-medium | 45 | 58 | 1.3 | 357 | 168 | 2.12 |
-| Dependency License Checker | bash | sonnet46-1m-medium | 18 | 29 | 1.6 | 139 | 271 | 0.51 |
-| Dependency License Checker | powershell-tool | sonnet46-1m-medium | 49 | 69 | 1.4 | 418 | 468 | 0.89 |
-| Dependency License Checker | typescript-bun | sonnet46-1m-medium | 23 | 54 | 2.3 | 292 | 162 | 1.80 |
-| Test Results Aggregator | default | sonnet46-1m-medium | 49 | 98 | 2.0 | 676 | 368 | 1.84 |
-| Test Results Aggregator | powershell | sonnet46-1m-medium | 0 | 0 | 0.0 | 0 | 558 | 0.00 |
-| Test Results Aggregator | bash | sonnet46-1m-medium | 32 | 53 | 1.7 | 268 | 309 | 0.87 |
-| Test Results Aggregator | powershell-tool | sonnet46-1m-medium | 35 | 54 | 1.5 | 390 | 560 | 0.70 |
-| Test Results Aggregator | typescript-bun | sonnet46-1m-medium | 29 | 52 | 1.8 | 288 | 522 | 0.55 |
-| Environment Matrix Generator | default | sonnet46-1m-medium | 15 | 38 | 2.5 | 293 | 119 | 2.46 |
-| Environment Matrix Generator | powershell | sonnet46-1m-medium | 32 | 47 | 1.5 | 287 | 269 | 1.07 |
-| Environment Matrix Generator | bash | sonnet46-1m-medium | 40 | 76 | 1.9 | 364 | 324 | 1.12 |
-| Environment Matrix Generator | powershell-tool | sonnet46-1m-medium | 28 | 36 | 1.3 | 280 | 367 | 0.76 |
-| Environment Matrix Generator | typescript-bun | sonnet46-1m-medium | 29 | 42 | 1.4 | 308 | 393 | 0.78 |
-| Artifact Cleanup Script | default | sonnet46-1m-medium | 8 | 38 | 4.8 | 194 | 368 | 0.53 |
-| Artifact Cleanup Script | powershell | sonnet46-1m-medium | 35 | 57 | 1.6 | 430 | 188 | 2.29 |
-| Artifact Cleanup Script | bash | sonnet46-1m-medium | 12 | 28 | 2.3 | 178 | 197 | 0.90 |
-| Artifact Cleanup Script | powershell-tool | sonnet46-1m-medium | 19 | 39 | 2.1 | 225 | 91 | 2.47 |
-| Artifact Cleanup Script | typescript-bun | sonnet46-1m-medium | 26 | 67 | 2.6 | 507 | 283 | 1.79 |
-| Secret Rotation Validator | default | sonnet46-1m-medium | 41 | 64 | 1.6 | 375 | 396 | 0.95 |
-| Secret Rotation Validator | powershell | sonnet46-1m-medium | 43 | 54 | 1.3 | 409 | 198 | 2.07 |
-| Secret Rotation Validator | bash | sonnet46-1m-medium | 24 | 54 | 2.2 | 259 | 229 | 1.13 |
-| Secret Rotation Validator | powershell-tool | sonnet46-1m-medium | 51 | 58 | 1.1 | 411 | 232 | 1.77 |
 | Secret Rotation Validator | typescript-bun | sonnet46-1m-medium | 33 | 70 | 2.1 | 450 | 258 | 1.74 |
 
 </details>
@@ -2898,6 +2908,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Dependency License Checker | powershell | opus47-1m-medium | 5.5min | 19 | 0 | $1.09 | — | powershell | ok |
 | Dependency License Checker | powershell | opus47-1m-xhigh | 13.9min | 52 | 0 | $3.72 | — | powershell | ok |
 | Dependency License Checker | powershell | opus47-200k-medium | 5.3min | 25 | 0 | $1.28 | — | powershell | ok |
+| Dependency License Checker | powershell | sonnet46-1m-medium | 6.0min | 30 | 0 | $0.97 | — | powershell | ok |
 | Dependency License Checker | powershell-tool | opus47-1m-high | 7.3min | 28 | 0 | $1.62 | — | powershell | ok |
 | Dependency License Checker | powershell-tool | opus47-1m-xhigh | 12.7min | 46 | 0 | $3.88 | — | powershell | ok |
 | Dependency License Checker | powershell-tool | opus47-200k-medium | 6.0min | 32 | 0 | $1.78 | — | powershell | ok |
@@ -2934,6 +2945,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Environment Matrix Generator | typescript-bun | opus47-200k-medium | 4.1min | 32 | 0 | $1.35 | — | typescript | ok |
 | Artifact Cleanup Script | bash | opus47-1m-medium | 7.1min | 29 | 0 | $1.68 | — | bash | ok |
 | Artifact Cleanup Script | bash | opus47-200k-medium | 6.3min | 34 | 0 | $1.69 | — | bash | ok |
+| Artifact Cleanup Script | bash | sonnet46-1m-medium | 10.1min | 38 | 0 | $1.59 | — | bash | ok |
 | Artifact Cleanup Script | default | opus47-1m-high | 8.1min | 40 | 0 | $2.68 | — | python | ok |
 | Artifact Cleanup Script | default | opus47-1m-medium | 4.2min | 20 | 0 | $0.93 | — | python | ok |
 | Artifact Cleanup Script | default | opus47-200k-medium | 4.4min | 20 | 0 | $1.05 | — | python | ok |
@@ -2960,30 +2972,34 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Secret Rotation Validator | powershell-tool | opus47-200k-medium | 5.7min | 29 | 0 | $1.65 | — | powershell | ok |
 | Secret Rotation Validator | typescript-bun | opus47-1m-high | 10.4min | 53 | 0 | $2.83 | — | typescript | ok |
 | Secret Rotation Validator | typescript-bun | opus47-1m-xhigh | 10.7min | 32 | 0 | $2.99 | — | typescript | ok |
-| Dependency License Checker | powershell | sonnet46-1m-medium | 6.0min | 30 | 0 | $0.97 | — | powershell | ok |
-| Artifact Cleanup Script | bash | sonnet46-1m-medium | 10.1min | 38 | 0 | $1.59 | — | bash | ok |
 | Semantic Version Bumper | bash | opus47-1m-medium | 3.8min | 26 | 1 | $1.06 | — | bash | ok |
 | Semantic Version Bumper | bash | opus47-1m-xhigh | 10.7min | 55 | 1 | $3.08 | — | bash | ok |
 | Semantic Version Bumper | bash | opus47-200k-medium | 4.8min | 30 | 1 | $1.33 | — | bash | ok |
 | Semantic Version Bumper | bash | sonnet46-200k | 5.7min | 30 | 1 | $0.88 | — | bash | ok |
+| Semantic Version Bumper | bash | sonnet46-1m-medium | 7.2min | 38 | 1 | $0.96 | — | bash | ok |
 | Semantic Version Bumper | default | haiku45-200k | 7.5min | 50 | 1 | $0.45 | — | javascript | ok |
 | Semantic Version Bumper | default | opus46-200k | 5.5min | 37 | 1 | $1.25 | — | python | ok |
 | Semantic Version Bumper | default | opus47-200k-medium | 4.1min | 28 | 1 | $1.15 | — | python | ok |
 | Semantic Version Bumper | powershell | opus47-1m-xhigh | 15.4min | 63 | 1 | $4.72 | — | powershell | ok |
 | Semantic Version Bumper | powershell | opus47-200k-medium | 5.2min | 37 | 1 | $1.59 | — | powershell | ok |
+| Semantic Version Bumper | powershell | sonnet46-1m-medium | 7.9min | 32 | 1 | $1.19 | — | powershell | ok |
 | Semantic Version Bumper | powershell-tool | opus46-200k | 5.1min | 33 | 1 | $1.22 | — | powershell | ok |
+| Semantic Version Bumper | powershell-tool | sonnet46-1m-medium | 4.7min | 29 | 1 | $0.70 | — | powershell | ok |
 | Semantic Version Bumper | typescript-bun | opus46-200k | 4.5min | 31 | 1 | $1.00 | — | typescript | ok |
 | Semantic Version Bumper | typescript-bun | opus47-1m-xhigh | 11.6min | 59 | 1 | $3.27 | — | typescript | ok |
 | Semantic Version Bumper | typescript-bun | opus47-200k-medium | 4.5min | 31 | 1 | $1.30 | — | typescript | ok |
 | Semantic Version Bumper | typescript-bun | sonnet46-200k | 9.3min | 39 | 1 | $1.17 | — | typescript | ok |
+| Semantic Version Bumper | typescript-bun | sonnet46-1m-medium | 5.6min | 36 | 1 | $1.01 | — | typescript | ok |
 | PR Label Assigner | bash | opus47-1m-medium | 4.2min | 29 | 1 | $1.08 | — | bash | ok |
 | PR Label Assigner | default | opus47-1m-xhigh | 11.9min | 59 | 1 | $3.91 | — | python | ok |
 | PR Label Assigner | powershell | haiku45-200k | 29.1min | 49 | 1 | $0.51 | — | powershell | timeout |
 | PR Label Assigner | powershell | opus46-200k | 12.0min | 21 | 1 | $1.96 | — | powershell | ok |
 | PR Label Assigner | powershell | opus47-1m-high | 15.3min | 51 | 1 | $3.83 | — | powershell | ok |
 | PR Label Assigner | powershell-tool | opus46-200k | 10.7min | 20 | 1 | $1.70 | — | powershell | ok |
+| PR Label Assigner | powershell-tool | sonnet46-1m-medium | 8.9min | 21 | 1 | $1.16 | — | powershell | ok |
 | PR Label Assigner | typescript-bun | opus47-1m-high | 6.2min | 36 | 1 | $1.85 | — | typescript | ok |
 | PR Label Assigner | typescript-bun | opus47-200k-medium | 15.2min | 35 | 1 | $1.47 | — | typescript | ok |
+| PR Label Assigner | typescript-bun | sonnet46-1m-medium | 6.2min | 36 | 1 | $0.92 | — | typescript | ok |
 | Dependency License Checker | bash | opus47-1m-high | 8.0min | 46 | 1 | $2.59 | — | bash | ok |
 | Dependency License Checker | bash | opus47-1m-medium | 4.3min | 30 | 1 | $1.15 | — | bash | ok |
 | Dependency License Checker | bash | opus47-200k-medium | 3.5min | 22 | 1 | $0.89 | — | bash | ok |
@@ -2993,7 +3009,9 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Dependency License Checker | typescript-bun | sonnet46-200k | 8.3min | 47 | 1 | $1.31 | — | typescript | ok |
 | Test Results Aggregator | bash | opus47-1m-medium | 3.6min | 25 | 1 | $1.01 | — | bash | ok |
 | Test Results Aggregator | default | opus47-1m-xhigh | 11.2min | 64 | 1 | $3.82 | — | python | ok |
+| Test Results Aggregator | default | sonnet46-1m-medium | 6.1min | 31 | 1 | $1.14 | — | python | ok |
 | Test Results Aggregator | powershell | haiku45-200k | 6.6min | 49 | 1 | $0.47 | — | powershell | ok |
+| Test Results Aggregator | powershell | sonnet46-1m-medium | 7.4min | 29 | 1 | $1.13 | — | powershell | ok |
 | Test Results Aggregator | powershell-tool | opus46-200k | 8.5min | 24 | 1 | $1.59 | — | powershell | ok |
 | Test Results Aggregator | powershell-tool | opus47-1m-high | 17.3min | 79 | 1 | $5.01 | — | powershell | ok |
 | Test Results Aggregator | typescript-bun | opus47-1m-high | 10.1min | 53 | 1 | $3.69 | — | typescript | ok |
@@ -3015,25 +3033,17 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Artifact Cleanup Script | powershell-tool | opus47-1m-xhigh | 18.1min | 82 | 1 | $6.07 | — | powershell | ok |
 | Artifact Cleanup Script | powershell-tool | sonnet46-200k | 7.0min | 26 | 1 | $1.08 | — | powershell | ok |
 | Artifact Cleanup Script | typescript-bun | opus47-1m-high | 9.6min | 63 | 1 | $3.56 | — | typescript | ok |
+| Secret Rotation Validator | bash | sonnet46-1m-medium | 8.2min | 36 | 1 | $1.17 | — | bash | ok |
 | Secret Rotation Validator | default | opus47-1m-medium | 4.0min | 26 | 1 | $1.26 | — | python | ok |
 | Secret Rotation Validator | powershell | sonnet46-200k | 12.7min | 35 | 1 | $1.81 | — | powershell | ok |
 | Secret Rotation Validator | powershell-tool | haiku45-200k | 4.3min | 34 | 1 | $0.38 | — | powershell | ok |
 | Secret Rotation Validator | powershell-tool | opus46-200k | 3.7min | 21 | 1 | $0.80 | — | powershell | ok |
 | Secret Rotation Validator | powershell-tool | opus47-1m-xhigh | 12.0min | 44 | 1 | $3.47 | — | powershell | ok |
+| Secret Rotation Validator | powershell-tool | sonnet46-1m-medium | 9.2min | 30 | 1 | $1.28 | — | powershell | ok |
 | Secret Rotation Validator | typescript-bun | opus46-200k | 8.9min | 24 | 1 | $1.51 | — | typescript | ok |
 | Secret Rotation Validator | typescript-bun | opus47-1m-medium | 4.9min | 32 | 1 | $1.32 | — | typescript | ok |
 | Secret Rotation Validator | typescript-bun | opus47-200k-medium | 7.2min | 43 | 1 | $1.84 | — | typescript | ok |
 | Secret Rotation Validator | typescript-bun | sonnet46-200k | 10.8min | 53 | 1 | $1.68 | — | typescript | ok |
-| Semantic Version Bumper | powershell | sonnet46-1m-medium | 7.9min | 32 | 1 | $1.19 | — | powershell | ok |
-| Semantic Version Bumper | bash | sonnet46-1m-medium | 7.2min | 38 | 1 | $0.96 | — | bash | ok |
-| Semantic Version Bumper | powershell-tool | sonnet46-1m-medium | 4.7min | 29 | 1 | $0.70 | — | powershell | ok |
-| Semantic Version Bumper | typescript-bun | sonnet46-1m-medium | 5.6min | 36 | 1 | $1.01 | — | typescript | ok |
-| PR Label Assigner | powershell-tool | sonnet46-1m-medium | 8.9min | 21 | 1 | $1.16 | — | powershell | ok |
-| PR Label Assigner | typescript-bun | sonnet46-1m-medium | 6.2min | 36 | 1 | $0.92 | — | typescript | ok |
-| Test Results Aggregator | default | sonnet46-1m-medium | 6.1min | 31 | 1 | $1.14 | — | python | ok |
-| Test Results Aggregator | powershell | sonnet46-1m-medium | 7.4min | 29 | 1 | $1.13 | — | powershell | ok |
-| Secret Rotation Validator | bash | sonnet46-1m-medium | 8.2min | 36 | 1 | $1.17 | — | bash | ok |
-| Secret Rotation Validator | powershell-tool | sonnet46-1m-medium | 9.2min | 30 | 1 | $1.28 | — | powershell | ok |
 | Semantic Version Bumper | bash | opus47-1m-high | 6.9min | 32 | 2 | $1.61 | — | bash | ok |
 | Semantic Version Bumper | powershell | opus46-200k | 6.0min | 28 | 2 | $1.12 | — | powershell | ok |
 | Semantic Version Bumper | powershell | sonnet46-200k | 12.3min | 30 | 2 | $1.43 | — | powershell | ok |
@@ -3045,7 +3055,9 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | PR Label Assigner | powershell-tool | haiku45-200k | 8.7min | 64 | 2 | $0.62 | — | powershell | ok |
 | PR Label Assigner | typescript-bun | haiku45-200k | 4.0min | 47 | 2 | $0.33 | — | typescript | ok |
 | Dependency License Checker | default | haiku45-200k | 4.8min | 34 | 2 | $0.32 | — | python | ok |
+| Dependency License Checker | powershell-tool | sonnet46-1m-medium | 7.9min | 39 | 2 | $1.42 | — | powershell | ok |
 | Dependency License Checker | typescript-bun | opus47-200k-medium | 10.2min | 58 | 2 | $1.98 | — | typescript | ok |
+| Dependency License Checker | typescript-bun | sonnet46-1m-medium | 6.0min | 35 | 2 | $1.07 | — | typescript | ok |
 | Test Results Aggregator | bash | opus47-200k-medium | 5.3min | 35 | 2 | $1.47 | — | bash | ok |
 | Test Results Aggregator | default | sonnet46-200k | 7.7min | 44 | 2 | $1.30 | — | python | ok |
 | Test Results Aggregator | powershell | opus46-200k | 11.9min | 26 | 2 | $2.31 | — | powershell | ok |
@@ -3054,81 +3066,79 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Environment Matrix Generator | bash | opus47-1m-xhigh | 10.7min | 43 | 2 | $3.05 | — | bash | ok |
 | Environment Matrix Generator | bash | opus47-200k-medium | 5.9min | 49 | 2 | $1.81 | — | bash | ok |
 | Environment Matrix Generator | default | opus46-200k | 7.3min | 30 | 2 | $1.40 | — | python | ok |
+| Environment Matrix Generator | powershell | sonnet46-1m-medium | 9.3min | 38 | 2 | $1.47 | — | powershell | ok |
 | Environment Matrix Generator | powershell-tool | opus47-1m-high | 18.4min | 90 | 2 | $6.68 | — | powershell | ok |
 | Artifact Cleanup Script | powershell | opus46-200k | 5.2min | 27 | 2 | $1.14 | — | powershell | ok |
+| Artifact Cleanup Script | powershell | sonnet46-1m-medium | 12.6min | 26 | 2 | $1.58 | — | powershell | ok |
 | Artifact Cleanup Script | powershell-tool | opus47-1m-high | 12.0min | 60 | 2 | $3.90 | — | powershell | ok |
+| Artifact Cleanup Script | powershell-tool | sonnet46-1m-medium | 9.1min | 62 | 2 | $1.71 | — | powershell | ok |
 | Artifact Cleanup Script | typescript-bun | opus46-200k | 5.0min | 35 | 2 | $1.19 | — | typescript | ok |
 | Artifact Cleanup Script | typescript-bun | sonnet46-200k | 8.3min | 38 | 2 | $1.40 | — | typescript | ok |
 | Secret Rotation Validator | bash | opus47-1m-high | 5.8min | 40 | 2 | $2.08 | — | bash | ok |
 | Secret Rotation Validator | bash | sonnet46-200k | 12.6min | 40 | 2 | $1.67 | — | bash | ok |
 | Secret Rotation Validator | powershell | haiku45-200k | 8.4min | 72 | 2 | $0.88 | — | powershell | ok |
 | Secret Rotation Validator | powershell | opus47-1m-xhigh | 18.2min | 85 | 2 | $5.72 | — | powershell | ok |
-| Dependency License Checker | powershell-tool | sonnet46-1m-medium | 7.9min | 39 | 2 | $1.42 | — | powershell | ok |
-| Dependency License Checker | typescript-bun | sonnet46-1m-medium | 6.0min | 35 | 2 | $1.07 | — | typescript | ok |
-| Environment Matrix Generator | powershell | sonnet46-1m-medium | 9.3min | 38 | 2 | $1.47 | — | powershell | ok |
-| Artifact Cleanup Script | powershell | sonnet46-1m-medium | 12.6min | 26 | 2 | $1.58 | — | powershell | ok |
-| Artifact Cleanup Script | powershell-tool | sonnet46-1m-medium | 9.1min | 62 | 2 | $1.71 | — | powershell | ok |
 | Semantic Version Bumper | bash | haiku45-200k | 11.9min | 55 | 3 | $0.54 | — | bash | ok |
 | Semantic Version Bumper | bash | opus46-200k | 5.9min | 53 | 3 | $1.52 | — | bash | ok |
+| Semantic Version Bumper | default | sonnet46-1m-medium | 5.8min | 34 | 3 | $0.96 | — | python | ok |
 | Semantic Version Bumper | powershell | haiku45-200k | 9.8min | 71 | 3 | $0.70 | — | powershell | ok |
+| PR Label Assigner | bash | sonnet46-1m-medium | 9.7min | 31 | 3 | $1.31 | — | bash | ok |
 | PR Label Assigner | default | opus46-200k | 4.8min | 35 | 3 | $1.02 | — | python | ok |
+| PR Label Assigner | default | sonnet46-1m-medium | 4.1min | 31 | 3 | $0.75 | — | python | ok |
+| PR Label Assigner | powershell | sonnet46-1m-medium | 6.9min | 21 | 3 | $0.79 | — | powershell | ok |
 | PR Label Assigner | powershell-tool | sonnet46-200k | 11.8min | 38 | 3 | $1.76 | — | powershell | ok |
+| Dependency License Checker | bash | sonnet46-1m-medium | 8.7min | 35 | 3 | $1.24 | — | bash | ok |
 | Dependency License Checker | default | opus46-200k | 4.2min | 29 | 3 | $0.91 | — | python | ok |
 | Dependency License Checker | powershell | sonnet46-200k | 7.2min | 29 | 3 | $1.13 | — | powershell | ok |
 | Dependency License Checker | powershell-tool | opus46-200k | 6.1min | 38 | 3 | $1.45 | — | powershell | ok |
 | Test Results Aggregator | bash | opus47-1m-high | 20.0min | 74 | 3 | $4.92 | — | bash | ok |
 | Test Results Aggregator | default | opus46-200k | 6.1min | 36 | 3 | $1.36 | — | python | ok |
+| Test Results Aggregator | typescript-bun | sonnet46-1m-medium | 4.6min | 38 | 3 | $0.94 | — | typescript | ok |
 | Environment Matrix Generator | bash | opus46-200k | 7.5min | 50 | 3 | $1.67 | — | bash | ok |
+| Environment Matrix Generator | bash | sonnet46-1m-medium | 3.5min | 30 | 3 | $0.60 | — | bash | ok |
 | Environment Matrix Generator | powershell | haiku45-200k | 3.2min | 32 | 3 | $0.31 | — | powershell | ok |
 | Environment Matrix Generator | powershell-tool | sonnet46-200k | 15.1min | 48 | 3 | $1.83 | — | powershell | ok |
 | Environment Matrix Generator | typescript-bun | opus46-200k | 6.0min | 29 | 3 | $1.16 | — | typescript | ok |
 | Environment Matrix Generator | typescript-bun | sonnet46-200k | 10.2min | 49 | 3 | $1.46 | — | typescript | ok |
+| Environment Matrix Generator | typescript-bun | sonnet46-1m-medium | 9.1min | 30 | 3 | $1.29 | — | typescript | ok |
 | Artifact Cleanup Script | bash | opus46-200k | 5.2min | 40 | 3 | $1.48 | — | bash | ok |
 | Artifact Cleanup Script | bash | opus47-1m-high | 5.7min | 28 | 3 | $1.59 | — | bash | ok |
 | Artifact Cleanup Script | default | haiku45-200k | 4.4min | 32 | 3 | $0.37 | — | python | ok |
 | Artifact Cleanup Script | default | opus46-200k | 8.3min | 34 | 3 | $1.61 | — | python | ok |
 | Artifact Cleanup Script | default | sonnet46-200k | 11.5min | 39 | 3 | $1.55 | — | python | ok |
 | Artifact Cleanup Script | powershell | haiku45-200k | 5.5min | 46 | 3 | $0.46 | — | powershell | ok |
-| Secret Rotation Validator | powershell-tool | sonnet46-200k | 10.3min | 33 | 3 | $1.28 | — | powershell | ok |
-| Semantic Version Bumper | default | sonnet46-1m-medium | 5.8min | 34 | 3 | $0.96 | — | python | ok |
-| PR Label Assigner | default | sonnet46-1m-medium | 4.1min | 31 | 3 | $0.75 | — | python | ok |
-| PR Label Assigner | powershell | sonnet46-1m-medium | 6.9min | 21 | 3 | $0.79 | — | powershell | ok |
-| PR Label Assigner | bash | sonnet46-1m-medium | 9.7min | 31 | 3 | $1.31 | — | bash | ok |
-| Dependency License Checker | bash | sonnet46-1m-medium | 8.7min | 35 | 3 | $1.24 | — | bash | ok |
-| Test Results Aggregator | typescript-bun | sonnet46-1m-medium | 4.6min | 38 | 3 | $0.94 | — | typescript | ok |
-| Environment Matrix Generator | bash | sonnet46-1m-medium | 3.5min | 30 | 3 | $0.60 | — | bash | ok |
-| Environment Matrix Generator | typescript-bun | sonnet46-1m-medium | 9.1min | 30 | 3 | $1.29 | — | typescript | ok |
 | Secret Rotation Validator | powershell | sonnet46-1m-medium | 8.4min | 34 | 3 | $1.20 | — | powershell | ok |
+| Secret Rotation Validator | powershell-tool | sonnet46-200k | 10.3min | 33 | 3 | $1.28 | — | powershell | ok |
 | Secret Rotation Validator | typescript-bun | sonnet46-1m-medium | 10.0min | 33 | 3 | $1.42 | — | typescript | ok |
 | Semantic Version Bumper | default | sonnet46-200k | 8.0min | 29 | 4 | $1.05 | — | python | ok |
 | Semantic Version Bumper | typescript-bun | haiku45-200k | 8.5min | 55 | 4 | $0.63 | — | typescript | ok |
 | PR Label Assigner | bash | opus47-200k-medium | 4.2min | 36 | 4 | $1.45 | — | bash | ok |
 | PR Label Assigner | default | sonnet46-200k | 11.4min | 45 | 4 | $1.66 | — | python | ok |
 | Dependency License Checker | default | sonnet46-200k | 9.0min | 41 | 4 | $1.53 | — | python | ok |
+| Dependency License Checker | default | sonnet46-1m-medium | 6.8min | 35 | 4 | $1.16 | — | python | ok |
 | Dependency License Checker | typescript-bun | haiku45-200k | 4.5min | 37 | 4 | $0.32 | — | typescript | ok |
 | Test Results Aggregator | bash | opus47-1m-xhigh | 9.6min | 60 | 4 | $3.39 | — | bash | ok |
 | Test Results Aggregator | bash | sonnet46-200k | 17.4min | 52 | 4 | $1.97 | — | bash | ok |
+| Test Results Aggregator | bash | sonnet46-1m-medium | 10.3min | 34 | 4 | $1.48 | — | bash | ok |
 | Test Results Aggregator | typescript-bun | sonnet46-200k | 9.5min | 67 | 4 | $2.05 | — | typescript | ok |
 | Environment Matrix Generator | bash | sonnet46-200k | 9.8min | 40 | 4 | $1.29 | — | bash | ok |
 | Environment Matrix Generator | default | haiku45-200k | 5.0min | 48 | 4 | $0.44 | — | python | ok |
 | Environment Matrix Generator | default | sonnet46-200k | 6.8min | 46 | 4 | $1.28 | — | python | ok |
-| Artifact Cleanup Script | typescript-bun | haiku45-200k | 4.3min | 48 | 4 | $0.47 | — | typescript | ok |
-| Secret Rotation Validator | default | sonnet46-200k | 14.9min | 48 | 4 | $1.90 | — | python | ok |
-| Dependency License Checker | default | sonnet46-1m-medium | 6.8min | 35 | 4 | $1.16 | — | python | ok |
-| Test Results Aggregator | bash | sonnet46-1m-medium | 10.3min | 34 | 4 | $1.48 | — | bash | ok |
 | Environment Matrix Generator | powershell-tool | sonnet46-1m-medium | 14.0min | 51 | 4 | $2.41 | — | powershell | ok |
 | Artifact Cleanup Script | default | sonnet46-1m-medium | 4.3min | 30 | 4 | $0.72 | — | python | ok |
+| Artifact Cleanup Script | typescript-bun | haiku45-200k | 4.3min | 48 | 4 | $0.47 | — | typescript | ok |
+| Secret Rotation Validator | default | sonnet46-200k | 14.9min | 48 | 4 | $1.90 | — | python | ok |
 | Secret Rotation Validator | default | sonnet46-1m-medium | 8.6min | 48 | 4 | $1.68 | — | python | ok |
 | PR Label Assigner | bash | sonnet46-200k | 13.4min | 47 | 5 | $2.21 | — | bash | ok |
 | Dependency License Checker | bash | haiku45-200k | 10.8min | 93 | 5 | $1.17 | — | bash | ok |
 | Test Results Aggregator | default | haiku45-200k | 3.2min | 37 | 5 | $0.35 | — | python | ok |
+| Test Results Aggregator | powershell-tool | sonnet46-1m-medium | 16.7min | 36 | 5 | $2.00 | — | powershell | ok |
 | Test Results Aggregator | typescript-bun | opus46-200k | 9.0min | 62 | 5 | $2.16 | — | typescript | ok |
+| Environment Matrix Generator | default | sonnet46-1m-medium | 5.8min | 41 | 5 | $1.02 | — | python | ok |
 | Artifact Cleanup Script | bash | sonnet46-200k | 8.4min | 36 | 5 | $1.42 | — | bash | ok |
 | Secret Rotation Validator | bash | haiku45-200k | 5.4min | 58 | 5 | $0.51 | — | bash | ok |
 | Secret Rotation Validator | bash | opus46-200k | 7.4min | 51 | 5 | $1.71 | — | bash | ok |
 | Secret Rotation Validator | default | opus46-200k | 8.3min | 34 | 5 | $2.04 | — | python | ok |
-| Test Results Aggregator | powershell-tool | sonnet46-1m-medium | 16.7min | 36 | 5 | $2.00 | — | powershell | ok |
-| Environment Matrix Generator | default | sonnet46-1m-medium | 5.8min | 41 | 5 | $1.02 | — | python | ok |
 | PR Label Assigner | bash | haiku45-200k | 6.5min | 68 | 6 | $0.60 | — | bash | ok |
 | Artifact Cleanup Script | typescript-bun | sonnet46-1m-medium | 12.1min | 65 | 6 | $2.44 | — | typescript | ok |
 | PR Label Assigner | typescript-bun | sonnet46-200k | 6.9min | 51 | 7 | $1.45 | — | typescript | ok |
@@ -3159,11 +3169,11 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Artifact Cleanup Script | default | opus47-200k-medium | 4.4min | 20 | 0 | $1.05 | — | python | ok |
 | Semantic Version Bumper | powershell-tool | opus47-1m-medium | 3.6min | 21 | 0 | $0.82 | — | powershell | ok |
 | PR Label Assigner | powershell | opus46-200k | 12.0min | 21 | 1 | $1.96 | — | powershell | ok |
+| PR Label Assigner | powershell | sonnet46-1m-medium | 6.9min | 21 | 3 | $0.79 | — | powershell | ok |
+| PR Label Assigner | powershell-tool | sonnet46-1m-medium | 8.9min | 21 | 1 | $1.16 | — | powershell | ok |
 | Test Results Aggregator | default | opus47-1m-medium | 3.8min | 21 | 0 | $1.00 | — | python | ok |
 | Secret Rotation Validator | powershell | opus47-1m-medium | 3.9min | 21 | 0 | $1.04 | — | powershell | ok |
 | Secret Rotation Validator | powershell-tool | opus46-200k | 3.7min | 21 | 1 | $0.80 | — | powershell | ok |
-| PR Label Assigner | powershell | sonnet46-1m-medium | 6.9min | 21 | 3 | $0.79 | — | powershell | ok |
-| PR Label Assigner | powershell-tool | sonnet46-1m-medium | 8.9min | 21 | 1 | $1.16 | — | powershell | ok |
 | Dependency License Checker | bash | opus47-200k-medium | 3.5min | 22 | 1 | $0.89 | — | bash | ok |
 | Environment Matrix Generator | default | opus47-200k-medium | 3.4min | 22 | 1 | $0.98 | — | python | ok |
 | PR Label Assigner | powershell-tool | opus47-200k-medium | 3.9min | 23 | 0 | $1.01 | — | powershell | ok |
@@ -3181,13 +3191,13 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | PR Label Assigner | typescript-bun | opus47-1m-medium | 4.0min | 26 | 0 | $1.02 | — | typescript | ok |
 | Test Results Aggregator | powershell | opus46-200k | 11.9min | 26 | 2 | $2.31 | — | powershell | ok |
 | Environment Matrix Generator | bash | opus47-1m-medium | 3.4min | 26 | 0 | $0.98 | — | bash | ok |
+| Artifact Cleanup Script | powershell | sonnet46-1m-medium | 12.6min | 26 | 2 | $1.58 | — | powershell | ok |
 | Artifact Cleanup Script | powershell-tool | opus47-1m-medium | 6.0min | 26 | 0 | $1.65 | — | powershell | ok |
 | Artifact Cleanup Script | powershell-tool | opus47-200k-medium | 4.7min | 26 | 0 | $1.41 | — | powershell | ok |
 | Artifact Cleanup Script | powershell-tool | sonnet46-200k | 7.0min | 26 | 1 | $1.08 | — | powershell | ok |
 | Secret Rotation Validator | bash | opus47-200k-medium | 5.6min | 26 | 0 | $1.30 | — | bash | ok |
 | Secret Rotation Validator | default | opus47-1m-medium | 4.0min | 26 | 1 | $1.26 | — | python | ok |
 | Secret Rotation Validator | default | opus47-200k-medium | 4.9min | 26 | 0 | $1.21 | — | python | ok |
-| Artifact Cleanup Script | powershell | sonnet46-1m-medium | 12.6min | 26 | 2 | $1.58 | — | powershell | ok |
 | Semantic Version Bumper | typescript-bun | opus47-1m-medium | 5.0min | 27 | 0 | $1.26 | — | typescript | ok |
 | Dependency License Checker | powershell-tool | sonnet46-200k | 5.0min | 27 | 0 | $0.68 | — | powershell | ok |
 | Environment Matrix Generator | powershell-tool | opus47-200k-medium | 4.9min | 27 | 0 | $1.14 | — | powershell | ok |
@@ -3204,43 +3214,44 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Secret Rotation Validator | default | opus47-1m-xhigh | 7.6min | 28 | 0 | $2.34 | — | python | ok |
 | Semantic Version Bumper | default | opus47-1m-high | 7.2min | 29 | 0 | $2.10 | — | python | ok |
 | Semantic Version Bumper | default | sonnet46-200k | 8.0min | 29 | 4 | $1.05 | — | python | ok |
+| Semantic Version Bumper | powershell-tool | sonnet46-1m-medium | 4.7min | 29 | 1 | $0.70 | — | powershell | ok |
 | PR Label Assigner | bash | opus47-1m-medium | 4.2min | 29 | 1 | $1.08 | — | bash | ok |
 | PR Label Assigner | powershell | sonnet46-200k | 12.3min | 29 | 2 | $1.46 | — | powershell | ok |
 | Dependency License Checker | default | opus46-200k | 4.2min | 29 | 3 | $0.91 | — | python | ok |
 | Dependency License Checker | powershell | sonnet46-200k | 7.2min | 29 | 3 | $1.13 | — | powershell | ok |
 | Test Results Aggregator | default | opus47-200k-medium | 4.1min | 29 | 0 | $1.33 | — | python | ok |
+| Test Results Aggregator | powershell | sonnet46-1m-medium | 7.4min | 29 | 1 | $1.13 | — | powershell | ok |
 | Environment Matrix Generator | typescript-bun | opus46-200k | 6.0min | 29 | 3 | $1.16 | — | typescript | ok |
 | Artifact Cleanup Script | bash | opus47-1m-medium | 7.1min | 29 | 0 | $1.68 | — | bash | ok |
 | Artifact Cleanup Script | bash | opus47-1m-xhigh | 10.9min | 29 | 1 | $2.71 | — | bash | ok |
 | Secret Rotation Validator | powershell-tool | opus47-200k-medium | 5.7min | 29 | 0 | $1.65 | — | powershell | ok |
-| Semantic Version Bumper | powershell-tool | sonnet46-1m-medium | 4.7min | 29 | 1 | $0.70 | — | powershell | ok |
-| Test Results Aggregator | powershell | sonnet46-1m-medium | 7.4min | 29 | 1 | $1.13 | — | powershell | ok |
 | Semantic Version Bumper | bash | opus47-200k-medium | 4.8min | 30 | 1 | $1.33 | — | bash | ok |
 | Semantic Version Bumper | bash | sonnet46-200k | 5.7min | 30 | 1 | $0.88 | — | bash | ok |
 | Semantic Version Bumper | powershell | sonnet46-200k | 12.3min | 30 | 2 | $1.43 | — | powershell | ok |
 | Dependency License Checker | bash | opus47-1m-medium | 4.3min | 30 | 1 | $1.15 | — | bash | ok |
+| Dependency License Checker | powershell | sonnet46-1m-medium | 6.0min | 30 | 0 | $0.97 | — | powershell | ok |
 | Dependency License Checker | powershell-tool | opus47-1m-medium | 5.5min | 30 | 1 | $1.47 | — | powershell | ok |
 | Dependency License Checker | typescript-bun | opus46-200k | 4.7min | 30 | 1 | $1.09 | — | typescript | ok |
 | Test Results Aggregator | typescript-bun | opus47-200k-medium | 6.1min | 30 | 0 | $1.33 | — | typescript | ok |
-| Environment Matrix Generator | default | opus46-200k | 7.3min | 30 | 2 | $1.40 | — | python | ok |
-| Artifact Cleanup Script | powershell | sonnet46-200k | 9.9min | 30 | 1 | $1.47 | — | powershell | ok |
-| Secret Rotation Validator | powershell | opus47-200k-medium | 6.2min | 30 | 0 | $1.50 | — | powershell | ok |
-| Dependency License Checker | powershell | sonnet46-1m-medium | 6.0min | 30 | 0 | $0.97 | — | powershell | ok |
 | Environment Matrix Generator | bash | sonnet46-1m-medium | 3.5min | 30 | 3 | $0.60 | — | bash | ok |
+| Environment Matrix Generator | default | opus46-200k | 7.3min | 30 | 2 | $1.40 | — | python | ok |
 | Environment Matrix Generator | typescript-bun | sonnet46-1m-medium | 9.1min | 30 | 3 | $1.29 | — | typescript | ok |
 | Artifact Cleanup Script | default | sonnet46-1m-medium | 4.3min | 30 | 4 | $0.72 | — | python | ok |
+| Artifact Cleanup Script | powershell | sonnet46-200k | 9.9min | 30 | 1 | $1.47 | — | powershell | ok |
+| Secret Rotation Validator | powershell | opus47-200k-medium | 6.2min | 30 | 0 | $1.50 | — | powershell | ok |
 | Secret Rotation Validator | powershell-tool | sonnet46-1m-medium | 9.2min | 30 | 1 | $1.28 | — | powershell | ok |
 | Semantic Version Bumper | typescript-bun | opus46-200k | 4.5min | 31 | 1 | $1.00 | — | typescript | ok |
 | Semantic Version Bumper | typescript-bun | opus47-200k-medium | 4.5min | 31 | 1 | $1.30 | — | typescript | ok |
+| PR Label Assigner | bash | sonnet46-1m-medium | 9.7min | 31 | 3 | $1.31 | — | bash | ok |
 | PR Label Assigner | default | haiku45-200k | 3.8min | 31 | 2 | $0.31 | — | python | ok |
+| PR Label Assigner | default | sonnet46-1m-medium | 4.1min | 31 | 3 | $0.75 | — | python | ok |
 | PR Label Assigner | powershell | opus47-200k-medium | 5.5min | 31 | 0 | $1.43 | — | powershell | ok |
+| Test Results Aggregator | default | sonnet46-1m-medium | 6.1min | 31 | 1 | $1.14 | — | python | ok |
 | Environment Matrix Generator | default | opus47-1m-medium | 5.4min | 31 | 0 | $1.33 | — | python | ok |
 | Environment Matrix Generator | powershell | opus47-200k-medium | 5.6min | 31 | 0 | $1.51 | — | powershell | ok |
 | Artifact Cleanup Script | typescript-bun | opus47-200k-medium | 6.1min | 31 | 0 | $1.62 | — | typescript | ok |
-| PR Label Assigner | default | sonnet46-1m-medium | 4.1min | 31 | 3 | $0.75 | — | python | ok |
-| PR Label Assigner | bash | sonnet46-1m-medium | 9.7min | 31 | 3 | $1.31 | — | bash | ok |
-| Test Results Aggregator | default | sonnet46-1m-medium | 6.1min | 31 | 1 | $1.14 | — | python | ok |
 | Semantic Version Bumper | bash | opus47-1m-high | 6.9min | 32 | 2 | $1.61 | — | bash | ok |
+| Semantic Version Bumper | powershell | sonnet46-1m-medium | 7.9min | 32 | 1 | $1.19 | — | powershell | ok |
 | Dependency License Checker | powershell-tool | opus47-200k-medium | 6.0min | 32 | 0 | $1.78 | — | powershell | ok |
 | Environment Matrix Generator | powershell | haiku45-200k | 3.2min | 32 | 3 | $0.31 | — | powershell | ok |
 | Environment Matrix Generator | typescript-bun | opus47-200k-medium | 4.1min | 32 | 0 | $1.35 | — | typescript | ok |
@@ -3248,68 +3259,67 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Artifact Cleanup Script | powershell-tool | opus46-200k | 18.5min | 32 | 1 | $3.28 | — | powershell | ok |
 | Secret Rotation Validator | typescript-bun | opus47-1m-medium | 4.9min | 32 | 1 | $1.32 | — | typescript | ok |
 | Secret Rotation Validator | typescript-bun | opus47-1m-xhigh | 10.7min | 32 | 0 | $2.99 | — | typescript | ok |
-| Semantic Version Bumper | powershell | sonnet46-1m-medium | 7.9min | 32 | 1 | $1.19 | — | powershell | ok |
 | Semantic Version Bumper | powershell-tool | opus46-200k | 5.1min | 33 | 1 | $1.22 | — | powershell | ok |
 | Environment Matrix Generator | default | opus47-1m-high | 8.0min | 33 | 0 | $1.92 | — | python | ok |
 | Environment Matrix Generator | powershell | opus47-1m-high | 10.5min | 33 | 0 | $2.66 | — | powershell | ok |
 | Secret Rotation Validator | powershell-tool | sonnet46-200k | 10.3min | 33 | 3 | $1.28 | — | powershell | ok |
 | Secret Rotation Validator | typescript-bun | sonnet46-1m-medium | 10.0min | 33 | 3 | $1.42 | — | typescript | ok |
+| Semantic Version Bumper | default | sonnet46-1m-medium | 5.8min | 34 | 3 | $0.96 | — | python | ok |
 | PR Label Assigner | powershell-tool | opus47-1m-medium | 6.4min | 34 | 0 | $1.62 | — | powershell | ok |
 | PR Label Assigner | typescript-bun | opus46-200k | 5.5min | 34 | 0 | $0.98 | — | typescript | ok |
 | Dependency License Checker | default | haiku45-200k | 4.8min | 34 | 2 | $0.32 | — | python | ok |
+| Test Results Aggregator | bash | sonnet46-1m-medium | 10.3min | 34 | 4 | $1.48 | — | bash | ok |
 | Artifact Cleanup Script | bash | opus47-200k-medium | 6.3min | 34 | 0 | $1.69 | — | bash | ok |
 | Artifact Cleanup Script | default | opus46-200k | 8.3min | 34 | 3 | $1.61 | — | python | ok |
 | Artifact Cleanup Script | typescript-bun | opus47-1m-medium | 8.4min | 34 | 0 | $1.67 | — | typescript | ok |
 | Secret Rotation Validator | default | opus46-200k | 8.3min | 34 | 5 | $2.04 | — | python | ok |
 | Secret Rotation Validator | default | opus47-1m-high | 7.4min | 34 | 0 | $1.94 | — | python | ok |
-| Secret Rotation Validator | powershell-tool | haiku45-200k | 4.3min | 34 | 1 | $0.38 | — | powershell | ok |
-| Semantic Version Bumper | default | sonnet46-1m-medium | 5.8min | 34 | 3 | $0.96 | — | python | ok |
-| Test Results Aggregator | bash | sonnet46-1m-medium | 10.3min | 34 | 4 | $1.48 | — | bash | ok |
 | Secret Rotation Validator | powershell | sonnet46-1m-medium | 8.4min | 34 | 3 | $1.20 | — | powershell | ok |
+| Secret Rotation Validator | powershell-tool | haiku45-200k | 4.3min | 34 | 1 | $0.38 | — | powershell | ok |
 | PR Label Assigner | default | opus46-200k | 4.8min | 35 | 3 | $1.02 | — | python | ok |
 | PR Label Assigner | typescript-bun | opus47-200k-medium | 15.2min | 35 | 1 | $1.47 | — | typescript | ok |
+| Dependency License Checker | bash | sonnet46-1m-medium | 8.7min | 35 | 3 | $1.24 | — | bash | ok |
 | Dependency License Checker | default | opus47-1m-medium | 7.7min | 35 | 0 | $1.76 | — | python | ok |
+| Dependency License Checker | default | sonnet46-1m-medium | 6.8min | 35 | 4 | $1.16 | — | python | ok |
+| Dependency License Checker | typescript-bun | sonnet46-1m-medium | 6.0min | 35 | 2 | $1.07 | — | typescript | ok |
 | Test Results Aggregator | bash | opus47-200k-medium | 5.3min | 35 | 2 | $1.47 | — | bash | ok |
 | Environment Matrix Generator | powershell | opus47-1m-xhigh | 9.2min | 35 | 1 | $2.57 | — | powershell | ok |
 | Environment Matrix Generator | typescript-bun | opus47-1m-medium | 4.3min | 35 | 1 | $1.21 | — | typescript | ok |
 | Artifact Cleanup Script | typescript-bun | opus46-200k | 5.0min | 35 | 2 | $1.19 | — | typescript | ok |
 | Secret Rotation Validator | powershell | sonnet46-200k | 12.7min | 35 | 1 | $1.81 | — | powershell | ok |
-| Dependency License Checker | default | sonnet46-1m-medium | 6.8min | 35 | 4 | $1.16 | — | python | ok |
-| Dependency License Checker | bash | sonnet46-1m-medium | 8.7min | 35 | 3 | $1.24 | — | bash | ok |
-| Dependency License Checker | typescript-bun | sonnet46-1m-medium | 6.0min | 35 | 2 | $1.07 | — | typescript | ok |
+| Semantic Version Bumper | typescript-bun | sonnet46-1m-medium | 5.6min | 36 | 1 | $1.01 | — | typescript | ok |
 | PR Label Assigner | bash | opus47-200k-medium | 4.2min | 36 | 4 | $1.45 | — | bash | ok |
 | PR Label Assigner | typescript-bun | opus47-1m-high | 6.2min | 36 | 1 | $1.85 | — | typescript | ok |
+| PR Label Assigner | typescript-bun | sonnet46-1m-medium | 6.2min | 36 | 1 | $0.92 | — | typescript | ok |
 | Test Results Aggregator | default | opus46-200k | 6.1min | 36 | 3 | $1.36 | — | python | ok |
+| Test Results Aggregator | powershell-tool | sonnet46-1m-medium | 16.7min | 36 | 5 | $2.00 | — | powershell | ok |
 | Environment Matrix Generator | powershell-tool | haiku45-200k | 10.1min | 36 | 1 | $0.36 | — | powershell | ok |
 | Artifact Cleanup Script | bash | sonnet46-200k | 8.4min | 36 | 5 | $1.42 | — | bash | ok |
-| Secret Rotation Validator | powershell-tool | opus47-1m-high | 10.5min | 36 | 0 | $2.51 | — | powershell | ok |
-| Semantic Version Bumper | typescript-bun | sonnet46-1m-medium | 5.6min | 36 | 1 | $1.01 | — | typescript | ok |
-| PR Label Assigner | typescript-bun | sonnet46-1m-medium | 6.2min | 36 | 1 | $0.92 | — | typescript | ok |
-| Test Results Aggregator | powershell-tool | sonnet46-1m-medium | 16.7min | 36 | 5 | $2.00 | — | powershell | ok |
 | Secret Rotation Validator | bash | sonnet46-1m-medium | 8.2min | 36 | 1 | $1.17 | — | bash | ok |
+| Secret Rotation Validator | powershell-tool | opus47-1m-high | 10.5min | 36 | 0 | $2.51 | — | powershell | ok |
 | Semantic Version Bumper | default | opus46-200k | 5.5min | 37 | 1 | $1.25 | — | python | ok |
 | Semantic Version Bumper | default | opus47-1m-xhigh | 7.6min | 37 | 0 | $2.10 | — | python | ok |
 | Semantic Version Bumper | powershell | opus47-200k-medium | 5.2min | 37 | 1 | $1.59 | — | powershell | ok |
 | Dependency License Checker | default | opus47-200k-medium | 6.1min | 37 | 0 | $1.75 | — | python | ok |
 | Dependency License Checker | typescript-bun | haiku45-200k | 4.5min | 37 | 4 | $0.32 | — | typescript | ok |
 | Test Results Aggregator | default | haiku45-200k | 3.2min | 37 | 5 | $0.35 | — | python | ok |
+| Semantic Version Bumper | bash | sonnet46-1m-medium | 7.2min | 38 | 1 | $0.96 | — | bash | ok |
 | PR Label Assigner | powershell-tool | sonnet46-200k | 11.8min | 38 | 3 | $1.76 | — | powershell | ok |
 | Dependency License Checker | bash | opus47-1m-xhigh | 6.1min | 38 | 0 | $2.08 | — | bash | ok |
 | Dependency License Checker | default | opus47-1m-high | 7.3min | 38 | 0 | $2.05 | — | python | ok |
 | Dependency License Checker | powershell | opus46-200k | 6.4min | 38 | 0 | $1.35 | — | powershell | ok |
 | Dependency License Checker | powershell-tool | haiku45-200k | 5.2min | 38 | 1 | $0.39 | — | powershell | ok |
 | Dependency License Checker | powershell-tool | opus46-200k | 6.1min | 38 | 3 | $1.45 | — | powershell | ok |
-| Artifact Cleanup Script | typescript-bun | sonnet46-200k | 8.3min | 38 | 2 | $1.40 | — | typescript | ok |
-| Semantic Version Bumper | bash | sonnet46-1m-medium | 7.2min | 38 | 1 | $0.96 | — | bash | ok |
 | Test Results Aggregator | typescript-bun | sonnet46-1m-medium | 4.6min | 38 | 3 | $0.94 | — | typescript | ok |
 | Environment Matrix Generator | powershell | sonnet46-1m-medium | 9.3min | 38 | 2 | $1.47 | — | powershell | ok |
 | Artifact Cleanup Script | bash | sonnet46-1m-medium | 10.1min | 38 | 0 | $1.59 | — | bash | ok |
+| Artifact Cleanup Script | typescript-bun | sonnet46-200k | 8.3min | 38 | 2 | $1.40 | — | typescript | ok |
 | Semantic Version Bumper | powershell | opus47-1m-high | 9.5min | 39 | 0 | $2.36 | — | powershell | ok |
 | Semantic Version Bumper | typescript-bun | sonnet46-200k | 9.3min | 39 | 1 | $1.17 | — | typescript | ok |
+| Dependency License Checker | powershell-tool | sonnet46-1m-medium | 7.9min | 39 | 2 | $1.42 | — | powershell | ok |
 | Test Results Aggregator | powershell-tool | sonnet46-200k | 12.8min | 39 | 0 | $1.70 | — | powershell | ok |
 | Environment Matrix Generator | typescript-bun | opus47-1m-xhigh | 9.8min | 39 | 1 | $2.84 | — | typescript | ok |
 | Artifact Cleanup Script | default | sonnet46-200k | 11.5min | 39 | 3 | $1.55 | — | python | ok |
-| Dependency License Checker | powershell-tool | sonnet46-1m-medium | 7.9min | 39 | 2 | $1.42 | — | powershell | ok |
 | Semantic Version Bumper | powershell-tool | opus47-1m-high | 7.8min | 40 | 0 | $2.59 | — | powershell | ok |
 | Test Results Aggregator | default | opus47-1m-high | 10.3min | 40 | 0 | $2.47 | — | python | ok |
 | Test Results Aggregator | powershell | opus47-1m-medium | 11.2min | 40 | 0 | $2.26 | — | powershell | ok |
@@ -3374,9 +3384,9 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | PR Label Assigner | powershell | opus47-1m-high | 15.3min | 51 | 1 | $3.83 | — | powershell | ok |
 | PR Label Assigner | typescript-bun | sonnet46-200k | 6.9min | 51 | 7 | $1.45 | — | typescript | ok |
 | Dependency License Checker | default | opus47-1m-xhigh | 9.4min | 51 | 0 | $3.22 | — | python | ok |
+| Environment Matrix Generator | powershell-tool | sonnet46-1m-medium | 14.0min | 51 | 4 | $2.41 | — | powershell | ok |
 | Secret Rotation Validator | bash | opus46-200k | 7.4min | 51 | 5 | $1.71 | — | bash | ok |
 | Secret Rotation Validator | powershell | opus46-200k | 7.2min | 51 | 0 | $1.78 | — | powershell | ok |
-| Environment Matrix Generator | powershell-tool | sonnet46-1m-medium | 14.0min | 51 | 4 | $2.41 | — | powershell | ok |
 | PR Label Assigner | bash | opus47-1m-xhigh | 14.5min | 52 | 0 | $3.83 | — | bash | ok |
 | Dependency License Checker | powershell | opus47-1m-xhigh | 13.9min | 52 | 0 | $3.72 | — | powershell | ok |
 | Test Results Aggregator | bash | sonnet46-200k | 17.4min | 52 | 4 | $1.97 | — | bash | ok |
@@ -3446,6 +3456,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Semantic Version Bumper | bash | opus47-1m-xhigh | 10.7min | 55 | 1 | $3.08 | — | bash | ok |
 | Semantic Version Bumper | bash | opus47-200k-medium | 4.8min | 30 | 1 | $1.33 | — | bash | ok |
 | Semantic Version Bumper | bash | sonnet46-200k | 5.7min | 30 | 1 | $0.88 | — | bash | ok |
+| Semantic Version Bumper | bash | sonnet46-1m-medium | 7.2min | 38 | 1 | $0.96 | — | bash | ok |
 | Semantic Version Bumper | default | haiku45-200k | 7.5min | 50 | 1 | $0.45 | — | javascript | ok |
 | Semantic Version Bumper | default | opus46-200k | 5.5min | 37 | 1 | $1.25 | — | python | ok |
 | Semantic Version Bumper | default | opus47-1m-high | 7.2min | 29 | 0 | $2.10 | — | python | ok |
@@ -3453,6 +3464,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Semantic Version Bumper | default | opus47-1m-xhigh | 7.6min | 37 | 0 | $2.10 | — | python | ok |
 | Semantic Version Bumper | default | opus47-200k-medium | 4.1min | 28 | 1 | $1.15 | — | python | ok |
 | Semantic Version Bumper | default | sonnet46-200k | 8.0min | 29 | 4 | $1.05 | — | python | ok |
+| Semantic Version Bumper | default | sonnet46-1m-medium | 5.8min | 34 | 3 | $0.96 | — | python | ok |
 | Semantic Version Bumper | powershell | haiku45-200k | 9.8min | 71 | 3 | $0.70 | — | powershell | ok |
 | Semantic Version Bumper | powershell | opus46-200k | 6.0min | 28 | 2 | $1.12 | — | powershell | ok |
 | Semantic Version Bumper | powershell | opus47-1m-high | 9.5min | 39 | 0 | $2.36 | — | powershell | ok |
@@ -3460,6 +3472,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Semantic Version Bumper | powershell | opus47-1m-xhigh | 15.4min | 63 | 1 | $4.72 | — | powershell | ok |
 | Semantic Version Bumper | powershell | opus47-200k-medium | 5.2min | 37 | 1 | $1.59 | — | powershell | ok |
 | Semantic Version Bumper | powershell | sonnet46-200k | 12.3min | 30 | 2 | $1.43 | — | powershell | ok |
+| Semantic Version Bumper | powershell | sonnet46-1m-medium | 7.9min | 32 | 1 | $1.19 | — | powershell | ok |
 | Semantic Version Bumper | powershell-tool | haiku45-200k | 9.9min | 48 | 2 | $0.53 | — | powershell | ok |
 | Semantic Version Bumper | powershell-tool | opus46-200k | 5.1min | 33 | 1 | $1.22 | — | powershell | ok |
 | Semantic Version Bumper | powershell-tool | opus47-1m-high | 7.8min | 40 | 0 | $2.59 | — | powershell | ok |
@@ -3467,6 +3480,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Semantic Version Bumper | powershell-tool | opus47-1m-xhigh | 9.3min | 46 | 0 | $2.72 | — | powershell | ok |
 | Semantic Version Bumper | powershell-tool | opus47-200k-medium | 6.3min | 25 | 0 | $1.52 | — | powershell | ok |
 | Semantic Version Bumper | powershell-tool | sonnet46-200k | 12.7min | 42 | 0 | $1.92 | — | powershell | ok |
+| Semantic Version Bumper | powershell-tool | sonnet46-1m-medium | 4.7min | 29 | 1 | $0.70 | — | powershell | ok |
 | Semantic Version Bumper | typescript-bun | haiku45-200k | 8.5min | 55 | 4 | $0.63 | — | typescript | ok |
 | Semantic Version Bumper | typescript-bun | opus46-200k | 4.5min | 31 | 1 | $1.00 | — | typescript | ok |
 | Semantic Version Bumper | typescript-bun | opus47-1m-high | 9.6min | 59 | 0 | $2.82 | — | typescript | ok |
@@ -3474,6 +3488,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Semantic Version Bumper | typescript-bun | opus47-1m-xhigh | 11.6min | 59 | 1 | $3.27 | — | typescript | ok |
 | Semantic Version Bumper | typescript-bun | opus47-200k-medium | 4.5min | 31 | 1 | $1.30 | — | typescript | ok |
 | Semantic Version Bumper | typescript-bun | sonnet46-200k | 9.3min | 39 | 1 | $1.17 | — | typescript | ok |
+| Semantic Version Bumper | typescript-bun | sonnet46-1m-medium | 5.6min | 36 | 1 | $1.01 | — | typescript | ok |
 | PR Label Assigner | bash | haiku45-200k | 6.5min | 68 | 6 | $0.60 | — | bash | ok |
 | PR Label Assigner | bash | opus46-200k | 6.7min | 73 | 10 | $1.90 | — | bash | ok |
 | PR Label Assigner | bash | opus47-1m-high | 6.3min | 41 | 0 | $1.71 | — | bash | ok |
@@ -3481,6 +3496,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | PR Label Assigner | bash | opus47-1m-xhigh | 14.5min | 52 | 0 | $3.83 | — | bash | ok |
 | PR Label Assigner | bash | opus47-200k-medium | 4.2min | 36 | 4 | $1.45 | — | bash | ok |
 | PR Label Assigner | bash | sonnet46-200k | 13.4min | 47 | 5 | $2.21 | — | bash | ok |
+| PR Label Assigner | bash | sonnet46-1m-medium | 9.7min | 31 | 3 | $1.31 | — | bash | ok |
 | PR Label Assigner | default | haiku45-200k | 3.8min | 31 | 2 | $0.31 | — | python | ok |
 | PR Label Assigner | default | opus46-200k | 4.8min | 35 | 3 | $1.02 | — | python | ok |
 | PR Label Assigner | default | opus47-1m-high | 7.4min | 43 | 0 | $2.23 | — | python | ok |
@@ -3488,6 +3504,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | PR Label Assigner | default | opus47-1m-xhigh | 11.9min | 59 | 1 | $3.91 | — | python | ok |
 | PR Label Assigner | default | opus47-200k-medium | 2.8min | 19 | 0 | $0.77 | — | python | ok |
 | PR Label Assigner | default | sonnet46-200k | 11.4min | 45 | 4 | $1.66 | — | python | ok |
+| PR Label Assigner | default | sonnet46-1m-medium | 4.1min | 31 | 3 | $0.75 | — | python | ok |
 | PR Label Assigner | powershell | haiku45-200k | 29.1min | 49 | 1 | $0.51 | — | powershell | timeout |
 | PR Label Assigner | powershell | opus46-200k | 12.0min | 21 | 1 | $1.96 | — | powershell | ok |
 | PR Label Assigner | powershell | opus47-1m-high | 15.3min | 51 | 1 | $3.83 | — | powershell | ok |
@@ -3495,6 +3512,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | PR Label Assigner | powershell | opus47-1m-xhigh | 11.3min | 56 | 2 | $3.56 | — | powershell | ok |
 | PR Label Assigner | powershell | opus47-200k-medium | 5.5min | 31 | 0 | $1.43 | — | powershell | ok |
 | PR Label Assigner | powershell | sonnet46-200k | 12.3min | 29 | 2 | $1.46 | — | powershell | ok |
+| PR Label Assigner | powershell | sonnet46-1m-medium | 6.9min | 21 | 3 | $0.79 | — | powershell | ok |
 | PR Label Assigner | powershell-tool | haiku45-200k | 8.7min | 64 | 2 | $0.62 | — | powershell | ok |
 | PR Label Assigner | powershell-tool | opus46-200k | 10.7min | 20 | 1 | $1.70 | — | powershell | ok |
 | PR Label Assigner | powershell-tool | opus47-1m-high | 9.4min | 45 | 0 | $2.54 | — | powershell | ok |
@@ -3502,6 +3520,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | PR Label Assigner | powershell-tool | opus47-1m-xhigh | 28.0min | 93 | 8 | $9.31 | — | powershell | timeout |
 | PR Label Assigner | powershell-tool | opus47-200k-medium | 3.9min | 23 | 0 | $1.01 | — | powershell | ok |
 | PR Label Assigner | powershell-tool | sonnet46-200k | 11.8min | 38 | 3 | $1.76 | — | powershell | ok |
+| PR Label Assigner | powershell-tool | sonnet46-1m-medium | 8.9min | 21 | 1 | $1.16 | — | powershell | ok |
 | PR Label Assigner | typescript-bun | haiku45-200k | 4.0min | 47 | 2 | $0.33 | — | typescript | ok |
 | PR Label Assigner | typescript-bun | opus46-200k | 5.5min | 34 | 0 | $0.98 | — | typescript | ok |
 | PR Label Assigner | typescript-bun | opus47-1m-high | 6.2min | 36 | 1 | $1.85 | — | typescript | ok |
@@ -3509,6 +3528,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | PR Label Assigner | typescript-bun | opus47-1m-xhigh | 12.1min | 64 | 0 | $3.19 | — | typescript | ok |
 | PR Label Assigner | typescript-bun | opus47-200k-medium | 15.2min | 35 | 1 | $1.47 | — | typescript | ok |
 | PR Label Assigner | typescript-bun | sonnet46-200k | 6.9min | 51 | 7 | $1.45 | — | typescript | ok |
+| PR Label Assigner | typescript-bun | sonnet46-1m-medium | 6.2min | 36 | 1 | $0.92 | — | typescript | ok |
 | Dependency License Checker | bash | haiku45-200k | 10.8min | 93 | 5 | $1.17 | — | bash | ok |
 | Dependency License Checker | bash | opus46-200k | 6.4min | 57 | 7 | $1.59 | — | bash | ok |
 | Dependency License Checker | bash | opus47-1m-high | 8.0min | 46 | 1 | $2.59 | — | bash | ok |
@@ -3516,6 +3536,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Dependency License Checker | bash | opus47-1m-xhigh | 6.1min | 38 | 0 | $2.08 | — | bash | ok |
 | Dependency License Checker | bash | opus47-200k-medium | 3.5min | 22 | 1 | $0.89 | — | bash | ok |
 | Dependency License Checker | bash | sonnet46-200k | 11.9min | 53 | 7 | $1.90 | — | bash | ok |
+| Dependency License Checker | bash | sonnet46-1m-medium | 8.7min | 35 | 3 | $1.24 | — | bash | ok |
 | Dependency License Checker | default | haiku45-200k | 4.8min | 34 | 2 | $0.32 | — | python | ok |
 | Dependency License Checker | default | opus46-200k | 4.2min | 29 | 3 | $0.91 | — | python | ok |
 | Dependency License Checker | default | opus47-1m-high | 7.3min | 38 | 0 | $2.05 | — | python | ok |
@@ -3523,6 +3544,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Dependency License Checker | default | opus47-1m-xhigh | 9.4min | 51 | 0 | $3.22 | — | python | ok |
 | Dependency License Checker | default | opus47-200k-medium | 6.1min | 37 | 0 | $1.75 | — | python | ok |
 | Dependency License Checker | default | sonnet46-200k | 9.0min | 41 | 4 | $1.53 | — | python | ok |
+| Dependency License Checker | default | sonnet46-1m-medium | 6.8min | 35 | 4 | $1.16 | — | python | ok |
 | Dependency License Checker | powershell | haiku45-200k | 5.0min | 43 | 0 | $0.42 | — | powershell | ok |
 | Dependency License Checker | powershell | opus46-200k | 6.4min | 38 | 0 | $1.35 | — | powershell | ok |
 | Dependency License Checker | powershell | opus47-1m-high | 11.0min | 47 | 0 | $2.87 | — | powershell | ok |
@@ -3530,6 +3552,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Dependency License Checker | powershell | opus47-1m-xhigh | 13.9min | 52 | 0 | $3.72 | — | powershell | ok |
 | Dependency License Checker | powershell | opus47-200k-medium | 5.3min | 25 | 0 | $1.28 | — | powershell | ok |
 | Dependency License Checker | powershell | sonnet46-200k | 7.2min | 29 | 3 | $1.13 | — | powershell | ok |
+| Dependency License Checker | powershell | sonnet46-1m-medium | 6.0min | 30 | 0 | $0.97 | — | powershell | ok |
 | Dependency License Checker | powershell-tool | haiku45-200k | 5.2min | 38 | 1 | $0.39 | — | powershell | ok |
 | Dependency License Checker | powershell-tool | opus46-200k | 6.1min | 38 | 3 | $1.45 | — | powershell | ok |
 | Dependency License Checker | powershell-tool | opus47-1m-high | 7.3min | 28 | 0 | $1.62 | — | powershell | ok |
@@ -3537,6 +3560,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Dependency License Checker | powershell-tool | opus47-1m-xhigh | 12.7min | 46 | 0 | $3.88 | — | powershell | ok |
 | Dependency License Checker | powershell-tool | opus47-200k-medium | 6.0min | 32 | 0 | $1.78 | — | powershell | ok |
 | Dependency License Checker | powershell-tool | sonnet46-200k | 5.0min | 27 | 0 | $0.68 | — | powershell | ok |
+| Dependency License Checker | powershell-tool | sonnet46-1m-medium | 7.9min | 39 | 2 | $1.42 | — | powershell | ok |
 | Dependency License Checker | typescript-bun | haiku45-200k | 4.5min | 37 | 4 | $0.32 | — | typescript | ok |
 | Dependency License Checker | typescript-bun | opus46-200k | 4.7min | 30 | 1 | $1.09 | — | typescript | ok |
 | Dependency License Checker | typescript-bun | opus47-1m-high | 8.3min | 49 | 0 | $2.01 | — | typescript | ok |
@@ -3544,6 +3568,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Dependency License Checker | typescript-bun | opus47-1m-xhigh | 16.4min | 75 | 0 | $4.47 | — | typescript | ok |
 | Dependency License Checker | typescript-bun | opus47-200k-medium | 10.2min | 58 | 2 | $1.98 | — | typescript | ok |
 | Dependency License Checker | typescript-bun | sonnet46-200k | 8.3min | 47 | 1 | $1.31 | — | typescript | ok |
+| Dependency License Checker | typescript-bun | sonnet46-1m-medium | 6.0min | 35 | 2 | $1.07 | — | typescript | ok |
 | Test Results Aggregator | bash | haiku45-200k | 3.4min | 45 | 0 | $0.34 | — | bash | ok |
 | Test Results Aggregator | bash | opus46-200k | 19.3min | 47 | 7 | $1.54 | — | bash | ok |
 | Test Results Aggregator | bash | opus47-1m-high | 20.0min | 74 | 3 | $4.92 | — | bash | ok |
@@ -3551,6 +3576,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Test Results Aggregator | bash | opus47-1m-xhigh | 9.6min | 60 | 4 | $3.39 | — | bash | ok |
 | Test Results Aggregator | bash | opus47-200k-medium | 5.3min | 35 | 2 | $1.47 | — | bash | ok |
 | Test Results Aggregator | bash | sonnet46-200k | 17.4min | 52 | 4 | $1.97 | — | bash | ok |
+| Test Results Aggregator | bash | sonnet46-1m-medium | 10.3min | 34 | 4 | $1.48 | — | bash | ok |
 | Test Results Aggregator | default | haiku45-200k | 3.2min | 37 | 5 | $0.35 | — | python | ok |
 | Test Results Aggregator | default | opus46-200k | 6.1min | 36 | 3 | $1.36 | — | python | ok |
 | Test Results Aggregator | default | opus47-1m-high | 10.3min | 40 | 0 | $2.47 | — | python | ok |
@@ -3558,6 +3584,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Test Results Aggregator | default | opus47-1m-xhigh | 11.2min | 64 | 1 | $3.82 | — | python | ok |
 | Test Results Aggregator | default | opus47-200k-medium | 4.1min | 29 | 0 | $1.33 | — | python | ok |
 | Test Results Aggregator | default | sonnet46-200k | 7.7min | 44 | 2 | $1.30 | — | python | ok |
+| Test Results Aggregator | default | sonnet46-1m-medium | 6.1min | 31 | 1 | $1.14 | — | python | ok |
 | Test Results Aggregator | powershell | haiku45-200k | 6.6min | 49 | 1 | $0.47 | — | powershell | ok |
 | Test Results Aggregator | powershell | opus46-200k | 11.9min | 26 | 2 | $2.31 | — | powershell | ok |
 | Test Results Aggregator | powershell | opus47-1m-high | 8.7min | 46 | 2 | $2.72 | — | powershell | ok |
@@ -3565,6 +3592,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Test Results Aggregator | powershell | opus47-1m-xhigh | 9.8min | 44 | 0 | $2.99 | — | powershell | ok |
 | Test Results Aggregator | powershell | opus47-200k-medium | 8.1min | 42 | 0 | $2.29 | — | powershell | ok |
 | Test Results Aggregator | powershell | sonnet46-200k | 9.2min | 28 | 0 | $1.13 | — | powershell | ok |
+| Test Results Aggregator | powershell | sonnet46-1m-medium | 7.4min | 29 | 1 | $1.13 | — | powershell | ok |
 | Test Results Aggregator | powershell-tool | haiku45-200k | 7.6min | 57 | 2 | $0.58 | — | powershell | ok |
 | Test Results Aggregator | powershell-tool | opus46-200k | 8.5min | 24 | 1 | $1.59 | — | powershell | ok |
 | Test Results Aggregator | powershell-tool | opus47-1m-high | 17.3min | 79 | 1 | $5.01 | — | powershell | ok |
@@ -3572,6 +3600,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Test Results Aggregator | powershell-tool | opus47-1m-xhigh | 12.4min | 57 | 0 | $3.99 | — | powershell | ok |
 | Test Results Aggregator | powershell-tool | opus47-200k-medium | 8.2min | 42 | 0 | $2.21 | — | powershell | ok |
 | Test Results Aggregator | powershell-tool | sonnet46-200k | 12.8min | 39 | 0 | $1.70 | — | powershell | ok |
+| Test Results Aggregator | powershell-tool | sonnet46-1m-medium | 16.7min | 36 | 5 | $2.00 | — | powershell | ok |
 | Test Results Aggregator | typescript-bun | haiku45-200k | 8.2min | 68 | 7 | $0.70 | — | typescript | ok |
 | Test Results Aggregator | typescript-bun | opus46-200k | 9.0min | 62 | 5 | $2.16 | — | typescript | ok |
 | Test Results Aggregator | typescript-bun | opus47-1m-high | 10.1min | 53 | 1 | $3.69 | — | typescript | ok |
@@ -3579,6 +3608,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Test Results Aggregator | typescript-bun | opus47-1m-xhigh | 11.6min | 68 | 1 | $3.64 | — | typescript | ok |
 | Test Results Aggregator | typescript-bun | opus47-200k-medium | 6.1min | 30 | 0 | $1.33 | — | typescript | ok |
 | Test Results Aggregator | typescript-bun | sonnet46-200k | 9.5min | 67 | 4 | $2.05 | — | typescript | ok |
+| Test Results Aggregator | typescript-bun | sonnet46-1m-medium | 4.6min | 38 | 3 | $0.94 | — | typescript | ok |
 | Environment Matrix Generator | bash | haiku45-200k | 7.6min | 80 | 8 | $0.78 | — | bash | ok |
 | Environment Matrix Generator | bash | opus46-200k | 7.5min | 50 | 3 | $1.67 | — | bash | ok |
 | Environment Matrix Generator | bash | opus47-1m-high | 20.6min | 57 | 0 | $3.39 | — | bash | ok |
@@ -3586,6 +3616,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Environment Matrix Generator | bash | opus47-1m-xhigh | 10.7min | 43 | 2 | $3.05 | — | bash | ok |
 | Environment Matrix Generator | bash | opus47-200k-medium | 5.9min | 49 | 2 | $1.81 | — | bash | ok |
 | Environment Matrix Generator | bash | sonnet46-200k | 9.8min | 40 | 4 | $1.29 | — | bash | ok |
+| Environment Matrix Generator | bash | sonnet46-1m-medium | 3.5min | 30 | 3 | $0.60 | — | bash | ok |
 | Environment Matrix Generator | default | haiku45-200k | 5.0min | 48 | 4 | $0.44 | — | python | ok |
 | Environment Matrix Generator | default | opus46-200k | 7.3min | 30 | 2 | $1.40 | — | python | ok |
 | Environment Matrix Generator | default | opus47-1m-high | 8.0min | 33 | 0 | $1.92 | — | python | ok |
@@ -3593,6 +3624,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Environment Matrix Generator | default | opus47-1m-xhigh | 13.4min | 71 | 0 | $3.80 | — | python | ok |
 | Environment Matrix Generator | default | opus47-200k-medium | 3.4min | 22 | 1 | $0.98 | — | python | ok |
 | Environment Matrix Generator | default | sonnet46-200k | 6.8min | 46 | 4 | $1.28 | — | python | ok |
+| Environment Matrix Generator | default | sonnet46-1m-medium | 5.8min | 41 | 5 | $1.02 | — | python | ok |
 | Environment Matrix Generator | powershell | haiku45-200k | 3.2min | 32 | 3 | $0.31 | — | powershell | ok |
 | Environment Matrix Generator | powershell | opus46-200k | 13.1min | 40 | 0 | $2.85 | — | powershell | ok |
 | Environment Matrix Generator | powershell | opus47-1m-high | 10.5min | 33 | 0 | $2.66 | — | powershell | ok |
@@ -3600,6 +3632,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Environment Matrix Generator | powershell | opus47-1m-xhigh | 9.2min | 35 | 1 | $2.57 | — | powershell | ok |
 | Environment Matrix Generator | powershell | opus47-200k-medium | 5.6min | 31 | 0 | $1.51 | — | powershell | ok |
 | Environment Matrix Generator | powershell | sonnet46-200k | 15.1min | 53 | 7 | $2.98 | — | powershell | ok |
+| Environment Matrix Generator | powershell | sonnet46-1m-medium | 9.3min | 38 | 2 | $1.47 | — | powershell | ok |
 | Environment Matrix Generator | powershell-tool | haiku45-200k | 10.1min | 36 | 1 | $0.36 | — | powershell | ok |
 | Environment Matrix Generator | powershell-tool | opus46-200k | 3.9min | 25 | 1 | $0.87 | — | powershell | ok |
 | Environment Matrix Generator | powershell-tool | opus47-1m-high | 18.4min | 90 | 2 | $6.68 | — | powershell | ok |
@@ -3607,6 +3640,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Environment Matrix Generator | powershell-tool | opus47-1m-xhigh | 9.6min | 45 | 0 | $3.14 | — | powershell | ok |
 | Environment Matrix Generator | powershell-tool | opus47-200k-medium | 4.9min | 27 | 0 | $1.14 | — | powershell | ok |
 | Environment Matrix Generator | powershell-tool | sonnet46-200k | 15.1min | 48 | 3 | $1.83 | — | powershell | ok |
+| Environment Matrix Generator | powershell-tool | sonnet46-1m-medium | 14.0min | 51 | 4 | $2.41 | — | powershell | ok |
 | Environment Matrix Generator | typescript-bun | haiku45-200k | 5.2min | 40 | 0 | $0.40 | — | typescript | ok |
 | Environment Matrix Generator | typescript-bun | opus46-200k | 6.0min | 29 | 3 | $1.16 | — | typescript | ok |
 | Environment Matrix Generator | typescript-bun | opus47-1m-high | 8.1min | 48 | 0 | $2.51 | — | typescript | ok |
@@ -3614,6 +3648,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Environment Matrix Generator | typescript-bun | opus47-1m-xhigh | 9.8min | 39 | 1 | $2.84 | — | typescript | ok |
 | Environment Matrix Generator | typescript-bun | opus47-200k-medium | 4.1min | 32 | 0 | $1.35 | — | typescript | ok |
 | Environment Matrix Generator | typescript-bun | sonnet46-200k | 10.2min | 49 | 3 | $1.46 | — | typescript | ok |
+| Environment Matrix Generator | typescript-bun | sonnet46-1m-medium | 9.1min | 30 | 3 | $1.29 | — | typescript | ok |
 | Artifact Cleanup Script | bash | haiku45-200k | 7.6min | 88 | 7 | $0.93 | — | bash | ok |
 | Artifact Cleanup Script | bash | opus46-200k | 5.2min | 40 | 3 | $1.48 | — | bash | ok |
 | Artifact Cleanup Script | bash | opus47-1m-high | 5.7min | 28 | 3 | $1.59 | — | bash | ok |
@@ -3621,6 +3656,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Artifact Cleanup Script | bash | opus47-1m-xhigh | 10.9min | 29 | 1 | $2.71 | — | bash | ok |
 | Artifact Cleanup Script | bash | opus47-200k-medium | 6.3min | 34 | 0 | $1.69 | — | bash | ok |
 | Artifact Cleanup Script | bash | sonnet46-200k | 8.4min | 36 | 5 | $1.42 | — | bash | ok |
+| Artifact Cleanup Script | bash | sonnet46-1m-medium | 10.1min | 38 | 0 | $1.59 | — | bash | ok |
 | Artifact Cleanup Script | default | haiku45-200k | 4.4min | 32 | 3 | $0.37 | — | python | ok |
 | Artifact Cleanup Script | default | opus46-200k | 8.3min | 34 | 3 | $1.61 | — | python | ok |
 | Artifact Cleanup Script | default | opus47-1m-high | 8.1min | 40 | 0 | $2.68 | — | python | ok |
@@ -3628,6 +3664,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Artifact Cleanup Script | default | opus47-1m-xhigh | 11.7min | 60 | 1 | $3.89 | — | python | ok |
 | Artifact Cleanup Script | default | opus47-200k-medium | 4.4min | 20 | 0 | $1.05 | — | python | ok |
 | Artifact Cleanup Script | default | sonnet46-200k | 11.5min | 39 | 3 | $1.55 | — | python | ok |
+| Artifact Cleanup Script | default | sonnet46-1m-medium | 4.3min | 30 | 4 | $0.72 | — | python | ok |
 | Artifact Cleanup Script | powershell | haiku45-200k | 5.5min | 46 | 3 | $0.46 | — | powershell | ok |
 | Artifact Cleanup Script | powershell | opus46-200k | 5.2min | 27 | 2 | $1.14 | — | powershell | ok |
 | Artifact Cleanup Script | powershell | opus47-1m-high | 9.2min | 42 | 0 | $2.86 | — | powershell | ok |
@@ -3635,6 +3672,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Artifact Cleanup Script | powershell | opus47-1m-xhigh | 10.0min | 40 | 1 | $2.78 | — | powershell | ok |
 | Artifact Cleanup Script | powershell | opus47-200k-medium | 4.7min | 24 | 0 | $1.12 | — | powershell | ok |
 | Artifact Cleanup Script | powershell | sonnet46-200k | 9.9min | 30 | 1 | $1.47 | — | powershell | ok |
+| Artifact Cleanup Script | powershell | sonnet46-1m-medium | 12.6min | 26 | 2 | $1.58 | — | powershell | ok |
 | Artifact Cleanup Script | powershell-tool | haiku45-200k | 4.5min | 43 | 1 | $0.47 | — | powershell | ok |
 | Artifact Cleanup Script | powershell-tool | opus46-200k | 18.5min | 32 | 1 | $3.28 | — | powershell | ok |
 | Artifact Cleanup Script | powershell-tool | opus47-1m-high | 12.0min | 60 | 2 | $3.90 | — | powershell | ok |
@@ -3642,6 +3680,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Artifact Cleanup Script | powershell-tool | opus47-1m-xhigh | 18.1min | 82 | 1 | $6.07 | — | powershell | ok |
 | Artifact Cleanup Script | powershell-tool | opus47-200k-medium | 4.7min | 26 | 0 | $1.41 | — | powershell | ok |
 | Artifact Cleanup Script | powershell-tool | sonnet46-200k | 7.0min | 26 | 1 | $1.08 | — | powershell | ok |
+| Artifact Cleanup Script | powershell-tool | sonnet46-1m-medium | 9.1min | 62 | 2 | $1.71 | — | powershell | ok |
 | Artifact Cleanup Script | typescript-bun | haiku45-200k | 4.3min | 48 | 4 | $0.47 | — | typescript | ok |
 | Artifact Cleanup Script | typescript-bun | opus46-200k | 5.0min | 35 | 2 | $1.19 | — | typescript | ok |
 | Artifact Cleanup Script | typescript-bun | opus47-1m-high | 9.6min | 63 | 1 | $3.56 | — | typescript | ok |
@@ -3649,6 +3688,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Artifact Cleanup Script | typescript-bun | opus47-1m-xhigh | 14.3min | 77 | 0 | $4.63 | — | typescript | ok |
 | Artifact Cleanup Script | typescript-bun | opus47-200k-medium | 6.1min | 31 | 0 | $1.62 | — | typescript | ok |
 | Artifact Cleanup Script | typescript-bun | sonnet46-200k | 8.3min | 38 | 2 | $1.40 | — | typescript | ok |
+| Artifact Cleanup Script | typescript-bun | sonnet46-1m-medium | 12.1min | 65 | 6 | $2.44 | — | typescript | ok |
 | Secret Rotation Validator | bash | haiku45-200k | 5.4min | 58 | 5 | $0.51 | — | bash | ok |
 | Secret Rotation Validator | bash | opus46-200k | 7.4min | 51 | 5 | $1.71 | — | bash | ok |
 | Secret Rotation Validator | bash | opus47-1m-high | 5.8min | 40 | 2 | $2.08 | — | bash | ok |
@@ -3656,6 +3696,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Secret Rotation Validator | bash | opus47-1m-xhigh | 12.0min | 43 | 0 | $3.48 | — | bash | ok |
 | Secret Rotation Validator | bash | opus47-200k-medium | 5.6min | 26 | 0 | $1.30 | — | bash | ok |
 | Secret Rotation Validator | bash | sonnet46-200k | 12.6min | 40 | 2 | $1.67 | — | bash | ok |
+| Secret Rotation Validator | bash | sonnet46-1m-medium | 8.2min | 36 | 1 | $1.17 | — | bash | ok |
 | Secret Rotation Validator | default | haiku45-200k | 4.6min | 46 | 8 | $0.44 | — | python | ok |
 | Secret Rotation Validator | default | opus46-200k | 8.3min | 34 | 5 | $2.04 | — | python | ok |
 | Secret Rotation Validator | default | opus47-1m-high | 7.4min | 34 | 0 | $1.94 | — | python | ok |
@@ -3663,6 +3704,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Secret Rotation Validator | default | opus47-1m-xhigh | 7.6min | 28 | 0 | $2.34 | — | python | ok |
 | Secret Rotation Validator | default | opus47-200k-medium | 4.9min | 26 | 0 | $1.21 | — | python | ok |
 | Secret Rotation Validator | default | sonnet46-200k | 14.9min | 48 | 4 | $1.90 | — | python | ok |
+| Secret Rotation Validator | default | sonnet46-1m-medium | 8.6min | 48 | 4 | $1.68 | — | python | ok |
 | Secret Rotation Validator | powershell | haiku45-200k | 8.4min | 72 | 2 | $0.88 | — | powershell | ok |
 | Secret Rotation Validator | powershell | opus46-200k | 7.2min | 51 | 0 | $1.78 | — | powershell | ok |
 | Secret Rotation Validator | powershell | opus47-1m-high | 7.6min | 40 | 0 | $2.32 | — | powershell | ok |
@@ -3670,6 +3712,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Secret Rotation Validator | powershell | opus47-1m-xhigh | 18.2min | 85 | 2 | $5.72 | — | powershell | ok |
 | Secret Rotation Validator | powershell | opus47-200k-medium | 6.2min | 30 | 0 | $1.50 | — | powershell | ok |
 | Secret Rotation Validator | powershell | sonnet46-200k | 12.7min | 35 | 1 | $1.81 | — | powershell | ok |
+| Secret Rotation Validator | powershell | sonnet46-1m-medium | 8.4min | 34 | 3 | $1.20 | — | powershell | ok |
 | Secret Rotation Validator | powershell-tool | haiku45-200k | 4.3min | 34 | 1 | $0.38 | — | powershell | ok |
 | Secret Rotation Validator | powershell-tool | opus46-200k | 3.7min | 21 | 1 | $0.80 | — | powershell | ok |
 | Secret Rotation Validator | powershell-tool | opus47-1m-high | 10.5min | 36 | 0 | $2.51 | — | powershell | ok |
@@ -3677,6 +3720,7 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Secret Rotation Validator | powershell-tool | opus47-1m-xhigh | 12.0min | 44 | 1 | $3.47 | — | powershell | ok |
 | Secret Rotation Validator | powershell-tool | opus47-200k-medium | 5.7min | 29 | 0 | $1.65 | — | powershell | ok |
 | Secret Rotation Validator | powershell-tool | sonnet46-200k | 10.3min | 33 | 3 | $1.28 | — | powershell | ok |
+| Secret Rotation Validator | powershell-tool | sonnet46-1m-medium | 9.2min | 30 | 1 | $1.28 | — | powershell | ok |
 | Secret Rotation Validator | typescript-bun | haiku45-200k | 3.9min | 55 | 7 | $0.49 | — | typescript | ok |
 | Secret Rotation Validator | typescript-bun | opus46-200k | 8.9min | 24 | 1 | $1.51 | — | typescript | ok |
 | Secret Rotation Validator | typescript-bun | opus47-1m-high | 10.4min | 53 | 0 | $2.83 | — | typescript | ok |
@@ -3684,40 +3728,6 @@ Automated analysis of test files: test count, assertion count, and test-to-code 
 | Secret Rotation Validator | typescript-bun | opus47-1m-xhigh | 10.7min | 32 | 0 | $2.99 | — | typescript | ok |
 | Secret Rotation Validator | typescript-bun | opus47-200k-medium | 7.2min | 43 | 1 | $1.84 | — | typescript | ok |
 | Secret Rotation Validator | typescript-bun | sonnet46-200k | 10.8min | 53 | 1 | $1.68 | — | typescript | ok |
-| Semantic Version Bumper | default | sonnet46-1m-medium | 5.8min | 34 | 3 | $0.96 | — | python | ok |
-| Semantic Version Bumper | powershell | sonnet46-1m-medium | 7.9min | 32 | 1 | $1.19 | — | powershell | ok |
-| Semantic Version Bumper | bash | sonnet46-1m-medium | 7.2min | 38 | 1 | $0.96 | — | bash | ok |
-| Semantic Version Bumper | powershell-tool | sonnet46-1m-medium | 4.7min | 29 | 1 | $0.70 | — | powershell | ok |
-| Semantic Version Bumper | typescript-bun | sonnet46-1m-medium | 5.6min | 36 | 1 | $1.01 | — | typescript | ok |
-| PR Label Assigner | default | sonnet46-1m-medium | 4.1min | 31 | 3 | $0.75 | — | python | ok |
-| PR Label Assigner | powershell | sonnet46-1m-medium | 6.9min | 21 | 3 | $0.79 | — | powershell | ok |
-| PR Label Assigner | bash | sonnet46-1m-medium | 9.7min | 31 | 3 | $1.31 | — | bash | ok |
-| PR Label Assigner | powershell-tool | sonnet46-1m-medium | 8.9min | 21 | 1 | $1.16 | — | powershell | ok |
-| PR Label Assigner | typescript-bun | sonnet46-1m-medium | 6.2min | 36 | 1 | $0.92 | — | typescript | ok |
-| Dependency License Checker | default | sonnet46-1m-medium | 6.8min | 35 | 4 | $1.16 | — | python | ok |
-| Dependency License Checker | powershell | sonnet46-1m-medium | 6.0min | 30 | 0 | $0.97 | — | powershell | ok |
-| Dependency License Checker | bash | sonnet46-1m-medium | 8.7min | 35 | 3 | $1.24 | — | bash | ok |
-| Dependency License Checker | powershell-tool | sonnet46-1m-medium | 7.9min | 39 | 2 | $1.42 | — | powershell | ok |
-| Dependency License Checker | typescript-bun | sonnet46-1m-medium | 6.0min | 35 | 2 | $1.07 | — | typescript | ok |
-| Test Results Aggregator | default | sonnet46-1m-medium | 6.1min | 31 | 1 | $1.14 | — | python | ok |
-| Test Results Aggregator | powershell | sonnet46-1m-medium | 7.4min | 29 | 1 | $1.13 | — | powershell | ok |
-| Test Results Aggregator | bash | sonnet46-1m-medium | 10.3min | 34 | 4 | $1.48 | — | bash | ok |
-| Test Results Aggregator | powershell-tool | sonnet46-1m-medium | 16.7min | 36 | 5 | $2.00 | — | powershell | ok |
-| Test Results Aggregator | typescript-bun | sonnet46-1m-medium | 4.6min | 38 | 3 | $0.94 | — | typescript | ok |
-| Environment Matrix Generator | default | sonnet46-1m-medium | 5.8min | 41 | 5 | $1.02 | — | python | ok |
-| Environment Matrix Generator | powershell | sonnet46-1m-medium | 9.3min | 38 | 2 | $1.47 | — | powershell | ok |
-| Environment Matrix Generator | bash | sonnet46-1m-medium | 3.5min | 30 | 3 | $0.60 | — | bash | ok |
-| Environment Matrix Generator | powershell-tool | sonnet46-1m-medium | 14.0min | 51 | 4 | $2.41 | — | powershell | ok |
-| Environment Matrix Generator | typescript-bun | sonnet46-1m-medium | 9.1min | 30 | 3 | $1.29 | — | typescript | ok |
-| Artifact Cleanup Script | default | sonnet46-1m-medium | 4.3min | 30 | 4 | $0.72 | — | python | ok |
-| Artifact Cleanup Script | powershell | sonnet46-1m-medium | 12.6min | 26 | 2 | $1.58 | — | powershell | ok |
-| Artifact Cleanup Script | bash | sonnet46-1m-medium | 10.1min | 38 | 0 | $1.59 | — | bash | ok |
-| Artifact Cleanup Script | powershell-tool | sonnet46-1m-medium | 9.1min | 62 | 2 | $1.71 | — | powershell | ok |
-| Artifact Cleanup Script | typescript-bun | sonnet46-1m-medium | 12.1min | 65 | 6 | $2.44 | — | typescript | ok |
-| Secret Rotation Validator | default | sonnet46-1m-medium | 8.6min | 48 | 4 | $1.68 | — | python | ok |
-| Secret Rotation Validator | powershell | sonnet46-1m-medium | 8.4min | 34 | 3 | $1.20 | — | powershell | ok |
-| Secret Rotation Validator | bash | sonnet46-1m-medium | 8.2min | 36 | 1 | $1.17 | — | bash | ok |
-| Secret Rotation Validator | powershell-tool | sonnet46-1m-medium | 9.2min | 30 | 1 | $1.28 | — | powershell | ok |
 | Secret Rotation Validator | typescript-bun | sonnet46-1m-medium | 10.0min | 33 | 3 | $1.42 | — | typescript | ok |
 
 </details>
