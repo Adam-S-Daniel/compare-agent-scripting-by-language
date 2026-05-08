@@ -1,0 +1,80 @@
+name: artifact-cleanup-script
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      max_age_days:
+        description: Maximum artifact age in days (0 disables)
+        required: false
+        default: '30'
+      max_total_size_bytes:
+        description: Maximum total size budget in bytes (0 disables)
+        required: false
+        default: '0'
+      keep_latest_per_workflow:
+        description: Keep latest N artifacts per workflow run (0 disables)
+        required: false
+        default: '0'
+      dry_run:
+        description: Dry-run mode
+        required: false
+        default: 'true'
+  schedule:
+    - cron: '17 4 * * *'
+
+permissions:
+  contents: read
+
+env:
+  FIXTURE_PATH: fixtures/artifacts.json
+  MAX_AGE_DAYS: '30'
+  MAX_TOTAL_SIZE_BYTES: '0'
+  KEEP_LATEST_PER_WORKFLOW: '0'
+  DRY_RUN: 'true'
+
+jobs:
+  unit-tests:
+    name: Pester unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $r = Invoke-Pester -Path ./Cleanup-Artifacts.Tests.ps1 -Output Detailed -PassThru
+          if ($r.FailedCount -gt 0) {
+            Write-Error "Pester tests failed: $($r.FailedCount)"
+            exit 1
+          }
+
+  cleanup-plan:
+    name: Compute cleanup plan
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run cleanup script against fixture
+        shell: pwsh
+        env:
+          MAX_AGE_DAYS: ${{ github.event.inputs.max_age_days || env.MAX_AGE_DAYS }}
+          MAX_TOTAL_SIZE_BYTES: ${{ github.event.inputs.max_total_size_bytes || env.MAX_TOTAL_SIZE_BYTES }}
+          KEEP_LATEST_PER_WORKFLOW: ${{ github.event.inputs.keep_latest_per_workflow || env.KEEP_LATEST_PER_WORKFLOW }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || env.DRY_RUN }}
+        run: |
+          . ./Cleanup-Artifacts.ps1
+          $dry = [bool]::Parse($env:DRY_RUN)
+          $plan = Invoke-ArtifactCleanup `
+            -InputPath $env:FIXTURE_PATH `
+            -MaxAgeDays ([int]$env:MAX_AGE_DAYS) `
+            -MaxTotalSizeBytes ([long]$env:MAX_TOTAL_SIZE_BYTES) `
+            -KeepLatestPerWorkflow ([int]$env:KEEP_LATEST_PER_WORKFLOW) `
+            -DryRun:$dry
+          Write-Host "RESULT_DELETED_COUNT=$($plan.DeletedCount)"
+          Write-Host "RESULT_RETAINED_COUNT=$($plan.RetainedCount)"
+          Write-Host "RESULT_RECLAIMED_BYTES=$($plan.TotalReclaimedBytes)"
