@@ -1,0 +1,41 @@
+name: PR Label Assigner
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install pytest
+
+      - name: Run unit tests
+        run: python -m pytest tests/ -v -s
+
+      - name: Run label assigner with fixture inputs
+        run: |
+          echo "--- fixture: docs only ---"
+          python pr_label_assigner.py --files "docs/intro.md,docs/api/reference.md"
+          echo "--- fixture: api and source ---"
+          python pr_label_assigner.py --files "src/api/users.py,src/models/user.py"
+          echo "--- fixture: tests label ---"
+          python pr_label_assigner.py --files "app.test.js,src/components/Button.test.tsx"
+          echo "--- fixture: mixed ---"
+          python pr_label_assigner.py --files "docs/readme.md,src/api/endpoint.py,src/utils/helper.py,app.test.js"
+          echo "--- fixture: no match ---"
+          python pr_label_assigner.py --files "build/output.bin,dist/bundle.js.map"
+          echo "--- fixture: md anywhere ---"
+          python pr_label_assigner.py --files "CHANGELOG.md,src/README.md"
