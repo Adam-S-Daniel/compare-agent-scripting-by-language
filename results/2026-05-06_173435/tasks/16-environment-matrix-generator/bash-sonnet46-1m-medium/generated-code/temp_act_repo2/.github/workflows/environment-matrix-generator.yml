@@ -1,0 +1,112 @@
+name: Environment Matrix Generator
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      config_file:
+        description: "Path to matrix config JSON file"
+        required: false
+        default: "fixtures/basic_matrix.json"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y bats shellcheck python3
+          # Install actionlint for workflow validation tests
+          ACTIONLINT_VER=1.7.7
+          curl -sSfL "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VER}/actionlint_${ACTIONLINT_VER}_linux_amd64.tar.gz" \
+            | sudo tar -xz -C /usr/local/bin actionlint
+
+      - name: Validate script syntax
+        run: |
+          bash -n generate_matrix.sh
+          shellcheck generate_matrix.sh
+
+      - name: Run bats tests
+        run: |
+          bats tests/test_matrix.bats
+
+      - name: Generate matrix from basic config
+        run: |
+          ./generate_matrix.sh fixtures/basic_matrix.json | tee basic_output.json
+          python3 -c "import sys, json; data=json.load(open('basic_output.json')); print('Combinations:', len(data['include']))"
+
+      - name: Generate matrix with include rules
+        run: |
+          ./generate_matrix.sh fixtures/include_matrix.json | tee include_output.json
+
+      - name: Generate matrix with exclude rules
+        run: |
+          ./generate_matrix.sh fixtures/exclude_matrix.json | tee exclude_output.json
+          python3 -c "
+          import json
+          data = json.load(open('exclude_output.json'))
+          combos = data['include']
+          assert not any(
+              c.get('os') == 'windows-latest' and str(c.get('version')) == '3.9'
+              for c in combos
+          ), 'Excluded combination found!'
+          print('Exclude rules applied correctly. Combinations:', len(combos))
+          "
+
+      - name: Generate matrix with max-parallel and fail-fast
+        run: |
+          ./generate_matrix.sh fixtures/parallel_matrix.json | tee parallel_output.json
+          python3 -c "
+          import json
+          data = json.load(open('parallel_output.json'))
+          assert data.get('max-parallel') == 4, f'Expected max-parallel=4, got {data.get(\"max-parallel\")}'
+          print('max-parallel:', data['max-parallel'])
+          print('fail-fast:', data.get('fail-fast'))
+          "
+
+      - name: Validate max_size enforcement
+        run: |
+          if ./generate_matrix.sh fixtures/oversized_matrix.json 2>&1; then
+            echo "ERROR: oversized matrix should have failed"
+            exit 1
+          else
+            echo "Correctly rejected oversized matrix"
+          fi
+
+      - name: Generate 2x2 matrix and verify count
+        run: |
+          ./generate_matrix.sh fixtures/two_by_two.json | tee twobytwo_output.json
+          python3 -c "
+          import json
+          data = json.load(open('twobytwo_output.json'))
+          count = len(data['include'])
+          assert count == 4, f'Expected 4 combinations, got {count}'
+          print(f'2x2 matrix has {count} combinations as expected')
+          "
+
+      - name: Generate matrix with feature flags
+        run: |
+          ./generate_matrix.sh fixtures/feature_flags.json | tee flags_output.json
+          python3 -c "
+          import json
+          data = json.load(open('flags_output.json'))
+          output_str = json.dumps(data)
+          assert 'cache_enabled' in output_str, 'cache_enabled not found'
+          assert 'debug_mode' in output_str, 'debug_mode not found'
+          print('Feature flags present in matrix output')
+          "
+
+      - name: Summary
+        run: |
+          echo "All matrix generation tests passed!"
+          echo "--- Basic matrix output ---"
+          cat basic_output.json
