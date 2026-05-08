@@ -1,0 +1,170 @@
+# Dependency License Checker pipeline.
+#
+# How the test harness drives this:
+#   1. The harness creates a temp git repo containing the project files
+#      plus a top-level "test-case.json" describing which fixture files to
+#      use and what the expected outcome is.
+#   2. It runs `act push --rm`. Because the test-case is committed to the
+#      temp repo, the workflow reads it from disk and runs the checker
+#      against the fixture data.
+#   3. Each step prints clear, parseable markers (e.g. EXIT_CODE=...,
+#      OBSERVED_SUMMARY=...) so the harness can assert on exact values.
+name: Dependency License Checker
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Weekly compliance audit on Mondays at 06:00 UTC.
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+    inputs:
+      manifest_file:
+        description: Path (in repo) to the manifest to scan.
+        required: false
+        default: fixtures/sample-package.json
+      policy_file:
+        description: Path to the policy JSON (allow/deny lists).
+        required: false
+        default: fixtures/policy.json
+      licenses_file:
+        description: Path to the mocked license database.
+        required: false
+        default: fixtures/licenses.json
+
+permissions:
+  contents: read
+
+env:
+  # Pin the Bun version so CI behaviour matches local development.
+  BUN_VERSION: "1.3.11"
+
+jobs:
+  license-check:
+    name: License compliance scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        # Manual install instead of oven-sh/setup-bun so this workflow runs
+        # cleanly under nektos/act, which has trouble with the action's
+        # shipped node_modules/git clone cache. We fetch the official
+        # installer and pin to BUN_VERSION for reproducibility.
+        shell: bash
+        run: |
+          set -euo pipefail
+          if command -v bun >/dev/null 2>&1; then
+            echo "bun already installed: $(bun --version)"
+          else
+            curl -fsSL https://bun.sh/install | bash -s "bun-v${BUN_VERSION}"
+          fi
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+          "$HOME/.bun/bin/bun" --version
+
+      - name: Resolve test-case parameters
+        id: params
+        shell: bash
+        run: |
+          set -euo pipefail
+          # If the harness committed a test-case.json, use it. Otherwise
+          # fall back to workflow_dispatch inputs / sensible defaults so
+          # this workflow stays runnable on a regular push.
+          if [ -f test-case.json ]; then
+            echo "Using test-case.json from repo"
+            manifest=$(jq -r '.manifest // "fixtures/sample-package.json"' test-case.json)
+            policy=$(jq -r '.policy // "fixtures/policy.json"' test-case.json)
+            licenses=$(jq -r '.licenses // "fixtures/licenses.json"' test-case.json)
+            expected_exit=$(jq -r '.expected_exit_code // 0' test-case.json)
+            expected_summary=$(jq -r '.expected_summary // ""' test-case.json)
+            label=$(jq -r '.label // "default"' test-case.json)
+          else
+            echo "No test-case.json; using workflow_dispatch inputs / defaults"
+            manifest="${{ github.event.inputs.manifest_file || 'fixtures/sample-package.json' }}"
+            policy="${{ github.event.inputs.policy_file || 'fixtures/policy.json' }}"
+            licenses="${{ github.event.inputs.licenses_file || 'fixtures/licenses.json' }}"
+            expected_exit="0"
+            expected_summary=""
+            label="default"
+          fi
+          {
+            echo "manifest=${manifest}"
+            echo "policy=${policy}"
+            echo "licenses=${licenses}"
+            echo "expected_exit=${expected_exit}"
+            echo "expected_summary=${expected_summary}"
+            echo "label=${label}"
+          } >> "$GITHUB_OUTPUT"
+          echo "TEST_CASE_LABEL=${label}"
+          echo "MANIFEST=${manifest}"
+          echo "POLICY=${policy}"
+          echo "LICENSES=${licenses}"
+          echo "EXPECTED_EXIT=${expected_exit}"
+          echo "EXPECTED_SUMMARY=${expected_summary}"
+
+      - name: Run dependency license checker
+        id: check
+        shell: bash
+        env:
+          MANIFEST: ${{ steps.params.outputs.manifest }}
+          POLICY: ${{ steps.params.outputs.policy }}
+          LICENSES: ${{ steps.params.outputs.licenses }}
+        run: |
+          set +e
+          bun run src/cli.ts \
+            --manifest "$MANIFEST" \
+            --policy "$POLICY" \
+            --licenses "$LICENSES" \
+            --format text \
+            --report-file compliance-report.txt
+          actual_exit=$?
+          set -e
+          # Surface a parseable marker so the harness can assert on exit.
+          echo "EXIT_CODE=${actual_exit}"
+          # The summary line is prefixed "Summary:" by the renderer; pull it
+          # out for an explicit, machine-readable assertion target.
+          summary=$(grep -E '^Summary:' compliance-report.txt || true)
+          echo "OBSERVED_SUMMARY=${summary}"
+          {
+            echo "exit_code=${actual_exit}"
+            echo "summary=${summary}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Upload compliance report
+        # Skipped under nektos/act because the local server lacks the
+        # artifact upload endpoint that actions/upload-artifact@v4 needs.
+        if: ${{ !env.ACT }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: compliance-report-${{ steps.params.outputs.label }}
+          path: compliance-report.txt
+          if-no-files-found: error
+
+      - name: Verify outcome matches test-case expectations
+        shell: bash
+        env:
+          ACTUAL_EXIT: ${{ steps.check.outputs.exit_code }}
+          ACTUAL_SUMMARY: ${{ steps.check.outputs.summary }}
+          EXPECTED_EXIT: ${{ steps.params.outputs.expected_exit }}
+          EXPECTED_SUMMARY: ${{ steps.params.outputs.expected_summary }}
+          LABEL: ${{ steps.params.outputs.label }}
+        run: |
+          set -euo pipefail
+          echo "TEST_CASE=${LABEL}"
+          echo "ASSERT_EXIT actual=${ACTUAL_EXIT} expected=${EXPECTED_EXIT}"
+          if [ "${ACTUAL_EXIT}" != "${EXPECTED_EXIT}" ]; then
+            echo "FAIL: exit code mismatch" >&2
+            exit 1
+          fi
+          if [ -n "${EXPECTED_SUMMARY}" ]; then
+            echo "ASSERT_SUMMARY actual='${ACTUAL_SUMMARY}' expected='${EXPECTED_SUMMARY}'"
+            if [ "${ACTUAL_SUMMARY}" != "${EXPECTED_SUMMARY}" ]; then
+              echo "FAIL: summary mismatch" >&2
+              exit 1
+            fi
+          fi
+          echo "TEST_CASE_OK=${LABEL}"
