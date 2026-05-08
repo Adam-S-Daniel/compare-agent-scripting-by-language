@@ -1,0 +1,54 @@
+name: Dependency License Checker
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  license-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies (jq, bats, actionlint)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y jq bats
+          # Install actionlint for the workflow-structure bats test
+          curl -sL https://github.com/rhysd/actionlint/releases/download/v1.7.4/actionlint_1.7.4_linux_amd64.tar.gz \
+            | sudo tar xzf - -C /usr/local/bin actionlint
+
+      - name: Validate workflow with actionlint
+        run: actionlint .github/workflows/dependency-license-checker.yml
+
+      - name: Run bats tests
+        run: bats tests/license_checker.bats
+
+      - name: Run compliance check on package.json
+        run: |
+          output=$(./license-checker.sh fixtures/package.json fixtures/license-config.json mock-licenses.db || true)
+          echo "$output"
+          echo "$output" | grep -q "APPROVED: express 4.18.0 MIT"
+          echo "$output" | grep -q "DENIED:   gpl-package 1.0.0 GPL-3.0"
+          echo "$output" | grep -q "UNKNOWN:  mystery-lib 2.0.0 UNKNOWN"
+          echo "$output" | grep -q "Summary: 2 approved, 1 denied, 1 unknown"
+          echo "$output" | grep -q "Status: FAIL"
+          echo "All assertions passed for package.json"
+
+      - name: Run compliance check on requirements.txt
+        run: |
+          output=$(./license-checker.sh fixtures/requirements.txt fixtures/license-config.json mock-licenses.db || true)
+          echo "$output"
+          echo "$output" | grep -q "APPROVED: requests 2.28.0 Apache-2.0"
+          echo "$output" | grep -q "DENIED:   agpl-lib 1.5.0 AGPL-3.0"
+          echo "$output" | grep -q "Summary: 3 approved, 1 denied, 0 unknown"
+          echo "$output" | grep -q "Status: FAIL"
+          echo "All assertions passed for requirements.txt"
