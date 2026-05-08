@@ -1,0 +1,104 @@
+name: PR Label Assigner
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - "**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-label:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Pester unit tests
+        shell: pwsh
+        run: |
+          # Import Pester (pre-installed in act-ubuntu-pwsh image)
+          Import-Module Pester -MinimumVersion 5.0.0 -ErrorAction Stop
+
+          $config = New-PesterConfiguration
+          $config.Run.Path       = './Invoke-PRLabelAssigner.Tests.ps1'
+          $config.Output.Verbosity = 'Detailed'
+          $config.Run.Exit       = $true   # non-zero exit on failure
+
+          Invoke-Pester -Configuration $config
+
+      - name: Scenario 1 - mixed file types
+        shell: pwsh
+        run: |
+          . ./Invoke-PRLabelAssigner.ps1
+
+          $rules = @(
+            @{ Pattern = 'docs/**';    Label = 'documentation'; Priority = 1 },
+            @{ Pattern = 'src/api/**'; Label = 'api';           Priority = 2 },
+            @{ Pattern = '*.test.*';   Label = 'tests';         Priority = 3 }
+          )
+
+          $files = @(
+            'docs/guide.md',
+            'src/api/users.ps1',
+            'src/utils.test.ps1'
+          )
+
+          Write-Host "=== Scenario 1: Mixed file types ==="
+          Invoke-PRLabelAssigner -ChangedFiles $files -LabelRules $rules
+
+      - name: Scenario 2 - docs only
+        shell: pwsh
+        run: |
+          . ./Invoke-PRLabelAssigner.ps1
+
+          $rules = @(
+            @{ Pattern = 'docs/**';    Label = 'documentation'; Priority = 1 },
+            @{ Pattern = 'src/api/**'; Label = 'api';           Priority = 2 },
+            @{ Pattern = '*.test.*';   Label = 'tests';         Priority = 3 }
+          )
+
+          $files = @('docs/guide.md', 'docs/api/reference.md')
+
+          Write-Host "=== Scenario 2: Docs-only changes ==="
+          Invoke-PRLabelAssigner -ChangedFiles $files -LabelRules $rules
+
+      - name: Scenario 3 - no matching rules
+        shell: pwsh
+        run: |
+          . ./Invoke-PRLabelAssigner.ps1
+
+          $rules = @(
+            @{ Pattern = 'docs/**';    Label = 'documentation'; Priority = 1 },
+            @{ Pattern = 'src/api/**'; Label = 'api';           Priority = 2 },
+            @{ Pattern = '*.test.*';   Label = 'tests';         Priority = 3 }
+          )
+
+          $files = @('Makefile', 'LICENSE')
+
+          Write-Host "=== Scenario 3: No matching rules ==="
+          Invoke-PRLabelAssigner -ChangedFiles $files -LabelRules $rules
+
+      - name: Scenario 4 - priority ordering with overlapping rules
+        shell: pwsh
+        run: |
+          . ./Invoke-PRLabelAssigner.ps1
+
+          # docs/api/** (Priority=1, label=api-docs) should be evaluated before docs/** (Priority=2, label=documentation)
+          # Both labels should appear since we use union semantics
+          $rules = @(
+            @{ Pattern = 'docs/api/**'; Label = 'api-docs';       Priority = 1 },
+            @{ Pattern = 'docs/**';     Label = 'documentation';   Priority = 2 },
+            @{ Pattern = 'src/**';      Label = 'backend';         Priority = 3 }
+          )
+
+          $files = @('docs/api/reference.md', 'src/main.ps1')
+
+          Write-Host "=== Scenario 4: Priority ordering with overlapping rules ==="
+          Invoke-PRLabelAssigner -ChangedFiles $files -LabelRules $rules
