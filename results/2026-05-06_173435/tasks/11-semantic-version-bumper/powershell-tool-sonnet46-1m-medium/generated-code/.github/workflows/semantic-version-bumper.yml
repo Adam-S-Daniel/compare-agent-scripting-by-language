@@ -1,0 +1,222 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  workflow_dispatch:
+    inputs:
+      commit_messages:
+        description: "Newline-separated conventional commit messages"
+        required: false
+        default: "feat: add new feature\nfix: correct a bug"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Run Pester Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Pester
+        shell: pwsh
+        run: |
+          if (-not (Get-Module -ListAvailable -Name Pester)) {
+            Install-Module -Name Pester -Force -Scope CurrentUser
+          }
+          Import-Module Pester
+
+      - name: Run unit tests
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = "./Bump-Version.Tests.ps1"
+          $config.Output.Verbosity = "Detailed"
+          $config.TestResult.Enabled = $true
+          $config.TestResult.OutputPath = "test-results.xml"
+          $result = Invoke-Pester -Configuration $config
+          if ($result.FailedCount -gt 0) {
+            Write-Error "Pester tests failed: $($result.FailedCount) failure(s)"
+            exit 1
+          }
+          Write-Host "All $($result.PassedCount) tests passed"
+
+  bump-version:
+    name: Bump Semantic Version
+    runs-on: ubuntu-latest
+    needs: test
+    env:
+      VERSION_PATH: "."
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Pester
+        shell: pwsh
+        run: |
+          if (-not (Get-Module -ListAvailable -Name Pester)) {
+            Install-Module -Name Pester -Force -Scope CurrentUser
+          }
+
+      - name: Set up test fixture - patch bump (fix commit)
+        shell: pwsh
+        run: |
+          $fixtureDir = Join-Path $env:RUNNER_TEMP "fixture-patch"
+          New-Item -ItemType Directory -Path $fixtureDir -Force | Out-Null
+          Set-Content -Path "$fixtureDir/version.txt" -Value "1.1.0"
+          $commits = @("fix: correct null pointer exception", "chore: update dependencies")
+          $commits | Set-Content -Path "$fixtureDir/commits.txt"
+          Write-Host "Fixture created at: $fixtureDir"
+
+      - name: Run version bumper - patch scenario
+        shell: pwsh
+        run: |
+          $fixtureDir = Join-Path $env:RUNNER_TEMP "fixture-patch"
+          $commits = Get-Content "$fixtureDir/commits.txt"
+          . ./Bump-Version.ps1
+          $result = Invoke-SemanticVersionBump -Path $fixtureDir -Commits $commits -Date "2024-01-15"
+          Write-Host "PATCH_RESULT_START"
+          Write-Host "New version: $($result.NewVersion)"
+          Write-Host "Old version: $($result.OldVersion)"
+          Write-Host "Bump type: $($result.BumpType)"
+          Write-Host "PATCH_RESULT_END"
+          if ($result.NewVersion -ne "1.1.1") {
+            Write-Error "Expected 1.1.1, got $($result.NewVersion)"
+            exit 1
+          }
+          Write-Host "ASSERTION PASSED: patch bump produced 1.1.1"
+
+      - name: Set up test fixture - minor bump (feat commit)
+        shell: pwsh
+        run: |
+          $fixtureDir = Join-Path $env:RUNNER_TEMP "fixture-minor"
+          New-Item -ItemType Directory -Path $fixtureDir -Force | Out-Null
+          Set-Content -Path "$fixtureDir/version.txt" -Value "1.1.0"
+          $commits = @("feat: add user profile page", "fix: correct typo")
+          $commits | Set-Content -Path "$fixtureDir/commits.txt"
+
+      - name: Run version bumper - minor scenario
+        shell: pwsh
+        run: |
+          $fixtureDir = Join-Path $env:RUNNER_TEMP "fixture-minor"
+          $commits = Get-Content "$fixtureDir/commits.txt"
+          . ./Bump-Version.ps1
+          $result = Invoke-SemanticVersionBump -Path $fixtureDir -Commits $commits -Date "2024-01-15"
+          Write-Host "MINOR_RESULT_START"
+          Write-Host "New version: $($result.NewVersion)"
+          Write-Host "Old version: $($result.OldVersion)"
+          Write-Host "Bump type: $($result.BumpType)"
+          Write-Host "MINOR_RESULT_END"
+          if ($result.NewVersion -ne "1.2.0") {
+            Write-Error "Expected 1.2.0, got $($result.NewVersion)"
+            exit 1
+          }
+          Write-Host "ASSERTION PASSED: minor bump produced 1.2.0"
+
+      - name: Set up test fixture - major bump (breaking change)
+        shell: pwsh
+        run: |
+          $fixtureDir = Join-Path $env:RUNNER_TEMP "fixture-major"
+          New-Item -ItemType Directory -Path $fixtureDir -Force | Out-Null
+          Set-Content -Path "$fixtureDir/version.txt" -Value "1.1.0"
+          $commits = @("feat!: redesign public API", "feat: add new endpoint")
+          $commits | Set-Content -Path "$fixtureDir/commits.txt"
+
+      - name: Run version bumper - major scenario
+        shell: pwsh
+        run: |
+          $fixtureDir = Join-Path $env:RUNNER_TEMP "fixture-major"
+          $commits = Get-Content "$fixtureDir/commits.txt"
+          . ./Bump-Version.ps1
+          $result = Invoke-SemanticVersionBump -Path $fixtureDir -Commits $commits -Date "2024-01-15"
+          Write-Host "MAJOR_RESULT_START"
+          Write-Host "New version: $($result.NewVersion)"
+          Write-Host "Old version: $($result.OldVersion)"
+          Write-Host "Bump type: $($result.BumpType)"
+          Write-Host "MAJOR_RESULT_END"
+          if ($result.NewVersion -ne "2.0.0") {
+            Write-Error "Expected 2.0.0, got $($result.NewVersion)"
+            exit 1
+          }
+          Write-Host "ASSERTION PASSED: major bump produced 2.0.0"
+
+      - name: Set up test fixture - package.json scenario
+        shell: pwsh
+        run: |
+          $fixtureDir = Join-Path $env:RUNNER_TEMP "fixture-pkgjson"
+          New-Item -ItemType Directory -Path $fixtureDir -Force | Out-Null
+          $pkg = @{ name = "my-app"; version = "0.5.0"; description = "test app" } | ConvertTo-Json
+          Set-Content -Path "$fixtureDir/package.json" -Value $pkg
+          $commits = @("feat: add search functionality")
+          $commits | Set-Content -Path "$fixtureDir/commits.txt"
+
+      - name: Run version bumper - package.json scenario
+        shell: pwsh
+        run: |
+          $fixtureDir = Join-Path $env:RUNNER_TEMP "fixture-pkgjson"
+          $commits = Get-Content "$fixtureDir/commits.txt"
+          . ./Bump-Version.ps1
+          $result = Invoke-SemanticVersionBump -Path $fixtureDir -Commits $commits -Date "2024-01-15"
+          Write-Host "PKGJSON_RESULT_START"
+          Write-Host "New version: $($result.NewVersion)"
+          Write-Host "Old version: $($result.OldVersion)"
+          Write-Host "Bump type: $($result.BumpType)"
+          Write-Host "PKGJSON_RESULT_END"
+          if ($result.NewVersion -ne "0.6.0") {
+            Write-Error "Expected 0.6.0, got $($result.NewVersion)"
+            exit 1
+          }
+          Write-Host "ASSERTION PASSED: minor bump from package.json produced 0.6.0"
+          # Verify package.json was updated
+          $updated = Get-Content "$fixtureDir/package.json" | ConvertFrom-Json
+          if ($updated.version -ne "0.6.0") {
+            Write-Error "package.json was not updated. Found: $($updated.version)"
+            exit 1
+          }
+          Write-Host "ASSERTION PASSED: package.json updated correctly"
+
+      - name: Validate workflow structure
+        shell: pwsh
+        run: |
+          # Verify the workflow file exists and references correct script paths
+          $workflowPath = "./.github/workflows/semantic-version-bumper.yml"
+          if (-not (Test-Path $workflowPath)) {
+            Write-Error "Workflow file not found at $workflowPath"
+            exit 1
+          }
+          Write-Host "ASSERTION PASSED: workflow file exists"
+
+          $scriptPath = "./Bump-Version.ps1"
+          if (-not (Test-Path $scriptPath)) {
+            Write-Error "Bump-Version.ps1 not found"
+            exit 1
+          }
+          Write-Host "ASSERTION PASSED: Bump-Version.ps1 exists"
+
+          $testPath = "./Bump-Version.Tests.ps1"
+          if (-not (Test-Path $testPath)) {
+            Write-Error "Bump-Version.Tests.ps1 not found"
+            exit 1
+          }
+          Write-Host "ASSERTION PASSED: Bump-Version.Tests.ps1 exists"
+
+          # Verify workflow has expected trigger events
+          $content = Get-Content $workflowPath -Raw
+          if ($content -notmatch 'on:') {
+            Write-Error "Workflow missing 'on:' triggers"
+            exit 1
+          }
+          Write-Host "ASSERTION PASSED: workflow has trigger events"
+
+          # Verify jobs exist
+          if ($content -notmatch 'jobs:') {
+            Write-Error "Workflow missing 'jobs:' section"
+            exit 1
+          }
+          Write-Host "ASSERTION PASSED: workflow has jobs section"
+          Write-Host "All workflow structure assertions passed"
