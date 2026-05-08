@@ -1,0 +1,47 @@
+name: Semantic Version Bumper
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  workflow_dispatch:
+    inputs:
+      fixture_file:
+        description: "Path to test fixture JSON file"
+        required: false
+        default: "fixtures/test-case-minor.json"
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-bump:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+
+      - name: Verify Bun installation
+        run: bun --version
+
+      - name: Run unit tests
+        run: bun test
+
+      - name: Run version bumper (patch fixture)
+        run: |
+          bun run src/version-bumper.ts --fixture fixtures/test-case-patch.json
+
+      - name: Run version bumper (minor fixture)
+        run: |
+          bun run src/version-bumper.ts --fixture fixtures/test-case-minor.json
+
+      - name: Run version bumper (major fixture)
+        run: |
+          bun run src/version-bumper.ts --fixture fixtures/test-case-major.json
