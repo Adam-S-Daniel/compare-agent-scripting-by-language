@@ -20,8 +20,16 @@ python3 -c "from llm_providers import get_provider"
 # Regenerate all reports
 python3 generate_results.py --all
 
-# Run a benchmark (v4, all tasks/modes/models)
-python3 runner.py --tasks 11,12,13,15,16,17,18 --modes default,powershell,bash,typescript-bun --models opus,sonnet
+# Run a benchmark (v4, all tasks/modes/models). Use 5 modes including
+# powershell-tool. For multi-(model,effort) matrices, run sequentially via
+# a wrapper script (see run-fresh-matrix-2026-05-06.sh).
+python3 runner.py --tasks 11,12,13,15,16,17,18 --modes default,powershell,powershell-tool,bash,typescript-bun --models opus,sonnet
+
+# Build per-CC-version reference docs in each run dir (system prompt +
+# tool descriptions + sliced changelog). Idempotent; caches under
+# .cache/cc-versions/.
+python3 version_docs.py                   # all run dirs
+python3 version_docs.py results/<run-dir> # one run
 
 # Evaluate test quality (structural metrics only)
 python3 test_quality.py results/2026-04-09_152435
@@ -73,12 +81,15 @@ execution modes; "language" is the concept readers expect.
 
 - `models.py` — single source of truth for model IDs and token pricing. Update here when Anthropic changes prices.
 - `runner.py` — benchmark harness. Runs agents via `claude -p`, collects metrics, pushes results. Imports from `models.py` and `generate_results.py`.
-- `generate_results.py` — generates `results.md` reports and updates `README.md`. Can run standalone: `python3 generate_results.py --all`.
+- `generate_results.py` — generates `results.md` reports and updates `README.md`. Can run standalone: `python3 generate_results.py --all`. Each results.md opens with a "Claude Code versions used" line linking to the per-version docs (see `version_docs.py`).
+- `combine_results.py` — produces cross-run combined reports `results/results_<dirA>__<dirB>[__<dirC>...].md`. Same table layout as per-run reports plus a CLI Version Legend; uses `judge_consistency_report.py` for the JCS section and `conclusions_report.py` for the Opus-max Conclusions prose. Standalone: `python3 combine_results.py <dirA> <dirB> [<dirC> ...]`.
 - `test_quality.py` — test + deliverable quality evaluation. Structural metrics (always) + panel-of-judges LLM evaluation (`--llm-judge` for test-quality judge, `--deliverable-judge` for workflow+scripts judge). The default panel is Haiku 4.5 + Gemini 3.1 Pro (configured in the module-level `JUDGES` dict). Each judge writes its own per-run cache file; `load_panel_scores(variant_dir, kind)` reads them and returns a mean-aggregated score dict for the reporting layer. Legacy single-Sonnet `*-llm.json` caches still read for backward compat. Imported by `generate_results.py` for the "Test Quality Evaluation" section.
 - `llm_providers.py` — pluggable LLM provider abstraction for evaluation tasks (see "Adding LLM providers" below). Currently registered: `claude-cli` (pre-authenticated Claude Code CLI), `gemini-cli` (pre-authenticated Gemini CLI, bypasses billing gate), `gemini-api` (google-genai SDK, requires `GEMINI_API_KEY` and a paid-tier Google AI Studio account).
+- `version_docs.py` — for each unique Claude Code version observed in a run dir's `metrics.json` files, writes `claude-code-<version>.md` with the full system prompt (concatenated from `Piebald-AI/claude-code-system-prompts` at tag `v<version>`), every default-tool description sorted alphabetically, and the slice of `anthropics/claude-code` `CHANGELOG.md` from the lowest CC version observed in any benchmark in this repo through that version. Standalone: `python3 version_docs.py [<run-dir>]`. Caches upstream content under `.cache/cc-versions/` (gitignored). Output files are referenced by name in each `results.md`'s prominent "Claude Code versions used" line.
 - `benchmark-instructions-v*.md` — per-version specs given to agents during runs.
 - `hooks/syntax-check.py` — PostToolUse hook for syntax/lint checking.
 - `Dockerfile.act` — custom act container image with pwsh + Pester pre-installed. Build with `docker build -t act-ubuntu-pwsh:latest -f Dockerfile.act .`. Runner.py auto-detects it and injects `.actrc` into workspaces.
+- `run-fresh-matrix-*.sh` — per-campaign wrapper scripts that drive multiple sequential `runner.py` invocations (one per model-effort combo) into a single results dir using `--resume`. Use when the matrix needs more than one effort level; `runner.py` accepts a single `--effort` per invocation by design. See `run-fresh-matrix-2026-05-06.sh` for the canonical 8-invocation full-matrix template.
 - `skills/` — agent skills following [agentskills.io](https://agentskills.io/specification) spec.
 
 ### Adding new trap detectors
@@ -265,39 +276,55 @@ See the docstring in `llm_providers.py` for a complete example skeleton.
 7. If you changed architecture or findings, update this file (`AGENTS.md`).
 8. If you added files or moved things, update the Files table in `README.md`.
 
-## Current state (2026-04-13)
+## Current state (2026-05-08)
 
-### v4 benchmark — complete, task 14 archived
+### v4 full-matrix benchmark — complete
 
-64/64 runs finished (8 tasks x 4 modes x 2 models). Results in
-`results/2026-04-09_152435/`. Zero failures, zero timeouts, zero
-double-result bugs. Total cost $86.90, avg 8.6min/run.
+`results/2026-05-06_173435/` is the canonical current dataset: 280/280 runs
+across 7 tasks × 5 modes × 8 model-effort combos, $493.46 + $40.57 panel
+eval = $534.03, 38h 35m wall, 278/280 successful (2 failures).
+Single-directory, single-CC-version-line (2.1.131 → 2.1.132 mid-run);
+supersedes the `results/2026-04-17_004319/` + `results/2026-04-09_152435/`
+combined report. Standard panel-of-judges scores populated.
 
-v4 added trap-awareness guidance from v3 findings, `shell: pwsh` for
-PowerShell mode, "limit to 3 act push" instruction, and a custom act
-Docker image with pwsh/Pester pre-installed. This cut average run time
-by 24% vs v3 (8.6min vs 11.4min).
+The 8 model-effort combos: `haiku45` (no effort), `opus`/`sonnet` (no
+effort), `opus47-1m` at high/medium/xhigh, `opus47-200k` at medium,
+`sonnet46-1m` at medium. The 5 language modes: `default`, `bash`,
+`powershell`, `powershell-tool`, `typescript-bun`. The 7 tasks: 11, 12,
+13, 15, 16, 17, 18 (task 14 archived earlier).
 
-Post-v4 analysis found Task 14 (Docker Image Tag Generator) redundant
-with Task 16 (Environment Matrix Generator) across TQ scores, cost, and
-duration profiles. Task 14 was archived — see `archived-tasks/`. Future
-runs use 7 tasks (11, 12, 13, 15, 16, 17, 18) x 4 modes x 2 models = 56 runs.
+### Key findings vs prior baselines (CC 2.1.114 → 2.1.131/132)
 
-### Key findings (v4)
+- haiku45 ~21% faster on average (driven by a bash-mode regression-fix
+  on the haiku endpoint; bash specifically went 7× faster, while
+  powershell got 33% slower).
+- opus47-1m-high notably slower and pricier (+21% dur, +28% cost).
+  opus47-1m-medium ~24% faster, opus47-1m-xhigh flat. Other variants
+  within run-to-run noise.
+- The earlier `2026-04-24_202012` partial run was abandoned (had
+  widespread CLI-error failures on haiku/sonnet/opus variants — 46%
+  failure rate). Stash dropped on 2026-05-08.
 
-- Opus is faster than Sonnet across all modes.
-- Default mode always chooses Python.
-- PowerShell/sonnet is the slowest and most expensive combo.
-- TypeScript hooks have ~50% catch rate but are net negative for Opus
-  (tsc --noEmit takes 12-21s per Write on large files) and net positive
-  for Sonnet (smaller writes, 2-3s per check).
-- PowerShell hooks catch almost nothing (0-4% rate) — net negative.
-- v4 trap-awareness guidance eliminated the timeout and double-result
-  bugs that occurred in v3.
+### Earlier reference runs
 
-### Earlier versions
-
-- v3: `results/2026-04-08_192624/` — 64 runs, same tasks/modes/models as v4. Had 1 timeout, 3 double-result bugs. Avg 11.4min/run.
-- v2: `results/2026-04-07_225702/` — 111/144 runs. 18 tasks, modes: default/powershell/powershell-strict/csharp-script. Superseded by v3.
-- v1: `results/2026-04-02_163146/` — 144 runs, same as v2. Had permission-denial artifacts (88% of errors).
+- `results/2026-04-17_004319/` — 245 runs, mix of `2.1.112` + `2.1.114`. Used as the haiku45 / opus47-1m / sonnet46-1m baseline.
+- `results/2026-04-09_152435/` — 64/64, CC 2.1.97/98/100. Used as the no-effort opus / sonnet baseline.
+- `results/2026-04-08_192624/` — v3, 64 runs, 1 timeout, 3 double-result bugs. Avg 11.4min/run.
+- `results/2026-04-07_225702/` — v2, 111/144 runs. 18 tasks, modes: default/powershell/powershell-strict/csharp-script. Superseded by v3.
+- `results/2026-04-02_163146/` — v1, 144 runs, same as v2. Had permission-denial artifacts (88% of errors).
 - See `design-and-planning-artifacts/` for historical analysis and planning docs.
+
+### Per-CC-version reference docs
+
+Each run dir contains one `claude-code-<version>.md` per CC version
+observed in its `metrics.json` files. Built by `version_docs.py` from
+`Piebald-AI/claude-code-system-prompts` (system prompt + tool
+descriptions at that tag) and `anthropics/claude-code` `CHANGELOG.md`
+(sliced to [lowest CC version observed in any benchmark in this repo,
+this version], oldest first). Each `results.md` links these
+prominently in the "Claude Code versions used" line at the top.
+
+Regenerate after CC version changes:
+```bash
+python3 version_docs.py        # idempotent across all run dirs
+```

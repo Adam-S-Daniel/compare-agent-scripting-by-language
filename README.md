@@ -119,6 +119,8 @@ The LLM-as-judge uses a pluggable provider system (`llm_providers.py`). The benc
 
 **Current providers:**
 - `claude-cli` — pre-authenticated Claude Code CLI. No API key or secrets needed.
+- `gemini-cli` — pre-authenticated Gemini CLI; bypasses billing gate.
+- `gemini-api` — `google-genai` SDK; requires `GEMINI_API_KEY` and a paid-tier Google AI Studio account.
 
 **To add a new provider** (e.g., Anthropic API with key, OpenAI, Codex CLI):
 
