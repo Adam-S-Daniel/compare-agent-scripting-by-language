@@ -1,0 +1,81 @@
+name: PR Label Assigner
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Pester is pre-installed in act-ubuntu-pwsh:latest; this is a no-op there
+      # but ensures portability on stock GitHub-hosted runners.
+      - name: Install Pester
+        shell: pwsh
+        run: |
+          if (-not (Get-Module -ListAvailable -Name Pester | Where-Object { $_.Version -ge '5.0.0' })) {
+            Install-Module -Name Pester -MinimumVersion 5.0.0 -Force -SkipPublisherCheck
+          }
+
+      # Run the full Pester suite (unit + workflow-structure tests).
+      # -Run.Exit causes Pester to exit 1 on any failure, which fails the step.
+      - name: Run Pester unit tests
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path        = "./PR-LabelAssigner.Tests.ps1"
+          $config.Output.Verbosity = "Detailed"
+          $config.Run.Exit        = $true
+          Invoke-Pester -Configuration $config
+
+      # ── Test case 1: docs-only PR ────────────────────────────────────────
+      - name: Run test case 1 - documentation label
+        shell: pwsh
+        run: |
+          . ./Invoke-PrLabelAssigner.ps1
+          $files = @("docs/README.md", "docs/api/overview.md")
+          $rules = Get-Content ./fixtures/rules.json -Raw | ConvertFrom-Json
+          $labels = Get-PrLabels -Files $files -Rules $rules
+          $labelStr = if ($labels.Count -eq 0) { "<empty>" } else { $labels -join "," }
+          Write-Output "TC1_LABELS: $labelStr"
+
+      # ── Test case 2: API source + test file ──────────────────────────────
+      - name: Run test case 2 - api and tests labels
+        shell: pwsh
+        run: |
+          . ./Invoke-PrLabelAssigner.ps1
+          $files = @("src/api/controller.test.js", "src/api/routes.js")
+          $rules = Get-Content ./fixtures/rules.json -Raw | ConvertFrom-Json
+          $labels = Get-PrLabels -Files $files -Rules $rules
+          $labelStr = if ($labels.Count -eq 0) { "<empty>" } else { $labels -join "," }
+          Write-Output "TC2_LABELS: $labelStr"
+
+      # ── Test case 3: no rules match ──────────────────────────────────────
+      - name: Run test case 3 - no matching labels
+        shell: pwsh
+        run: |
+          . ./Invoke-PrLabelAssigner.ps1
+          $files = @("LICENSE", "Makefile")
+          $rules = Get-Content ./fixtures/rules.json -Raw | ConvertFrom-Json
+          $labels = Get-PrLabels -Files $files -Rules $rules
+          $labelStr = if ($labels.Count -eq 0) { "<empty>" } else { $labels -join "," }
+          Write-Output "TC3_LABELS: $labelStr"
+
+      # ── Test case 4: multi-file, priority ordering ───────────────────────
+      - name: Run test case 4 - priority ordering
+        shell: pwsh
+        run: |
+          . ./Invoke-PrLabelAssigner.ps1
+          $files = @("src/api/auth.js", "docs/contributing.md", "src/frontend/app.test.ts")
+          $rules = Get-Content ./fixtures/rules.json -Raw | ConvertFrom-Json
+          $labels = Get-PrLabels -Files $files -Rules $rules
+          $labelStr = if ($labels.Count -eq 0) { "<empty>" } else { $labels -join "," }
+          Write-Output "TC4_LABELS: $labelStr"
