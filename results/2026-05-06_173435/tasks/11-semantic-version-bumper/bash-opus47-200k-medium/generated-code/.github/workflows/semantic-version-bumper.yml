@@ -1,0 +1,53 @@
+name: semantic-version-bumper
+
+# Run on push, PRs, manual dispatch, and a daily schedule so the bumper
+# can also drive nightly release branches if desired.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    env:
+      # Directory containing one subdirectory per test case. Each case dir
+      # holds VERSION + commits.txt. Defaults to ./fixture/cases.
+      SVB_CASES_DIR: ${{ github.workspace }}/fixture/cases
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Bash syntax check
+        run: |
+          set -euo pipefail
+          bash --version | head -n1
+          bash -n ./bump-version.sh
+
+      - name: Run semantic version bumper across all fixture cases
+        run: |
+          set -euo pipefail
+          if [ ! -d "$SVB_CASES_DIR" ]; then
+            echo "no cases dir at $SVB_CASES_DIR; nothing to do"
+            exit 0
+          fi
+          # Iterate cases deterministically and emit one marker per case
+          # so the test harness can assert exact expected values.
+          for case_dir in "$SVB_CASES_DIR"/*/; do
+            [ -d "$case_dir" ] || continue
+            case_name=$(basename "$case_dir")
+            ver_file="${case_dir}VERSION"
+            commits_file="${case_dir}commits.txt"
+            changelog_file="${case_dir}CHANGELOG.md"
+            : > "$changelog_file"
+            echo "----- running case: ${case_name} -----"
+            new=$(./bump-version.sh "$ver_file" "$commits_file" "$changelog_file")
+            echo "SVB_CASE=${case_name} SVB_NEW_VERSION=${new}"
+            echo "----- changelog (${case_name}) -----"
+            head -n 10 "$changelog_file" || true
+          done
