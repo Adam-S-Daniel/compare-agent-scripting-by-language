@@ -18,7 +18,9 @@ Narrowed to 8 tasks (11-18, all GHA-category). Changed modes to `default`, `powe
 
 ### [v4](benchmark-instructions-v4.md) — Trap-Aware Guidance
 
-Same tasks, modes, and models as v3. Added "Common Pitfalls" section derived from v3 trap analysis. `shell: pwsh` guidance for PowerShell mode. "Limit to 3 act push runs" instruction. Custom act container with pwsh/Pester pre-installed (`Dockerfile.act`). Cut average run time by 24% vs v3. 64 total runs, zero failures.
+Same 8 tasks as v3 (task 14 later archived, leaving 7). Added "Common Pitfalls" section derived from v3 trap analysis. `shell: pwsh` guidance for PowerShell mode. "Limit to 3 act push runs" instruction. Custom act container with pwsh/Pester pre-installed (`Dockerfile.act`). Cut average run time by 24% vs v3.
+
+Modes expanded to 5: `default`, `powershell`, `bash`, `typescript-bun`, and `powershell-tool` (identical prompt to `powershell`, but with the [PowerShell tool](https://code.claude.com/docs/en/tools-reference#powershell-tool) enabled so the agent invokes `pwsh` natively instead of going through Bash). Models expanded beyond Opus/Sonnet 4.6 to include Opus 4.7 (high/medium/xhigh effort, 1M and 200K context), Sonnet 4.6 1M, and Haiku 4.5.
 
 See also: [v3 design plan](design-and-planning-artifacts/PLAN-v3-gha.md) and other [design artifacts](design-and-planning-artifacts/).
 
