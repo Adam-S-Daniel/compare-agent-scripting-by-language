@@ -1,6 +1,6 @@
-# compare-agent-scripting-by-language
+# GHA-bench
 
-Benchmarks how well agents perform scripting tasks when asked to use various languages (and when not asked to use a particular language). **[Latest results](results/2026-05-06_173435/results.md)** | [All results](#benchmark-runs)
+Benchmarks agent/scripting-language combinations on completing GitHub Actions scripting tasks when asked to use various languages. **[Latest results](results/2026-05-06_173435/results.md)** | [All results](#benchmark-runs)
 
 ## Benchmark Versions
 
