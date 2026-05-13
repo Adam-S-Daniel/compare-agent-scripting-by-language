@@ -2,7 +2,7 @@
   {
     "type": "system",
     "subtype": "init",
-    "cwd": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus",
+    "cwd": "/home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus",
     "session_id": "19a0c2fa-f823-4f36-964e-95b3d9c14040",
     "tools": [
       "Task",
@@ -135,7 +135,7 @@
           "id": "toolu_01448EYjC4yPYD3cZcxXExrE",
           "name": "Bash",
           "input": {
-            "command": "ls /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/",
+            "command": "ls /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/",
             "description": "Check current working directory contents"
           },
           "caller": {
@@ -249,7 +249,7 @@
           "id": "toolu_01JgAPDZcgNybYFJTWuMAFSX",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_docker_tags.py",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_docker_tags.py",
             "content": "# Test suite for Docker image tag generator\n# Using red/green TDD: each test is written before the implementation.\n\nimport pytest\nfrom docker_tags import generate_tags\n\n\n# --- Cycle 1: main branch produces \"latest\" ---\n\ndef test_main_branch_produces_latest():\n    \"\"\"The main branch should always get the 'latest' tag.\"\"\"\n    result = generate_tags(branch=\"main\", commit_sha=\"abc1234def5678\")\n    assert \"latest\" in result\n"
           },
           "caller": {
@@ -286,7 +286,7 @@
         {
           "tool_use_id": "toolu_01JgAPDZcgNybYFJTWuMAFSX",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_docker_tags.py"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_docker_tags.py"
         }
       ]
     },
@@ -296,7 +296,7 @@
     "timestamp": "2026-04-06T00:50:04.073Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_docker_tags.py",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_docker_tags.py",
       "content": "# Test suite for Docker image tag generator\n# Using red/green TDD: each test is written before the implementation.\n\nimport pytest\nfrom docker_tags import generate_tags\n\n\n# --- Cycle 1: main branch produces \"latest\" ---\n\ndef test_main_branch_produces_latest():\n    \"\"\"The main branch should always get the 'latest' tag.\"\"\"\n    result = generate_tags(branch=\"main\", commit_sha=\"abc1234def5678\")\n    assert \"latest\" in result\n",
       "structuredPatch": [],
       "originalFile": null
@@ -2553,7 +2553,7 @@
           "id": "toolu_01JyVjkDAMTsR2Bg1zos2ZV1",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/docker_tags.py",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/docker_tags.py",
             "content": "#!/usr/bin/env python3\n\"\"\"\nDocker Image Tag Generator\n\nGenerates appropriate Docker image tags from git context (branch name,\ncommit SHA, tags, PR number) following common conventions:\n\n  - \"latest\"            for the main/master branch\n  - \"pr-{number}\"       for pull requests\n  - \"v{semver}\"         for semver tags (e.g. v1.2.3)\n  - \"{branch}-{sha7}\"   for feature branches\n\nAll tags are sanitized: lowercased, special characters replaced with hyphens,\nleading/trailing hyphens stripped, and consecutive hyphens collapsed.\n\"\"\"\n\nimport re\nimport sys\nimport json\n\n\ndef sanitize_tag(tag: str) -> str:\n    \"\"\"Sanitize a string for use as a Docker image tag.\n\n    Docker tags must match [a-zA-Z0-9_.-] but by convention we also\n    lowercase and replace anything outside [a-z0-9._-] with hyphens,\n    then collapse runs of hyphens and strip leading/trailing hyphens.\n    \"\"\"\n    if not tag:\n        raise ValueError(\"Tag cannot be empty\")\n\n    # Lowercase first\n    tag = tag.lower()\n    # Replace any character that isn't alphanumeric, dot, or hyphen\n    tag = re.sub(r\"[^a-z0-9.\\-]\", \"-\", tag)\n    # Collapse consecutive hyphens\n    tag = re.sub(r\"-{2,}\", \"-\", tag)\n    # Strip leading/trailing hyphens\n    tag = tag.strip(\"-\")\n\n    if not tag:\n        raise ValueError(\"Tag is empty after sanitization\")\n\n    return tag\n\n\ndef generate_tags(\n    branch: str = \"\",\n    commit_sha: str = \"\",\n    tag: str = \"\",\n    pr_number: int | None = None,\n) -> list[str]:\n    \"\"\"Generate Docker image tags from git context.\n\n    Args:\n        branch:     Current git branch name (e.g. \"main\", \"feature/cool-thing\").\n        commit_sha: Full or abbreviated commit SHA.\n        tag:        Git tag, if any (e.g. \"v1.2.3\").\n        pr_number:  Pull request number, if applicable.\n\n    Returns:\n        A list of Docker-safe image tags.\n\n    Raises:\n        ValueError: If no usable git context is provided.\n    \"\"\"\n    tags: list[str] = []\n\n    # --- Rule 1: semver tag  \u2192  \"v{semver}\" ---\n    if tag:\n        semver_match = re.match(\n            r\"^v?(\\d+\\.\\d+\\.\\d+(?:[a-zA-Z0-9.+\\-]*)?)$\", tag\n        )\n        if semver_match:\n            version = semver_match.group(1)\n            tags.append(sanitize_tag(f\"v{version}\"))\n        else:\n            # Non-semver tag \u2014 sanitize and use as-is\n            tags.append(sanitize_tag(tag))\n\n    # --- Rule 2: PR number  \u2192  \"pr-{number}\" ---\n    if pr_number is not None:\n        if not isinstance(pr_number, int) or pr_number <= 0:\n            raise ValueError(f\"PR number must be a positive integer, got: {pr_number}\")\n        tags.append(f\"pr-{pr_number}\")\n\n    # --- Rule 3: main/master branch  \u2192  \"latest\" ---\n    if branch in (\"main\", \"master\"):\n        tags.append(\"latest\")\n\n    # --- Rule 4: feature branch  \u2192  \"{branch}-{short_sha}\" ---\n    if branch and branch not in (\"main\", \"master\"):\n        short_sha = commit_sha[:7] if commit_sha else \"\"\n        if short_sha:\n            tags.append(sanitize_tag(f\"{branch}-{short_sha}\"))\n        else:\n            tags.append(sanitize_tag(branch))\n\n    # Must produce at least one tag\n    if not tags:\n        raise ValueError(\n            \"Cannot generate tags: provide at least a branch, tag, or PR number\"\n        )\n\n    return tags\n\n\n# --- CLI entry point ---\ndef main() -> None:\n    \"\"\"Parse JSON from stdin or command-line args and print tags.\"\"\"\n    import argparse\n\n    parser = argparse.ArgumentParser(description=\"Generate Docker image tags from git context\")\n    parser.add_argument(\"--branch\", default=\"\", help=\"Git branch name\")\n    parser.add_argument(\"--sha\", default=\"\", help=\"Git commit SHA\")\n    parser.add_argument(\"--tag\", default=\"\", help=\"Git tag (e.g. v1.2.3)\")\n    parser.add_argument(\"--pr\", type=int, default=None, help=\"Pull request number\")\n    parser.add_argument(\"--json\", action=\"store_true\", help=\"Output as JSON array\")\n\n    args = parser.parse_args()\n\n    try:\n        result = generate_tags(\n            branch=args.branch,\n            commit_sha=args.sha,\n            tag=args.tag,\n            pr_number=args.pr,\n        )\n    except ValueError as e:\n        print(f\"Error: {e}\", file=sys.stderr)\n        sys.exit(1)\n\n    if args.json:\n        print(json.dumps(result))\n    else:\n        for t in result:\n            print(t)\n\n\nif __name__ == \"__main__\":\n    main()\n"
           },
           "caller": {
@@ -2590,7 +2590,7 @@
         {
           "tool_use_id": "toolu_01JyVjkDAMTsR2Bg1zos2ZV1",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/docker_tags.py"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/docker_tags.py"
         }
       ]
     },
@@ -2600,7 +2600,7 @@
     "timestamp": "2026-04-06T00:52:38.197Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/docker_tags.py",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/docker_tags.py",
       "content": "#!/usr/bin/env python3\n\"\"\"\nDocker Image Tag Generator\n\nGenerates appropriate Docker image tags from git context (branch name,\ncommit SHA, tags, PR number) following common conventions:\n\n  - \"latest\"            for the main/master branch\n  - \"pr-{number}\"       for pull requests\n  - \"v{semver}\"         for semver tags (e.g. v1.2.3)\n  - \"{branch}-{sha7}\"   for feature branches\n\nAll tags are sanitized: lowercased, special characters replaced with hyphens,\nleading/trailing hyphens stripped, and consecutive hyphens collapsed.\n\"\"\"\n\nimport re\nimport sys\nimport json\n\n\ndef sanitize_tag(tag: str) -> str:\n    \"\"\"Sanitize a string for use as a Docker image tag.\n\n    Docker tags must match [a-zA-Z0-9_.-] but by convention we also\n    lowercase and replace anything outside [a-z0-9._-] with hyphens,\n    then collapse runs of hyphens and strip leading/trailing hyphens.\n    \"\"\"\n    if not tag:\n        raise ValueError(\"Tag cannot be empty\")\n\n    # Lowercase first\n    tag = tag.lower()\n    # Replace any character that isn't alphanumeric, dot, or hyphen\n    tag = re.sub(r\"[^a-z0-9.\\-]\", \"-\", tag)\n    # Collapse consecutive hyphens\n    tag = re.sub(r\"-{2,}\", \"-\", tag)\n    # Strip leading/trailing hyphens\n    tag = tag.strip(\"-\")\n\n    if not tag:\n        raise ValueError(\"Tag is empty after sanitization\")\n\n    return tag\n\n\ndef generate_tags(\n    branch: str = \"\",\n    commit_sha: str = \"\",\n    tag: str = \"\",\n    pr_number: int | None = None,\n) -> list[str]:\n    \"\"\"Generate Docker image tags from git context.\n\n    Args:\n        branch:     Current git branch name (e.g. \"main\", \"feature/cool-thing\").\n        commit_sha: Full or abbreviated commit SHA.\n        tag:        Git tag, if any (e.g. \"v1.2.3\").\n        pr_number:  Pull request number, if applicable.\n\n    Returns:\n        A list of Docker-safe image tags.\n\n    Raises:\n        ValueError: If no usable git context is provided.\n    \"\"\"\n    tags: list[str] = []\n\n    # --- Rule 1: semver tag  \u2192  \"v{semver}\" ---\n    if tag:\n        semver_match = re.match(\n            r\"^v?(\\d+\\.\\d+\\.\\d+(?:[a-zA-Z0-9.+\\-]*)?)$\", tag\n        )\n        if semver_match:\n            version = semver_match.group(1)\n            tags.append(sanitize_tag(f\"v{version}\"))\n        else:\n            # Non-semver tag \u2014 sanitize and use as-is\n            tags.append(sanitize_tag(tag))\n\n    # --- Rule 2: PR number  \u2192  \"pr-{number}\" ---\n    if pr_number is not None:\n        if not isinstance(pr_number, int) or pr_number <= 0:\n            raise ValueError(f\"PR number must be a positive integer, got: {pr_number}\")\n        tags.append(f\"pr-{pr_number}\")\n\n    # --- Rule 3: main/master branch  \u2192  \"latest\" ---\n    if branch in (\"main\", \"master\"):\n        tags.append(\"latest\")\n\n    # --- Rule 4: feature branch  \u2192  \"{branch}-{short_sha}\" ---\n    if branch and branch not in (\"main\", \"master\"):\n        short_sha = commit_sha[:7] if commit_sha else \"\"\n        if short_sha:\n            tags.append(sanitize_tag(f\"{branch}-{short_sha}\"))\n        else:\n            tags.append(sanitize_tag(branch))\n\n    # Must produce at least one tag\n    if not tags:\n        raise ValueError(\n            \"Cannot generate tags: provide at least a branch, tag, or PR number\"\n        )\n\n    return tags\n\n\n# --- CLI entry point ---\ndef main() -> None:\n    \"\"\"Parse JSON from stdin or command-line args and print tags.\"\"\"\n    import argparse\n\n    parser = argparse.ArgumentParser(description=\"Generate Docker image tags from git context\")\n    parser.add_argument(\"--branch\", default=\"\", help=\"Git branch name\")\n    parser.add_argument(\"--sha\", default=\"\", help=\"Git commit SHA\")\n    parser.add_argument(\"--tag\", default=\"\", help=\"Git tag (e.g. v1.2.3)\")\n    parser.add_argument(\"--pr\", type=int, default=None, help=\"Pull request number\")\n    parser.add_argument(\"--json\", action=\"store_true\", help=\"Output as JSON array\")\n\n    args = parser.parse_args()\n\n    try:\n        result = generate_tags(\n            branch=args.branch,\n            commit_sha=args.sha,\n            tag=args.tag,\n            pr_number=args.pr,\n        )\n    except ValueError as e:\n        print(f\"Error: {e}\", file=sys.stderr)\n        sys.exit(1)\n\n    if args.json:\n        print(json.dumps(result))\n    else:\n        for t in result:\n            print(t)\n\n\nif __name__ == \"__main__\":\n    main()\n",
       "structuredPatch": [],
       "originalFile": null
@@ -2653,7 +2653,7 @@
           "id": "toolu_016j4rxMp8dvZBA1mDrbqtHW",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_docker_tags.py",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_docker_tags.py",
             "content": "#!/usr/bin/env python3\n\"\"\"\nTest suite for Docker Image Tag Generator \u2014 structured as TDD cycles.\n\nEach section below represents a red/green/refactor cycle:\n  1. Write a failing test (RED)\n  2. Implement the minimum code to pass (GREEN)\n  3. Refactor if needed\n\nAll tests are runnable with:  python -m pytest test_docker_tags.py -v\n\"\"\"\n\nimport subprocess\nimport sys\nimport pytest\n\nfrom docker_tags import generate_tags, sanitize_tag\n\n\n# =========================================================================\n# Cycle 1: main branch \u2192 \"latest\"\n# =========================================================================\n\nclass TestMainBranchLatest:\n    \"\"\"RED: main branch should produce the 'latest' tag.\"\"\"\n\n    def test_main_branch_produces_latest(self):\n        result = generate_tags(branch=\"main\", commit_sha=\"abc1234def5678\")\n        assert \"latest\" in result\n\n    def test_master_branch_also_produces_latest(self):\n        \"\"\"'master' is an alternative default branch name.\"\"\"\n        result = generate_tags(branch=\"master\", commit_sha=\"abc1234\")\n        assert \"latest\" in result\n\n    def test_main_branch_does_not_produce_branch_sha_tag(self):\n        \"\"\"main should only get 'latest', not a branch-sha tag.\"\"\"\n        result = generate_tags(branch=\"main\", commit_sha=\"abc1234\")\n        assert result == [\"latest\"]\n\n\n# =========================================================================\n# Cycle 2: PR number \u2192 \"pr-{number}\"\n# =========================================================================\n\nclass TestPRTags:\n    \"\"\"RED: a PR number should produce 'pr-{number}'.\"\"\"\n\n    def test_pr_number_produces_pr_tag(self):\n        result = generate_tags(branch=\"feature/foo\", commit_sha=\"abc1234\", pr_number=42)\n        assert \"pr-42\" in result\n\n    def test_pr_tag_format(self):\n        result = generate_tags(branch=\"fix/bar\", commit_sha=\"1234567\", pr_number=1)\n        assert \"pr-1\" in result\n\n    def test_pr_with_main_branch(self):\n        \"\"\"PR from main should include both pr-N and latest.\"\"\"\n        result = generate_tags(branch=\"main\", commit_sha=\"abc1234\", pr_number=99)\n        assert \"pr-99\" in result\n        assert \"latest\" in result\n\n\n# =========================================================================\n# Cycle 3: semver git tag \u2192 \"v{semver}\"\n# =========================================================================\n\nclass TestSemverTags:\n    \"\"\"RED: a semver git tag should produce 'v{major}.{minor}.{patch}'.\"\"\"\n\n    def test_semver_tag_with_v_prefix(self):\n        result = generate_tags(tag=\"v1.2.3\", branch=\"main\", commit_sha=\"abc1234\")\n        assert \"v1.2.3\" in result\n\n    def test_semver_tag_without_v_prefix(self):\n        \"\"\"Tags like '1.2.3' (no v) should still get normalized to v1.2.3.\"\"\"\n        result = generate_tags(tag=\"1.2.3\", branch=\"main\", commit_sha=\"abc1234\")\n        assert \"v1.2.3\" in result\n\n    def test_semver_prerelease(self):\n        result = generate_tags(tag=\"v2.0.0-beta.1\", branch=\"main\", commit_sha=\"abc1234\")\n        assert \"v2.0.0-beta.1\" in result\n\n    def test_semver_with_build_metadata(self):\n        result = generate_tags(tag=\"v1.0.0+build.42\", branch=\"main\", commit_sha=\"abc\")\n        assert \"v1.0.0-build.42\" in result  # '+' sanitized to '-'\n\n\n# =========================================================================\n# Cycle 4: feature branch \u2192 \"{branch}-{short_sha}\"\n# =========================================================================\n\nclass TestFeatureBranchTags:\n    \"\"\"RED: feature branches should produce '{branch}-{7-char-sha}'.\"\"\"\n\n    def test_simple_feature_branch(self):\n        result = generate_tags(branch=\"feature/cool-thing\", commit_sha=\"abc1234def5678\")\n        assert \"feature-cool-thing-abc1234\" in result\n\n    def test_short_sha_is_7_chars(self):\n        result = generate_tags(branch=\"dev\", commit_sha=\"abcdef1234567890\")\n        tag = [t for t in result if t.startswith(\"dev-\")][0]\n        # The sha portion should be 7 characters\n        sha_part = tag.split(\"-\", 1)[1]\n        assert len(sha_part) == 7\n\n    def test_branch_without_sha_uses_branch_only(self):\n        \"\"\"If no commit SHA is provided, use just the sanitized branch name.\"\"\"\n        result = generate_tags(branch=\"develop\")\n        assert \"develop\" in result\n\n    def test_nested_branch_slashes_become_hyphens(self):\n        result = generate_tags(branch=\"feat/ui/button\", commit_sha=\"1234567\")\n        assert \"feat-ui-button-1234567\" in result\n\n\n# =========================================================================\n# Cycle 5: tag sanitization\n# =========================================================================\n\nclass TestSanitization:\n    \"\"\"RED: tags must be lowercased, special chars replaced, hyphens cleaned.\"\"\"\n\n    def test_uppercase_is_lowered(self):\n        assert sanitize_tag(\"MyTag\") == \"mytag\"\n\n    def test_slashes_become_hyphens(self):\n        assert sanitize_tag(\"feature/thing\") == \"feature-thing\"\n\n    def test_underscores_become_hyphens(self):\n        assert sanitize_tag(\"my_branch\") == \"my-branch\"\n\n    def test_consecutive_hyphens_collapsed(self):\n        assert sanitize_tag(\"a--b---c\") == \"a-b-c\"\n\n    def test_leading_trailing_hyphens_stripped(self):\n        assert sanitize_tag(\"-hello-\") == \"hello\"\n\n    def test_special_chars_replaced(self):\n        assert sanitize_tag(\"feat@2!x\") == \"feat-2-x\"\n\n    def test_dots_preserved(self):\n        \"\"\"Dots are valid in Docker tags and should be kept.\"\"\"\n        assert sanitize_tag(\"v1.2.3\") == \"v1.2.3\"\n\n    def test_empty_string_raises(self):\n        with pytest.raises(ValueError, match=\"cannot be empty\"):\n            sanitize_tag(\"\")\n\n    def test_all_special_chars_raises(self):\n        with pytest.raises(ValueError, match=\"empty after sanitization\"):\n            sanitize_tag(\"@#$%\")\n\n\n# =========================================================================\n# Cycle 6: error handling\n# =========================================================================\n\nclass TestErrorHandling:\n    \"\"\"RED: missing or invalid inputs should raise meaningful errors.\"\"\"\n\n    def test_no_context_raises(self):\n        \"\"\"Calling with no branch, tag, or PR should raise ValueError.\"\"\"\n        with pytest.raises(ValueError, match=\"Cannot generate tags\"):\n            generate_tags()\n\n    def test_negative_pr_number_raises(self):\n        with pytest.raises(ValueError, match=\"positive integer\"):\n            generate_tags(branch=\"main\", pr_number=-1)\n\n    def test_zero_pr_number_raises(self):\n        with pytest.raises(ValueError, match=\"positive integer\"):\n            generate_tags(branch=\"main\", pr_number=0)\n\n\n# =========================================================================\n# Cycle 7: combined contexts \u2014 multiple tags generated at once\n# =========================================================================\n\nclass TestCombinedContexts:\n    \"\"\"RED: multiple inputs should produce multiple tags in priority order.\"\"\"\n\n    def test_tag_and_main_and_pr(self):\n        \"\"\"All three contexts present \u2014 should get semver, pr, and latest.\"\"\"\n        result = generate_tags(\n            branch=\"main\",\n            commit_sha=\"abc1234\",\n            tag=\"v3.1.0\",\n            pr_number=55,\n        )\n        assert \"v3.1.0\" in result\n        assert \"pr-55\" in result\n        assert \"latest\" in result\n\n    def test_tag_order_is_semver_pr_latest(self):\n        \"\"\"Tags should appear in a deterministic order: tag, pr, branch.\"\"\"\n        result = generate_tags(\n            branch=\"main\", commit_sha=\"abc1234\", tag=\"v1.0.0\", pr_number=10\n        )\n        assert result.index(\"v1.0.0\") < result.index(\"pr-10\")\n        assert result.index(\"pr-10\") < result.index(\"latest\")\n\n    def test_feature_branch_with_pr(self):\n        result = generate_tags(\n            branch=\"feature/login\", commit_sha=\"deadbeef123\", pr_number=7\n        )\n        assert \"pr-7\" in result\n        assert \"feature-login-deadbee\" in result\n\n\n# =========================================================================\n# Cycle 8: CLI interface\n# =========================================================================\n\nclass TestCLI:\n    \"\"\"RED: the CLI should accept flags and output tags.\"\"\"\n\n    def test_cli_main_branch(self):\n        result = subprocess.run(\n            [sys.executable, \"docker_tags.py\", \"--branch\", \"main\", \"--sha\", \"abc1234\"],\n            capture_output=True, text=True,\n        )\n        assert result.returncode == 0\n        assert \"latest\" in result.stdout\n\n    def test_cli_json_output(self):\n        result = subprocess.run(\n            [sys.executable, \"docker_tags.py\", \"--branch\", \"main\", \"--sha\", \"abc\", \"--json\"],\n            capture_output=True, text=True,\n        )\n        assert result.returncode == 0\n        import json\n        tags = json.loads(result.stdout)\n        assert \"latest\" in tags\n\n    def test_cli_no_args_errors(self):\n        result = subprocess.run(\n            [sys.executable, \"docker_tags.py\"],\n            capture_output=True, text=True,\n        )\n        assert result.returncode != 0\n        assert \"Error\" in result.stderr\n\n    def test_cli_full_context(self):\n        result = subprocess.run(\n            [\n                sys.executable, \"docker_tags.py\",\n                \"--branch\", \"feature/signup\",\n                \"--sha\", \"deadbeef1234567\",\n                \"--tag\", \"v2.0.0\",\n                \"--pr\", \"42\",\n            ],\n            capture_output=True, text=True,\n        )\n        assert result.returncode == 0\n        lines = result.stdout.strip().split(\"\\n\")\n        assert \"v2.0.0\" in lines\n        assert \"pr-42\" in lines\n        assert \"feature-signup-deadbee\" in lines\n"
           },
           "caller": {
@@ -2690,7 +2690,7 @@
         {
           "tool_use_id": "toolu_016j4rxMp8dvZBA1mDrbqtHW",
           "type": "tool_result",
-          "content": "The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_docker_tags.py has been updated successfully."
+          "content": "The file /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_docker_tags.py has been updated successfully."
         }
       ]
     },
@@ -2700,7 +2700,7 @@
     "timestamp": "2026-04-06T00:53:14.092Z",
     "tool_use_result": {
       "type": "update",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_docker_tags.py",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_docker_tags.py",
       "content": "#!/usr/bin/env python3\n\"\"\"\nTest suite for Docker Image Tag Generator \u2014 structured as TDD cycles.\n\nEach section below represents a red/green/refactor cycle:\n  1. Write a failing test (RED)\n  2. Implement the minimum code to pass (GREEN)\n  3. Refactor if needed\n\nAll tests are runnable with:  python -m pytest test_docker_tags.py -v\n\"\"\"\n\nimport subprocess\nimport sys\nimport pytest\n\nfrom docker_tags import generate_tags, sanitize_tag\n\n\n# =========================================================================\n# Cycle 1: main branch \u2192 \"latest\"\n# =========================================================================\n\nclass TestMainBranchLatest:\n    \"\"\"RED: main branch should produce the 'latest' tag.\"\"\"\n\n    def test_main_branch_produces_latest(self):\n        result = generate_tags(branch=\"main\", commit_sha=\"abc1234def5678\")\n        assert \"latest\" in result\n\n    def test_master_branch_also_produces_latest(self):\n        \"\"\"'master' is an alternative default branch name.\"\"\"\n        result = generate_tags(branch=\"master\", commit_sha=\"abc1234\")\n        assert \"latest\" in result\n\n    def test_main_branch_does_not_produce_branch_sha_tag(self):\n        \"\"\"main should only get 'latest', not a branch-sha tag.\"\"\"\n        result = generate_tags(branch=\"main\", commit_sha=\"abc1234\")\n        assert result == [\"latest\"]\n\n\n# =========================================================================\n# Cycle 2: PR number \u2192 \"pr-{number}\"\n# =========================================================================\n\nclass TestPRTags:\n    \"\"\"RED: a PR number should produce 'pr-{number}'.\"\"\"\n\n    def test_pr_number_produces_pr_tag(self):\n        result = generate_tags(branch=\"feature/foo\", commit_sha=\"abc1234\", pr_number=42)\n        assert \"pr-42\" in result\n\n    def test_pr_tag_format(self):\n        result = generate_tags(branch=\"fix/bar\", commit_sha=\"1234567\", pr_number=1)\n        assert \"pr-1\" in result\n\n    def test_pr_with_main_branch(self):\n        \"\"\"PR from main should include both pr-N and latest.\"\"\"\n        result = generate_tags(branch=\"main\", commit_sha=\"abc1234\", pr_number=99)\n        assert \"pr-99\" in result\n        assert \"latest\" in result\n\n\n# =========================================================================\n# Cycle 3: semver git tag \u2192 \"v{semver}\"\n# =========================================================================\n\nclass TestSemverTags:\n    \"\"\"RED: a semver git tag should produce 'v{major}.{minor}.{patch}'.\"\"\"\n\n    def test_semver_tag_with_v_prefix(self):\n        result = generate_tags(tag=\"v1.2.3\", branch=\"main\", commit_sha=\"abc1234\")\n        assert \"v1.2.3\" in result\n\n    def test_semver_tag_without_v_prefix(self):\n        \"\"\"Tags like '1.2.3' (no v) should still get normalized to v1.2.3.\"\"\"\n        result = generate_tags(tag=\"1.2.3\", branch=\"main\", commit_sha=\"abc1234\")\n        assert \"v1.2.3\" in result\n\n    def test_semver_prerelease(self):\n        result = generate_tags(tag=\"v2.0.0-beta.1\", branch=\"main\", commit_sha=\"abc1234\")\n        assert \"v2.0.0-beta.1\" in result\n\n    def test_semver_with_build_metadata(self):\n        result = generate_tags(tag=\"v1.0.0+build.42\", branch=\"main\", commit_sha=\"abc\")\n        assert \"v1.0.0-build.42\" in result  # '+' sanitized to '-'\n\n\n# =========================================================================\n# Cycle 4: feature branch \u2192 \"{branch}-{short_sha}\"\n# =========================================================================\n\nclass TestFeatureBranchTags:\n    \"\"\"RED: feature branches should produce '{branch}-{7-char-sha}'.\"\"\"\n\n    def test_simple_feature_branch(self):\n        result = generate_tags(branch=\"feature/cool-thing\", commit_sha=\"abc1234def5678\")\n        assert \"feature-cool-thing-abc1234\" in result\n\n    def test_short_sha_is_7_chars(self):\n        result = generate_tags(branch=\"dev\", commit_sha=\"abcdef1234567890\")\n        tag = [t for t in result if t.startswith(\"dev-\")][0]\n        # The sha portion should be 7 characters\n        sha_part = tag.split(\"-\", 1)[1]\n        assert len(sha_part) == 7\n\n    def test_branch_without_sha_uses_branch_only(self):\n        \"\"\"If no commit SHA is provided, use just the sanitized branch name.\"\"\"\n        result = generate_tags(branch=\"develop\")\n        assert \"develop\" in result\n\n    def test_nested_branch_slashes_become_hyphens(self):\n        result = generate_tags(branch=\"feat/ui/button\", commit_sha=\"1234567\")\n        assert \"feat-ui-button-1234567\" in result\n\n\n# =========================================================================\n# Cycle 5: tag sanitization\n# =========================================================================\n\nclass TestSanitization:\n    \"\"\"RED: tags must be lowercased, special chars replaced, hyphens cleaned.\"\"\"\n\n    def test_uppercase_is_lowered(self):\n        assert sanitize_tag(\"MyTag\") == \"mytag\"\n\n    def test_slashes_become_hyphens(self):\n        assert sanitize_tag(\"feature/thing\") == \"feature-thing\"\n\n    def test_underscores_become_hyphens(self):\n        assert sanitize_tag(\"my_branch\") == \"my-branch\"\n\n    def test_consecutive_hyphens_collapsed(self):\n        assert sanitize_tag(\"a--b---c\") == \"a-b-c\"\n\n    def test_leading_trailing_hyphens_stripped(self):\n        assert sanitize_tag(\"-hello-\") == \"hello\"\n\n    def test_special_chars_replaced(self):\n        assert sanitize_tag(\"feat@2!x\") == \"feat-2-x\"\n\n    def test_dots_preserved(self):\n        \"\"\"Dots are valid in Docker tags and should be kept.\"\"\"\n        assert sanitize_tag(\"v1.2.3\") == \"v1.2.3\"\n\n    def test_empty_string_raises(self):\n        with pytest.raises(ValueError, match=\"cannot be empty\"):\n            sanitize_tag(\"\")\n\n    def test_all_special_chars_raises(self):\n        with pytest.raises(ValueError, match=\"empty after sanitization\"):\n            sanitize_tag(\"@#$%\")\n\n\n# =========================================================================\n# Cycle 6: error handling\n# =========================================================================\n\nclass TestErrorHandling:\n    \"\"\"RED: missing or invalid inputs should raise meaningful errors.\"\"\"\n\n    def test_no_context_raises(self):\n        \"\"\"Calling with no branch, tag, or PR should raise ValueError.\"\"\"\n        with pytest.raises(ValueError, match=\"Cannot generate tags\"):\n            generate_tags()\n\n    def test_negative_pr_number_raises(self):\n        with pytest.raises(ValueError, match=\"positive integer\"):\n            generate_tags(branch=\"main\", pr_number=-1)\n\n    def test_zero_pr_number_raises(self):\n        with pytest.raises(ValueError, match=\"positive integer\"):\n            generate_tags(branch=\"main\", pr_number=0)\n\n\n# =========================================================================\n# Cycle 7: combined contexts \u2014 multiple tags generated at once\n# =========================================================================\n\nclass TestCombinedContexts:\n    \"\"\"RED: multiple inputs should produce multiple tags in priority order.\"\"\"\n\n    def test_tag_and_main_and_pr(self):\n        \"\"\"All three contexts present \u2014 should get semver, pr, and latest.\"\"\"\n        result = generate_tags(\n            branch=\"main\",\n            commit_sha=\"abc1234\",\n            tag=\"v3.1.0\",\n            pr_number=55,\n        )\n        assert \"v3.1.0\" in result\n        assert \"pr-55\" in result\n        assert \"latest\" in result\n\n    def test_tag_order_is_semver_pr_latest(self):\n        \"\"\"Tags should appear in a deterministic order: tag, pr, branch.\"\"\"\n        result = generate_tags(\n            branch=\"main\", commit_sha=\"abc1234\", tag=\"v1.0.0\", pr_number=10\n        )\n        assert result.index(\"v1.0.0\") < result.index(\"pr-10\")\n        assert result.index(\"pr-10\") < result.index(\"latest\")\n\n    def test_feature_branch_with_pr(self):\n        result = generate_tags(\n            branch=\"feature/login\", commit_sha=\"deadbeef123\", pr_number=7\n        )\n        assert \"pr-7\" in result\n        assert \"feature-login-deadbee\" in result\n\n\n# =========================================================================\n# Cycle 8: CLI interface\n# =========================================================================\n\nclass TestCLI:\n    \"\"\"RED: the CLI should accept flags and output tags.\"\"\"\n\n    def test_cli_main_branch(self):\n        result = subprocess.run(\n            [sys.executable, \"docker_tags.py\", \"--branch\", \"main\", \"--sha\", \"abc1234\"],\n            capture_output=True, text=True,\n        )\n        assert result.returncode == 0\n        assert \"latest\" in result.stdout\n\n    def test_cli_json_output(self):\n        result = subprocess.run(\n            [sys.executable, \"docker_tags.py\", \"--branch\", \"main\", \"--sha\", \"abc\", \"--json\"],\n            capture_output=True, text=True,\n        )\n        assert result.returncode == 0\n        import json\n        tags = json.loads(result.stdout)\n        assert \"latest\" in tags\n\n    def test_cli_no_args_errors(self):\n        result = subprocess.run(\n            [sys.executable, \"docker_tags.py\"],\n            capture_output=True, text=True,\n        )\n        assert result.returncode != 0\n        assert \"Error\" in result.stderr\n\n    def test_cli_full_context(self):\n        result = subprocess.run(\n            [\n                sys.executable, \"docker_tags.py\",\n                \"--branch\", \"feature/signup\",\n                \"--sha\", \"deadbeef1234567\",\n                \"--tag\", \"v2.0.0\",\n                \"--pr\", \"42\",\n            ],\n            capture_output=True, text=True,\n        )\n        assert result.returncode == 0\n        lines = result.stdout.strip().split(\"\\n\")\n        assert \"v2.0.0\" in lines\n        assert \"pr-42\" in lines\n        assert \"feature-signup-deadbee\" in lines\n",
       "structuredPatch": [
         {
@@ -4188,7 +4188,7 @@
           "id": "toolu_01F5wthH5mfBH7p9ekHEC5Be",
           "name": "Bash",
           "input": {
-            "command": "python -m pytest /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_docker_tags.py -v 2>&1",
+            "command": "python -m pytest /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_docker_tags.py -v 2>&1",
             "description": "Run pytest with absolute path"
           },
           "caller": {
@@ -7160,7 +7160,7 @@
           "name": "Agent",
           "input": {
             "description": "Run pytest test suite",
-            "prompt": "Please run the following command from the directory /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/ and report the full output:\n\ncd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/ && python -m pytest test_docker_tags.py -v 2>&1\n\nReport the full output including any failures."
+            "prompt": "Please run the following command from the directory /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/ and report the full output:\n\ncd /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/ && python -m pytest test_docker_tags.py -v 2>&1\n\nReport the full output including any failures."
           },
           "caller": {
             "type": "direct"
@@ -7195,7 +7195,7 @@
     "tool_use_id": "toolu_01XgMBfsy8F7rUsSZwxvt8nE",
     "description": "Run pytest test suite",
     "task_type": "local_agent",
-    "prompt": "Please run the following command from the directory /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/ and report the full output:\n\ncd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/ && python -m pytest test_docker_tags.py -v 2>&1\n\nReport the full output including any failures.",
+    "prompt": "Please run the following command from the directory /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/ and report the full output:\n\ncd /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/ && python -m pytest test_docker_tags.py -v 2>&1\n\nReport the full output including any failures.",
     "uuid": "e9d30fa2-96e0-4fbe-8109-fdd69af1e88d",
     "session_id": "19a0c2fa-f823-4f36-964e-95b3d9c14040"
   },
@@ -7206,7 +7206,7 @@
       "content": [
         {
           "type": "text",
-          "text": "Please run the following command from the directory /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/ and report the full output:\n\ncd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/ && python -m pytest test_docker_tags.py -v 2>&1\n\nReport the full output including any failures."
+          "text": "Please run the following command from the directory /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/ and report the full output:\n\ncd /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/ && python -m pytest test_docker_tags.py -v 2>&1\n\nReport the full output including any failures."
         }
       ]
     },
@@ -7243,7 +7243,7 @@
           "id": "toolu_012kxawoJ7QUQaDAwo1x7vRx",
           "name": "Bash",
           "input": {
-            "command": "cd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/ && python -m pytest test_docker_tags.py -v 2>&1",
+            "command": "cd /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/ && python -m pytest test_docker_tags.py -v 2>&1",
             "description": "Run pytest on test_docker_tags.py with verbose output",
             "timeout": 120000
           },
@@ -7320,7 +7320,7 @@
           "id": "toolu_01RTk2mvHkUGZ6qHYeUXy7Km",
           "name": "Bash",
           "input": {
-            "command": "cd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/ && python -m pytest test_docker_tags.py -v 2>&1",
+            "command": "cd /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/ && python -m pytest test_docker_tags.py -v 2>&1",
             "description": "Run pytest on test_docker_tags.py with verbose output",
             "timeout": 120000,
             "dangerouslyDisableSandbox": true
@@ -7398,7 +7398,7 @@
           "id": "toolu_01SAgSBQjwwawbsDsc4URczc",
           "name": "Bash",
           "input": {
-            "command": "python -m pytest /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_docker_tags.py -v 2>&1",
+            "command": "python -m pytest /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_docker_tags.py -v 2>&1",
             "description": "Run pytest on test_docker_tags.py with verbose output",
             "timeout": 120000
           },
@@ -7552,7 +7552,7 @@
           "id": "toolu_01C7m5NQTMb6AsX67RsDdCJv",
           "name": "Bash",
           "input": {
-            "command": "ls /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/",
+            "command": "ls /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/",
             "description": "List files in the workspace directory"
           },
           "caller": {
@@ -7935,7 +7935,7 @@
           "id": "toolu_012uobuKLcvQ9FPBA2i3P7mp",
           "name": "Bash",
           "input": {
-            "command": "/usr/bin/python3 -m pytest /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_docker_tags.py -v",
+            "command": "/usr/bin/python3 -m pytest /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_docker_tags.py -v",
             "description": "Execute pytest on the docker tag test file",
             "timeout": 120000
           },
@@ -8089,7 +8089,7 @@
           "id": "toolu_017jqhgzonytrxer2w2tnrLB",
           "name": "Read",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_docker_tags.py"
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_docker_tags.py"
           },
           "caller": {
             "type": "direct"
@@ -8162,7 +8162,7 @@
           "id": "toolu_01RRMtMoQcXAf8CpHg2MGW3Q",
           "name": "Read",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/docker_tags.py"
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/docker_tags.py"
           },
           "caller": {
             "type": "direct"
@@ -8466,7 +8466,7 @@
           "id": "toolu_0193ZPLCF5vNApdBi1mYV3J4",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/run_tests.py",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/run_tests.py",
             "content": "#!/usr/bin/env python3\n\"\"\"Manual test runner that mirrors test_docker_tags.py tests.\"\"\"\nimport sys\nimport subprocess\nimport json\nimport traceback\n\nsys.path.insert(0, '.')\nfrom docker_tags import generate_tags, sanitize_tag\n\npassed = 0\nfailed = 0\nerror_list = []\n\ndef check(name, condition, detail=''):\n    global passed, failed\n    if condition:\n        passed += 1\n        print(f'PASSED  {name}')\n    else:\n        failed += 1\n        msg = f'FAILED  {name}'\n        if detail:\n            msg += f' -- {detail}'\n        print(msg)\n        error_list.append(msg)\n\ndef expect_raises(name, exc_type, match_str, func, *args, **kwargs):\n    global passed, failed\n    try:\n        func(*args, **kwargs)\n        failed += 1\n        msg = f'FAILED  {name} -- no exception raised'\n        print(msg)\n        error_list.append(msg)\n    except exc_type as e:\n        if match_str.lower() in str(e).lower():\n            passed += 1\n            print(f'PASSED  {name}')\n        else:\n            failed += 1\n            msg = f'FAILED  {name} -- exception message mismatch: {e!r}'\n            print(msg)\n            error_list.append(msg)\n    except Exception as e:\n        failed += 1\n        msg = f'FAILED  {name} -- wrong exception type: {type(e).__name__}: {e}'\n        print(msg)\n        error_list.append(msg)\n\nprint(\"=\" * 70)\nprint(\"Cycle 1: main branch -> latest\")\nprint(\"=\" * 70)\nresult = generate_tags(branch=\"main\", commit_sha=\"abc1234def5678\")\ncheck(\"test_main_branch_produces_latest\", \"latest\" in result, f\"got {result}\")\n\nresult = generate_tags(branch=\"master\", commit_sha=\"abc1234\")\ncheck(\"test_master_branch_also_produces_latest\", \"latest\" in result, f\"got {result}\")\n\nresult = generate_tags(branch=\"main\", commit_sha=\"abc1234\")\ncheck(\"test_main_branch_does_not_produce_branch_sha_tag\", result == [\"latest\"], f\"got {result}\")\n\nprint()\nprint(\"=\" * 70)\nprint(\"Cycle 2: PR tags\")\nprint(\"=\" * 70)\nresult = generate_tags(branch=\"feature/foo\", commit_sha=\"abc1234\", pr_number=42)\ncheck(\"test_pr_number_produces_pr_tag\", \"pr-42\" in result, f\"got {result}\")\n\nresult = generate_tags(branch=\"fix/bar\", commit_sha=\"1234567\", pr_number=1)\ncheck(\"test_pr_tag_format\", \"pr-1\" in result, f\"got {result}\")\n\nresult = generate_tags(branch=\"main\", commit_sha=\"abc1234\", pr_number=99)\ncheck(\"test_pr_with_main_branch [pr-99]\", \"pr-99\" in result, f\"got {result}\")\ncheck(\"test_pr_with_main_branch [latest]\", \"latest\" in result, f\"got {result}\")\n\nprint()\nprint(\"=\" * 70)\nprint(\"Cycle 3: semver tags\")\nprint(\"=\" * 70)\nresult = generate_tags(tag=\"v1.2.3\", branch=\"main\", commit_sha=\"abc1234\")\ncheck(\"test_semver_tag_with_v_prefix\", \"v1.2.3\" in result, f\"got {result}\")\n\nresult = generate_tags(tag=\"1.2.3\", branch=\"main\", commit_sha=\"abc1234\")\ncheck(\"test_semver_tag_without_v_prefix\", \"v1.2.3\" in result, f\"got {result}\")\n\nresult = generate_tags(tag=\"v2.0.0-beta.1\", branch=\"main\", commit_sha=\"abc1234\")\ncheck(\"test_semver_prerelease\", \"v2.0.0-beta.1\" in result, f\"got {result}\")\n\nresult = generate_tags(tag=\"v1.0.0+build.42\", branch=\"main\", commit_sha=\"abc\")\ncheck(\"test_semver_with_build_metadata\", \"v1.0.0-build.42\" in result, f\"got {result}\")\n\nprint()\nprint(\"=\" * 70)\nprint(\"Cycle 4: feature branch tags\")\nprint(\"=\" * 70)\nresult = generate_tags(branch=\"feature/cool-thing\", commit_sha=\"abc1234def5678\")\ncheck(\"test_simple_feature_branch\", \"feature-cool-thing-abc1234\" in result, f\"got {result}\")\n\nresult = generate_tags(branch=\"dev\", commit_sha=\"abcdef1234567890\")\ntag = [t for t in result if t.startswith(\"dev-\")][0]\nsha_part = tag.split(\"-\", 1)[1]\ncheck(\"test_short_sha_is_7_chars\", len(sha_part) == 7, f\"sha_part={sha_part!r}, len={len(sha_part)}\")\n\nresult = generate_tags(branch=\"develop\")\ncheck(\"test_branch_without_sha_uses_branch_only\", \"develop\" in result, f\"got {result}\")\n\nresult = generate_tags(branch=\"feat/ui/button\", commit_sha=\"1234567\")\ncheck(\"test_nested_branch_slashes_become_hyphens\", \"feat-ui-button-1234567\" in result, f\"got {result}\")\n\nprint()\nprint(\"=\" * 70)\nprint(\"Cycle 5: sanitization\")\nprint(\"=\" * 70)\ncheck(\"test_uppercase_is_lowered\", sanitize_tag(\"MyTag\") == \"mytag\", f\"got {sanitize_tag('MyTag')!r}\")\ncheck(\"test_slashes_become_hyphens\", sanitize_tag(\"feature/thing\") == \"feature-thing\", f\"got {sanitize_tag('feature/thing')!r}\")\ncheck(\"test_underscores_become_hyphens\", sanitize_tag(\"my_branch\") == \"my-branch\", f\"got {sanitize_tag('my_branch')!r}\")\ncheck(\"test_consecutive_hyphens_collapsed\", sanitize_tag(\"a--b---c\") == \"a-b-c\", f\"got {sanitize_tag('a--b---c')!r}\")\ncheck(\"test_leading_trailing_hyphens_stripped\", sanitize_tag(\"-hello-\") == \"hello\", f\"got {sanitize_tag('-hello-')!r}\")\ncheck(\"test_special_chars_replaced\", sanitize_tag(\"feat@2!x\") == \"feat-2-x\", f\"got {sanitize_tag('feat@2!x')!r}\")\ncheck(\"test_dots_preserved\", sanitize_tag(\"v1.2.3\") == \"v1.2.3\", f\"got {sanitize_tag('v1.2.3')!r}\")\n\nexpect_raises(\"test_empty_string_raises\", ValueError, \"cannot be empty\", sanitize_tag, \"\")\nexpect_raises(\"test_all_special_chars_raises\", ValueError, \"empty after sanitization\", sanitize_tag, \"@#$%\")\n\nprint()\nprint(\"=\" * 70)\nprint(\"Cycle 6: error handling\")\nprint(\"=\" * 70)\nexpect_raises(\"test_no_context_raises\", ValueError, \"Cannot generate tags\", generate_tags)\nexpect_raises(\"test_negative_pr_number_raises\", ValueError, \"positive integer\", generate_tags, branch=\"main\", pr_number=-1)\nexpect_raises(\"test_zero_pr_number_raises\", ValueError, \"positive integer\", generate_tags, branch=\"main\", pr_number=0)\n\nprint()\nprint(\"=\" * 70)\nprint(\"Cycle 7: combined contexts\")\nprint(\"=\" * 70)\nresult = generate_tags(branch=\"main\", commit_sha=\"abc1234\", tag=\"v3.1.0\", pr_number=55)\ncheck(\"test_tag_and_main_and_pr [v3.1.0]\", \"v3.1.0\" in result, f\"got {result}\")\ncheck(\"test_tag_and_main_and_pr [pr-55]\", \"pr-55\" in result, f\"got {result}\")\ncheck(\"test_tag_and_main_and_pr [latest]\", \"latest\" in result, f\"got {result}\")\n\nresult = generate_tags(branch=\"main\", commit_sha=\"abc1234\", tag=\"v1.0.0\", pr_number=10)\ncheck(\"test_tag_order_semver_before_pr\", result.index(\"v1.0.0\") < result.index(\"pr-10\"), f\"got {result}\")\ncheck(\"test_tag_order_pr_before_latest\", result.index(\"pr-10\") < result.index(\"latest\"), f\"got {result}\")\n\nresult = generate_tags(branch=\"feature/login\", commit_sha=\"deadbeef123\", pr_number=7)\ncheck(\"test_feature_branch_with_pr [pr-7]\", \"pr-7\" in result, f\"got {result}\")\ncheck(\"test_feature_branch_with_pr [feature-login-deadbee]\", \"feature-login-deadbee\" in result, f\"got {result}\")\n\nprint()\nprint(\"=\" * 70)\nprint(\"Cycle 8: CLI tests\")\nprint(\"=\" * 70)\nr = subprocess.run([sys.executable, \"docker_tags.py\", \"--branch\", \"main\", \"--sha\", \"abc1234\"], capture_output=True, text=True)\ncheck(\"test_cli_main_branch [rc=0]\", r.returncode == 0, f\"returncode={r.returncode}\")\ncheck(\"test_cli_main_branch [latest in stdout]\", \"latest\" in r.stdout, f\"stdout={r.stdout!r}\")\n\nr = subprocess.run([sys.executable, \"docker_tags.py\", \"--branch\", \"main\", \"--sha\", \"abc\", \"--json\"], capture_output=True, text=True)\ncheck(\"test_cli_json_output [rc=0]\", r.returncode == 0, f\"returncode={r.returncode}\")\ntry:\n    tags = json.loads(r.stdout)\n    check(\"test_cli_json_output [latest in json]\", \"latest\" in tags, f\"tags={tags}\")\nexcept Exception as ex:\n    check(\"test_cli_json_output [latest in json]\", False, f\"json parse error: {ex}, stdout={r.stdout!r}\")\n\nr = subprocess.run([sys.executable, \"docker_tags.py\"], capture_output=True, text=True)\ncheck(\"test_cli_no_args_errors [rc!=0]\", r.returncode != 0, f\"returncode={r.returncode}\")\ncheck(\"test_cli_no_args_errors [Error in stderr]\", \"Error\" in r.stderr, f\"stderr={r.stderr!r}\")\n\nr = subprocess.run([sys.executable, \"docker_tags.py\", \"--branch\", \"feature/signup\", \"--sha\", \"deadbeef1234567\", \"--tag\", \"v2.0.0\", \"--pr\", \"42\"], capture_output=True, text=True)\ncheck(\"test_cli_full_context [rc=0]\", r.returncode == 0, f\"returncode={r.returncode}\")\nlines = r.stdout.strip().split(\"\\n\")\ncheck(\"test_cli_full_context [v2.0.0]\", \"v2.0.0\" in lines, f\"lines={lines}\")\ncheck(\"test_cli_full_context [pr-42]\", \"pr-42\" in lines, f\"lines={lines}\")\ncheck(\"test_cli_full_context [feature-signup-deadbee]\", \"feature-signup-deadbee\" in lines, f\"lines={lines}\")\n\nprint()\nprint(\"=\" * 70)\nprint(f\"TOTAL: {passed} passed, {failed} failed, {passed + failed} total\")\nprint(\"=\" * 70)\nif error_list:\n    print()\n    print(\"FAILURES:\")\n    for e in error_list:\n        print(f\"  {e}\")\n    sys.exit(1)\nelse:\n    print(\"All tests passed!\")\n"
           },
           "caller": {
@@ -8503,7 +8503,7 @@
         {
           "tool_use_id": "toolu_0193ZPLCF5vNApdBi1mYV3J4",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/run_tests.py"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/run_tests.py"
         }
       ]
     },
@@ -8540,7 +8540,7 @@
           "id": "toolu_01QtKxccGq6o4nqZzdhPkf5d",
           "name": "Bash",
           "input": {
-            "command": "/usr/bin/python3 /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/run_tests.py",
+            "command": "/usr/bin/python3 /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/run_tests.py",
             "description": "Run the manual test runner script",
             "timeout": 60000
           },
@@ -8925,7 +8925,7 @@
           "id": "toolu_019CFaLZE7HgtKrpiBQrJEDr",
           "name": "Bash",
           "input": {
-            "command": "cd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/ && python -m pytest test_docker_tags.py -v 2>&1",
+            "command": "cd /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/ && python -m pytest test_docker_tags.py -v 2>&1",
             "description": "Run pytest on docker_tags tests as user requested",
             "timeout": 120000,
             "dangerouslyDisableSandbox": true
@@ -9313,7 +9313,7 @@
           "id": "toolu_012TFoit9QRtSV4kqg9Xvu2H",
           "name": "Bash",
           "input": {
-            "command": "rm /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/run_tests.py",
+            "command": "rm /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/run_tests.py",
             "description": "Remove temporary test runner script"
           },
           "caller": {
@@ -9387,7 +9387,7 @@
           "content": [
             {
               "type": "text",
-              "text": "I was unable to execute the pytest command. The sandbox environment is consistently blocking all forms of Python execution (`python -m pytest`, `pytest`, `python3`, etc.) with a \"command requires approval\" error. This is a security restriction of the sandbox I'm running in -- I cannot run arbitrary Python scripts or test runners.\n\n**What I can report from reading the source files:**\n\nThe test file (`/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_docker_tags.py`) contains 8 test cycles with ~30 test assertions across these classes:\n- `TestMainBranchLatest` (3 tests)\n- `TestPRTags` (3 tests)\n- `TestSemverTags` (4 tests)\n- `TestFeatureBranchTags` (4 tests)\n- `TestSanitization` (9 tests)\n- `TestErrorHandling` (3 tests)\n- `TestCombinedContexts` (3 tests)\n- `TestCLI` (4 tests)\n\nThe implementation (`/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/docker_tags.py`) appears well-structured and matches the test expectations. To get the actual test results, you would need to run the command directly in a terminal:\n\n```\ncd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/ && python -m pytest test_docker_tags.py -v\n```"
+              "text": "I was unable to execute the pytest command. The sandbox environment is consistently blocking all forms of Python execution (`python -m pytest`, `pytest`, `python3`, etc.) with a \"command requires approval\" error. This is a security restriction of the sandbox I'm running in -- I cannot run arbitrary Python scripts or test runners.\n\n**What I can report from reading the source files:**\n\nThe test file (`/home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_docker_tags.py`) contains 8 test cycles with ~30 test assertions across these classes:\n- `TestMainBranchLatest` (3 tests)\n- `TestPRTags` (3 tests)\n- `TestSemverTags` (4 tests)\n- `TestFeatureBranchTags` (4 tests)\n- `TestSanitization` (9 tests)\n- `TestErrorHandling` (3 tests)\n- `TestCombinedContexts` (3 tests)\n- `TestCLI` (4 tests)\n\nThe implementation (`/home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/docker_tags.py`) appears well-structured and matches the test expectations. To get the actual test results, you would need to run the command directly in a terminal:\n\n```\ncd /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/ && python -m pytest test_docker_tags.py -v\n```"
             },
             {
               "type": "text",
@@ -9403,12 +9403,12 @@
     "timestamp": "2026-04-06T01:01:41.131Z",
     "tool_use_result": {
       "status": "completed",
-      "prompt": "Please run the following command from the directory /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/ and report the full output:\n\ncd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/ && python -m pytest test_docker_tags.py -v 2>&1\n\nReport the full output including any failures.",
+      "prompt": "Please run the following command from the directory /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/ and report the full output:\n\ncd /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/ && python -m pytest test_docker_tags.py -v 2>&1\n\nReport the full output including any failures.",
       "agentId": "aa54d531698d045b0",
       "content": [
         {
           "type": "text",
-          "text": "I was unable to execute the pytest command. The sandbox environment is consistently blocking all forms of Python execution (`python -m pytest`, `pytest`, `python3`, etc.) with a \"command requires approval\" error. This is a security restriction of the sandbox I'm running in -- I cannot run arbitrary Python scripts or test runners.\n\n**What I can report from reading the source files:**\n\nThe test file (`/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_docker_tags.py`) contains 8 test cycles with ~30 test assertions across these classes:\n- `TestMainBranchLatest` (3 tests)\n- `TestPRTags` (3 tests)\n- `TestSemverTags` (4 tests)\n- `TestFeatureBranchTags` (4 tests)\n- `TestSanitization` (9 tests)\n- `TestErrorHandling` (3 tests)\n- `TestCombinedContexts` (3 tests)\n- `TestCLI` (4 tests)\n\nThe implementation (`/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/docker_tags.py`) appears well-structured and matches the test expectations. To get the actual test results, you would need to run the command directly in a terminal:\n\n```\ncd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/ && python -m pytest test_docker_tags.py -v\n```"
+          "text": "I was unable to execute the pytest command. The sandbox environment is consistently blocking all forms of Python execution (`python -m pytest`, `pytest`, `python3`, etc.) with a \"command requires approval\" error. This is a security restriction of the sandbox I'm running in -- I cannot run arbitrary Python scripts or test runners.\n\n**What I can report from reading the source files:**\n\nThe test file (`/home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_docker_tags.py`) contains 8 test cycles with ~30 test assertions across these classes:\n- `TestMainBranchLatest` (3 tests)\n- `TestPRTags` (3 tests)\n- `TestSemverTags` (4 tests)\n- `TestFeatureBranchTags` (4 tests)\n- `TestSanitization` (9 tests)\n- `TestErrorHandling` (3 tests)\n- `TestCombinedContexts` (3 tests)\n- `TestCLI` (4 tests)\n\nThe implementation (`/home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/docker_tags.py`) appears well-structured and matches the test expectations. To get the actual test results, you would need to run the command directly in a terminal:\n\n```\ncd /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/ && python -m pytest test_docker_tags.py -v\n```"
         }
       ],
       "totalDurationMs": 176642,
@@ -9516,7 +9516,7 @@
           "id": "toolu_015PztvkVRFL1qAYQg7yGX9i",
           "name": "Bash",
           "input": {
-            "command": "cd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/ && python -m pytest test_docker_tags.py -v 2>&1",
+            "command": "cd /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/ && python -m pytest test_docker_tags.py -v 2>&1",
             "description": "Run pytest with sandbox disabled",
             "dangerouslyDisableSandbox": true
           },
@@ -10084,7 +10084,7 @@
       "content": [
         {
           "type": "tool_result",
-          "content": "ls in '/usr/bin' was blocked. For security, Claude Code may only list files in the allowed working directories for this session: '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus'.",
+          "content": "ls in '/usr/bin' was blocked. For security, Claude Code may only list files in the allowed working directories for this session: '/home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus'.",
           "is_error": true,
           "tool_use_id": "toolu_01DSNHL1x8ZARxzBfKFNW23c"
         }
@@ -10094,7 +10094,7 @@
     "session_id": "19a0c2fa-f823-4f36-964e-95b3d9c14040",
     "uuid": "92ca5fee-0cde-4349-bade-30911b8cdb04",
     "timestamp": "2026-04-06T01:02:13.488Z",
-    "tool_use_result": "Error: ls in '/usr/bin' was blocked. For security, Claude Code may only list files in the allowed working directories for this session: '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus'."
+    "tool_use_result": "Error: ls in '/usr/bin' was blocked. For security, Claude Code may only list files in the allowed working directories for this session: '/home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus'."
   },
   {
     "type": "assistant",
@@ -10109,7 +10109,7 @@
           "id": "toolu_01A2LPUfozj997EE6jQ4yQPS",
           "name": "Bash",
           "input": {
-            "command": "ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/",
+            "command": "ls -la /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/",
             "description": "List workspace files"
           },
           "caller": {
@@ -11996,7 +11996,7 @@
         {
           "tool_use_id": "toolu_01QDzUxZrBEHgGUSmxTV8Ddr",
           "type": "tool_result",
-          "content": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus",
+          "content": "/home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus",
           "is_error": false
         }
       ]
@@ -12006,7 +12006,7 @@
     "uuid": "551ef4c9-686d-43d7-8638-03b7dc22edb1",
     "timestamp": "2026-04-06T01:03:54.174Z",
     "tool_use_result": {
-      "stdout": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus",
+      "stdout": "/home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus",
       "stderr": "",
       "interrupted": false,
       "isImage": false,
@@ -12305,7 +12305,7 @@
           "id": "toolu_01Q7C9LjqTrdZ3xYnDgQLADX",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_quick.sh",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_quick.sh",
             "content": "#!/bin/bash\necho \"hello from script\"\n"
           },
           "caller": {
@@ -12342,7 +12342,7 @@
         {
           "tool_use_id": "toolu_01Q7C9LjqTrdZ3xYnDgQLADX",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_quick.sh"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_quick.sh"
         }
       ]
     },
@@ -12352,7 +12352,7 @@
     "timestamp": "2026-04-06T01:04:13.040Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_quick.sh",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_quick.sh",
       "content": "#!/bin/bash\necho \"hello from script\"\n",
       "structuredPatch": [],
       "originalFile": null
@@ -12371,7 +12371,7 @@
           "id": "toolu_01TEQXP55gq5m8JoasbU8ioW",
           "name": "Bash",
           "input": {
-            "command": "chmod +x /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_quick.sh",
+            "command": "chmod +x /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_quick.sh",
             "description": "Make test script executable"
           },
           "caller": {
@@ -12432,7 +12432,7 @@
           "id": "toolu_015PgPsNqiE6oE2UEpDgH2s4",
           "name": "Bash",
           "input": {
-            "command": "chmod +x /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_quick.sh",
+            "command": "chmod +x /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_quick.sh",
             "description": "Make test script executable"
           },
           "caller": {
@@ -12493,7 +12493,7 @@
           "id": "toolu_0156aoewwfpq1rRXDdRJE2sW",
           "name": "Bash",
           "input": {
-            "command": "chmod +x /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_quick.sh",
+            "command": "chmod +x /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_quick.sh",
             "description": "chmod script"
           },
           "caller": {
@@ -12684,7 +12684,7 @@
           "id": "toolu_01KamkvF3omEM9fy1iDJRTRq",
           "name": "Bash",
           "input": {
-            "command": "rm -f /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_quick.sh",
+            "command": "rm -f /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_quick.sh",
             "description": "Remove temp test script"
           },
           "caller": {
@@ -12751,7 +12751,7 @@
           "id": "toolu_01A5NkM2zYhABQTwX4QH43Pk",
           "name": "Read",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/docker_tags.py"
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/docker_tags.py"
           },
           "caller": {
             "type": "direct"
@@ -12798,7 +12798,7 @@
     "tool_use_result": {
       "type": "text",
       "file": {
-        "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/docker_tags.py",
+        "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/docker_tags.py",
         "content": "#!/usr/bin/env python3\n\"\"\"\nDocker Image Tag Generator\n\nGenerates appropriate Docker image tags from git context (branch name,\ncommit SHA, tags, PR number) following common conventions:\n\n  - \"latest\"            for the main/master branch\n  - \"pr-{number}\"       for pull requests\n  - \"v{semver}\"         for semver tags (e.g. v1.2.3)\n  - \"{branch}-{sha7}\"   for feature branches\n\nAll tags are sanitized: lowercased, special characters replaced with hyphens,\nleading/trailing hyphens stripped, and consecutive hyphens collapsed.\n\"\"\"\n\nimport re\nimport sys\nimport json\n\n\ndef sanitize_tag(tag: str) -> str:\n    \"\"\"Sanitize a string for use as a Docker image tag.\n\n    Docker tags must match [a-zA-Z0-9_.-] but by convention we also\n    lowercase and replace anything outside [a-z0-9._-] with hyphens,\n    then collapse runs of hyphens and strip leading/trailing hyphens.\n    \"\"\"\n    if not tag:\n        raise ValueError(\"Tag cannot be empty\")\n\n    # Lowercase first\n    tag = tag.lower()\n    # Replace any character that isn't alphanumeric, dot, or hyphen\n    tag = re.sub(r\"[^a-z0-9.\\-]\", \"-\", tag)\n    # Collapse consecutive hyphens\n    tag = re.sub(r\"-{2,}\", \"-\", tag)\n    # Strip leading/trailing hyphens\n    tag = tag.strip(\"-\")\n\n    if not tag:\n        raise ValueError(\"Tag is empty after sanitization\")\n\n    return tag\n\n\ndef generate_tags(\n    branch: str = \"\",\n    commit_sha: str = \"\",\n    tag: str = \"\",\n    pr_number: int | None = None,\n) -> list[str]:\n    \"\"\"Generate Docker image tags from git context.\n\n    Args:\n        branch:     Current git branch name (e.g. \"main\", \"feature/cool-thing\").\n        commit_sha: Full or abbreviated commit SHA.\n        tag:        Git tag, if any (e.g. \"v1.2.3\").\n        pr_number:  Pull request number, if applicable.\n\n    Returns:\n        A list of Docker-safe image tags.\n\n    Raises:\n        ValueError: If no usable git context is provided.\n    \"\"\"\n    tags: list[str] = []\n\n    # --- Rule 1: semver tag  \u2192  \"v{semver}\" ---\n    if tag:\n        semver_match = re.match(\n            r\"^v?(\\d+\\.\\d+\\.\\d+(?:[a-zA-Z0-9.+\\-]*)?)$\", tag\n        )\n        if semver_match:\n            version = semver_match.group(1)\n            tags.append(sanitize_tag(f\"v{version}\"))\n        else:\n            # Non-semver tag \u2014 sanitize and use as-is\n            tags.append(sanitize_tag(tag))\n\n    # --- Rule 2: PR number  \u2192  \"pr-{number}\" ---\n    if pr_number is not None:\n        if not isinstance(pr_number, int) or pr_number <= 0:\n            raise ValueError(f\"PR number must be a positive integer, got: {pr_number}\")\n        tags.append(f\"pr-{pr_number}\")\n\n    # --- Rule 3: main/master branch  \u2192  \"latest\" ---\n    if branch in (\"main\", \"master\"):\n        tags.append(\"latest\")\n\n    # --- Rule 4: feature branch  \u2192  \"{branch}-{short_sha}\" ---\n    if branch and branch not in (\"main\", \"master\"):\n        short_sha = commit_sha[:7] if commit_sha else \"\"\n        if short_sha:\n            tags.append(sanitize_tag(f\"{branch}-{short_sha}\"))\n        else:\n            tags.append(sanitize_tag(branch))\n\n    # Must produce at least one tag\n    if not tags:\n        raise ValueError(\n            \"Cannot generate tags: provide at least a branch, tag, or PR number\"\n        )\n\n    return tags\n\n\n# --- CLI entry point ---\ndef main() -> None:\n    \"\"\"Parse JSON from stdin or command-line args and print tags.\"\"\"\n    import argparse\n\n    parser = argparse.ArgumentParser(description=\"Generate Docker image tags from git context\")\n    parser.add_argument(\"--branch\", default=\"\", help=\"Git branch name\")\n    parser.add_argument(\"--sha\", default=\"\", help=\"Git commit SHA\")\n    parser.add_argument(\"--tag\", default=\"\", help=\"Git tag (e.g. v1.2.3)\")\n    parser.add_argument(\"--pr\", type=int, default=None, help=\"Pull request number\")\n    parser.add_argument(\"--json\", action=\"store_true\", help=\"Output as JSON array\")\n\n    args = parser.parse_args()\n\n    try:\n        result = generate_tags(\n            branch=args.branch,\n            commit_sha=args.sha,\n            tag=args.tag,\n            pr_number=args.pr,\n        )\n    except ValueError as e:\n        print(f\"Error: {e}\", file=sys.stderr)\n        sys.exit(1)\n\n    if args.json:\n        print(json.dumps(result))\n    else:\n        for t in result:\n            print(t)\n\n\nif __name__ == \"__main__\":\n    main()\n",
         "numLines": 142,
         "startLine": 1,
@@ -12819,7 +12819,7 @@
           "id": "toolu_01Sg81Bs7JRGvjchzZq7uPMC",
           "name": "Read",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_docker_tags.py"
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_docker_tags.py"
           },
           "caller": {
             "type": "direct"
@@ -12866,7 +12866,7 @@
     "tool_use_result": {
       "type": "text",
       "file": {
-        "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_docker_tags.py",
+        "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_docker_tags.py",
         "content": "#!/usr/bin/env python3\n\"\"\"\nTest suite for Docker Image Tag Generator \u2014 structured as TDD cycles.\n\nEach section below represents a red/green/refactor cycle:\n  1. Write a failing test (RED)\n  2. Implement the minimum code to pass (GREEN)\n  3. Refactor if needed\n\nAll tests are runnable with:  python -m pytest test_docker_tags.py -v\n\"\"\"\n\nimport subprocess\nimport sys\nimport pytest\n\nfrom docker_tags import generate_tags, sanitize_tag\n\n\n# =========================================================================\n# Cycle 1: main branch \u2192 \"latest\"\n# =========================================================================\n\nclass TestMainBranchLatest:\n    \"\"\"RED: main branch should produce the 'latest' tag.\"\"\"\n\n    def test_main_branch_produces_latest(self):\n        result = generate_tags(branch=\"main\", commit_sha=\"abc1234def5678\")\n        assert \"latest\" in result\n\n    def test_master_branch_also_produces_latest(self):\n        \"\"\"'master' is an alternative default branch name.\"\"\"\n        result = generate_tags(branch=\"master\", commit_sha=\"abc1234\")\n        assert \"latest\" in result\n\n    def test_main_branch_does_not_produce_branch_sha_tag(self):\n        \"\"\"main should only get 'latest', not a branch-sha tag.\"\"\"\n        result = generate_tags(branch=\"main\", commit_sha=\"abc1234\")\n        assert result == [\"latest\"]\n\n\n# =========================================================================\n# Cycle 2: PR number \u2192 \"pr-{number}\"\n# =========================================================================\n\nclass TestPRTags:\n    \"\"\"RED: a PR number should produce 'pr-{number}'.\"\"\"\n\n    def test_pr_number_produces_pr_tag(self):\n        result = generate_tags(branch=\"feature/foo\", commit_sha=\"abc1234\", pr_number=42)\n        assert \"pr-42\" in result\n\n    def test_pr_tag_format(self):\n        result = generate_tags(branch=\"fix/bar\", commit_sha=\"1234567\", pr_number=1)\n        assert \"pr-1\" in result\n\n    def test_pr_with_main_branch(self):\n        \"\"\"PR from main should include both pr-N and latest.\"\"\"\n        result = generate_tags(branch=\"main\", commit_sha=\"abc1234\", pr_number=99)\n        assert \"pr-99\" in result\n        assert \"latest\" in result\n\n\n# =========================================================================\n# Cycle 3: semver git tag \u2192 \"v{semver}\"\n# =========================================================================\n\nclass TestSemverTags:\n    \"\"\"RED: a semver git tag should produce 'v{major}.{minor}.{patch}'.\"\"\"\n\n    def test_semver_tag_with_v_prefix(self):\n        result = generate_tags(tag=\"v1.2.3\", branch=\"main\", commit_sha=\"abc1234\")\n        assert \"v1.2.3\" in result\n\n    def test_semver_tag_without_v_prefix(self):\n        \"\"\"Tags like '1.2.3' (no v) should still get normalized to v1.2.3.\"\"\"\n        result = generate_tags(tag=\"1.2.3\", branch=\"main\", commit_sha=\"abc1234\")\n        assert \"v1.2.3\" in result\n\n    def test_semver_prerelease(self):\n        result = generate_tags(tag=\"v2.0.0-beta.1\", branch=\"main\", commit_sha=\"abc1234\")\n        assert \"v2.0.0-beta.1\" in result\n\n    def test_semver_with_build_metadata(self):\n        result = generate_tags(tag=\"v1.0.0+build.42\", branch=\"main\", commit_sha=\"abc\")\n        assert \"v1.0.0-build.42\" in result  # '+' sanitized to '-'\n\n\n# =========================================================================\n# Cycle 4: feature branch \u2192 \"{branch}-{short_sha}\"\n# =========================================================================\n\nclass TestFeatureBranchTags:\n    \"\"\"RED: feature branches should produce '{branch}-{7-char-sha}'.\"\"\"\n\n    def test_simple_feature_branch(self):\n        result = generate_tags(branch=\"feature/cool-thing\", commit_sha=\"abc1234def5678\")\n        assert \"feature-cool-thing-abc1234\" in result\n\n    def test_short_sha_is_7_chars(self):\n        result = generate_tags(branch=\"dev\", commit_sha=\"abcdef1234567890\")\n        tag = [t for t in result if t.startswith(\"dev-\")][0]\n        # The sha portion should be 7 characters\n        sha_part = tag.split(\"-\", 1)[1]\n        assert len(sha_part) == 7\n\n    def test_branch_without_sha_uses_branch_only(self):\n        \"\"\"If no commit SHA is provided, use just the sanitized branch name.\"\"\"\n        result = generate_tags(branch=\"develop\")\n        assert \"develop\" in result\n\n    def test_nested_branch_slashes_become_hyphens(self):\n        result = generate_tags(branch=\"feat/ui/button\", commit_sha=\"1234567\")\n        assert \"feat-ui-button-1234567\" in result\n\n\n# =========================================================================\n# Cycle 5: tag sanitization\n# =========================================================================\n\nclass TestSanitization:\n    \"\"\"RED: tags must be lowercased, special chars replaced, hyphens cleaned.\"\"\"\n\n    def test_uppercase_is_lowered(self):\n        assert sanitize_tag(\"MyTag\") == \"mytag\"\n\n    def test_slashes_become_hyphens(self):\n        assert sanitize_tag(\"feature/thing\") == \"feature-thing\"\n\n    def test_underscores_become_hyphens(self):\n        assert sanitize_tag(\"my_branch\") == \"my-branch\"\n\n    def test_consecutive_hyphens_collapsed(self):\n        assert sanitize_tag(\"a--b---c\") == \"a-b-c\"\n\n    def test_leading_trailing_hyphens_stripped(self):\n        assert sanitize_tag(\"-hello-\") == \"hello\"\n\n    def test_special_chars_replaced(self):\n        assert sanitize_tag(\"feat@2!x\") == \"feat-2-x\"\n\n    def test_dots_preserved(self):\n        \"\"\"Dots are valid in Docker tags and should be kept.\"\"\"\n        assert sanitize_tag(\"v1.2.3\") == \"v1.2.3\"\n\n    def test_empty_string_raises(self):\n        with pytest.raises(ValueError, match=\"cannot be empty\"):\n            sanitize_tag(\"\")\n\n    def test_all_special_chars_raises(self):\n        with pytest.raises(ValueError, match=\"empty after sanitization\"):\n            sanitize_tag(\"@#$%\")\n\n\n# =========================================================================\n# Cycle 6: error handling\n# =========================================================================\n\nclass TestErrorHandling:\n    \"\"\"RED: missing or invalid inputs should raise meaningful errors.\"\"\"\n\n    def test_no_context_raises(self):\n        \"\"\"Calling with no branch, tag, or PR should raise ValueError.\"\"\"\n        with pytest.raises(ValueError, match=\"Cannot generate tags\"):\n            generate_tags()\n\n    def test_negative_pr_number_raises(self):\n        with pytest.raises(ValueError, match=\"positive integer\"):\n            generate_tags(branch=\"main\", pr_number=-1)\n\n    def test_zero_pr_number_raises(self):\n        with pytest.raises(ValueError, match=\"positive integer\"):\n            generate_tags(branch=\"main\", pr_number=0)\n\n\n# =========================================================================\n# Cycle 7: combined contexts \u2014 multiple tags generated at once\n# =========================================================================\n\nclass TestCombinedContexts:\n    \"\"\"RED: multiple inputs should produce multiple tags in priority order.\"\"\"\n\n    def test_tag_and_main_and_pr(self):\n        \"\"\"All three contexts present \u2014 should get semver, pr, and latest.\"\"\"\n        result = generate_tags(\n            branch=\"main\",\n            commit_sha=\"abc1234\",\n            tag=\"v3.1.0\",\n            pr_number=55,\n        )\n        assert \"v3.1.0\" in result\n        assert \"pr-55\" in result\n        assert \"latest\" in result\n\n    def test_tag_order_is_semver_pr_latest(self):\n        \"\"\"Tags should appear in a deterministic order: tag, pr, branch.\"\"\"\n        result = generate_tags(\n            branch=\"main\", commit_sha=\"abc1234\", tag=\"v1.0.0\", pr_number=10\n        )\n        assert result.index(\"v1.0.0\") < result.index(\"pr-10\")\n        assert result.index(\"pr-10\") < result.index(\"latest\")\n\n    def test_feature_branch_with_pr(self):\n        result = generate_tags(\n            branch=\"feature/login\", commit_sha=\"deadbeef123\", pr_number=7\n        )\n        assert \"pr-7\" in result\n        assert \"feature-login-deadbee\" in result\n\n\n# =========================================================================\n# Cycle 8: CLI interface\n# =========================================================================\n\nclass TestCLI:\n    \"\"\"RED: the CLI should accept flags and output tags.\"\"\"\n\n    def test_cli_main_branch(self):\n        result = subprocess.run(\n            [sys.executable, \"docker_tags.py\", \"--branch\", \"main\", \"--sha\", \"abc1234\"],\n            capture_output=True, text=True,\n        )\n        assert result.returncode == 0\n        assert \"latest\" in result.stdout\n\n    def test_cli_json_output(self):\n        result = subprocess.run(\n            [sys.executable, \"docker_tags.py\", \"--branch\", \"main\", \"--sha\", \"abc\", \"--json\"],\n            capture_output=True, text=True,\n        )\n        assert result.returncode == 0\n        import json\n        tags = json.loads(result.stdout)\n        assert \"latest\" in tags\n\n    def test_cli_no_args_errors(self):\n        result = subprocess.run(\n            [sys.executable, \"docker_tags.py\"],\n            capture_output=True, text=True,\n        )\n        assert result.returncode != 0\n        assert \"Error\" in result.stderr\n\n    def test_cli_full_context(self):\n        result = subprocess.run(\n            [\n                sys.executable, \"docker_tags.py\",\n                \"--branch\", \"feature/signup\",\n                \"--sha\", \"deadbeef1234567\",\n                \"--tag\", \"v2.0.0\",\n                \"--pr\", \"42\",\n            ],\n            capture_output=True, text=True,\n        )\n        assert result.returncode == 0\n        lines = result.stdout.strip().split(\"\\n\")\n        assert \"v2.0.0\" in lines\n        assert \"pr-42\" in lines\n        assert \"feature-signup-deadbee\" in lines\n",
         "numLines": 260,
         "startLine": 1,
@@ -13421,7 +13421,7 @@
         "tool_name": "Bash",
         "tool_use_id": "toolu_01F5wthH5mfBH7p9ekHEC5Be",
         "tool_input": {
-          "command": "python -m pytest /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_docker_tags.py -v 2>&1",
+          "command": "python -m pytest /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_docker_tags.py -v 2>&1",
           "description": "Run pytest with absolute path"
         }
       },
@@ -13797,7 +13797,7 @@
         "tool_name": "Bash",
         "tool_use_id": "toolu_012kxawoJ7QUQaDAwo1x7vRx",
         "tool_input": {
-          "command": "cd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/ && python -m pytest test_docker_tags.py -v 2>&1",
+          "command": "cd /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/ && python -m pytest test_docker_tags.py -v 2>&1",
           "timeout": 120000,
           "description": "Run pytest on test_docker_tags.py with verbose output"
         }
@@ -13806,7 +13806,7 @@
         "tool_name": "Bash",
         "tool_use_id": "toolu_01RTk2mvHkUGZ6qHYeUXy7Km",
         "tool_input": {
-          "command": "cd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/ && python -m pytest test_docker_tags.py -v 2>&1",
+          "command": "cd /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/ && python -m pytest test_docker_tags.py -v 2>&1",
           "timeout": 120000,
           "description": "Run pytest on test_docker_tags.py with verbose output",
           "dangerouslyDisableSandbox": true
@@ -13816,7 +13816,7 @@
         "tool_name": "Bash",
         "tool_use_id": "toolu_01SAgSBQjwwawbsDsc4URczc",
         "tool_input": {
-          "command": "python -m pytest /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_docker_tags.py -v 2>&1",
+          "command": "python -m pytest /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_docker_tags.py -v 2>&1",
           "timeout": 120000,
           "description": "Run pytest on test_docker_tags.py with verbose output"
         }
@@ -13862,7 +13862,7 @@
         "tool_name": "Bash",
         "tool_use_id": "toolu_012uobuKLcvQ9FPBA2i3P7mp",
         "tool_input": {
-          "command": "/usr/bin/python3 -m pytest /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_docker_tags.py -v",
+          "command": "/usr/bin/python3 -m pytest /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_docker_tags.py -v",
           "timeout": 120000,
           "description": "Execute pytest on the docker tag test file"
         }
@@ -13907,7 +13907,7 @@
         "tool_name": "Bash",
         "tool_use_id": "toolu_01QtKxccGq6o4nqZzdhPkf5d",
         "tool_input": {
-          "command": "/usr/bin/python3 /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/run_tests.py",
+          "command": "/usr/bin/python3 /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/run_tests.py",
           "timeout": 60000,
           "description": "Run the manual test runner script"
         }
@@ -13952,7 +13952,7 @@
         "tool_name": "Bash",
         "tool_use_id": "toolu_019CFaLZE7HgtKrpiBQrJEDr",
         "tool_input": {
-          "command": "cd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/ && python -m pytest test_docker_tags.py -v 2>&1",
+          "command": "cd /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/ && python -m pytest test_docker_tags.py -v 2>&1",
           "timeout": 120000,
           "description": "Run pytest on docker_tags tests as user requested",
           "dangerouslyDisableSandbox": true
@@ -14000,7 +14000,7 @@
         "tool_name": "Bash",
         "tool_use_id": "toolu_015PztvkVRFL1qAYQg7yGX9i",
         "tool_input": {
-          "command": "cd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/ && python -m pytest test_docker_tags.py -v 2>&1",
+          "command": "cd /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/ && python -m pytest test_docker_tags.py -v 2>&1",
           "description": "Run pytest with sandbox disabled",
           "dangerouslyDisableSandbox": true
         }
@@ -14275,7 +14275,7 @@
         "tool_name": "Bash",
         "tool_use_id": "toolu_01TEQXP55gq5m8JoasbU8ioW",
         "tool_input": {
-          "command": "chmod +x /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_quick.sh",
+          "command": "chmod +x /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_quick.sh",
           "description": "Make test script executable"
         }
       },
@@ -14283,7 +14283,7 @@
         "tool_name": "Bash",
         "tool_use_id": "toolu_015PgPsNqiE6oE2UEpDgH2s4",
         "tool_input": {
-          "command": "chmod +x /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_quick.sh",
+          "command": "chmod +x /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_quick.sh",
           "description": "Make test script executable"
         }
       },
@@ -14291,7 +14291,7 @@
         "tool_name": "Bash",
         "tool_use_id": "toolu_0156aoewwfpq1rRXDdRJE2sW",
         "tool_input": {
-          "command": "chmod +x /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_quick.sh",
+          "command": "chmod +x /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/14-docker-image-tag-generator/default-opus/test_quick.sh",
           "description": "chmod script"
         }
       },

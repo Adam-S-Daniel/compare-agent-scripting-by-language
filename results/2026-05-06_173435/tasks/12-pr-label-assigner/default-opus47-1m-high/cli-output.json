@@ -25,7 +25,7 @@
   {
     "type": "system",
     "subtype": "init",
-    "cwd": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high",
+    "cwd": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high",
     "session_id": "df1fc50c-f298-4c4e-908c-989760e33e9c",
     "tools": [
       "Task",
@@ -116,7 +116,7 @@
     "analytics_disabled": false,
     "uuid": "882e03b5-8a57-4628-b4a9-1901f8bcd50d",
     "memory_paths": {
-      "auto": "/home/passp/.claude/projects/-home-passp-repos-compare-agent-scripting-by-language-workspaces-2026-05-06-173435-12-pr-label-assigner-default-opus47-1m-high/memory/"
+      "auto": "/home/passp/.claude/projects/-home-passp-repos-GHA-bench-workspaces-2026-05-06-173435-12-pr-label-assigner-default-opus47-1m-high/memory/"
     },
     "fast_mode_state": "off"
   },
@@ -181,7 +181,7 @@
           "id": "toolu_01PYPtc8RQj6CMqrhXJJrM5v",
           "name": "Bash",
           "input": {
-            "command": "ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/",
+            "command": "ls -la /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/",
             "description": "List working directory"
           },
           "caller": {
@@ -248,7 +248,7 @@
           "id": "toolu_01NL6fzb36ZBMJbxwin272FA",
           "name": "Bash",
           "input": {
-            "command": "cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/.actrc && cat /home/passp/repos/compare-agent-scripting-by-language/AGENTS.md 2>/dev/null | head -100",
+            "command": "cat /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/.actrc && cat /home/passp/repos/GHA-bench/AGENTS.md 2>/dev/null | head -100",
             "description": "Check actrc and AGENTS.md"
           },
           "caller": {
@@ -654,7 +654,7 @@
           "id": "toolu_013A9znoR8EsAXXJSSwqdT7Y",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/tests/test_label_assigner.py",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/tests/test_label_assigner.py",
             "content": "\"\"\"Unit tests for the PR label assigner.\n\nBuilt via red/green TDD. Each test was written failing first, then the\nminimum production code added to make it pass.\n\"\"\"\nimport json\nfrom pathlib import Path\n\nimport pytest\n\nfrom label_assigner import (\n    LabelRule,\n    LabelAssignerError,\n    assign_labels,\n    load_rules,\n    main,\n)\n\n\n# --- Test 1: basic single-pattern match ---------------------------------\ndef test_single_rule_matches_one_file():\n    rules = [LabelRule(pattern=\"docs/**\", label=\"documentation\")]\n    files = [\"docs/intro.md\"]\n    assert assign_labels(rules, files) == [\"documentation\"]\n\n\n# --- Test 2: no match yields empty list ---------------------------------\ndef test_no_match_returns_empty():\n    rules = [LabelRule(pattern=\"docs/**\", label=\"documentation\")]\n    files = [\"src/main.py\"]\n    assert assign_labels(rules, files) == []\n\n\n# --- Test 3: multiple rules, multiple labels (deduplicated, sorted) -----\ndef test_multiple_rules_dedup_sorted():\n    rules = [\n        LabelRule(pattern=\"docs/**\", label=\"documentation\"),\n        LabelRule(pattern=\"src/api/**\", label=\"api\"),\n    ]\n    files = [\"docs/a.md\", \"docs/b.md\", \"src/api/users.py\"]\n    # docs label appears twice from two files but must be deduped\n    assert assign_labels(rules, files) == [\"api\", \"documentation\"]\n\n\n# --- Test 4: a single file can earn multiple labels ---------------------\ndef test_one_file_multiple_labels():\n    rules = [\n        LabelRule(pattern=\"src/api/**\", label=\"api\"),\n        LabelRule(pattern=\"**/*.py\", label=\"python\"),\n    ]\n    files = [\"src/api/users.py\"]\n    assert assign_labels(rules, files) == [\"api\", \"python\"]\n\n\n# --- Test 5: glob handles *.test.* style patterns -----------------------\ndef test_test_file_glob():\n    rules = [LabelRule(pattern=\"**/*.test.*\", label=\"tests\")]\n    files = [\"src/foo.test.js\", \"src/foo.js\"]\n    assert assign_labels(rules, files) == [\"tests\"]\n\n\n# --- Test 6: priority \u2014 when conflicting rules match same file, highest\n# priority wins, and the loser's label is suppressed for that file ------\ndef test_priority_conflict_resolution():\n    # Two rules both match the same file; they belong to the same conflict\n    # *group* (both tagged group=\"layer\"). The rule with the higher priority\n    # number wins, and its label is the only one applied for files in that\n    # group.\n    rules = [\n        LabelRule(pattern=\"src/**\", label=\"backend\", group=\"layer\", priority=1),\n        LabelRule(pattern=\"src/api/**\", label=\"api\", group=\"layer\", priority=10),\n    ]\n    files = [\"src/api/users.py\"]\n    # api wins because its priority is higher; backend is suppressed for\n    # this file even though its pattern also matches.\n    assert assign_labels(rules, files) == [\"api\"]\n\n\n# --- Test 7: priority only suppresses inside the same group -------------\ndef test_priority_only_within_group():\n    rules = [\n        LabelRule(pattern=\"src/**\", label=\"backend\", group=\"layer\", priority=1),\n        LabelRule(pattern=\"src/api/**\", label=\"api\", group=\"layer\", priority=10),\n        LabelRule(pattern=\"**/*.py\", label=\"python\"),  # no group => independent\n    ]\n    files = [\"src/api/users.py\"]\n    assert assign_labels(rules, files) == [\"api\", \"python\"]\n\n\n# --- Test 8: load_rules from a JSON config file -------------------------\ndef test_load_rules_from_json(tmp_path: Path):\n    cfg = tmp_path / \"rules.json\"\n    cfg.write_text(json.dumps({\n        \"rules\": [\n            {\"pattern\": \"docs/**\", \"label\": \"documentation\"},\n            {\"pattern\": \"src/api/**\", \"label\": \"api\",\n             \"group\": \"layer\", \"priority\": 10},\n        ]\n    }))\n    rules = load_rules(str(cfg))\n    assert len(rules) == 2\n    assert rules[0].pattern == \"docs/**\"\n    assert rules[0].label == \"documentation\"\n    assert rules[1].priority == 10\n    assert rules[1].group == \"layer\"\n\n\n# --- Test 9: load_rules from a YAML config file -------------------------\ndef test_load_rules_from_yaml(tmp_path: Path):\n    cfg = tmp_path / \"rules.yaml\"\n    cfg.write_text(\n        \"rules:\\n\"\n        \"  - pattern: 'docs/**'\\n\"\n        \"    label: documentation\\n\"\n        \"  - pattern: 'src/api/**'\\n\"\n        \"    label: api\\n\"\n        \"    group: layer\\n\"\n        \"    priority: 10\\n\"\n    )\n    rules = load_rules(str(cfg))\n    assert [r.label for r in rules] == [\"documentation\", \"api\"]\n    assert rules[1].group == \"layer\"\n    assert rules[1].priority == 10\n\n\n# --- Test 10: malformed config file gives a meaningful error ------------\ndef test_load_rules_missing_file():\n    with pytest.raises(LabelAssignerError, match=\"not found\"):\n        load_rules(\"/nonexistent/path/rules.json\")\n\n\ndef test_load_rules_invalid_schema(tmp_path: Path):\n    cfg = tmp_path / \"bad.json\"\n    cfg.write_text(json.dumps({\"rules\": [{\"label\": \"oops\"}]}))  # no pattern\n    with pytest.raises(LabelAssignerError, match=\"pattern\"):\n        load_rules(str(cfg))\n\n\ndef test_load_rules_unknown_extension(tmp_path: Path):\n    cfg = tmp_path / \"rules.txt\"\n    cfg.write_text(\"hello\")\n    with pytest.raises(LabelAssignerError, match=\"extension\"):\n        load_rules(str(cfg))\n\n\n# --- Test 11: main() \u2014 end-to-end CLI behavior --------------------------\ndef test_main_prints_labels(tmp_path: Path, capsys):\n    cfg = tmp_path / \"rules.json\"\n    cfg.write_text(json.dumps({\n        \"rules\": [\n            {\"pattern\": \"docs/**\", \"label\": \"documentation\"},\n            {\"pattern\": \"**/*.py\", \"label\": \"python\"},\n        ]\n    }))\n    files_file = tmp_path / \"files.txt\"\n    files_file.write_text(\"docs/a.md\\nsrc/b.py\\n\")\n\n    rc = main([\"--rules\", str(cfg), \"--files\", str(files_file)])\n    out = capsys.readouterr().out\n\n    assert rc == 0\n    # main prints one label per line, sorted, plus a JSON summary line\n    lines = out.strip().splitlines()\n    assert \"documentation\" in lines\n    assert \"python\" in lines\n    # summary line begins with LABELS_JSON= and is parseable\n    summary = [l for l in lines if l.startswith(\"LABELS_JSON=\")][0]\n    payload = json.loads(summary[len(\"LABELS_JSON=\"):])\n    assert payload == [\"documentation\", \"python\"]\n\n\ndef test_main_handles_missing_rules_file(tmp_path: Path, capsys):\n    files_file = tmp_path / \"files.txt\"\n    files_file.write_text(\"a.md\\n\")\n    rc = main([\"--rules\", \"/no/such/file.json\", \"--files\", str(files_file)])\n    err = capsys.readouterr().err\n    assert rc != 0\n    assert \"not found\" in err or \"error\" in err.lower()\n\n\n# --- Test 12: empty files list returns no labels -----------------------\ndef test_empty_files_list():\n    rules = [LabelRule(pattern=\"**/*\", label=\"any\")]\n    assert assign_labels(rules, []) == []\n\n\n# --- Test 13: blank lines / whitespace in the files file are ignored ---\ndef test_main_ignores_blank_lines(tmp_path: Path, capsys):\n    cfg = tmp_path / \"rules.json\"\n    cfg.write_text(json.dumps({\"rules\": [\n        {\"pattern\": \"**/*.py\", \"label\": \"python\"},\n    ]}))\n    files_file = tmp_path / \"files.txt\"\n    files_file.write_text(\"\\n  src/a.py  \\n\\n\\n\")\n    rc = main([\"--rules\", str(cfg), \"--files\", str(files_file)])\n    out = capsys.readouterr().out\n    assert rc == 0\n    summary = [l for l in out.splitlines() if l.startswith(\"LABELS_JSON=\")][0]\n    assert json.loads(summary[len(\"LABELS_JSON=\"):]) == [\"python\"]\n"
           },
           "caller": {
@@ -714,7 +714,7 @@
         {
           "tool_use_id": "toolu_013A9znoR8EsAXXJSSwqdT7Y",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/tests/test_label_assigner.py (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/tests/test_label_assigner.py (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -724,7 +724,7 @@
     "timestamp": "2026-05-07T12:50:36.028Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/tests/test_label_assigner.py",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/tests/test_label_assigner.py",
       "content": "\"\"\"Unit tests for the PR label assigner.\n\nBuilt via red/green TDD. Each test was written failing first, then the\nminimum production code added to make it pass.\n\"\"\"\nimport json\nfrom pathlib import Path\n\nimport pytest\n\nfrom label_assigner import (\n    LabelRule,\n    LabelAssignerError,\n    assign_labels,\n    load_rules,\n    main,\n)\n\n\n# --- Test 1: basic single-pattern match ---------------------------------\ndef test_single_rule_matches_one_file():\n    rules = [LabelRule(pattern=\"docs/**\", label=\"documentation\")]\n    files = [\"docs/intro.md\"]\n    assert assign_labels(rules, files) == [\"documentation\"]\n\n\n# --- Test 2: no match yields empty list ---------------------------------\ndef test_no_match_returns_empty():\n    rules = [LabelRule(pattern=\"docs/**\", label=\"documentation\")]\n    files = [\"src/main.py\"]\n    assert assign_labels(rules, files) == []\n\n\n# --- Test 3: multiple rules, multiple labels (deduplicated, sorted) -----\ndef test_multiple_rules_dedup_sorted():\n    rules = [\n        LabelRule(pattern=\"docs/**\", label=\"documentation\"),\n        LabelRule(pattern=\"src/api/**\", label=\"api\"),\n    ]\n    files = [\"docs/a.md\", \"docs/b.md\", \"src/api/users.py\"]\n    # docs label appears twice from two files but must be deduped\n    assert assign_labels(rules, files) == [\"api\", \"documentation\"]\n\n\n# --- Test 4: a single file can earn multiple labels ---------------------\ndef test_one_file_multiple_labels():\n    rules = [\n        LabelRule(pattern=\"src/api/**\", label=\"api\"),\n        LabelRule(pattern=\"**/*.py\", label=\"python\"),\n    ]\n    files = [\"src/api/users.py\"]\n    assert assign_labels(rules, files) == [\"api\", \"python\"]\n\n\n# --- Test 5: glob handles *.test.* style patterns -----------------------\ndef test_test_file_glob():\n    rules = [LabelRule(pattern=\"**/*.test.*\", label=\"tests\")]\n    files = [\"src/foo.test.js\", \"src/foo.js\"]\n    assert assign_labels(rules, files) == [\"tests\"]\n\n\n# --- Test 6: priority \u2014 when conflicting rules match same file, highest\n# priority wins, and the loser's label is suppressed for that file ------\ndef test_priority_conflict_resolution():\n    # Two rules both match the same file; they belong to the same conflict\n    # *group* (both tagged group=\"layer\"). The rule with the higher priority\n    # number wins, and its label is the only one applied for files in that\n    # group.\n    rules = [\n        LabelRule(pattern=\"src/**\", label=\"backend\", group=\"layer\", priority=1),\n        LabelRule(pattern=\"src/api/**\", label=\"api\", group=\"layer\", priority=10),\n    ]\n    files = [\"src/api/users.py\"]\n    # api wins because its priority is higher; backend is suppressed for\n    # this file even though its pattern also matches.\n    assert assign_labels(rules, files) == [\"api\"]\n\n\n# --- Test 7: priority only suppresses inside the same group -------------\ndef test_priority_only_within_group():\n    rules = [\n        LabelRule(pattern=\"src/**\", label=\"backend\", group=\"layer\", priority=1),\n        LabelRule(pattern=\"src/api/**\", label=\"api\", group=\"layer\", priority=10),\n        LabelRule(pattern=\"**/*.py\", label=\"python\"),  # no group => independent\n    ]\n    files = [\"src/api/users.py\"]\n    assert assign_labels(rules, files) == [\"api\", \"python\"]\n\n\n# --- Test 8: load_rules from a JSON config file -------------------------\ndef test_load_rules_from_json(tmp_path: Path):\n    cfg = tmp_path / \"rules.json\"\n    cfg.write_text(json.dumps({\n        \"rules\": [\n            {\"pattern\": \"docs/**\", \"label\": \"documentation\"},\n            {\"pattern\": \"src/api/**\", \"label\": \"api\",\n             \"group\": \"layer\", \"priority\": 10},\n        ]\n    }))\n    rules = load_rules(str(cfg))\n    assert len(rules) == 2\n    assert rules[0].pattern == \"docs/**\"\n    assert rules[0].label == \"documentation\"\n    assert rules[1].priority == 10\n    assert rules[1].group == \"layer\"\n\n\n# --- Test 9: load_rules from a YAML config file -------------------------\ndef test_load_rules_from_yaml(tmp_path: Path):\n    cfg = tmp_path / \"rules.yaml\"\n    cfg.write_text(\n        \"rules:\\n\"\n        \"  - pattern: 'docs/**'\\n\"\n        \"    label: documentation\\n\"\n        \"  - pattern: 'src/api/**'\\n\"\n        \"    label: api\\n\"\n        \"    group: layer\\n\"\n        \"    priority: 10\\n\"\n    )\n    rules = load_rules(str(cfg))\n    assert [r.label for r in rules] == [\"documentation\", \"api\"]\n    assert rules[1].group == \"layer\"\n    assert rules[1].priority == 10\n\n\n# --- Test 10: malformed config file gives a meaningful error ------------\ndef test_load_rules_missing_file():\n    with pytest.raises(LabelAssignerError, match=\"not found\"):\n        load_rules(\"/nonexistent/path/rules.json\")\n\n\ndef test_load_rules_invalid_schema(tmp_path: Path):\n    cfg = tmp_path / \"bad.json\"\n    cfg.write_text(json.dumps({\"rules\": [{\"label\": \"oops\"}]}))  # no pattern\n    with pytest.raises(LabelAssignerError, match=\"pattern\"):\n        load_rules(str(cfg))\n\n\ndef test_load_rules_unknown_extension(tmp_path: Path):\n    cfg = tmp_path / \"rules.txt\"\n    cfg.write_text(\"hello\")\n    with pytest.raises(LabelAssignerError, match=\"extension\"):\n        load_rules(str(cfg))\n\n\n# --- Test 11: main() \u2014 end-to-end CLI behavior --------------------------\ndef test_main_prints_labels(tmp_path: Path, capsys):\n    cfg = tmp_path / \"rules.json\"\n    cfg.write_text(json.dumps({\n        \"rules\": [\n            {\"pattern\": \"docs/**\", \"label\": \"documentation\"},\n            {\"pattern\": \"**/*.py\", \"label\": \"python\"},\n        ]\n    }))\n    files_file = tmp_path / \"files.txt\"\n    files_file.write_text(\"docs/a.md\\nsrc/b.py\\n\")\n\n    rc = main([\"--rules\", str(cfg), \"--files\", str(files_file)])\n    out = capsys.readouterr().out\n\n    assert rc == 0\n    # main prints one label per line, sorted, plus a JSON summary line\n    lines = out.strip().splitlines()\n    assert \"documentation\" in lines\n    assert \"python\" in lines\n    # summary line begins with LABELS_JSON= and is parseable\n    summary = [l for l in lines if l.startswith(\"LABELS_JSON=\")][0]\n    payload = json.loads(summary[len(\"LABELS_JSON=\"):])\n    assert payload == [\"documentation\", \"python\"]\n\n\ndef test_main_handles_missing_rules_file(tmp_path: Path, capsys):\n    files_file = tmp_path / \"files.txt\"\n    files_file.write_text(\"a.md\\n\")\n    rc = main([\"--rules\", \"/no/such/file.json\", \"--files\", str(files_file)])\n    err = capsys.readouterr().err\n    assert rc != 0\n    assert \"not found\" in err or \"error\" in err.lower()\n\n\n# --- Test 12: empty files list returns no labels -----------------------\ndef test_empty_files_list():\n    rules = [LabelRule(pattern=\"**/*\", label=\"any\")]\n    assert assign_labels(rules, []) == []\n\n\n# --- Test 13: blank lines / whitespace in the files file are ignored ---\ndef test_main_ignores_blank_lines(tmp_path: Path, capsys):\n    cfg = tmp_path / \"rules.json\"\n    cfg.write_text(json.dumps({\"rules\": [\n        {\"pattern\": \"**/*.py\", \"label\": \"python\"},\n    ]}))\n    files_file = tmp_path / \"files.txt\"\n    files_file.write_text(\"\\n  src/a.py  \\n\\n\\n\")\n    rc = main([\"--rules\", str(cfg), \"--files\", str(files_file)])\n    out = capsys.readouterr().out\n    assert rc == 0\n    summary = [l for l in out.splitlines() if l.startswith(\"LABELS_JSON=\")][0]\n    assert json.loads(summary[len(\"LABELS_JSON=\"):]) == [\"python\"]\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -794,7 +794,7 @@
         {
           "tool_use_id": "toolu_011hFF9Er7kdz4kqGXwfn7dc",
           "type": "tool_result",
-          "content": "configfile: pyproject.toml\nplugins: anyio-4.13.0\ncollected 0 items / 1 error\n\n==================================== ERRORS ====================================\n_ ERROR collecting workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/tests/test_label_assigner.py _\nImportError while importing test module '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/tests/test_label_assigner.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/usr/lib/python3.12/importlib/__init__.py:90: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntests/test_label_assigner.py:11: in <module>\n    from label_assigner import (\nE   ModuleNotFoundError: No module named 'label_assigner'\n=========================== short test summary info ============================\nERROR tests/test_label_assigner.py\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n=============================== 1 error in 0.18s ===============================",
+          "content": "configfile: pyproject.toml\nplugins: anyio-4.13.0\ncollected 0 items / 1 error\n\n==================================== ERRORS ====================================\n_ ERROR collecting workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/tests/test_label_assigner.py _\nImportError while importing test module '/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/tests/test_label_assigner.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/usr/lib/python3.12/importlib/__init__.py:90: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntests/test_label_assigner.py:11: in <module>\n    from label_assigner import (\nE   ModuleNotFoundError: No module named 'label_assigner'\n=========================== short test summary info ============================\nERROR tests/test_label_assigner.py\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n=============================== 1 error in 0.18s ===============================",
           "is_error": false
         }
       ]
@@ -804,7 +804,7 @@
     "uuid": "f0562938-1df6-4ec5-8225-e2db3dffb88d",
     "timestamp": "2026-05-07T12:50:40.001Z",
     "tool_use_result": {
-      "stdout": "configfile: pyproject.toml\nplugins: anyio-4.13.0\ncollected 0 items / 1 error\n\n==================================== ERRORS ====================================\n_ ERROR collecting workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/tests/test_label_assigner.py _\nImportError while importing test module '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/tests/test_label_assigner.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/usr/lib/python3.12/importlib/__init__.py:90: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntests/test_label_assigner.py:11: in <module>\n    from label_assigner import (\nE   ModuleNotFoundError: No module named 'label_assigner'\n=========================== short test summary info ============================\nERROR tests/test_label_assigner.py\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n=============================== 1 error in 0.18s ===============================",
+      "stdout": "configfile: pyproject.toml\nplugins: anyio-4.13.0\ncollected 0 items / 1 error\n\n==================================== ERRORS ====================================\n_ ERROR collecting workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/tests/test_label_assigner.py _\nImportError while importing test module '/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/tests/test_label_assigner.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/usr/lib/python3.12/importlib/__init__.py:90: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntests/test_label_assigner.py:11: in <module>\n    from label_assigner import (\nE   ModuleNotFoundError: No module named 'label_assigner'\n=========================== short test summary info ============================\nERROR tests/test_label_assigner.py\n!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!\n!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n=============================== 1 error in 0.18s ===============================",
       "stderr": "",
       "interrupted": false,
       "isImage": false,
@@ -893,7 +893,7 @@
           "id": "toolu_01SBW7e5GFN4PnQZGe4WYYwv",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/label_assigner.py",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/label_assigner.py",
             "content": "\"\"\"PR label assigner.\n\nGiven a list of changed file paths and a config of glob-pattern -> label\nrules, emit the deduplicated set of labels that should be applied to the\nPR.\n\nConcepts\n--------\n* Each rule has a ``pattern`` (glob), a ``label`` (string), and optionally\n  a ``group`` plus ``priority``. Rules in the same ``group`` conflict:\n  for any given file, only the highest-priority rule in that group\n  contributes its label. Rules without a group are independent and always\n  contribute when matched.\n* Glob semantics follow common path-matching conventions:\n    ``**``      any number of path segments (including zero)\n    ``*``       any characters in a single segment (no ``/``)\n    ``?``       a single non-``/`` character\n\"\"\"\nfrom __future__ import annotations\n\nimport argparse\nimport json\nimport re\nimport sys\nfrom dataclasses import dataclass, field\nfrom pathlib import Path\nfrom typing import Iterable, Sequence\n\n\nclass LabelAssignerError(Exception):\n    \"\"\"Raised on configuration or input errors.\"\"\"\n\n\n@dataclass(frozen=True)\nclass LabelRule:\n    pattern: str\n    label: str\n    group: str | None = None\n    priority: int = 0\n\n\n# --- glob -> regex ------------------------------------------------------\ndef _glob_to_regex(pattern: str) -> re.Pattern[str]:\n    \"\"\"Translate a glob pattern to an anchored regex.\n\n    Supports ``**`` (any path segments), ``*`` (any chars in one segment),\n    and ``?`` (one non-``/`` char). Simpler and more predictable than\n    ``fnmatch`` for the patterns this tool actually has to handle.\n    \"\"\"\n    out: list[str] = []\n    i = 0\n    n = len(pattern)\n    while i < n:\n        c = pattern[i]\n        if c == \"*\":\n            if i + 1 < n and pattern[i + 1] == \"*\":\n                # `**/` consumes zero or more leading path segments;\n                # bare `**` (e.g. at end) matches anything.\n                if i + 2 < n and pattern[i + 2] == \"/\":\n                    out.append(\"(?:.*/)?\")\n                    i += 3\n                else:\n                    out.append(\".*\")\n                    i += 2\n            else:\n                out.append(\"[^/]*\")\n                i += 1\n        elif c == \"?\":\n            out.append(\"[^/]\")\n            i += 1\n        elif c in r\".\\+()^$|{}[]\":\n            out.append(\"\\\\\" + c)\n            i += 1\n        else:\n            out.append(c)\n            i += 1\n    return re.compile(\"^\" + \"\".join(out) + \"$\")\n\n\ndef _matches(pattern: str, path: str) -> bool:\n    return _glob_to_regex(pattern).match(path) is not None\n\n\n# --- core ---------------------------------------------------------------\ndef assign_labels(rules: Sequence[LabelRule], files: Iterable[str]) -> list[str]:\n    \"\"\"Return the sorted, deduplicated list of labels for ``files``.\n\n    For each file:\n      * collect every rule whose pattern matches\n      * within each conflict ``group``, keep only the highest-priority rule\n      * ungrouped rules always contribute when matched\n    \"\"\"\n    labels: set[str] = set()\n    for f in files:\n        if not f:\n            continue\n        matched = [r for r in rules if _matches(r.pattern, f)]\n        winners_per_group: dict[str, LabelRule] = {}\n        for r in matched:\n            if r.group is None:\n                labels.add(r.label)\n            else:\n                cur = winners_per_group.get(r.group)\n                if cur is None or r.priority > cur.priority:\n                    winners_per_group[r.group] = r\n        for r in winners_per_group.values():\n            labels.add(r.label)\n    return sorted(labels)\n\n\n# --- config loading -----------------------------------------------------\ndef _coerce_rules(raw: object, source: str) -> list[LabelRule]:\n    if not isinstance(raw, dict) or \"rules\" not in raw:\n        raise LabelAssignerError(\n            f\"{source}: top-level must be a mapping with a 'rules' key\"\n        )\n    items = raw[\"rules\"]\n    if not isinstance(items, list):\n        raise LabelAssignerError(f\"{source}: 'rules' must be a list\")\n    out: list[LabelRule] = []\n    for idx, item in enumerate(items):\n        if not isinstance(item, dict):\n            raise LabelAssignerError(\n                f\"{source}: rule #{idx} must be a mapping\"\n            )\n        if \"pattern\" not in item:\n            raise LabelAssignerError(\n                f\"{source}: rule #{idx} missing required field 'pattern'\"\n            )\n        if \"label\" not in item:\n            raise LabelAssignerError(\n                f\"{source}: rule #{idx} missing required field 'label'\"\n            )\n        out.append(LabelRule(\n            pattern=str(item[\"pattern\"]),\n            label=str(item[\"label\"]),\n            group=(str(item[\"group\"]) if item.get(\"group\") is not None else None),\n            priority=int(item.get(\"priority\", 0)),\n        ))\n    return out\n\n\ndef load_rules(path: str) -> list[LabelRule]:\n    p = Path(path)\n    if not p.exists():\n        raise LabelAssignerError(f\"rules config not found: {path}\")\n    suffix = p.suffix.lower()\n    text = p.read_text(encoding=\"utf-8\")\n    try:\n        if suffix == \".json\":\n            data = json.loads(text)\n        elif suffix in (\".yaml\", \".yml\"):\n            import yaml  # local import; YAML is optional\n            data = yaml.safe_load(text)\n        else:\n            raise LabelAssignerError(\n                f\"unsupported rules-file extension: {suffix or '(none)'}\"\n            )\n    except json.JSONDecodeError as exc:\n        raise LabelAssignerError(f\"invalid JSON in {path}: {exc}\") from exc\n    return _coerce_rules(data, source=path)\n\n\n# --- CLI ----------------------------------------------------------------\ndef _read_files_list(path: str) -> list[str]:\n    p = Path(path)\n    if not p.exists():\n        raise LabelAssignerError(f\"changed-files list not found: {path}\")\n    out: list[str] = []\n    for line in p.read_text(encoding=\"utf-8\").splitlines():\n        line = line.strip()\n        if line:\n            out.append(line)\n    return out\n\n\ndef main(argv: Sequence[str] | None = None) -> int:\n    parser = argparse.ArgumentParser(\n        description=\"Assign labels to a PR based on its changed files.\"\n    )\n    parser.add_argument(\"--rules\", required=True, help=\"path to rules config (JSON or YAML)\")\n    parser.add_argument(\"--files\", required=True, help=\"path to a newline-separated list of changed files\")\n    args = parser.parse_args(argv)\n\n    try:\n        rules = load_rules(args.rules)\n        files = _read_files_list(args.files)\n    except LabelAssignerError as exc:\n        print(f\"error: {exc}\", file=sys.stderr)\n        return 2\n\n    labels = assign_labels(rules, files)\n    for lbl in labels:\n        print(lbl)\n    # Machine-readable summary the workflow / harness can grep for.\n    print(f\"LABELS_JSON={json.dumps(labels)}\")\n    return 0\n\n\nif __name__ == \"__main__\":  # pragma: no cover\n    raise SystemExit(main())\n"
           },
           "caller": {
@@ -953,7 +953,7 @@
         {
           "tool_use_id": "toolu_01SBW7e5GFN4PnQZGe4WYYwv",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/label_assigner.py (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/label_assigner.py (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -963,7 +963,7 @@
     "timestamp": "2026-05-07T12:51:26.527Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/label_assigner.py",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/label_assigner.py",
       "content": "\"\"\"PR label assigner.\n\nGiven a list of changed file paths and a config of glob-pattern -> label\nrules, emit the deduplicated set of labels that should be applied to the\nPR.\n\nConcepts\n--------\n* Each rule has a ``pattern`` (glob), a ``label`` (string), and optionally\n  a ``group`` plus ``priority``. Rules in the same ``group`` conflict:\n  for any given file, only the highest-priority rule in that group\n  contributes its label. Rules without a group are independent and always\n  contribute when matched.\n* Glob semantics follow common path-matching conventions:\n    ``**``      any number of path segments (including zero)\n    ``*``       any characters in a single segment (no ``/``)\n    ``?``       a single non-``/`` character\n\"\"\"\nfrom __future__ import annotations\n\nimport argparse\nimport json\nimport re\nimport sys\nfrom dataclasses import dataclass, field\nfrom pathlib import Path\nfrom typing import Iterable, Sequence\n\n\nclass LabelAssignerError(Exception):\n    \"\"\"Raised on configuration or input errors.\"\"\"\n\n\n@dataclass(frozen=True)\nclass LabelRule:\n    pattern: str\n    label: str\n    group: str | None = None\n    priority: int = 0\n\n\n# --- glob -> regex ------------------------------------------------------\ndef _glob_to_regex(pattern: str) -> re.Pattern[str]:\n    \"\"\"Translate a glob pattern to an anchored regex.\n\n    Supports ``**`` (any path segments), ``*`` (any chars in one segment),\n    and ``?`` (one non-``/`` char). Simpler and more predictable than\n    ``fnmatch`` for the patterns this tool actually has to handle.\n    \"\"\"\n    out: list[str] = []\n    i = 0\n    n = len(pattern)\n    while i < n:\n        c = pattern[i]\n        if c == \"*\":\n            if i + 1 < n and pattern[i + 1] == \"*\":\n                # `**/` consumes zero or more leading path segments;\n                # bare `**` (e.g. at end) matches anything.\n                if i + 2 < n and pattern[i + 2] == \"/\":\n                    out.append(\"(?:.*/)?\")\n                    i += 3\n                else:\n                    out.append(\".*\")\n                    i += 2\n            else:\n                out.append(\"[^/]*\")\n                i += 1\n        elif c == \"?\":\n            out.append(\"[^/]\")\n            i += 1\n        elif c in r\".\\+()^$|{}[]\":\n            out.append(\"\\\\\" + c)\n            i += 1\n        else:\n            out.append(c)\n            i += 1\n    return re.compile(\"^\" + \"\".join(out) + \"$\")\n\n\ndef _matches(pattern: str, path: str) -> bool:\n    return _glob_to_regex(pattern).match(path) is not None\n\n\n# --- core ---------------------------------------------------------------\ndef assign_labels(rules: Sequence[LabelRule], files: Iterable[str]) -> list[str]:\n    \"\"\"Return the sorted, deduplicated list of labels for ``files``.\n\n    For each file:\n      * collect every rule whose pattern matches\n      * within each conflict ``group``, keep only the highest-priority rule\n      * ungrouped rules always contribute when matched\n    \"\"\"\n    labels: set[str] = set()\n    for f in files:\n        if not f:\n            continue\n        matched = [r for r in rules if _matches(r.pattern, f)]\n        winners_per_group: dict[str, LabelRule] = {}\n        for r in matched:\n            if r.group is None:\n                labels.add(r.label)\n            else:\n                cur = winners_per_group.get(r.group)\n                if cur is None or r.priority > cur.priority:\n                    winners_per_group[r.group] = r\n        for r in winners_per_group.values():\n            labels.add(r.label)\n    return sorted(labels)\n\n\n# --- config loading -----------------------------------------------------\ndef _coerce_rules(raw: object, source: str) -> list[LabelRule]:\n    if not isinstance(raw, dict) or \"rules\" not in raw:\n        raise LabelAssignerError(\n            f\"{source}: top-level must be a mapping with a 'rules' key\"\n        )\n    items = raw[\"rules\"]\n    if not isinstance(items, list):\n        raise LabelAssignerError(f\"{source}: 'rules' must be a list\")\n    out: list[LabelRule] = []\n    for idx, item in enumerate(items):\n        if not isinstance(item, dict):\n            raise LabelAssignerError(\n                f\"{source}: rule #{idx} must be a mapping\"\n            )\n        if \"pattern\" not in item:\n            raise LabelAssignerError(\n                f\"{source}: rule #{idx} missing required field 'pattern'\"\n            )\n        if \"label\" not in item:\n            raise LabelAssignerError(\n                f\"{source}: rule #{idx} missing required field 'label'\"\n            )\n        out.append(LabelRule(\n            pattern=str(item[\"pattern\"]),\n            label=str(item[\"label\"]),\n            group=(str(item[\"group\"]) if item.get(\"group\") is not None else None),\n            priority=int(item.get(\"priority\", 0)),\n        ))\n    return out\n\n\ndef load_rules(path: str) -> list[LabelRule]:\n    p = Path(path)\n    if not p.exists():\n        raise LabelAssignerError(f\"rules config not found: {path}\")\n    suffix = p.suffix.lower()\n    text = p.read_text(encoding=\"utf-8\")\n    try:\n        if suffix == \".json\":\n            data = json.loads(text)\n        elif suffix in (\".yaml\", \".yml\"):\n            import yaml  # local import; YAML is optional\n            data = yaml.safe_load(text)\n        else:\n            raise LabelAssignerError(\n                f\"unsupported rules-file extension: {suffix or '(none)'}\"\n            )\n    except json.JSONDecodeError as exc:\n        raise LabelAssignerError(f\"invalid JSON in {path}: {exc}\") from exc\n    return _coerce_rules(data, source=path)\n\n\n# --- CLI ----------------------------------------------------------------\ndef _read_files_list(path: str) -> list[str]:\n    p = Path(path)\n    if not p.exists():\n        raise LabelAssignerError(f\"changed-files list not found: {path}\")\n    out: list[str] = []\n    for line in p.read_text(encoding=\"utf-8\").splitlines():\n        line = line.strip()\n        if line:\n            out.append(line)\n    return out\n\n\ndef main(argv: Sequence[str] | None = None) -> int:\n    parser = argparse.ArgumentParser(\n        description=\"Assign labels to a PR based on its changed files.\"\n    )\n    parser.add_argument(\"--rules\", required=True, help=\"path to rules config (JSON or YAML)\")\n    parser.add_argument(\"--files\", required=True, help=\"path to a newline-separated list of changed files\")\n    args = parser.parse_args(argv)\n\n    try:\n        rules = load_rules(args.rules)\n        files = _read_files_list(args.files)\n    except LabelAssignerError as exc:\n        print(f\"error: {exc}\", file=sys.stderr)\n        return 2\n\n    labels = assign_labels(rules, files)\n    for lbl in labels:\n        print(lbl)\n    # Machine-readable summary the workflow / harness can grep for.\n    print(f\"LABELS_JSON={json.dumps(labels)}\")\n    return 0\n\n\nif __name__ == \"__main__\":  # pragma: no cover\n    raise SystemExit(main())\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -1215,7 +1215,7 @@
         {
           "tool_use_id": "toolu_01Ec2Y2GJea6tBUx8UHXEYnp",
           "type": "tool_result",
-          "content": "============================= test session starts ==============================\nplatform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3\ncachedir: .pytest_cache\nrootdir: /home/passp/repos/compare-agent-scripting-by-language\nconfigfile: pyproject.toml\nplugins: anyio-4.13.0\ncollecting ... collected 16 items\n\ntests/test_label_assigner.py::test_single_rule_matches_one_file PASSED   [  6%]\ntests/test_label_assigner.py::test_no_match_returns_empty PASSED         [ 12%]\ntests/test_label_assigner.py::test_multiple_rules_dedup_sorted PASSED    [ 18%]\ntests/test_label_assigner.py::test_one_file_multiple_labels PASSED       [ 25%]\ntests/test_label_assigner.py::test_test_file_glob PASSED                 [ 31%]\ntests/test_label_assigner.py::test_priority_conflict_resolution PASSED   [ 37%]\ntests/test_label_assigner.py::test_priority_only_within_group PASSED     [ 43%]\ntests/test_label_assigner.py::test_load_rules_from_json PASSED           [ 50%]\ntests/test_label_assigner.py::test_load_rules_from_yaml PASSED           [ 56%]\ntests/test_label_assigner.py::test_load_rules_missing_file PASSED        [ 62%]\ntests/test_label_assigner.py::test_load_rules_invalid_schema PASSED      [ 68%]\ntests/test_label_assigner.py::test_load_rules_unknown_extension PASSED   [ 75%]\ntests/test_label_assigner.py::test_main_prints_labels PASSED             [ 81%]\ntests/test_label_assigner.py::test_main_handles_missing_rules_file PASSED [ 87%]\ntests/test_label_assigner.py::test_empty_files_list PASSED               [ 93%]\ntests/test_label_assigner.py::test_main_ignores_blank_lines PASSED       [100%]\n\n============================== 16 passed in 0.07s ==============================",
+          "content": "============================= test session starts ==============================\nplatform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3\ncachedir: .pytest_cache\nrootdir: /home/passp/repos/GHA-bench\nconfigfile: pyproject.toml\nplugins: anyio-4.13.0\ncollecting ... collected 16 items\n\ntests/test_label_assigner.py::test_single_rule_matches_one_file PASSED   [  6%]\ntests/test_label_assigner.py::test_no_match_returns_empty PASSED         [ 12%]\ntests/test_label_assigner.py::test_multiple_rules_dedup_sorted PASSED    [ 18%]\ntests/test_label_assigner.py::test_one_file_multiple_labels PASSED       [ 25%]\ntests/test_label_assigner.py::test_test_file_glob PASSED                 [ 31%]\ntests/test_label_assigner.py::test_priority_conflict_resolution PASSED   [ 37%]\ntests/test_label_assigner.py::test_priority_only_within_group PASSED     [ 43%]\ntests/test_label_assigner.py::test_load_rules_from_json PASSED           [ 50%]\ntests/test_label_assigner.py::test_load_rules_from_yaml PASSED           [ 56%]\ntests/test_label_assigner.py::test_load_rules_missing_file PASSED        [ 62%]\ntests/test_label_assigner.py::test_load_rules_invalid_schema PASSED      [ 68%]\ntests/test_label_assigner.py::test_load_rules_unknown_extension PASSED   [ 75%]\ntests/test_label_assigner.py::test_main_prints_labels PASSED             [ 81%]\ntests/test_label_assigner.py::test_main_handles_missing_rules_file PASSED [ 87%]\ntests/test_label_assigner.py::test_empty_files_list PASSED               [ 93%]\ntests/test_label_assigner.py::test_main_ignores_blank_lines PASSED       [100%]\n\n============================== 16 passed in 0.07s ==============================",
           "is_error": false
         }
       ]
@@ -1225,7 +1225,7 @@
     "uuid": "2ef68cc6-82d4-4943-ab53-3b9cfaf051ff",
     "timestamp": "2026-05-07T12:51:38.868Z",
     "tool_use_result": {
-      "stdout": "============================= test session starts ==============================\nplatform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3\ncachedir: .pytest_cache\nrootdir: /home/passp/repos/compare-agent-scripting-by-language\nconfigfile: pyproject.toml\nplugins: anyio-4.13.0\ncollecting ... collected 16 items\n\ntests/test_label_assigner.py::test_single_rule_matches_one_file PASSED   [  6%]\ntests/test_label_assigner.py::test_no_match_returns_empty PASSED         [ 12%]\ntests/test_label_assigner.py::test_multiple_rules_dedup_sorted PASSED    [ 18%]\ntests/test_label_assigner.py::test_one_file_multiple_labels PASSED       [ 25%]\ntests/test_label_assigner.py::test_test_file_glob PASSED                 [ 31%]\ntests/test_label_assigner.py::test_priority_conflict_resolution PASSED   [ 37%]\ntests/test_label_assigner.py::test_priority_only_within_group PASSED     [ 43%]\ntests/test_label_assigner.py::test_load_rules_from_json PASSED           [ 50%]\ntests/test_label_assigner.py::test_load_rules_from_yaml PASSED           [ 56%]\ntests/test_label_assigner.py::test_load_rules_missing_file PASSED        [ 62%]\ntests/test_label_assigner.py::test_load_rules_invalid_schema PASSED      [ 68%]\ntests/test_label_assigner.py::test_load_rules_unknown_extension PASSED   [ 75%]\ntests/test_label_assigner.py::test_main_prints_labels PASSED             [ 81%]\ntests/test_label_assigner.py::test_main_handles_missing_rules_file PASSED [ 87%]\ntests/test_label_assigner.py::test_empty_files_list PASSED               [ 93%]\ntests/test_label_assigner.py::test_main_ignores_blank_lines PASSED       [100%]\n\n============================== 16 passed in 0.07s ==============================",
+      "stdout": "============================= test session starts ==============================\nplatform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3\ncachedir: .pytest_cache\nrootdir: /home/passp/repos/GHA-bench\nconfigfile: pyproject.toml\nplugins: anyio-4.13.0\ncollecting ... collected 16 items\n\ntests/test_label_assigner.py::test_single_rule_matches_one_file PASSED   [  6%]\ntests/test_label_assigner.py::test_no_match_returns_empty PASSED         [ 12%]\ntests/test_label_assigner.py::test_multiple_rules_dedup_sorted PASSED    [ 18%]\ntests/test_label_assigner.py::test_one_file_multiple_labels PASSED       [ 25%]\ntests/test_label_assigner.py::test_test_file_glob PASSED                 [ 31%]\ntests/test_label_assigner.py::test_priority_conflict_resolution PASSED   [ 37%]\ntests/test_label_assigner.py::test_priority_only_within_group PASSED     [ 43%]\ntests/test_label_assigner.py::test_load_rules_from_json PASSED           [ 50%]\ntests/test_label_assigner.py::test_load_rules_from_yaml PASSED           [ 56%]\ntests/test_label_assigner.py::test_load_rules_missing_file PASSED        [ 62%]\ntests/test_label_assigner.py::test_load_rules_invalid_schema PASSED      [ 68%]\ntests/test_label_assigner.py::test_load_rules_unknown_extension PASSED   [ 75%]\ntests/test_label_assigner.py::test_main_prints_labels PASSED             [ 81%]\ntests/test_label_assigner.py::test_main_handles_missing_rules_file PASSED [ 87%]\ntests/test_label_assigner.py::test_empty_files_list PASSED               [ 93%]\ntests/test_label_assigner.py::test_main_ignores_blank_lines PASSED       [100%]\n\n============================== 16 passed in 0.07s ==============================",
       "stderr": "",
       "interrupted": false,
       "isImage": false,
@@ -1279,7 +1279,7 @@
           "id": "toolu_016ruym6Jo9zrtHRce99NykN",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/rules.yaml",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/rules.yaml",
             "content": "# Default label rules used by the workflow if a fixture does not ship its own.\n# Patterns use ** for any segments, * for any chars within a segment.\nrules:\n  - pattern: \"docs/**\"\n    label: documentation\n  - pattern: \"src/api/**\"\n    label: api\n    group: layer\n    priority: 10\n  - pattern: \"src/**\"\n    label: backend\n    group: layer\n    priority: 1\n  - pattern: \"**/*.test.*\"\n    label: tests\n  - pattern: \"**/*.py\"\n    label: python\n  - pattern: \"**/*.md\"\n    label: documentation\n"
           },
           "caller": {
@@ -1339,7 +1339,7 @@
         {
           "tool_use_id": "toolu_016ruym6Jo9zrtHRce99NykN",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/rules.yaml (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/rules.yaml (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -1349,7 +1349,7 @@
     "timestamp": "2026-05-07T12:51:46.468Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/rules.yaml",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/rules.yaml",
       "content": "# Default label rules used by the workflow if a fixture does not ship its own.\n# Patterns use ** for any segments, * for any chars within a segment.\nrules:\n  - pattern: \"docs/**\"\n    label: documentation\n  - pattern: \"src/api/**\"\n    label: api\n    group: layer\n    priority: 10\n  - pattern: \"src/**\"\n    label: backend\n    group: layer\n    priority: 1\n  - pattern: \"**/*.test.*\"\n    label: tests\n  - pattern: \"**/*.py\"\n    label: python\n  - pattern: \"**/*.md\"\n    label: documentation\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -1369,7 +1369,7 @@
           "id": "toolu_01DwRtYXNBCHrc8vhvcYRH95",
           "name": "Bash",
           "input": {
-            "command": "mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/.github/workflows",
+            "command": "mkdir -p /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/.github/workflows",
             "description": "Create fixtures and workflow dirs"
           },
           "caller": {
@@ -1471,7 +1471,7 @@
           "id": "toolu_01THQm1FQknT6BgghFJ1MaND",
           "name": "Bash",
           "input": {
-            "command": "docker images | grep act-ubuntu-pwsh 2>&1; echo \"---\"; cat /home/passp/repos/compare-agent-scripting-by-language/Dockerfile.act 2>&1 | head -40",
+            "command": "docker images | grep act-ubuntu-pwsh 2>&1; echo \"---\"; cat /home/passp/repos/GHA-bench/Dockerfile.act 2>&1 | head -40",
             "description": "Check act image and Dockerfile"
           },
           "caller": {
@@ -1607,7 +1607,7 @@
           "id": "toolu_01DjbfBCDMNZhjufRpruqEHw",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/.github/workflows/pr-label-assigner.yml",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/.github/workflows/pr-label-assigner.yml",
             "content": "name: PR Label Assigner\n\n# Triggers: every push and PR (so labels can be computed for real PRs),\n# manual runs (handy for debugging), and the no-arg `act push` invocations\n# the harness uses for fixture-driven testing.\non:\n  push:\n  pull_request:\n  workflow_dispatch:\n\npermissions:\n  contents: read\n\nenv:\n  RULES_FILE: rules.yaml\n  FILES_LIST: files.txt\n  EXPECTED_FILE: expected.json\n\njobs:\n  unit-tests:\n    name: Unit tests\n    runs-on: ubuntu-latest\n    steps:\n      - name: Checkout\n        uses: actions/checkout@v4\n\n      - name: Set up Python\n        uses: actions/setup-python@v5\n        with:\n          python-version: '3.12'\n\n      - name: Install dependencies\n        run: pip install --quiet pytest pyyaml\n\n      - name: Run pytest\n        run: python3 -m pytest tests/ -v\n\n  assign-labels:\n    name: Assign labels\n    needs: unit-tests\n    runs-on: ubuntu-latest\n    steps:\n      - name: Checkout\n        uses: actions/checkout@v4\n\n      - name: Set up Python\n        uses: actions/setup-python@v5\n        with:\n          python-version: '3.12'\n\n      - name: Install dependencies\n        run: pip install --quiet pyyaml\n\n      - name: Run label assigner\n        run: |\n          python3 label_assigner.py \\\n            --rules \"${RULES_FILE}\" \\\n            --files \"${FILES_LIST}\" \\\n            | tee labels.out\n\n      - name: Verify labels match expected.json\n        run: |\n          python3 - <<'PY'\n          import json, os, sys\n          actual_line = next(\n              l for l in open(\"labels.out\") if l.startswith(\"LABELS_JSON=\")\n          )\n          actual = json.loads(actual_line.split(\"=\", 1)[1])\n          expected_path = os.environ[\"EXPECTED_FILE\"]\n          if not os.path.exists(expected_path):\n              print(f\"NOTE: {expected_path} not present; skipping comparison\")\n              print(f\"ACTUAL_LABELS={json.dumps(actual)}\")\n              sys.exit(0)\n          expected = json.load(open(expected_path))\n          print(f\"EXPECTED={json.dumps(expected)}\")\n          print(f\"ACTUAL={json.dumps(actual)}\")\n          if actual != expected:\n              print(f\"FAIL: labels mismatch\", file=sys.stderr)\n              sys.exit(1)\n          print(\"LABELS_OK\")\n          PY\n"
           },
           "caller": {
@@ -1667,7 +1667,7 @@
         {
           "tool_use_id": "toolu_01DjbfBCDMNZhjufRpruqEHw",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/.github/workflows/pr-label-assigner.yml (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/.github/workflows/pr-label-assigner.yml (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -1677,7 +1677,7 @@
     "timestamp": "2026-05-07T12:52:28.684Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/.github/workflows/pr-label-assigner.yml",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/.github/workflows/pr-label-assigner.yml",
       "content": "name: PR Label Assigner\n\n# Triggers: every push and PR (so labels can be computed for real PRs),\n# manual runs (handy for debugging), and the no-arg `act push` invocations\n# the harness uses for fixture-driven testing.\non:\n  push:\n  pull_request:\n  workflow_dispatch:\n\npermissions:\n  contents: read\n\nenv:\n  RULES_FILE: rules.yaml\n  FILES_LIST: files.txt\n  EXPECTED_FILE: expected.json\n\njobs:\n  unit-tests:\n    name: Unit tests\n    runs-on: ubuntu-latest\n    steps:\n      - name: Checkout\n        uses: actions/checkout@v4\n\n      - name: Set up Python\n        uses: actions/setup-python@v5\n        with:\n          python-version: '3.12'\n\n      - name: Install dependencies\n        run: pip install --quiet pytest pyyaml\n\n      - name: Run pytest\n        run: python3 -m pytest tests/ -v\n\n  assign-labels:\n    name: Assign labels\n    needs: unit-tests\n    runs-on: ubuntu-latest\n    steps:\n      - name: Checkout\n        uses: actions/checkout@v4\n\n      - name: Set up Python\n        uses: actions/setup-python@v5\n        with:\n          python-version: '3.12'\n\n      - name: Install dependencies\n        run: pip install --quiet pyyaml\n\n      - name: Run label assigner\n        run: |\n          python3 label_assigner.py \\\n            --rules \"${RULES_FILE}\" \\\n            --files \"${FILES_LIST}\" \\\n            | tee labels.out\n\n      - name: Verify labels match expected.json\n        run: |\n          python3 - <<'PY'\n          import json, os, sys\n          actual_line = next(\n              l for l in open(\"labels.out\") if l.startswith(\"LABELS_JSON=\")\n          )\n          actual = json.loads(actual_line.split(\"=\", 1)[1])\n          expected_path = os.environ[\"EXPECTED_FILE\"]\n          if not os.path.exists(expected_path):\n              print(f\"NOTE: {expected_path} not present; skipping comparison\")\n              print(f\"ACTUAL_LABELS={json.dumps(actual)}\")\n              sys.exit(0)\n          expected = json.load(open(expected_path))\n          print(f\"EXPECTED={json.dumps(expected)}\")\n          print(f\"ACTUAL={json.dumps(actual)}\")\n          if actual != expected:\n              print(f\"FAIL: labels mismatch\", file=sys.stderr)\n              sys.exit(1)\n          print(\"LABELS_OK\")\n          PY\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -1798,7 +1798,7 @@
           "id": "toolu_01VpJ2SkQJDgnQ7GYNvQFTRt",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/files.txt",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/files.txt",
             "content": "docs/intro.md\nsrc/api/users.py\n"
           },
           "caller": {
@@ -1858,7 +1858,7 @@
         {
           "tool_use_id": "toolu_01VpJ2SkQJDgnQ7GYNvQFTRt",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/files.txt (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/files.txt (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -1868,7 +1868,7 @@
     "timestamp": "2026-05-07T12:52:36.504Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/files.txt",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/files.txt",
       "content": "docs/intro.md\nsrc/api/users.py\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -2145,7 +2145,7 @@
           "id": "toolu_01VWoLvUQAt8cMqPr6oPB5wH",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/basic-docs/rules.yaml",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/basic-docs/rules.yaml",
             "content": "rules:\n  - pattern: \"docs/**\"\n    label: documentation\n  - pattern: \"**/*.md\"\n    label: documentation\n"
           },
           "caller": {
@@ -2205,7 +2205,7 @@
         {
           "tool_use_id": "toolu_01VWoLvUQAt8cMqPr6oPB5wH",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/basic-docs/rules.yaml (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/basic-docs/rules.yaml (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -2215,7 +2215,7 @@
     "timestamp": "2026-05-07T12:52:52.679Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/basic-docs/rules.yaml",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/basic-docs/rules.yaml",
       "content": "rules:\n  - pattern: \"docs/**\"\n    label: documentation\n  - pattern: \"**/*.md\"\n    label: documentation\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -2235,7 +2235,7 @@
           "id": "toolu_01LYD6J826KpNSbZHQZQ7ovF",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/basic-docs/files.txt",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/basic-docs/files.txt",
             "content": "docs/intro.md\ndocs/sub/guide.md\nREADME.md\n"
           },
           "caller": {
@@ -2295,7 +2295,7 @@
         {
           "tool_use_id": "toolu_01LYD6J826KpNSbZHQZQ7ovF",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/basic-docs/files.txt (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/basic-docs/files.txt (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -2305,7 +2305,7 @@
     "timestamp": "2026-05-07T12:52:55.852Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/basic-docs/files.txt",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/basic-docs/files.txt",
       "content": "docs/intro.md\ndocs/sub/guide.md\nREADME.md\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -2325,7 +2325,7 @@
           "id": "toolu_01UuSJrr6LPB3QYTMDxwb7rV",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/basic-docs/expected.json",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/basic-docs/expected.json",
             "content": "[\"documentation\"]\n"
           },
           "caller": {
@@ -2385,7 +2385,7 @@
         {
           "tool_use_id": "toolu_01UuSJrr6LPB3QYTMDxwb7rV",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/basic-docs/expected.json (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/basic-docs/expected.json (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -2395,7 +2395,7 @@
     "timestamp": "2026-05-07T12:52:58.735Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/basic-docs/expected.json",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/basic-docs/expected.json",
       "content": "[\"documentation\"]\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -2415,7 +2415,7 @@
           "id": "toolu_012gRSj8KMJuAm9WCxqxBc8G",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/priority-conflict/rules.yaml",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/priority-conflict/rules.yaml",
             "content": "rules:\n  - pattern: \"src/api/**\"\n    label: api\n    group: layer\n    priority: 10\n  - pattern: \"src/**\"\n    label: backend\n    group: layer\n    priority: 1\n  - pattern: \"**/*.py\"\n    label: python\n"
           },
           "caller": {
@@ -2475,7 +2475,7 @@
         {
           "tool_use_id": "toolu_012gRSj8KMJuAm9WCxqxBc8G",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/priority-conflict/rules.yaml (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/priority-conflict/rules.yaml (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -2485,7 +2485,7 @@
     "timestamp": "2026-05-07T12:53:01.101Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/priority-conflict/rules.yaml",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/priority-conflict/rules.yaml",
       "content": "rules:\n  - pattern: \"src/api/**\"\n    label: api\n    group: layer\n    priority: 10\n  - pattern: \"src/**\"\n    label: backend\n    group: layer\n    priority: 1\n  - pattern: \"**/*.py\"\n    label: python\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -2505,7 +2505,7 @@
           "id": "toolu_019GVDbx4ugFTSagFswdo1sQ",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/priority-conflict/files.txt",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/priority-conflict/files.txt",
             "content": "src/api/users.py\nsrc/lib/utils.py\n"
           },
           "caller": {
@@ -2565,7 +2565,7 @@
         {
           "tool_use_id": "toolu_019GVDbx4ugFTSagFswdo1sQ",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/priority-conflict/files.txt (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/priority-conflict/files.txt (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -2575,7 +2575,7 @@
     "timestamp": "2026-05-07T12:53:04.731Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/priority-conflict/files.txt",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/priority-conflict/files.txt",
       "content": "src/api/users.py\nsrc/lib/utils.py\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -2630,7 +2630,7 @@
           "id": "toolu_01NeANRZoJQZSbrvYaWZgQPB",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/priority-conflict/expected.json",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/priority-conflict/expected.json",
             "content": "[\"api\", \"backend\", \"python\"]\n"
           },
           "caller": {
@@ -2690,7 +2690,7 @@
         {
           "tool_use_id": "toolu_01NeANRZoJQZSbrvYaWZgQPB",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/priority-conflict/expected.json (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/priority-conflict/expected.json (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -2700,7 +2700,7 @@
     "timestamp": "2026-05-07T12:53:09.943Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/priority-conflict/expected.json",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/priority-conflict/expected.json",
       "content": "[\"api\", \"backend\", \"python\"]\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -2720,7 +2720,7 @@
           "id": "toolu_015e3SXqzENVB3X41vZP4gf6",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/multi-label-mixed/rules.yaml",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/multi-label-mixed/rules.yaml",
             "content": "rules:\n  - pattern: \"docs/**\"\n    label: documentation\n  - pattern: \"src/api/**\"\n    label: api\n    group: layer\n    priority: 10\n  - pattern: \"src/**\"\n    label: backend\n    group: layer\n    priority: 1\n  - pattern: \"**/*.test.*\"\n    label: tests\n  - pattern: \"**/*.py\"\n    label: python\n  - pattern: \"**/*.js\"\n    label: javascript\n"
           },
           "caller": {
@@ -2780,7 +2780,7 @@
         {
           "tool_use_id": "toolu_015e3SXqzENVB3X41vZP4gf6",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/multi-label-mixed/rules.yaml (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/multi-label-mixed/rules.yaml (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -2790,7 +2790,7 @@
     "timestamp": "2026-05-07T12:53:14.425Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/multi-label-mixed/rules.yaml",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/multi-label-mixed/rules.yaml",
       "content": "rules:\n  - pattern: \"docs/**\"\n    label: documentation\n  - pattern: \"src/api/**\"\n    label: api\n    group: layer\n    priority: 10\n  - pattern: \"src/**\"\n    label: backend\n    group: layer\n    priority: 1\n  - pattern: \"**/*.test.*\"\n    label: tests\n  - pattern: \"**/*.py\"\n    label: python\n  - pattern: \"**/*.js\"\n    label: javascript\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -2810,7 +2810,7 @@
           "id": "toolu_01Ksm6cZvsWmVgKa2GL9NQEp",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/multi-label-mixed/files.txt",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/multi-label-mixed/files.txt",
             "content": "docs/intro.md\nsrc/api/users.py\nsrc/api/users.test.js\nsrc/lib/util.py\n"
           },
           "caller": {
@@ -2870,7 +2870,7 @@
         {
           "tool_use_id": "toolu_01Ksm6cZvsWmVgKa2GL9NQEp",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/multi-label-mixed/files.txt (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/multi-label-mixed/files.txt (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -2880,7 +2880,7 @@
     "timestamp": "2026-05-07T12:53:19.256Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/multi-label-mixed/files.txt",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/multi-label-mixed/files.txt",
       "content": "docs/intro.md\nsrc/api/users.py\nsrc/api/users.test.js\nsrc/lib/util.py\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -2935,7 +2935,7 @@
           "id": "toolu_01FxrbRqY9ZXqXKtmRe1h94c",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/multi-label-mixed/expected.json",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/multi-label-mixed/expected.json",
             "content": "[\"api\", \"backend\", \"documentation\", \"javascript\", \"python\", \"tests\"]\n"
           },
           "caller": {
@@ -2995,7 +2995,7 @@
         {
           "tool_use_id": "toolu_01FxrbRqY9ZXqXKtmRe1h94c",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/multi-label-mixed/expected.json (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/multi-label-mixed/expected.json (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -3005,7 +3005,7 @@
     "timestamp": "2026-05-07T12:53:24.663Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/multi-label-mixed/expected.json",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/multi-label-mixed/expected.json",
       "content": "[\"api\", \"backend\", \"documentation\", \"javascript\", \"python\", \"tests\"]\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -3025,7 +3025,7 @@
           "id": "toolu_01RjpyasvqVftWpy72rHXgym",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/no-matches/rules.yaml",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/no-matches/rules.yaml",
             "content": "rules:\n  - pattern: \"docs/**\"\n    label: documentation\n  - pattern: \"**/*.py\"\n    label: python\n"
           },
           "caller": {
@@ -3085,7 +3085,7 @@
         {
           "tool_use_id": "toolu_01RjpyasvqVftWpy72rHXgym",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/no-matches/rules.yaml (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/no-matches/rules.yaml (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -3095,7 +3095,7 @@
     "timestamp": "2026-05-07T12:53:28.153Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/no-matches/rules.yaml",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/no-matches/rules.yaml",
       "content": "rules:\n  - pattern: \"docs/**\"\n    label: documentation\n  - pattern: \"**/*.py\"\n    label: python\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -3115,7 +3115,7 @@
           "id": "toolu_017ddJ8cAHoGxWfxkYdkDB5q",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/no-matches/files.txt",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/no-matches/files.txt",
             "content": "scripts/build.sh\nconfig/database.yml\n"
           },
           "caller": {
@@ -3175,7 +3175,7 @@
         {
           "tool_use_id": "toolu_017ddJ8cAHoGxWfxkYdkDB5q",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/no-matches/files.txt (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/no-matches/files.txt (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -3185,7 +3185,7 @@
     "timestamp": "2026-05-07T12:53:29.451Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/no-matches/files.txt",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/no-matches/files.txt",
       "content": "scripts/build.sh\nconfig/database.yml\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -3205,7 +3205,7 @@
           "id": "toolu_01W2KffNQXxhHo5uMTHH5bK7",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/no-matches/expected.json",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/no-matches/expected.json",
             "content": "[]\n"
           },
           "caller": {
@@ -3265,7 +3265,7 @@
         {
           "tool_use_id": "toolu_01W2KffNQXxhHo5uMTHH5bK7",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/no-matches/expected.json (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/no-matches/expected.json (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -3275,7 +3275,7 @@
     "timestamp": "2026-05-07T12:53:32.379Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/no-matches/expected.json",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/fixtures/no-matches/expected.json",
       "content": "[]\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -3364,7 +3364,7 @@
           "id": "toolu_01PfCGamvTqtoHtSzLwUEHLw",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/.github/workflows/pr-label-assigner.yml",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/.github/workflows/pr-label-assigner.yml",
             "content": "name: PR Label Assigner\n\n# Triggers: every push and PR (so labels can be computed for real PRs),\n# manual runs (handy for debugging), and the no-arg `act push` invocations\n# that the local test harness uses for fixture-driven verification.\non:\n  push:\n  pull_request:\n  workflow_dispatch:\n\npermissions:\n  contents: read\n\nenv:\n  RULES_FILE: rules.yaml\n  FILES_LIST: files.txt\n  EXPECTED_FILE: expected.json\n\njobs:\n  unit-tests:\n    name: Unit tests\n    runs-on: ubuntu-latest\n    steps:\n      - name: Checkout\n        uses: actions/checkout@v4\n\n      - name: Show Python version\n        run: python3 --version\n\n      - name: Install dependencies\n        run: python3 -m pip install --quiet --break-system-packages pytest pyyaml\n\n      - name: Run pytest\n        run: python3 -m pytest tests/ -v\n\n  assign-labels:\n    name: Assign labels\n    needs: unit-tests\n    runs-on: ubuntu-latest\n    steps:\n      - name: Checkout\n        uses: actions/checkout@v4\n\n      - name: Install dependencies\n        run: python3 -m pip install --quiet --break-system-packages pyyaml\n\n      - name: Run label assigner\n        run: |\n          python3 label_assigner.py \\\n            --rules \"${RULES_FILE}\" \\\n            --files \"${FILES_LIST}\" \\\n            | tee labels.out\n\n      - name: Verify labels match expected.json\n        run: |\n          python3 - <<'PY'\n          import json, os, sys\n          actual_line = next(\n              l for l in open(\"labels.out\") if l.startswith(\"LABELS_JSON=\")\n          )\n          actual = json.loads(actual_line.split(\"=\", 1)[1])\n          expected_path = os.environ[\"EXPECTED_FILE\"]\n          if not os.path.exists(expected_path):\n              print(f\"NOTE: {expected_path} not present; skipping comparison\")\n              print(f\"ACTUAL_LABELS={json.dumps(actual)}\")\n              sys.exit(0)\n          expected = json.load(open(expected_path))\n          print(f\"EXPECTED={json.dumps(expected)}\")\n          print(f\"ACTUAL={json.dumps(actual)}\")\n          if actual != expected:\n              print(\"FAIL: labels mismatch\", file=sys.stderr)\n              sys.exit(1)\n          print(\"LABELS_OK\")\n          PY\n"
           },
           "caller": {
@@ -3424,7 +3424,7 @@
         {
           "tool_use_id": "toolu_01PfCGamvTqtoHtSzLwUEHLw",
           "type": "tool_result",
-          "content": "The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/.github/workflows/pr-label-assigner.yml has been updated successfully. (file state is current in your context \u2014 no need to Read it back)"
+          "content": "The file /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/.github/workflows/pr-label-assigner.yml has been updated successfully. (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -3434,7 +3434,7 @@
     "timestamp": "2026-05-07T12:54:07.991Z",
     "tool_use_result": {
       "type": "update",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/.github/workflows/pr-label-assigner.yml",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/.github/workflows/pr-label-assigner.yml",
       "content": "name: PR Label Assigner\n\n# Triggers: every push and PR (so labels can be computed for real PRs),\n# manual runs (handy for debugging), and the no-arg `act push` invocations\n# that the local test harness uses for fixture-driven verification.\non:\n  push:\n  pull_request:\n  workflow_dispatch:\n\npermissions:\n  contents: read\n\nenv:\n  RULES_FILE: rules.yaml\n  FILES_LIST: files.txt\n  EXPECTED_FILE: expected.json\n\njobs:\n  unit-tests:\n    name: Unit tests\n    runs-on: ubuntu-latest\n    steps:\n      - name: Checkout\n        uses: actions/checkout@v4\n\n      - name: Show Python version\n        run: python3 --version\n\n      - name: Install dependencies\n        run: python3 -m pip install --quiet --break-system-packages pytest pyyaml\n\n      - name: Run pytest\n        run: python3 -m pytest tests/ -v\n\n  assign-labels:\n    name: Assign labels\n    needs: unit-tests\n    runs-on: ubuntu-latest\n    steps:\n      - name: Checkout\n        uses: actions/checkout@v4\n\n      - name: Install dependencies\n        run: python3 -m pip install --quiet --break-system-packages pyyaml\n\n      - name: Run label assigner\n        run: |\n          python3 label_assigner.py \\\n            --rules \"${RULES_FILE}\" \\\n            --files \"${FILES_LIST}\" \\\n            | tee labels.out\n\n      - name: Verify labels match expected.json\n        run: |\n          python3 - <<'PY'\n          import json, os, sys\n          actual_line = next(\n              l for l in open(\"labels.out\") if l.startswith(\"LABELS_JSON=\")\n          )\n          actual = json.loads(actual_line.split(\"=\", 1)[1])\n          expected_path = os.environ[\"EXPECTED_FILE\"]\n          if not os.path.exists(expected_path):\n              print(f\"NOTE: {expected_path} not present; skipping comparison\")\n              print(f\"ACTUAL_LABELS={json.dumps(actual)}\")\n              sys.exit(0)\n          expected = json.load(open(expected_path))\n          print(f\"EXPECTED={json.dumps(expected)}\")\n          print(f\"ACTUAL={json.dumps(actual)}\")\n          if actual != expected:\n              print(\"FAIL: labels mismatch\", file=sys.stderr)\n              sys.exit(1)\n          print(\"LABELS_OK\")\n          PY\n",
       "structuredPatch": [
         {
@@ -3634,7 +3634,7 @@
           "id": "toolu_01QFunRwuLuzEMvQTBx6PR3f",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/run_act_tests.py",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/run_act_tests.py",
             "content": "\"\"\"End-to-end test harness driving the workflow through `act`.\n\nFor each fixture under ``fixtures/<name>/`` the harness:\n    1. Builds an isolated temp git repo containing this project plus the\n       fixture's ``rules.yaml`` / ``files.txt`` / ``expected.json``.\n    2. Runs ``act push --rm`` against it.\n    3. Appends the act stdout/stderr to ``act-result.txt`` (delimited).\n    4. Asserts act exited 0, that every job reported \"Job succeeded\",\n       and that the LABELS_JSON line printed by the workflow matches the\n       fixture's known-good ``expected.json``.\n\nAlso performs static structure checks on the workflow file itself\n(YAML parses, expected jobs/steps present, referenced script paths exist,\n``actionlint`` passes).\n\"\"\"\nfrom __future__ import annotations\n\nimport json\nimport os\nimport shutil\nimport subprocess\nimport sys\nimport tempfile\nfrom pathlib import Path\n\nimport yaml\n\nPROJECT_ROOT = Path(__file__).parent.resolve()\nWORKFLOW_PATH = PROJECT_ROOT / \".github\" / \"workflows\" / \"pr-label-assigner.yml\"\nACT_RESULT_FILE = PROJECT_ROOT / \"act-result.txt\"\n\n# Files that make up the project (everything except the fixtures dir and\n# the harness itself, both of which we do NOT need inside the temp repo).\nPROJECT_FILES = [\n    \"label_assigner.py\",\n    \"tests\",\n    \".github\",\n    \".actrc\",\n]\n\nFIXTURES = [\"basic-docs\", \"priority-conflict\", \"multi-label-mixed\"]\n\n\n# ---------------------------------------------------------------------- #\n# Static workflow-structure checks (no act needed)                        #\n# ---------------------------------------------------------------------- #\ndef check_workflow_structure() -> None:\n    \"\"\"Parse the workflow YAML and assert expected shape.\"\"\"\n    print(\"=== Workflow structure checks ===\")\n    with WORKFLOW_PATH.open() as fh:\n        wf = yaml.safe_load(fh)\n\n    # PyYAML parses the bare `on:` key as the boolean True. Either form is\n    # acceptable; we just need a triggers block.\n    triggers = wf.get(\"on\") or wf.get(True)\n    assert triggers is not None, \"workflow has no triggers\"\n    for trig in (\"push\", \"pull_request\", \"workflow_dispatch\"):\n        assert trig in triggers, f\"missing trigger: {trig}\"\n\n    jobs = wf.get(\"jobs\", {})\n    for job_name in (\"unit-tests\", \"assign-labels\"):\n        assert job_name in jobs, f\"missing job: {job_name}\"\n\n    # The assign-labels job must depend on unit-tests.\n    assert jobs[\"assign-labels\"].get(\"needs\") == \"unit-tests\", \\\n        \"assign-labels must declare needs: unit-tests\"\n\n    # Permissions should be locked down.\n    assert wf.get(\"permissions\", {}).get(\"contents\") == \"read\", \\\n        \"permissions.contents must be read\"\n\n    # Script files referenced by the workflow must exist on disk.\n    assert (PROJECT_ROOT / \"label_assigner.py\").exists()\n    assert (PROJECT_ROOT / \"tests\").is_dir()\n    print(\"  workflow structure OK\")\n\n\ndef check_actionlint() -> None:\n    print(\"=== actionlint ===\")\n    result = subprocess.run(\n        [\"actionlint\", str(WORKFLOW_PATH)],\n        capture_output=True, text=True,\n    )\n    sys.stdout.write(result.stdout)\n    sys.stderr.write(result.stderr)\n    assert result.returncode == 0, \"actionlint failed\"\n    print(\"  actionlint OK\")\n\n\n# ---------------------------------------------------------------------- #\n# Per-fixture act runs                                                    #\n# ---------------------------------------------------------------------- #\ndef stage_fixture(workdir: Path, fixture_name: str) -> None:\n    \"\"\"Copy project files + the fixture's rules/files/expected into workdir.\"\"\"\n    for entry in PROJECT_FILES:\n        src = PROJECT_ROOT / entry\n        dst = workdir / entry\n        if src.is_dir():\n            shutil.copytree(src, dst)\n        else:\n            shutil.copy2(src, dst)\n\n    fixture_dir = PROJECT_ROOT / \"fixtures\" / fixture_name\n    for fname in (\"rules.yaml\", \"files.txt\", \"expected.json\"):\n        shutil.copy2(fixture_dir / fname, workdir / fname)\n\n    # Initialize a git repo so act has a SHA to use for the push event.\n    subprocess.run([\"git\", \"init\", \"-q\", \"-b\", \"main\"], cwd=workdir, check=True)\n    subprocess.run(\n        [\"git\", \"-c\", \"user.email=test@example.com\",\n         \"-c\", \"user.name=Harness\", \"add\", \"-A\"],\n        cwd=workdir, check=True,\n    )\n    subprocess.run(\n        [\"git\", \"-c\", \"user.email=test@example.com\",\n         \"-c\", \"user.name=Harness\", \"commit\", \"-q\", \"-m\", \"fixture\"],\n        cwd=workdir, check=True,\n    )\n\n\ndef run_act(workdir: Path) -> tuple[int, str]:\n    \"\"\"Run `act push --rm` in workdir; return (exit_code, combined_output).\"\"\"\n    proc = subprocess.run(\n        [\"act\", \"push\", \"--rm\"],\n        cwd=workdir,\n        capture_output=True,\n        text=True,\n        timeout=600,\n    )\n    combined = proc.stdout + \"\\n--- STDERR ---\\n\" + proc.stderr\n    return proc.returncode, combined\n\n\ndef parse_labels_from_output(output: str) -> list[str]:\n    \"\"\"Extract the LABELS_JSON=... payload printed by the workflow.\"\"\"\n    for raw_line in output.splitlines():\n        # act prefixes lines like \"| LABELS_JSON=...\" \u2014 strip its decorations.\n        line = raw_line\n        if \"LABELS_JSON=\" in line:\n            tail = line.split(\"LABELS_JSON=\", 1)[1]\n            # Trim any trailing decorations (act sometimes appends shell-job\n            # markers after the raw output).\n            return json.loads(tail)\n    raise AssertionError(\"LABELS_JSON= line not found in act output\")\n\n\ndef append_section(name: str, body: str) -> None:\n    with ACT_RESULT_FILE.open(\"a\") as fh:\n        fh.write(f\"\\n{'=' * 70}\\n\")\n        fh.write(f\"FIXTURE: {name}\\n\")\n        fh.write(f\"{'=' * 70}\\n\")\n        fh.write(body)\n        fh.write(\"\\n\")\n\n\ndef run_fixture(name: str) -> None:\n    print(f\"\\n=== Fixture: {name} ===\")\n    expected = json.loads(\n        (PROJECT_ROOT / \"fixtures\" / name / \"expected.json\").read_text()\n    )\n    with tempfile.TemporaryDirectory(prefix=f\"act-{name}-\") as td:\n        workdir = Path(td)\n        stage_fixture(workdir, name)\n        exit_code, output = run_act(workdir)\n\n    append_section(name, output)\n    print(f\"  act exit code: {exit_code}\")\n    if exit_code != 0:\n        print(output[-4000:])\n    assert exit_code == 0, f\"act failed for fixture {name} (exit={exit_code})\"\n\n    # Every job in this workflow must report success.\n    job_succeeded_count = output.count(\"Job succeeded\")\n    assert job_succeeded_count >= 2, (\n        f\"expected both jobs to print 'Job succeeded' \"\n        f\"(got {job_succeeded_count}) for fixture {name}\"\n    )\n\n    actual = parse_labels_from_output(output)\n    assert actual == expected, (\n        f\"fixture {name} label mismatch:\\n  expected={expected}\\n  actual  ={actual}\"\n    )\n    print(f\"  labels: {actual} (matches expected)\")\n\n\n# ---------------------------------------------------------------------- #\ndef main() -> int:\n    # Truncate previous run output.\n    ACT_RESULT_FILE.write_text(\"\")\n\n    check_workflow_structure()\n    check_actionlint()\n\n    for name in FIXTURES:\n        run_fixture(name)\n\n    print(f\"\\nAll {len(FIXTURES)} fixtures passed via act.\")\n    print(f\"Output saved to: {ACT_RESULT_FILE}\")\n    return 0\n\n\nif __name__ == \"__main__\":\n    raise SystemExit(main())\n"
           },
           "caller": {
@@ -3694,7 +3694,7 @@
         {
           "tool_use_id": "toolu_01QFunRwuLuzEMvQTBx6PR3f",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/run_act_tests.py (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/run_act_tests.py (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -3704,7 +3704,7 @@
     "timestamp": "2026-05-07T12:54:44.515Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/run_act_tests.py",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/run_act_tests.py",
       "content": "\"\"\"End-to-end test harness driving the workflow through `act`.\n\nFor each fixture under ``fixtures/<name>/`` the harness:\n    1. Builds an isolated temp git repo containing this project plus the\n       fixture's ``rules.yaml`` / ``files.txt`` / ``expected.json``.\n    2. Runs ``act push --rm`` against it.\n    3. Appends the act stdout/stderr to ``act-result.txt`` (delimited).\n    4. Asserts act exited 0, that every job reported \"Job succeeded\",\n       and that the LABELS_JSON line printed by the workflow matches the\n       fixture's known-good ``expected.json``.\n\nAlso performs static structure checks on the workflow file itself\n(YAML parses, expected jobs/steps present, referenced script paths exist,\n``actionlint`` passes).\n\"\"\"\nfrom __future__ import annotations\n\nimport json\nimport os\nimport shutil\nimport subprocess\nimport sys\nimport tempfile\nfrom pathlib import Path\n\nimport yaml\n\nPROJECT_ROOT = Path(__file__).parent.resolve()\nWORKFLOW_PATH = PROJECT_ROOT / \".github\" / \"workflows\" / \"pr-label-assigner.yml\"\nACT_RESULT_FILE = PROJECT_ROOT / \"act-result.txt\"\n\n# Files that make up the project (everything except the fixtures dir and\n# the harness itself, both of which we do NOT need inside the temp repo).\nPROJECT_FILES = [\n    \"label_assigner.py\",\n    \"tests\",\n    \".github\",\n    \".actrc\",\n]\n\nFIXTURES = [\"basic-docs\", \"priority-conflict\", \"multi-label-mixed\"]\n\n\n# ---------------------------------------------------------------------- #\n# Static workflow-structure checks (no act needed)                        #\n# ---------------------------------------------------------------------- #\ndef check_workflow_structure() -> None:\n    \"\"\"Parse the workflow YAML and assert expected shape.\"\"\"\n    print(\"=== Workflow structure checks ===\")\n    with WORKFLOW_PATH.open() as fh:\n        wf = yaml.safe_load(fh)\n\n    # PyYAML parses the bare `on:` key as the boolean True. Either form is\n    # acceptable; we just need a triggers block.\n    triggers = wf.get(\"on\") or wf.get(True)\n    assert triggers is not None, \"workflow has no triggers\"\n    for trig in (\"push\", \"pull_request\", \"workflow_dispatch\"):\n        assert trig in triggers, f\"missing trigger: {trig}\"\n\n    jobs = wf.get(\"jobs\", {})\n    for job_name in (\"unit-tests\", \"assign-labels\"):\n        assert job_name in jobs, f\"missing job: {job_name}\"\n\n    # The assign-labels job must depend on unit-tests.\n    assert jobs[\"assign-labels\"].get(\"needs\") == \"unit-tests\", \\\n        \"assign-labels must declare needs: unit-tests\"\n\n    # Permissions should be locked down.\n    assert wf.get(\"permissions\", {}).get(\"contents\") == \"read\", \\\n        \"permissions.contents must be read\"\n\n    # Script files referenced by the workflow must exist on disk.\n    assert (PROJECT_ROOT / \"label_assigner.py\").exists()\n    assert (PROJECT_ROOT / \"tests\").is_dir()\n    print(\"  workflow structure OK\")\n\n\ndef check_actionlint() -> None:\n    print(\"=== actionlint ===\")\n    result = subprocess.run(\n        [\"actionlint\", str(WORKFLOW_PATH)],\n        capture_output=True, text=True,\n    )\n    sys.stdout.write(result.stdout)\n    sys.stderr.write(result.stderr)\n    assert result.returncode == 0, \"actionlint failed\"\n    print(\"  actionlint OK\")\n\n\n# ---------------------------------------------------------------------- #\n# Per-fixture act runs                                                    #\n# ---------------------------------------------------------------------- #\ndef stage_fixture(workdir: Path, fixture_name: str) -> None:\n    \"\"\"Copy project files + the fixture's rules/files/expected into workdir.\"\"\"\n    for entry in PROJECT_FILES:\n        src = PROJECT_ROOT / entry\n        dst = workdir / entry\n        if src.is_dir():\n            shutil.copytree(src, dst)\n        else:\n            shutil.copy2(src, dst)\n\n    fixture_dir = PROJECT_ROOT / \"fixtures\" / fixture_name\n    for fname in (\"rules.yaml\", \"files.txt\", \"expected.json\"):\n        shutil.copy2(fixture_dir / fname, workdir / fname)\n\n    # Initialize a git repo so act has a SHA to use for the push event.\n    subprocess.run([\"git\", \"init\", \"-q\", \"-b\", \"main\"], cwd=workdir, check=True)\n    subprocess.run(\n        [\"git\", \"-c\", \"user.email=test@example.com\",\n         \"-c\", \"user.name=Harness\", \"add\", \"-A\"],\n        cwd=workdir, check=True,\n    )\n    subprocess.run(\n        [\"git\", \"-c\", \"user.email=test@example.com\",\n         \"-c\", \"user.name=Harness\", \"commit\", \"-q\", \"-m\", \"fixture\"],\n        cwd=workdir, check=True,\n    )\n\n\ndef run_act(workdir: Path) -> tuple[int, str]:\n    \"\"\"Run `act push --rm` in workdir; return (exit_code, combined_output).\"\"\"\n    proc = subprocess.run(\n        [\"act\", \"push\", \"--rm\"],\n        cwd=workdir,\n        capture_output=True,\n        text=True,\n        timeout=600,\n    )\n    combined = proc.stdout + \"\\n--- STDERR ---\\n\" + proc.stderr\n    return proc.returncode, combined\n\n\ndef parse_labels_from_output(output: str) -> list[str]:\n    \"\"\"Extract the LABELS_JSON=... payload printed by the workflow.\"\"\"\n    for raw_line in output.splitlines():\n        # act prefixes lines like \"| LABELS_JSON=...\" \u2014 strip its decorations.\n        line = raw_line\n        if \"LABELS_JSON=\" in line:\n            tail = line.split(\"LABELS_JSON=\", 1)[1]\n            # Trim any trailing decorations (act sometimes appends shell-job\n            # markers after the raw output).\n            return json.loads(tail)\n    raise AssertionError(\"LABELS_JSON= line not found in act output\")\n\n\ndef append_section(name: str, body: str) -> None:\n    with ACT_RESULT_FILE.open(\"a\") as fh:\n        fh.write(f\"\\n{'=' * 70}\\n\")\n        fh.write(f\"FIXTURE: {name}\\n\")\n        fh.write(f\"{'=' * 70}\\n\")\n        fh.write(body)\n        fh.write(\"\\n\")\n\n\ndef run_fixture(name: str) -> None:\n    print(f\"\\n=== Fixture: {name} ===\")\n    expected = json.loads(\n        (PROJECT_ROOT / \"fixtures\" / name / \"expected.json\").read_text()\n    )\n    with tempfile.TemporaryDirectory(prefix=f\"act-{name}-\") as td:\n        workdir = Path(td)\n        stage_fixture(workdir, name)\n        exit_code, output = run_act(workdir)\n\n    append_section(name, output)\n    print(f\"  act exit code: {exit_code}\")\n    if exit_code != 0:\n        print(output[-4000:])\n    assert exit_code == 0, f\"act failed for fixture {name} (exit={exit_code})\"\n\n    # Every job in this workflow must report success.\n    job_succeeded_count = output.count(\"Job succeeded\")\n    assert job_succeeded_count >= 2, (\n        f\"expected both jobs to print 'Job succeeded' \"\n        f\"(got {job_succeeded_count}) for fixture {name}\"\n    )\n\n    actual = parse_labels_from_output(output)\n    assert actual == expected, (\n        f\"fixture {name} label mismatch:\\n  expected={expected}\\n  actual  ={actual}\"\n    )\n    print(f\"  labels: {actual} (matches expected)\")\n\n\n# ---------------------------------------------------------------------- #\ndef main() -> int:\n    # Truncate previous run output.\n    ACT_RESULT_FILE.write_text(\"\")\n\n    check_workflow_structure()\n    check_actionlint()\n\n    for name in FIXTURES:\n        run_fixture(name)\n\n    print(f\"\\nAll {len(FIXTURES)} fixtures passed via act.\")\n    print(f\"Output saved to: {ACT_RESULT_FILE}\")\n    return 0\n\n\nif __name__ == \"__main__\":\n    raise SystemExit(main())\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -4100,7 +4100,7 @@
         {
           "tool_use_id": "toolu_011rypfsRZMPHuQNfi3wqtzj",
           "type": "tool_result",
-          "content": "=== Workflow structure checks ===\n  workflow structure OK\n=== actionlint ===\n  actionlint OK\n\n=== Fixture: basic-docs ===\n  act exit code: 1\n[PR Label Assigner/Unit tests] \u2b50 Run Set up job\n[PR Label Assigner/Unit tests] \ud83d\ude80  Start image=act-ubuntu-pwsh:latest\n[PR Label Assigner/Unit tests]   \ud83d\udc33  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=true\n[PR Label Assigner/Unit tests] using DockerAuthConfig authentication for docker pull\n[PR Label Assigner/Unit tests] Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'\n[PR Label Assigner/Unit tests]   \u274c  Failure - Set up job\n[PR Label Assigner/Unit tests] \ud83c\udfc1  Job failed\n\n--- STDERR ---\ntime=\"2026-05-07T08:55:21-04:00\" level=info msg=\"Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'\"\nError: Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'\n\nTraceback (most recent call last):\n  File \"/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/run_act_tests.py\", line 203, in <module>\n    raise SystemExit(main())\n                     ^^^^^^\n  File \"/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/run_act_tests.py\", line 195, in main\n    run_fixture(name)\n  File \"/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/run_act_tests.py\", line 170, in run_fixture\n    assert exit_code == 0, f\"act failed for fixture {name} (exit={exit_code})\"\n           ^^^^^^^^^^^^^^\nAssertionError: act failed for fixture basic-docs (exit=1)",
+          "content": "=== Workflow structure checks ===\n  workflow structure OK\n=== actionlint ===\n  actionlint OK\n\n=== Fixture: basic-docs ===\n  act exit code: 1\n[PR Label Assigner/Unit tests] \u2b50 Run Set up job\n[PR Label Assigner/Unit tests] \ud83d\ude80  Start image=act-ubuntu-pwsh:latest\n[PR Label Assigner/Unit tests]   \ud83d\udc33  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=true\n[PR Label Assigner/Unit tests] using DockerAuthConfig authentication for docker pull\n[PR Label Assigner/Unit tests] Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'\n[PR Label Assigner/Unit tests]   \u274c  Failure - Set up job\n[PR Label Assigner/Unit tests] \ud83c\udfc1  Job failed\n\n--- STDERR ---\ntime=\"2026-05-07T08:55:21-04:00\" level=info msg=\"Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'\"\nError: Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'\n\nTraceback (most recent call last):\n  File \"/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/run_act_tests.py\", line 203, in <module>\n    raise SystemExit(main())\n                     ^^^^^^\n  File \"/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/run_act_tests.py\", line 195, in main\n    run_fixture(name)\n  File \"/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/run_act_tests.py\", line 170, in run_fixture\n    assert exit_code == 0, f\"act failed for fixture {name} (exit={exit_code})\"\n           ^^^^^^^^^^^^^^\nAssertionError: act failed for fixture basic-docs (exit=1)",
           "is_error": false
         }
       ]
@@ -4110,7 +4110,7 @@
     "uuid": "d815f296-7983-4d6e-8d60-7f6a432cca4c",
     "timestamp": "2026-05-07T12:55:22.669Z",
     "tool_use_result": {
-      "stdout": "=== Workflow structure checks ===\n  workflow structure OK\n=== actionlint ===\n  actionlint OK\n\n=== Fixture: basic-docs ===\n  act exit code: 1\n[PR Label Assigner/Unit tests] \u2b50 Run Set up job\n[PR Label Assigner/Unit tests] \ud83d\ude80  Start image=act-ubuntu-pwsh:latest\n[PR Label Assigner/Unit tests]   \ud83d\udc33  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=true\n[PR Label Assigner/Unit tests] using DockerAuthConfig authentication for docker pull\n[PR Label Assigner/Unit tests] Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'\n[PR Label Assigner/Unit tests]   \u274c  Failure - Set up job\n[PR Label Assigner/Unit tests] \ud83c\udfc1  Job failed\n\n--- STDERR ---\ntime=\"2026-05-07T08:55:21-04:00\" level=info msg=\"Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'\"\nError: Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'\n\nTraceback (most recent call last):\n  File \"/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/run_act_tests.py\", line 203, in <module>\n    raise SystemExit(main())\n                     ^^^^^^\n  File \"/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/run_act_tests.py\", line 195, in main\n    run_fixture(name)\n  File \"/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/run_act_tests.py\", line 170, in run_fixture\n    assert exit_code == 0, f\"act failed for fixture {name} (exit={exit_code})\"\n           ^^^^^^^^^^^^^^\nAssertionError: act failed for fixture basic-docs (exit=1)",
+      "stdout": "=== Workflow structure checks ===\n  workflow structure OK\n=== actionlint ===\n  actionlint OK\n\n=== Fixture: basic-docs ===\n  act exit code: 1\n[PR Label Assigner/Unit tests] \u2b50 Run Set up job\n[PR Label Assigner/Unit tests] \ud83d\ude80  Start image=act-ubuntu-pwsh:latest\n[PR Label Assigner/Unit tests]   \ud83d\udc33  docker pull image=act-ubuntu-pwsh:latest platform= username= forcePull=true\n[PR Label Assigner/Unit tests] using DockerAuthConfig authentication for docker pull\n[PR Label Assigner/Unit tests] Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'\n[PR Label Assigner/Unit tests]   \u274c  Failure - Set up job\n[PR Label Assigner/Unit tests] \ud83c\udfc1  Job failed\n\n--- STDERR ---\ntime=\"2026-05-07T08:55:21-04:00\" level=info msg=\"Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'\"\nError: Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'\n\nTraceback (most recent call last):\n  File \"/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/run_act_tests.py\", line 203, in <module>\n    raise SystemExit(main())\n                     ^^^^^^\n  File \"/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/run_act_tests.py\", line 195, in main\n    run_fixture(name)\n  File \"/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/run_act_tests.py\", line 170, in run_fixture\n    assert exit_code == 0, f\"act failed for fixture {name} (exit={exit_code})\"\n           ^^^^^^^^^^^^^^\nAssertionError: act failed for fixture basic-docs (exit=1)",
       "stderr": "",
       "interrupted": false,
       "isImage": false,
@@ -4200,7 +4200,7 @@
           "name": "Edit",
           "input": {
             "replace_all": false,
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/run_act_tests.py",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/run_act_tests.py",
             "old_string": "    proc = subprocess.run(\n        [\"act\", \"push\", \"--rm\"],\n        cwd=workdir,\n        capture_output=True,\n        text=True,\n        timeout=600,\n    )",
             "new_string": "    # `--pull=false` keeps act from forcing a re-pull of the local-only\n    # custom image (act-ubuntu-pwsh:latest) on every run.\n    proc = subprocess.run(\n        [\"act\", \"push\", \"--rm\", \"--pull=false\"],\n        cwd=workdir,\n        capture_output=True,\n        text=True,\n        timeout=600,\n    )"
           },
@@ -4261,7 +4261,7 @@
         {
           "tool_use_id": "toolu_018xN6sMpUGHphk4CbpiNpNA",
           "type": "tool_result",
-          "content": "The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/run_act_tests.py has been updated successfully. (file state is current in your context \u2014 no need to Read it back)"
+          "content": "The file /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/run_act_tests.py has been updated successfully. (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -4270,7 +4270,7 @@
     "uuid": "eadbafec-3966-45f6-9e5c-d3d89d7bae1a",
     "timestamp": "2026-05-07T12:55:29.934Z",
     "tool_use_result": {
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/run_act_tests.py",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/run_act_tests.py",
       "oldString": "    proc = subprocess.run(\n        [\"act\", \"push\", \"--rm\"],\n        cwd=workdir,\n        capture_output=True,\n        text=True,\n        timeout=600,\n    )",
       "newString": "    # `--pull=false` keeps act from forcing a re-pull of the local-only\n    # custom image (act-ubuntu-pwsh:latest) on every run.\n    proc = subprocess.run(\n        [\"act\", \"push\", \"--rm\", \"--pull=false\"],\n        cwd=workdir,\n        capture_output=True,\n        text=True,\n        timeout=600,\n    )",
       "originalFile": "\"\"\"End-to-end test harness driving the workflow through `act`.\n\nFor each fixture under ``fixtures/<name>/`` the harness:\n    1. Builds an isolated temp git repo containing this project plus the\n       fixture's ``rules.yaml`` / ``files.txt`` / ``expected.json``.\n    2. Runs ``act push --rm`` against it.\n    3. Appends the act stdout/stderr to ``act-result.txt`` (delimited).\n    4. Asserts act exited 0, that every job reported \"Job succeeded\",\n       and that the LABELS_JSON line printed by the workflow matches the\n       fixture's known-good ``expected.json``.\n\nAlso performs static structure checks on the workflow file itself\n(YAML parses, expected jobs/steps present, referenced script paths exist,\n``actionlint`` passes).\n\"\"\"\nfrom __future__ import annotations\n\nimport json\nimport os\nimport shutil\nimport subprocess\nimport sys\nimport tempfile\nfrom pathlib import Path\n\nimport yaml\n\nPROJECT_ROOT = Path(__file__).parent.resolve()\nWORKFLOW_PATH = PROJECT_ROOT / \".github\" / \"workflows\" / \"pr-label-assigner.yml\"\nACT_RESULT_FILE = PROJECT_ROOT / \"act-result.txt\"\n\n# Files that make up the project (everything except the fixtures dir and\n# the harness itself, both of which we do NOT need inside the temp repo).\nPROJECT_FILES = [\n    \"label_assigner.py\",\n    \"tests\",\n    \".github\",\n    \".actrc\",\n]\n\nFIXTURES = [\"basic-docs\", \"priority-conflict\", \"multi-label-mixed\"]\n\n\n# ---------------------------------------------------------------------- #\n# Static workflow-structure checks (no act needed)                        #\n# ---------------------------------------------------------------------- #\ndef check_workflow_structure() -> None:\n    \"\"\"Parse the workflow YAML and assert expected shape.\"\"\"\n    print(\"=== Workflow structure checks ===\")\n    with WORKFLOW_PATH.open() as fh:\n        wf = yaml.safe_load(fh)\n\n    # PyYAML parses the bare `on:` key as the boolean True. Either form is\n    # acceptable; we just need a triggers block.\n    triggers = wf.get(\"on\") or wf.get(True)\n    assert triggers is not None, \"workflow has no triggers\"\n    for trig in (\"push\", \"pull_request\", \"workflow_dispatch\"):\n        assert trig in triggers, f\"missing trigger: {trig}\"\n\n    jobs = wf.get(\"jobs\", {})\n    for job_name in (\"unit-tests\", \"assign-labels\"):\n        assert job_name in jobs, f\"missing job: {job_name}\"\n\n    # The assign-labels job must depend on unit-tests.\n    assert jobs[\"assign-labels\"].get(\"needs\") == \"unit-tests\", \\\n        \"assign-labels must declare needs: unit-tests\"\n\n    # Permissions should be locked down.\n    assert wf.get(\"permissions\", {}).get(\"contents\") == \"read\", \\\n        \"permissions.contents must be read\"\n\n    # Script files referenced by the workflow must exist on disk.\n    assert (PROJECT_ROOT / \"label_assigner.py\").exists()\n    assert (PROJECT_ROOT / \"tests\").is_dir()\n    print(\"  workflow structure OK\")\n\n\ndef check_actionlint() -> None:\n    print(\"=== actionlint ===\")\n    result = subprocess.run(\n        [\"actionlint\", str(WORKFLOW_PATH)],\n        capture_output=True, text=True,\n    )\n    sys.stdout.write(result.stdout)\n    sys.stderr.write(result.stderr)\n    assert result.returncode == 0, \"actionlint failed\"\n    print(\"  actionlint OK\")\n\n\n# ---------------------------------------------------------------------- #\n# Per-fixture act runs                                                    #\n# ---------------------------------------------------------------------- #\ndef stage_fixture(workdir: Path, fixture_name: str) -> None:\n    \"\"\"Copy project files + the fixture's rules/files/expected into workdir.\"\"\"\n    for entry in PROJECT_FILES:\n        src = PROJECT_ROOT / entry\n        dst = workdir / entry\n        if src.is_dir():\n            shutil.copytree(src, dst)\n        else:\n            shutil.copy2(src, dst)\n\n    fixture_dir = PROJECT_ROOT / \"fixtures\" / fixture_name\n    for fname in (\"rules.yaml\", \"files.txt\", \"expected.json\"):\n        shutil.copy2(fixture_dir / fname, workdir / fname)\n\n    # Initialize a git repo so act has a SHA to use for the push event.\n    subprocess.run([\"git\", \"init\", \"-q\", \"-b\", \"main\"], cwd=workdir, check=True)\n    subprocess.run(\n        [\"git\", \"-c\", \"user.email=test@example.com\",\n         \"-c\", \"user.name=Harness\", \"add\", \"-A\"],\n        cwd=workdir, check=True,\n    )\n    subprocess.run(\n        [\"git\", \"-c\", \"user.email=test@example.com\",\n         \"-c\", \"user.name=Harness\", \"commit\", \"-q\", \"-m\", \"fixture\"],\n        cwd=workdir, check=True,\n    )\n\n\ndef run_act(workdir: Path) -> tuple[int, str]:\n    \"\"\"Run `act push --rm` in workdir; return (exit_code, combined_output).\"\"\"\n    proc = subprocess.run(\n        [\"act\", \"push\", \"--rm\"],\n        cwd=workdir,\n        capture_output=True,\n        text=True,\n        timeout=600,\n    )\n    combined = proc.stdout + \"\\n--- STDERR ---\\n\" + proc.stderr\n    return proc.returncode, combined\n\n\ndef parse_labels_from_output(output: str) -> list[str]:\n    \"\"\"Extract the LABELS_JSON=... payload printed by the workflow.\"\"\"\n    for raw_line in output.splitlines():\n        # act prefixes lines like \"| LABELS_JSON=...\" \u2014 strip its decorations.\n        line = raw_line\n        if \"LABELS_JSON=\" in line:\n            tail = line.split(\"LABELS_JSON=\", 1)[1]\n            # Trim any trailing decorations (act sometimes appends shell-job\n            # markers after the raw output).\n            return json.loads(tail)\n    raise AssertionError(\"LABELS_JSON= line not found in act output\")\n\n\ndef append_section(name: str, body: str) -> None:\n    with ACT_RESULT_FILE.open(\"a\") as fh:\n        fh.write(f\"\\n{'=' * 70}\\n\")\n        fh.write(f\"FIXTURE: {name}\\n\")\n        fh.write(f\"{'=' * 70}\\n\")\n        fh.write(body)\n        fh.write(\"\\n\")\n\n\ndef run_fixture(name: str) -> None:\n    print(f\"\\n=== Fixture: {name} ===\")\n    expected = json.loads(\n        (PROJECT_ROOT / \"fixtures\" / name / \"expected.json\").read_text()\n    )\n    with tempfile.TemporaryDirectory(prefix=f\"act-{name}-\") as td:\n        workdir = Path(td)\n        stage_fixture(workdir, name)\n        exit_code, output = run_act(workdir)\n\n    append_section(name, output)\n    print(f\"  act exit code: {exit_code}\")\n    if exit_code != 0:\n        print(output[-4000:])\n    assert exit_code == 0, f\"act failed for fixture {name} (exit={exit_code})\"\n\n    # Every job in this workflow must report success.\n    job_succeeded_count = output.count(\"Job succeeded\")\n    assert job_succeeded_count >= 2, (\n        f\"expected both jobs to print 'Job succeeded' \"\n        f\"(got {job_succeeded_count}) for fixture {name}\"\n    )\n\n    actual = parse_labels_from_output(output)\n    assert actual == expected, (\n        f\"fixture {name} label mismatch:\\n  expected={expected}\\n  actual  ={actual}\"\n    )\n    print(f\"  labels: {actual} (matches expected)\")\n\n\n# ---------------------------------------------------------------------- #\ndef main() -> int:\n    # Truncate previous run output.\n    ACT_RESULT_FILE.write_text(\"\")\n\n    check_workflow_structure()\n    check_actionlint()\n\n    for name in FIXTURES:\n        run_fixture(name)\n\n    print(f\"\\nAll {len(FIXTURES)} fixtures passed via act.\")\n    print(f\"Output saved to: {ACT_RESULT_FILE}\")\n    return 0\n\n\nif __name__ == \"__main__\":\n    raise SystemExit(main())\n",
@@ -4371,7 +4371,7 @@
         {
           "tool_use_id": "toolu_01JCGwVbb3fU87ELWhFEtEts",
           "type": "tool_result",
-          "content": "=== Workflow structure checks ===\n  workflow structure OK\n=== actionlint ===\n  actionlint OK\n\n=== Fixture: basic-docs ===\n  act exit code: 0\n  labels: ['documentation'] (matches expected)\n\n=== Fixture: priority-conflict ===\n  act exit code: 0\n  labels: ['api', 'backend', 'python'] (matches expected)\n\n=== Fixture: multi-label-mixed ===\n  act exit code: 0\n  labels: ['api', 'backend', 'documentation', 'javascript', 'python', 'tests'] (matches expected)\n\nAll 3 fixtures passed via act.\nOutput saved to: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/act-result.txt",
+          "content": "=== Workflow structure checks ===\n  workflow structure OK\n=== actionlint ===\n  actionlint OK\n\n=== Fixture: basic-docs ===\n  act exit code: 0\n  labels: ['documentation'] (matches expected)\n\n=== Fixture: priority-conflict ===\n  act exit code: 0\n  labels: ['api', 'backend', 'python'] (matches expected)\n\n=== Fixture: multi-label-mixed ===\n  act exit code: 0\n  labels: ['api', 'backend', 'documentation', 'javascript', 'python', 'tests'] (matches expected)\n\nAll 3 fixtures passed via act.\nOutput saved to: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/act-result.txt",
           "is_error": false
         }
       ]
@@ -4381,7 +4381,7 @@
     "uuid": "7a4eaa2f-a224-4207-a870-8aae7fcb8ef2",
     "timestamp": "2026-05-07T12:56:21.138Z",
     "tool_use_result": {
-      "stdout": "=== Workflow structure checks ===\n  workflow structure OK\n=== actionlint ===\n  actionlint OK\n\n=== Fixture: basic-docs ===\n  act exit code: 0\n  labels: ['documentation'] (matches expected)\n\n=== Fixture: priority-conflict ===\n  act exit code: 0\n  labels: ['api', 'backend', 'python'] (matches expected)\n\n=== Fixture: multi-label-mixed ===\n  act exit code: 0\n  labels: ['api', 'backend', 'documentation', 'javascript', 'python', 'tests'] (matches expected)\n\nAll 3 fixtures passed via act.\nOutput saved to: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/act-result.txt",
+      "stdout": "=== Workflow structure checks ===\n  workflow structure OK\n=== actionlint ===\n  actionlint OK\n\n=== Fixture: basic-docs ===\n  act exit code: 0\n  labels: ['documentation'] (matches expected)\n\n=== Fixture: priority-conflict ===\n  act exit code: 0\n  labels: ['api', 'backend', 'python'] (matches expected)\n\n=== Fixture: multi-label-mixed ===\n  act exit code: 0\n  labels: ['api', 'backend', 'documentation', 'javascript', 'python', 'tests'] (matches expected)\n\nAll 3 fixtures passed via act.\nOutput saved to: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/default-opus47-1m-high/act-result.txt",
       "stderr": "",
       "interrupted": false,
       "isImage": false,

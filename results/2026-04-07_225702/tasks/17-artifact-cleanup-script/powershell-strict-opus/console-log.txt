@@ -3,7 +3,7 @@
 I'll start by understanding the task, then follow TDD methodology to build the artifact cleanup script.
 
 Let me check the current working directory first.
-[Tool: Bash] ls /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/
+[Tool: Bash] ls /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/
 [Result] benchmark-instructions-v2.md
 [Tool: Bash] which pwsh && pwsh --version
 [Result] /snap/bin/pwsh
@@ -11,24 +11,24 @@ PowerShell 7.6.0
 [Assistant] Good. Let me start with the first failing test — testing the mock data structure and basic artifact creation.
 
 ## Step 1: First failing test — Artifact data model and mock data
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1", "content": "Set-StrictMo
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1", "content": "Set-StrictMo
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1 (file state is current in your context — no need to Read it back)
 [Assistant] Run the failing test:
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path ./ArtifactCleanup.Tests.ps1 -Output Detailed" 2>&1 | tail -30
 [Result] [95mPester v5.7.1[0m
 [95m
 [95mStarting discovery in 1 files.[0m
-[91m[-] Discovery in /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1 failed with:[0m
+[91m[-] Discovery in /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1 failed with:[0m
 [91mSystem.Management.Automation.ParameterBindingException: A parameter cannot be found that matches parameter name 'Latest'.
 [91m   at System.Management.Automation.ExceptionHandlingOps.CheckActionPreference(FunctionContext funcContext, Exception exception) in /root/parts/powershell/build/src/System.Management.Automation/engine/runtime/Operations/MiscOps.cs:line 1786
 [91m   at System.Management.Automation.Interpreter.ActionCallInstruction`2.Run(InterpretedFrame frame) in /root/parts/powershell/build/src/System.Management.Automation/engine/interpreter/CallInstruction.Generated.cs:line 504
 [91m   at System.Management.Automation.Interpreter.EnterTryCatchFinallyInstruction.Run(InterpretedFrame frame) in /root/parts/powershe
 [Assistant] The correct syntax is `-Version Latest`, not `-Latest`. Let me fix the test file and create the implementation file.
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1", "o
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1", "o
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Assistant] Now create the minimal implementation to make the tests pass:
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.ps1", "content": "Set-StrictMode -Ve
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.ps1", "content": "Set-StrictMode -Ve
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.ps1 (file state is current in your context — no need to Read it back)
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path ./ArtifactCleanup.Tests.ps1 -Output Detailed" 2>&1 | tail -20
 [Result] [95mPester v5.7.1[0m
 [95m
@@ -36,16 +36,16 @@ PowerShell 7.6.0
 [95mDiscovery found 3 tests in 126ms.[0m
 [95mRunning tests.[0m
 [95m
-[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1'[0m
+[95mRunning tests from '/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1'[0m
 [92mDescribing New-ArtifactRecord[0m
 [32m  [+] creates an artifact record with all required fields[0m[90m 97ms (76ms|21ms)[0m
 [91m  [-] rejects empty name[0m[90m 43ms (42ms|1ms)[0m
-[91m   Expected an exception with message like '*Name cannot be empty*' to be thrown, but the message was 'Cannot bind argument to parameter 'Name' because it is an empty string.'. from /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1:21 char:36
+[91m   Expected an exception with message like '*Name cannot be empty*' to be thrown, but the message was 'Cannot bind argument to parameter 'Name' because it is an empty string.'. from /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1:21 char:36
 [91m       +         { New-ArtifactRecord -Name '' -SizeBytes 100 -CreationDate ([ …
 [91m       +                      
 [Assistant] PowerShell's `[Parameter(Mandatory)]` with `[string]` already rejects empty strings. Let me fix the test to match the actual error message.
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1", "o
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1", "o
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path ./ArtifactCleanup.Tests.ps1 -Output Detailed" 2>&1 | tail -15
 [Result] [95mPester v5.7.1[0m
 [95m
@@ -53,7 +53,7 @@ PowerShell 7.6.0
 [95mDiscovery found 3 tests in 131ms.[0m
 [95mRunning tests.[0m
 [95m
-[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1'[0m
+[95mRunning tests from '/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1'[0m
 [92mDescribing New-ArtifactRecord[0m
 [32m  [+] creates an artifact record with all required fields[0m[90m 92ms (71ms|21ms)[0m
 [32m  [+] rejects empty name[0m[90m 23ms (23ms|1ms)[0m
@@ -63,7 +63,7 @@ PowerShell 7.6.0
 [Assistant] All green. Now let me add mock data fixtures and the retention policy tests.
 
 ## Step 2: Mock data fixtures + retention policy (max age)
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1"}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1"}
 [Result] 1	BeforeAll {
 2	    Set-StrictMode -Version Latest
 3	    $ErrorActionPreference = 'Stop'
@@ -90,14 +90,14 @@ PowerShell 7.6.0
 24	    }
 25	
 26	    It 'rejects negat
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1", "o
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1", "o
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Assistant] Run the failing tests:
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path ./ArtifactCleanup.Tests.ps1 -Output Detailed" 2>&1 | tail -30
 [Result] [95mDiscovery found 7 tests in 126ms.[0m
 [95mRunning tests.[0m
 [95m
-[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1'[0m
+[95mRunning tests from '/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1'[0m
 [92mDescribing New-ArtifactRecord[0m
 [32m  [+] creates an artifact record with all required fields[0m[90m 100ms (78ms|22ms)[0m
 [32m  [+] rejects empty name[0m[90m 33ms (32ms|1ms)[0m
@@ -107,9 +107,9 @@ PowerShell 7.6.0
 [91m  [-] returns a known set of artifacts for testing[0m[90m 89ms (86ms|3ms)[0m
 [91m   CommandNotFoundException: The term 'New-MockArtifactSet' is not recognized as a name of a cmdlet, function, script file, or executable program.
 [91m   Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
-[91m   at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspace
+[91m   at <ScriptBlock>, /home/passp/repos/GHA-bench/workspace
 [Assistant] Good — 4 failing tests. Now implement `New-MockArtifactSet` and `Get-ArtifactsExceedingMaxAge`:
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.ps1"}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.ps1"}
 [Result] 1	Set-StrictMode -Version Latest
 2	$ErrorActionPreference = 'Stop'
 3	
@@ -146,13 +146,13 @@ PowerShell 7.6.0
 34	    }
 35	
 36	    [PSCustomObject]
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.ps1", "old_str
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.ps1", "old_str
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path ./ArtifactCleanup.Tests.ps1 -Output Detailed" 2>&1 | tail -20
 [Result] [95mDiscovery found 7 tests in 127ms.[0m
 [95mRunning tests.[0m
 [95m
-[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1'[0m
+[95mRunning tests from '/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1'[0m
 [92mDescribing New-ArtifactRecord[0m
 [32m  [+] creates an artifact record with all required fields[0m[90m 102ms (80ms|22ms)[0m
 [32m  [+] rejects empty name[0m[90m 34ms (33ms|1ms)[0m
@@ -166,10 +166,10 @@ PowerShell 7.6.0
 [91m  [-] returns nothing when all artifacts are within age limit[0m[90m 6ms (5ms|1ms)[0m
 [91m   PropertyNotFoundException: The property 'Count' cannot be found on this object. Verify that the property exis
 [Assistant] Strict mode issue — `$null` from an empty filter has no `.Count`. Fix the test to wrap in `@()`:
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1", "o
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1", "o
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path ./ArtifactCleanup.Tests.ps1 -Output Detailed" 2>&1 | tail -15
-[Result] [95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1'[0m
+[Result] [95mRunning tests from '/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1'[0m
 [92mDescribing New-ArtifactRecord[0m
 [32m  [+] creates an artifact record with all required fields[0m[90m 93ms (71ms|22ms)[0m
 [32m  [+] rejects empty name[0m[90m 29ms (29ms|1ms)[0m
@@ -187,7 +187,7 @@ PowerShell 7.6.0
 [Assistant] All 7 green. Now add tests for max total size and keep-latest-N policies.
 
 ## Step 3: Keep-latest-N per workflow + max total size policies
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1"}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1"}
 [Result] 1	BeforeAll {
 2	    Set-StrictMode -Version Latest
 3	    $ErrorActionPreference = 'Stop'
@@ -214,14 +214,14 @@ PowerShell 7.6.0
 24	    }
 25	
 26	    It 'rejects negat
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1", "o
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1", "o
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Assistant] Run failing tests:
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path ./ArtifactCleanup.Tests.ps1 -Output Detailed" 2>&1 | tail -20
 [Result] [91m  [-] keeps exactly 2 per workflow[0m[90m 82ms (81ms|1ms)[0m
 [91m   CommandNotFoundException: The term 'Get-ArtifactsExceedingKeepLatestN' is not recognized as a name of a cmdlet, function, script file, or executable program.
 [91m   Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
-[91m   at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1:104[0m
+[91m   at <ScriptBlock>, /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1:104[0m
 [0m
 [92mDescribing Get-ArtifactsExceedingMaxTotalSize[0m
 [91m  [-] marks oldest artifacts for deletion until total size is within budget[0m[90m 99ms (96ms|2ms)[0m
@@ -229,7 +229,7 @@ PowerShell 7.6.0
 [91m   Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
 [91m  
 [Assistant] Good — 6 new failures. Now implement both functions:
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.ps1", "offset": 90}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.ps1", "offset": 90}
 [Result] 90	
 91	    if ($MaxAgeDays -lt 0) {
 92	        throw "MaxAgeDays must be non-negative"
@@ -242,10 +242,10 @@ PowerShell 7.6.0
 99	    return $expired
 100	}
 101	
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.ps1", "old_str
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.ps1", "old_str
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path ./ArtifactCleanup.Tests.ps1 -Output Detailed" 2>&1 | tail -25
-[Result] [95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1'[0m
+[Result] [95mRunning tests from '/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1'[0m
 [92mDescribing New-ArtifactRecord[0m
 [32m  [+] creates an artifact record with all required fields[0m[90m 88ms (67ms|21ms)[0m
 [32m  [+] rejects empty name[0m[90m 25ms (24ms|1ms)[0m
@@ -264,7 +264,7 @@ PowerShell 7.6.0
 [Assistant] All 13 green. Now add the combined policy application and deletion plan generation.
 
 ## Step 4: Combined policy + deletion plan + dry-run mode
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1"}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1"}
 [Result] 1	BeforeAll {
 2	    Set-StrictMode -Version Latest
 3	    $ErrorActionPreference = 'Stop'
@@ -291,8 +291,8 @@ PowerShell 7.6.0
 24	    }
 25	
 26	    It 'rejects negat
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1", "o
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1", "o
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Assistant] Run failing tests:
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path ./ArtifactCleanup.Tests.ps1 -Output Detailed" 2>&1 | tail -30
 [Result] [32m  [+] returns nothing when already within budget[0m[90m 5ms (3ms|1ms)[0m
@@ -302,11 +302,11 @@ PowerShell 7.6.0
 [91m  [-] combines all policies and de-duplicates artifacts to delete[0m[90m 158ms (154ms|4ms)[0m
 [91m   CommandNotFoundException: The term 'New-DeletionPlan' is not recognized as a name of a cmdlet, function, script file, or executable program.
 [91m   Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
-[91m   at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1:160[0m
+[91m   at <ScriptBlock>, /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1:160[0m
 [91m  [-] handles case where no policies trigger any deletions[0m[90m 89ms (87ms|1ms)[0m
 [91m   CommandNotFoundException: The term 'New-DeletionPlan' is not recognized as a name of a cmdlet, function, script file, or executa
 [Assistant] 5 new failures as expected. Now implement `New-DeletionPlan`, `Invoke-ArtifactCleanup`, and `Format-DeletionSummary`:
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.ps1", "offset": 150}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.ps1", "offset": 150}
 [Result] 150	        until the remaining total size fits within MaxTotalSizeBytes.
 151	        Returns the artifacts marked for deletion.
 152	    #>
@@ -336,19 +336,19 @@ PowerShell 7.6.0
 176	    # Sort oldest first — delete oldest until within budget
 177	    [PSCustomObject[]]$sorted = @($Artifacts | Sort-Object -Property CreationDate)
 178	    [System.Collections.Generic.List[PSCustomObject]]$toDelete = [System.Collections.Generic.List[PSCus
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.ps1", "old_str
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.ps1", "old_str
 [Result ERROR] <tool_use_error>Found 2 matches of the string to replace, but replace_all is false. To replace all occurrences, set replace_all to true. To replace only one occurrence, please provide more context to uniquely identify the instance.
 String:     return [PSCustomObject[]]@($toDelete)
 }</tool_use_error>
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.ps1", "offset": 185}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.ps1", "offset": 185}
 [Result] 185	        $totalSize -= [long]$artifact.SizeBytes
 186	    }
 187	
 188	    return [PSCustomObject[]]@($toDelete)
 189	}
 190	
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.ps1", "old_str
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.ps1", "old_str
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path ./ArtifactCleanup.Tests.ps1 -Output Detailed" 2>&1 | tail -30
 [Result] [92mDescribing New-MockArtifactSet[0m
 [32m  [+] returns a known set of artifacts for testing[0m[90m 66ms (64ms|2ms)[0m
@@ -369,7 +369,7 @@ String:     return [PSCustomObject[]]@($toDelete)
 [Assistant] All 18 tests passing. Let me add a few more edge case tests and the `Format-ByteSize` test, then add an integration test using the mock data set.
 
 ## Step 5: Edge cases + integration test with mock data
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1", "offset": 230}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1", "offset": 230}
 [Result] 230	        )
 231	        $plan = New-DeletionPlan -Artifacts $artifacts `
 232	            -MaxAgeDays ([int]30) `
@@ -385,8 +385,8 @@ String:     return [PSCustomObject[]]@($toDelete)
 242	    }
 243	}
 244	
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1", "o
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1", "o
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path ./ArtifactCleanup.Tests.ps1 -Output Detailed" 2>&1 | tail -45
 [Result] [32m  [+] returns a known set of artifacts for testing[0m[90m 76ms (69ms|7ms)[0m
 [0m
@@ -441,7 +441,7 @@ Space reclaimed:    6.50 MB
 [95mDiscovery found 28 tests in 146ms.[0m
 [95mRunning tests.[0m
 [95m
-[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1'[0m
+[95mRunning tests from '/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/17-artifact-cleanup-script/powershell-strict-opus/ArtifactCleanup.Tests.ps1'[0m
 [92mDescribing New-ArtifactRecord[0m
 [32m  [+] creates an artifact record with all required fields[0m[90m 85ms (65ms|20ms)[0m
 [32m  [+] rejects empty name[0m[90m 32ms (30ms|1ms)[0m

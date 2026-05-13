@@ -74,8 +74,8 @@ Each benchmark version defines a set of scripting tasks, language modes, and mod
 ## Running a Benchmark
 
 ```bash
-git clone https://github.com/Adam-S-Daniel/compare-agent-scripting-by-language.git
-cd compare-agent-scripting-by-language
+git clone https://github.com/Adam-S-Daniel/GHA-bench.git
+cd GHA-bench
 
 # Ensure claude CLI is installed and authenticated
 # Then run:

@@ -25,7 +25,7 @@
   {
     "type": "system",
     "subtype": "init",
-    "cwd": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium",
+    "cwd": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium",
     "session_id": "c8893116-4913-4a7a-9519-bb015fb7353a",
     "tools": [
       "Task",
@@ -116,7 +116,7 @@
     "analytics_disabled": false,
     "uuid": "732a2ace-5889-4e45-a9ba-20c75a4fddc4",
     "memory_paths": {
-      "auto": "/home/passp/.claude/projects/-home-passp-repos-compare-agent-scripting-by-language-workspaces-2026-05-06-173435-12-pr-label-assigner-typescript-bun-opus47-1m-medium/memory/"
+      "auto": "/home/passp/.claude/projects/-home-passp-repos-GHA-bench-workspaces-2026-05-06-173435-12-pr-label-assigner-typescript-bun-opus47-1m-medium/memory/"
     },
     "fast_mode_state": "off"
   },
@@ -181,7 +181,7 @@
           "id": "toolu_012YnggU4QEiGTJBSAeuFZyG",
           "name": "Bash",
           "input": {
-            "command": "ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/",
+            "command": "ls -la /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/",
             "description": "List working directory"
           },
           "caller": {
@@ -354,7 +354,7 @@
           "id": "toolu_01DN6i2WxjVTzs63PoKsfa6X",
           "name": "Bash",
           "input": {
-            "command": "cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/.actrc; which bun act actionlint",
+            "command": "cat /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/.actrc; which bun act actionlint",
             "description": "Check tools"
           },
           "caller": {
@@ -421,7 +421,7 @@
           "id": "toolu_01ESxodqbniJCQHSqqnbC51x",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/labeler.test.ts",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/labeler.test.ts",
             "content": "import { describe, test, expect } from \"bun:test\";\nimport { assignLabels, type LabelRule } from \"./labeler\";\n\ndescribe(\"assignLabels\", () => {\n  test(\"returns empty set for no files\", () => {\n    expect(assignLabels([], [])).toEqual([]);\n  });\n\n  test(\"matches a simple glob and assigns its label\", () => {\n    const rules: LabelRule[] = [{ pattern: \"docs/**\", label: \"documentation\" }];\n    expect(assignLabels([\"docs/intro.md\"], rules)).toEqual([\"documentation\"]);\n  });\n\n  test(\"returns multiple labels when different files match different rules\", () => {\n    const rules: LabelRule[] = [\n      { pattern: \"docs/**\", label: \"documentation\" },\n      { pattern: \"src/api/**\", label: \"api\" },\n    ];\n    const result = assignLabels(\n      [\"docs/a.md\", \"src/api/users.ts\"],\n      rules,\n    );\n    expect(result.sort()).toEqual([\"api\", \"documentation\"]);\n  });\n\n  test(\"a single file may receive multiple labels from multiple matching rules\", () => {\n    const rules: LabelRule[] = [\n      { pattern: \"src/api/**\", label: \"api\" },\n      { pattern: \"**/*.ts\", label: \"typescript\" },\n    ];\n    const result = assignLabels([\"src/api/users.ts\"], rules);\n    expect(result.sort()).toEqual([\"api\", \"typescript\"]);\n  });\n\n  test(\"deduplicates labels across files\", () => {\n    const rules: LabelRule[] = [{ pattern: \"**/*.test.*\", label: \"tests\" }];\n    const result = assignLabels([\"a.test.ts\", \"b.test.ts\"], rules);\n    expect(result).toEqual([\"tests\"]);\n  });\n\n  test(\"priority ordering: when two rules conflict, higher-priority wins (lower wins suppressed)\", () => {\n    // 'priority' is descending: higher number = higher priority\n    // When rules conflict (share an exclusion group), only the highest priority label is applied.\n    const rules: LabelRule[] = [\n      { pattern: \"src/**\", label: \"source\", priority: 1, group: \"area\" },\n      { pattern: \"src/api/**\", label: \"api\", priority: 10, group: \"area\" },\n    ];\n    const result = assignLabels([\"src/api/users.ts\"], rules);\n    expect(result).toEqual([\"api\"]);\n  });\n\n  test(\"rules in different groups don't conflict\", () => {\n    const rules: LabelRule[] = [\n      { pattern: \"src/**\", label: \"source\", priority: 1, group: \"area\" },\n      { pattern: \"**/*.ts\", label: \"typescript\", priority: 5, group: \"language\" },\n    ];\n    const result = assignLabels([\"src/foo.ts\"], rules);\n    expect(result.sort()).toEqual([\"source\", \"typescript\"]);\n  });\n\n  test(\"output is sorted alphabetically and deterministic\", () => {\n    const rules: LabelRule[] = [\n      { pattern: \"**/*.ts\", label: \"zeta\" },\n      { pattern: \"**/*.ts\", label: \"alpha\" },\n    ];\n    expect(assignLabels([\"x.ts\"], rules)).toEqual([\"alpha\", \"zeta\"]);\n  });\n\n  test(\"invalid rule (empty pattern) throws meaningful error\", () => {\n    const rules = [{ pattern: \"\", label: \"x\" }] as LabelRule[];\n    expect(() => assignLabels([\"a.ts\"], rules)).toThrow(/empty pattern/i);\n  });\n\n  test(\"invalid rule (empty label) throws meaningful error\", () => {\n    const rules = [{ pattern: \"**/*\", label: \"\" }] as LabelRule[];\n    expect(() => assignLabels([\"a.ts\"], rules)).toThrow(/empty label/i);\n  });\n});\n"
           },
           "caller": {
@@ -481,7 +481,7 @@
         {
           "tool_use_id": "toolu_01ESxodqbniJCQHSqqnbC51x",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/labeler.test.ts (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/labeler.test.ts (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -491,7 +491,7 @@
     "timestamp": "2026-05-07T18:39:56.094Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/labeler.test.ts",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/labeler.test.ts",
       "content": "import { describe, test, expect } from \"bun:test\";\nimport { assignLabels, type LabelRule } from \"./labeler\";\n\ndescribe(\"assignLabels\", () => {\n  test(\"returns empty set for no files\", () => {\n    expect(assignLabels([], [])).toEqual([]);\n  });\n\n  test(\"matches a simple glob and assigns its label\", () => {\n    const rules: LabelRule[] = [{ pattern: \"docs/**\", label: \"documentation\" }];\n    expect(assignLabels([\"docs/intro.md\"], rules)).toEqual([\"documentation\"]);\n  });\n\n  test(\"returns multiple labels when different files match different rules\", () => {\n    const rules: LabelRule[] = [\n      { pattern: \"docs/**\", label: \"documentation\" },\n      { pattern: \"src/api/**\", label: \"api\" },\n    ];\n    const result = assignLabels(\n      [\"docs/a.md\", \"src/api/users.ts\"],\n      rules,\n    );\n    expect(result.sort()).toEqual([\"api\", \"documentation\"]);\n  });\n\n  test(\"a single file may receive multiple labels from multiple matching rules\", () => {\n    const rules: LabelRule[] = [\n      { pattern: \"src/api/**\", label: \"api\" },\n      { pattern: \"**/*.ts\", label: \"typescript\" },\n    ];\n    const result = assignLabels([\"src/api/users.ts\"], rules);\n    expect(result.sort()).toEqual([\"api\", \"typescript\"]);\n  });\n\n  test(\"deduplicates labels across files\", () => {\n    const rules: LabelRule[] = [{ pattern: \"**/*.test.*\", label: \"tests\" }];\n    const result = assignLabels([\"a.test.ts\", \"b.test.ts\"], rules);\n    expect(result).toEqual([\"tests\"]);\n  });\n\n  test(\"priority ordering: when two rules conflict, higher-priority wins (lower wins suppressed)\", () => {\n    // 'priority' is descending: higher number = higher priority\n    // When rules conflict (share an exclusion group), only the highest priority label is applied.\n    const rules: LabelRule[] = [\n      { pattern: \"src/**\", label: \"source\", priority: 1, group: \"area\" },\n      { pattern: \"src/api/**\", label: \"api\", priority: 10, group: \"area\" },\n    ];\n    const result = assignLabels([\"src/api/users.ts\"], rules);\n    expect(result).toEqual([\"api\"]);\n  });\n\n  test(\"rules in different groups don't conflict\", () => {\n    const rules: LabelRule[] = [\n      { pattern: \"src/**\", label: \"source\", priority: 1, group: \"area\" },\n      { pattern: \"**/*.ts\", label: \"typescript\", priority: 5, group: \"language\" },\n    ];\n    const result = assignLabels([\"src/foo.ts\"], rules);\n    expect(result.sort()).toEqual([\"source\", \"typescript\"]);\n  });\n\n  test(\"output is sorted alphabetically and deterministic\", () => {\n    const rules: LabelRule[] = [\n      { pattern: \"**/*.ts\", label: \"zeta\" },\n      { pattern: \"**/*.ts\", label: \"alpha\" },\n    ];\n    expect(assignLabels([\"x.ts\"], rules)).toEqual([\"alpha\", \"zeta\"]);\n  });\n\n  test(\"invalid rule (empty pattern) throws meaningful error\", () => {\n    const rules = [{ pattern: \"\", label: \"x\" }] as LabelRule[];\n    expect(() => assignLabels([\"a.ts\"], rules)).toThrow(/empty pattern/i);\n  });\n\n  test(\"invalid rule (empty label) throws meaningful error\", () => {\n    const rules = [{ pattern: \"**/*\", label: \"\" }] as LabelRule[];\n    expect(() => assignLabels([\"a.ts\"], rules)).toThrow(/empty label/i);\n  });\n});\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -548,7 +548,7 @@
         {
           "tool_use_id": "toolu_01YEwiLFCiqPgRPcRDxnEhrC",
           "type": "tool_result",
-          "content": "bun test v1.3.11 (af24e281)\n\nlabeler.test.ts:\n\n# Unhandled error between tests\n-------------------------------\nerror: Cannot find module './labeler' from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/labeler.test.ts'\n-------------------------------\n\n\n 0 pass\n 1 fail\n 1 error\nRan 1 test across 1 file. [13.00ms]",
+          "content": "bun test v1.3.11 (af24e281)\n\nlabeler.test.ts:\n\n# Unhandled error between tests\n-------------------------------\nerror: Cannot find module './labeler' from '/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/labeler.test.ts'\n-------------------------------\n\n\n 0 pass\n 1 fail\n 1 error\nRan 1 test across 1 file. [13.00ms]",
           "is_error": false
         }
       ]
@@ -558,7 +558,7 @@
     "uuid": "e49822a8-25a4-400e-995b-e2eabc212932",
     "timestamp": "2026-05-07T18:39:59.488Z",
     "tool_use_result": {
-      "stdout": "bun test v1.3.11 (af24e281)\n\nlabeler.test.ts:\n\n# Unhandled error between tests\n-------------------------------\nerror: Cannot find module './labeler' from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/labeler.test.ts'\n-------------------------------\n\n\n 0 pass\n 1 fail\n 1 error\nRan 1 test across 1 file. [13.00ms]",
+      "stdout": "bun test v1.3.11 (af24e281)\n\nlabeler.test.ts:\n\n# Unhandled error between tests\n-------------------------------\nerror: Cannot find module './labeler' from '/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/labeler.test.ts'\n-------------------------------\n\n\n 0 pass\n 1 fail\n 1 error\nRan 1 test across 1 file. [13.00ms]",
       "stderr": "",
       "interrupted": false,
       "isImage": false,
@@ -612,7 +612,7 @@
           "id": "toolu_01AaSJ4wwi1nQvrsnJXhbZFh",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/labeler.ts",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/labeler.ts",
             "content": "// PR Label Assigner \u2014 assigns labels to a PR based on which changed files match\n// configured glob patterns. Supports multiple labels per file, dedup, and a\n// priority/group conflict-resolution mechanism.\n//\n// Approach:\n//   1. Each rule has a glob pattern + label. Optional `group` + `priority` mark\n//      the rule as part of a mutually-exclusive set; only the highest-priority\n//      label within a group survives.\n//   2. Globs are compiled to RegExps via a small minimatch-style translator\n//      that supports `**`, `*`, `?`, and bracket classes.\n\nexport interface LabelRule {\n  pattern: string;\n  label: string;\n  /** Higher priority wins within the same group. Default 0. */\n  priority?: number;\n  /** Rules sharing a non-empty group are mutually exclusive. */\n  group?: string;\n}\n\n// Translate a glob into a regex source string. Anchored with ^...$ by caller.\nfunction globToRegex(glob: string): RegExp {\n  let re = \"\";\n  for (let i = 0; i < glob.length; i++) {\n    const c = glob[i];\n    if (c === \"*\") {\n      // '**' (optionally followed by '/') matches any sequence including '/'\n      if (glob[i + 1] === \"*\") {\n        // consume **\n        i++;\n        if (glob[i + 1] === \"/\") {\n          // '**/' matches zero or more path segments\n          re += \"(?:.*/)?\";\n          i++;\n        } else {\n          re += \".*\";\n        }\n      } else {\n        // single * matches anything except '/'\n        re += \"[^/]*\";\n      }\n    } else if (c === \"?\") {\n      re += \"[^/]\";\n    } else if (c === \"[\") {\n      // Pass bracket class through, finding closing ]\n      const end = glob.indexOf(\"]\", i + 1);\n      if (end === -1) {\n        re += \"\\\\[\";\n      } else {\n        re += glob.slice(i, end + 1);\n        i = end;\n      }\n    } else if (\".+^$(){}|\\\\/\".includes(c)) {\n      re += \"\\\\\" + c;\n    } else {\n      re += c;\n    }\n  }\n  return new RegExp(\"^\" + re + \"$\");\n}\n\nfunction validateRule(rule: LabelRule): void {\n  if (!rule.pattern || rule.pattern.length === 0) {\n    throw new Error(`Invalid rule: empty pattern (label='${rule.label}')`);\n  }\n  if (!rule.label || rule.label.length === 0) {\n    throw new Error(`Invalid rule: empty label (pattern='${rule.pattern}')`);\n  }\n}\n\n/**\n * Compute the set of labels to apply given a list of changed file paths and a\n * list of rules. Returns a sorted, de-duplicated array of label strings.\n */\nexport function assignLabels(files: string[], rules: LabelRule[]): string[] {\n  for (const r of rules) validateRule(r);\n\n  // Track candidate labels with their best priority within each group.\n  // Key: group name (or unique-per-rule marker for ungrouped). Value: best priority + label.\n  const ungrouped = new Set<string>();\n  const grouped = new Map<string, { label: string; priority: number }>();\n\n  for (const file of files) {\n    for (const rule of rules) {\n      const re = globToRegex(rule.pattern);\n      if (!re.test(file)) continue;\n\n      if (rule.group) {\n        const cur = grouped.get(rule.group);\n        const pri = rule.priority ?? 0;\n        if (!cur || pri > cur.priority) {\n          grouped.set(rule.group, { label: rule.label, priority: pri });\n        }\n      } else {\n        ungrouped.add(rule.label);\n      }\n    }\n  }\n\n  const out = new Set<string>(ungrouped);\n  for (const v of grouped.values()) out.add(v.label);\n  return Array.from(out).sort();\n}\n\n// CLI entrypoint: read a JSON config { files: [...], rules: [...] } from a path\n// passed as argv[2], or from stdin if argv[2] === \"-\".\nif (import.meta.main) {\n  const arg = process.argv[2];\n  if (!arg) {\n    console.error(\"Usage: bun run labeler.ts <config.json|->\");\n    process.exit(2);\n  }\n  const text =\n    arg === \"-\"\n      ? await Bun.stdin.text()\n      : await Bun.file(arg).text();\n  let config: { files: string[]; rules: LabelRule[] };\n  try {\n    config = JSON.parse(text);\n  } catch (e) {\n    console.error(`Failed to parse JSON config: ${(e as Error).message}`);\n    process.exit(2);\n  }\n  if (!Array.isArray(config.files) || !Array.isArray(config.rules)) {\n    console.error(\"Config must have { files: string[], rules: LabelRule[] }\");\n    process.exit(2);\n  }\n  try {\n    const labels = assignLabels(config.files, config.rules);\n    console.log(JSON.stringify({ labels }));\n  } catch (e) {\n    console.error((e as Error).message);\n    process.exit(1);\n  }\n}\n"
           },
           "caller": {
@@ -672,7 +672,7 @@
         {
           "tool_use_id": "toolu_01AaSJ4wwi1nQvrsnJXhbZFh",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/labeler.ts (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/labeler.ts (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -682,7 +682,7 @@
     "timestamp": "2026-05-07T18:40:24.111Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/labeler.ts",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/labeler.ts",
       "content": "// PR Label Assigner \u2014 assigns labels to a PR based on which changed files match\n// configured glob patterns. Supports multiple labels per file, dedup, and a\n// priority/group conflict-resolution mechanism.\n//\n// Approach:\n//   1. Each rule has a glob pattern + label. Optional `group` + `priority` mark\n//      the rule as part of a mutually-exclusive set; only the highest-priority\n//      label within a group survives.\n//   2. Globs are compiled to RegExps via a small minimatch-style translator\n//      that supports `**`, `*`, `?`, and bracket classes.\n\nexport interface LabelRule {\n  pattern: string;\n  label: string;\n  /** Higher priority wins within the same group. Default 0. */\n  priority?: number;\n  /** Rules sharing a non-empty group are mutually exclusive. */\n  group?: string;\n}\n\n// Translate a glob into a regex source string. Anchored with ^...$ by caller.\nfunction globToRegex(glob: string): RegExp {\n  let re = \"\";\n  for (let i = 0; i < glob.length; i++) {\n    const c = glob[i];\n    if (c === \"*\") {\n      // '**' (optionally followed by '/') matches any sequence including '/'\n      if (glob[i + 1] === \"*\") {\n        // consume **\n        i++;\n        if (glob[i + 1] === \"/\") {\n          // '**/' matches zero or more path segments\n          re += \"(?:.*/)?\";\n          i++;\n        } else {\n          re += \".*\";\n        }\n      } else {\n        // single * matches anything except '/'\n        re += \"[^/]*\";\n      }\n    } else if (c === \"?\") {\n      re += \"[^/]\";\n    } else if (c === \"[\") {\n      // Pass bracket class through, finding closing ]\n      const end = glob.indexOf(\"]\", i + 1);\n      if (end === -1) {\n        re += \"\\\\[\";\n      } else {\n        re += glob.slice(i, end + 1);\n        i = end;\n      }\n    } else if (\".+^$(){}|\\\\/\".includes(c)) {\n      re += \"\\\\\" + c;\n    } else {\n      re += c;\n    }\n  }\n  return new RegExp(\"^\" + re + \"$\");\n}\n\nfunction validateRule(rule: LabelRule): void {\n  if (!rule.pattern || rule.pattern.length === 0) {\n    throw new Error(`Invalid rule: empty pattern (label='${rule.label}')`);\n  }\n  if (!rule.label || rule.label.length === 0) {\n    throw new Error(`Invalid rule: empty label (pattern='${rule.pattern}')`);\n  }\n}\n\n/**\n * Compute the set of labels to apply given a list of changed file paths and a\n * list of rules. Returns a sorted, de-duplicated array of label strings.\n */\nexport function assignLabels(files: string[], rules: LabelRule[]): string[] {\n  for (const r of rules) validateRule(r);\n\n  // Track candidate labels with their best priority within each group.\n  // Key: group name (or unique-per-rule marker for ungrouped). Value: best priority + label.\n  const ungrouped = new Set<string>();\n  const grouped = new Map<string, { label: string; priority: number }>();\n\n  for (const file of files) {\n    for (const rule of rules) {\n      const re = globToRegex(rule.pattern);\n      if (!re.test(file)) continue;\n\n      if (rule.group) {\n        const cur = grouped.get(rule.group);\n        const pri = rule.priority ?? 0;\n        if (!cur || pri > cur.priority) {\n          grouped.set(rule.group, { label: rule.label, priority: pri });\n        }\n      } else {\n        ungrouped.add(rule.label);\n      }\n    }\n  }\n\n  const out = new Set<string>(ungrouped);\n  for (const v of grouped.values()) out.add(v.label);\n  return Array.from(out).sort();\n}\n\n// CLI entrypoint: read a JSON config { files: [...], rules: [...] } from a path\n// passed as argv[2], or from stdin if argv[2] === \"-\".\nif (import.meta.main) {\n  const arg = process.argv[2];\n  if (!arg) {\n    console.error(\"Usage: bun run labeler.ts <config.json|->\");\n    process.exit(2);\n  }\n  const text =\n    arg === \"-\"\n      ? await Bun.stdin.text()\n      : await Bun.file(arg).text();\n  let config: { files: string[]; rules: LabelRule[] };\n  try {\n    config = JSON.parse(text);\n  } catch (e) {\n    console.error(`Failed to parse JSON config: ${(e as Error).message}`);\n    process.exit(2);\n  }\n  if (!Array.isArray(config.files) || !Array.isArray(config.rules)) {\n    console.error(\"Config must have { files: string[], rules: LabelRule[] }\");\n    process.exit(2);\n  }\n  try {\n    const labels = assignLabels(config.files, config.rules);\n    console.log(JSON.stringify({ labels }));\n  } catch (e) {\n    console.error((e as Error).message);\n    process.exit(1);\n  }\n}\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -803,7 +803,7 @@
           "id": "toolu_01FfDkU4koGHUxE2YEzn1916",
           "name": "Bash",
           "input": {
-            "command": "mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/.github/workflows /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/fixtures",
+            "command": "mkdir -p /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/.github/workflows /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/fixtures",
             "description": "Create dirs"
           },
           "caller": {
@@ -870,7 +870,7 @@
           "id": "toolu_01DRpAvp3JDK8Bn6jtSWvcu1",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/fixtures/case1.json",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/fixtures/case1.json",
             "content": "{\n  \"files\": [\"docs/intro.md\", \"src/api/users.ts\", \"src/api/users.test.ts\"],\n  \"rules\": [\n    { \"pattern\": \"docs/**\", \"label\": \"documentation\" },\n    { \"pattern\": \"src/api/**\", \"label\": \"api\" },\n    { \"pattern\": \"**/*.test.*\", \"label\": \"tests\" }\n  ]\n}\n"
           },
           "caller": {
@@ -930,7 +930,7 @@
         {
           "tool_use_id": "toolu_01DRpAvp3JDK8Bn6jtSWvcu1",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/fixtures/case1.json (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/fixtures/case1.json (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -940,7 +940,7 @@
     "timestamp": "2026-05-07T18:40:35.402Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/fixtures/case1.json",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/fixtures/case1.json",
       "content": "{\n  \"files\": [\"docs/intro.md\", \"src/api/users.ts\", \"src/api/users.test.ts\"],\n  \"rules\": [\n    { \"pattern\": \"docs/**\", \"label\": \"documentation\" },\n    { \"pattern\": \"src/api/**\", \"label\": \"api\" },\n    { \"pattern\": \"**/*.test.*\", \"label\": \"tests\" }\n  ]\n}\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -960,7 +960,7 @@
           "id": "toolu_01AgTWGxFsQk2SghUr8t8wjh",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/fixtures/case2.json",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/fixtures/case2.json",
             "content": "{\n  \"files\": [\"src/api/x.ts\", \"src/util/y.ts\"],\n  \"rules\": [\n    { \"pattern\": \"src/**\", \"label\": \"source\", \"priority\": 1, \"group\": \"area\" },\n    { \"pattern\": \"src/api/**\", \"label\": \"api\", \"priority\": 10, \"group\": \"area\" },\n    { \"pattern\": \"**/*.ts\", \"label\": \"typescript\" }\n  ]\n}\n"
           },
           "caller": {
@@ -1020,7 +1020,7 @@
         {
           "tool_use_id": "toolu_01AgTWGxFsQk2SghUr8t8wjh",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/fixtures/case2.json (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/fixtures/case2.json (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -1030,7 +1030,7 @@
     "timestamp": "2026-05-07T18:40:40.282Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/fixtures/case2.json",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/fixtures/case2.json",
       "content": "{\n  \"files\": [\"src/api/x.ts\", \"src/util/y.ts\"],\n  \"rules\": [\n    { \"pattern\": \"src/**\", \"label\": \"source\", \"priority\": 1, \"group\": \"area\" },\n    { \"pattern\": \"src/api/**\", \"label\": \"api\", \"priority\": 10, \"group\": \"area\" },\n    { \"pattern\": \"**/*.ts\", \"label\": \"typescript\" }\n  ]\n}\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -1085,7 +1085,7 @@
           "id": "toolu_01JPJi3KKYTjUmXPk3ESnNn1",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/fixtures/case3.json",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/fixtures/case3.json",
             "content": "{\n  \"files\": [],\n  \"rules\": [\n    { \"pattern\": \"**/*\", \"label\": \"any\" }\n  ]\n}\n"
           },
           "caller": {
@@ -1145,7 +1145,7 @@
         {
           "tool_use_id": "toolu_01JPJi3KKYTjUmXPk3ESnNn1",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/fixtures/case3.json (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/fixtures/case3.json (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -1155,7 +1155,7 @@
     "timestamp": "2026-05-07T18:40:54.164Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/fixtures/case3.json",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/fixtures/case3.json",
       "content": "{\n  \"files\": [],\n  \"rules\": [\n    { \"pattern\": \"**/*\", \"label\": \"any\" }\n  ]\n}\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -1175,7 +1175,7 @@
           "id": "toolu_018k86Q1jrLVAirxbXxX8ZRQ",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/.github/workflows/pr-label-assigner.yml",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/.github/workflows/pr-label-assigner.yml",
             "content": "name: PR Label Assigner\n\non:\n  push:\n  pull_request:\n  workflow_dispatch:\n    inputs:\n      fixture:\n        description: Fixture file to use\n        required: false\n        default: fixtures/case1.json\n\npermissions:\n  contents: read\n\nenv:\n  FIXTURE: ${{ github.event.inputs.fixture || 'fixtures/case1.json' }}\n\njobs:\n  assign-labels:\n    runs-on: ubuntu-latest\n    steps:\n      - name: Checkout\n        uses: actions/checkout@v4\n\n      - name: Setup Bun\n        uses: oven-sh/setup-bun@v2\n        with:\n          bun-version: latest\n\n      - name: Run unit tests\n        run: bun test\n\n      - name: Run labeler on fixture\n        id: labeler\n        run: |\n          echo \"Using fixture: $FIXTURE\"\n          OUT=$(bun run labeler.ts \"$FIXTURE\")\n          echo \"Labeler output: $OUT\"\n          echo \"labels_json=$OUT\" >> \"$GITHUB_OUTPUT\"\n\n      - name: Print result\n        run: |\n          echo \"Final labels: ${{ steps.labeler.outputs.labels_json }}\"\n"
           },
           "caller": {
@@ -1235,7 +1235,7 @@
         {
           "tool_use_id": "toolu_018k86Q1jrLVAirxbXxX8ZRQ",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/.github/workflows/pr-label-assigner.yml (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/.github/workflows/pr-label-assigner.yml (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -1245,7 +1245,7 @@
     "timestamp": "2026-05-07T18:41:02.304Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/.github/workflows/pr-label-assigner.yml",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/.github/workflows/pr-label-assigner.yml",
       "content": "name: PR Label Assigner\n\non:\n  push:\n  pull_request:\n  workflow_dispatch:\n    inputs:\n      fixture:\n        description: Fixture file to use\n        required: false\n        default: fixtures/case1.json\n\npermissions:\n  contents: read\n\nenv:\n  FIXTURE: ${{ github.event.inputs.fixture || 'fixtures/case1.json' }}\n\njobs:\n  assign-labels:\n    runs-on: ubuntu-latest\n    steps:\n      - name: Checkout\n        uses: actions/checkout@v4\n\n      - name: Setup Bun\n        uses: oven-sh/setup-bun@v2\n        with:\n          bun-version: latest\n\n      - name: Run unit tests\n        run: bun test\n\n      - name: Run labeler on fixture\n        id: labeler\n        run: |\n          echo \"Using fixture: $FIXTURE\"\n          OUT=$(bun run labeler.ts \"$FIXTURE\")\n          echo \"Labeler output: $OUT\"\n          echo \"labels_json=$OUT\" >> \"$GITHUB_OUTPUT\"\n\n      - name: Print result\n        run: |\n          echo \"Final labels: ${{ steps.labeler.outputs.labels_json }}\"\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -1366,7 +1366,7 @@
           "id": "toolu_014JUDzTLALjpbe7Hzyr2USa",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/workflow.test.ts",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/workflow.test.ts",
             "content": "// Tests for the GitHub Actions workflow file: structural validation,\n// actionlint, and end-to-end execution via act for each fixture.\n\nimport { describe, test, expect, beforeAll } from \"bun:test\";\nimport { spawnSync } from \"node:child_process\";\nimport { existsSync, readFileSync, mkdirSync, cpSync, writeFileSync, appendFileSync, rmSync } from \"node:fs\";\nimport { join } from \"node:path\";\nimport { tmpdir } from \"node:os\";\nimport { parse as parseYaml } from \"yaml\";\n\nconst REPO = process.cwd();\nconst WORKFLOW = join(REPO, \".github/workflows/pr-label-assigner.yml\");\nconst ACT_RESULT = join(REPO, \"act-result.txt\");\n\ndescribe(\"workflow structure\", () => {\n  let yml: any;\n  beforeAll(() => {\n    yml = parseYaml(readFileSync(WORKFLOW, \"utf8\"));\n  });\n\n  test(\"workflow file exists\", () => {\n    expect(existsSync(WORKFLOW)).toBe(true);\n  });\n\n  test(\"has expected triggers\", () => {\n    // YAML parser converts `on:` to literal \"on\"; key is true in some versions\n    const onKey = yml.on ?? yml[true as unknown as string];\n    expect(onKey).toBeDefined();\n    expect(Object.keys(onKey)).toEqual(expect.arrayContaining([\"push\", \"pull_request\", \"workflow_dispatch\"]));\n  });\n\n  test(\"has assign-labels job with required steps\", () => {\n    const job = yml.jobs[\"assign-labels\"];\n    expect(job).toBeDefined();\n    expect(job[\"runs-on\"]).toBe(\"ubuntu-latest\");\n    const stepNames = job.steps.map((s: any) => s.name);\n    expect(stepNames).toEqual(expect.arrayContaining([\"Checkout\", \"Setup Bun\", \"Run unit tests\", \"Run labeler on fixture\"]));\n  });\n\n  test(\"references existing script and fixtures\", () => {\n    expect(existsSync(join(REPO, \"labeler.ts\"))).toBe(true);\n    expect(existsSync(join(REPO, \"fixtures/case1.json\"))).toBe(true);\n    expect(existsSync(join(REPO, \"fixtures/case2.json\"))).toBe(true);\n    expect(existsSync(join(REPO, \"fixtures/case3.json\"))).toBe(true);\n  });\n\n  test(\"actionlint passes with exit code 0\", () => {\n    const res = spawnSync(\"actionlint\", [WORKFLOW], { encoding: \"utf8\" });\n    if (res.status !== 0) console.error(res.stdout, res.stderr);\n    expect(res.status).toBe(0);\n  });\n});\n\n// ---- act end-to-end ----\n\ninterface Case {\n  fixture: string;\n  expectedLabels: string[];\n}\n\nconst cases: Case[] = [\n  { fixture: \"fixtures/case1.json\", expectedLabels: [\"api\", \"documentation\", \"tests\"] },\n  { fixture: \"fixtures/case2.json\", expectedLabels: [\"api\", \"typescript\"] },\n  { fixture: \"fixtures/case3.json\", expectedLabels: [] },\n];\n\nfunction runAct(fixture: string): { stdout: string; status: number | null } {\n  // Build a clean temp git repo with project files and the chosen fixture as default.\n  const tmp = join(tmpdir(), `pr-label-act-${Date.now()}-${Math.random().toString(36).slice(2)}`);\n  mkdirSync(tmp, { recursive: true });\n  for (const item of [\n    \"labeler.ts\",\n    \"labeler.test.ts\",\n    \"package.json\",\n    \"tsconfig.json\",\n    \".github\",\n    \"fixtures\",\n    \".actrc\",\n  ]) {\n    const src = join(REPO, item);\n    if (existsSync(src)) cpSync(src, join(tmp, item), { recursive: true });\n  }\n\n  // Override workflow's default fixture by editing the env.FIXTURE for the run.\n  // Simplest: write a small override via a setup step? Instead, copy chosen\n  // fixture to the default path used in workflow: fixtures/case1.json.\n  cpSync(join(REPO, fixture), join(tmp, \"fixtures/case1.json\"));\n\n  spawnSync(\"git\", [\"init\", \"-q\", \"-b\", \"main\"], { cwd: tmp });\n  spawnSync(\"git\", [\"add\", \"-A\"], { cwd: tmp });\n  spawnSync(\"git\", [\"-c\", \"user.email=t@t\", \"-c\", \"user.name=t\", \"commit\", \"-q\", \"-m\", \"init\"], { cwd: tmp });\n\n  const res = spawnSync(\"act\", [\"push\", \"--rm\"], { cwd: tmp, encoding: \"utf8\", maxBuffer: 100 * 1024 * 1024 });\n  const out = (res.stdout || \"\") + \"\\n\" + (res.stderr || \"\");\n  rmSync(tmp, { recursive: true, force: true });\n  return { stdout: out, status: res.status };\n}\n\ndescribe(\"act end-to-end\", () => {\n  beforeAll(() => {\n    if (existsSync(ACT_RESULT)) rmSync(ACT_RESULT);\n    writeFileSync(ACT_RESULT, `# act-result.txt \u2014 generated ${new Date().toISOString()}\\n\\n`);\n  });\n\n  for (const c of cases) {\n    test(`runs workflow for ${c.fixture}`, () => {\n      const { stdout, status } = runAct(c.fixture);\n      appendFileSync(ACT_RESULT, `\\n========== ${c.fixture} ==========\\n`);\n      appendFileSync(ACT_RESULT, stdout);\n      appendFileSync(ACT_RESULT, `\\n[exit=${status}]\\n`);\n\n      expect(status).toBe(0);\n      expect(stdout).toMatch(/Job succeeded/);\n\n      // Assert exact final labels JSON appears in output.\n      const expectedJson = JSON.stringify({ labels: c.expectedLabels });\n      expect(stdout.includes(expectedJson)).toBe(true);\n    }, 240_000);\n  }\n});\n"
           },
           "caller": {
@@ -1426,7 +1426,7 @@
         {
           "tool_use_id": "toolu_014JUDzTLALjpbe7Hzyr2USa",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/workflow.test.ts (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/workflow.test.ts (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -1436,7 +1436,7 @@
     "timestamp": "2026-05-07T18:41:33.735Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/workflow.test.ts",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/workflow.test.ts",
       "content": "// Tests for the GitHub Actions workflow file: structural validation,\n// actionlint, and end-to-end execution via act for each fixture.\n\nimport { describe, test, expect, beforeAll } from \"bun:test\";\nimport { spawnSync } from \"node:child_process\";\nimport { existsSync, readFileSync, mkdirSync, cpSync, writeFileSync, appendFileSync, rmSync } from \"node:fs\";\nimport { join } from \"node:path\";\nimport { tmpdir } from \"node:os\";\nimport { parse as parseYaml } from \"yaml\";\n\nconst REPO = process.cwd();\nconst WORKFLOW = join(REPO, \".github/workflows/pr-label-assigner.yml\");\nconst ACT_RESULT = join(REPO, \"act-result.txt\");\n\ndescribe(\"workflow structure\", () => {\n  let yml: any;\n  beforeAll(() => {\n    yml = parseYaml(readFileSync(WORKFLOW, \"utf8\"));\n  });\n\n  test(\"workflow file exists\", () => {\n    expect(existsSync(WORKFLOW)).toBe(true);\n  });\n\n  test(\"has expected triggers\", () => {\n    // YAML parser converts `on:` to literal \"on\"; key is true in some versions\n    const onKey = yml.on ?? yml[true as unknown as string];\n    expect(onKey).toBeDefined();\n    expect(Object.keys(onKey)).toEqual(expect.arrayContaining([\"push\", \"pull_request\", \"workflow_dispatch\"]));\n  });\n\n  test(\"has assign-labels job with required steps\", () => {\n    const job = yml.jobs[\"assign-labels\"];\n    expect(job).toBeDefined();\n    expect(job[\"runs-on\"]).toBe(\"ubuntu-latest\");\n    const stepNames = job.steps.map((s: any) => s.name);\n    expect(stepNames).toEqual(expect.arrayContaining([\"Checkout\", \"Setup Bun\", \"Run unit tests\", \"Run labeler on fixture\"]));\n  });\n\n  test(\"references existing script and fixtures\", () => {\n    expect(existsSync(join(REPO, \"labeler.ts\"))).toBe(true);\n    expect(existsSync(join(REPO, \"fixtures/case1.json\"))).toBe(true);\n    expect(existsSync(join(REPO, \"fixtures/case2.json\"))).toBe(true);\n    expect(existsSync(join(REPO, \"fixtures/case3.json\"))).toBe(true);\n  });\n\n  test(\"actionlint passes with exit code 0\", () => {\n    const res = spawnSync(\"actionlint\", [WORKFLOW], { encoding: \"utf8\" });\n    if (res.status !== 0) console.error(res.stdout, res.stderr);\n    expect(res.status).toBe(0);\n  });\n});\n\n// ---- act end-to-end ----\n\ninterface Case {\n  fixture: string;\n  expectedLabels: string[];\n}\n\nconst cases: Case[] = [\n  { fixture: \"fixtures/case1.json\", expectedLabels: [\"api\", \"documentation\", \"tests\"] },\n  { fixture: \"fixtures/case2.json\", expectedLabels: [\"api\", \"typescript\"] },\n  { fixture: \"fixtures/case3.json\", expectedLabels: [] },\n];\n\nfunction runAct(fixture: string): { stdout: string; status: number | null } {\n  // Build a clean temp git repo with project files and the chosen fixture as default.\n  const tmp = join(tmpdir(), `pr-label-act-${Date.now()}-${Math.random().toString(36).slice(2)}`);\n  mkdirSync(tmp, { recursive: true });\n  for (const item of [\n    \"labeler.ts\",\n    \"labeler.test.ts\",\n    \"package.json\",\n    \"tsconfig.json\",\n    \".github\",\n    \"fixtures\",\n    \".actrc\",\n  ]) {\n    const src = join(REPO, item);\n    if (existsSync(src)) cpSync(src, join(tmp, item), { recursive: true });\n  }\n\n  // Override workflow's default fixture by editing the env.FIXTURE for the run.\n  // Simplest: write a small override via a setup step? Instead, copy chosen\n  // fixture to the default path used in workflow: fixtures/case1.json.\n  cpSync(join(REPO, fixture), join(tmp, \"fixtures/case1.json\"));\n\n  spawnSync(\"git\", [\"init\", \"-q\", \"-b\", \"main\"], { cwd: tmp });\n  spawnSync(\"git\", [\"add\", \"-A\"], { cwd: tmp });\n  spawnSync(\"git\", [\"-c\", \"user.email=t@t\", \"-c\", \"user.name=t\", \"commit\", \"-q\", \"-m\", \"init\"], { cwd: tmp });\n\n  const res = spawnSync(\"act\", [\"push\", \"--rm\"], { cwd: tmp, encoding: \"utf8\", maxBuffer: 100 * 1024 * 1024 });\n  const out = (res.stdout || \"\") + \"\\n\" + (res.stderr || \"\");\n  rmSync(tmp, { recursive: true, force: true });\n  return { stdout: out, status: res.status };\n}\n\ndescribe(\"act end-to-end\", () => {\n  beforeAll(() => {\n    if (existsSync(ACT_RESULT)) rmSync(ACT_RESULT);\n    writeFileSync(ACT_RESULT, `# act-result.txt \u2014 generated ${new Date().toISOString()}\\n\\n`);\n  });\n\n  for (const c of cases) {\n    test(`runs workflow for ${c.fixture}`, () => {\n      const { stdout, status } = runAct(c.fixture);\n      appendFileSync(ACT_RESULT, `\\n========== ${c.fixture} ==========\\n`);\n      appendFileSync(ACT_RESULT, stdout);\n      appendFileSync(ACT_RESULT, `\\n[exit=${status}]\\n`);\n\n      expect(status).toBe(0);\n      expect(stdout).toMatch(/Job succeeded/);\n\n      // Assert exact final labels JSON appears in output.\n      const expectedJson = JSON.stringify({ labels: c.expectedLabels });\n      expect(stdout.includes(expectedJson)).toBe(true);\n    }, 240_000);\n  }\n});\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -1456,7 +1456,7 @@
           "id": "toolu_01CG9XGkTXduyWE9EF4nEiVh",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/package.json",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/package.json",
             "content": "{\n  \"name\": \"pr-label-assigner\",\n  \"version\": \"0.1.0\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"test\": \"bun test\",\n    \"labeler\": \"bun run labeler.ts\"\n  },\n  \"dependencies\": {\n    \"yaml\": \"^2.5.0\"\n  }\n}\n"
           },
           "caller": {
@@ -1516,7 +1516,7 @@
         {
           "tool_use_id": "toolu_01CG9XGkTXduyWE9EF4nEiVh",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/package.json (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/package.json (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -1526,7 +1526,7 @@
     "timestamp": "2026-05-07T18:41:37.208Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/package.json",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/package.json",
       "content": "{\n  \"name\": \"pr-label-assigner\",\n  \"version\": \"0.1.0\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"test\": \"bun test\",\n    \"labeler\": \"bun run labeler.ts\"\n  },\n  \"dependencies\": {\n    \"yaml\": \"^2.5.0\"\n  }\n}\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -1546,7 +1546,7 @@
           "id": "toolu_018jz4gatMsCErKe8FBJSTCW",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/tsconfig.json",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/tsconfig.json",
             "content": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"skipLibCheck\": true,\n    \"types\": [\"bun-types\"]\n  }\n}\n"
           },
           "caller": {
@@ -1606,7 +1606,7 @@
         {
           "tool_use_id": "toolu_018jz4gatMsCErKe8FBJSTCW",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/tsconfig.json (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/tsconfig.json (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -1616,7 +1616,7 @@
     "timestamp": "2026-05-07T18:41:40.765Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/tsconfig.json",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/tsconfig.json",
       "content": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"skipLibCheck\": true,\n    \"types\": [\"bun-types\"]\n  }\n}\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -1842,7 +1842,7 @@
         {
           "tool_use_id": "toolu_015y3KmupYG4rg3WnWRXJxbk",
           "type": "tool_result",
-          "content": "bun test v1.3.11 (af24e281)\n\nworkflow.test.ts:\n107 |       const { stdout, status } = runAct(c.fixture);\n108 |       appendFileSync(ACT_RESULT, `\\n========== ${c.fixture} ==========\\n`);\n109 |       appendFileSync(ACT_RESULT, stdout);\n110 |       appendFileSync(ACT_RESULT, `\\n[exit=${status}]\\n`);\n111 | \n112 |       expect(status).toBe(0);\n                           ^\nerror: expect(received).toBe(expected)\n\nExpected: 0\nReceived: 1\n\n      at <anonymous> (/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/workflow.test.ts:112:22)\n(fail) act end-to-end > runs workflow for fixtures/case1.json [548.18ms]\n107 |       const { stdout, status } = runAct(c.fixture);\n108 |       appendFileSync(ACT_RESULT, `\\n========== ${c.fixture} ==========\\n`);\n109 |       appendFileSync(ACT_RESULT, stdout);\n110 |       appendFileSync(ACT_RESULT, `\\n[exit=${status}]\\n`);\n111 | \n112 |       expect(status).toBe(0);\n                           ^\nerror: expect(received).toBe(expected)\n\nExpected: 0\nReceived: 1\n\n      at <anonymous> (/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/workflow.test.ts:112:22)\n(fail) act end-to-end > runs workflow for fixtures/case2.json [503.83ms]\n107 |       const { stdout, status } = runAct(c.fixture);\n108 |       appendFileSync(ACT_RESULT, `\\n========== ${c.fixture} ==========\\n`);\n109 |       appendFileSync(ACT_RESULT, stdout);\n110 |       appendFileSync(ACT_RESULT, `\\n[exit=${status}]\\n`);\n111 | \n112 |       expect(status).toBe(0);\n                           ^\nerror: expect(received).toBe(expected)\n\nExpected: 0\nReceived: 1\n\n      at <anonymous> (/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/workflow.test.ts:112:22)\n(fail) act end-to-end > runs workflow for fixtures/case3.json [540.43ms]\n\n 5 pass\n 3 fail\n 14 expect() calls\nRan 8 tests across 1 file. [1.88s]",
+          "content": "bun test v1.3.11 (af24e281)\n\nworkflow.test.ts:\n107 |       const { stdout, status } = runAct(c.fixture);\n108 |       appendFileSync(ACT_RESULT, `\\n========== ${c.fixture} ==========\\n`);\n109 |       appendFileSync(ACT_RESULT, stdout);\n110 |       appendFileSync(ACT_RESULT, `\\n[exit=${status}]\\n`);\n111 | \n112 |       expect(status).toBe(0);\n                           ^\nerror: expect(received).toBe(expected)\n\nExpected: 0\nReceived: 1\n\n      at <anonymous> (/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/workflow.test.ts:112:22)\n(fail) act end-to-end > runs workflow for fixtures/case1.json [548.18ms]\n107 |       const { stdout, status } = runAct(c.fixture);\n108 |       appendFileSync(ACT_RESULT, `\\n========== ${c.fixture} ==========\\n`);\n109 |       appendFileSync(ACT_RESULT, stdout);\n110 |       appendFileSync(ACT_RESULT, `\\n[exit=${status}]\\n`);\n111 | \n112 |       expect(status).toBe(0);\n                           ^\nerror: expect(received).toBe(expected)\n\nExpected: 0\nReceived: 1\n\n      at <anonymous> (/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/workflow.test.ts:112:22)\n(fail) act end-to-end > runs workflow for fixtures/case2.json [503.83ms]\n107 |       const { stdout, status } = runAct(c.fixture);\n108 |       appendFileSync(ACT_RESULT, `\\n========== ${c.fixture} ==========\\n`);\n109 |       appendFileSync(ACT_RESULT, stdout);\n110 |       appendFileSync(ACT_RESULT, `\\n[exit=${status}]\\n`);\n111 | \n112 |       expect(status).toBe(0);\n                           ^\nerror: expect(received).toBe(expected)\n\nExpected: 0\nReceived: 1\n\n      at <anonymous> (/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/workflow.test.ts:112:22)\n(fail) act end-to-end > runs workflow for fixtures/case3.json [540.43ms]\n\n 5 pass\n 3 fail\n 14 expect() calls\nRan 8 tests across 1 file. [1.88s]",
           "is_error": false
         }
       ]
@@ -1852,7 +1852,7 @@
     "uuid": "71077004-7df2-40f5-a1b0-8d1a292f1d8f",
     "timestamp": "2026-05-07T18:41:50.999Z",
     "tool_use_result": {
-      "stdout": "bun test v1.3.11 (af24e281)\n\nworkflow.test.ts:\n107 |       const { stdout, status } = runAct(c.fixture);\n108 |       appendFileSync(ACT_RESULT, `\\n========== ${c.fixture} ==========\\n`);\n109 |       appendFileSync(ACT_RESULT, stdout);\n110 |       appendFileSync(ACT_RESULT, `\\n[exit=${status}]\\n`);\n111 | \n112 |       expect(status).toBe(0);\n                           ^\nerror: expect(received).toBe(expected)\n\nExpected: 0\nReceived: 1\n\n      at <anonymous> (/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/workflow.test.ts:112:22)\n(fail) act end-to-end > runs workflow for fixtures/case1.json [548.18ms]\n107 |       const { stdout, status } = runAct(c.fixture);\n108 |       appendFileSync(ACT_RESULT, `\\n========== ${c.fixture} ==========\\n`);\n109 |       appendFileSync(ACT_RESULT, stdout);\n110 |       appendFileSync(ACT_RESULT, `\\n[exit=${status}]\\n`);\n111 | \n112 |       expect(status).toBe(0);\n                           ^\nerror: expect(received).toBe(expected)\n\nExpected: 0\nReceived: 1\n\n      at <anonymous> (/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/workflow.test.ts:112:22)\n(fail) act end-to-end > runs workflow for fixtures/case2.json [503.83ms]\n107 |       const { stdout, status } = runAct(c.fixture);\n108 |       appendFileSync(ACT_RESULT, `\\n========== ${c.fixture} ==========\\n`);\n109 |       appendFileSync(ACT_RESULT, stdout);\n110 |       appendFileSync(ACT_RESULT, `\\n[exit=${status}]\\n`);\n111 | \n112 |       expect(status).toBe(0);\n                           ^\nerror: expect(received).toBe(expected)\n\nExpected: 0\nReceived: 1\n\n      at <anonymous> (/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/workflow.test.ts:112:22)\n(fail) act end-to-end > runs workflow for fixtures/case3.json [540.43ms]\n\n 5 pass\n 3 fail\n 14 expect() calls\nRan 8 tests across 1 file. [1.88s]",
+      "stdout": "bun test v1.3.11 (af24e281)\n\nworkflow.test.ts:\n107 |       const { stdout, status } = runAct(c.fixture);\n108 |       appendFileSync(ACT_RESULT, `\\n========== ${c.fixture} ==========\\n`);\n109 |       appendFileSync(ACT_RESULT, stdout);\n110 |       appendFileSync(ACT_RESULT, `\\n[exit=${status}]\\n`);\n111 | \n112 |       expect(status).toBe(0);\n                           ^\nerror: expect(received).toBe(expected)\n\nExpected: 0\nReceived: 1\n\n      at <anonymous> (/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/workflow.test.ts:112:22)\n(fail) act end-to-end > runs workflow for fixtures/case1.json [548.18ms]\n107 |       const { stdout, status } = runAct(c.fixture);\n108 |       appendFileSync(ACT_RESULT, `\\n========== ${c.fixture} ==========\\n`);\n109 |       appendFileSync(ACT_RESULT, stdout);\n110 |       appendFileSync(ACT_RESULT, `\\n[exit=${status}]\\n`);\n111 | \n112 |       expect(status).toBe(0);\n                           ^\nerror: expect(received).toBe(expected)\n\nExpected: 0\nReceived: 1\n\n      at <anonymous> (/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/workflow.test.ts:112:22)\n(fail) act end-to-end > runs workflow for fixtures/case2.json [503.83ms]\n107 |       const { stdout, status } = runAct(c.fixture);\n108 |       appendFileSync(ACT_RESULT, `\\n========== ${c.fixture} ==========\\n`);\n109 |       appendFileSync(ACT_RESULT, stdout);\n110 |       appendFileSync(ACT_RESULT, `\\n[exit=${status}]\\n`);\n111 | \n112 |       expect(status).toBe(0);\n                           ^\nerror: expect(received).toBe(expected)\n\nExpected: 0\nReceived: 1\n\n      at <anonymous> (/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/workflow.test.ts:112:22)\n(fail) act end-to-end > runs workflow for fixtures/case3.json [540.43ms]\n\n 5 pass\n 3 fail\n 14 expect() calls\nRan 8 tests across 1 file. [1.88s]",
       "stderr": "",
       "interrupted": false,
       "isImage": false,
@@ -2110,7 +2110,7 @@
           "name": "Edit",
           "input": {
             "replace_all": false,
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/workflow.test.ts",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/workflow.test.ts",
             "old_string": "  const res = spawnSync(\"act\", [\"push\", \"--rm\"], { cwd: tmp, encoding: \"utf8\", maxBuffer: 100 * 1024 * 1024 });",
             "new_string": "  const res = spawnSync(\"act\", [\"push\", \"--rm\", \"--pull=false\"], { cwd: tmp, encoding: \"utf8\", maxBuffer: 100 * 1024 * 1024 });"
           },
@@ -2171,7 +2171,7 @@
         {
           "tool_use_id": "toolu_015RxVV6mkxxiWo5a439qc6L",
           "type": "tool_result",
-          "content": "The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/workflow.test.ts has been updated successfully. (file state is current in your context \u2014 no need to Read it back)"
+          "content": "The file /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/workflow.test.ts has been updated successfully. (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -2180,7 +2180,7 @@
     "uuid": "f9abb425-c15f-4243-b950-329b62f1127d",
     "timestamp": "2026-05-07T18:42:02.923Z",
     "tool_use_result": {
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/workflow.test.ts",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/typescript-bun-opus47-1m-medium/workflow.test.ts",
       "oldString": "  const res = spawnSync(\"act\", [\"push\", \"--rm\"], { cwd: tmp, encoding: \"utf8\", maxBuffer: 100 * 1024 * 1024 });",
       "newString": "  const res = spawnSync(\"act\", [\"push\", \"--rm\", \"--pull=false\"], { cwd: tmp, encoding: \"utf8\", maxBuffer: 100 * 1024 * 1024 });",
       "originalFile": "// Tests for the GitHub Actions workflow file: structural validation,\n// actionlint, and end-to-end execution via act for each fixture.\n\nimport { describe, test, expect, beforeAll } from \"bun:test\";\nimport { spawnSync } from \"node:child_process\";\nimport { existsSync, readFileSync, mkdirSync, cpSync, writeFileSync, appendFileSync, rmSync } from \"node:fs\";\nimport { join } from \"node:path\";\nimport { tmpdir } from \"node:os\";\nimport { parse as parseYaml } from \"yaml\";\n\nconst REPO = process.cwd();\nconst WORKFLOW = join(REPO, \".github/workflows/pr-label-assigner.yml\");\nconst ACT_RESULT = join(REPO, \"act-result.txt\");\n\ndescribe(\"workflow structure\", () => {\n  let yml: any;\n  beforeAll(() => {\n    yml = parseYaml(readFileSync(WORKFLOW, \"utf8\"));\n  });\n\n  test(\"workflow file exists\", () => {\n    expect(existsSync(WORKFLOW)).toBe(true);\n  });\n\n  test(\"has expected triggers\", () => {\n    // YAML parser converts `on:` to literal \"on\"; key is true in some versions\n    const onKey = yml.on ?? yml[true as unknown as string];\n    expect(onKey).toBeDefined();\n    expect(Object.keys(onKey)).toEqual(expect.arrayContaining([\"push\", \"pull_request\", \"workflow_dispatch\"]));\n  });\n\n  test(\"has assign-labels job with required steps\", () => {\n    const job = yml.jobs[\"assign-labels\"];\n    expect(job).toBeDefined();\n    expect(job[\"runs-on\"]).toBe(\"ubuntu-latest\");\n    const stepNames = job.steps.map((s: any) => s.name);\n    expect(stepNames).toEqual(expect.arrayContaining([\"Checkout\", \"Setup Bun\", \"Run unit tests\", \"Run labeler on fixture\"]));\n  });\n\n  test(\"references existing script and fixtures\", () => {\n    expect(existsSync(join(REPO, \"labeler.ts\"))).toBe(true);\n    expect(existsSync(join(REPO, \"fixtures/case1.json\"))).toBe(true);\n    expect(existsSync(join(REPO, \"fixtures/case2.json\"))).toBe(true);\n    expect(existsSync(join(REPO, \"fixtures/case3.json\"))).toBe(true);\n  });\n\n  test(\"actionlint passes with exit code 0\", () => {\n    const res = spawnSync(\"actionlint\", [WORKFLOW], { encoding: \"utf8\" });\n    if (res.status !== 0) console.error(res.stdout, res.stderr);\n    expect(res.status).toBe(0);\n  });\n});\n\n// ---- act end-to-end ----\n\ninterface Case {\n  fixture: string;\n  expectedLabels: string[];\n}\n\nconst cases: Case[] = [\n  { fixture: \"fixtures/case1.json\", expectedLabels: [\"api\", \"documentation\", \"tests\"] },\n  { fixture: \"fixtures/case2.json\", expectedLabels: [\"api\", \"typescript\"] },\n  { fixture: \"fixtures/case3.json\", expectedLabels: [] },\n];\n\nfunction runAct(fixture: string): { stdout: string; status: number | null } {\n  // Build a clean temp git repo with project files and the chosen fixture as default.\n  const tmp = join(tmpdir(), `pr-label-act-${Date.now()}-${Math.random().toString(36).slice(2)}`);\n  mkdirSync(tmp, { recursive: true });\n  for (const item of [\n    \"labeler.ts\",\n    \"labeler.test.ts\",\n    \"package.json\",\n    \"tsconfig.json\",\n    \".github\",\n    \"fixtures\",\n    \".actrc\",\n  ]) {\n    const src = join(REPO, item);\n    if (existsSync(src)) cpSync(src, join(tmp, item), { recursive: true });\n  }\n\n  // Override workflow's default fixture by editing the env.FIXTURE for the run.\n  // Simplest: write a small override via a setup step? Instead, copy chosen\n  // fixture to the default path used in workflow: fixtures/case1.json.\n  cpSync(join(REPO, fixture), join(tmp, \"fixtures/case1.json\"));\n\n  spawnSync(\"git\", [\"init\", \"-q\", \"-b\", \"main\"], { cwd: tmp });\n  spawnSync(\"git\", [\"add\", \"-A\"], { cwd: tmp });\n  spawnSync(\"git\", [\"-c\", \"user.email=t@t\", \"-c\", \"user.name=t\", \"commit\", \"-q\", \"-m\", \"init\"], { cwd: tmp });\n\n  const res = spawnSync(\"act\", [\"push\", \"--rm\"], { cwd: tmp, encoding: \"utf8\", maxBuffer: 100 * 1024 * 1024 });\n  const out = (res.stdout || \"\") + \"\\n\" + (res.stderr || \"\");\n  rmSync(tmp, { recursive: true, force: true });\n  return { stdout: out, status: res.status };\n}\n\ndescribe(\"act end-to-end\", () => {\n  beforeAll(() => {\n    if (existsSync(ACT_RESULT)) rmSync(ACT_RESULT);\n    writeFileSync(ACT_RESULT, `# act-result.txt \u2014 generated ${new Date().toISOString()}\\n\\n`);\n  });\n\n  for (const c of cases) {\n    test(`runs workflow for ${c.fixture}`, () => {\n      const { stdout, status } = runAct(c.fixture);\n      appendFileSync(ACT_RESULT, `\\n========== ${c.fixture} ==========\\n`);\n      appendFileSync(ACT_RESULT, stdout);\n      appendFileSync(ACT_RESULT, `\\n[exit=${status}]\\n`);\n\n      expect(status).toBe(0);\n      expect(stdout).toMatch(/Job succeeded/);\n\n      // Assert exact final labels JSON appears in output.\n      const expectedJson = JSON.stringify({ labels: c.expectedLabels });\n      expect(stdout.includes(expectedJson)).toBe(true);\n    }, 240_000);\n  }\n});\n",

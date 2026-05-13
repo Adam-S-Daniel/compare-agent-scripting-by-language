@@ -2,7 +2,7 @@
   {
     "type": "system",
     "subtype": "init",
-    "cwd": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium",
+    "cwd": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium",
     "session_id": "1237864a-054d-4b61-b7d4-d21c019627b2",
     "tools": [
       "Task",
@@ -78,7 +78,7 @@
     "plugins": [],
     "uuid": "9276a1fe-cf4c-4d65-8d58-93807cfbfe98",
     "memory_paths": {
-      "auto": "/home/passp/.claude/projects/-home-passp-repos-compare-agent-scripting-by-language-workspaces-2026-04-17-004319-12-pr-label-assigner-default-opus47-1m-medium/memory/"
+      "auto": "/home/passp/.claude/projects/-home-passp-repos-GHA-bench-workspaces-2026-04-17-004319-12-pr-label-assigner-default-opus47-1m-medium/memory/"
     },
     "fast_mode_state": "off"
   },
@@ -143,7 +143,7 @@
           "id": "toolu_01UWp9SQ4zMgV5i1d2qKEiVm",
           "name": "Bash",
           "input": {
-            "command": "ls /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/",
+            "command": "ls /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/",
             "description": "List working directory"
           },
           "caller": {
@@ -346,7 +346,7 @@
           "id": "toolu_01S3TTs2Z7Jj1GQ2vr15rwMM",
           "name": "Bash",
           "input": {
-            "command": "ls /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/.actrc 2>/dev/null && cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/.actrc",
+            "command": "ls /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/.actrc 2>/dev/null && cat /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/.actrc",
             "description": "Check actrc"
           },
           "caller": {
@@ -383,7 +383,7 @@
         {
           "tool_use_id": "toolu_01S3TTs2Z7Jj1GQ2vr15rwMM",
           "type": "tool_result",
-          "content": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/.actrc\n-P ubuntu-latest=act-ubuntu-pwsh:latest",
+          "content": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/.actrc\n-P ubuntu-latest=act-ubuntu-pwsh:latest",
           "is_error": false
         }
       ]
@@ -393,7 +393,7 @@
     "uuid": "6f35bab1-c6b4-4a69-a49d-c421307d2370",
     "timestamp": "2026-04-17T13:04:17.163Z",
     "tool_use_result": {
-      "stdout": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/.actrc\n-P ubuntu-latest=act-ubuntu-pwsh:latest",
+      "stdout": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/.actrc\n-P ubuntu-latest=act-ubuntu-pwsh:latest",
       "stderr": "",
       "interrupted": false,
       "isImage": false,
@@ -549,7 +549,7 @@
           "id": "toolu_0115CFDwCfRsE9ix3oTAtza2",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/label_assigner.py",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/label_assigner.py",
             "content": "#!/usr/bin/env python3\n\"\"\"PR label assigner.\n\nReads a JSON rules file and a newline-delimited list of changed files, then\nemits the deduplicated set of labels (one per line, stdout) that should apply\nto the PR.\n\nRule format (JSON):\n    {\n      \"rules\": [\n        {\"pattern\": \"docs/**\", \"labels\": [\"documentation\"], \"priority\": 10},\n        {\"pattern\": \"*.test.*\", \"labels\": [\"tests\"], \"priority\": 5},\n        {\"pattern\": \"src/api/**\", \"labels\": [\"api\", \"backend\"]}\n      ]\n    }\n\nPriority (default 0) is used only to sort the output: higher priority first,\nthen alphabetic within the same priority. Every rule whose glob matches any\nchanged file contributes its labels to the final set (labels are deduped).\n\"\"\"\n\nfrom __future__ import annotations\n\nimport json\nimport re\nimport sys\nfrom pathlib import Path\n\n\ndef glob_to_regex(pattern: str) -> re.Pattern[str]:\n    \"\"\"Translate a glob pattern into an anchored regex.\n\n    Supports `**` (matches any path including slashes), `*` (matches within a\n    single path segment), and `?` (matches a single non-slash char).\n    \"\"\"\n    i = 0\n    out = [\"^\"]\n    while i < len(pattern):\n        c = pattern[i]\n        if c == \"*\":\n            # `**/` -> any number of directories (including zero)\n            if pattern[i : i + 3] == \"**/\":\n                out.append(\"(?:.*/)?\")\n                i += 3\n                continue\n            # trailing or standalone `**` -> anything\n            if pattern[i : i + 2] == \"**\":\n                out.append(\".*\")\n                i += 2\n                continue\n            # single `*` -> anything except slash\n            out.append(\"[^/]*\")\n            i += 1\n            continue\n        if c == \"?\":\n            out.append(\"[^/]\")\n        else:\n            out.append(re.escape(c))\n        i += 1\n    out.append(\"$\")\n    return re.compile(\"\".join(out))\n\n\ndef rule_matches(pattern: str, files: list[str]) -> bool:\n    \"\"\"Return True if any changed file matches the rule's glob.\"\"\"\n    regex = glob_to_regex(pattern)\n    return any(regex.match(f) for f in files)\n\n\ndef assign_labels(files: list[str], rules: list[dict]) -> list[str]:\n    \"\"\"Compute the sorted label list for the given files and rules.\"\"\"\n    # label -> highest priority seen for that label\n    label_priority: dict[str, int] = {}\n    for rule in rules:\n        if \"pattern\" not in rule or \"labels\" not in rule:\n            raise ValueError(\n                f\"rule missing required keys 'pattern' and 'labels': {rule!r}\"\n            )\n        priority = int(rule.get(\"priority\", 0))\n        if rule_matches(rule[\"pattern\"], files):\n            for label in rule[\"labels\"]:\n                if label not in label_priority or label_priority[label] < priority:\n                    label_priority[label] = priority\n    return sorted(label_priority, key=lambda l: (-label_priority[l], l))\n\n\ndef main(argv: list[str]) -> int:\n    if len(argv) != 3:\n        print(\n            f\"usage: {argv[0]} <rules.json> <files.txt>\",\n            file=sys.stderr,\n        )\n        return 2\n    rules_path = Path(argv[1])\n    files_path = Path(argv[2])\n    try:\n        rules_doc = json.loads(rules_path.read_text(encoding=\"utf-8\"))\n    except FileNotFoundError:\n        print(f\"error: rules file not found: {rules_path}\", file=sys.stderr)\n        return 1\n    except json.JSONDecodeError as e:\n        print(f\"error: invalid JSON in rules file: {e}\", file=sys.stderr)\n        return 1\n    try:\n        files_text = files_path.read_text(encoding=\"utf-8\")\n    except FileNotFoundError:\n        print(f\"error: files list not found: {files_path}\", file=sys.stderr)\n        return 1\n\n    rules = rules_doc.get(\"rules\") if isinstance(rules_doc, dict) else None\n    if not isinstance(rules, list):\n        print(\"error: rules file must have top-level 'rules' list\", file=sys.stderr)\n        return 1\n    files = [line.strip() for line in files_text.splitlines() if line.strip()]\n\n    try:\n        labels = assign_labels(files, rules)\n    except ValueError as e:\n        print(f\"error: {e}\", file=sys.stderr)\n        return 1\n\n    # Machine-parseable output: a BEGIN/END block so the CI harness can extract\n    # exactly the labels regardless of other log chatter.\n    print(\"LABELS_BEGIN\")\n    for label in labels:\n        print(label)\n    print(\"LABELS_END\")\n    return 0\n\n\nif __name__ == \"__main__\":\n    sys.exit(main(sys.argv))\n"
           },
           "caller": {
@@ -609,7 +609,7 @@
         {
           "tool_use_id": "toolu_0115CFDwCfRsE9ix3oTAtza2",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/label_assigner.py (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/label_assigner.py (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -619,7 +619,7 @@
     "timestamp": "2026-04-17T13:04:40.775Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/label_assigner.py",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/label_assigner.py",
       "content": "#!/usr/bin/env python3\n\"\"\"PR label assigner.\n\nReads a JSON rules file and a newline-delimited list of changed files, then\nemits the deduplicated set of labels (one per line, stdout) that should apply\nto the PR.\n\nRule format (JSON):\n    {\n      \"rules\": [\n        {\"pattern\": \"docs/**\", \"labels\": [\"documentation\"], \"priority\": 10},\n        {\"pattern\": \"*.test.*\", \"labels\": [\"tests\"], \"priority\": 5},\n        {\"pattern\": \"src/api/**\", \"labels\": [\"api\", \"backend\"]}\n      ]\n    }\n\nPriority (default 0) is used only to sort the output: higher priority first,\nthen alphabetic within the same priority. Every rule whose glob matches any\nchanged file contributes its labels to the final set (labels are deduped).\n\"\"\"\n\nfrom __future__ import annotations\n\nimport json\nimport re\nimport sys\nfrom pathlib import Path\n\n\ndef glob_to_regex(pattern: str) -> re.Pattern[str]:\n    \"\"\"Translate a glob pattern into an anchored regex.\n\n    Supports `**` (matches any path including slashes), `*` (matches within a\n    single path segment), and `?` (matches a single non-slash char).\n    \"\"\"\n    i = 0\n    out = [\"^\"]\n    while i < len(pattern):\n        c = pattern[i]\n        if c == \"*\":\n            # `**/` -> any number of directories (including zero)\n            if pattern[i : i + 3] == \"**/\":\n                out.append(\"(?:.*/)?\")\n                i += 3\n                continue\n            # trailing or standalone `**` -> anything\n            if pattern[i : i + 2] == \"**\":\n                out.append(\".*\")\n                i += 2\n                continue\n            # single `*` -> anything except slash\n            out.append(\"[^/]*\")\n            i += 1\n            continue\n        if c == \"?\":\n            out.append(\"[^/]\")\n        else:\n            out.append(re.escape(c))\n        i += 1\n    out.append(\"$\")\n    return re.compile(\"\".join(out))\n\n\ndef rule_matches(pattern: str, files: list[str]) -> bool:\n    \"\"\"Return True if any changed file matches the rule's glob.\"\"\"\n    regex = glob_to_regex(pattern)\n    return any(regex.match(f) for f in files)\n\n\ndef assign_labels(files: list[str], rules: list[dict]) -> list[str]:\n    \"\"\"Compute the sorted label list for the given files and rules.\"\"\"\n    # label -> highest priority seen for that label\n    label_priority: dict[str, int] = {}\n    for rule in rules:\n        if \"pattern\" not in rule or \"labels\" not in rule:\n            raise ValueError(\n                f\"rule missing required keys 'pattern' and 'labels': {rule!r}\"\n            )\n        priority = int(rule.get(\"priority\", 0))\n        if rule_matches(rule[\"pattern\"], files):\n            for label in rule[\"labels\"]:\n                if label not in label_priority or label_priority[label] < priority:\n                    label_priority[label] = priority\n    return sorted(label_priority, key=lambda l: (-label_priority[l], l))\n\n\ndef main(argv: list[str]) -> int:\n    if len(argv) != 3:\n        print(\n            f\"usage: {argv[0]} <rules.json> <files.txt>\",\n            file=sys.stderr,\n        )\n        return 2\n    rules_path = Path(argv[1])\n    files_path = Path(argv[2])\n    try:\n        rules_doc = json.loads(rules_path.read_text(encoding=\"utf-8\"))\n    except FileNotFoundError:\n        print(f\"error: rules file not found: {rules_path}\", file=sys.stderr)\n        return 1\n    except json.JSONDecodeError as e:\n        print(f\"error: invalid JSON in rules file: {e}\", file=sys.stderr)\n        return 1\n    try:\n        files_text = files_path.read_text(encoding=\"utf-8\")\n    except FileNotFoundError:\n        print(f\"error: files list not found: {files_path}\", file=sys.stderr)\n        return 1\n\n    rules = rules_doc.get(\"rules\") if isinstance(rules_doc, dict) else None\n    if not isinstance(rules, list):\n        print(\"error: rules file must have top-level 'rules' list\", file=sys.stderr)\n        return 1\n    files = [line.strip() for line in files_text.splitlines() if line.strip()]\n\n    try:\n        labels = assign_labels(files, rules)\n    except ValueError as e:\n        print(f\"error: {e}\", file=sys.stderr)\n        return 1\n\n    # Machine-parseable output: a BEGIN/END block so the CI harness can extract\n    # exactly the labels regardless of other log chatter.\n    print(\"LABELS_BEGIN\")\n    for label in labels:\n        print(label)\n    print(\"LABELS_END\")\n    return 0\n\n\nif __name__ == \"__main__\":\n    sys.exit(main(sys.argv))\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -639,7 +639,7 @@
           "id": "toolu_01X2xfqA8BUarby1xbdN8xYw",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/.github/workflows/pr-label-assigner.yml",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/.github/workflows/pr-label-assigner.yml",
             "content": "name: PR Label Assigner\n\n# Runs the label assigner script against a fixture of changed files and\n# rules. The test harness swaps `fixture/` with per-case data before running\n# `act push`, then asserts on the block emitted between LABELS_BEGIN /\n# LABELS_END.\non:\n  push:\n  pull_request:\n  workflow_dispatch:\n\npermissions:\n  contents: read\n\njobs:\n  assign:\n    name: Assign labels\n    runs-on: ubuntu-latest\n    env:\n      RULES_FILE: fixture/rules.json\n      FILES_LIST: fixture/files.txt\n    steps:\n      - name: Check out repository\n        uses: actions/checkout@v4\n\n      - name: Show Python version\n        run: python3 --version\n\n      - name: Run label assigner\n        run: python3 label_assigner.py \"$RULES_FILE\" \"$FILES_LIST\"\n"
           },
           "caller": {
@@ -699,7 +699,7 @@
         {
           "tool_use_id": "toolu_01X2xfqA8BUarby1xbdN8xYw",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/.github/workflows/pr-label-assigner.yml (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/.github/workflows/pr-label-assigner.yml (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -709,7 +709,7 @@
     "timestamp": "2026-04-17T13:04:46.852Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/.github/workflows/pr-label-assigner.yml",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/.github/workflows/pr-label-assigner.yml",
       "content": "name: PR Label Assigner\n\n# Runs the label assigner script against a fixture of changed files and\n# rules. The test harness swaps `fixture/` with per-case data before running\n# `act push`, then asserts on the block emitted between LABELS_BEGIN /\n# LABELS_END.\non:\n  push:\n  pull_request:\n  workflow_dispatch:\n\npermissions:\n  contents: read\n\njobs:\n  assign:\n    name: Assign labels\n    runs-on: ubuntu-latest\n    env:\n      RULES_FILE: fixture/rules.json\n      FILES_LIST: fixture/files.txt\n    steps:\n      - name: Check out repository\n        uses: actions/checkout@v4\n\n      - name: Show Python version\n        run: python3 --version\n\n      - name: Run label assigner\n        run: python3 label_assigner.py \"$RULES_FILE\" \"$FILES_LIST\"\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -830,7 +830,7 @@
           "id": "toolu_01XLm4UNxS28cbJk2HZtQQV6",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/basic/rules.json",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/basic/rules.json",
             "content": "{\n  \"rules\": [\n    {\"pattern\": \"docs/**\", \"labels\": [\"documentation\"], \"priority\": 10},\n    {\"pattern\": \"src/api/**\", \"labels\": [\"api\", \"backend\"], \"priority\": 20},\n    {\"pattern\": \"**/*.test.*\", \"labels\": [\"tests\"], \"priority\": 5},\n    {\"pattern\": \"*.md\", \"labels\": [\"documentation\"], \"priority\": 1}\n  ]\n}\n"
           },
           "caller": {
@@ -890,7 +890,7 @@
         {
           "tool_use_id": "toolu_01XLm4UNxS28cbJk2HZtQQV6",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/basic/rules.json (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/basic/rules.json (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -900,7 +900,7 @@
     "timestamp": "2026-04-17T13:04:55.239Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/basic/rules.json",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/basic/rules.json",
       "content": "{\n  \"rules\": [\n    {\"pattern\": \"docs/**\", \"labels\": [\"documentation\"], \"priority\": 10},\n    {\"pattern\": \"src/api/**\", \"labels\": [\"api\", \"backend\"], \"priority\": 20},\n    {\"pattern\": \"**/*.test.*\", \"labels\": [\"tests\"], \"priority\": 5},\n    {\"pattern\": \"*.md\", \"labels\": [\"documentation\"], \"priority\": 1}\n  ]\n}\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -920,7 +920,7 @@
           "id": "toolu_01UQbuAog2qLWkA7uDdNYBS8",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/basic/files.txt",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/basic/files.txt",
             "content": "src/api/users.py\nsrc/api/orders.py\ndocs/guide.md\nsrc/utils/helpers.py\n"
           },
           "caller": {
@@ -980,7 +980,7 @@
         {
           "tool_use_id": "toolu_01UQbuAog2qLWkA7uDdNYBS8",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/basic/files.txt (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/basic/files.txt (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -990,7 +990,7 @@
     "timestamp": "2026-04-17T13:04:58.055Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/basic/files.txt",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/basic/files.txt",
       "content": "src/api/users.py\nsrc/api/orders.py\ndocs/guide.md\nsrc/utils/helpers.py\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -1045,7 +1045,7 @@
           "id": "toolu_01UrPKiA2TZPrr3i4JwUJH9Y",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/basic/expected.txt",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/basic/expected.txt",
             "content": "api\nbackend\ndocumentation\n"
           },
           "caller": {
@@ -1105,7 +1105,7 @@
         {
           "tool_use_id": "toolu_01UrPKiA2TZPrr3i4JwUJH9Y",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/basic/expected.txt (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/basic/expected.txt (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -1115,7 +1115,7 @@
     "timestamp": "2026-04-17T13:05:03.339Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/basic/expected.txt",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/basic/expected.txt",
       "content": "api\nbackend\ndocumentation\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -1135,7 +1135,7 @@
           "id": "toolu_01YVwS5QheRb95DY2iuFwGEK",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/tests_and_docs/rules.json",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/tests_and_docs/rules.json",
             "content": "{\n  \"rules\": [\n    {\"pattern\": \"docs/**\", \"labels\": [\"documentation\"], \"priority\": 10},\n    {\"pattern\": \"src/api/**\", \"labels\": [\"api\", \"backend\"], \"priority\": 20},\n    {\"pattern\": \"**/*.test.*\", \"labels\": [\"tests\"], \"priority\": 5},\n    {\"pattern\": \"*.md\", \"labels\": [\"documentation\"], \"priority\": 1}\n  ]\n}\n"
           },
           "caller": {
@@ -1195,7 +1195,7 @@
         {
           "tool_use_id": "toolu_01YVwS5QheRb95DY2iuFwGEK",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/tests_and_docs/rules.json (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/tests_and_docs/rules.json (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -1205,7 +1205,7 @@
     "timestamp": "2026-04-17T13:05:07.051Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/tests_and_docs/rules.json",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/tests_and_docs/rules.json",
       "content": "{\n  \"rules\": [\n    {\"pattern\": \"docs/**\", \"labels\": [\"documentation\"], \"priority\": 10},\n    {\"pattern\": \"src/api/**\", \"labels\": [\"api\", \"backend\"], \"priority\": 20},\n    {\"pattern\": \"**/*.test.*\", \"labels\": [\"tests\"], \"priority\": 5},\n    {\"pattern\": \"*.md\", \"labels\": [\"documentation\"], \"priority\": 1}\n  ]\n}\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -1225,7 +1225,7 @@
           "id": "toolu_017djGTiLpF78R8BXcWsd6wa",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/tests_and_docs/files.txt",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/tests_and_docs/files.txt",
             "content": "README.md\nsrc/utils/helpers.test.js\ndocs/api/overview.md\n"
           },
           "caller": {
@@ -1285,7 +1285,7 @@
         {
           "tool_use_id": "toolu_017djGTiLpF78R8BXcWsd6wa",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/tests_and_docs/files.txt (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/tests_and_docs/files.txt (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -1295,7 +1295,7 @@
     "timestamp": "2026-04-17T13:05:09.906Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/tests_and_docs/files.txt",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/tests_and_docs/files.txt",
       "content": "README.md\nsrc/utils/helpers.test.js\ndocs/api/overview.md\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -1350,7 +1350,7 @@
           "id": "toolu_01BZf7Rwa3iGZeZiPv9n58ss",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/tests_and_docs/expected.txt",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/tests_and_docs/expected.txt",
             "content": "documentation\ntests\n"
           },
           "caller": {
@@ -1410,7 +1410,7 @@
         {
           "tool_use_id": "toolu_01BZf7Rwa3iGZeZiPv9n58ss",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/tests_and_docs/expected.txt (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/tests_and_docs/expected.txt (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -1420,7 +1420,7 @@
     "timestamp": "2026-04-17T13:05:14.460Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/tests_and_docs/expected.txt",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/tests_and_docs/expected.txt",
       "content": "documentation\ntests\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -1440,7 +1440,7 @@
           "id": "toolu_014U3iufcDTtUcpMXGwbQ1XB",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/no_matches/rules.json",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/no_matches/rules.json",
             "content": "{\n  \"rules\": [\n    {\"pattern\": \"docs/**\", \"labels\": [\"documentation\"], \"priority\": 10},\n    {\"pattern\": \"src/api/**\", \"labels\": [\"api\"], \"priority\": 20}\n  ]\n}\n"
           },
           "caller": {
@@ -1500,7 +1500,7 @@
         {
           "tool_use_id": "toolu_014U3iufcDTtUcpMXGwbQ1XB",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/no_matches/rules.json (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/no_matches/rules.json (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -1510,7 +1510,7 @@
     "timestamp": "2026-04-17T13:05:17.462Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/no_matches/rules.json",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/no_matches/rules.json",
       "content": "{\n  \"rules\": [\n    {\"pattern\": \"docs/**\", \"labels\": [\"documentation\"], \"priority\": 10},\n    {\"pattern\": \"src/api/**\", \"labels\": [\"api\"], \"priority\": 20}\n  ]\n}\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -1530,7 +1530,7 @@
           "id": "toolu_01Y5Jwn38MroSYjGMHvS79V8",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/no_matches/files.txt",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/no_matches/files.txt",
             "content": "README\nMakefile\nscripts/build.sh\n"
           },
           "caller": {
@@ -1590,7 +1590,7 @@
         {
           "tool_use_id": "toolu_01Y5Jwn38MroSYjGMHvS79V8",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/no_matches/files.txt (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/no_matches/files.txt (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -1600,7 +1600,7 @@
     "timestamp": "2026-04-17T13:05:21.458Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/no_matches/files.txt",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/no_matches/files.txt",
       "content": "README\nMakefile\nscripts/build.sh\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -1620,7 +1620,7 @@
           "id": "toolu_01PGu7noykMN2PF4ssuq5LCK",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/no_matches/expected.txt",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/no_matches/expected.txt",
             "content": ""
           },
           "caller": {
@@ -1680,7 +1680,7 @@
         {
           "tool_use_id": "toolu_01PGu7noykMN2PF4ssuq5LCK",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/no_matches/expected.txt (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/no_matches/expected.txt (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -1690,7 +1690,7 @@
     "timestamp": "2026-04-17T13:05:24.031Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/no_matches/expected.txt",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/fixtures/no_matches/expected.txt",
       "content": "",
       "structuredPatch": [],
       "originalFile": null,
@@ -1744,7 +1744,7 @@
           "id": "toolu_013FwWmsgp64hYyicok2ooud",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/test_harness.py",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/test_harness.py",
             "content": "#!/usr/bin/env python3\n\"\"\"Integration test harness.\n\nFor every directory under `fixtures/`, this harness:\n\n1. Builds a temporary git repo containing the script, the workflow, and the\n   fixture copied into `fixture/` (the path the workflow reads from).\n2. Runs `act push --rm` against that repo.\n3. Captures stdout+stderr, appends to `act-result.txt`.\n4. Asserts act exits 0, every job reports \"Job succeeded\", and the emitted\n   label block (between LABELS_BEGIN / LABELS_END) matches `expected.txt`.\n\nPer the benchmark rules this harness never calls the Python script directly;\nall test cases execute through the GitHub Actions workflow via act.\n\"\"\"\n\nfrom __future__ import annotations\n\nimport json\nimport os\nimport shutil\nimport subprocess\nimport sys\nimport tempfile\nimport textwrap\nfrom pathlib import Path\n\nROOT = Path(__file__).resolve().parent\nFIXTURES_DIR = ROOT / \"fixtures\"\nRESULT_FILE = ROOT / \"act-result.txt\"\nACTRC = ROOT / \".actrc\"\n\n\ndef _run(cmd: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:\n    return subprocess.run(\n        cmd, cwd=str(cwd), capture_output=True, text=True, check=False\n    )\n\n\ndef _setup_repo(case_dir: Path, workdir: Path) -> None:\n    \"\"\"Copy script, workflow, and fixture data into a fresh git repo.\"\"\"\n    # Project files that all cases share.\n    shutil.copy(ROOT / \"label_assigner.py\", workdir / \"label_assigner.py\")\n    (workdir / \".github\" / \"workflows\").mkdir(parents=True, exist_ok=True)\n    shutil.copy(\n        ROOT / \".github/workflows/pr-label-assigner.yml\",\n        workdir / \".github/workflows/pr-label-assigner.yml\",\n    )\n    if ACTRC.exists():\n        shutil.copy(ACTRC, workdir / \".actrc\")\n    # Per-case fixture data lands at the path the workflow reads.\n    fixture_dst = workdir / \"fixture\"\n    fixture_dst.mkdir()\n    shutil.copy(case_dir / \"rules.json\", fixture_dst / \"rules.json\")\n    shutil.copy(case_dir / \"files.txt\", fixture_dst / \"files.txt\")\n\n    # Minimal git repo so `act push` has a commit to work against.\n    subprocess.run([\"git\", \"init\", \"-q\", \"-b\", \"main\"], cwd=workdir, check=True)\n    subprocess.run(\n        [\"git\", \"config\", \"user.email\", \"harness@example.com\"],\n        cwd=workdir,\n        check=True,\n    )\n    subprocess.run(\n        [\"git\", \"config\", \"user.name\", \"harness\"], cwd=workdir, check=True\n    )\n    subprocess.run([\"git\", \"add\", \"-A\"], cwd=workdir, check=True)\n    subprocess.run(\n        [\"git\", \"commit\", \"-q\", \"-m\", \"fixture\"], cwd=workdir, check=True\n    )\n\n\ndef _parse_labels(act_output: str) -> list[str]:\n    \"\"\"Extract the LABELS_BEGIN...LABELS_END block from act logs.\n\n    act prefixes every line with stuff like `| `, so we strip common prefixes\n    before matching delimiters.\n    \"\"\"\n    labels: list[str] = []\n    in_block = False\n    for raw in act_output.splitlines():\n        # Strip the `[... ] ... | ` prefix act emits around command stdout.\n        cleaned = raw\n        if \"| \" in cleaned:\n            cleaned = cleaned.split(\"| \", 1)[1]\n        cleaned = cleaned.rstrip()\n        if cleaned.endswith(\"LABELS_BEGIN\"):\n            in_block = True\n            labels = []\n            continue\n        if cleaned.endswith(\"LABELS_END\"):\n            in_block = False\n            continue\n        if in_block:\n            # Drop any leading whitespace that survived prefix stripping.\n            label = cleaned.strip()\n            if label:\n                labels.append(label)\n    return labels\n\n\ndef _append_result(header: str, body: str) -> None:\n    with RESULT_FILE.open(\"a\", encoding=\"utf-8\") as f:\n        f.write(\"=\" * 72 + \"\\n\")\n        f.write(header + \"\\n\")\n        f.write(\"=\" * 72 + \"\\n\")\n        f.write(body)\n        if not body.endswith(\"\\n\"):\n            f.write(\"\\n\")\n\n\ndef _read_expected(case_dir: Path) -> list[str]:\n    text = (case_dir / \"expected.txt\").read_text(encoding=\"utf-8\")\n    return [line.strip() for line in text.splitlines() if line.strip()]\n\n\ndef _check_workflow_structure() -> None:\n    \"\"\"Workflow-structure assertions (YAML shape + referenced paths exist).\"\"\"\n    # Use a tiny YAML reader rather than adding a PyYAML dependency: we just\n    # verify the key fields are present as substrings in the right sections.\n    wf = (ROOT / \".github/workflows/pr-label-assigner.yml\").read_text(\n        encoding=\"utf-8\"\n    )\n    assert \"on:\" in wf, \"workflow missing 'on:' triggers\"\n    assert \"pull_request\" in wf, \"workflow should trigger on pull_request\"\n    assert \"push\" in wf, \"workflow should trigger on push\"\n    assert \"workflow_dispatch\" in wf, \"workflow should allow workflow_dispatch\"\n    assert \"actions/checkout@v4\" in wf, \"workflow must checkout the repo\"\n    assert \"label_assigner.py\" in wf, \"workflow must reference the script\"\n    assert (ROOT / \"label_assigner.py\").exists(), \"script file missing\"\n    # actionlint should pass.\n    result = _run([\"actionlint\", \".github/workflows/pr-label-assigner.yml\"], ROOT)\n    assert result.returncode == 0, (\n        f\"actionlint failed:\\n{result.stdout}\\n{result.stderr}\"\n    )\n    print(\"workflow structure: OK\")\n\n\ndef _run_case(case_dir: Path) -> bool:\n    case_name = case_dir.name\n    print(f\"\\n--- case: {case_name} ---\")\n    with tempfile.TemporaryDirectory(prefix=f\"act-{case_name}-\") as tmp:\n        workdir = Path(tmp)\n        _setup_repo(case_dir, workdir)\n        # `act push --rm` builds and runs the workflow end-to-end.\n        proc = _run([\"act\", \"push\", \"--rm\"], workdir)\n        combined = (\n            f\"$ act push --rm   (case={case_name})\\n\"\n            f\"exit_code={proc.returncode}\\n\"\n            f\"--- stdout ---\\n{proc.stdout}\\n\"\n            f\"--- stderr ---\\n{proc.stderr}\\n\"\n        )\n        _append_result(f\"CASE: {case_name}\", combined)\n        if proc.returncode != 0:\n            print(f\"FAIL: act exited {proc.returncode}\")\n            print(proc.stdout[-2000:])\n            print(proc.stderr[-2000:])\n            return False\n        if \"Job succeeded\" not in proc.stdout and \"Job succeeded\" not in proc.stderr:\n            print(\"FAIL: 'Job succeeded' not found in act output\")\n            return False\n        labels = _parse_labels(proc.stdout + \"\\n\" + proc.stderr)\n        expected = _read_expected(case_dir)\n        if labels != expected:\n            print(f\"FAIL: labels mismatch\\n  expected: {expected}\\n  got:      {labels}\")\n            return False\n        print(f\"PASS: labels={labels}\")\n        return True\n\n\ndef main() -> int:\n    # Fresh result file each run so act-result.txt is deterministic.\n    RESULT_FILE.write_text(\"\", encoding=\"utf-8\")\n\n    _check_workflow_structure()\n\n    cases = sorted(p for p in FIXTURES_DIR.iterdir() if p.is_dir())\n    if not cases:\n        print(\"no fixture cases found\")\n        return 1\n\n    ok = 0\n    for case_dir in cases:\n        if _run_case(case_dir):\n            ok += 1\n    total = len(cases)\n    print(f\"\\n{ok}/{total} cases passed\")\n    return 0 if ok == total else 1\n\n\nif __name__ == \"__main__\":\n    sys.exit(main())\n"
           },
           "caller": {
@@ -1804,7 +1804,7 @@
         {
           "tool_use_id": "toolu_013FwWmsgp64hYyicok2ooud",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/test_harness.py (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/test_harness.py (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -1814,7 +1814,7 @@
     "timestamp": "2026-04-17T13:05:56.496Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/test_harness.py",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/test_harness.py",
       "content": "#!/usr/bin/env python3\n\"\"\"Integration test harness.\n\nFor every directory under `fixtures/`, this harness:\n\n1. Builds a temporary git repo containing the script, the workflow, and the\n   fixture copied into `fixture/` (the path the workflow reads from).\n2. Runs `act push --rm` against that repo.\n3. Captures stdout+stderr, appends to `act-result.txt`.\n4. Asserts act exits 0, every job reports \"Job succeeded\", and the emitted\n   label block (between LABELS_BEGIN / LABELS_END) matches `expected.txt`.\n\nPer the benchmark rules this harness never calls the Python script directly;\nall test cases execute through the GitHub Actions workflow via act.\n\"\"\"\n\nfrom __future__ import annotations\n\nimport json\nimport os\nimport shutil\nimport subprocess\nimport sys\nimport tempfile\nimport textwrap\nfrom pathlib import Path\n\nROOT = Path(__file__).resolve().parent\nFIXTURES_DIR = ROOT / \"fixtures\"\nRESULT_FILE = ROOT / \"act-result.txt\"\nACTRC = ROOT / \".actrc\"\n\n\ndef _run(cmd: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:\n    return subprocess.run(\n        cmd, cwd=str(cwd), capture_output=True, text=True, check=False\n    )\n\n\ndef _setup_repo(case_dir: Path, workdir: Path) -> None:\n    \"\"\"Copy script, workflow, and fixture data into a fresh git repo.\"\"\"\n    # Project files that all cases share.\n    shutil.copy(ROOT / \"label_assigner.py\", workdir / \"label_assigner.py\")\n    (workdir / \".github\" / \"workflows\").mkdir(parents=True, exist_ok=True)\n    shutil.copy(\n        ROOT / \".github/workflows/pr-label-assigner.yml\",\n        workdir / \".github/workflows/pr-label-assigner.yml\",\n    )\n    if ACTRC.exists():\n        shutil.copy(ACTRC, workdir / \".actrc\")\n    # Per-case fixture data lands at the path the workflow reads.\n    fixture_dst = workdir / \"fixture\"\n    fixture_dst.mkdir()\n    shutil.copy(case_dir / \"rules.json\", fixture_dst / \"rules.json\")\n    shutil.copy(case_dir / \"files.txt\", fixture_dst / \"files.txt\")\n\n    # Minimal git repo so `act push` has a commit to work against.\n    subprocess.run([\"git\", \"init\", \"-q\", \"-b\", \"main\"], cwd=workdir, check=True)\n    subprocess.run(\n        [\"git\", \"config\", \"user.email\", \"harness@example.com\"],\n        cwd=workdir,\n        check=True,\n    )\n    subprocess.run(\n        [\"git\", \"config\", \"user.name\", \"harness\"], cwd=workdir, check=True\n    )\n    subprocess.run([\"git\", \"add\", \"-A\"], cwd=workdir, check=True)\n    subprocess.run(\n        [\"git\", \"commit\", \"-q\", \"-m\", \"fixture\"], cwd=workdir, check=True\n    )\n\n\ndef _parse_labels(act_output: str) -> list[str]:\n    \"\"\"Extract the LABELS_BEGIN...LABELS_END block from act logs.\n\n    act prefixes every line with stuff like `| `, so we strip common prefixes\n    before matching delimiters.\n    \"\"\"\n    labels: list[str] = []\n    in_block = False\n    for raw in act_output.splitlines():\n        # Strip the `[... ] ... | ` prefix act emits around command stdout.\n        cleaned = raw\n        if \"| \" in cleaned:\n            cleaned = cleaned.split(\"| \", 1)[1]\n        cleaned = cleaned.rstrip()\n        if cleaned.endswith(\"LABELS_BEGIN\"):\n            in_block = True\n            labels = []\n            continue\n        if cleaned.endswith(\"LABELS_END\"):\n            in_block = False\n            continue\n        if in_block:\n            # Drop any leading whitespace that survived prefix stripping.\n            label = cleaned.strip()\n            if label:\n                labels.append(label)\n    return labels\n\n\ndef _append_result(header: str, body: str) -> None:\n    with RESULT_FILE.open(\"a\", encoding=\"utf-8\") as f:\n        f.write(\"=\" * 72 + \"\\n\")\n        f.write(header + \"\\n\")\n        f.write(\"=\" * 72 + \"\\n\")\n        f.write(body)\n        if not body.endswith(\"\\n\"):\n            f.write(\"\\n\")\n\n\ndef _read_expected(case_dir: Path) -> list[str]:\n    text = (case_dir / \"expected.txt\").read_text(encoding=\"utf-8\")\n    return [line.strip() for line in text.splitlines() if line.strip()]\n\n\ndef _check_workflow_structure() -> None:\n    \"\"\"Workflow-structure assertions (YAML shape + referenced paths exist).\"\"\"\n    # Use a tiny YAML reader rather than adding a PyYAML dependency: we just\n    # verify the key fields are present as substrings in the right sections.\n    wf = (ROOT / \".github/workflows/pr-label-assigner.yml\").read_text(\n        encoding=\"utf-8\"\n    )\n    assert \"on:\" in wf, \"workflow missing 'on:' triggers\"\n    assert \"pull_request\" in wf, \"workflow should trigger on pull_request\"\n    assert \"push\" in wf, \"workflow should trigger on push\"\n    assert \"workflow_dispatch\" in wf, \"workflow should allow workflow_dispatch\"\n    assert \"actions/checkout@v4\" in wf, \"workflow must checkout the repo\"\n    assert \"label_assigner.py\" in wf, \"workflow must reference the script\"\n    assert (ROOT / \"label_assigner.py\").exists(), \"script file missing\"\n    # actionlint should pass.\n    result = _run([\"actionlint\", \".github/workflows/pr-label-assigner.yml\"], ROOT)\n    assert result.returncode == 0, (\n        f\"actionlint failed:\\n{result.stdout}\\n{result.stderr}\"\n    )\n    print(\"workflow structure: OK\")\n\n\ndef _run_case(case_dir: Path) -> bool:\n    case_name = case_dir.name\n    print(f\"\\n--- case: {case_name} ---\")\n    with tempfile.TemporaryDirectory(prefix=f\"act-{case_name}-\") as tmp:\n        workdir = Path(tmp)\n        _setup_repo(case_dir, workdir)\n        # `act push --rm` builds and runs the workflow end-to-end.\n        proc = _run([\"act\", \"push\", \"--rm\"], workdir)\n        combined = (\n            f\"$ act push --rm   (case={case_name})\\n\"\n            f\"exit_code={proc.returncode}\\n\"\n            f\"--- stdout ---\\n{proc.stdout}\\n\"\n            f\"--- stderr ---\\n{proc.stderr}\\n\"\n        )\n        _append_result(f\"CASE: {case_name}\", combined)\n        if proc.returncode != 0:\n            print(f\"FAIL: act exited {proc.returncode}\")\n            print(proc.stdout[-2000:])\n            print(proc.stderr[-2000:])\n            return False\n        if \"Job succeeded\" not in proc.stdout and \"Job succeeded\" not in proc.stderr:\n            print(\"FAIL: 'Job succeeded' not found in act output\")\n            return False\n        labels = _parse_labels(proc.stdout + \"\\n\" + proc.stderr)\n        expected = _read_expected(case_dir)\n        if labels != expected:\n            print(f\"FAIL: labels mismatch\\n  expected: {expected}\\n  got:      {labels}\")\n            return False\n        print(f\"PASS: labels={labels}\")\n        return True\n\n\ndef main() -> int:\n    # Fresh result file each run so act-result.txt is deterministic.\n    RESULT_FILE.write_text(\"\", encoding=\"utf-8\")\n\n    _check_workflow_structure()\n\n    cases = sorted(p for p in FIXTURES_DIR.iterdir() if p.is_dir())\n    if not cases:\n        print(\"no fixture cases found\")\n        return 1\n\n    ok = 0\n    for case_dir in cases:\n        if _run_case(case_dir):\n            ok += 1\n    total = len(cases)\n    print(f\"\\n{ok}/{total} cases passed\")\n    return 0 if ok == total else 1\n\n\nif __name__ == \"__main__\":\n    sys.exit(main())\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -2128,7 +2128,7 @@
           "name": "Edit",
           "input": {
             "replace_all": false,
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/test_harness.py",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/test_harness.py",
             "old_string": "        proc = _run([\"act\", \"push\", \"--rm\"], workdir)",
             "new_string": "        # --pull=false: the ubuntu-latest image is a locally-built pwsh image\n        # (see .actrc); act would otherwise try to fetch it from a registry.\n        proc = _run([\"act\", \"push\", \"--rm\", \"--pull=false\"], workdir)"
           },
@@ -2189,7 +2189,7 @@
         {
           "tool_use_id": "toolu_01TACdncrTk1MDpdFG1pEaHL",
           "type": "tool_result",
-          "content": "The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/test_harness.py has been updated successfully. (file state is current in your context \u2014 no need to Read it back)"
+          "content": "The file /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/test_harness.py has been updated successfully. (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -2198,7 +2198,7 @@
     "uuid": "efbd2089-3163-4ffb-af21-f30008ead0ce",
     "timestamp": "2026-04-17T13:06:14.904Z",
     "tool_use_result": {
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/test_harness.py",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/12-pr-label-assigner/default-opus47-1m-medium/test_harness.py",
       "oldString": "        proc = _run([\"act\", \"push\", \"--rm\"], workdir)",
       "newString": "        # --pull=false: the ubuntu-latest image is a locally-built pwsh image\n        # (see .actrc); act would otherwise try to fetch it from a registry.\n        proc = _run([\"act\", \"push\", \"--rm\", \"--pull=false\"], workdir)",
       "originalFile": "#!/usr/bin/env python3\n\"\"\"Integration test harness.\n\nFor every directory under `fixtures/`, this harness:\n\n1. Builds a temporary git repo containing the script, the workflow, and the\n   fixture copied into `fixture/` (the path the workflow reads from).\n2. Runs `act push --rm` against that repo.\n3. Captures stdout+stderr, appends to `act-result.txt`.\n4. Asserts act exits 0, every job reports \"Job succeeded\", and the emitted\n   label block (between LABELS_BEGIN / LABELS_END) matches `expected.txt`.\n\nPer the benchmark rules this harness never calls the Python script directly;\nall test cases execute through the GitHub Actions workflow via act.\n\"\"\"\n\nfrom __future__ import annotations\n\nimport json\nimport os\nimport shutil\nimport subprocess\nimport sys\nimport tempfile\nimport textwrap\nfrom pathlib import Path\n\nROOT = Path(__file__).resolve().parent\nFIXTURES_DIR = ROOT / \"fixtures\"\nRESULT_FILE = ROOT / \"act-result.txt\"\nACTRC = ROOT / \".actrc\"\n\n\ndef _run(cmd: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:\n    return subprocess.run(\n        cmd, cwd=str(cwd), capture_output=True, text=True, check=False\n    )\n\n\ndef _setup_repo(case_dir: Path, workdir: Path) -> None:\n    \"\"\"Copy script, workflow, and fixture data into a fresh git repo.\"\"\"\n    # Project files that all cases share.\n    shutil.copy(ROOT / \"label_assigner.py\", workdir / \"label_assigner.py\")\n    (workdir / \".github\" / \"workflows\").mkdir(parents=True, exist_ok=True)\n    shutil.copy(\n        ROOT / \".github/workflows/pr-label-assigner.yml\",\n        workdir / \".github/workflows/pr-label-assigner.yml\",\n    )\n    if ACTRC.exists():\n        shutil.copy(ACTRC, workdir / \".actrc\")\n    # Per-case fixture data lands at the path the workflow reads.\n    fixture_dst = workdir / \"fixture\"\n    fixture_dst.mkdir()\n    shutil.copy(case_dir / \"rules.json\", fixture_dst / \"rules.json\")\n    shutil.copy(case_dir / \"files.txt\", fixture_dst / \"files.txt\")\n\n    # Minimal git repo so `act push` has a commit to work against.\n    subprocess.run([\"git\", \"init\", \"-q\", \"-b\", \"main\"], cwd=workdir, check=True)\n    subprocess.run(\n        [\"git\", \"config\", \"user.email\", \"harness@example.com\"],\n        cwd=workdir,\n        check=True,\n    )\n    subprocess.run(\n        [\"git\", \"config\", \"user.name\", \"harness\"], cwd=workdir, check=True\n    )\n    subprocess.run([\"git\", \"add\", \"-A\"], cwd=workdir, check=True)\n    subprocess.run(\n        [\"git\", \"commit\", \"-q\", \"-m\", \"fixture\"], cwd=workdir, check=True\n    )\n\n\ndef _parse_labels(act_output: str) -> list[str]:\n    \"\"\"Extract the LABELS_BEGIN...LABELS_END block from act logs.\n\n    act prefixes every line with stuff like `| `, so we strip common prefixes\n    before matching delimiters.\n    \"\"\"\n    labels: list[str] = []\n    in_block = False\n    for raw in act_output.splitlines():\n        # Strip the `[... ] ... | ` prefix act emits around command stdout.\n        cleaned = raw\n        if \"| \" in cleaned:\n            cleaned = cleaned.split(\"| \", 1)[1]\n        cleaned = cleaned.rstrip()\n        if cleaned.endswith(\"LABELS_BEGIN\"):\n            in_block = True\n            labels = []\n            continue\n        if cleaned.endswith(\"LABELS_END\"):\n            in_block = False\n            continue\n        if in_block:\n            # Drop any leading whitespace that survived prefix stripping.\n            label = cleaned.strip()\n            if label:\n                labels.append(label)\n    return labels\n\n\ndef _append_result(header: str, body: str) -> None:\n    with RESULT_FILE.open(\"a\", encoding=\"utf-8\") as f:\n        f.write(\"=\" * 72 + \"\\n\")\n        f.write(header + \"\\n\")\n        f.write(\"=\" * 72 + \"\\n\")\n        f.write(body)\n        if not body.endswith(\"\\n\"):\n            f.write(\"\\n\")\n\n\ndef _read_expected(case_dir: Path) -> list[str]:\n    text = (case_dir / \"expected.txt\").read_text(encoding=\"utf-8\")\n    return [line.strip() for line in text.splitlines() if line.strip()]\n\n\ndef _check_workflow_structure() -> None:\n    \"\"\"Workflow-structure assertions (YAML shape + referenced paths exist).\"\"\"\n    # Use a tiny YAML reader rather than adding a PyYAML dependency: we just\n    # verify the key fields are present as substrings in the right sections.\n    wf = (ROOT / \".github/workflows/pr-label-assigner.yml\").read_text(\n        encoding=\"utf-8\"\n    )\n    assert \"on:\" in wf, \"workflow missing 'on:' triggers\"\n    assert \"pull_request\" in wf, \"workflow should trigger on pull_request\"\n    assert \"push\" in wf, \"workflow should trigger on push\"\n    assert \"workflow_dispatch\" in wf, \"workflow should allow workflow_dispatch\"\n    assert \"actions/checkout@v4\" in wf, \"workflow must checkout the repo\"\n    assert \"label_assigner.py\" in wf, \"workflow must reference the script\"\n    assert (ROOT / \"label_assigner.py\").exists(), \"script file missing\"\n    # actionlint should pass.\n    result = _run([\"actionlint\", \".github/workflows/pr-label-assigner.yml\"], ROOT)\n    assert result.returncode == 0, (\n        f\"actionlint failed:\\n{result.stdout}\\n{result.stderr}\"\n    )\n    print(\"workflow structure: OK\")\n\n\ndef _run_case(case_dir: Path) -> bool:\n    case_name = case_dir.name\n    print(f\"\\n--- case: {case_name} ---\")\n    with tempfile.TemporaryDirectory(prefix=f\"act-{case_name}-\") as tmp:\n        workdir = Path(tmp)\n        _setup_repo(case_dir, workdir)\n        # `act push --rm` builds and runs the workflow end-to-end.\n        proc = _run([\"act\", \"push\", \"--rm\"], workdir)\n        combined = (\n            f\"$ act push --rm   (case={case_name})\\n\"\n            f\"exit_code={proc.returncode}\\n\"\n            f\"--- stdout ---\\n{proc.stdout}\\n\"\n            f\"--- stderr ---\\n{proc.stderr}\\n\"\n        )\n        _append_result(f\"CASE: {case_name}\", combined)\n        if proc.returncode != 0:\n            print(f\"FAIL: act exited {proc.returncode}\")\n            print(proc.stdout[-2000:])\n            print(proc.stderr[-2000:])\n            return False\n        if \"Job succeeded\" not in proc.stdout and \"Job succeeded\" not in proc.stderr:\n            print(\"FAIL: 'Job succeeded' not found in act output\")\n            return False\n        labels = _parse_labels(proc.stdout + \"\\n\" + proc.stderr)\n        expected = _read_expected(case_dir)\n        if labels != expected:\n            print(f\"FAIL: labels mismatch\\n  expected: {expected}\\n  got:      {labels}\")\n            return False\n        print(f\"PASS: labels={labels}\")\n        return True\n\n\ndef main() -> int:\n    # Fresh result file each run so act-result.txt is deterministic.\n    RESULT_FILE.write_text(\"\", encoding=\"utf-8\")\n\n    _check_workflow_structure()\n\n    cases = sorted(p for p in FIXTURES_DIR.iterdir() if p.is_dir())\n    if not cases:\n        print(\"no fixture cases found\")\n        return 1\n\n    ok = 0\n    for case_dir in cases:\n        if _run_case(case_dir):\n            ok += 1\n    total = len(cases)\n    print(f\"\\n{ok}/{total} cases passed\")\n    return 0 if ok == total else 1\n\n\nif __name__ == \"__main__\":\n    sys.exit(main())\n",

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-WORKSPACE="/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/18-secret-rotation-validator/csharp-script-sonnet"
+WORKSPACE="/home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/18-secret-rotation-validator/csharp-script-sonnet"
 cd "$WORKSPACE"
 
 # Find or install dotnet

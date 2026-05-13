@@ -1,5 +1,5 @@
 [Assistant] I'll start by reading the AGENTS.md file for project instructions, then build the solution using TDD.
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/AGENTS.md"}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/AGENTS.md"}
 [Result] 1	# Agent Instructions
 2	
 3	All agent-facing instructions live in this file. `CLAUDE.md` contains only a
@@ -27,7 +27,7 @@
 25	
 26	# Evaluate test quality (structural metrics only)
 27	python3 test_quality.py results/2026-04
-[Tool: Bash] ls /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/
+[Tool: Bash] ls /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/
 [Result] benchmark-instructions-v4.md
 [Tool: Bash] bun --version && actionlint --version
 [Result] 1.3.11
@@ -35,7 +35,7 @@
 installed by downloading from release page
 built with go1.26.1 compiler for linux/amd64
 [Assistant] Let me check for the custom act Docker image and understand the environment better.
-[Tool: Bash] docker images act-ubuntu-pwsh 2>/dev/null; cat /home/passp/repos/compare-agent-scripting-by-language/Dockerfile.act 2>/dev/null | head -20
+[Tool: Bash] docker images act-ubuntu-pwsh 2>/dev/null; cat /home/passp/repos/GHA-bench/Dockerfile.act 2>/dev/null | head -20
 [Result] IMAGE                    ID             DISK USAGE   CONTENT SIZE   EXTRA
 act-ubuntu-pwsh:latest   f0ba9895b524       2.55GB          640MB   U    
 # Custom act container image with PowerShell and Pester pre-installed.
@@ -57,7 +57,7 @@ RUN apt-get update -qq \
     && rm -f packages-microsoft-prod.deb \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
-[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/.actrc 2>/dev/null; echo "---"; cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/benchmark-instructions-v4.md 2>/dev/null | head -50
+[Tool: Bash] cat /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/.actrc 2>/dev/null; echo "---"; cat /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/benchmark-instructions-v4.md 2>/dev/null | head -50
 [Result] -P ubuntu-latest=act-ubuntu-pwsh:latest
 ---
 # Benchmark Instructions v4 — GitHub Actions
@@ -78,25 +78,25 @@ RUN apt-get update -qq \
 
 Each task is executed by a Claude Code agent under 4 different language constraints ("modes") and with 2 different models, yielding **8 runs per task**.
 [Assistant] I'll build this step by step — types, validator, formatter, CLI, tests, workflow, and test harness. Let me start by creating all the source files.
-[Tool: Bash] mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/fixtures /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/.github/workflows
+[Tool: Bash] mkdir -p /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/fixtures /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/.github/workflows
 [Result] (Bash completed with no output)
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/types.ts", "content": "export interface SecretConfig 
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/types.ts (file state is current in your context — no need to Read it back)
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/validator.ts", "content": "import type { SecretConfig
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/validator.ts (file state is current in your context — no need to Read it back)
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/formatter.ts", "content": "import type { RotationRepo
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/formatter.ts (file state is current in your context — no need to Read it back)
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/main.ts", "content": "import { readFileSync } from \"
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/main.ts (file state is current in your context — no need to Read it back)
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/fixtures/test-secrets.json", "content": "{\n  \"secre
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/fixtures/test-secrets.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/types.ts", "content": "export interface SecretConfig 
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/types.ts (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/validator.ts", "content": "import type { SecretConfig
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/validator.ts (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/formatter.ts", "content": "import type { RotationRepo
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/formatter.ts (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/main.ts", "content": "import { readFileSync } from \"
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/main.ts (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/fixtures/test-secrets.json", "content": "{\n  \"secre
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/fixtures/test-secrets.json (file state is current in your context — no need to Read it back)
 [Assistant] Now creating the test files and workflow.
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/validator.test.ts", "content": "import { describe, te
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/validator.test.ts (file state is current in your context — no need to Read it back)
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/formatter.test.ts", "content": "import { describe, te
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/formatter.test.ts (file state is current in your context — no need to Read it back)
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/.github/workflows/secret-rotation-validator.yml", "co
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/.github/workflows/secret-rotation-validator.yml (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/validator.test.ts", "content": "import { describe, te
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/validator.test.ts (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/formatter.test.ts", "content": "import { describe, te
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/formatter.test.ts (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/.github/workflows/secret-rotation-validator.yml", "co
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/.github/workflows/secret-rotation-validator.yml (file state is current in your context — no need to Read it back)
 [Assistant] Now let me validate with actionlint and do a quick local sanity check of the tests.
 [Tool: Bash] actionlint .github/workflows/secret-rotation-validator.yml
 [Result] (Bash completed with no output)
@@ -108,8 +108,8 @@ Each task is executed by a Claude Code agent under 4 different language constrai
  79 expect() calls
 Ran 27 tests across 2 files. [46.00ms]
 [Assistant] actionlint passes clean and all 27 tests pass locally. Now creating the test harness that runs everything through act.
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/run-tests.ts", "content": "import { existsSync, mkdte
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/run-tests.ts (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/run-tests.ts", "content": "import { existsSync, mkdte
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/run-tests.ts (file state is current in your context — no need to Read it back)
 [Assistant] Now running the test harness through act. This will take a couple minutes.
 [Tool: Bash] bun run run-tests.ts 2>&1
 [Result ERROR] Exit code 1
@@ -142,7 +142,7 @@ Ran 27 tests across 2 files. [46.00ms]
 
 === 
 [Assistant] Act failed. Let me check the output to diagnose the issue.
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/act-result.txt"}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/act-result.txt"}
 [Result] 1	=== ACT RUN: Secret Rotation Validator ===
 2	Exit code: 1
 3	
@@ -161,11 +161,11 @@ Ran 27 tests across 2 files. [46.00ms]
 16	
 17	=== PH
 [Assistant] The issue is act's `forcePull=true` default trying to pull from Docker Hub. I need to add `--pull=false` since the image is local.
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/run-tests.ts", "old_string": "l
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/run-tests.ts has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/run-tests.ts", "old_string": "l
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/run-tests.ts has been updated successfully. (file state is current in your context — no need to Read it back)
 [Assistant] I also need to fix the "no test failures" assertion — `bun test` output will contain the word "fail" in "0 fail". Let me fix that check.
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/run-tests.ts", "old_string": "a
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/run-tests.ts has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/run-tests.ts", "old_string": "a
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/18-secret-rotation-validator/typescript-bun-opus/run-tests.ts has been updated successfully. (file state is current in your context — no need to Read it back)
 [Assistant] Running the test harness again (act run 2 of 3).
 [Tool: Bash] bun run run-tests.ts 2>&1
 [Result] === PHASE 1: WORKFLOW STRUCTURE TESTS ===
