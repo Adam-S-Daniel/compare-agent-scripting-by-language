@@ -3,7 +3,7 @@ Manual test runner - executes all assertions from test_label_assigner.py
 without requiring pytest, for environments where pytest is sandboxed.
 """
 import sys
-sys.path.insert(0, '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/12-pr-label-assigner/default-sonnet')
+sys.path.insert(0, '/home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/12-pr-label-assigner/default-sonnet')
 
 from label_assigner import assign_labels, LabelRule, LabelConfig
 

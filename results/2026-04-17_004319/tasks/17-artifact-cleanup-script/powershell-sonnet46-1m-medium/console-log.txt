@@ -1,5 +1,5 @@
 [Assistant] Let me read the project instructions and benchmark guidelines first.
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/AGENTS.md"}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/AGENTS.md"}
 [Result] 1	# Agent Instructions
 2	
 3	All agent-facing instructions live in this file. `CLAUDE.md` contains only a
@@ -27,7 +27,7 @@
 25	
 26	# Evaluate test quality (structural metrics only)
 27	python3 test_quality.py results/2026-04
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/benchmark-instructions-v4.md"}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/benchmark-instructions-v4.md"}
 [Result] 1	# Benchmark Instructions v4 — GitHub Actions
 2	
 3	**Version**: v4
@@ -46,32 +46,32 @@
 16	
 17	Each task is executed by a Claude Code agent under 4 different language constraints ("modes") and with 2 different models, yielding **8 runs per task**. A
 [Assistant] Let me check the existing `.actrc` and workspace structure.
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/.actrc"}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/.actrc"}
 [Result] 1	-P ubuntu-latest=act-ubuntu-pwsh:latest
 2	
-[Tool: Bash] ls /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/
+[Tool: Bash] ls /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/
 [Result] benchmark-instructions-v4.md
 [Assistant] Now I have a clear picture of the project. Let me implement this step by step with TDD. I'll create all files in the right order.
-[Tool: Bash] mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/.github/workflows
+[Tool: Bash] mkdir -p /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/.github/workflows
 [Result] (Bash completed with no output)
 [Assistant] **Step 1: Write the first failing test (TDD red phase)**
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.Tests.ps1", "content": "#Requ
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.Tests.ps1", "content": "#Requ
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.Tests.ps1 (file state is current in your context — no need to Read it back)
 [Assistant] Now let me verify the test fails (since the implementation doesn't exist yet), then write the implementation.
 [Tool: Bash] pwsh -Command "Invoke-Pester ./ArtifactCleanup.Tests.ps1 -Tag Unit -Output Minimal" 2>&1 | head -30
 [Result] [95m
 [95mStarting discovery in 1 files.[0m
 [95mDiscovery found 28 tests in 424ms.[0m
 [95mRunning tests.[0m
-[91m[-] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.Tests.ps1 failed with:[0m
-[91mCommandNotFoundException: The term '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.ps1' is not recognized as a name of a cmdlet, function, script file, or executable program.
+[91m[-] /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.Tests.ps1 failed with:[0m
+[91mCommandNotFoundException: The term '/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.ps1' is not recognized as a name of a cmdlet, function, script file, or executable program.
 [91mCheck the spelling of the name, or if a path was included, verify that the path is correct and try again.
-[91mat <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.Tests.ps1:10[0m
+[91mat <ScriptBlock>, /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.Tests.ps1:10[0m
 [97mTests completed in 825ms[0m
 [97mTests Passed: 0, [0m[91mFailed: 21, [0m[90mSkipped: 0, 
 [Assistant] Tests are failing as expected (red phase). Now write the implementation.
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.ps1", "content": "<#\n.SYNOPS
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.ps1", "content": "<#\n.SYNOPS
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.ps1 (file state is current in your context — no need to Read it back)
 [Assistant] Now run unit tests to verify the green phase:
 [Tool: Bash] pwsh -Command "Invoke-Pester ./ArtifactCleanup.Tests.ps1 -Tag Unit -Output Normal" 2>&1
 [Result] [95m
@@ -80,20 +80,20 @@
 [95mRunning tests.[0m
 [91m[-] Get-ArtifactDeletionPlan - Max Age Policy.retains all artifacts when none exceed MaxAgeDays[0m[90m 29ms (25ms|3ms)[0m
 [91m PropertyNotFoundException: The property 'Sum' cannot be found on this object. Verify that the property exists.
-[91m at Get-ArtifactDeletionPlan, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.ps1:110
-[91m at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.Tests.ps1:57[0m
+[91m at Get-ArtifactDeletionPlan, /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.ps1:110
+[91m at <ScriptBlock>, /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.Tests.ps1:57[0m
 [91m[-] Get-ArtifactDeletionPlan - Max Age Policy.handles an empty artifact list gracefully[0m[90m 13ms (11ms|2ms)[0m
 [91m ParameterBindingValidationException: Cannot bind argument to parameter 'Artifacts' because it is an empty array.
 [
 [Assistant] Two issues: `Measure-Object -Sum` on empty arrays with strict mode, and empty array binding. Let me fix the implementation:
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.ps1", "
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.ps1", "
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.ps1", "
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.ps1", "
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Assistant] Also remove the now-stale null check line:
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.ps1", "
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.ps1", "offset": 100, "limit":
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.ps1", "
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.ps1", "offset": 100, "limit":
 [Result] 100	        foreach ($artifact in $candidates) {
 101	            if ($currentSize -le $Policy.MaxTotalSizeBytes) { break }
 102	            [void]$deleteSet.Add($artifact.Name)
@@ -114,23 +114,23 @@
 117	        SpaceReclaimedBytes = [long]$reclaimed
 118	        DryRun              = [bool]$DryRun
 119	    }
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.ps1", "
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.ps1", "
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Tool: Bash] pwsh -Command "Invoke-Pester ./ArtifactCleanup.Tests.ps1 -Tag Unit -Output Normal" 2>&1
 [Result] [95m
 [95mStarting discovery in 1 files.[0m
 [95mDiscovery found 28 tests in 347ms.[0m
 [95mRunning tests.[0m
 [91m[-] Workflow Structure Tests.workflow YAML file exists[0m[90m 69ms (64ms|5ms)[0m
-[91m Expected path '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/.github/workflows/artifact-cleanup-script.yml' to exist, but it did not exist.
-[91m at $script:WorkflowFile | Should -Exist, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.Tests.ps1:259
-[91m at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.Tests.ps1:259[0m
+[91m Expected path '/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/.github/workflows/artifact-cleanup-script.yml' to exist, but it did not exist.
+[91m at $script:WorkflowFile | Should -Exist, /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.Tests.ps1:259
+[91m at <ScriptBlock>, /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.Tests.ps1:259[0m
 [91m[-] Workflow Structure Tests.workflow has push trigger[0m[90m 11ms (9ms|2ms)[0m
 [91m ItemNotFoundException: Cannot find path '/home/p
 [Assistant] All logic tests pass now. The 7 failures are workflow structure tests — need the YAML file. Let me create it:
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/.github/workflows/artifact-cleanup-script.yml
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/.github/workflows/artifact-cleanup-script.yml (file state is current in your context — no need to Read it back)
-[Tool: Bash] actionlint /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/.github/workflows/artifact-cleanup-script.yml
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/.github/workflows/artifact-cleanup-script.yml
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/.github/workflows/artifact-cleanup-script.yml (file state is current in your context — no need to Read it back)
+[Tool: Bash] actionlint /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/.github/workflows/artifact-cleanup-script.yml
 [Result] (Bash completed with no output)
 [Assistant] actionlint passes cleanly. Now run unit tests again to verify all pass:
 [Tool: Bash] pwsh -Command "Invoke-Pester ./ArtifactCleanup.Tests.ps1 -Tag Unit -Output Normal" 2>&1
@@ -138,7 +138,7 @@
 [95mStarting discovery in 1 files.[0m
 [95mDiscovery found 28 tests in 320ms.[0m
 [95mRunning tests.[0m
-[32m[+] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.Tests.ps1[0m[90m 1.46s (617ms|573ms)[0m
+[32m[+] /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.Tests.ps1[0m[90m 1.46s (617ms|573ms)[0m
 [97mTests completed in 1.49s[0m
 [32mTests Passed: 21, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[37mNotRun: 7[0m
 [Assistant] All 21 unit tests pass. Now run the integration test (single `act push` run):
@@ -168,17 +168,17 @@ ghcr.io/catthehacker/ubuntu:full-latest   9327301aea27       67.7GB         16.8
 ghcr.io/catthehacker/ubuntu:pwsh-latest   5c3a44a9d687       2.59GB          384MB        
 ubuntu:latest                             c4a8d5503dfb        119MB         31.7MB
 [Assistant] The image exists locally but act is force-pulling. I need to add `--pull=false` to the actrc:
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/.actrc"}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/.actrc"}
 [Result] 1	-P ubuntu-latest=act-ubuntu-pwsh:latest
 2	
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/.actrc", "content": "-P ubuntu-latest=act-ubu
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/.actrc has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/.actrc", "content": "-P ubuntu-latest=act-ubu
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/.actrc has been updated successfully. (file state is current in your context — no need to Read it back)
 [Tool: Bash] pwsh -Command "Invoke-Pester ./ArtifactCleanup.Tests.ps1 -Tag Integration -Output Normal" 2>&1
 [Result] [95m
 [95mStarting discovery in 1 files.[0m
 [95mDiscovery found 28 tests in 361ms.[0m
 [95mRunning tests.[0m
-[32m[+] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.Tests.ps1[0m[90m 11.24s (10.36s|561ms)[0m
+[32m[+] /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.Tests.ps1[0m[90m 11.24s (10.36s|561ms)[0m
 [97mTests completed in 11.29s[0m
 [32mTests Passed: 7, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[37mNotRun: 21[0m
 [Assistant] All integration tests pass. Let me now run the full test suite (unit + integration):
@@ -187,7 +187,7 @@ ubuntu:latest                             c4a8d5503dfb        119MB         31.7
 [95mStarting discovery in 1 files.[0m
 [95mDiscovery found 28 tests in 393ms.[0m
 [95mRunning tests.[0m
-[32m[+] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.Tests.ps1[0m[90m 11.72s (10.6s|788ms)[0m
+[32m[+] /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.Tests.ps1[0m[90m 11.72s (10.6s|788ms)[0m
 [97mTests completed in 11.75s[0m
 [32mTests Passed: 28, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
 [Assistant] All 28 tests pass. Let me verify `act-result.txt` exists and check its content:
@@ -231,7 +231,7 @@ drwxr-xr-x  3 passp passp  4096 Apr 20 04:41 .github
 [95mStarting discovery in 1 files.[0m
 [95mDiscovery found 28 tests in 354ms.[0m
 [95mRunning tests.[0m
-[32m[+] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.Tests.ps1[0m[90m 12.67s (11.63s|729ms)[0m
+[32m[+] /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/17-artifact-cleanup-script/powershell-sonnet46-1m-medium/ArtifactCleanup.Tests.ps1[0m[90m 12.67s (11.63s|729ms)[0m
 [97mTests completed in 12.7s[0m
 [32mTests Passed: 28, [0m[90mFailed: 0, [0m[90mSkipped:
 [Assistant] All 28 tests pass and `act-result.txt` is present. Here's a summary of what was built:

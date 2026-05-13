@@ -3,7 +3,7 @@
 I'll start by understanding the task and then follow TDD methodology to build a directory tree sync tool in PowerShell with strict mode.
 
 Let me first check the current working directory.
-[Tool: Bash] ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/
+[Tool: Bash] ls -la /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/
 [Result] total 28
 drwxr-xr-x 2 passp passp  4096 Apr  7 23:54 .
 drwxr-xr-x 5 passp passp  4096 Apr  7 23:54 ..
@@ -14,21 +14,21 @@ PowerShell 7.6.0
 [Assistant] Good. Let me start with the first failing test — testing that we can compute SHA-256 hashes of files.
 
 ## TDD Cycle 1: File Hashing
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1", "content": "Set-StrictMode -La
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1", "content": "Set-StrictMode -La
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1 (file state is current in your context — no need to Read it back)
 [Assistant] Run the test — it should fail since `DirectorySync.ps1` doesn't exist yet.
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path './DirectorySync.Tests.ps1' -Output Detailed" 2>&1 | tail -30
 [Result] [95mPester v5.7.1[0m
 [95m
 [95mStarting discovery in 1 files.[0m
-[91m[-] Discovery in /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1 failed with:[0m
+[91m[-] Discovery in /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1 failed with:[0m
 [91mSystem.Management.Automation.ParameterBindingException: A parameter cannot be found that matches parameter name 'Latest'.
 [91m   at System.Management.Automation.ExceptionHandlingOps.CheckActionPreference(FunctionContext funcContext, Exception exception) in /root/parts/powershell/build/src/System.Management.Automation/engine/runtime/Operations/MiscOps.cs:line 1786
 [91m   at System.Management.Automation.Interpreter.ActionCallInstruction`2.Run(InterpretedFrame frame) in /root/parts/powershell/build/src/System.Management.Automation/engine/interpreter/CallInstruction.Generated.cs:line 504
 [91m   at System.Management.Automation.Interpreter.EnterTryCatchFinallyInstruction.Run(InterpretedFrame frame) in /root/parts/powershell/bui
 [Assistant] The parameter is `-Version Latest`, not `-Latest`. Let me fix both files.
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1", "old_str
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1", "old_str
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Assistant] Now run — should fail because `DirectorySync.ps1` doesn't exist.
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path './DirectorySync.Tests.ps1' -Output Detailed" 2>&1 | tail -20
 [Result] [95mPester v5.7.1[0m
@@ -37,14 +37,14 @@ PowerShell 7.6.0
 [95mDiscovery found 3 tests in 118ms.[0m
 [95mRunning tests.[0m
 [95m
-[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1'[0m
-[91m[-] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1 failed with:[0m
-[91mCommandNotFoundException: The term '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.ps1' is not recognized as a name of a cmdlet, function, script file, or executable program.
+[95mRunning tests from '/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1'[0m
+[91m[-] /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1 failed with:[0m
+[91mCommandNotFoundException: The term '/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.ps1' is not recognized as a name of a cmdlet, function, script file, or executable program.
 [91mCheck the spelling of the name, or if a path was included, verify that the path is correct and try again.
-[91mat <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-
+[91mat <ScriptBlock>, /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-
 [Assistant] Good — tests fail because the source file doesn't exist. Now write the minimum implementation.
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.ps1", "content": "Set-StrictMode -Version 
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.ps1", "content": "Set-StrictMode -Version 
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.ps1 (file state is current in your context — no need to Read it back)
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path './DirectorySync.Tests.ps1' -Output Detailed" 2>&1 | tail -25
 [Result] [95mPester v5.7.1[0m
 [95m
@@ -52,7 +52,7 @@ PowerShell 7.6.0
 [95mDiscovery found 3 tests in 136ms.[0m
 [95mRunning tests.[0m
 [95m
-[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1'[0m
+[95mRunning tests from '/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1'[0m
 [92mDescribing Get-FileHashMap[0m
 [32m  [+] Should return an empty hashtable for an empty directory[0m[90m 111ms (89ms|22ms)[0m
 [32m  [+] Should return SHA-256 hashes for files in a directory[0m[90m 30ms (29ms|1ms)[0m
@@ -62,7 +62,7 @@ PowerShell 7.6.0
 [Assistant] All 3 tests pass. Now TDD cycle 2.
 
 ## TDD Cycle 2: Compare Directory Trees
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1"}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1"}
 [Result] 1	# Import the module under test and enable strict mode inside Pester's BeforeAll
 2	BeforeAll {
 3	    Set-StrictMode -Version Latest
@@ -90,8 +90,8 @@ PowerShell 7.6.0
 25	    }
 26	
 27	    It 'Should return SHA-256 hashes for files in a direc
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1", "old_str
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1", "old_str
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Assistant] Run to confirm the new tests fail.
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path './DirectorySync.Tests.ps1' -Output Detailed" 2>&1 | tail -25
 [Result] [32m  [+] Should use relative paths as keys including subdirectories[0m[90m 10ms (9ms|1ms)[0m
@@ -100,12 +100,12 @@ PowerShell 7.6.0
 [91m  [-] Should detect files only in source[0m[90m 112ms (110ms|2ms)[0m
 [91m   CommandNotFoundException: The term 'Compare-DirectoryTrees' is not recognized as a name of a cmdlet, function, script file, or executable program.
 [91m   Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
-[91m   at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1:67[0m
+[91m   at <ScriptBlock>, /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1:67[0m
 [91m  [-] Should detect files only in target[0m[90m 92ms (92ms|1ms)[0m
 [91m   CommandNotFoundException: The term 'Compare-DirectoryTrees' is not recognized as a name of a cmdlet, function, script file, or executable program.
 [91m   Check the spelling of the name, or if a path was included, verify that the path is c
 [Assistant] 5 new tests fail as expected. Now implement `Compare-DirectoryTrees`.
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.ps1"}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.ps1"}
 [Result] 1	Set-StrictMode -Version Latest
 2	$ErrorActionPreference = 'Stop'
 3	
@@ -140,8 +140,8 @@ PowerShell 7.6.0
 32	
 33	    [hashtable]$hashMap = @{}
 34	    [
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.ps1", "old_string": 
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.ps1", "old_string": 
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path './DirectorySync.Tests.ps1' -Output Detailed" 2>&1 | tail -25
 [Result] [95mPester v5.7.1[0m
 [95m
@@ -149,7 +149,7 @@ PowerShell 7.6.0
 [95mDiscovery found 8 tests in 131ms.[0m
 [95mRunning tests.[0m
 [95m
-[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1'[0m
+[95mRunning tests from '/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1'[0m
 [92mDescribing Get-FileHashMap[0m
 [32m  [+] Should return an empty hashtable for an empty directory[0m[90m 107ms (85ms|22ms)[0m
 [32m  [+] Should return SHA-256 hashes for files in a directory[0m[90m 26ms (26ms|1ms)[0m
@@ -163,13 +163,13 @@ PowerShell 7.6.0
 [Assistant] All 8 tests pass. 
 
 ## TDD Cycle 3: Sync Plan Generation
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1", "old_str
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1", "old_str
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path './DirectorySync.Tests.ps1' -Output Detailed" 2>&1 | grep -E '^\[9[12]|Tests Passed|Tests completed'
 [Result] [97mTests completed in 1.13s[0m
 [97mTests Passed: 8, [0m[91mFailed: 5, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
 [Assistant] 5 new tests fail. Now implement `New-SyncPlan`.
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.ps1", "offset": 95}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.ps1", "offset": 95}
 [Result] 95	        }
 96	        else {
 97	            $modified.Add($key)
@@ -184,14 +184,14 @@ PowerShell 7.6.0
 106	    }
 107	}
 108	
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.ps1", "old_string": 
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.ps1", "old_string": 
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path './DirectorySync.Tests.ps1' -Output Detailed" 2>&1 | tail -25
 [Result] [95mStarting discovery in 1 files.[0m
 [95mDiscovery found 13 tests in 129ms.[0m
 [95mRunning tests.[0m
 [95m
-[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1'[0m
+[95mRunning tests from '/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1'[0m
 [92mDescribing Get-FileHashMap[0m
 [32m  [+] Should return an empty hashtable for an empty directory[0m[90m 108ms (87ms|21ms)[0m
 [32m  [+] Should return SHA-256 hashes for files in a directory[0m[90m 28ms (27ms|1ms)[0m
@@ -206,7 +206,7 @@ PowerShell 7.6.0
 [Assistant] All 13 tests pass.
 
 ## TDD Cycle 4: Invoke-SyncPlan (Dry-Run and Execute modes)
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1", "offset": 140}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1", "offset": 140}
 [Result] 140	
 141	        $plan = New-SyncPlan -SourcePath $script:sourceRoot -TargetPath $script:targetRoot
 142	        $plan.Actions.Count | Should -Be 1
@@ -227,13 +227,13 @@ PowerShell 7.6.0
 157	        Set-Content -Path (Join-Path $script:sourceRoot 'file.txt') -Value 'v2' -NoNewline
 158	        Set-Content -Path (Join-Path $script:targetRoot 'file.txt') -Value 'v1' -NoNewline
 15
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1", "old_str
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1", "old_str
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path './DirectorySync.Tests.ps1' -Output Detailed" 2>&1 | grep -E 'Tests Passed|Tests completed'
 [Result] [97mTests completed in 1.57s[0m
 [97mTests Passed: 13, [0m[91mFailed: 8, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
 [Assistant] 8 new tests fail. Now implement `Invoke-SyncPlan`.
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.ps1", "offset": 140}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.ps1", "offset": 140}
 [Result] 140	
 141	    # Files that differ need to be overwritten in target from source
 142	    foreach ($file in $comparison.Modified) {
@@ -258,12 +258,12 @@ PowerShell 7.6.0
 161	    }
 162	}
 163	
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.ps1", "old_string": 
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.ps1", "old_string": 
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path './DirectorySync.Tests.ps1' -Output Detailed" 2>&1 | tail -35
 [Result] [95mRunning tests.[0m
 [95m
-[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1'[0m
+[95mRunning tests from '/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1'[0m
 [92mDescribing Get-FileHashMap[0m
 [32m  [+] Should return an empty hashtable for an empty directory[0m[90m 106ms (86ms|20ms)[0m
 [32m  [+] Should return SHA-256 hashes for files in a directory[0m[90m 36ms (35ms|1ms)[0m
@@ -279,7 +279,7 @@ PowerShell 7.6.0
 [Assistant] All 21 tests pass.
 
 ## TDD Cycle 5: Error Handling
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1", "offset": 258}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1", "offset": 258}
 [Result] 258	
 259	        Get-Content -LiteralPath (Join-Path $script:targetRoot 'file.txt') -Raw | Should -Be 'updated'
 260	    }
@@ -300,8 +300,8 @@ PowerShell 7.6.0
 275	        # Set up a complex scenario
 276	        Set-Content -Path (Join-Path $script:sourceRoot 'a.txt') -Value 'aaa' -NoNewline
 277	    
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1", "old_str
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1", "old_str
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path './DirectorySync.Tests.ps1' -Output Detailed" 2>&1 | tail -15
 [Result] [0m
 [92mDescribing Invoke-SyncPlan - Execute mode[0m
@@ -321,8 +321,8 @@ PowerShell 7.6.0
 [Assistant] All 24 tests pass. The error handling already worked because `Get-FileHashMap` throws when the directory doesn't exist and `Compare-DirectoryTrees` calls it.
 
 ## TDD Cycle 6: Edge cases — empty files, binary files, special characters
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1", "old_str
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1", "old_str
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path './DirectorySync.Tests.ps1' -Output Detailed" 2>&1 | tail -15
 [Result] [32m  [+] Should make target identical to source after a full sync[0m[90m 40ms (39ms|1ms)[0m
 [32m  [+] Should return a report with Executed status[0m[90m 15ms (13ms|2ms)[0m
@@ -340,7 +340,7 @@ PowerShell 7.6.0
 [97mTests completed in 1.02s[0m
 [32mTests Passed: 28, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[
 [Assistant] All 28 tests pass. Let me do a final review of both files to make sure everything is clean and meets the strict mode requirements.
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.ps1"}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.ps1"}
 [Result] 1	Set-StrictMode -Version Latest
 2	$ErrorActionPreference = 'Stop'
 3	
@@ -376,7 +376,7 @@ PowerShell 7.6.0
 33	    [hashtable]$hashMap = @{}
 34	    [
 [Assistant] Everything looks good. Let me verify the final test file and run the complete suite one more time.
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1"}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1"}
 [Result] 1	# Import the module under test and enable strict mode inside Pester's BeforeAll
 2	BeforeAll {
 3	    Set-StrictMode -Version Latest
@@ -412,7 +412,7 @@ PowerShell 7.6.0
 [95mDiscovery found 28 tests in 143ms.[0m
 [95mRunning tests.[0m
 [95m
-[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1'[0m
+[95mRunning tests from '/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/03-directory-tree-sync/powershell-strict-opus/DirectorySync.Tests.ps1'[0m
 [92mDescribing Get-FileHashMap[0m
 [32m  [+] Should return an empty hashtable for an empty directory[0m[90m 112ms (93ms|19ms)[0m
 [32m  [+] Should return SHA-256 hashes for files in a directory[0m[90m 24ms (23ms|1ms)[0m

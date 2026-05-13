@@ -2045,7 +2045,7 @@ def update_readme(repo_root: Path) -> None:
     if readme_path.exists():
         content = readme_path.read_text()
     else:
-        content = "# compare-agent-scripting-by-language\n\n"
+        content = "# GHA-bench\n\n"
 
     begin = "<!-- BEGIN BENCHMARK RUNS -->"
     end = "<!-- END BENCHMARK RUNS -->"

@@ -90,7 +90,7 @@ bash -n dependency-license-checker.sh
 
 ## Files Ready for Delivery
 
-All files are in: `/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-haiku45/`
+All files are in: `/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-haiku45/`
 
 Key deliverables:
 - ✓ Executable script: `dependency-license-checker.sh`

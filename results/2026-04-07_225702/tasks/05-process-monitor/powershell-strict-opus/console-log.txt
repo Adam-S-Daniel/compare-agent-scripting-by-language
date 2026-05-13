@@ -3,7 +3,7 @@
 I'll start by understanding the task and planning my approach, then follow strict TDD methodology.
 
 Let me first check the current working directory.
-[Tool: Bash] ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/
+[Tool: Bash] ls -la /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/
 [Result] total 28
 drwxr-xr-x 2 passp passp  4096 Apr  8 01:01 .
 drwxr-xr-x 5 passp passp  4096 Apr  8 01:01 ..
@@ -14,8 +14,8 @@ PowerShell 7.6.0
 [Assistant] Good. Let me start with TDD — first failing test, then implementation, iterating through the functionality.
 
 **Cycle 1: Process data model — parse/create process info objects**
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1", "content": "Set-StrictMode -Versi
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1", "content": "Set-StrictMode -Versi
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1 (file state is current in your context — no need to Read it back)
 [Assistant] Run the test — it should fail since `ProcessMonitor.ps1` doesn't exist yet.
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path ./ProcessMonitor.Tests.ps1 -Output Detailed" 2>&1 | tail -30
 [Result] [95mPester v5.7.1[0m
@@ -24,31 +24,31 @@ PowerShell 7.6.0
 [95mDiscovery found 4 tests in 121ms.[0m
 [95mRunning tests.[0m
 [95m
-[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1'[0m
-[91m[-] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1 failed with:[0m
-[91mCommandNotFoundException: The term '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1' is not recognized as a name of a cmdlet, function, script file, or executable program.
+[95mRunning tests from '/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1'[0m
+[91m[-] /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1 failed with:[0m
+[91mCommandNotFoundException: The term '/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1' is not recognized as a name of a cmdlet, function, script file, or executable program.
 [91mCheck the spelling of the name, or if a path was included, verify that the path is correct and try again.
-[91mat <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-m
+[91mat <ScriptBlock>, /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-m
 [Assistant] RED. Now write the minimum code to make it pass.
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1", "content": "Set-StrictMode -Version Lat
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1", "content": "Set-StrictMode -Version Lat
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1 (file state is current in your context — no need to Read it back)
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path ./ProcessMonitor.Tests.ps1 -Output Detailed" 2>&1 | tail -20
 [Result] [91m  [-] rejects negative CPU percent[0m[90m 50ms (49ms|1ms)[0m
-[91m   Expected an exception with message like '*CPU percent cannot be negative*' to be thrown, but the message was 'Cannot overwrite variable PID because it is read-only or constant.'. from /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1:18 char:11
+[91m   Expected an exception with message like '*CPU percent cannot be negative*' to be thrown, but the message was 'Cannot overwrite variable PID because it is read-only or constant.'. from /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1:18 char:11
 [91m       +         { New-ProcessInfo -PID 1 -Name 'x' -CpuPercent -5.0 -MemoryMB …
 [91m       +           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-[91m   at Should -Throw '*CPU percent cannot be negative*', /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1:19
-[91m   at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1:18[0m
+[91m   at Should -Throw '*CPU percent cannot be negative*', /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1:19
+[91m   at <ScriptBlock>, /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1:18[0m
 [91m  [-] 
 [Assistant] `$PID` is an automatic variable in PowerShell. I need to rename the parameter.
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1", "old_string": "  
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1", "old_string": "  
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1", "old_string": "  
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1", "old_string": "  
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Assistant] Now update the tests to use `-ProcessId` instead of `-PID`.
-[Tool: Edit] {"replace_all": true, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1", "old_string"
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1 has been updated. All occurrences were successfully replaced. (file state is current in your context — no need to Read it back)
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1"}
+[Tool: Edit] {"replace_all": true, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1", "old_string"
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1 has been updated. All occurrences were successfully replaced. (file state is current in your context — no need to Read it back)
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1"}
 [Result] 1	Set-StrictMode -Version Latest
 2	$ErrorActionPreference = 'Stop'
 3	
@@ -78,29 +78,29 @@ PowerShell 7.6.0
 27	    It 'rejects empty name' {
 28	        { New-ProcessInfo -ProcessId1 -Na
 [Assistant] The replace-all removed the space before the number. Let me fix those.
-[Tool: Edit] {"replace_all": true, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1", "old_string"
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1 has been updated. All occurrences were successfully replaced. (file state is current in your context — no need to Read it back)
-[Tool: Edit] {"replace_all": true, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1", "old_string"
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1 has been updated. All occurrences were successfully replaced. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": true, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1", "old_string"
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1 has been updated. All occurrences were successfully replaced. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": true, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1", "old_string"
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1 has been updated. All occurrences were successfully replaced. (file state is current in your context — no need to Read it back)
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path ./ProcessMonitor.Tests.ps1 -Output Detailed" 2>&1 | tail -15
 [Result] [95mRunning tests.[0m
 [95m
-[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1'[0m
+[95mRunning tests from '/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1'[0m
 [92mDescribing New-ProcessInfo[0m
 [32m  [+] creates a process info object with all required fields[0m[90m 92ms (68ms|24ms)[0m
 [32m  [+] rejects negative CPU percent[0m[90m 27ms (26ms|1ms)[0m
 [32m  [+] rejects negative memory[0m[90m 4ms (4ms|1ms)[0m
 [91m  [-] rejects empty name[0m[90m 16ms (15ms|1ms)[0m
-[91m   Expected an exception with message like '*Process name cannot be empty*' to be thrown, but the message was 'Cannot bind argument to parameter 'Name' because it is an empty string.'. from /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1:28 char:46
+[91m   Expected an exception with message like '*Process name cannot be empty*' to be thrown, but the message was 'Cannot bind argument to parameter 'Name' because it is an empty string.'. from /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1:28 char:46
 [91m       +         { New-ProcessInfo -ProcessId 1 -Name '' -CpuPercent 0.0 -Memo …
 [91m       +             
 [Assistant] The empty string validation is caught by PowerShell's Mandatory before our check. I need to add `[ValidateNotNullOrEmpty()]` or use `[AllowEmptyString()]` and handle it ourselves. Since the test expects our custom message, let me allow empty strings through and validate manually.
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1", "old_string": "  
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1", "old_string": "  
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path ./ProcessMonitor.Tests.ps1 -Output Detailed" 2>&1 | tail -10
 [Result] [95mRunning tests.[0m
 [95m
-[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1'[0m
+[95mRunning tests from '/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1'[0m
 [92mDescribing New-ProcessInfo[0m
 [32m  [+] creates a process info object with all required fields[0m[90m 88ms (68ms|21ms)[0m
 [32m  [+] rejects negative CPU percent[0m[90m 27ms (26ms|1ms)[0m
@@ -109,7 +109,7 @@ PowerShell 7.6.0
 [97mTests completed in 420ms[0m
 [32mTests Passed: 4, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
 [Assistant] GREEN. All 4 pass. Now **Cycle 2: Filtering by thresholds**.
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1"}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1"}
 [Result] 1	Set-StrictMode -Version Latest
 2	$ErrorActionPreference = 'Stop'
 3	
@@ -138,14 +138,14 @@ PowerShell 7.6.0
 26	
 27	    It 'rejects empty name' {
 28	        { New-ProcessInfo -ProcessId 1
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1", "old_string
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1", "old_string
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path ./ProcessMonitor.Tests.ps1 -Output Detailed" 2>&1 | tail -20
 [Result] [95mStarting discovery in 1 files.[0m
 [95mDiscovery found 9 tests in 134ms.[0m
 [95mRunning tests.[0m
 [95m
-[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1'[0m
+[95mRunning tests from '/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1'[0m
 [92mDescribing New-ProcessInfo[0m
 [32m  [+] creates a process info object with all required fields[0m[90m 87ms (66ms|21ms)[0m
 [32m  [+] rejects negative CPU percent[0m[90m 33ms (32ms|1ms)[0m
@@ -158,22 +158,22 @@ PowerShell 7.6.0
 [91m  Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
 [91m  at <ScriptBlock>, 
 [Assistant] RED — the helper function isn't found in Pester's scope because it's defined at file scope. I need to move it inside the `BeforeAll` block or a shared scope. Let me put it in the top-level `BeforeAll`.
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1", "old_string
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1", "old_string
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Assistant] Now remove the duplicate helper that was outside BeforeAll.
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1", "old_string
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1", "old_string
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path ./ProcessMonitor.Tests.ps1 -Output Detailed" 2>&1 | tail -20
 [Result] [91m   Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
-[91m   at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1:53[0m
+[91m   at <ScriptBlock>, /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1:53[0m
 [91m  [-] filters by memory threshold only[0m[90m 83ms (82ms|1ms)[0m
 [91m   CommandNotFoundException: The term 'Get-FilteredProcesses' is not recognized as a name of a cmdlet, function, script file, or executable program.
 [91m   Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
-[91m   at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1:60[0m
+[91m   at <ScriptBlock>, /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1:60[0m
 [91m  [-] filters by both CPU and memory (OR logic — exceeding either triggers inclusion)[0m[90m 78ms (77ms|1ms)[0m
 [91m   CommandNotFoundException: The term 'Get-FilteredPro
 [Assistant] RED — `Get-FilteredProcesses` doesn't exist yet. Now implement it.
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1"}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1"}
 [Result] 1	Set-StrictMode -Version Latest
 2	$ErrorActionPreference = 'Stop'
 3	
@@ -203,15 +203,15 @@ PowerShell 7.6.0
 27	    }
 28	    if ($MemoryMB -lt 0) {
 29	        throw "Memory 
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1", "old_string": "  
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1", "old_string": "  
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path ./ProcessMonitor.Tests.ps1 -Output Detailed" 2>&1 | tail -20
 [Result] [95m
 [95mStarting discovery in 1 files.[0m
 [95mDiscovery found 9 tests in 121ms.[0m
 [95mRunning tests.[0m
 [95m
-[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1'[0m
+[95mRunning tests from '/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1'[0m
 [92mDescribing New-ProcessInfo[0m
 [32m  [+] creates a process info object with all required fields[0m[90m 84ms (63ms|20ms)[0m
 [32m  [+] rejects negative CPU percent[0m[90m 32ms (31ms|1ms)[0m
@@ -224,7 +224,7 @@ PowerShell 7.6.0
 [32m  [+] filters by both CPU and memory (OR logic — exceeding either triggers inclusion)[0m[90m 4ms (4ms|1ms)[0m
 [32m  [+] returns nothing when no process exceeds thresholds[0m[90m 6ms 
 [Assistant] GREEN — 9/9. **Cycle 3: Top N resource consumers**.
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1"}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1"}
 [Result] 1	Set-StrictMode -Version Latest
 2	$ErrorActionPreference = 'Stop'
 3	
@@ -249,8 +249,8 @@ PowerShell 7.6.0
 22	Describe 'New-ProcessInfo' {
 23	    It 'creates a process info object with all required fields' {
 24	        $proc = New-
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1", "old_string
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1", "old_string
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path ./ProcessMonitor.Tests.ps1 -Output Detailed" 2>&1 | grep -E '\[[-+]\]|Tests Passed|Tests completed'
 [Result] [32m  [+] creates a process info object with all required fields[0m[90m 83ms (62ms|20ms)[0m
 [32m  [+] rejects negative CPU percent[0m[90m 32ms (31ms|1ms)[0m
@@ -266,7 +266,7 @@ PowerShell 7.6.0
 [91m  [-] returns all when Count exceeds list size[0m[90m 108ms (103ms|5ms)[0m
 [91m  [-] rejects invalid So
 [Assistant] RED — 5 new tests failing. Now implement `Get-TopConsumers`.
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1"}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1"}
 [Result] 1	Set-StrictMode -Version Latest
 2	$ErrorActionPreference = 'Stop'
 3	
@@ -296,8 +296,8 @@ PowerShell 7.6.0
 27	    }
 28	    if ($MemoryMB -lt 0) {
 29	        throw "Memory 
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1", "old_string": "  
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1", "old_string": "  
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path ./ProcessMonitor.Tests.ps1 -Output Detailed" 2>&1 | grep -E '\[[-+]\]|Tests Passed|Tests completed'
 [Result] [32m  [+] creates a process info object with all required fields[0m[90m 84ms (62ms|21ms)[0m
 [32m  [+] rejects negative CPU percent[0m[90m 33ms (32ms|1ms)[0m
@@ -313,7 +313,7 @@ PowerShell 7.6.0
 [32m  [+] returns all when Count exceeds list size[0m[90m 10ms (8ms|2ms)[0m
 [32m  [+] rejects invalid SortBy 
 [Assistant] GREEN — 14/14. **Cycle 4: Alert report generation**.
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1"}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1"}
 [Result] 1	Set-StrictMode -Version Latest
 2	$ErrorActionPreference = 'Stop'
 3	
@@ -338,8 +338,8 @@ PowerShell 7.6.0
 22	Describe 'New-ProcessInfo' {
 23	    It 'creates a process info object with all required fields' {
 24	        $proc = New-
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1", "old_string
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1", "old_string
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path ./ProcessMonitor.Tests.ps1 -Output Detailed" 2>&1 | grep -E '\[[-+]\]|Tests Passed|Tests completed'
 [Result] [32m  [+] creates a process info object with all required fields[0m[90m 84ms (64ms|20ms)[0m
 [32m  [+] rejects negative CPU percent[0m[90m 30ms (29ms|1ms)[0m
@@ -355,7 +355,7 @@ PowerShell 7.6.0
 [32m  [+] returns all when Count exceeds list size[0m[90m 10ms (7ms|2ms)[0m
 [32m  [+] rejects invalid SortBy 
 [Assistant] RED — 4 new tests failing. Now implement `New-AlertReport` and `Invoke-ProcessMonitor`.
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1"}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1"}
 [Result] 1	Set-StrictMode -Version Latest
 2	$ErrorActionPreference = 'Stop'
 3	
@@ -385,8 +385,8 @@ PowerShell 7.6.0
 27	    }
 28	    if ($MemoryMB -lt 0) {
 29	        throw "Memory 
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1", "old_string": "  
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1", "old_string": "  
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path ./ProcessMonitor.Tests.ps1 -Output Detailed" 2>&1 | grep -E '\[[-+]\]|Tests Passed|Tests completed'
 [Result] [32m  [+] creates a process info object with all required fields[0m[90m 80ms (61ms|19ms)[0m
 [32m  [+] rejects negative CPU percent[0m[90m 30ms (29ms|1ms)[0m
@@ -405,12 +405,12 @@ PowerShell 7.6.0
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path ./ProcessMonitor.Tests.ps1 -Output Detailed" 2>&1 | grep -A 10 '\[-\] returns no-alert'
 [Result] [91m  [-] returns no-alert report when nothing exceeds thresholds[0m[90m 9ms (8ms|2ms)[0m
 [91m   PropertyNotFoundException: The property 'Count' cannot be found on this object. Verify that the property exists.
-[91m   at Invoke-ProcessMonitor, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1:154
-[91m   at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1:166[0m
+[91m   at Invoke-ProcessMonitor, /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1:154
+[91m   at <ScriptBlock>, /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1:166[0m
 [97mTests completed in 737ms[0m
 [97mTests Passed: 17, [0m[91mFailed: 1, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
 [Assistant] The issue is at line 154 — when `Get-FilteredProcesses` returns an empty array, it gets unwrapped. I need to handle the empty case differently. Let me look at the exact line.
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1", "offset": 140, "limit": 25}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1", "offset": 140, "limit": 25}
 [Result] 140	    [CmdletBinding()]
 141	    [OutputType([string])]
 142	    param(
@@ -437,8 +437,8 @@ PowerShell 7.6.0
 163	
 164	    return 
 [Assistant] The issue is that `$filtered` is an empty `PSCustomObject[]` but strict mode can't find `.Count` on it when it's truly empty (the cast from `@()` returns `$null`). Let me fix with an explicit null check.
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1", "old_string": "  
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1", "old_string": "  
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path ./ProcessMonitor.Tests.ps1 -Output Detailed" 2>&1 | grep -E '\[[-+]\]|Tests Passed|Tests completed'
 [Result] [32m  [+] creates a process info object with all required fields[0m[90m 84ms (63ms|21ms)[0m
 [32m  [+] rejects negative CPU percent[0m[90m 31ms (30ms|1ms)[0m
@@ -457,13 +457,13 @@ PowerShell 7.6.0
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path ./ProcessMonitor.Tests.ps1 -Output Detailed" 2>&1 | grep -A 8 '\[-\] returns no-alert'
 [Result] [91m  [-] returns no-alert report when nothing exceeds thresholds[0m[90m 7ms (6ms|1ms)[0m
 [91m   ParameterBindingValidationException: Cannot bind argument to parameter 'AlertProcesses' because it is null.
-[91m   at Invoke-ProcessMonitor, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1:161
-[91m   at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1:166[0m
+[91m   at Invoke-ProcessMonitor, /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1:161
+[91m   at <ScriptBlock>, /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1:166[0m
 [97mTests completed in 786ms[0m
 [97mTests Passed: 17, [0m[91mFailed: 1, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
 [Assistant] The `$top` is null when the else branch assigns `@()` to a `[PSCustomObject[]]`. The `@()` gets cast to `$null` for that typed array. I need to handle this at the call site by wrapping differently.
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1", "old_string": "  
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1", "old_string": "  
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path ./ProcessMonitor.Tests.ps1 -Output Detailed" 2>&1 | grep -E '\[[-+]\]|Tests Passed|Tests completed'
 [Result] [32m  [+] creates a process info object with all required fields[0m[90m 80ms (61ms|19ms)[0m
 [32m  [+] rejects negative CPU percent[0m[90m 29ms (28ms|1ms)[0m
@@ -479,7 +479,7 @@ PowerShell 7.6.0
 [32m  [+] returns all when Count exceeds list size[0m[90m 9ms (4ms|5ms)[0m
 [32m  [+] rejects invalid SortBy v
 [Assistant] GREEN — 18/18. **Cycle 5: Read process data from system (mockable)** — add a function that can read live processes but is designed for mock injection.
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1"}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1"}
 [Result] 1	Set-StrictMode -Version Latest
 2	$ErrorActionPreference = 'Stop'
 3	
@@ -505,8 +505,8 @@ PowerShell 7.6.0
 23	    It 'creates a process info object with all required fields' {
 24	        $proc = New-
 [Assistant] Now add tests for reading process data from system (with mock) and edge cases.
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1", "old_string
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1", "old_string
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path ./ProcessMonitor.Tests.ps1 -Output Detailed" 2>&1 | grep -E '\[[-+]\]|Tests Passed|Tests completed'
 [Result] [32m  [+] creates a process info object with all required fields[0m[90m 83ms (57ms|26ms)[0m
 [32m  [+] rejects negative CPU percent[0m[90m 30ms (30ms|1ms)[0m
@@ -522,7 +522,7 @@ PowerShell 7.6.0
 [32m  [+] returns all when Count exceeds list size[0m[90m 5ms (4ms|2ms)[0m
 [32m  [+] rejects invalid SortBy
 [Assistant] RED — 2 new tests failing as expected (Read-ProcessData not yet implemented). Now implement it.
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1"}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1"}
 [Result] 1	Set-StrictMode -Version Latest
 2	$ErrorActionPreference = 'Stop'
 3	
@@ -552,8 +552,8 @@ PowerShell 7.6.0
 27	    }
 28	    if ($MemoryMB -lt 0) {
 29	        throw "Memory 
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1", "old_string": "  
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1", "old_string": "  
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path ./ProcessMonitor.Tests.ps1 -Output Detailed" 2>&1 | grep -E '\[[-+]\]|Tests Passed|Tests completed'
 [Result] [32m  [+] creates a process info object with all required fields[0m[90m 85ms (59ms|26ms)[0m
 [32m  [+] rejects negative CPU percent[0m[90m 30ms (29ms|1ms)[0m
@@ -569,7 +569,7 @@ PowerShell 7.6.0
 [32m  [+] returns all when Count exceeds list size[0m[90m 5ms (3ms|1ms)[0m
 [32m  [+] rejects invalid SortBy
 [Assistant] GREEN — 22/22. All tests pass. Let me verify the final state of both files.
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1"}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.ps1"}
 [Result] 1	Set-StrictMode -Version Latest
 2	$ErrorActionPreference = 'Stop'
 3	
@@ -599,7 +599,7 @@ PowerShell 7.6.0
 27	    }
 28	    if ($MemoryMB -lt 0) {
 29	        throw "Memory 
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1"}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1"}
 [Result] 1	Set-StrictMode -Version Latest
 2	$ErrorActionPreference = 'Stop'
 3	
@@ -632,7 +632,7 @@ PowerShell 7.6.0
 [95mDiscovery found 22 tests in 164ms.[0m
 [95mRunning tests.[0m
 [95m
-[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1'[0m
+[95mRunning tests from '/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/05-process-monitor/powershell-strict-opus/ProcessMonitor.Tests.ps1'[0m
 [92mDescribing New-ProcessInfo[0m
 [32m  [+] creates a process info object with all required fields[0m[90m 123ms (84ms|39ms)[0m
 [32m  [+] rejects negative CPU percent[0m[90m 46ms (44ms|1ms)[0m

@@ -185,7 +185,7 @@ def validate_act_result():
 
 
 if __name__ == '__main__':
-    os.chdir('/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/17-artifact-cleanup-script/default-haiku45')
+    os.chdir('/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/17-artifact-cleanup-script/default-haiku45')
 
     wf_valid = validate_workflow()
     result_valid = validate_act_result()

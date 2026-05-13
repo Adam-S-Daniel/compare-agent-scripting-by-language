@@ -25,7 +25,7 @@
   {
     "type": "system",
     "subtype": "init",
-    "cwd": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium",
+    "cwd": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium",
     "session_id": "eb8a7593-b2ef-4b6b-89aa-8ad490b6e935",
     "tools": [
       "Task",
@@ -116,7 +116,7 @@
     "analytics_disabled": false,
     "uuid": "5e92f765-e41a-4ae8-b736-20a46ede460a",
     "memory_paths": {
-      "auto": "/home/passp/.claude/projects/-home-passp-repos-compare-agent-scripting-by-language-workspaces-2026-05-06-173435-16-environment-matrix-generator-bash-opus47-200k-medium/memory/"
+      "auto": "/home/passp/.claude/projects/-home-passp-repos-GHA-bench-workspaces-2026-05-06-173435-16-environment-matrix-generator-bash-opus47-200k-medium/memory/"
     },
     "fast_mode_state": "off"
   },
@@ -518,7 +518,7 @@
           "id": "toolu_01DvDmUA4dRhhvGUkjNG8kK5",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/matrix_gen.bats",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/matrix_gen.bats",
             "content": "#!/usr/bin/env bats\n# Tests for matrix_gen.sh - environment matrix generator\n# All tests written red/green TDD style.\n\nsetup() {\n  ROOT=\"${BATS_TEST_DIRNAME}/..\"\n  SCRIPT=\"${ROOT}/matrix_gen.sh\"\n  FIX=\"${ROOT}/tests/fixtures\"\n}\n\n# --- Basic Cartesian product --------------------------------------------------\n\n@test \"simple 2x2 matrix produces 4 combinations\" {\n  run \"$SCRIPT\" \"$FIX/simple.json\"\n  [ \"$status\" -eq 0 ]\n  count=$(echo \"$output\" | jq '.matrix.include | length')\n  [ \"$count\" -eq 4 ]\n}\n\n@test \"simple matrix contains expected combination\" {\n  run \"$SCRIPT\" \"$FIX/simple.json\"\n  [ \"$status\" -eq 0 ]\n  found=$(echo \"$output\" | jq '[.matrix.include[] | select(.os==\"ubuntu-latest\" and .node==\"20\")] | length')\n  [ \"$found\" -eq 1 ]\n}\n\n# --- Exclude rules -----------------------------------------------------------\n\n@test \"exclude rule drops matching combination\" {\n  run \"$SCRIPT\" \"$FIX/with_exclude.json\"\n  [ \"$status\" -eq 0 ]\n  count=$(echo \"$output\" | jq '.matrix.include | length')\n  [ \"$count\" -eq 3 ]\n  excluded=$(echo \"$output\" | jq '[.matrix.include[] | select(.os==\"macos-latest\" and .node==\"18\")] | length')\n  [ \"$excluded\" -eq 0 ]\n}\n\n# --- Include rules -----------------------------------------------------------\n\n@test \"include rule appends extra combination\" {\n  run \"$SCRIPT\" \"$FIX/with_include.json\"\n  [ \"$status\" -eq 0 ]\n  count=$(echo \"$output\" | jq '.matrix.include | length')\n  [ \"$count\" -eq 5 ]\n  extra=$(echo \"$output\" | jq '[.matrix.include[] | select(.experimental==true)] | length')\n  [ \"$extra\" -eq 1 ]\n}\n\n# --- max-parallel and fail-fast ---------------------------------------------\n\n@test \"max-parallel and fail-fast pass through\" {\n  run \"$SCRIPT\" \"$FIX/with_options.json\"\n  [ \"$status\" -eq 0 ]\n  mp=$(echo \"$output\" | jq '.\"max-parallel\"')\n  ff=$(echo \"$output\" | jq '.\"fail-fast\"')\n  [ \"$mp\" = \"4\" ]\n  [ \"$ff\" = \"false\" ]\n}\n\n# --- max-size validation ------------------------------------------------------\n\n@test \"matrix exceeding max-size returns error\" {\n  run \"$SCRIPT\" \"$FIX/too_big.json\"\n  [ \"$status\" -ne 0 ]\n  echo \"$output\" | grep -q \"exceeds max-size\"\n}\n\n# --- Error handling ----------------------------------------------------------\n\n@test \"missing config file returns error\" {\n  run \"$SCRIPT\" \"/nonexistent/file.json\"\n  [ \"$status\" -ne 0 ]\n  echo \"$output\" | grep -qi \"not found\"\n}\n\n@test \"invalid JSON returns error\" {\n  tmp=$(mktemp)\n  echo \"not json\" > \"$tmp\"\n  run \"$SCRIPT\" \"$tmp\"\n  rm -f \"$tmp\"\n  [ \"$status\" -ne 0 ]\n  echo \"$output\" | grep -qi \"invalid\"\n}\n\n@test \"no dimensions returns error\" {\n  tmp=$(mktemp)\n  echo '{\"max-parallel\": 2}' > \"$tmp\"\n  run \"$SCRIPT\" \"$tmp\"\n  rm -f \"$tmp\"\n  [ \"$status\" -ne 0 ]\n}\n\n# --- Three-dimensional matrix -----------------------------------------------\n\n@test \"three-dimensional matrix yields product\" {\n  run \"$SCRIPT\" \"$FIX/three_dim.json\"\n  [ \"$status\" -eq 0 ]\n  count=$(echo \"$output\" | jq '.matrix.include | length')\n  [ \"$count\" -eq 8 ]\n}\n\n# --- Default fail-fast behavior ---------------------------------------------\n\n@test \"fail-fast defaults to true when not specified\" {\n  run \"$SCRIPT\" \"$FIX/simple.json\"\n  [ \"$status\" -eq 0 ]\n  ff=$(echo \"$output\" | jq '.\"fail-fast\"')\n  [ \"$ff\" = \"true\" ]\n}\n"
           },
           "caller": {
@@ -578,7 +578,7 @@
         {
           "tool_use_id": "toolu_01DvDmUA4dRhhvGUkjNG8kK5",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/matrix_gen.bats (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/matrix_gen.bats (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -588,7 +588,7 @@
     "timestamp": "2026-05-08T06:20:10.979Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/matrix_gen.bats",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/matrix_gen.bats",
       "content": "#!/usr/bin/env bats\n# Tests for matrix_gen.sh - environment matrix generator\n# All tests written red/green TDD style.\n\nsetup() {\n  ROOT=\"${BATS_TEST_DIRNAME}/..\"\n  SCRIPT=\"${ROOT}/matrix_gen.sh\"\n  FIX=\"${ROOT}/tests/fixtures\"\n}\n\n# --- Basic Cartesian product --------------------------------------------------\n\n@test \"simple 2x2 matrix produces 4 combinations\" {\n  run \"$SCRIPT\" \"$FIX/simple.json\"\n  [ \"$status\" -eq 0 ]\n  count=$(echo \"$output\" | jq '.matrix.include | length')\n  [ \"$count\" -eq 4 ]\n}\n\n@test \"simple matrix contains expected combination\" {\n  run \"$SCRIPT\" \"$FIX/simple.json\"\n  [ \"$status\" -eq 0 ]\n  found=$(echo \"$output\" | jq '[.matrix.include[] | select(.os==\"ubuntu-latest\" and .node==\"20\")] | length')\n  [ \"$found\" -eq 1 ]\n}\n\n# --- Exclude rules -----------------------------------------------------------\n\n@test \"exclude rule drops matching combination\" {\n  run \"$SCRIPT\" \"$FIX/with_exclude.json\"\n  [ \"$status\" -eq 0 ]\n  count=$(echo \"$output\" | jq '.matrix.include | length')\n  [ \"$count\" -eq 3 ]\n  excluded=$(echo \"$output\" | jq '[.matrix.include[] | select(.os==\"macos-latest\" and .node==\"18\")] | length')\n  [ \"$excluded\" -eq 0 ]\n}\n\n# --- Include rules -----------------------------------------------------------\n\n@test \"include rule appends extra combination\" {\n  run \"$SCRIPT\" \"$FIX/with_include.json\"\n  [ \"$status\" -eq 0 ]\n  count=$(echo \"$output\" | jq '.matrix.include | length')\n  [ \"$count\" -eq 5 ]\n  extra=$(echo \"$output\" | jq '[.matrix.include[] | select(.experimental==true)] | length')\n  [ \"$extra\" -eq 1 ]\n}\n\n# --- max-parallel and fail-fast ---------------------------------------------\n\n@test \"max-parallel and fail-fast pass through\" {\n  run \"$SCRIPT\" \"$FIX/with_options.json\"\n  [ \"$status\" -eq 0 ]\n  mp=$(echo \"$output\" | jq '.\"max-parallel\"')\n  ff=$(echo \"$output\" | jq '.\"fail-fast\"')\n  [ \"$mp\" = \"4\" ]\n  [ \"$ff\" = \"false\" ]\n}\n\n# --- max-size validation ------------------------------------------------------\n\n@test \"matrix exceeding max-size returns error\" {\n  run \"$SCRIPT\" \"$FIX/too_big.json\"\n  [ \"$status\" -ne 0 ]\n  echo \"$output\" | grep -q \"exceeds max-size\"\n}\n\n# --- Error handling ----------------------------------------------------------\n\n@test \"missing config file returns error\" {\n  run \"$SCRIPT\" \"/nonexistent/file.json\"\n  [ \"$status\" -ne 0 ]\n  echo \"$output\" | grep -qi \"not found\"\n}\n\n@test \"invalid JSON returns error\" {\n  tmp=$(mktemp)\n  echo \"not json\" > \"$tmp\"\n  run \"$SCRIPT\" \"$tmp\"\n  rm -f \"$tmp\"\n  [ \"$status\" -ne 0 ]\n  echo \"$output\" | grep -qi \"invalid\"\n}\n\n@test \"no dimensions returns error\" {\n  tmp=$(mktemp)\n  echo '{\"max-parallel\": 2}' > \"$tmp\"\n  run \"$SCRIPT\" \"$tmp\"\n  rm -f \"$tmp\"\n  [ \"$status\" -ne 0 ]\n}\n\n# --- Three-dimensional matrix -----------------------------------------------\n\n@test \"three-dimensional matrix yields product\" {\n  run \"$SCRIPT\" \"$FIX/three_dim.json\"\n  [ \"$status\" -eq 0 ]\n  count=$(echo \"$output\" | jq '.matrix.include | length')\n  [ \"$count\" -eq 8 ]\n}\n\n# --- Default fail-fast behavior ---------------------------------------------\n\n@test \"fail-fast defaults to true when not specified\" {\n  run \"$SCRIPT\" \"$FIX/simple.json\"\n  [ \"$status\" -eq 0 ]\n  ff=$(echo \"$output\" | jq '.\"fail-fast\"')\n  [ \"$ff\" = \"true\" ]\n}\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -608,7 +608,7 @@
           "id": "toolu_01DqvDPvm4Xiy2toZ5pmhevS",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/fixtures/simple.json",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/fixtures/simple.json",
             "content": "{\n  \"os\": [\"ubuntu-latest\", \"macos-latest\"],\n  \"node\": [\"18\", \"20\"]\n}\n"
           },
           "caller": {
@@ -668,7 +668,7 @@
         {
           "tool_use_id": "toolu_01DqvDPvm4Xiy2toZ5pmhevS",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/fixtures/simple.json (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/fixtures/simple.json (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -678,7 +678,7 @@
     "timestamp": "2026-05-08T06:20:13.669Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/fixtures/simple.json",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/fixtures/simple.json",
       "content": "{\n  \"os\": [\"ubuntu-latest\", \"macos-latest\"],\n  \"node\": [\"18\", \"20\"]\n}\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -698,7 +698,7 @@
           "id": "toolu_01CtNGocgb8X8Qf9RkHcJRxd",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/fixtures/with_exclude.json",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/fixtures/with_exclude.json",
             "content": "{\n  \"os\": [\"ubuntu-latest\", \"macos-latest\"],\n  \"node\": [\"18\", \"20\"],\n  \"exclude\": [\n    {\"os\": \"macos-latest\", \"node\": \"18\"}\n  ]\n}\n"
           },
           "caller": {
@@ -758,7 +758,7 @@
         {
           "tool_use_id": "toolu_01CtNGocgb8X8Qf9RkHcJRxd",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/fixtures/with_exclude.json (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/fixtures/with_exclude.json (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -768,7 +768,7 @@
     "timestamp": "2026-05-08T06:20:16.329Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/fixtures/with_exclude.json",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/fixtures/with_exclude.json",
       "content": "{\n  \"os\": [\"ubuntu-latest\", \"macos-latest\"],\n  \"node\": [\"18\", \"20\"],\n  \"exclude\": [\n    {\"os\": \"macos-latest\", \"node\": \"18\"}\n  ]\n}\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -788,7 +788,7 @@
           "id": "toolu_012bhWciKrp7wbSbQ4gkCZpH",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/fixtures/with_include.json",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/fixtures/with_include.json",
             "content": "{\n  \"os\": [\"ubuntu-latest\", \"macos-latest\"],\n  \"node\": [\"18\", \"20\"],\n  \"include\": [\n    {\"os\": \"ubuntu-latest\", \"node\": \"22\", \"experimental\": true}\n  ]\n}\n"
           },
           "caller": {
@@ -848,7 +848,7 @@
         {
           "tool_use_id": "toolu_012bhWciKrp7wbSbQ4gkCZpH",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/fixtures/with_include.json (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/fixtures/with_include.json (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -858,7 +858,7 @@
     "timestamp": "2026-05-08T06:20:18.998Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/fixtures/with_include.json",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/fixtures/with_include.json",
       "content": "{\n  \"os\": [\"ubuntu-latest\", \"macos-latest\"],\n  \"node\": [\"18\", \"20\"],\n  \"include\": [\n    {\"os\": \"ubuntu-latest\", \"node\": \"22\", \"experimental\": true}\n  ]\n}\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -878,7 +878,7 @@
           "id": "toolu_01NQHzcFDt4boZFi4KgcBwLK",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/fixtures/with_options.json",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/fixtures/with_options.json",
             "content": "{\n  \"os\": [\"ubuntu-latest\"],\n  \"node\": [\"20\"],\n  \"max-parallel\": 4,\n  \"fail-fast\": false\n}\n"
           },
           "caller": {
@@ -938,7 +938,7 @@
         {
           "tool_use_id": "toolu_01NQHzcFDt4boZFi4KgcBwLK",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/fixtures/with_options.json (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/fixtures/with_options.json (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -948,7 +948,7 @@
     "timestamp": "2026-05-08T06:20:22.115Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/fixtures/with_options.json",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/fixtures/with_options.json",
       "content": "{\n  \"os\": [\"ubuntu-latest\"],\n  \"node\": [\"20\"],\n  \"max-parallel\": 4,\n  \"fail-fast\": false\n}\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -968,7 +968,7 @@
           "id": "toolu_01MxrtR1HNVPQDbxLLBi14Fm",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/fixtures/too_big.json",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/fixtures/too_big.json",
             "content": "{\n  \"os\": [\"a\", \"b\", \"c\", \"d\"],\n  \"lang\": [\"1\", \"2\", \"3\", \"4\"],\n  \"feat\": [\"x\", \"y\", \"z\"],\n  \"max-size\": 10\n}\n"
           },
           "caller": {
@@ -1028,7 +1028,7 @@
         {
           "tool_use_id": "toolu_01MxrtR1HNVPQDbxLLBi14Fm",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/fixtures/too_big.json (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/fixtures/too_big.json (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -1038,7 +1038,7 @@
     "timestamp": "2026-05-08T06:20:26.161Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/fixtures/too_big.json",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/fixtures/too_big.json",
       "content": "{\n  \"os\": [\"a\", \"b\", \"c\", \"d\"],\n  \"lang\": [\"1\", \"2\", \"3\", \"4\"],\n  \"feat\": [\"x\", \"y\", \"z\"],\n  \"max-size\": 10\n}\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -1058,7 +1058,7 @@
           "id": "toolu_01FYrJjkwpRYVeArSBSp98Mc",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/fixtures/three_dim.json",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/fixtures/three_dim.json",
             "content": "{\n  \"os\": [\"ubuntu-latest\", \"macos-latest\"],\n  \"node\": [\"18\", \"20\"],\n  \"feature\": [\"a\", \"b\"]\n}\n"
           },
           "caller": {
@@ -1118,7 +1118,7 @@
         {
           "tool_use_id": "toolu_01FYrJjkwpRYVeArSBSp98Mc",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/fixtures/three_dim.json (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/fixtures/three_dim.json (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -1128,7 +1128,7 @@
     "timestamp": "2026-05-08T06:20:29.142Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/fixtures/three_dim.json",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/fixtures/three_dim.json",
       "content": "{\n  \"os\": [\"ubuntu-latest\", \"macos-latest\"],\n  \"node\": [\"18\", \"20\"],\n  \"feature\": [\"a\", \"b\"]\n}\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -1182,7 +1182,7 @@
           "id": "toolu_01ECWLN87Lk6eMERzyQQR8s5",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/matrix_gen.sh",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/matrix_gen.sh",
             "content": "#!/usr/bin/env bash\n# matrix_gen.sh - generate a GitHub Actions strategy.matrix from a JSON config.\n#\n# Approach:\n#   1. Read a JSON config file (path arg or - for stdin).\n#   2. Identify dimension keys (every top-level key except the reserved\n#      keys: include, exclude, max-parallel, fail-fast, max-size).\n#   3. Compute the cartesian product of those dimensions with jq.\n#   4. Drop combinations that match any exclude rule (all rule keys equal).\n#   5. Append include entries verbatim.\n#   6. Validate total size against max-size (default 256, GH's hard cap).\n#   7. Emit a JSON object suitable to feed straight into a workflow:\n#        { \"matrix\": { \"include\": [...] },\n#          \"max-parallel\": <n>,\n#          \"fail-fast\": <bool> }\n#\n# Errors are written to stderr with non-zero exit codes.\n\nset -euo pipefail\n\nerr() { echo \"matrix_gen: error: $*\" >&2; }\n\nusage() {\n  cat >&2 <<'EOF'\nUsage: matrix_gen.sh <config.json>\n       matrix_gen.sh -          # read JSON from stdin\nEOF\n}\n\nif [[ $# -ne 1 ]]; then\n  usage\n  exit 2\nfi\n\ninput=\"$1\"\nif [[ \"$input\" == \"-\" ]]; then\n  config=$(cat)\nelse\n  if [[ ! -f \"$input\" ]]; then\n    err \"config file not found: $input\"\n    exit 1\n  fi\n  config=$(cat \"$input\")\nfi\n\n# Validate JSON.\nif ! echo \"$config\" | jq -e . >/dev/null 2>&1; then\n  err \"invalid JSON in config\"\n  exit 1\nfi\n\n# Identify dimension keys.\ndim_keys=$(echo \"$config\" | jq -r '\n  keys[]\n  | select(. as $k | [\"include\",\"exclude\",\"max-parallel\",\"fail-fast\",\"max-size\"] | index($k) | not)\n')\n\nif [[ -z \"$dim_keys\" ]]; then\n  err \"no matrix dimensions found (need at least one non-reserved key)\"\n  exit 1\nfi\n\n# Compute cartesian product. Build a jq program that reduces the dimensions.\n# Result: array of objects, one per combination.\ncombos=$(echo \"$config\" | jq --argjson keys \"$(printf '%s\\n' \"$dim_keys\" | jq -R . | jq -s .)\" '\n  . as $cfg\n  | reduce $keys[] as $k ([{}];\n      [ .[] as $base\n        | $cfg[$k][] as $v\n        | $base + {($k): $v}\n      ])\n')\n\n# Apply exclude rules: drop combos for which some rule matches all its keys.\ncombos=$(echo \"$config\" | jq --argjson combos \"$combos\" '\n  ($combos) as $list\n  | (.exclude // []) as $excludes\n  | $list\n  | map(. as $c\n        | select(\n            ($excludes | map(\n              . as $e\n              | ($e | to_entries | all(.value == $c[.key]))\n            ) | any | not)\n          ))\n')\n\n# Append includes (verbatim).\ncombos=$(echo \"$config\" | jq --argjson combos \"$combos\" '\n  $combos + (.include // [])\n')\n\ntotal=$(echo \"$combos\" | jq 'length')\n\n# Validate size. Default cap mirrors GitHub Actions (256).\nmax_size=$(echo \"$config\" | jq -r '.\"max-size\" // 256')\nif (( total > max_size )); then\n  err \"matrix size $total exceeds max-size $max_size\"\n  exit 1\nfi\nif (( total == 0 )); then\n  err \"matrix is empty after applying excludes\"\n  exit 1\nfi\n\n# Pull through optional knobs.\nfail_fast=$(echo \"$config\" | jq '.\"fail-fast\" // true')\nmax_parallel=$(echo \"$config\" | jq '.\"max-parallel\" // null')\n\njq -n \\\n  --argjson include \"$combos\" \\\n  --argjson failfast \"$fail_fast\" \\\n  --argjson maxpar \"$max_parallel\" \\\n  '{\n     matrix: { include: $include },\n     \"fail-fast\": $failfast,\n     \"max-parallel\": $maxpar\n   }'\n"
           },
           "caller": {
@@ -1242,7 +1242,7 @@
         {
           "tool_use_id": "toolu_01ECWLN87Lk6eMERzyQQR8s5",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/matrix_gen.sh (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/matrix_gen.sh (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -1252,7 +1252,7 @@
     "timestamp": "2026-05-08T06:20:48.917Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/matrix_gen.sh",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/matrix_gen.sh",
       "content": "#!/usr/bin/env bash\n# matrix_gen.sh - generate a GitHub Actions strategy.matrix from a JSON config.\n#\n# Approach:\n#   1. Read a JSON config file (path arg or - for stdin).\n#   2. Identify dimension keys (every top-level key except the reserved\n#      keys: include, exclude, max-parallel, fail-fast, max-size).\n#   3. Compute the cartesian product of those dimensions with jq.\n#   4. Drop combinations that match any exclude rule (all rule keys equal).\n#   5. Append include entries verbatim.\n#   6. Validate total size against max-size (default 256, GH's hard cap).\n#   7. Emit a JSON object suitable to feed straight into a workflow:\n#        { \"matrix\": { \"include\": [...] },\n#          \"max-parallel\": <n>,\n#          \"fail-fast\": <bool> }\n#\n# Errors are written to stderr with non-zero exit codes.\n\nset -euo pipefail\n\nerr() { echo \"matrix_gen: error: $*\" >&2; }\n\nusage() {\n  cat >&2 <<'EOF'\nUsage: matrix_gen.sh <config.json>\n       matrix_gen.sh -          # read JSON from stdin\nEOF\n}\n\nif [[ $# -ne 1 ]]; then\n  usage\n  exit 2\nfi\n\ninput=\"$1\"\nif [[ \"$input\" == \"-\" ]]; then\n  config=$(cat)\nelse\n  if [[ ! -f \"$input\" ]]; then\n    err \"config file not found: $input\"\n    exit 1\n  fi\n  config=$(cat \"$input\")\nfi\n\n# Validate JSON.\nif ! echo \"$config\" | jq -e . >/dev/null 2>&1; then\n  err \"invalid JSON in config\"\n  exit 1\nfi\n\n# Identify dimension keys.\ndim_keys=$(echo \"$config\" | jq -r '\n  keys[]\n  | select(. as $k | [\"include\",\"exclude\",\"max-parallel\",\"fail-fast\",\"max-size\"] | index($k) | not)\n')\n\nif [[ -z \"$dim_keys\" ]]; then\n  err \"no matrix dimensions found (need at least one non-reserved key)\"\n  exit 1\nfi\n\n# Compute cartesian product. Build a jq program that reduces the dimensions.\n# Result: array of objects, one per combination.\ncombos=$(echo \"$config\" | jq --argjson keys \"$(printf '%s\\n' \"$dim_keys\" | jq -R . | jq -s .)\" '\n  . as $cfg\n  | reduce $keys[] as $k ([{}];\n      [ .[] as $base\n        | $cfg[$k][] as $v\n        | $base + {($k): $v}\n      ])\n')\n\n# Apply exclude rules: drop combos for which some rule matches all its keys.\ncombos=$(echo \"$config\" | jq --argjson combos \"$combos\" '\n  ($combos) as $list\n  | (.exclude // []) as $excludes\n  | $list\n  | map(. as $c\n        | select(\n            ($excludes | map(\n              . as $e\n              | ($e | to_entries | all(.value == $c[.key]))\n            ) | any | not)\n          ))\n')\n\n# Append includes (verbatim).\ncombos=$(echo \"$config\" | jq --argjson combos \"$combos\" '\n  $combos + (.include // [])\n')\n\ntotal=$(echo \"$combos\" | jq 'length')\n\n# Validate size. Default cap mirrors GitHub Actions (256).\nmax_size=$(echo \"$config\" | jq -r '.\"max-size\" // 256')\nif (( total > max_size )); then\n  err \"matrix size $total exceeds max-size $max_size\"\n  exit 1\nfi\nif (( total == 0 )); then\n  err \"matrix is empty after applying excludes\"\n  exit 1\nfi\n\n# Pull through optional knobs.\nfail_fast=$(echo \"$config\" | jq '.\"fail-fast\" // true')\nmax_parallel=$(echo \"$config\" | jq '.\"max-parallel\" // null')\n\njq -n \\\n  --argjson include \"$combos\" \\\n  --argjson failfast \"$fail_fast\" \\\n  --argjson maxpar \"$max_parallel\" \\\n  '{\n     matrix: { include: $include },\n     \"fail-fast\": $failfast,\n     \"max-parallel\": $maxpar\n   }'\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -1471,7 +1471,7 @@
           "name": "Edit",
           "input": {
             "replace_all": false,
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/matrix_gen.sh",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/matrix_gen.sh",
             "old_string": "fail_fast=$(echo \"$config\" | jq '.\"fail-fast\" // true')",
             "new_string": "fail_fast=$(echo \"$config\" | jq 'if has(\"fail-fast\") then .\"fail-fast\" else true end')"
           },
@@ -1532,7 +1532,7 @@
         {
           "tool_use_id": "toolu_019mvEow1HeZ4EgP6LsA43y2",
           "type": "tool_result",
-          "content": "The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/matrix_gen.sh has been updated successfully. (file state is current in your context \u2014 no need to Read it back)"
+          "content": "The file /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/matrix_gen.sh has been updated successfully. (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -1541,7 +1541,7 @@
     "uuid": "29a13707-7d3e-4984-b19a-d2e9a9e4876e",
     "timestamp": "2026-05-08T06:21:00.728Z",
     "tool_use_result": {
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/matrix_gen.sh",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/matrix_gen.sh",
       "oldString": "fail_fast=$(echo \"$config\" | jq '.\"fail-fast\" // true')",
       "newString": "fail_fast=$(echo \"$config\" | jq 'if has(\"fail-fast\") then .\"fail-fast\" else true end')",
       "originalFile": "#!/usr/bin/env bash\n# matrix_gen.sh - generate a GitHub Actions strategy.matrix from a JSON config.\n#\n# Approach:\n#   1. Read a JSON config file (path arg or - for stdin).\n#   2. Identify dimension keys (every top-level key except the reserved\n#      keys: include, exclude, max-parallel, fail-fast, max-size).\n#   3. Compute the cartesian product of those dimensions with jq.\n#   4. Drop combinations that match any exclude rule (all rule keys equal).\n#   5. Append include entries verbatim.\n#   6. Validate total size against max-size (default 256, GH's hard cap).\n#   7. Emit a JSON object suitable to feed straight into a workflow:\n#        { \"matrix\": { \"include\": [...] },\n#          \"max-parallel\": <n>,\n#          \"fail-fast\": <bool> }\n#\n# Errors are written to stderr with non-zero exit codes.\n\nset -euo pipefail\n\nerr() { echo \"matrix_gen: error: $*\" >&2; }\n\nusage() {\n  cat >&2 <<'EOF'\nUsage: matrix_gen.sh <config.json>\n       matrix_gen.sh -          # read JSON from stdin\nEOF\n}\n\nif [[ $# -ne 1 ]]; then\n  usage\n  exit 2\nfi\n\ninput=\"$1\"\nif [[ \"$input\" == \"-\" ]]; then\n  config=$(cat)\nelse\n  if [[ ! -f \"$input\" ]]; then\n    err \"config file not found: $input\"\n    exit 1\n  fi\n  config=$(cat \"$input\")\nfi\n\n# Validate JSON.\nif ! echo \"$config\" | jq -e . >/dev/null 2>&1; then\n  err \"invalid JSON in config\"\n  exit 1\nfi\n\n# Identify dimension keys.\ndim_keys=$(echo \"$config\" | jq -r '\n  keys[]\n  | select(. as $k | [\"include\",\"exclude\",\"max-parallel\",\"fail-fast\",\"max-size\"] | index($k) | not)\n')\n\nif [[ -z \"$dim_keys\" ]]; then\n  err \"no matrix dimensions found (need at least one non-reserved key)\"\n  exit 1\nfi\n\n# Compute cartesian product. Build a jq program that reduces the dimensions.\n# Result: array of objects, one per combination.\ncombos=$(echo \"$config\" | jq --argjson keys \"$(printf '%s\\n' \"$dim_keys\" | jq -R . | jq -s .)\" '\n  . as $cfg\n  | reduce $keys[] as $k ([{}];\n      [ .[] as $base\n        | $cfg[$k][] as $v\n        | $base + {($k): $v}\n      ])\n')\n\n# Apply exclude rules: drop combos for which some rule matches all its keys.\ncombos=$(echo \"$config\" | jq --argjson combos \"$combos\" '\n  ($combos) as $list\n  | (.exclude // []) as $excludes\n  | $list\n  | map(. as $c\n        | select(\n            ($excludes | map(\n              . as $e\n              | ($e | to_entries | all(.value == $c[.key]))\n            ) | any | not)\n          ))\n')\n\n# Append includes (verbatim).\ncombos=$(echo \"$config\" | jq --argjson combos \"$combos\" '\n  $combos + (.include // [])\n')\n\ntotal=$(echo \"$combos\" | jq 'length')\n\n# Validate size. Default cap mirrors GitHub Actions (256).\nmax_size=$(echo \"$config\" | jq -r '.\"max-size\" // 256')\nif (( total > max_size )); then\n  err \"matrix size $total exceeds max-size $max_size\"\n  exit 1\nfi\nif (( total == 0 )); then\n  err \"matrix is empty after applying excludes\"\n  exit 1\nfi\n\n# Pull through optional knobs.\nfail_fast=$(echo \"$config\" | jq '.\"fail-fast\" // true')\nmax_parallel=$(echo \"$config\" | jq '.\"max-parallel\" // null')\n\njq -n \\\n  --argjson include \"$combos\" \\\n  --argjson failfast \"$fail_fast\" \\\n  --argjson maxpar \"$max_parallel\" \\\n  '{\n     matrix: { include: $include },\n     \"fail-fast\": $failfast,\n     \"max-parallel\": $maxpar\n   }'\n",
@@ -1681,7 +1681,7 @@
           "id": "toolu_01YMQaBAwaYtjALs2JefWcN9",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/.github/workflows/environment-matrix-generator.yml",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/.github/workflows/environment-matrix-generator.yml",
             "content": "name: environment-matrix-generator\n\non:\n  push:\n  pull_request:\n  workflow_dispatch:\n  schedule:\n    - cron: '0 6 * * 1'\n\npermissions:\n  contents: read\n\nenv:\n  BATS_VERSION: \"1.13.0\"\n\njobs:\n  test:\n    name: Lint and run bats tests through CI\n    runs-on: ubuntu-latest\n    steps:\n      - name: Checkout\n        uses: actions/checkout@v4\n\n      - name: Install dependencies (jq, bats, shellcheck)\n        shell: bash\n        run: |\n          set -euo pipefail\n          if ! command -v jq >/dev/null 2>&1; then\n            apt-get update && apt-get install -y --no-install-recommends jq\n          fi\n          if ! command -v bats >/dev/null 2>&1; then\n            apt-get update && apt-get install -y --no-install-recommends bats\n          fi\n          if ! command -v shellcheck >/dev/null 2>&1; then\n            apt-get update && apt-get install -y --no-install-recommends shellcheck\n          fi\n          jq --version\n          bats --version\n          shellcheck --version | head -1\n\n      - name: Syntax check (bash -n)\n        shell: bash\n        run: bash -n matrix_gen.sh\n\n      - name: ShellCheck\n        shell: bash\n        run: shellcheck matrix_gen.sh\n\n      - name: Run bats test suite\n        shell: bash\n        run: bats tests/matrix_gen.bats\n\n      - name: Demo - simple matrix output\n        shell: bash\n        run: |\n          echo \"=== simple.json output ===\"\n          ./matrix_gen.sh tests/fixtures/simple.json\n          echo \"=== three_dim.json output ===\"\n          ./matrix_gen.sh tests/fixtures/three_dim.json\n          echo \"=== with_exclude.json output ===\"\n          ./matrix_gen.sh tests/fixtures/with_exclude.json\n"
           },
           "caller": {
@@ -1741,7 +1741,7 @@
         {
           "tool_use_id": "toolu_01YMQaBAwaYtjALs2JefWcN9",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/.github/workflows/environment-matrix-generator.yml (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/.github/workflows/environment-matrix-generator.yml (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -1751,7 +1751,7 @@
     "timestamp": "2026-05-08T06:21:11.951Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/.github/workflows/environment-matrix-generator.yml",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/.github/workflows/environment-matrix-generator.yml",
       "content": "name: environment-matrix-generator\n\non:\n  push:\n  pull_request:\n  workflow_dispatch:\n  schedule:\n    - cron: '0 6 * * 1'\n\npermissions:\n  contents: read\n\nenv:\n  BATS_VERSION: \"1.13.0\"\n\njobs:\n  test:\n    name: Lint and run bats tests through CI\n    runs-on: ubuntu-latest\n    steps:\n      - name: Checkout\n        uses: actions/checkout@v4\n\n      - name: Install dependencies (jq, bats, shellcheck)\n        shell: bash\n        run: |\n          set -euo pipefail\n          if ! command -v jq >/dev/null 2>&1; then\n            apt-get update && apt-get install -y --no-install-recommends jq\n          fi\n          if ! command -v bats >/dev/null 2>&1; then\n            apt-get update && apt-get install -y --no-install-recommends bats\n          fi\n          if ! command -v shellcheck >/dev/null 2>&1; then\n            apt-get update && apt-get install -y --no-install-recommends shellcheck\n          fi\n          jq --version\n          bats --version\n          shellcheck --version | head -1\n\n      - name: Syntax check (bash -n)\n        shell: bash\n        run: bash -n matrix_gen.sh\n\n      - name: ShellCheck\n        shell: bash\n        run: shellcheck matrix_gen.sh\n\n      - name: Run bats test suite\n        shell: bash\n        run: bats tests/matrix_gen.bats\n\n      - name: Demo - simple matrix output\n        shell: bash\n        run: |\n          echo \"=== simple.json output ===\"\n          ./matrix_gen.sh tests/fixtures/simple.json\n          echo \"=== three_dim.json output ===\"\n          ./matrix_gen.sh tests/fixtures/three_dim.json\n          echo \"=== with_exclude.json output ===\"\n          ./matrix_gen.sh tests/fixtures/with_exclude.json\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -1872,7 +1872,7 @@
           "id": "toolu_01K1c1pHPAufJ4SbRHprjEep",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/run-tests.sh",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/run-tests.sh",
             "content": "#!/usr/bin/env bash\n# run-tests.sh - drive the workflow through act and assert on its output.\n#\n# All tests must execute through the GitHub Actions workflow. We invoke\n# `act push --rm` once and capture its full output to act-result.txt, then\n# scan it for the expected per-test-case results emitted by the workflow.\n\nset -euo pipefail\n\ncd \"$(dirname \"$0\")\"\n\nRESULT=\"act-result.txt\"\n: > \"$RESULT\"\n\n# --- Workflow structure tests (run before act, instant) ----------------------\n\necho \"[harness] structure: workflow file exists\" | tee -a \"$RESULT\"\ntest -f .github/workflows/environment-matrix-generator.yml\n\necho \"[harness] structure: actionlint passes\" | tee -a \"$RESULT\"\nactionlint .github/workflows/environment-matrix-generator.yml\n\necho \"[harness] structure: workflow references matrix_gen.sh\" | tee -a \"$RESULT\"\ngrep -q 'matrix_gen.sh' .github/workflows/environment-matrix-generator.yml\n\necho \"[harness] structure: triggers include push, pull_request, workflow_dispatch, schedule\" | tee -a \"$RESULT\"\nfor trig in push pull_request workflow_dispatch schedule; do\n  grep -qE \"^[[:space:]]*${trig}:\" .github/workflows/environment-matrix-generator.yml\ndone\n\necho \"[harness] structure: matrix_gen.sh and tests/matrix_gen.bats exist\" | tee -a \"$RESULT\"\ntest -f matrix_gen.sh\ntest -f tests/matrix_gen.bats\n\n# --- Run the workflow under act ----------------------------------------------\n\necho \"[harness] running: act push --rm\" | tee -a \"$RESULT\"\necho \"===== BEGIN act push --rm =====\" >> \"$RESULT\"\nset +e\nact push --rm >>\"$RESULT\" 2>&1\nact_status=$?\nset -e\necho \"===== END act push (exit=$act_status) =====\" >> \"$RESULT\"\n\nif (( act_status != 0 )); then\n  echo \"[harness] FAIL: act exited $act_status (see $RESULT)\" >&2\n  exit 1\nfi\n\n# --- Assert on captured output -----------------------------------------------\n\nassert_in_result() {\n  local pat=\"$1\" desc=\"$2\"\n  if grep -qE \"$pat\" \"$RESULT\"; then\n    echo \"[harness] PASS: $desc\"\n  else\n    echo \"[harness] FAIL: $desc (pattern: $pat)\" >&2\n    exit 1\n  fi\n}\n\n# Each line matches output produced by act for the workflow's job/steps.\nassert_in_result 'Job succeeded' 'act reports Job succeeded'\nassert_in_result '11 tests, 0 failures' 'all 11 bats tests passed inside act'\nassert_in_result 'simple\\.json output' 'demo step ran for simple.json'\nassert_in_result 'three_dim\\.json output' 'demo step ran for three_dim.json'\nassert_in_result 'with_exclude\\.json output' 'demo step ran for with_exclude.json'\n# Verify the simple matrix really produced the 4 expected combos in the demo step.\n# The demo prints raw JSON; check exact expected key/value pairs appear.\nassert_in_result '\"os\": \"ubuntu-latest\"' 'demo output contains ubuntu-latest combination'\nassert_in_result '\"os\": \"macos-latest\"' 'demo output contains macos-latest combination'\nassert_in_result '\"node\": \"18\"' 'demo output contains node 18'\nassert_in_result '\"node\": \"20\"' 'demo output contains node 20'\n\necho \"[harness] All assertions passed.\"\n"
           },
           "caller": {
@@ -1932,7 +1932,7 @@
         {
           "tool_use_id": "toolu_01K1c1pHPAufJ4SbRHprjEep",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/run-tests.sh (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/run-tests.sh (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -1942,7 +1942,7 @@
     "timestamp": "2026-05-08T06:21:31.661Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/run-tests.sh",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/run-tests.sh",
       "content": "#!/usr/bin/env bash\n# run-tests.sh - drive the workflow through act and assert on its output.\n#\n# All tests must execute through the GitHub Actions workflow. We invoke\n# `act push --rm` once and capture its full output to act-result.txt, then\n# scan it for the expected per-test-case results emitted by the workflow.\n\nset -euo pipefail\n\ncd \"$(dirname \"$0\")\"\n\nRESULT=\"act-result.txt\"\n: > \"$RESULT\"\n\n# --- Workflow structure tests (run before act, instant) ----------------------\n\necho \"[harness] structure: workflow file exists\" | tee -a \"$RESULT\"\ntest -f .github/workflows/environment-matrix-generator.yml\n\necho \"[harness] structure: actionlint passes\" | tee -a \"$RESULT\"\nactionlint .github/workflows/environment-matrix-generator.yml\n\necho \"[harness] structure: workflow references matrix_gen.sh\" | tee -a \"$RESULT\"\ngrep -q 'matrix_gen.sh' .github/workflows/environment-matrix-generator.yml\n\necho \"[harness] structure: triggers include push, pull_request, workflow_dispatch, schedule\" | tee -a \"$RESULT\"\nfor trig in push pull_request workflow_dispatch schedule; do\n  grep -qE \"^[[:space:]]*${trig}:\" .github/workflows/environment-matrix-generator.yml\ndone\n\necho \"[harness] structure: matrix_gen.sh and tests/matrix_gen.bats exist\" | tee -a \"$RESULT\"\ntest -f matrix_gen.sh\ntest -f tests/matrix_gen.bats\n\n# --- Run the workflow under act ----------------------------------------------\n\necho \"[harness] running: act push --rm\" | tee -a \"$RESULT\"\necho \"===== BEGIN act push --rm =====\" >> \"$RESULT\"\nset +e\nact push --rm >>\"$RESULT\" 2>&1\nact_status=$?\nset -e\necho \"===== END act push (exit=$act_status) =====\" >> \"$RESULT\"\n\nif (( act_status != 0 )); then\n  echo \"[harness] FAIL: act exited $act_status (see $RESULT)\" >&2\n  exit 1\nfi\n\n# --- Assert on captured output -----------------------------------------------\n\nassert_in_result() {\n  local pat=\"$1\" desc=\"$2\"\n  if grep -qE \"$pat\" \"$RESULT\"; then\n    echo \"[harness] PASS: $desc\"\n  else\n    echo \"[harness] FAIL: $desc (pattern: $pat)\" >&2\n    exit 1\n  fi\n}\n\n# Each line matches output produced by act for the workflow's job/steps.\nassert_in_result 'Job succeeded' 'act reports Job succeeded'\nassert_in_result '11 tests, 0 failures' 'all 11 bats tests passed inside act'\nassert_in_result 'simple\\.json output' 'demo step ran for simple.json'\nassert_in_result 'three_dim\\.json output' 'demo step ran for three_dim.json'\nassert_in_result 'with_exclude\\.json output' 'demo step ran for with_exclude.json'\n# Verify the simple matrix really produced the 4 expected combos in the demo step.\n# The demo prints raw JSON; check exact expected key/value pairs appear.\nassert_in_result '\"os\": \"ubuntu-latest\"' 'demo output contains ubuntu-latest combination'\nassert_in_result '\"os\": \"macos-latest\"' 'demo output contains macos-latest combination'\nassert_in_result '\"node\": \"18\"' 'demo output contains node 18'\nassert_in_result '\"node\": \"20\"' 'demo output contains node 20'\n\necho \"[harness] All assertions passed.\"\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -2302,7 +2302,7 @@
           "name": "Edit",
           "input": {
             "replace_all": false,
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/run-tests.sh",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/run-tests.sh",
             "old_string": "act push --rm >>\"$RESULT\" 2>&1",
             "new_string": "act push --rm --pull=false >>\"$RESULT\" 2>&1"
           },
@@ -2363,7 +2363,7 @@
         {
           "tool_use_id": "toolu_017uPNC2zxFwDPwBGSH9houU",
           "type": "tool_result",
-          "content": "The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/run-tests.sh has been updated successfully. (file state is current in your context \u2014 no need to Read it back)"
+          "content": "The file /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/run-tests.sh has been updated successfully. (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -2372,7 +2372,7 @@
     "uuid": "a1f2fc3b-336d-44cf-8e49-dbbaab561f1c",
     "timestamp": "2026-05-08T06:21:49.531Z",
     "tool_use_result": {
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/run-tests.sh",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/run-tests.sh",
       "oldString": "act push --rm >>\"$RESULT\" 2>&1",
       "newString": "act push --rm --pull=false >>\"$RESULT\" 2>&1",
       "originalFile": "#!/usr/bin/env bash\n# run-tests.sh - drive the workflow through act and assert on its output.\n#\n# All tests must execute through the GitHub Actions workflow. We invoke\n# `act push --rm` once and capture its full output to act-result.txt, then\n# scan it for the expected per-test-case results emitted by the workflow.\n\nset -euo pipefail\n\ncd \"$(dirname \"$0\")\"\n\nRESULT=\"act-result.txt\"\n: > \"$RESULT\"\n\n# --- Workflow structure tests (run before act, instant) ----------------------\n\necho \"[harness] structure: workflow file exists\" | tee -a \"$RESULT\"\ntest -f .github/workflows/environment-matrix-generator.yml\n\necho \"[harness] structure: actionlint passes\" | tee -a \"$RESULT\"\nactionlint .github/workflows/environment-matrix-generator.yml\n\necho \"[harness] structure: workflow references matrix_gen.sh\" | tee -a \"$RESULT\"\ngrep -q 'matrix_gen.sh' .github/workflows/environment-matrix-generator.yml\n\necho \"[harness] structure: triggers include push, pull_request, workflow_dispatch, schedule\" | tee -a \"$RESULT\"\nfor trig in push pull_request workflow_dispatch schedule; do\n  grep -qE \"^[[:space:]]*${trig}:\" .github/workflows/environment-matrix-generator.yml\ndone\n\necho \"[harness] structure: matrix_gen.sh and tests/matrix_gen.bats exist\" | tee -a \"$RESULT\"\ntest -f matrix_gen.sh\ntest -f tests/matrix_gen.bats\n\n# --- Run the workflow under act ----------------------------------------------\n\necho \"[harness] running: act push --rm\" | tee -a \"$RESULT\"\necho \"===== BEGIN act push --rm =====\" >> \"$RESULT\"\nset +e\nact push --rm >>\"$RESULT\" 2>&1\nact_status=$?\nset -e\necho \"===== END act push (exit=$act_status) =====\" >> \"$RESULT\"\n\nif (( act_status != 0 )); then\n  echo \"[harness] FAIL: act exited $act_status (see $RESULT)\" >&2\n  exit 1\nfi\n\n# --- Assert on captured output -----------------------------------------------\n\nassert_in_result() {\n  local pat=\"$1\" desc=\"$2\"\n  if grep -qE \"$pat\" \"$RESULT\"; then\n    echo \"[harness] PASS: $desc\"\n  else\n    echo \"[harness] FAIL: $desc (pattern: $pat)\" >&2\n    exit 1\n  fi\n}\n\n# Each line matches output produced by act for the workflow's job/steps.\nassert_in_result 'Job succeeded' 'act reports Job succeeded'\nassert_in_result '11 tests, 0 failures' 'all 11 bats tests passed inside act'\nassert_in_result 'simple\\.json output' 'demo step ran for simple.json'\nassert_in_result 'three_dim\\.json output' 'demo step ran for three_dim.json'\nassert_in_result 'with_exclude\\.json output' 'demo step ran for with_exclude.json'\n# Verify the simple matrix really produced the 4 expected combos in the demo step.\n# The demo prints raw JSON; check exact expected key/value pairs appear.\nassert_in_result '\"os\": \"ubuntu-latest\"' 'demo output contains ubuntu-latest combination'\nassert_in_result '\"os\": \"macos-latest\"' 'demo output contains macos-latest combination'\nassert_in_result '\"node\": \"18\"' 'demo output contains node 18'\nassert_in_result '\"node\": \"20\"' 'demo output contains node 20'\n\necho \"[harness] All assertions passed.\"\n",
@@ -2603,7 +2603,7 @@
           "name": "Edit",
           "input": {
             "replace_all": true,
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/matrix_gen.bats",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/matrix_gen.bats",
             "old_string": "  SCRIPT=\"${ROOT}/matrix_gen.sh\"",
             "new_string": "  SCRIPT=\"bash ${ROOT}/matrix_gen.sh\""
           },
@@ -2664,7 +2664,7 @@
         {
           "tool_use_id": "toolu_01898D39BZ8mLLFJt2MsBmfv",
           "type": "tool_result",
-          "content": "The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/matrix_gen.bats has been updated. All occurrences were successfully replaced. (file state is current in your context \u2014 no need to Read it back)"
+          "content": "The file /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/matrix_gen.bats has been updated. All occurrences were successfully replaced. (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -2673,7 +2673,7 @@
     "uuid": "d255d5b4-b84c-4c82-9a41-09b00a0192af",
     "timestamp": "2026-05-08T06:22:22.292Z",
     "tool_use_result": {
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/matrix_gen.bats",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/matrix_gen.bats",
       "oldString": "  SCRIPT=\"${ROOT}/matrix_gen.sh\"",
       "newString": "  SCRIPT=\"bash ${ROOT}/matrix_gen.sh\"",
       "originalFile": "#!/usr/bin/env bats\n# Tests for matrix_gen.sh - environment matrix generator\n# All tests written red/green TDD style.\n\nsetup() {\n  ROOT=\"${BATS_TEST_DIRNAME}/..\"\n  SCRIPT=\"${ROOT}/matrix_gen.sh\"\n  FIX=\"${ROOT}/tests/fixtures\"\n}\n\n# --- Basic Cartesian product --------------------------------------------------\n\n@test \"simple 2x2 matrix produces 4 combinations\" {\n  run \"$SCRIPT\" \"$FIX/simple.json\"\n  [ \"$status\" -eq 0 ]\n  count=$(echo \"$output\" | jq '.matrix.include | length')\n  [ \"$count\" -eq 4 ]\n}\n\n@test \"simple matrix contains expected combination\" {\n  run \"$SCRIPT\" \"$FIX/simple.json\"\n  [ \"$status\" -eq 0 ]\n  found=$(echo \"$output\" | jq '[.matrix.include[] | select(.os==\"ubuntu-latest\" and .node==\"20\")] | length')\n  [ \"$found\" -eq 1 ]\n}\n\n# --- Exclude rules -----------------------------------------------------------\n\n@test \"exclude rule drops matching combination\" {\n  run \"$SCRIPT\" \"$FIX/with_exclude.json\"\n  [ \"$status\" -eq 0 ]\n  count=$(echo \"$output\" | jq '.matrix.include | length')\n  [ \"$count\" -eq 3 ]\n  excluded=$(echo \"$output\" | jq '[.matrix.include[] | select(.os==\"macos-latest\" and .node==\"18\")] | length')\n  [ \"$excluded\" -eq 0 ]\n}\n\n# --- Include rules -----------------------------------------------------------\n\n@test \"include rule appends extra combination\" {\n  run \"$SCRIPT\" \"$FIX/with_include.json\"\n  [ \"$status\" -eq 0 ]\n  count=$(echo \"$output\" | jq '.matrix.include | length')\n  [ \"$count\" -eq 5 ]\n  extra=$(echo \"$output\" | jq '[.matrix.include[] | select(.experimental==true)] | length')\n  [ \"$extra\" -eq 1 ]\n}\n\n# --- max-parallel and fail-fast ---------------------------------------------\n\n@test \"max-parallel and fail-fast pass through\" {\n  run \"$SCRIPT\" \"$FIX/with_options.json\"\n  [ \"$status\" -eq 0 ]\n  mp=$(echo \"$output\" | jq '.\"max-parallel\"')\n  ff=$(echo \"$output\" | jq '.\"fail-fast\"')\n  [ \"$mp\" = \"4\" ]\n  [ \"$ff\" = \"false\" ]\n}\n\n# --- max-size validation ------------------------------------------------------\n\n@test \"matrix exceeding max-size returns error\" {\n  run \"$SCRIPT\" \"$FIX/too_big.json\"\n  [ \"$status\" -ne 0 ]\n  echo \"$output\" | grep -q \"exceeds max-size\"\n}\n\n# --- Error handling ----------------------------------------------------------\n\n@test \"missing config file returns error\" {\n  run \"$SCRIPT\" \"/nonexistent/file.json\"\n  [ \"$status\" -ne 0 ]\n  echo \"$output\" | grep -qi \"not found\"\n}\n\n@test \"invalid JSON returns error\" {\n  tmp=$(mktemp)\n  echo \"not json\" > \"$tmp\"\n  run \"$SCRIPT\" \"$tmp\"\n  rm -f \"$tmp\"\n  [ \"$status\" -ne 0 ]\n  echo \"$output\" | grep -qi \"invalid\"\n}\n\n@test \"no dimensions returns error\" {\n  tmp=$(mktemp)\n  echo '{\"max-parallel\": 2}' > \"$tmp\"\n  run \"$SCRIPT\" \"$tmp\"\n  rm -f \"$tmp\"\n  [ \"$status\" -ne 0 ]\n}\n\n# --- Three-dimensional matrix -----------------------------------------------\n\n@test \"three-dimensional matrix yields product\" {\n  run \"$SCRIPT\" \"$FIX/three_dim.json\"\n  [ \"$status\" -eq 0 ]\n  count=$(echo \"$output\" | jq '.matrix.include | length')\n  [ \"$count\" -eq 8 ]\n}\n\n# --- Default fail-fast behavior ---------------------------------------------\n\n@test \"fail-fast defaults to true when not specified\" {\n  run \"$SCRIPT\" \"$FIX/simple.json\"\n  [ \"$status\" -eq 0 ]\n  ff=$(echo \"$output\" | jq '.\"fail-fast\"')\n  [ \"$ff\" = \"true\" ]\n}\n",
@@ -2748,7 +2748,7 @@
           "name": "Edit",
           "input": {
             "replace_all": false,
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/matrix_gen.bats",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/matrix_gen.bats",
             "old_string": "  SCRIPT=\"bash ${ROOT}/matrix_gen.sh\"",
             "new_string": "  SCRIPT=\"${ROOT}/matrix_gen.sh\"\n  chmod +x \"$SCRIPT\" 2>/dev/null || true"
           },
@@ -2809,7 +2809,7 @@
         {
           "tool_use_id": "toolu_01NTXNrVVDq6YvxYyk91w82f",
           "type": "tool_result",
-          "content": "The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/matrix_gen.bats has been updated successfully. (file state is current in your context \u2014 no need to Read it back)"
+          "content": "The file /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/matrix_gen.bats has been updated successfully. (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -2818,7 +2818,7 @@
     "uuid": "238a70a5-caf0-4b7a-954c-d5585407e463",
     "timestamp": "2026-05-08T06:22:29.228Z",
     "tool_use_result": {
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/matrix_gen.bats",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/matrix_gen.bats",
       "oldString": "  SCRIPT=\"bash ${ROOT}/matrix_gen.sh\"",
       "newString": "  SCRIPT=\"${ROOT}/matrix_gen.sh\"\n  chmod +x \"$SCRIPT\" 2>/dev/null || true",
       "originalFile": "#!/usr/bin/env bats\n# Tests for matrix_gen.sh - environment matrix generator\n# All tests written red/green TDD style.\n\nsetup() {\n  ROOT=\"${BATS_TEST_DIRNAME}/..\"\n  SCRIPT=\"bash ${ROOT}/matrix_gen.sh\"\n  FIX=\"${ROOT}/tests/fixtures\"\n}\n\n# --- Basic Cartesian product --------------------------------------------------\n\n@test \"simple 2x2 matrix produces 4 combinations\" {\n  run \"$SCRIPT\" \"$FIX/simple.json\"\n  [ \"$status\" -eq 0 ]\n  count=$(echo \"$output\" | jq '.matrix.include | length')\n  [ \"$count\" -eq 4 ]\n}\n\n@test \"simple matrix contains expected combination\" {\n  run \"$SCRIPT\" \"$FIX/simple.json\"\n  [ \"$status\" -eq 0 ]\n  found=$(echo \"$output\" | jq '[.matrix.include[] | select(.os==\"ubuntu-latest\" and .node==\"20\")] | length')\n  [ \"$found\" -eq 1 ]\n}\n\n# --- Exclude rules -----------------------------------------------------------\n\n@test \"exclude rule drops matching combination\" {\n  run \"$SCRIPT\" \"$FIX/with_exclude.json\"\n  [ \"$status\" -eq 0 ]\n  count=$(echo \"$output\" | jq '.matrix.include | length')\n  [ \"$count\" -eq 3 ]\n  excluded=$(echo \"$output\" | jq '[.matrix.include[] | select(.os==\"macos-latest\" and .node==\"18\")] | length')\n  [ \"$excluded\" -eq 0 ]\n}\n\n# --- Include rules -----------------------------------------------------------\n\n@test \"include rule appends extra combination\" {\n  run \"$SCRIPT\" \"$FIX/with_include.json\"\n  [ \"$status\" -eq 0 ]\n  count=$(echo \"$output\" | jq '.matrix.include | length')\n  [ \"$count\" -eq 5 ]\n  extra=$(echo \"$output\" | jq '[.matrix.include[] | select(.experimental==true)] | length')\n  [ \"$extra\" -eq 1 ]\n}\n\n# --- max-parallel and fail-fast ---------------------------------------------\n\n@test \"max-parallel and fail-fast pass through\" {\n  run \"$SCRIPT\" \"$FIX/with_options.json\"\n  [ \"$status\" -eq 0 ]\n  mp=$(echo \"$output\" | jq '.\"max-parallel\"')\n  ff=$(echo \"$output\" | jq '.\"fail-fast\"')\n  [ \"$mp\" = \"4\" ]\n  [ \"$ff\" = \"false\" ]\n}\n\n# --- max-size validation ------------------------------------------------------\n\n@test \"matrix exceeding max-size returns error\" {\n  run \"$SCRIPT\" \"$FIX/too_big.json\"\n  [ \"$status\" -ne 0 ]\n  echo \"$output\" | grep -q \"exceeds max-size\"\n}\n\n# --- Error handling ----------------------------------------------------------\n\n@test \"missing config file returns error\" {\n  run \"$SCRIPT\" \"/nonexistent/file.json\"\n  [ \"$status\" -ne 0 ]\n  echo \"$output\" | grep -qi \"not found\"\n}\n\n@test \"invalid JSON returns error\" {\n  tmp=$(mktemp)\n  echo \"not json\" > \"$tmp\"\n  run \"$SCRIPT\" \"$tmp\"\n  rm -f \"$tmp\"\n  [ \"$status\" -ne 0 ]\n  echo \"$output\" | grep -qi \"invalid\"\n}\n\n@test \"no dimensions returns error\" {\n  tmp=$(mktemp)\n  echo '{\"max-parallel\": 2}' > \"$tmp\"\n  run \"$SCRIPT\" \"$tmp\"\n  rm -f \"$tmp\"\n  [ \"$status\" -ne 0 ]\n}\n\n# --- Three-dimensional matrix -----------------------------------------------\n\n@test \"three-dimensional matrix yields product\" {\n  run \"$SCRIPT\" \"$FIX/three_dim.json\"\n  [ \"$status\" -eq 0 ]\n  count=$(echo \"$output\" | jq '.matrix.include | length')\n  [ \"$count\" -eq 8 ]\n}\n\n# --- Default fail-fast behavior ---------------------------------------------\n\n@test \"fail-fast defaults to true when not specified\" {\n  run \"$SCRIPT\" \"$FIX/simple.json\"\n  [ \"$status\" -eq 0 ]\n  ff=$(echo \"$output\" | jq '.\"fail-fast\"')\n  [ \"$ff\" = \"true\" ]\n}\n",
@@ -2893,7 +2893,7 @@
           "id": "toolu_01RwkDPHYMRL6jv4iZhi5EYu",
           "name": "Read",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/matrix_gen.bats",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/matrix_gen.bats",
             "offset": 1,
             "limit": 30
           },
@@ -2942,7 +2942,7 @@
     "tool_use_result": {
       "type": "text",
       "file": {
-        "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/matrix_gen.bats",
+        "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/tests/matrix_gen.bats",
         "content": "#!/usr/bin/env bats\n# Tests for matrix_gen.sh - environment matrix generator\n# All tests written red/green TDD style.\n\nsetup() {\n  ROOT=\"${BATS_TEST_DIRNAME}/..\"\n  SCRIPT=\"${ROOT}/matrix_gen.sh\"\n  chmod +x \"$SCRIPT\" 2>/dev/null || true\n  FIX=\"${ROOT}/tests/fixtures\"\n}\n\n# --- Basic Cartesian product --------------------------------------------------\n\n@test \"simple 2x2 matrix produces 4 combinations\" {\n  run \"$SCRIPT\" \"$FIX/simple.json\"\n  [ \"$status\" -eq 0 ]\n  count=$(echo \"$output\" | jq '.matrix.include | length')\n  [ \"$count\" -eq 4 ]\n}\n\n@test \"simple matrix contains expected combination\" {\n  run \"$SCRIPT\" \"$FIX/simple.json\"\n  [ \"$status\" -eq 0 ]\n  found=$(echo \"$output\" | jq '[.matrix.include[] | select(.os==\"ubuntu-latest\" and .node==\"20\")] | length')\n  [ \"$found\" -eq 1 ]\n}\n\n# --- Exclude rules -----------------------------------------------------------\n\n@test \"exclude rule drops matching combination\" {",
         "numLines": 30,
         "startLine": 1,
@@ -3461,7 +3461,7 @@
           "name": "Edit",
           "input": {
             "replace_all": false,
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/matrix_gen.sh",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/matrix_gen.sh",
             "old_string": "  '{\n     matrix: { include: $include },\n     \"fail-fast\": $failfast,\n     \"max-parallel\": $maxpar\n   }'",
             "new_string": "  '{\n     \"matrix\": { \"include\": $include },\n     \"fail-fast\": $failfast,\n     \"max-parallel\": $maxpar\n   }'"
           },
@@ -3522,7 +3522,7 @@
         {
           "tool_use_id": "toolu_0131ZGhavLG78fM8kKs3zfqj",
           "type": "tool_result",
-          "content": "The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/matrix_gen.sh has been updated successfully. (file state is current in your context \u2014 no need to Read it back)"
+          "content": "The file /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/matrix_gen.sh has been updated successfully. (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -3531,7 +3531,7 @@
     "uuid": "3a17f6cb-c39b-4639-a55e-07fcb171c299",
     "timestamp": "2026-05-08T06:23:34.473Z",
     "tool_use_result": {
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/matrix_gen.sh",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/matrix_gen.sh",
       "oldString": "  '{\n     matrix: { include: $include },\n     \"fail-fast\": $failfast,\n     \"max-parallel\": $maxpar\n   }'",
       "newString": "  '{\n     \"matrix\": { \"include\": $include },\n     \"fail-fast\": $failfast,\n     \"max-parallel\": $maxpar\n   }'",
       "originalFile": "#!/usr/bin/env bash\n# matrix_gen.sh - generate a GitHub Actions strategy.matrix from a JSON config.\n#\n# Approach:\n#   1. Read a JSON config file (path arg or - for stdin).\n#   2. Identify dimension keys (every top-level key except the reserved\n#      keys: include, exclude, max-parallel, fail-fast, max-size).\n#   3. Compute the cartesian product of those dimensions with jq.\n#   4. Drop combinations that match any exclude rule (all rule keys equal).\n#   5. Append include entries verbatim.\n#   6. Validate total size against max-size (default 256, GH's hard cap).\n#   7. Emit a JSON object suitable to feed straight into a workflow:\n#        { \"matrix\": { \"include\": [...] },\n#          \"max-parallel\": <n>,\n#          \"fail-fast\": <bool> }\n#\n# Errors are written to stderr with non-zero exit codes.\n\nset -euo pipefail\n\nerr() { echo \"matrix_gen: error: $*\" >&2; }\n\nusage() {\n  cat >&2 <<'EOF'\nUsage: matrix_gen.sh <config.json>\n       matrix_gen.sh -          # read JSON from stdin\nEOF\n}\n\nif [[ $# -ne 1 ]]; then\n  usage\n  exit 2\nfi\n\ninput=\"$1\"\nif [[ \"$input\" == \"-\" ]]; then\n  config=$(cat)\nelse\n  if [[ ! -f \"$input\" ]]; then\n    err \"config file not found: $input\"\n    exit 1\n  fi\n  config=$(cat \"$input\")\nfi\n\n# Validate JSON.\nif ! echo \"$config\" | jq -e . >/dev/null 2>&1; then\n  err \"invalid JSON in config\"\n  exit 1\nfi\n\n# Identify dimension keys.\ndim_keys=$(echo \"$config\" | jq -r '\n  keys[]\n  | select(. as $k | [\"include\",\"exclude\",\"max-parallel\",\"fail-fast\",\"max-size\"] | index($k) | not)\n')\n\nif [[ -z \"$dim_keys\" ]]; then\n  err \"no matrix dimensions found (need at least one non-reserved key)\"\n  exit 1\nfi\n\n# Compute cartesian product. Build a jq program that reduces the dimensions.\n# Result: array of objects, one per combination.\ncombos=$(echo \"$config\" | jq --argjson keys \"$(printf '%s\\n' \"$dim_keys\" | jq -R . | jq -s .)\" '\n  . as $cfg\n  | reduce $keys[] as $k ([{}];\n      [ .[] as $base\n        | $cfg[$k][] as $v\n        | $base + {($k): $v}\n      ])\n')\n\n# Apply exclude rules: drop combos for which some rule matches all its keys.\ncombos=$(echo \"$config\" | jq --argjson combos \"$combos\" '\n  ($combos) as $list\n  | (.exclude // []) as $excludes\n  | $list\n  | map(. as $c\n        | select(\n            ($excludes | map(\n              . as $e\n              | ($e | to_entries | all(.value == $c[.key]))\n            ) | any | not)\n          ))\n')\n\n# Append includes (verbatim).\ncombos=$(echo \"$config\" | jq --argjson combos \"$combos\" '\n  $combos + (.include // [])\n')\n\ntotal=$(echo \"$combos\" | jq 'length')\n\n# Validate size. Default cap mirrors GitHub Actions (256).\nmax_size=$(echo \"$config\" | jq -r '.\"max-size\" // 256')\nif (( total > max_size )); then\n  err \"matrix size $total exceeds max-size $max_size\"\n  exit 1\nfi\nif (( total == 0 )); then\n  err \"matrix is empty after applying excludes\"\n  exit 1\nfi\n\n# Pull through optional knobs.\nfail_fast=$(echo \"$config\" | jq 'if has(\"fail-fast\") then .\"fail-fast\" else true end')\nmax_parallel=$(echo \"$config\" | jq '.\"max-parallel\" // null')\n\njq -n \\\n  --argjson include \"$combos\" \\\n  --argjson failfast \"$fail_fast\" \\\n  --argjson maxpar \"$max_parallel\" \\\n  '{\n     matrix: { include: $include },\n     \"fail-fast\": $failfast,\n     \"max-parallel\": $maxpar\n   }'\n",
@@ -3740,7 +3740,7 @@
           "name": "Edit",
           "input": {
             "replace_all": true,
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/matrix_gen.sh",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/matrix_gen.sh",
             "old_string": "$include",
             "new_string": "$inc"
           },
@@ -3801,7 +3801,7 @@
         {
           "tool_use_id": "toolu_01KTirdTXxvpVYhsTcr5gHfS",
           "type": "tool_result",
-          "content": "The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/matrix_gen.sh has been updated. All occurrences were successfully replaced. (file state is current in your context \u2014 no need to Read it back)"
+          "content": "The file /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/matrix_gen.sh has been updated. All occurrences were successfully replaced. (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -3810,7 +3810,7 @@
     "uuid": "aa6657fb-d02e-4917-a988-c13bfae383e1",
     "timestamp": "2026-05-08T06:23:47.609Z",
     "tool_use_result": {
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/matrix_gen.sh",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/matrix_gen.sh",
       "oldString": "$include",
       "newString": "$inc",
       "originalFile": "#!/usr/bin/env bash\n# matrix_gen.sh - generate a GitHub Actions strategy.matrix from a JSON config.\n#\n# Approach:\n#   1. Read a JSON config file (path arg or - for stdin).\n#   2. Identify dimension keys (every top-level key except the reserved\n#      keys: include, exclude, max-parallel, fail-fast, max-size).\n#   3. Compute the cartesian product of those dimensions with jq.\n#   4. Drop combinations that match any exclude rule (all rule keys equal).\n#   5. Append include entries verbatim.\n#   6. Validate total size against max-size (default 256, GH's hard cap).\n#   7. Emit a JSON object suitable to feed straight into a workflow:\n#        { \"matrix\": { \"include\": [...] },\n#          \"max-parallel\": <n>,\n#          \"fail-fast\": <bool> }\n#\n# Errors are written to stderr with non-zero exit codes.\n\nset -euo pipefail\n\nerr() { echo \"matrix_gen: error: $*\" >&2; }\n\nusage() {\n  cat >&2 <<'EOF'\nUsage: matrix_gen.sh <config.json>\n       matrix_gen.sh -          # read JSON from stdin\nEOF\n}\n\nif [[ $# -ne 1 ]]; then\n  usage\n  exit 2\nfi\n\ninput=\"$1\"\nif [[ \"$input\" == \"-\" ]]; then\n  config=$(cat)\nelse\n  if [[ ! -f \"$input\" ]]; then\n    err \"config file not found: $input\"\n    exit 1\n  fi\n  config=$(cat \"$input\")\nfi\n\n# Validate JSON.\nif ! echo \"$config\" | jq -e . >/dev/null 2>&1; then\n  err \"invalid JSON in config\"\n  exit 1\nfi\n\n# Identify dimension keys.\ndim_keys=$(echo \"$config\" | jq -r '\n  keys[]\n  | select(. as $k | [\"include\",\"exclude\",\"max-parallel\",\"fail-fast\",\"max-size\"] | index($k) | not)\n')\n\nif [[ -z \"$dim_keys\" ]]; then\n  err \"no matrix dimensions found (need at least one non-reserved key)\"\n  exit 1\nfi\n\n# Compute cartesian product. Build a jq program that reduces the dimensions.\n# Result: array of objects, one per combination.\ncombos=$(echo \"$config\" | jq --argjson keys \"$(printf '%s\\n' \"$dim_keys\" | jq -R . | jq -s .)\" '\n  . as $cfg\n  | reduce $keys[] as $k ([{}];\n      [ .[] as $base\n        | $cfg[$k][] as $v\n        | $base + {($k): $v}\n      ])\n')\n\n# Apply exclude rules: drop combos for which some rule matches all its keys.\ncombos=$(echo \"$config\" | jq --argjson combos \"$combos\" '\n  ($combos) as $list\n  | (.exclude // []) as $excludes\n  | $list\n  | map(. as $c\n        | select(\n            ($excludes | map(\n              . as $e\n              | ($e | to_entries | all(.value == $c[.key]))\n            ) | any | not)\n          ))\n')\n\n# Append includes (verbatim).\ncombos=$(echo \"$config\" | jq --argjson combos \"$combos\" '\n  $combos + (.include // [])\n')\n\ntotal=$(echo \"$combos\" | jq 'length')\n\n# Validate size. Default cap mirrors GitHub Actions (256).\nmax_size=$(echo \"$config\" | jq -r '.\"max-size\" // 256')\nif (( total > max_size )); then\n  err \"matrix size $total exceeds max-size $max_size\"\n  exit 1\nfi\nif (( total == 0 )); then\n  err \"matrix is empty after applying excludes\"\n  exit 1\nfi\n\n# Pull through optional knobs.\nfail_fast=$(echo \"$config\" | jq 'if has(\"fail-fast\") then .\"fail-fast\" else true end')\nmax_parallel=$(echo \"$config\" | jq '.\"max-parallel\" // null')\n\njq -n \\\n  --argjson include \"$combos\" \\\n  --argjson failfast \"$fail_fast\" \\\n  --argjson maxpar \"$max_parallel\" \\\n  '{\n     \"matrix\": { \"include\": $include },\n     \"fail-fast\": $failfast,\n     \"max-parallel\": $maxpar\n   }'\n",
@@ -3850,7 +3850,7 @@
           "name": "Edit",
           "input": {
             "replace_all": false,
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/matrix_gen.sh",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/matrix_gen.sh",
             "old_string": "  --argjson inc \"$combos\" \\",
             "new_string": "  --argjson inc \"$combos\" \\\n"
           },
@@ -4015,7 +4015,7 @@
           "name": "Edit",
           "input": {
             "replace_all": false,
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/matrix_gen.sh",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/matrix_gen.sh",
             "old_string": "  --argjson include \"$combos\" \\",
             "new_string": "  --argjson inc \"$combos\" \\"
           },
@@ -4076,7 +4076,7 @@
         {
           "tool_use_id": "toolu_01MuhkzZeeyEaXdFKJRXMX23",
           "type": "tool_result",
-          "content": "The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/matrix_gen.sh has been updated successfully. (file state is current in your context \u2014 no need to Read it back)"
+          "content": "The file /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/matrix_gen.sh has been updated successfully. (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -4085,7 +4085,7 @@
     "uuid": "e2e42baf-3f51-4833-856f-83a3581ed3f0",
     "timestamp": "2026-05-08T06:23:59.511Z",
     "tool_use_result": {
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/matrix_gen.sh",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/matrix_gen.sh",
       "oldString": "  --argjson include \"$combos\" \\",
       "newString": "  --argjson inc \"$combos\" \\",
       "originalFile": "#!/usr/bin/env bash\n# matrix_gen.sh - generate a GitHub Actions strategy.matrix from a JSON config.\n#\n# Approach:\n#   1. Read a JSON config file (path arg or - for stdin).\n#   2. Identify dimension keys (every top-level key except the reserved\n#      keys: include, exclude, max-parallel, fail-fast, max-size).\n#   3. Compute the cartesian product of those dimensions with jq.\n#   4. Drop combinations that match any exclude rule (all rule keys equal).\n#   5. Append include entries verbatim.\n#   6. Validate total size against max-size (default 256, GH's hard cap).\n#   7. Emit a JSON object suitable to feed straight into a workflow:\n#        { \"matrix\": { \"include\": [...] },\n#          \"max-parallel\": <n>,\n#          \"fail-fast\": <bool> }\n#\n# Errors are written to stderr with non-zero exit codes.\n\nset -euo pipefail\n\nerr() { echo \"matrix_gen: error: $*\" >&2; }\n\nusage() {\n  cat >&2 <<'EOF'\nUsage: matrix_gen.sh <config.json>\n       matrix_gen.sh -          # read JSON from stdin\nEOF\n}\n\nif [[ $# -ne 1 ]]; then\n  usage\n  exit 2\nfi\n\ninput=\"$1\"\nif [[ \"$input\" == \"-\" ]]; then\n  config=$(cat)\nelse\n  if [[ ! -f \"$input\" ]]; then\n    err \"config file not found: $input\"\n    exit 1\n  fi\n  config=$(cat \"$input\")\nfi\n\n# Validate JSON.\nif ! echo \"$config\" | jq -e . >/dev/null 2>&1; then\n  err \"invalid JSON in config\"\n  exit 1\nfi\n\n# Identify dimension keys.\ndim_keys=$(echo \"$config\" | jq -r '\n  keys[]\n  | select(. as $k | [\"include\",\"exclude\",\"max-parallel\",\"fail-fast\",\"max-size\"] | index($k) | not)\n')\n\nif [[ -z \"$dim_keys\" ]]; then\n  err \"no matrix dimensions found (need at least one non-reserved key)\"\n  exit 1\nfi\n\n# Compute cartesian product. Build a jq program that reduces the dimensions.\n# Result: array of objects, one per combination.\ncombos=$(echo \"$config\" | jq --argjson keys \"$(printf '%s\\n' \"$dim_keys\" | jq -R . | jq -s .)\" '\n  . as $cfg\n  | reduce $keys[] as $k ([{}];\n      [ .[] as $base\n        | $cfg[$k][] as $v\n        | $base + {($k): $v}\n      ])\n')\n\n# Apply exclude rules: drop combos for which some rule matches all its keys.\ncombos=$(echo \"$config\" | jq --argjson combos \"$combos\" '\n  ($combos) as $list\n  | (.exclude // []) as $excludes\n  | $list\n  | map(. as $c\n        | select(\n            ($excludes | map(\n              . as $e\n              | ($e | to_entries | all(.value == $c[.key]))\n            ) | any | not)\n          ))\n')\n\n# Append includes (verbatim).\ncombos=$(echo \"$config\" | jq --argjson combos \"$combos\" '\n  $combos + (.include // [])\n')\n\ntotal=$(echo \"$combos\" | jq 'length')\n\n# Validate size. Default cap mirrors GitHub Actions (256).\nmax_size=$(echo \"$config\" | jq -r '.\"max-size\" // 256')\nif (( total > max_size )); then\n  err \"matrix size $total exceeds max-size $max_size\"\n  exit 1\nfi\nif (( total == 0 )); then\n  err \"matrix is empty after applying excludes\"\n  exit 1\nfi\n\n# Pull through optional knobs.\nfail_fast=$(echo \"$config\" | jq 'if has(\"fail-fast\") then .\"fail-fast\" else true end')\nmax_parallel=$(echo \"$config\" | jq '.\"max-parallel\" // null')\n\njq -n \\\n  --argjson include \"$combos\" \\\n  --argjson failfast \"$fail_fast\" \\\n  --argjson maxpar \"$max_parallel\" \\\n  '{\n     \"matrix\": { \"include\": $inc },\n     \"fail-fast\": $failfast,\n     \"max-parallel\": $maxpar\n   }'\n",
@@ -4418,7 +4418,7 @@
           "name": "Edit",
           "input": {
             "replace_all": false,
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/run-tests.sh",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/run-tests.sh",
             "old_string": "assert_in_result '11 tests, 0 failures' 'all 11 bats tests passed inside act'",
             "new_string": "assert_in_result 'ok 11 fail-fast defaults to true' 'all 11 bats tests passed inside act'\n# Confirm no failures appear (negative assertion)\nif grep -qE 'not ok [0-9]+ ' \"$RESULT\"; then\n  echo \"[harness] FAIL: bats reported a failing test inside act\" >&2\n  exit 1\nfi\necho \"[harness] PASS: no failing bats tests in act output\""
           },
@@ -4479,7 +4479,7 @@
         {
           "tool_use_id": "toolu_01JcpVLvVq4uaHoyvEoemEjT",
           "type": "tool_result",
-          "content": "The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/run-tests.sh has been updated successfully. (file state is current in your context \u2014 no need to Read it back)"
+          "content": "The file /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/run-tests.sh has been updated successfully. (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -4488,7 +4488,7 @@
     "uuid": "28633df2-ee80-4a1a-a6e7-9afbe4bd8036",
     "timestamp": "2026-05-08T06:24:43.564Z",
     "tool_use_result": {
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/run-tests.sh",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/run-tests.sh",
       "oldString": "assert_in_result '11 tests, 0 failures' 'all 11 bats tests passed inside act'",
       "newString": "assert_in_result 'ok 11 fail-fast defaults to true' 'all 11 bats tests passed inside act'\n# Confirm no failures appear (negative assertion)\nif grep -qE 'not ok [0-9]+ ' \"$RESULT\"; then\n  echo \"[harness] FAIL: bats reported a failing test inside act\" >&2\n  exit 1\nfi\necho \"[harness] PASS: no failing bats tests in act output\"",
       "originalFile": "#!/usr/bin/env bash\n# run-tests.sh - drive the workflow through act and assert on its output.\n#\n# All tests must execute through the GitHub Actions workflow. We invoke\n# `act push --rm` once and capture its full output to act-result.txt, then\n# scan it for the expected per-test-case results emitted by the workflow.\n\nset -euo pipefail\n\ncd \"$(dirname \"$0\")\"\n\nRESULT=\"act-result.txt\"\n: > \"$RESULT\"\n\n# --- Workflow structure tests (run before act, instant) ----------------------\n\necho \"[harness] structure: workflow file exists\" | tee -a \"$RESULT\"\ntest -f .github/workflows/environment-matrix-generator.yml\n\necho \"[harness] structure: actionlint passes\" | tee -a \"$RESULT\"\nactionlint .github/workflows/environment-matrix-generator.yml\n\necho \"[harness] structure: workflow references matrix_gen.sh\" | tee -a \"$RESULT\"\ngrep -q 'matrix_gen.sh' .github/workflows/environment-matrix-generator.yml\n\necho \"[harness] structure: triggers include push, pull_request, workflow_dispatch, schedule\" | tee -a \"$RESULT\"\nfor trig in push pull_request workflow_dispatch schedule; do\n  grep -qE \"^[[:space:]]*${trig}:\" .github/workflows/environment-matrix-generator.yml\ndone\n\necho \"[harness] structure: matrix_gen.sh and tests/matrix_gen.bats exist\" | tee -a \"$RESULT\"\ntest -f matrix_gen.sh\ntest -f tests/matrix_gen.bats\n\n# --- Run the workflow under act ----------------------------------------------\n\necho \"[harness] running: act push --rm\" | tee -a \"$RESULT\"\necho \"===== BEGIN act push --rm =====\" >> \"$RESULT\"\nset +e\nact push --rm --pull=false >>\"$RESULT\" 2>&1\nact_status=$?\nset -e\necho \"===== END act push (exit=$act_status) =====\" >> \"$RESULT\"\n\nif (( act_status != 0 )); then\n  echo \"[harness] FAIL: act exited $act_status (see $RESULT)\" >&2\n  exit 1\nfi\n\n# --- Assert on captured output -----------------------------------------------\n\nassert_in_result() {\n  local pat=\"$1\" desc=\"$2\"\n  if grep -qE \"$pat\" \"$RESULT\"; then\n    echo \"[harness] PASS: $desc\"\n  else\n    echo \"[harness] FAIL: $desc (pattern: $pat)\" >&2\n    exit 1\n  fi\n}\n\n# Each line matches output produced by act for the workflow's job/steps.\nassert_in_result 'Job succeeded' 'act reports Job succeeded'\nassert_in_result '11 tests, 0 failures' 'all 11 bats tests passed inside act'\nassert_in_result 'simple\\.json output' 'demo step ran for simple.json'\nassert_in_result 'three_dim\\.json output' 'demo step ran for three_dim.json'\nassert_in_result 'with_exclude\\.json output' 'demo step ran for with_exclude.json'\n# Verify the simple matrix really produced the 4 expected combos in the demo step.\n# The demo prints raw JSON; check exact expected key/value pairs appear.\nassert_in_result '\"os\": \"ubuntu-latest\"' 'demo output contains ubuntu-latest combination'\nassert_in_result '\"os\": \"macos-latest\"' 'demo output contains macos-latest combination'\nassert_in_result '\"node\": \"18\"' 'demo output contains node 18'\nassert_in_result '\"node\": \"20\"' 'demo output contains node 20'\n\necho \"[harness] All assertions passed.\"\n",
@@ -4669,7 +4669,7 @@
           "id": "toolu_01U6Bdr8qv9gEKXyVHAKJJV1",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/verify.sh",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/verify.sh",
             "content": "#!/usr/bin/env bash\n# verify.sh - re-run only the assertion phase against an existing act-result.txt.\n# Use this to validate harness assertions without spending another act invocation.\nset -euo pipefail\ncd \"$(dirname \"$0\")\"\nRESULT=\"act-result.txt\"\ntest -s \"$RESULT\" || { echo \"no $RESULT\" >&2; exit 1; }\n\nassert_in_result() {\n  local pat=\"$1\" desc=\"$2\"\n  if grep -qE \"$pat\" \"$RESULT\"; then\n    echo \"PASS: $desc\"\n  else\n    echo \"FAIL: $desc (pattern: $pat)\" >&2\n    exit 1\n  fi\n}\n\nassert_in_result 'Job succeeded' 'act reports Job succeeded'\nassert_in_result 'ok 11 fail-fast defaults to true' 'all 11 bats tests passed'\nif grep -qE 'not ok [0-9]+ ' \"$RESULT\"; then\n  echo \"FAIL: bats reported a failing test\" >&2; exit 1\nfi\necho \"PASS: no failing bats tests\"\nassert_in_result 'simple\\.json output' 'demo simple.json'\nassert_in_result 'three_dim\\.json output' 'demo three_dim.json'\nassert_in_result 'with_exclude\\.json output' 'demo with_exclude.json'\nassert_in_result '\"os\": \"ubuntu-latest\"' 'ubuntu-latest combination'\nassert_in_result '\"os\": \"macos-latest\"' 'macos-latest combination'\nassert_in_result '\"node\": \"18\"' 'node 18'\nassert_in_result '\"node\": \"20\"' 'node 20'\necho \"All assertions passed.\"\n"
           },
           "caller": {
@@ -4729,7 +4729,7 @@
         {
           "tool_use_id": "toolu_01U6Bdr8qv9gEKXyVHAKJJV1",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/verify.sh (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/verify.sh (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -4739,7 +4739,7 @@
     "timestamp": "2026-05-08T06:25:00.090Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/verify.sh",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/16-environment-matrix-generator/bash-opus47-200k-medium/verify.sh",
       "content": "#!/usr/bin/env bash\n# verify.sh - re-run only the assertion phase against an existing act-result.txt.\n# Use this to validate harness assertions without spending another act invocation.\nset -euo pipefail\ncd \"$(dirname \"$0\")\"\nRESULT=\"act-result.txt\"\ntest -s \"$RESULT\" || { echo \"no $RESULT\" >&2; exit 1; }\n\nassert_in_result() {\n  local pat=\"$1\" desc=\"$2\"\n  if grep -qE \"$pat\" \"$RESULT\"; then\n    echo \"PASS: $desc\"\n  else\n    echo \"FAIL: $desc (pattern: $pat)\" >&2\n    exit 1\n  fi\n}\n\nassert_in_result 'Job succeeded' 'act reports Job succeeded'\nassert_in_result 'ok 11 fail-fast defaults to true' 'all 11 bats tests passed'\nif grep -qE 'not ok [0-9]+ ' \"$RESULT\"; then\n  echo \"FAIL: bats reported a failing test\" >&2; exit 1\nfi\necho \"PASS: no failing bats tests\"\nassert_in_result 'simple\\.json output' 'demo simple.json'\nassert_in_result 'three_dim\\.json output' 'demo three_dim.json'\nassert_in_result 'with_exclude\\.json output' 'demo with_exclude.json'\nassert_in_result '\"os\": \"ubuntu-latest\"' 'ubuntu-latest combination'\nassert_in_result '\"os\": \"macos-latest\"' 'macos-latest combination'\nassert_in_result '\"node\": \"18\"' 'node 18'\nassert_in_result '\"node\": \"20\"' 'node 20'\necho \"All assertions passed.\"\n",
       "structuredPatch": [],
       "originalFile": null,
