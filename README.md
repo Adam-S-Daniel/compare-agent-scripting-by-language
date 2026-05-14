@@ -2,6 +2,12 @@
 
 Benchmarks agent/scripting-language combinations on completing GitHub Actions scripting tasks when asked to use various languages. **[Latest results](results/2026-05-06_173435/results.md)** | [All results](#benchmark-runs)
 
+## External References
+
+[Introducing GHA-bench](https://adamdaniel.ai/blog/introducing-gha-bench/) on adamdaniel.ai.
+
+> Interact with results and read more
+
 ## Benchmark Versions
 
 ### [v1](benchmark-instructions-v1.md) — Baseline
