@@ -5,7 +5,7 @@ echo "=== dotnet version ==="
 dotnet --version
 echo ""
 echo "=== Running tests ==="
-cd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-02_163146/09-error-retry-pipeline/csharp-script-opus
+cd /home/passp/repos/GHA-bench/workspaces/2026-04-02_163146/09-error-retry-pipeline/csharp-script-opus
 dotnet test PipelineTests/PipelineTests.csproj --verbosity normal 2>&1
 TEST_EXIT=$?
 echo ""

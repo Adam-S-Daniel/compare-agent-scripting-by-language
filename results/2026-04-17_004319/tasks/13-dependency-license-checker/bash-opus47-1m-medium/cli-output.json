@@ -2,7 +2,7 @@
   {
     "type": "system",
     "subtype": "init",
-    "cwd": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium",
+    "cwd": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium",
     "session_id": "2496f23f-69e5-46fc-ac0f-02cae4edc070",
     "tools": [
       "Task",
@@ -78,7 +78,7 @@
     "plugins": [],
     "uuid": "3861ad7c-06d5-4d58-bc20-bc321cfda24c",
     "memory_paths": {
-      "auto": "/home/passp/.claude/projects/-home-passp-repos-compare-agent-scripting-by-language-workspaces-2026-04-17-004319-13-dependency-license-checker-bash-opus47-1m-medium/memory/"
+      "auto": "/home/passp/.claude/projects/-home-passp-repos-GHA-bench-workspaces-2026-04-17-004319-13-dependency-license-checker-bash-opus47-1m-medium/memory/"
     },
     "fast_mode_state": "off"
   },
@@ -143,7 +143,7 @@
           "id": "toolu_01BoggB9U24Nsm7CEFyKd2qH",
           "name": "Bash",
           "input": {
-            "command": "ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/ && cat /home/passp/repos/compare-agent-scripting-by-language/AGENTS.md 2>/dev/null | head -100",
+            "command": "ls -la /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/ && cat /home/passp/repos/GHA-bench/AGENTS.md 2>/dev/null | head -100",
             "description": "List directory and read AGENTS.md"
           },
           "caller": {
@@ -210,7 +210,7 @@
           "id": "toolu_014GHouzmuqJxfHhqT8Ttpxh",
           "name": "Bash",
           "input": {
-            "command": "cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/.actrc; which bats shellcheck actionlint act; bats --version 2>/dev/null",
+            "command": "cat /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/.actrc; which bats shellcheck actionlint act; bats --version 2>/dev/null",
             "description": "Check tools and actrc"
           },
           "caller": {
@@ -379,7 +379,7 @@
           "id": "toolu_01ELruuF99vpBiTRWaWWadEZ",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/license-checker.sh",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/license-checker.sh",
             "content": "#!/usr/bin/env bash\n# Dependency license compliance checker.\n# Parses a manifest (package.json or requirements.txt), looks up each dep's\n# license from a mock DB, and classifies as approved/denied/unknown based on\n# allow- and deny-lists.\n\nset -euo pipefail\n\nusage() {\n    cat <<'EOF'\nUsage: license-checker.sh --manifest <file> [--allow <csv>] [--deny <csv>] [--db <file>]\n\nOptions:\n  --manifest <file>   Path to package.json or requirements.txt\n  --allow <csv>       Comma-separated allowed licenses (e.g. MIT,Apache-2.0)\n  --deny <csv>        Comma-separated denied licenses (e.g. GPL-3.0)\n  --db <file>         Path to license DB (CSV: name,version,license). Mock for tests.\n  -h|--help           Show this help\nEOF\n}\n\nmanifest=\"\"\nallow_csv=\"\"\ndeny_csv=\"\"\ndb_file=\"${LICENSE_DB:-}\"\n\nwhile [[ $# -gt 0 ]]; do\n    case \"$1\" in\n        --manifest) manifest=\"$2\"; shift 2 ;;\n        --allow)    allow_csv=\"$2\"; shift 2 ;;\n        --deny)     deny_csv=\"$2\"; shift 2 ;;\n        --db)       db_file=\"$2\"; shift 2 ;;\n        -h|--help)  usage; exit 0 ;;\n        *) echo \"ERROR: unknown argument: $1\" >&2; usage >&2; exit 2 ;;\n    esac\ndone\n\nif [[ -z \"$manifest\" ]]; then\n    echo \"ERROR: --manifest is required\" >&2\n    exit 2\nfi\nif [[ ! -f \"$manifest\" ]]; then\n    echo \"ERROR: manifest not found: $manifest\" >&2\n    exit 2\nfi\n\n# Parse the manifest into \"name<TAB>version\" lines on stdout.\nparse_manifest() {\n    local file=\"$1\"\n    local base\n    base=\"$(basename \"$file\")\"\n    case \"$base\" in\n        package.json)\n            # Extract dependencies + devDependencies as name/version pairs.\n            # Avoid jq dependency: use a small awk-based parser sufficient for\n            # well-formatted package.json files used in this checker.\n            python3 - \"$file\" <<'PY'\nimport json, sys\nwith open(sys.argv[1]) as f:\n    data = json.load(f)\nfor key in (\"dependencies\", \"devDependencies\"):\n    for name, ver in (data.get(key) or {}).items():\n        print(f\"{name}\\t{ver}\")\nPY\n            ;;\n        requirements.txt)\n            # Each non-empty, non-comment line: pkg==version (or pkg)\n            while IFS= read -r line || [[ -n \"$line\" ]]; do\n                line=\"${line%%#*}\"                   # strip comments\n                line=\"$(echo -n \"$line\" | tr -d '[:space:]')\"\n                [[ -z \"$line\" ]] && continue\n                if [[ \"$line\" == *\"==\"* ]]; then\n                    name=\"${line%%==*}\"\n                    ver=\"${line##*==}\"\n                else\n                    name=\"$line\"\n                    ver=\"\"\n                fi\n                printf '%s\\t%s\\n' \"$name\" \"$ver\"\n            done < \"$file\"\n            ;;\n        *)\n            echo \"ERROR: unsupported manifest type: $base\" >&2\n            return 3\n            ;;\n    esac\n}\n\n# Look up license for \"name version\" using the mock DB CSV.\n# Returns \"UNKNOWN\" if not present.\nlookup_license() {\n    local name=\"$1\" version=\"$2\"\n    if [[ -z \"$db_file\" || ! -f \"$db_file\" ]]; then\n        echo \"UNKNOWN\"\n        return 0\n    fi\n    local found=\"UNKNOWN\"\n    while IFS=, read -r d_name d_ver d_lic; do\n        [[ -z \"$d_name\" || \"$d_name\" == \"name\" ]] && continue\n        if [[ \"$d_name\" == \"$name\" ]]; then\n            if [[ \"$d_ver\" == \"$version\" || \"$d_ver\" == \"*\" ]]; then\n                found=\"$d_lic\"\n                break\n            fi\n        fi\n    done < \"$db_file\"\n    echo \"$found\"\n}\n\n# Classify a license against allow/deny lists.\n# Precedence: deny > allow > unknown.\nclassify() {\n    local license=\"$1\"\n    local item\n    if [[ \"$license\" == \"UNKNOWN\" ]]; then\n        echo \"unknown\"\n        return 0\n    fi\n    IFS=',' read -ra deny_arr <<< \"$deny_csv\"\n    for item in \"${deny_arr[@]}\"; do\n        [[ -z \"$item\" ]] && continue\n        if [[ \"$item\" == \"$license\" ]]; then\n            echo \"denied\"\n            return 0\n        fi\n    done\n    IFS=',' read -ra allow_arr <<< \"$allow_csv\"\n    for item in \"${allow_arr[@]}\"; do\n        [[ -z \"$item\" ]] && continue\n        if [[ \"$item\" == \"$license\" ]]; then\n            echo \"approved\"\n            return 0\n        fi\n    done\n    echo \"unknown\"\n}\n\nmain() {\n    local denied_count=0\n    echo \"Dependency License Compliance Report\"\n    echo \"====================================\"\n    printf '%-30s %-15s %-15s %s\\n' \"NAME\" \"VERSION\" \"LICENSE\" \"STATUS\"\n    while IFS=$'\\t' read -r name version; do\n        [[ -z \"$name\" ]] && continue\n        license=\"$(lookup_license \"$name\" \"$version\")\"\n        status=\"$(classify \"$license\")\"\n        printf '%-30s %-15s %-15s %s\\n' \"$name\" \"${version:--}\" \"$license\" \"$status\"\n        if [[ \"$status\" == \"denied\" ]]; then\n            denied_count=$((denied_count + 1))\n        fi\n    done < <(parse_manifest \"$manifest\")\n    echo \"====================================\"\n    echo \"Denied dependencies: $denied_count\"\n    # Exit non-zero if any denied license is present.\n    if [[ \"$denied_count\" -gt 0 ]]; then\n        return 1\n    fi\n    return 0\n}\n\nmain\n"
           },
           "caller": {
@@ -439,7 +439,7 @@
         {
           "tool_use_id": "toolu_01ELruuF99vpBiTRWaWWadEZ",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/license-checker.sh (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/license-checker.sh (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -449,7 +449,7 @@
     "timestamp": "2026-04-17T13:55:05.864Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/license-checker.sh",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/license-checker.sh",
       "content": "#!/usr/bin/env bash\n# Dependency license compliance checker.\n# Parses a manifest (package.json or requirements.txt), looks up each dep's\n# license from a mock DB, and classifies as approved/denied/unknown based on\n# allow- and deny-lists.\n\nset -euo pipefail\n\nusage() {\n    cat <<'EOF'\nUsage: license-checker.sh --manifest <file> [--allow <csv>] [--deny <csv>] [--db <file>]\n\nOptions:\n  --manifest <file>   Path to package.json or requirements.txt\n  --allow <csv>       Comma-separated allowed licenses (e.g. MIT,Apache-2.0)\n  --deny <csv>        Comma-separated denied licenses (e.g. GPL-3.0)\n  --db <file>         Path to license DB (CSV: name,version,license). Mock for tests.\n  -h|--help           Show this help\nEOF\n}\n\nmanifest=\"\"\nallow_csv=\"\"\ndeny_csv=\"\"\ndb_file=\"${LICENSE_DB:-}\"\n\nwhile [[ $# -gt 0 ]]; do\n    case \"$1\" in\n        --manifest) manifest=\"$2\"; shift 2 ;;\n        --allow)    allow_csv=\"$2\"; shift 2 ;;\n        --deny)     deny_csv=\"$2\"; shift 2 ;;\n        --db)       db_file=\"$2\"; shift 2 ;;\n        -h|--help)  usage; exit 0 ;;\n        *) echo \"ERROR: unknown argument: $1\" >&2; usage >&2; exit 2 ;;\n    esac\ndone\n\nif [[ -z \"$manifest\" ]]; then\n    echo \"ERROR: --manifest is required\" >&2\n    exit 2\nfi\nif [[ ! -f \"$manifest\" ]]; then\n    echo \"ERROR: manifest not found: $manifest\" >&2\n    exit 2\nfi\n\n# Parse the manifest into \"name<TAB>version\" lines on stdout.\nparse_manifest() {\n    local file=\"$1\"\n    local base\n    base=\"$(basename \"$file\")\"\n    case \"$base\" in\n        package.json)\n            # Extract dependencies + devDependencies as name/version pairs.\n            # Avoid jq dependency: use a small awk-based parser sufficient for\n            # well-formatted package.json files used in this checker.\n            python3 - \"$file\" <<'PY'\nimport json, sys\nwith open(sys.argv[1]) as f:\n    data = json.load(f)\nfor key in (\"dependencies\", \"devDependencies\"):\n    for name, ver in (data.get(key) or {}).items():\n        print(f\"{name}\\t{ver}\")\nPY\n            ;;\n        requirements.txt)\n            # Each non-empty, non-comment line: pkg==version (or pkg)\n            while IFS= read -r line || [[ -n \"$line\" ]]; do\n                line=\"${line%%#*}\"                   # strip comments\n                line=\"$(echo -n \"$line\" | tr -d '[:space:]')\"\n                [[ -z \"$line\" ]] && continue\n                if [[ \"$line\" == *\"==\"* ]]; then\n                    name=\"${line%%==*}\"\n                    ver=\"${line##*==}\"\n                else\n                    name=\"$line\"\n                    ver=\"\"\n                fi\n                printf '%s\\t%s\\n' \"$name\" \"$ver\"\n            done < \"$file\"\n            ;;\n        *)\n            echo \"ERROR: unsupported manifest type: $base\" >&2\n            return 3\n            ;;\n    esac\n}\n\n# Look up license for \"name version\" using the mock DB CSV.\n# Returns \"UNKNOWN\" if not present.\nlookup_license() {\n    local name=\"$1\" version=\"$2\"\n    if [[ -z \"$db_file\" || ! -f \"$db_file\" ]]; then\n        echo \"UNKNOWN\"\n        return 0\n    fi\n    local found=\"UNKNOWN\"\n    while IFS=, read -r d_name d_ver d_lic; do\n        [[ -z \"$d_name\" || \"$d_name\" == \"name\" ]] && continue\n        if [[ \"$d_name\" == \"$name\" ]]; then\n            if [[ \"$d_ver\" == \"$version\" || \"$d_ver\" == \"*\" ]]; then\n                found=\"$d_lic\"\n                break\n            fi\n        fi\n    done < \"$db_file\"\n    echo \"$found\"\n}\n\n# Classify a license against allow/deny lists.\n# Precedence: deny > allow > unknown.\nclassify() {\n    local license=\"$1\"\n    local item\n    if [[ \"$license\" == \"UNKNOWN\" ]]; then\n        echo \"unknown\"\n        return 0\n    fi\n    IFS=',' read -ra deny_arr <<< \"$deny_csv\"\n    for item in \"${deny_arr[@]}\"; do\n        [[ -z \"$item\" ]] && continue\n        if [[ \"$item\" == \"$license\" ]]; then\n            echo \"denied\"\n            return 0\n        fi\n    done\n    IFS=',' read -ra allow_arr <<< \"$allow_csv\"\n    for item in \"${allow_arr[@]}\"; do\n        [[ -z \"$item\" ]] && continue\n        if [[ \"$item\" == \"$license\" ]]; then\n            echo \"approved\"\n            return 0\n        fi\n    done\n    echo \"unknown\"\n}\n\nmain() {\n    local denied_count=0\n    echo \"Dependency License Compliance Report\"\n    echo \"====================================\"\n    printf '%-30s %-15s %-15s %s\\n' \"NAME\" \"VERSION\" \"LICENSE\" \"STATUS\"\n    while IFS=$'\\t' read -r name version; do\n        [[ -z \"$name\" ]] && continue\n        license=\"$(lookup_license \"$name\" \"$version\")\"\n        status=\"$(classify \"$license\")\"\n        printf '%-30s %-15s %-15s %s\\n' \"$name\" \"${version:--}\" \"$license\" \"$status\"\n        if [[ \"$status\" == \"denied\" ]]; then\n            denied_count=$((denied_count + 1))\n        fi\n    done < <(parse_manifest \"$manifest\")\n    echo \"====================================\"\n    echo \"Denied dependencies: $denied_count\"\n    # Exit non-zero if any denied license is present.\n    if [[ \"$denied_count\" -gt 0 ]]; then\n        return 1\n    fi\n    return 0\n}\n\nmain\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -536,7 +536,7 @@
           "id": "toolu_0196QhfB1pRzAhUEKDQZSwrG",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/fixtures/package.json",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/fixtures/package.json",
             "content": "{\n  \"name\": \"demo-app\",\n  \"version\": \"1.0.0\",\n  \"dependencies\": {\n    \"express\": \"4.18.2\",\n    \"lodash\": \"4.17.21\",\n    \"evil-pkg\": \"1.0.0\"\n  },\n  \"devDependencies\": {\n    \"jest\": \"29.7.0\",\n    \"mystery-lib\": \"0.1.0\"\n  }\n}\n"
           },
           "caller": {
@@ -596,7 +596,7 @@
         {
           "tool_use_id": "toolu_0196QhfB1pRzAhUEKDQZSwrG",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/fixtures/package.json (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/fixtures/package.json (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -606,7 +606,7 @@
     "timestamp": "2026-04-17T13:55:12.818Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/fixtures/package.json",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/fixtures/package.json",
       "content": "{\n  \"name\": \"demo-app\",\n  \"version\": \"1.0.0\",\n  \"dependencies\": {\n    \"express\": \"4.18.2\",\n    \"lodash\": \"4.17.21\",\n    \"evil-pkg\": \"1.0.0\"\n  },\n  \"devDependencies\": {\n    \"jest\": \"29.7.0\",\n    \"mystery-lib\": \"0.1.0\"\n  }\n}\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -626,7 +626,7 @@
           "id": "toolu_01TYBKQau3VNW8RiMMf1idSg",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/fixtures/requirements.txt",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/fixtures/requirements.txt",
             "content": "# sample python requirements\nrequests==2.31.0\nflask==3.0.0\nevil-pkg==1.0.0\nmystery-lib\n"
           },
           "caller": {
@@ -686,7 +686,7 @@
         {
           "tool_use_id": "toolu_01TYBKQau3VNW8RiMMf1idSg",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/fixtures/requirements.txt (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/fixtures/requirements.txt (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -696,7 +696,7 @@
     "timestamp": "2026-04-17T13:55:18.206Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/fixtures/requirements.txt",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/fixtures/requirements.txt",
       "content": "# sample python requirements\nrequests==2.31.0\nflask==3.0.0\nevil-pkg==1.0.0\nmystery-lib\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -716,7 +716,7 @@
           "id": "toolu_01SPQSW14CB7NnAqCSfS8zWo",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/fixtures/license-db.csv",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/fixtures/license-db.csv",
             "content": "name,version,license\nexpress,4.18.2,MIT\nlodash,4.17.21,MIT\njest,29.7.0,MIT\nevil-pkg,1.0.0,GPL-3.0\nrequests,2.31.0,Apache-2.0\nflask,3.0.0,BSD-3-Clause\n"
           },
           "caller": {
@@ -776,7 +776,7 @@
         {
           "tool_use_id": "toolu_01SPQSW14CB7NnAqCSfS8zWo",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/fixtures/license-db.csv (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/fixtures/license-db.csv (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -786,7 +786,7 @@
     "timestamp": "2026-04-17T13:55:22.333Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/fixtures/license-db.csv",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/fixtures/license-db.csv",
       "content": "name,version,license\nexpress,4.18.2,MIT\nlodash,4.17.21,MIT\njest,29.7.0,MIT\nevil-pkg,1.0.0,GPL-3.0\nrequests,2.31.0,Apache-2.0\nflask,3.0.0,BSD-3-Clause\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -841,7 +841,7 @@
           "id": "toolu_01P81be1nGeFDjCufL1ssF2N",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/.github/workflows/dependency-license-checker.yml",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/.github/workflows/dependency-license-checker.yml",
             "content": "name: Dependency License Check\n\non:\n  push:\n  pull_request:\n  workflow_dispatch:\n    inputs:\n      fixture:\n        description: Manifest fixture path\n        default: fixtures/package.json\n      allow:\n        description: Comma-separated allow-list\n        default: MIT,Apache-2.0,BSD-3-Clause\n      deny:\n        description: Comma-separated deny-list\n        default: GPL-3.0,AGPL-3.0\n  schedule:\n    - cron: \"0 6 * * 1\"\n\npermissions:\n  contents: read\n\njobs:\n  license-check:\n    name: Run dependency license compliance check\n    runs-on: ubuntu-latest\n    env:\n      FIXTURE: ${{ github.event.inputs.fixture }}\n      ALLOW: ${{ github.event.inputs.allow }}\n      DENY: ${{ github.event.inputs.deny }}\n    steps:\n      - name: Checkout repository\n        uses: actions/checkout@v4\n\n      - name: Verify required tools\n        shell: bash\n        run: |\n          set -euo pipefail\n          command -v bash\n          command -v python3\n          bash --version | head -n1\n\n      - name: Run license compliance checker\n        shell: bash\n        run: |\n          set -uo pipefail\n          fixture=\"${FIXTURE:-fixtures/package.json}\"\n          allow=\"${ALLOW:-MIT,Apache-2.0,BSD-3-Clause}\"\n          deny=\"${DENY:-GPL-3.0,AGPL-3.0}\"\n          chmod +x license-checker.sh\n          set +e\n          ./license-checker.sh \\\n            --manifest \"$fixture\" \\\n            --allow \"$allow\" \\\n            --deny \"$deny\" \\\n            --db fixtures/license-db.csv | tee report.txt\n          rc=${PIPESTATUS[0]}\n          set -e\n          echo \"CHECKER_EXIT=$rc\"\n          # Workflow always succeeds; report records non-compliance.\n          exit 0\n"
           },
           "caller": {
@@ -901,7 +901,7 @@
         {
           "tool_use_id": "toolu_01P81be1nGeFDjCufL1ssF2N",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/.github/workflows/dependency-license-checker.yml (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/.github/workflows/dependency-license-checker.yml (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -911,7 +911,7 @@
     "timestamp": "2026-04-17T13:56:05.241Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/.github/workflows/dependency-license-checker.yml",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/.github/workflows/dependency-license-checker.yml",
       "content": "name: Dependency License Check\n\non:\n  push:\n  pull_request:\n  workflow_dispatch:\n    inputs:\n      fixture:\n        description: Manifest fixture path\n        default: fixtures/package.json\n      allow:\n        description: Comma-separated allow-list\n        default: MIT,Apache-2.0,BSD-3-Clause\n      deny:\n        description: Comma-separated deny-list\n        default: GPL-3.0,AGPL-3.0\n  schedule:\n    - cron: \"0 6 * * 1\"\n\npermissions:\n  contents: read\n\njobs:\n  license-check:\n    name: Run dependency license compliance check\n    runs-on: ubuntu-latest\n    env:\n      FIXTURE: ${{ github.event.inputs.fixture }}\n      ALLOW: ${{ github.event.inputs.allow }}\n      DENY: ${{ github.event.inputs.deny }}\n    steps:\n      - name: Checkout repository\n        uses: actions/checkout@v4\n\n      - name: Verify required tools\n        shell: bash\n        run: |\n          set -euo pipefail\n          command -v bash\n          command -v python3\n          bash --version | head -n1\n\n      - name: Run license compliance checker\n        shell: bash\n        run: |\n          set -uo pipefail\n          fixture=\"${FIXTURE:-fixtures/package.json}\"\n          allow=\"${ALLOW:-MIT,Apache-2.0,BSD-3-Clause}\"\n          deny=\"${DENY:-GPL-3.0,AGPL-3.0}\"\n          chmod +x license-checker.sh\n          set +e\n          ./license-checker.sh \\\n            --manifest \"$fixture\" \\\n            --allow \"$allow\" \\\n            --deny \"$deny\" \\\n            --db fixtures/license-db.csv | tee report.txt\n          rc=${PIPESTATUS[0]}\n          set -e\n          echo \"CHECKER_EXIT=$rc\"\n          # Workflow always succeeds; report records non-compliance.\n          exit 0\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -1104,7 +1104,7 @@
           "id": "toolu_014oy8q5XrKcDqcDNovYdF48",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/fixtures/all-approved.json",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/fixtures/all-approved.json",
             "content": "{\n  \"name\": \"clean-app\",\n  \"version\": \"1.0.0\",\n  \"dependencies\": {\n    \"express\": \"4.18.2\",\n    \"lodash\": \"4.17.21\"\n  }\n}\n"
           },
           "caller": {
@@ -1164,7 +1164,7 @@
         {
           "tool_use_id": "toolu_014oy8q5XrKcDqcDNovYdF48",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/fixtures/all-approved.json (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/fixtures/all-approved.json (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -1174,7 +1174,7 @@
     "timestamp": "2026-04-17T13:56:26.377Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/fixtures/all-approved.json",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/fixtures/all-approved.json",
       "content": "{\n  \"name\": \"clean-app\",\n  \"version\": \"1.0.0\",\n  \"dependencies\": {\n    \"express\": \"4.18.2\",\n    \"lodash\": \"4.17.21\"\n  }\n}\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -1194,7 +1194,7 @@
           "id": "toolu_01W3Lc1wLhHK1GSiE4eyHV22",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/tests/license-checker.bats",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/tests/license-checker.bats",
             "content": "#!/usr/bin/env bats\n# All tests run through the GitHub Actions workflow via `act`.\n# Each test case sets up a temp git repo with project + fixture data,\n# runs `act push`, captures output into act-result.txt, and asserts\n# on exact expected values in the workflow output.\n\nPROJECT_DIR=\"$(cd \"$(dirname \"${BATS_TEST_FILENAME}\")/..\" && pwd)\"\nACT_RESULT_FILE=\"${PROJECT_DIR}/act-result.txt\"\n\nsetup_file() {\n    # Reset the cumulative act output file once per run.\n    : > \"${ACT_RESULT_FILE}\"\n}\n\n# Build an isolated git repo containing all project files; return its path.\nmake_temp_repo() {\n    local tmp\n    tmp=\"$(mktemp -d)\"\n    # Copy everything except VCS/act artifacts.\n    tar -C \"$PROJECT_DIR\" \\\n        --exclude='./.git' \\\n        --exclude='./act-result.txt' \\\n        --exclude='./tests' \\\n        -cf - . | tar -C \"$tmp\" -xf -\n    (\n        cd \"$tmp\"\n        git init -q\n        git config user.email test@example.com\n        git config user.name test\n        git add -A\n        git commit -q -m init\n    )\n    echo \"$tmp\"\n}\n\n# Run act in the given repo with given env vars; append to ACT_RESULT_FILE.\nrun_act_case() {\n    local repo=\"$1\" label=\"$2\"\n    shift 2\n    local env_args=()\n    for kv in \"$@\"; do\n        env_args+=(--env \"$kv\")\n    done\n    {\n        echo \"===== BEGIN: $label =====\"\n    } >> \"$ACT_RESULT_FILE\"\n    (\n        cd \"$repo\"\n        # shellcheck disable=SC2068\n        act push --rm ${env_args[@]/#/} 2>&1\n    ) | tee -a \"$ACT_RESULT_FILE\"\n    local rc=${PIPESTATUS[0]}\n    echo \"===== END: $label (exit=$rc) =====\" >> \"$ACT_RESULT_FILE\"\n    return \"$rc\"\n}\n\n# ---------- Structural / static tests (no act required) ----------\n\n@test \"actionlint passes on the workflow\" {\n    run actionlint \"$PROJECT_DIR/.github/workflows/dependency-license-checker.yml\"\n    [ \"$status\" -eq 0 ]\n}\n\n@test \"workflow file has push, pull_request, workflow_dispatch, schedule triggers\" {\n    run grep -E \"^on:|  push:|  pull_request:|  workflow_dispatch:|  schedule:\" \\\n        \"$PROJECT_DIR/.github/workflows/dependency-license-checker.yml\"\n    [ \"$status\" -eq 0 ]\n    [[ \"$output\" == *\"push:\"* ]]\n    [[ \"$output\" == *\"pull_request:\"* ]]\n    [[ \"$output\" == *\"workflow_dispatch:\"* ]]\n    [[ \"$output\" == *\"schedule:\"* ]]\n}\n\n@test \"workflow references the license-checker.sh script\" {\n    run grep -F \"license-checker.sh\" \\\n        \"$PROJECT_DIR/.github/workflows/dependency-license-checker.yml\"\n    [ \"$status\" -eq 0 ]\n    [ -x \"$PROJECT_DIR/license-checker.sh\" ]\n}\n\n@test \"workflow uses actions/checkout@v4\" {\n    run grep -F \"actions/checkout@v4\" \\\n        \"$PROJECT_DIR/.github/workflows/dependency-license-checker.yml\"\n    [ \"$status\" -eq 0 ]\n}\n\n@test \"script passes shellcheck and bash -n\" {\n    run bash -n \"$PROJECT_DIR/license-checker.sh\"\n    [ \"$status\" -eq 0 ]\n    run shellcheck \"$PROJECT_DIR/license-checker.sh\"\n    [ \"$status\" -eq 0 ]\n}\n\n@test \"required fixture files exist\" {\n    [ -f \"$PROJECT_DIR/fixtures/package.json\" ]\n    [ -f \"$PROJECT_DIR/fixtures/requirements.txt\" ]\n    [ -f \"$PROJECT_DIR/fixtures/license-db.csv\" ]\n    [ -f \"$PROJECT_DIR/fixtures/all-approved.json\" ]\n}\n\n# ---------- End-to-end tests via act (max 3 act runs total) ----------\n\n@test \"act case 1: package.json reports denied, approved, unknown correctly\" {\n    repo=\"$(make_temp_repo)\"\n    run run_act_case \"$repo\" \"case1-package-json\" \\\n        \"FIXTURE=fixtures/package.json\" \\\n        \"ALLOW=MIT,Apache-2.0,BSD-3-Clause\" \\\n        \"DENY=GPL-3.0,AGPL-3.0\"\n    [ \"$status\" -eq 0 ]\n    # Workflow job succeeded line.\n    [[ \"$output\" == *\"Job succeeded\"* ]]\n    # Exact expected lines.\n    [[ \"$output\" == *\"express\"*\"4.18.2\"*\"MIT\"*\"approved\"* ]]\n    [[ \"$output\" == *\"lodash\"*\"4.17.21\"*\"MIT\"*\"approved\"* ]]\n    [[ \"$output\" == *\"jest\"*\"29.7.0\"*\"MIT\"*\"approved\"* ]]\n    [[ \"$output\" == *\"evil-pkg\"*\"1.0.0\"*\"GPL-3.0\"*\"denied\"* ]]\n    [[ \"$output\" == *\"mystery-lib\"*\"UNKNOWN\"*\"unknown\"* ]]\n    [[ \"$output\" == *\"Denied dependencies: 1\"* ]]\n    [[ \"$output\" == *\"CHECKER_EXIT=1\"* ]]\n    rm -rf \"$repo\"\n}\n\n@test \"act case 2: requirements.txt reports Apache/BSD approved, GPL denied\" {\n    repo=\"$(make_temp_repo)\"\n    run run_act_case \"$repo\" \"case2-requirements-txt\" \\\n        \"FIXTURE=fixtures/requirements.txt\" \\\n        \"ALLOW=MIT,Apache-2.0,BSD-3-Clause\" \\\n        \"DENY=GPL-3.0,AGPL-3.0\"\n    [ \"$status\" -eq 0 ]\n    [[ \"$output\" == *\"Job succeeded\"* ]]\n    [[ \"$output\" == *\"requests\"*\"2.31.0\"*\"Apache-2.0\"*\"approved\"* ]]\n    [[ \"$output\" == *\"flask\"*\"3.0.0\"*\"BSD-3-Clause\"*\"approved\"* ]]\n    [[ \"$output\" == *\"evil-pkg\"*\"1.0.0\"*\"GPL-3.0\"*\"denied\"* ]]\n    [[ \"$output\" == *\"mystery-lib\"*\"UNKNOWN\"*\"unknown\"* ]]\n    [[ \"$output\" == *\"Denied dependencies: 1\"* ]]\n    [[ \"$output\" == *\"CHECKER_EXIT=1\"* ]]\n    rm -rf \"$repo\"\n}\n\n@test \"act case 3: all-approved fixture reports no denials\" {\n    repo=\"$(make_temp_repo)\"\n    run run_act_case \"$repo\" \"case3-all-approved\" \\\n        \"FIXTURE=fixtures/all-approved.json\" \\\n        \"ALLOW=MIT,Apache-2.0,BSD-3-Clause\" \\\n        \"DENY=GPL-3.0,AGPL-3.0\"\n    [ \"$status\" -eq 0 ]\n    [[ \"$output\" == *\"Job succeeded\"* ]]\n    [[ \"$output\" == *\"express\"*\"4.18.2\"*\"MIT\"*\"approved\"* ]]\n    [[ \"$output\" == *\"lodash\"*\"4.17.21\"*\"MIT\"*\"approved\"* ]]\n    [[ \"$output\" == *\"Denied dependencies: 0\"* ]]\n    [[ \"$output\" == *\"CHECKER_EXIT=0\"* ]]\n    # No denied entries.\n    [[ \"$output\" != *\"denied\"* ]] || {\n        # \"Denied dependencies: 0\" legitimately contains the substring \"Denied\",\n        # but not lowercase \"denied\" as a status; tolerate mismatch as long as\n        # denied count is zero above.\n        true\n    }\n    rm -rf \"$repo\"\n}\n\n@test \"act-result.txt was produced and contains all three cases\" {\n    [ -f \"$ACT_RESULT_FILE\" ]\n    run grep -F \"BEGIN: case1-package-json\" \"$ACT_RESULT_FILE\"\n    [ \"$status\" -eq 0 ]\n    run grep -F \"BEGIN: case2-requirements-txt\" \"$ACT_RESULT_FILE\"\n    [ \"$status\" -eq 0 ]\n    run grep -F \"BEGIN: case3-all-approved\" \"$ACT_RESULT_FILE\"\n    [ \"$status\" -eq 0 ]\n}\n"
           },
           "caller": {
@@ -1254,7 +1254,7 @@
         {
           "tool_use_id": "toolu_01W3Lc1wLhHK1GSiE4eyHV22",
           "type": "tool_result",
-          "content": "File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/tests/license-checker.bats (file state is current in your context \u2014 no need to Read it back)"
+          "content": "File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/tests/license-checker.bats (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -1264,7 +1264,7 @@
     "timestamp": "2026-04-17T13:56:58.716Z",
     "tool_use_result": {
       "type": "create",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/tests/license-checker.bats",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/tests/license-checker.bats",
       "content": "#!/usr/bin/env bats\n# All tests run through the GitHub Actions workflow via `act`.\n# Each test case sets up a temp git repo with project + fixture data,\n# runs `act push`, captures output into act-result.txt, and asserts\n# on exact expected values in the workflow output.\n\nPROJECT_DIR=\"$(cd \"$(dirname \"${BATS_TEST_FILENAME}\")/..\" && pwd)\"\nACT_RESULT_FILE=\"${PROJECT_DIR}/act-result.txt\"\n\nsetup_file() {\n    # Reset the cumulative act output file once per run.\n    : > \"${ACT_RESULT_FILE}\"\n}\n\n# Build an isolated git repo containing all project files; return its path.\nmake_temp_repo() {\n    local tmp\n    tmp=\"$(mktemp -d)\"\n    # Copy everything except VCS/act artifacts.\n    tar -C \"$PROJECT_DIR\" \\\n        --exclude='./.git' \\\n        --exclude='./act-result.txt' \\\n        --exclude='./tests' \\\n        -cf - . | tar -C \"$tmp\" -xf -\n    (\n        cd \"$tmp\"\n        git init -q\n        git config user.email test@example.com\n        git config user.name test\n        git add -A\n        git commit -q -m init\n    )\n    echo \"$tmp\"\n}\n\n# Run act in the given repo with given env vars; append to ACT_RESULT_FILE.\nrun_act_case() {\n    local repo=\"$1\" label=\"$2\"\n    shift 2\n    local env_args=()\n    for kv in \"$@\"; do\n        env_args+=(--env \"$kv\")\n    done\n    {\n        echo \"===== BEGIN: $label =====\"\n    } >> \"$ACT_RESULT_FILE\"\n    (\n        cd \"$repo\"\n        # shellcheck disable=SC2068\n        act push --rm ${env_args[@]/#/} 2>&1\n    ) | tee -a \"$ACT_RESULT_FILE\"\n    local rc=${PIPESTATUS[0]}\n    echo \"===== END: $label (exit=$rc) =====\" >> \"$ACT_RESULT_FILE\"\n    return \"$rc\"\n}\n\n# ---------- Structural / static tests (no act required) ----------\n\n@test \"actionlint passes on the workflow\" {\n    run actionlint \"$PROJECT_DIR/.github/workflows/dependency-license-checker.yml\"\n    [ \"$status\" -eq 0 ]\n}\n\n@test \"workflow file has push, pull_request, workflow_dispatch, schedule triggers\" {\n    run grep -E \"^on:|  push:|  pull_request:|  workflow_dispatch:|  schedule:\" \\\n        \"$PROJECT_DIR/.github/workflows/dependency-license-checker.yml\"\n    [ \"$status\" -eq 0 ]\n    [[ \"$output\" == *\"push:\"* ]]\n    [[ \"$output\" == *\"pull_request:\"* ]]\n    [[ \"$output\" == *\"workflow_dispatch:\"* ]]\n    [[ \"$output\" == *\"schedule:\"* ]]\n}\n\n@test \"workflow references the license-checker.sh script\" {\n    run grep -F \"license-checker.sh\" \\\n        \"$PROJECT_DIR/.github/workflows/dependency-license-checker.yml\"\n    [ \"$status\" -eq 0 ]\n    [ -x \"$PROJECT_DIR/license-checker.sh\" ]\n}\n\n@test \"workflow uses actions/checkout@v4\" {\n    run grep -F \"actions/checkout@v4\" \\\n        \"$PROJECT_DIR/.github/workflows/dependency-license-checker.yml\"\n    [ \"$status\" -eq 0 ]\n}\n\n@test \"script passes shellcheck and bash -n\" {\n    run bash -n \"$PROJECT_DIR/license-checker.sh\"\n    [ \"$status\" -eq 0 ]\n    run shellcheck \"$PROJECT_DIR/license-checker.sh\"\n    [ \"$status\" -eq 0 ]\n}\n\n@test \"required fixture files exist\" {\n    [ -f \"$PROJECT_DIR/fixtures/package.json\" ]\n    [ -f \"$PROJECT_DIR/fixtures/requirements.txt\" ]\n    [ -f \"$PROJECT_DIR/fixtures/license-db.csv\" ]\n    [ -f \"$PROJECT_DIR/fixtures/all-approved.json\" ]\n}\n\n# ---------- End-to-end tests via act (max 3 act runs total) ----------\n\n@test \"act case 1: package.json reports denied, approved, unknown correctly\" {\n    repo=\"$(make_temp_repo)\"\n    run run_act_case \"$repo\" \"case1-package-json\" \\\n        \"FIXTURE=fixtures/package.json\" \\\n        \"ALLOW=MIT,Apache-2.0,BSD-3-Clause\" \\\n        \"DENY=GPL-3.0,AGPL-3.0\"\n    [ \"$status\" -eq 0 ]\n    # Workflow job succeeded line.\n    [[ \"$output\" == *\"Job succeeded\"* ]]\n    # Exact expected lines.\n    [[ \"$output\" == *\"express\"*\"4.18.2\"*\"MIT\"*\"approved\"* ]]\n    [[ \"$output\" == *\"lodash\"*\"4.17.21\"*\"MIT\"*\"approved\"* ]]\n    [[ \"$output\" == *\"jest\"*\"29.7.0\"*\"MIT\"*\"approved\"* ]]\n    [[ \"$output\" == *\"evil-pkg\"*\"1.0.0\"*\"GPL-3.0\"*\"denied\"* ]]\n    [[ \"$output\" == *\"mystery-lib\"*\"UNKNOWN\"*\"unknown\"* ]]\n    [[ \"$output\" == *\"Denied dependencies: 1\"* ]]\n    [[ \"$output\" == *\"CHECKER_EXIT=1\"* ]]\n    rm -rf \"$repo\"\n}\n\n@test \"act case 2: requirements.txt reports Apache/BSD approved, GPL denied\" {\n    repo=\"$(make_temp_repo)\"\n    run run_act_case \"$repo\" \"case2-requirements-txt\" \\\n        \"FIXTURE=fixtures/requirements.txt\" \\\n        \"ALLOW=MIT,Apache-2.0,BSD-3-Clause\" \\\n        \"DENY=GPL-3.0,AGPL-3.0\"\n    [ \"$status\" -eq 0 ]\n    [[ \"$output\" == *\"Job succeeded\"* ]]\n    [[ \"$output\" == *\"requests\"*\"2.31.0\"*\"Apache-2.0\"*\"approved\"* ]]\n    [[ \"$output\" == *\"flask\"*\"3.0.0\"*\"BSD-3-Clause\"*\"approved\"* ]]\n    [[ \"$output\" == *\"evil-pkg\"*\"1.0.0\"*\"GPL-3.0\"*\"denied\"* ]]\n    [[ \"$output\" == *\"mystery-lib\"*\"UNKNOWN\"*\"unknown\"* ]]\n    [[ \"$output\" == *\"Denied dependencies: 1\"* ]]\n    [[ \"$output\" == *\"CHECKER_EXIT=1\"* ]]\n    rm -rf \"$repo\"\n}\n\n@test \"act case 3: all-approved fixture reports no denials\" {\n    repo=\"$(make_temp_repo)\"\n    run run_act_case \"$repo\" \"case3-all-approved\" \\\n        \"FIXTURE=fixtures/all-approved.json\" \\\n        \"ALLOW=MIT,Apache-2.0,BSD-3-Clause\" \\\n        \"DENY=GPL-3.0,AGPL-3.0\"\n    [ \"$status\" -eq 0 ]\n    [[ \"$output\" == *\"Job succeeded\"* ]]\n    [[ \"$output\" == *\"express\"*\"4.18.2\"*\"MIT\"*\"approved\"* ]]\n    [[ \"$output\" == *\"lodash\"*\"4.17.21\"*\"MIT\"*\"approved\"* ]]\n    [[ \"$output\" == *\"Denied dependencies: 0\"* ]]\n    [[ \"$output\" == *\"CHECKER_EXIT=0\"* ]]\n    # No denied entries.\n    [[ \"$output\" != *\"denied\"* ]] || {\n        # \"Denied dependencies: 0\" legitimately contains the substring \"Denied\",\n        # but not lowercase \"denied\" as a status; tolerate mismatch as long as\n        # denied count is zero above.\n        true\n    }\n    rm -rf \"$repo\"\n}\n\n@test \"act-result.txt was produced and contains all three cases\" {\n    [ -f \"$ACT_RESULT_FILE\" ]\n    run grep -F \"BEGIN: case1-package-json\" \"$ACT_RESULT_FILE\"\n    [ \"$status\" -eq 0 ]\n    run grep -F \"BEGIN: case2-requirements-txt\" \"$ACT_RESULT_FILE\"\n    [ \"$status\" -eq 0 ]\n    run grep -F \"BEGIN: case3-all-approved\" \"$ACT_RESULT_FILE\"\n    [ \"$status\" -eq 0 ]\n}\n",
       "structuredPatch": [],
       "originalFile": null,
@@ -1319,7 +1319,7 @@
           "id": "toolu_017QoLSoDDVDnaC3YZSiNTiB",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/.github/workflows/dependency-license-checker.yml",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/.github/workflows/dependency-license-checker.yml",
             "content": "name: Dependency License Check\n\non:\n  push:\n  pull_request:\n  workflow_dispatch:\n    inputs:\n      fixture:\n        description: Manifest fixture path\n        default: fixtures/package.json\n      allow:\n        description: Comma-separated allow-list\n        default: MIT,Apache-2.0,BSD-3-Clause\n      deny:\n        description: Comma-separated deny-list\n        default: GPL-3.0,AGPL-3.0\n  schedule:\n    - cron: \"0 6 * * 1\"\n\npermissions:\n  contents: read\n\njobs:\n  license-check:\n    name: Run dependency license compliance check\n    runs-on: ubuntu-latest\n    steps:\n      - name: Checkout repository\n        uses: actions/checkout@v4\n\n      - name: Verify required tools\n        shell: bash\n        run: |\n          set -euo pipefail\n          command -v bash\n          command -v python3\n          bash --version | head -n1\n\n      - name: Run license compliance checker\n        shell: bash\n        env:\n          # Surface workflow_dispatch inputs as env vars. Push/pull_request\n          # runs supply values through the runner's environment (act --env).\n          FIXTURE_INPUT: ${{ inputs.fixture }}\n          ALLOW_INPUT: ${{ inputs.allow }}\n          DENY_INPUT: ${{ inputs.deny }}\n        run: |\n          set -uo pipefail\n          fixture=\"${FIXTURE:-${FIXTURE_INPUT:-fixtures/package.json}}\"\n          allow=\"${ALLOW:-${ALLOW_INPUT:-MIT,Apache-2.0,BSD-3-Clause}}\"\n          deny=\"${DENY:-${DENY_INPUT:-GPL-3.0,AGPL-3.0}}\"\n          chmod +x license-checker.sh\n          set +e\n          ./license-checker.sh \\\n            --manifest \"$fixture\" \\\n            --allow \"$allow\" \\\n            --deny \"$deny\" \\\n            --db fixtures/license-db.csv | tee report.txt\n          rc=${PIPESTATUS[0]}\n          set -e\n          echo \"CHECKER_EXIT=$rc\"\n          exit 0\n"
           },
           "caller": {
@@ -1379,7 +1379,7 @@
         {
           "tool_use_id": "toolu_017QoLSoDDVDnaC3YZSiNTiB",
           "type": "tool_result",
-          "content": "The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/.github/workflows/dependency-license-checker.yml has been updated successfully. (file state is current in your context \u2014 no need to Read it back)"
+          "content": "The file /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/.github/workflows/dependency-license-checker.yml has been updated successfully. (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -1389,7 +1389,7 @@
     "timestamp": "2026-04-17T13:57:27.834Z",
     "tool_use_result": {
       "type": "update",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/.github/workflows/dependency-license-checker.yml",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/.github/workflows/dependency-license-checker.yml",
       "content": "name: Dependency License Check\n\non:\n  push:\n  pull_request:\n  workflow_dispatch:\n    inputs:\n      fixture:\n        description: Manifest fixture path\n        default: fixtures/package.json\n      allow:\n        description: Comma-separated allow-list\n        default: MIT,Apache-2.0,BSD-3-Clause\n      deny:\n        description: Comma-separated deny-list\n        default: GPL-3.0,AGPL-3.0\n  schedule:\n    - cron: \"0 6 * * 1\"\n\npermissions:\n  contents: read\n\njobs:\n  license-check:\n    name: Run dependency license compliance check\n    runs-on: ubuntu-latest\n    steps:\n      - name: Checkout repository\n        uses: actions/checkout@v4\n\n      - name: Verify required tools\n        shell: bash\n        run: |\n          set -euo pipefail\n          command -v bash\n          command -v python3\n          bash --version | head -n1\n\n      - name: Run license compliance checker\n        shell: bash\n        env:\n          # Surface workflow_dispatch inputs as env vars. Push/pull_request\n          # runs supply values through the runner's environment (act --env).\n          FIXTURE_INPUT: ${{ inputs.fixture }}\n          ALLOW_INPUT: ${{ inputs.allow }}\n          DENY_INPUT: ${{ inputs.deny }}\n        run: |\n          set -uo pipefail\n          fixture=\"${FIXTURE:-${FIXTURE_INPUT:-fixtures/package.json}}\"\n          allow=\"${ALLOW:-${ALLOW_INPUT:-MIT,Apache-2.0,BSD-3-Clause}}\"\n          deny=\"${DENY:-${DENY_INPUT:-GPL-3.0,AGPL-3.0}}\"\n          chmod +x license-checker.sh\n          set +e\n          ./license-checker.sh \\\n            --manifest \"$fixture\" \\\n            --allow \"$allow\" \\\n            --deny \"$deny\" \\\n            --db fixtures/license-db.csv | tee report.txt\n          rc=${PIPESTATUS[0]}\n          set -e\n          echo \"CHECKER_EXIT=$rc\"\n          exit 0\n",
       "structuredPatch": [
         {
@@ -1741,7 +1741,7 @@
           "name": "Edit",
           "input": {
             "replace_all": false,
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/license-checker.sh",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/license-checker.sh",
             "old_string": "parse_manifest() {\n    local file=\"$1\"\n    local base\n    base=\"$(basename \"$file\")\"\n    case \"$base\" in\n        package.json)",
             "new_string": "parse_manifest() {\n    local file=\"$1\"\n    local base kind\n    base=\"$(basename \"$file\")\"\n    # Prefer filename-based detection; fall back to content sniff so that\n    # alternately named JSON fixtures (e.g. all-approved.json) still parse.\n    case \"$base\" in\n        package.json|*.json) kind=package.json ;;\n        requirements.txt|*.txt) kind=requirements.txt ;;\n        *)\n            if head -c1 \"$file\" | grep -q '{'; then\n                kind=package.json\n            else\n                kind=requirements.txt\n            fi\n            ;;\n    esac\n    case \"$kind\" in\n        package.json)"
           },
@@ -1802,7 +1802,7 @@
         {
           "tool_use_id": "toolu_01PTAvb6eFPXJBSEsD1SLUr8",
           "type": "tool_result",
-          "content": "The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/license-checker.sh has been updated successfully. (file state is current in your context \u2014 no need to Read it back)"
+          "content": "The file /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/license-checker.sh has been updated successfully. (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -1811,7 +1811,7 @@
     "uuid": "011e29f0-1979-4bf1-94e2-d158fcb571ae",
     "timestamp": "2026-04-17T13:57:47.369Z",
     "tool_use_result": {
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/license-checker.sh",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/license-checker.sh",
       "oldString": "parse_manifest() {\n    local file=\"$1\"\n    local base\n    base=\"$(basename \"$file\")\"\n    case \"$base\" in\n        package.json)",
       "newString": "parse_manifest() {\n    local file=\"$1\"\n    local base kind\n    base=\"$(basename \"$file\")\"\n    # Prefer filename-based detection; fall back to content sniff so that\n    # alternately named JSON fixtures (e.g. all-approved.json) still parse.\n    case \"$base\" in\n        package.json|*.json) kind=package.json ;;\n        requirements.txt|*.txt) kind=requirements.txt ;;\n        *)\n            if head -c1 \"$file\" | grep -q '{'; then\n                kind=package.json\n            else\n                kind=requirements.txt\n            fi\n            ;;\n    esac\n    case \"$kind\" in\n        package.json)",
       "originalFile": "#!/usr/bin/env bash\n# Dependency license compliance checker.\n# Parses a manifest (package.json or requirements.txt), looks up each dep's\n# license from a mock DB, and classifies as approved/denied/unknown based on\n# allow- and deny-lists.\n\nset -euo pipefail\n\nusage() {\n    cat <<'EOF'\nUsage: license-checker.sh --manifest <file> [--allow <csv>] [--deny <csv>] [--db <file>]\n\nOptions:\n  --manifest <file>   Path to package.json or requirements.txt\n  --allow <csv>       Comma-separated allowed licenses (e.g. MIT,Apache-2.0)\n  --deny <csv>        Comma-separated denied licenses (e.g. GPL-3.0)\n  --db <file>         Path to license DB (CSV: name,version,license). Mock for tests.\n  -h|--help           Show this help\nEOF\n}\n\nmanifest=\"\"\nallow_csv=\"\"\ndeny_csv=\"\"\ndb_file=\"${LICENSE_DB:-}\"\n\nwhile [[ $# -gt 0 ]]; do\n    case \"$1\" in\n        --manifest) manifest=\"$2\"; shift 2 ;;\n        --allow)    allow_csv=\"$2\"; shift 2 ;;\n        --deny)     deny_csv=\"$2\"; shift 2 ;;\n        --db)       db_file=\"$2\"; shift 2 ;;\n        -h|--help)  usage; exit 0 ;;\n        *) echo \"ERROR: unknown argument: $1\" >&2; usage >&2; exit 2 ;;\n    esac\ndone\n\nif [[ -z \"$manifest\" ]]; then\n    echo \"ERROR: --manifest is required\" >&2\n    exit 2\nfi\nif [[ ! -f \"$manifest\" ]]; then\n    echo \"ERROR: manifest not found: $manifest\" >&2\n    exit 2\nfi\n\n# Parse the manifest into \"name<TAB>version\" lines on stdout.\nparse_manifest() {\n    local file=\"$1\"\n    local base\n    base=\"$(basename \"$file\")\"\n    case \"$base\" in\n        package.json)\n            # Extract dependencies + devDependencies as name/version pairs.\n            # Avoid jq dependency: use a small awk-based parser sufficient for\n            # well-formatted package.json files used in this checker.\n            python3 - \"$file\" <<'PY'\nimport json, sys\nwith open(sys.argv[1]) as f:\n    data = json.load(f)\nfor key in (\"dependencies\", \"devDependencies\"):\n    for name, ver in (data.get(key) or {}).items():\n        print(f\"{name}\\t{ver}\")\nPY\n            ;;\n        requirements.txt)\n            # Each non-empty, non-comment line: pkg==version (or pkg)\n            while IFS= read -r line || [[ -n \"$line\" ]]; do\n                line=\"${line%%#*}\"                   # strip comments\n                line=\"$(echo -n \"$line\" | tr -d '[:space:]')\"\n                [[ -z \"$line\" ]] && continue\n                if [[ \"$line\" == *\"==\"* ]]; then\n                    name=\"${line%%==*}\"\n                    ver=\"${line##*==}\"\n                else\n                    name=\"$line\"\n                    ver=\"\"\n                fi\n                printf '%s\\t%s\\n' \"$name\" \"$ver\"\n            done < \"$file\"\n            ;;\n        *)\n            echo \"ERROR: unsupported manifest type: $base\" >&2\n            return 3\n            ;;\n    esac\n}\n\n# Look up license for \"name version\" using the mock DB CSV.\n# Returns \"UNKNOWN\" if not present.\nlookup_license() {\n    local name=\"$1\" version=\"$2\"\n    if [[ -z \"$db_file\" || ! -f \"$db_file\" ]]; then\n        echo \"UNKNOWN\"\n        return 0\n    fi\n    local found=\"UNKNOWN\"\n    while IFS=, read -r d_name d_ver d_lic; do\n        [[ -z \"$d_name\" || \"$d_name\" == \"name\" ]] && continue\n        if [[ \"$d_name\" == \"$name\" ]]; then\n            if [[ \"$d_ver\" == \"$version\" || \"$d_ver\" == \"*\" ]]; then\n                found=\"$d_lic\"\n                break\n            fi\n        fi\n    done < \"$db_file\"\n    echo \"$found\"\n}\n\n# Classify a license against allow/deny lists.\n# Precedence: deny > allow > unknown.\nclassify() {\n    local license=\"$1\"\n    local item\n    if [[ \"$license\" == \"UNKNOWN\" ]]; then\n        echo \"unknown\"\n        return 0\n    fi\n    IFS=',' read -ra deny_arr <<< \"$deny_csv\"\n    for item in \"${deny_arr[@]}\"; do\n        [[ -z \"$item\" ]] && continue\n        if [[ \"$item\" == \"$license\" ]]; then\n            echo \"denied\"\n            return 0\n        fi\n    done\n    IFS=',' read -ra allow_arr <<< \"$allow_csv\"\n    for item in \"${allow_arr[@]}\"; do\n        [[ -z \"$item\" ]] && continue\n        if [[ \"$item\" == \"$license\" ]]; then\n            echo \"approved\"\n            return 0\n        fi\n    done\n    echo \"unknown\"\n}\n\nmain() {\n    local denied_count=0\n    echo \"Dependency License Compliance Report\"\n    echo \"====================================\"\n    printf '%-30s %-15s %-15s %s\\n' \"NAME\" \"VERSION\" \"LICENSE\" \"STATUS\"\n    while IFS=$'\\t' read -r name version; do\n        [[ -z \"$name\" ]] && continue\n        license=\"$(lookup_license \"$name\" \"$version\")\"\n        status=\"$(classify \"$license\")\"\n        printf '%-30s %-15s %-15s %s\\n' \"$name\" \"${version:--}\" \"$license\" \"$status\"\n        if [[ \"$status\" == \"denied\" ]]; then\n            denied_count=$((denied_count + 1))\n        fi\n    done < <(parse_manifest \"$manifest\")\n    echo \"====================================\"\n    echo \"Denied dependencies: $denied_count\"\n    # Exit non-zero if any denied license is present.\n    if [[ \"$denied_count\" -gt 0 ]]; then\n        return 1\n    fi\n    return 0\n}\n\nmain\n",
@@ -1968,7 +1968,7 @@
           "name": "Edit",
           "input": {
             "replace_all": false,
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/tests/license-checker.bats",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/tests/license-checker.bats",
             "old_string": "    (\n        cd \"$repo\"\n        # shellcheck disable=SC2068\n        act push --rm ${env_args[@]/#/} 2>&1\n    ) | tee -a \"$ACT_RESULT_FILE\"",
             "new_string": "    (\n        cd \"$repo\"\n        act push --rm \"${env_args[@]}\" 2>&1\n    ) | tee -a \"$ACT_RESULT_FILE\""
           },
@@ -2029,7 +2029,7 @@
         {
           "tool_use_id": "toolu_01SAs3iNdvfHtrEZBCEnofgj",
           "type": "tool_result",
-          "content": "The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/tests/license-checker.bats has been updated successfully. (file state is current in your context \u2014 no need to Read it back)"
+          "content": "The file /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/tests/license-checker.bats has been updated successfully. (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -2038,7 +2038,7 @@
     "uuid": "3ef1f8ce-65c8-4592-9855-3fc864ebf5e5",
     "timestamp": "2026-04-17T13:58:17.973Z",
     "tool_use_result": {
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/tests/license-checker.bats",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/tests/license-checker.bats",
       "oldString": "    (\n        cd \"$repo\"\n        # shellcheck disable=SC2068\n        act push --rm ${env_args[@]/#/} 2>&1\n    ) | tee -a \"$ACT_RESULT_FILE\"",
       "newString": "    (\n        cd \"$repo\"\n        act push --rm \"${env_args[@]}\" 2>&1\n    ) | tee -a \"$ACT_RESULT_FILE\"",
       "originalFile": "#!/usr/bin/env bats\n# All tests run through the GitHub Actions workflow via `act`.\n# Each test case sets up a temp git repo with project + fixture data,\n# runs `act push`, captures output into act-result.txt, and asserts\n# on exact expected values in the workflow output.\n\nPROJECT_DIR=\"$(cd \"$(dirname \"${BATS_TEST_FILENAME}\")/..\" && pwd)\"\nACT_RESULT_FILE=\"${PROJECT_DIR}/act-result.txt\"\n\nsetup_file() {\n    # Reset the cumulative act output file once per run.\n    : > \"${ACT_RESULT_FILE}\"\n}\n\n# Build an isolated git repo containing all project files; return its path.\nmake_temp_repo() {\n    local tmp\n    tmp=\"$(mktemp -d)\"\n    # Copy everything except VCS/act artifacts.\n    tar -C \"$PROJECT_DIR\" \\\n        --exclude='./.git' \\\n        --exclude='./act-result.txt' \\\n        --exclude='./tests' \\\n        -cf - . | tar -C \"$tmp\" -xf -\n    (\n        cd \"$tmp\"\n        git init -q\n        git config user.email test@example.com\n        git config user.name test\n        git add -A\n        git commit -q -m init\n    )\n    echo \"$tmp\"\n}\n\n# Run act in the given repo with given env vars; append to ACT_RESULT_FILE.\nrun_act_case() {\n    local repo=\"$1\" label=\"$2\"\n    shift 2\n    local env_args=()\n    for kv in \"$@\"; do\n        env_args+=(--env \"$kv\")\n    done\n    {\n        echo \"===== BEGIN: $label =====\"\n    } >> \"$ACT_RESULT_FILE\"\n    (\n        cd \"$repo\"\n        # shellcheck disable=SC2068\n        act push --rm ${env_args[@]/#/} 2>&1\n    ) | tee -a \"$ACT_RESULT_FILE\"\n    local rc=${PIPESTATUS[0]}\n    echo \"===== END: $label (exit=$rc) =====\" >> \"$ACT_RESULT_FILE\"\n    return \"$rc\"\n}\n\n# ---------- Structural / static tests (no act required) ----------\n\n@test \"actionlint passes on the workflow\" {\n    run actionlint \"$PROJECT_DIR/.github/workflows/dependency-license-checker.yml\"\n    [ \"$status\" -eq 0 ]\n}\n\n@test \"workflow file has push, pull_request, workflow_dispatch, schedule triggers\" {\n    run grep -E \"^on:|  push:|  pull_request:|  workflow_dispatch:|  schedule:\" \\\n        \"$PROJECT_DIR/.github/workflows/dependency-license-checker.yml\"\n    [ \"$status\" -eq 0 ]\n    [[ \"$output\" == *\"push:\"* ]]\n    [[ \"$output\" == *\"pull_request:\"* ]]\n    [[ \"$output\" == *\"workflow_dispatch:\"* ]]\n    [[ \"$output\" == *\"schedule:\"* ]]\n}\n\n@test \"workflow references the license-checker.sh script\" {\n    run grep -F \"license-checker.sh\" \\\n        \"$PROJECT_DIR/.github/workflows/dependency-license-checker.yml\"\n    [ \"$status\" -eq 0 ]\n    [ -x \"$PROJECT_DIR/license-checker.sh\" ]\n}\n\n@test \"workflow uses actions/checkout@v4\" {\n    run grep -F \"actions/checkout@v4\" \\\n        \"$PROJECT_DIR/.github/workflows/dependency-license-checker.yml\"\n    [ \"$status\" -eq 0 ]\n}\n\n@test \"script passes shellcheck and bash -n\" {\n    run bash -n \"$PROJECT_DIR/license-checker.sh\"\n    [ \"$status\" -eq 0 ]\n    run shellcheck \"$PROJECT_DIR/license-checker.sh\"\n    [ \"$status\" -eq 0 ]\n}\n\n@test \"required fixture files exist\" {\n    [ -f \"$PROJECT_DIR/fixtures/package.json\" ]\n    [ -f \"$PROJECT_DIR/fixtures/requirements.txt\" ]\n    [ -f \"$PROJECT_DIR/fixtures/license-db.csv\" ]\n    [ -f \"$PROJECT_DIR/fixtures/all-approved.json\" ]\n}\n\n# ---------- End-to-end tests via act (max 3 act runs total) ----------\n\n@test \"act case 1: package.json reports denied, approved, unknown correctly\" {\n    repo=\"$(make_temp_repo)\"\n    run run_act_case \"$repo\" \"case1-package-json\" \\\n        \"FIXTURE=fixtures/package.json\" \\\n        \"ALLOW=MIT,Apache-2.0,BSD-3-Clause\" \\\n        \"DENY=GPL-3.0,AGPL-3.0\"\n    [ \"$status\" -eq 0 ]\n    # Workflow job succeeded line.\n    [[ \"$output\" == *\"Job succeeded\"* ]]\n    # Exact expected lines.\n    [[ \"$output\" == *\"express\"*\"4.18.2\"*\"MIT\"*\"approved\"* ]]\n    [[ \"$output\" == *\"lodash\"*\"4.17.21\"*\"MIT\"*\"approved\"* ]]\n    [[ \"$output\" == *\"jest\"*\"29.7.0\"*\"MIT\"*\"approved\"* ]]\n    [[ \"$output\" == *\"evil-pkg\"*\"1.0.0\"*\"GPL-3.0\"*\"denied\"* ]]\n    [[ \"$output\" == *\"mystery-lib\"*\"UNKNOWN\"*\"unknown\"* ]]\n    [[ \"$output\" == *\"Denied dependencies: 1\"* ]]\n    [[ \"$output\" == *\"CHECKER_EXIT=1\"* ]]\n    rm -rf \"$repo\"\n}\n\n@test \"act case 2: requirements.txt reports Apache/BSD approved, GPL denied\" {\n    repo=\"$(make_temp_repo)\"\n    run run_act_case \"$repo\" \"case2-requirements-txt\" \\\n        \"FIXTURE=fixtures/requirements.txt\" \\\n        \"ALLOW=MIT,Apache-2.0,BSD-3-Clause\" \\\n        \"DENY=GPL-3.0,AGPL-3.0\"\n    [ \"$status\" -eq 0 ]\n    [[ \"$output\" == *\"Job succeeded\"* ]]\n    [[ \"$output\" == *\"requests\"*\"2.31.0\"*\"Apache-2.0\"*\"approved\"* ]]\n    [[ \"$output\" == *\"flask\"*\"3.0.0\"*\"BSD-3-Clause\"*\"approved\"* ]]\n    [[ \"$output\" == *\"evil-pkg\"*\"1.0.0\"*\"GPL-3.0\"*\"denied\"* ]]\n    [[ \"$output\" == *\"mystery-lib\"*\"UNKNOWN\"*\"unknown\"* ]]\n    [[ \"$output\" == *\"Denied dependencies: 1\"* ]]\n    [[ \"$output\" == *\"CHECKER_EXIT=1\"* ]]\n    rm -rf \"$repo\"\n}\n\n@test \"act case 3: all-approved fixture reports no denials\" {\n    repo=\"$(make_temp_repo)\"\n    run run_act_case \"$repo\" \"case3-all-approved\" \\\n        \"FIXTURE=fixtures/all-approved.json\" \\\n        \"ALLOW=MIT,Apache-2.0,BSD-3-Clause\" \\\n        \"DENY=GPL-3.0,AGPL-3.0\"\n    [ \"$status\" -eq 0 ]\n    [[ \"$output\" == *\"Job succeeded\"* ]]\n    [[ \"$output\" == *\"express\"*\"4.18.2\"*\"MIT\"*\"approved\"* ]]\n    [[ \"$output\" == *\"lodash\"*\"4.17.21\"*\"MIT\"*\"approved\"* ]]\n    [[ \"$output\" == *\"Denied dependencies: 0\"* ]]\n    [[ \"$output\" == *\"CHECKER_EXIT=0\"* ]]\n    # No denied entries.\n    [[ \"$output\" != *\"denied\"* ]] || {\n        # \"Denied dependencies: 0\" legitimately contains the substring \"Denied\",\n        # but not lowercase \"denied\" as a status; tolerate mismatch as long as\n        # denied count is zero above.\n        true\n    }\n    rm -rf \"$repo\"\n}\n\n@test \"act-result.txt was produced and contains all three cases\" {\n    [ -f \"$ACT_RESULT_FILE\" ]\n    run grep -F \"BEGIN: case1-package-json\" \"$ACT_RESULT_FILE\"\n    [ \"$status\" -eq 0 ]\n    run grep -F \"BEGIN: case2-requirements-txt\" \"$ACT_RESULT_FILE\"\n    [ \"$status\" -eq 0 ]\n    run grep -F \"BEGIN: case3-all-approved\" \"$ACT_RESULT_FILE\"\n    [ \"$status\" -eq 0 ]\n}\n",
@@ -2439,7 +2439,7 @@
           "name": "Edit",
           "input": {
             "replace_all": false,
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/.actrc",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/.actrc",
             "old_string": "-P ubuntu-latest=act-ubuntu-pwsh:latest",
             "new_string": "-P ubuntu-latest=act-ubuntu-pwsh:latest\n--pull=false\n"
           },
@@ -2501,7 +2501,7 @@
           "id": "toolu_01J8qPvTrwpifrEcXTfpX83J",
           "name": "Read",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/.actrc"
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/.actrc"
           },
           "caller": {
             "type": "direct"
@@ -2548,7 +2548,7 @@
     "tool_use_result": {
       "type": "text",
       "file": {
-        "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/.actrc",
+        "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/.actrc",
         "content": "-P ubuntu-latest=act-ubuntu-pwsh:latest\n",
         "numLines": 2,
         "startLine": 1,
@@ -2569,7 +2569,7 @@
           "id": "toolu_013hVowjR4jbGqQWzK5SiKVH",
           "name": "Write",
           "input": {
-            "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/.actrc",
+            "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/.actrc",
             "content": "-P ubuntu-latest=act-ubuntu-pwsh:latest\n--pull=false\n"
           },
           "caller": {
@@ -2629,7 +2629,7 @@
         {
           "tool_use_id": "toolu_013hVowjR4jbGqQWzK5SiKVH",
           "type": "tool_result",
-          "content": "The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/.actrc has been updated successfully. (file state is current in your context \u2014 no need to Read it back)"
+          "content": "The file /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/.actrc has been updated successfully. (file state is current in your context \u2014 no need to Read it back)"
         }
       ]
     },
@@ -2639,7 +2639,7 @@
     "timestamp": "2026-04-17T13:59:00.798Z",
     "tool_use_result": {
       "type": "update",
-      "filePath": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/.actrc",
+      "filePath": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/13-dependency-license-checker/bash-opus47-1m-medium/.actrc",
       "content": "-P ubuntu-latest=act-ubuntu-pwsh:latest\n--pull=false\n",
       "structuredPatch": [
         {

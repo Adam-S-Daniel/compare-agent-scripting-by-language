@@ -1,5 +1,5 @@
 [Assistant] I'll start by reading the project instructions, then implement the PR label assigner using TDD with PowerShell.
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/AGENTS.md"}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/AGENTS.md"}
 [Result] 1	# Agent Instructions
 2	
 3	All agent-facing instructions live in this file. `CLAUDE.md` contains only a
@@ -27,10 +27,10 @@
 25	
 26	# Evaluate test quality (structural metrics only)
 27	python3 test_quality.py results/2026-04
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet"}
-[Result ERROR] EISDIR: illegal operation on a directory, read '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet'
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet"}
+[Result ERROR] EISDIR: illegal operation on a directory, read '/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet'
 [Assistant] Let me check the current directory and the actrc file for container configuration.
-[Tool: Bash] ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/
+[Tool: Bash] ls -la /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/
 [Result] total 44
 drwxr-xr-x  4 passp passp  4096 May  7 03:28 .
 drwxr-xr-x 16 passp passp  4096 May  7 03:28 ..
@@ -38,11 +38,11 @@ drwxr-xr-x 16 passp passp  4096 May  7 03:28 ..
 drwxr-xr-x  2 passp passp  4096 May  7 03:28 .claude
 drwxr-xr-x  6 passp passp  4096 May  7 03:28 .git
 -rw-r--r--  1 passp passp 21843 Apr 17 00:12 benchmark-instructions-v4.md
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/.actrc"}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/.actrc"}
 [Result] 1	-P ubuntu-latest=act-ubuntu-pwsh:latest
 2	
 [Assistant] Let me check the benchmark instructions and understand the full scope.
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/benchmark-instructions-v4.md", "limit": 80}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/benchmark-instructions-v4.md", "limit": 80}
 [Result] 1	# Benchmark Instructions v4 — GitHub Actions
 2	
 3	**Version**: v4
@@ -60,7 +60,7 @@ drwxr-xr-x  6 passp passp  4096 May  7 03:28 .git
 15	### Overview
 16	
 17	Each task is executed by a Claude Code agent under 4 different language constraints ("modes") and with 2 different models, yielding **8 runs per task**. A
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/benchmark-instructions-v4.md", "limit": 80, "offset": 80}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/benchmark-instructions-v4.md", "limit": 80, "offset": 80}
 [Result] 80	### Pre-installed Tools
 81	
 82	The following tools are pre-installed in the benchmark environment:
@@ -81,7 +81,7 @@ drwxr-xr-x  6 passp passp  4096 May  7 03:28 .git
 97	
 98	All runs have PostToolUse hooks enabled that automatically check files on Write/
 [Assistant] Now I have full context. Let me implement the PR label assigner with TDD. I'll write the failing tests first, then the implementation, then the workflow.
-[Tool: Bash] ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/.github/ 2>/dev/null || echo "No .github dir yet"
+[Tool: Bash] ls -la /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/.github/ 2>/dev/null || echo "No .github dir yet"
 [Result] No .github dir yet
 [Tool: Bash] docker images | grep act-ubuntu-pwsh 2>/dev/null || echo "No custom act image found"
 [Result] WARNING: This output is designed for human readability. For machine-readable output, please use --format.
@@ -92,30 +92,30 @@ act-ubuntu-pwsh:latest                          f0ba9895b524       2.55GB       
 [Tool: TodoWrite] {"todos": [{"content": "Write failing Pester tests (TDD red phase)", "activeForm": "Writing failing Pester tests", "status": "in_progress"}, {"content": "Write PrLabelAssigner.ps1 implementation (TDD 
 [Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
 [Assistant] Writing the Pester test file first (TDD red phase) — these will fail until the implementation exists.
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/PrLabelAssigner.Tests.ps1", "content": "# PrLabelAssigner.
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/PrLabelAssigner.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/PrLabelAssigner.Tests.ps1", "content": "# PrLabelAssigner.
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/PrLabelAssigner.Tests.ps1 (file state is current in your context — no need to Read it back)
 [Tool: TodoWrite] {"todos": [{"content": "Write failing Pester tests (TDD red phase)", "activeForm": "Writing failing Pester tests", "status": "completed"}, {"content": "Write PrLabelAssigner.ps1 implementation (TDD gr
 [Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
 [Assistant] Now writing the implementation (TDD green phase):
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/PrLabelAssigner.ps1", "content": "# PrLabelAssigner.ps1\n#
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/PrLabelAssigner.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/PrLabelAssigner.ps1", "content": "# PrLabelAssigner.ps1\n#
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/PrLabelAssigner.ps1 (file state is current in your context — no need to Read it back)
 [Assistant] Let me verify the tests pass locally before building the workflow:
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path ./PrLabelAssigner.Tests.ps1 -Output Detailed 2>&1" 2>&1 | tail -40
 [Result] [91m   Expected regular expression 'workflow_dispatch:' to match $null, but it did not match.
-[91m   at $content | Should -Match 'workflow_dispatch:', /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/PrLabelAssigner.Tests.ps1:320
-[91m   at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/PrLabelAssigner.Tests.ps1:320[0m
-[31;1mGet-Content: [0m/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/PrLabelAssigner.Tests.ps1:324[0m
+[91m   at $content | Should -Match 'workflow_dispatch:', /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/PrLabelAssigner.Tests.ps1:320
+[91m   at <ScriptBlock>, /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/PrLabelAssigner.Tests.ps1:320[0m
+[31;1mGet-Content: [0m/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/PrLabelAssigner.Tests.ps1:324[0m
 [31;1m[0m[36;1mLine |[0m
 [31;1m[0m[36;1m[36;1m 324 | [0m         $content = [36;1mGet-Content $script:workflowPath -Raw[0m
 [31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m     | [31;1m                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
 [31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m[31;1m[31;1m
 [Assistant] 42/50 tests pass — only the workflow structure tests fail because the file doesn't exist yet. Creating the workflow now:
-[Tool: Bash] mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/.github/workflows
+[Tool: Bash] mkdir -p /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/.github/workflows
 [Result] (Bash completed with no output)
 [Tool: TodoWrite] {"todos": [{"content": "Write failing Pester tests (TDD red phase)", "activeForm": "Writing failing Pester tests", "status": "completed"}, {"content": "Write PrLabelAssigner.ps1 implementation (TDD gr
 [Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/.github/workflows/pr-label-assigner.yml", "content": "name
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/.github/workflows/pr-label-assigner.yml (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/.github/workflows/pr-label-assigner.yml", "content": "name
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/.github/workflows/pr-label-assigner.yml (file state is current in your context — no need to Read it back)
 [Tool: Bash] actionlint .github/workflows/pr-label-assigner.yml
 [Result] (Bash completed with no output)
 [Assistant] actionlint passes. Now let me confirm all Pester tests pass with the workflow file in place:
@@ -143,8 +143,8 @@ act-ubuntu-pwsh:latest                          f0ba9895b524       2.55GB       
 [Assistant] 50/50 tests pass. Now writing the test harness:
 [Tool: TodoWrite] {"todos": [{"content": "Write failing Pester tests (TDD red phase)", "activeForm": "Writing failing Pester tests", "status": "completed"}, {"content": "Write PrLabelAssigner.ps1 implementation (TDD gr
 [Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/Run-Tests.ps1", "content": "# Run-Tests.ps1\n# Test harnes
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/Run-Tests.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/Run-Tests.ps1", "content": "# Run-Tests.ps1\n# Test harnes
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/Run-Tests.ps1 (file state is current in your context — no need to Read it back)
 [Tool: TodoWrite] {"todos": [{"content": "Write failing Pester tests (TDD red phase)", "activeForm": "Writing failing Pester tests", "status": "completed"}, {"content": "Write PrLabelAssigner.ps1 implementation (TDD gr
 [Result] Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress. Please proceed with the current tasks if applicable
 [Assistant] Now running the test harness which commits files and invokes `act push --rm`:
@@ -198,8 +198,8 @@ act-ubuntu-pwsh:latest   f0ba9895b524       2.55GB          640MB   U
 [Result]       --action-offline-mode                               If action contents exists, it will not be fetch and pull again. If turn on this, will turn off force pull
   -p, --pull                                              pull docker image(s) even if already present (default true)
 [Assistant] The default `--pull=true` causes Docker to try to fetch the image from a registry. I'll update the harness to pass `--pull=false`:
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/Run-Tests.ps1", "old_string": "$actO
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/Run-Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/Run-Tests.ps1", "old_string": "$actO
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/Run-Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Tool: Bash] pwsh ./Run-Tests.ps1 2>&1
 [Result ERROR] Exit code 1
 
@@ -226,11 +226,11 @@ act-ubuntu-pwsh:latest   f0ba9895b524       2.55GB          640MB   U
 [Result] [PR Label Assigner/test-and-label]   | CICD_RESULT: api,ci/cd,documentation,source,tests
   [FAIL] output contains exact value: CICD_RESULT: ci/cd,documentation,source,tests
 [Assistant] The scenario includes `src/api/handlers/auth.test.ps1` which also matches `src/api/**` — my expected value was missing `api`. Fixing:
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/Run-Tests.ps1", "old_string": "    \
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/Run-Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/Run-Tests.ps1", "old_string": "    \
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/Run-Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Assistant] Also update the workflow's comment to match:
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/.github/workflows/pr-label-assigner.
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/.github/workflows/pr-label-assigner.yml has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/.github/workflows/pr-label-assigner.
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-05-06_173435/12-pr-label-assigner/powershell-tool-sonnet/.github/workflows/pr-label-assigner.yml has been updated successfully. (file state is current in your context — no need to Read it back)
 [Tool: Bash] actionlint .github/workflows/pr-label-assigner.yml && echo "actionlint OK"
 [Result] actionlint OK
 [Tool: Bash] pwsh ./Run-Tests.ps1 2>&1

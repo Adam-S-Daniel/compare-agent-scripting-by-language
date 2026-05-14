@@ -1,5 +1,5 @@
 [Assistant] I'll start by reading the project instructions and then implement the solution using TDD with PowerShell/Pester.
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/AGENTS.md"}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/AGENTS.md"}
 [Result] 1	# Agent Instructions
 2	
 3	All agent-facing instructions live in this file. `CLAUDE.md` contains only a
@@ -27,7 +27,7 @@
 25	
 26	# Evaluate test quality (structural metrics only)
 27	python3 test_quality.py results/2026-04
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/benchmark-instructions-v4.md"}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/benchmark-instructions-v4.md"}
 [Result] 1	# Benchmark Instructions v4 — GitHub Actions
 2	
 3	**Version**: v4
@@ -46,7 +46,7 @@
 16	
 17	Each task is executed by a Claude Code agent under 4 different language constraints ("modes") and with 2 different models, yielding **8 runs per task**. A
 [Assistant] Let me check the working directory and `.actrc` file.
-[Tool: Bash] ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/ && cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/.actrc 2>/dev/null || echo "no .actrc"
+[Tool: Bash] ls -la /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/ && cat /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/.actrc 2>/dev/null || echo "no .actrc"
 [Result] total 44
 drwxr-xr-x  4 passp passp  4096 Apr 19 11:42 .
 drwxr-xr-x 19 passp passp  4096 Apr 19 11:42 ..
@@ -60,38 +60,38 @@ drwxr-xr-x  7 passp passp  4096 Apr 19 11:42 .git
 act version 0.2.87
 29.4.0
 [Assistant] Now I have all the context. Let me build this systematically following TDD. I'll create fixtures first, then failing tests, then implementation, then the workflow.
-[Tool: Bash] mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/fixtures && mkdir -p /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/.github/workflows
+[Tool: Bash] mkdir -p /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/fixtures && mkdir -p /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/.github/workflows
 [Result] (Bash completed with no output)
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/fixtures/patch-commits.txt", "content": 
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/fixtures/patch-commits.txt (file state is current in your context — no need to Read it back)
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/fixtures/minor-commits.txt", "content": 
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/fixtures/minor-commits.txt (file state is current in your context — no need to Read it back)
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/fixtures/major-commits.txt", "content": 
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/fixtures/major-commits.txt (file state is current in your context — no need to Read it back)
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/fixtures/noop-commits.txt", "content": "
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/fixtures/noop-commits.txt (file state is current in your context — no need to Read it back)
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/fixtures/version-1.0.0.json", "content":
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/fixtures/version-1.0.0.json (file state is current in your context — no need to Read it back)
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/fixtures/version-2.5.3.json", "content":
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/fixtures/version-2.5.3.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/fixtures/patch-commits.txt", "content": 
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/fixtures/patch-commits.txt (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/fixtures/minor-commits.txt", "content": 
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/fixtures/minor-commits.txt (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/fixtures/major-commits.txt", "content": 
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/fixtures/major-commits.txt (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/fixtures/noop-commits.txt", "content": "
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/fixtures/noop-commits.txt (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/fixtures/version-1.0.0.json", "content":
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/fixtures/version-1.0.0.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/fixtures/version-2.5.3.json", "content":
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/fixtures/version-2.5.3.json (file state is current in your context — no need to Read it back)
 [Assistant] Now I'll write the failing tests first (TDD red phase), then the implementation.
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.Tests.ps1", "conte
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.Tests.ps1", "conte
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.Tests.ps1 (file state is current in your context — no need to Read it back)
 [Assistant] Now let me verify these tests fail (TDD red phase), then write the implementation:
 [Tool: Bash] pwsh -Command "Invoke-Pester ./SemanticVersionBumper.Tests.ps1 -Output Minimal 2>&1 | head -30"
 [Result] [95m
 [95mStarting discovery in 1 files.[0m
 [95mDiscovery found 50 tests in 399ms.[0m
 [95mRunning tests.[0m
-[91m[-] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.Tests.ps1 failed with:[0m
-[91mCommandNotFoundException: The term '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.ps1' is not recognized as a name of a cmdlet, function, script file, or executable program.
+[91m[-] /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.Tests.ps1 failed with:[0m
+[91mCommandNotFoundException: The term '/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.ps1' is not recognized as a name of a cmdlet, function, script file, or executable program.
 [91mCheck the spelling of the name, or if a path was included, verify that the path is correct and try again.
-[91mat <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.Tests.ps1:7[0m
+[91mat <ScriptBlock>, /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.Tests.ps1:7[0m
 [97mTests completed in 874ms[0m
 [97mTests Passed: 0, [0m[91mF
 [Assistant] Tests fail as expected (TDD red). Now implementing the script (green phase):
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.ps1", "content": "
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.ps1", "content": "
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.ps1 (file state is current in your context — no need to Read it back)
 [Assistant] Now let me run the unit tests (excluding act integration tests) to check the green phase:
 [Tool: Bash] pwsh -Command "Invoke-Pester ./SemanticVersionBumper.Tests.ps1 -Output Minimal -ExcludeTagFilter 'act' 2>&1"
 [Result] [95m
@@ -103,20 +103,20 @@ BUMP_TYPE=patch
 PREVIOUS_VERSION=1.0.0
 [91m[-] Invoke-SemanticVersionBump (integration).reads version.json and outputs new version[0m[90m 190ms (184ms|5ms)[0m
 [91m Expected regular expression 'NEW_VERSION=1\.0\.1' to match $null, but it did not match.
-[91m at $output | Should -Match "NEW_VERSION=1\.0\.1", /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.Tests.ps1:174
-[91m at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.Tests.ps1:174[0m
+[91m at $output | Should -Match "NEW_VERSION=1\.0\.1", /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.Tests.ps1:174
+[91m at <ScriptBlock>, /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.Tests.ps1:174[0m
 NEW_VERSION=2.4.0
 BUMP_TYPE=minor
 PREVIOUS_VERSION=2.3.0
 [91m[-] Invoke-SemanticVersionBump (integration).reads package.json version field[0m[90m 42ms (40ms|2ms)
 [Assistant] I see two issues to fix: (1) `Write-Host` output isn't captured by `& $scriptPath`, and (2) `Invoke-ActTestCase` is defined in a Pester scope that makes it inaccessible. Let me fix both and also create the workflow file.
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBum
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBum
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Assistant] Now fix the test file to move `Invoke-ActTestCase` to script scope and fix the shared variable issue:
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBum
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBum
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Assistant] Now remove the duplicate `Invoke-ActTestCase` function definition from inside the `Describe` block and fix the variable references:
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBum
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBum
 [Result ERROR] <tool_use_error>String to replace not found in file.
 String: Describe "Act Integration Tests" {
     # These tests run the full workflow via act for each test case.
@@ -139,7 +139,7 @@ String: Describe "Act Integration Tests" {
     function Invoke-ActTestCase {
         
 [Assistant] Let me read the current state of the test file:
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.Tests.ps1", "offse
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.Tests.ps1", "offse
 [Result] 300	
 301	    It "exits with error for missing version file" {
 302	        $commitsFile = Join-Path $tmpDir "commits.txt"
@@ -165,16 +165,16 @@ String: Describe "Act Integration Tests" {
 322	    BeforeAll {
 323	        $workflowPath = Join-Path $PSScriptRoot ".github/workflows/semantic-version
 [Assistant] I need to rewrite the test file cleanly. The duplication and scope issues need a full rewrite:
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.Tests.ps1", "conte
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.Tests.ps1", "conte
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Assistant] Now create the GitHub Actions workflow file:
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/.github/workflows/semantic-version-bumpe
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/.github/workflows/semantic-version-bumper.yml (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/.github/workflows/semantic-version-bumpe
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/.github/workflows/semantic-version-bumper.yml (file state is current in your context — no need to Read it back)
 [Assistant] Also create the default `version.json` and `commits.txt` for the workflow (used when act runs on the workspace itself):
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/version.json", "content": "{\n  \"versio
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/version.json (file state is current in your context — no need to Read it back)
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/commits.txt", "content": "feat: add sema
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/commits.txt (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/version.json", "content": "{\n  \"versio
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/version.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/commits.txt", "content": "feat: add sema
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/commits.txt (file state is current in your context — no need to Read it back)
 [Assistant] Now validate with actionlint and run unit tests:
 [Tool: Bash] actionlint .github/workflows/semantic-version-bumper.yml
 [Result] (Bash completed with no output)
@@ -185,15 +185,15 @@ String: Describe "Act Integration Tests" {
 [95mRunning tests.[0m
 [91m[-] Invoke-SemanticVersionBump (integration).reads version.json and outputs new version[0m[90m 160ms (156ms|3ms)[0m
 [91m Expected regular expression 'NEW_VERSION=1\.0\.1' to match 'BUMP_TYPE=patch', but it did not match.
-[91m at $out | Should -Match "NEW_VERSION=1\.0\.1", /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.Tests.ps1:226
-[91m at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.Tests.ps1:226[0m
+[91m at $out | Should -Match "NEW_VERSION=1\.0\.1", /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.Tests.ps1:226
+[91m at <ScriptBlock>, /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.Tests.ps1:226[0m
 [91m[-] Invoke-SemanticVersionBump (integration).reads package.json version field[0m[90m 34ms (32ms|2ms)[0m
 [91m Expected regular expression 'NEW_VERSION=2\.4\.0' to match 'BUMP_TYPE=minor', but it did not ma
 [Assistant] Two issues to fix: `$out | Should -Match` fails on multiple output lines, and `Invoke-ActTestCase` scoping in Pester 5. I'll use `-TestCases` for the act tests and fix the output matching:
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.Tests.ps1", "conte
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.Tests.ps1", "conte
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Tool: Bash] pwsh -Command "Invoke-Pester ./SemanticVersionBumper.Tests.ps1 -Output Minimal 2>&1" | grep -E "(FAIL|PASS|Tests comp|Error)" | head -30
-[Result] [31;1mGet-Content: [0m/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.Tests.ps1:189[0m
+[Result] [31;1mGet-Content: [0m/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.Tests.ps1:189[0m
 [31;1m[0m[36;1mLine |[0m
 [31;1m[0m[36;1m[36;1m 189 | [0m         ($vf | [36;1mGet-Content[0m | ConvertFrom-Json).version | Should -Be " …[0m
 [31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m     | [31;1m                ~~~~~~~~~~~[0m
@@ -202,7 +202,7 @@ String: Describe "Act Integration Tests" {
 [31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m[31;1m[31;1m[36;1m[31;1m[36;1m[31;1m[36;1m     | [31;1mits properties do not match any of the parameters that take pipeline[0m
 [31;1m[0m[36;1m[36;1m[0m[36;1m
 [Tool: Bash] pwsh -Command "Invoke-Pester ./SemanticVersionBumper.Tests.ps1 -Output Minimal 2>&1" | tail -5
-[Result] [31;1mGet-Content: [0m/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.Tests.ps1:189[0m
+[Result] [31;1mGet-Content: [0m/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.Tests.ps1:189[0m
 [31;1m[0m[36;1mLine |[0m
 [31;1m[0m[36;1m[36;1m 189 | [0m         ($vf | [36;1mGet-Content[0m | ConvertFrom-Json).version | Should -Be " …[0m
 [31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m     | [31;1m                ~~~~~~~~~~~[0m
@@ -211,19 +211,19 @@ String: Describe "Act Integration Tests" {
 [31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m[31;1m[31;1m[36;1m[31;1m[36;1m[31;1m[36;1m     | [31;1mits properties do not match any of the parameters that take pipeline[0m
 [31;1m[0m[36;1m[36;1m[0m[36;1m
 [Assistant] Two remaining issues: `$vf | Get-Content` syntax error (need `Get-Content $vf`), and act failing. Let me fix the syntax error and check the act failure:
-[Tool: Edit] {"replace_all": true, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBump
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.Tests.ps1 has been updated. All occurrences were successfully replaced. (file state is current in your context — no need to Read it back)
-[Tool: Edit] {"replace_all": true, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBump
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.Tests.ps1 has been updated. All occurrences were successfully replaced. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": true, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBump
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.Tests.ps1 has been updated. All occurrences were successfully replaced. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": true, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBump
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.Tests.ps1 has been updated. All occurrences were successfully replaced. (file state is current in your context — no need to Read it back)
 [Assistant] Now let me debug the act failure by running it manually on a test case:
 [Tool: Bash] set -e
 TMPDIR=$(mktemp -d)
 mkdir -p "$TMPDIR/.github/workflows"
-cp /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.ps1 "$TMPDIR/"
-cp /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/.github/workflows/semantic-version-bumper.yml "$TMPDIR/.github/workflows/"
-cp /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/.actrc "$TMPDIR/"
+cp /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.ps1 "$TMPDIR/"
+cp /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/.github/workflows/semantic-version-bumper.yml "$TMPDIR/.github/workflows/"
+cp /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/.actrc "$TMPDIR/"
 echo '{"version":"1.0.0"}' > "$TMPDIR/version.json"
-cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/fixtures/patch-commits.txt > "$TMPDIR/commits.txt"
+cat /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/fixtures/patch-commits.txt > "$TMPDIR/commits.txt"
 cd "$TMPDIR"
 git init --quiet
 git config user.email "test@example.com"
@@ -244,25 +244,25 @@ rm -rf "$TMPDIR"
 [Semantic Version Bumper/bump-version] 🏁  Job failed
 Error: Error response from daemon: pull access denied for act-ubuntu-pwsh, repository does not exist or may require 'docker login'
 EXIT: 1
-Shell cwd was reset to /home/passp/repos/compare-agent-scripting-by-language/workspaces
+Shell cwd was reset to /home/passp/repos/GHA-bench/workspaces
 [Assistant] The Docker image `act-ubuntu-pwsh:latest` needs to be available locally. Let me check:
 [Tool: Bash] docker images | grep act-ubuntu-pwsh
 [Result] WARNING: This output is designed for human readability. For machine-readable output, please use --format.
 act-ubuntu-pwsh:latest                    ba4101fd0f65       2.55GB          639MB
 [Assistant] The image is local only. I need `--pull=false` to prevent act from trying to pull it. Let me update `.actrc`:
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/.actrc"}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/.actrc"}
 [Result] 1	-P ubuntu-latest=act-ubuntu-pwsh:latest
 2	
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/.actrc", "content": "-P ubuntu-latest=ac
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/.actrc has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/.actrc", "content": "-P ubuntu-latest=ac
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/.actrc has been updated successfully. (file state is current in your context — no need to Read it back)
 [Tool: Bash] set -e
 TMPDIR=$(mktemp -d)
 mkdir -p "$TMPDIR/.github/workflows"
-cp /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.ps1 "$TMPDIR/"
-cp /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/.github/workflows/semantic-version-bumper.yml "$TMPDIR/.github/workflows/"
-cp /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/.actrc "$TMPDIR/"
+cp /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.ps1 "$TMPDIR/"
+cp /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/.github/workflows/semantic-version-bumper.yml "$TMPDIR/.github/workflows/"
+cp /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/.actrc "$TMPDIR/"
 echo '{"version":"1.0.0"}' > "$TMPDIR/version.json"
-cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/fixtures/patch-commits.txt > "$TMPDIR/commits.txt"
+cat /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/fixtures/patch-commits.txt > "$TMPDIR/commits.txt"
 cd "$TMPDIR"
 git init --quiet
 git config user.email "test@example.com"
@@ -289,11 +289,11 @@ rm -rf "$TMPDIR"
 [95mStarting discovery in 1 files.[0m
 [95mDiscovery found 49 tests in 441ms.[0m
 [95mRunning tests.[0m
-[32m[+] /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.Tests.ps1[0m[90m 23.11s (21.89s|833ms)[0m
+[32m[+] /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/SemanticVersionBumper.Tests.ps1[0m[90m 23.11s (21.89s|833ms)[0m
 [97mTests completed in 23.14s[0m
 [32mTests Passed: 49, [0m[90mFailed: 0, [0m[90mSkipped: 0, [0m[90mInconclusive: 0, [0m[37m[0m[90mNotRun: 0[0m
 [Assistant] All 49 tests pass. Let me verify `act-result.txt` was created and contains the expected content:
-[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/act-result.txt
+[Tool: Bash] cat /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium/act-result.txt
 [Result] # Act Integration Test Results
 
 
@@ -311,7 +311,7 @@ time="2026-04-19T11:53:59-04:00" level=info msg="Using docker host 'unix:///var/
 [Assistant] All 4 act test cases pass with exact expected values. Let me do a final check — run `act push` on the workspace itself (for the benchmark's `act_pass` check) and confirm actionlint still passes:
 [Tool: Bash] actionlint .github/workflows/semantic-version-bumper.yml && echo "actionlint: PASS"
 [Result] actionlint: PASS
-[Tool: Bash] cd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium
+[Tool: Bash] cd /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/11-semantic-version-bumper/powershell-tool-sonnet46-1m-medium
 git add -A && git commit -m "test: workspace setup" --quiet 2>/dev/null || true
 act push --rm 2>&1
 [Result] time="2026-04-19T11:54:30-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"

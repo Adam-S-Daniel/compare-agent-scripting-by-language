@@ -1,5 +1,5 @@
 [Assistant] Let me start by reading the project instructions and understanding the current directory structure.
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/AGENTS.md"}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/AGENTS.md"}
 [Result] 1	# Agent Instructions
 2	
 3	All agent-facing instructions live in this file. `CLAUDE.md` contains only a
@@ -27,10 +27,10 @@
 25	
 26	# Evaluate test quality (structural metrics only)
 27	python3 test_quality.py results/2026-04
-[Tool: Bash] ls /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/
+[Tool: Bash] ls /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/
 [Result] benchmark-instructions-v4.md
 [Assistant] Let me check what's available in the environment before coding.
-[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/benchmark-instructions-v4.md | head -50
+[Tool: Bash] cat /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/benchmark-instructions-v4.md | head -50
 [Result] # Benchmark Instructions v4 — GitHub Actions
 
 **Version**: v4
@@ -48,7 +48,7 @@
 ### Overview
 
 Each task is executed by a Claude Code agent under 4 different language constraints ("modes") and with 2 different models, yielding **8 runs per task**. Agents receive only the prompt -- no conver
-[Tool: Bash] which act && act --version; which actionlint && actionlint --version; which python3 && python3 --version; cat /home/passp/repos/compare-agent-scripting-by-language/.actrc 2>/dev/null || echo "no .actrc at root"
+[Tool: Bash] which act && act --version; which actionlint && actionlint --version; which python3 && python3 --version; cat /home/passp/repos/GHA-bench/.actrc 2>/dev/null || echo "no .actrc at root"
 [Result] /home/passp/.local/bin/act
 act version 0.2.87
 /home/passp/.local/bin/actionlint
@@ -58,7 +58,7 @@ built with go1.26.1 compiler for linux/amd64
 /usr/bin/python3
 Python 3.12.3
 no .actrc at root
-[Tool: Bash] cat /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/.actrc; echo "---"; docker images | grep act
+[Tool: Bash] cat /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/.actrc; echo "---"; docker images | grep act
 [Result] -P ubuntu-latest=act-ubuntu-pwsh:latest
 ---
 WARNING: This output is designed for human readability. For machine-readable output, please use --format.
@@ -70,23 +70,23 @@ ghcr.io/catthehacker/ubuntu:act-latest    bd77095e8123       1.99GB          284
 [Tool: Bash] python3 -c "import yaml; print('yaml ok')" 2>&1; mkdir -p fixtures .github/workflows
 [Result] yaml ok
 [Assistant] Good. Now I'll write the test harness first (the "failing test"), then the implementation.
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/test_harness.py", "content": "#!/usr/bin/env pyt
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/test_harness.py (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/test_harness.py", "content": "#!/usr/bin/env pyt
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/test_harness.py (file state is current in your context — no need to Read it back)
 [Assistant] Now let me write the fixture files:
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/fixtures/junit_basic.xml", "content": "<?xml ver
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/fixtures/junit_basic.xml (file state is current in your context — no need to Read it back)
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/fixtures/json_results.json", "content": "{\n  \"
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/fixtures/json_results.json (file state is current in your context — no need to Read it back)
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/fixtures/junit_matrix_run1.xml", "content": "<?x
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/fixtures/junit_matrix_run1.xml (file state is current in your context — no need to Read it back)
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/fixtures/junit_matrix_run2.xml", "content": "<?x
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/fixtures/junit_matrix_run2.xml (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/fixtures/junit_basic.xml", "content": "<?xml ver
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/fixtures/junit_basic.xml (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/fixtures/json_results.json", "content": "{\n  \"
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/fixtures/json_results.json (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/fixtures/junit_matrix_run1.xml", "content": "<?x
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/fixtures/junit_matrix_run1.xml (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/fixtures/junit_matrix_run2.xml", "content": "<?x
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/fixtures/junit_matrix_run2.xml (file state is current in your context — no need to Read it back)
 [Assistant] Now let me implement `aggregator.py`:
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/aggregator.py", "content": "#!/usr/bin/env pytho
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/aggregator.py (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/aggregator.py", "content": "#!/usr/bin/env pytho
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/aggregator.py (file state is current in your context — no need to Read it back)
 [Assistant] Now write the GitHub Actions workflow:
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/.github/workflows/test-results-aggregator.yml", 
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/.github/workflows/test-results-aggregator.yml (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/.github/workflows/test-results-aggregator.yml", 
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/.github/workflows/test-results-aggregator.yml (file state is current in your context — no need to Read it back)
 [Assistant] Now validate with actionlint and do a quick local smoke test:
 [Tool: Bash] actionlint .github/workflows/test-results-aggregator.yml && echo "actionlint PASSED"
 [Result] actionlint PASSED
@@ -131,7 +131,7 @@ Tests that passed in some runs and failed in others:
 <!-- AGGREGATE_RESULT: passed=12 failed=3 skipped=1 total=16 duration=1.600 -->
 <!-- FLAKY_RESULT: testFlaky -->
 [Assistant] Let me verify each test case scenario locally:
-[Tool: Bash] cd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium
+[Tool: Bash] cd /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium
 
 echo "=== Test 1: junit_only ==="
 tmp=$(mktemp -d); mkdir $tmp/f; cp fixtures/junit_basic.xml $tmp/f/; python3 aggregator.py $tmp/f/ | grep "AGGREGATE_RESULT\|FLAKY_RESULT"; rm -rf $tmp
@@ -157,7 +157,7 @@ tmp=$(mktemp -d); mkdir $tmp/f; cp fixtures/junit_basic.xml fixtures/json_result
 <!-- AGGREGATE_RESULT: passed=5 failed=2 skipped=1 total=8 duration=0.750 -->
 <!-- FLAKY_RESULT: none -->
 [Assistant] All 4 cases produce exactly the expected values. Now run the full test harness via `act`:
-[Tool: Bash] cd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium
+[Tool: Bash] cd /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium
 python3 test_harness.py 2>&1
 [Result ERROR] Exit code 1
 
@@ -181,7 +181,7 @@ python3 test_harness.py 2>&1
 Results: 4/8 tests passed
 SOME TESTS FAILED
 [Assistant] Let me check what went wrong in act:
-[Tool: Bash] head -100 /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/act-result.txt
+[Tool: Bash] head -100 /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/act-result.txt
 [Result] act-result.txt — Test Results Aggregator CI Runs
 Generated by test_harness.py
 ======================================================================
@@ -200,7 +200,7 @@ Exit Code: 1
 [Assistant] The Docker image exists locally but act is trying to pull it. Let me check:
 [Tool: Bash] docker image inspect act-ubuntu-pwsh:latest --format '{{.Id}}' 2>&1 | head -3
 # Check if act runs from the main workspace (not temp dir)
-cd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium
+cd /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium
 act push --rm --list 2>&1 | head -20
 [Result] sha256:413e38f474cc87bd9ca2d340c962b5257dcc839c975650973efb218180986132
 time="2026-04-20T02:04:17-04:00" level=info msg="Using docker host 'unix:///var/run/docker.sock', and daemon socket 'unix:///var/run/docker.sock'"
@@ -215,13 +215,13 @@ Stage  Job ID     Job name                Workflow name            Workflow file
   -q, --quiet                                             disable logging of output from steps
       --rebuild                                           rebuild local action docker image(s) even if already present (default true)
 [Assistant] The `--pull` defaults to `true` (always pull). I need to add `--pull=false` to prevent pulling the local image. Let me update the test harness and also the `.actrc`:
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/.actrc"}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/.actrc"}
 [Result] 1	-P ubuntu-latest=act-ubuntu-pwsh:latest
 2	
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/.actrc", "old_string": "-P
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/.actrc has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/.actrc", "old_string": "-P
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium/.actrc has been updated successfully. (file state is current in your context — no need to Read it back)
 [Assistant] Now run the test harness again:
-[Tool: Bash] cd /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium
+[Tool: Bash] cd /home/passp/repos/GHA-bench/workspaces/2026-04-17_004319/15-test-results-aggregator/default-sonnet46-1m-medium
 python3 test_harness.py 2>&1
 [Result] === Workflow Structure Tests (no act) ===
   [[32mPASS[0m] workflow file exists

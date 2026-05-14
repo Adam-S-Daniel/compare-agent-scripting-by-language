@@ -1,11 +1,11 @@
 [Assistant] 
 
 I'll build this in Python with pytest. Let me start with TDD - writing failing tests first, then implementing.
-[Tool: Bash] ls /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/
+[Tool: Bash] ls /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/
 [Result] benchmark-instructions-v2.md
 [Assistant] Let me start with the first failing test — testing the exponential backoff retry logic.
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/test_pipeline.py", "content": "# TDD tests for error-retry pipeli
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/test_pipeline.py (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/test_pipeline.py", "content": "# TDD tests for error-retry pipeli
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/test_pipeline.py (file state is current in your context — no need to Read it back)
 [Assistant] RED — run the tests to see them fail:
 [Tool: Bash] python -m pytest test_pipeline.py -v 2>&1 | tail -20
 [Result] /bin/bash: line 1: python: command not found
@@ -34,13 +34,13 @@ test_pipeline.py:42: ModuleNotFoundError
 FAILED test_pipeline.py::test_retry_calls_processor_until_success - ModuleNot...
 FAILED test_pipeline.p
 [Assistant] All 4 tests fail. GREEN — implement `retry_with_backoff`:
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/pipeline.py", "content": "# Error-retry pipeline with exponential
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/pipeline.py (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/pipeline.py", "content": "# Error-retry pipeline with exponential
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/pipeline.py (file state is current in your context — no need to Read it back)
 [Tool: Bash] python3 -m pytest test_pipeline.py -v 2>&1 | tail -15
 [Result] ============================= test session starts ==============================
 platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
 cachedir: .pytest_cache
-rootdir: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus
+rootdir: /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus
 collecting ... collected 4 items
 
 test_pipeline.py::test_retry_calls_processor_until_success PASSED        [ 25%]
@@ -50,10 +50,10 @@ test_pipeline.py::test_retry_backoff_delays_increase_exponentially PASSED [100%]
 
 ============================== 4 passed in 0.02s ===============================
 [Assistant] 4/4 pass. Now Cycle 2 — dead-letter queue. RED first:
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/test_pipeline.py", "old_string": "    # Exp
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/test_pipeline.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/test_pipeline.py", "old_string": "    # Exp
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/test_pipeline.py has been updated successfully. (file state is current in your context — no need to Read it back)
 [Tool: Bash] python3 -m pytest test_pipeline.py -v 2>&1 | tail -15
-[Result] E       ImportError: cannot import name 'DeadLetterQueue' from 'pipeline' (/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/pipeline.py)
+[Result] E       ImportError: cannot import name 'DeadLetterQueue' from 'pipeline' (/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/pipeline.py)
 
 test_pipeline.py:57: ImportError
 ______________________ test_dead_letter_queue_is_iterable ______________________
@@ -61,7 +61,7 @@ ______________________ test_dead_letter_queue_is_iterable ______________________
     def test_dead_letter_queue_is_iterable():
         """DLQ should be iterable for inspection/reporting."""
 >       from pipeline import DeadLetterQueue
-E       ImportError: cannot import name 'DeadLetterQueue' from 'pipeline' (/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/pipeline.py)
+E       ImportError: cannot import name 'DeadLetterQueue' from 'pipeline' (/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/pipeline.py)
 
 test_pipeline.py:68: ImportError
 =========================== short test summary info ============================
@@ -69,11 +69,11 @@ FAILED test_pipeline.py::test_dead_letter_queue_receives_permanently_failed_item
 FAILED test_pipeline.py::test_dead_letter_queue_is_iterable - ImportError: ca...
 ========================= 2 failed, 
 [Assistant] 2 new tests fail. GREEN — implement `DeadLetterQueue`:
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/pipeline.py", "old_string": "    raise last
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/pipeline.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/pipeline.py", "old_string": "    raise last
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/pipeline.py has been updated successfully. (file state is current in your context — no need to Read it back)
 [Tool: Bash] python3 -m pytest test_pipeline.py -v 2>&1 | tail -12
 [Result] cachedir: .pytest_cache
-rootdir: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus
+rootdir: /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus
 collecting ... collected 6 items
 
 test_pipeline.py::test_retry_calls_processor_until_success PASSED        [ 16%]
@@ -85,12 +85,12 @@ test_pipeline.py::test_dead_letter_queue_is_iterable PASSED              [100%]
 
 ============================== 6 passed in 0.02s ===============================
 [Assistant] 6/6 pass. Cycle 3 — progress reporting. RED:
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/test_pipeline.py", "old_string": "    asser
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/test_pipeline.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/test_pipeline.py", "old_string": "    asser
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/test_pipeline.py has been updated successfully. (file state is current in your context — no need to Read it back)
 [Tool: Bash] python3 -m pytest test_pipeline.py -v 2>&1 | tail -10
 [Result]         """An optional callback should be invoked on each event."""
 >       from pipeline import ProgressReporter
-E       ImportError: cannot import name 'ProgressReporter' from 'pipeline' (/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/pipeline.py)
+E       ImportError: cannot import name 'ProgressReporter' from 'pipeline' (/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/pipeline.py)
 
 test_pipeline.py:114: ImportError
 =========================== short test summary info ============================
@@ -99,7 +99,7 @@ FAILED test_pipeline.py::test_progress_reporter_summary - ImportError: cannot...
 FAILED test_pipeline.py::test_progress_reporter_calls_callback - ImportError:...
 ========================= 3 failed, 6 passed in 0.04s ==========================
 [Assistant] 3 new tests fail. GREEN — implement `ProgressReporter`:
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/pipeline.py"}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/pipeline.py"}
 [Result] 1	# Error-retry pipeline with exponential backoff, dead-letter queue,
 2	# and progress reporting. All queue/processing operations are mockable.
 3	
@@ -131,11 +131,11 @@ FAILED test_pipeline.py::test_progress_reporter_calls_callback - ImportError:...
 29	        self.items: list[tuple] = []
 30	
 31	    def add(self, item, error: Ex
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/pipeline.py", "old_string": "    def __iter
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/pipeline.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/pipeline.py", "old_string": "    def __iter
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/pipeline.py has been updated successfully. (file state is current in your context — no need to Read it back)
 [Tool: Bash] python3 -m pytest test_pipeline.py -v 2>&1 | tail -15
 [Result] cachedir: .pytest_cache
-rootdir: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus
+rootdir: /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus
 collecting ... collected 9 items
 
 test_pipeline.py::test_retry_calls_processor_until_success PASSED        [ 11%]
@@ -150,13 +150,13 @@ test_pipeline.py::test_progress_reporter_calls_callback PASSED           [100%]
 
 ============================== 9 passed in 0.02s ===============================
 [Assistant] 9/9 pass. Cycle 4 — the full pipeline that ties everything together. RED:
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/test_pipeline.py", "old_string": "    asser
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/test_pipeline.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/test_pipeline.py", "old_string": "    asser
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/test_pipeline.py has been updated successfully. (file state is current in your context — no need to Read it back)
 [Tool: Bash] python3 -m pytest test_pipeline.py -v 2>&1 | tail -15
 [Result]     def test_pipeline_summary_includes_all_fields():
         """Final summary should have processed, failed, retrying, total, and dlq_count."""
 >       from pipeline import Pipeline
-E       ImportError: cannot import name 'Pipeline' from 'pipeline' (/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/pipeline.py)
+E       ImportError: cannot import name 'Pipeline' from 'pipeline' (/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/pipeline.py)
 
 test_pipeline.py:223: ImportError
 =========================== short test summary info ============================
@@ -168,13 +168,13 @@ FAILED test_pipeline.py::test_pipeline_progress_events - ImportError: cannot ...
 FAILED test_pipeline.py::test_pipeline_summary_includes_all_fields - ImportEr...
 ===============
 [Assistant] 6 new tests fail. GREEN — implement `Pipeline`:
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/pipeline.py", "old_string": "    def summar
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/pipeline.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/pipeline.py", "old_string": "    def summar
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/pipeline.py has been updated successfully. (file state is current in your context — no need to Read it back)
 [Tool: Bash] python3 -m pytest test_pipeline.py -v 2>&1 | tail -25
 [Result] ============================= test session starts ==============================
 platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
 cachedir: .pytest_cache
-rootdir: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus
+rootdir: /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus
 collecting ... collected 15 items
 
 test_pipeline.py::test_retry_calls_processor_until_success PASSED        [  6%]
@@ -187,17 +187,17 @@ test_pipeline.py::test_progress_reporter_tracks_counts PASSED            [ 46%]
 test_pipeline.py::test_progress_reporter_summary PASSED                  [ 53%]
 t
 [Assistant] All 15 tests pass. Now clean up the unused `dataclass` import and add a `__main__` demo block.
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/pipeline.py", "old_string": "import time\nf
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/pipeline.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/pipeline.py", "old_string": "import time\nf
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/pipeline.py has been updated successfully. (file state is current in your context — no need to Read it back)
 [Assistant] Now add the demo runner at the bottom:
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/pipeline.py", "old_string": "        self.r
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/pipeline.py has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/pipeline.py", "old_string": "        self.r
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus/pipeline.py has been updated successfully. (file state is current in your context — no need to Read it back)
 [Assistant] Final verification — all tests pass and demo runs:
 [Tool: Bash] python3 -m pytest test_pipeline.py -v 2>&1
 [Result] ============================= test session starts ==============================
 platform linux -- Python 3.12.3, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
 cachedir: .pytest_cache
-rootdir: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus
+rootdir: /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/09-error-retry-pipeline/default-opus
 collecting ... collected 15 items
 
 test_pipeline.py::test_retry_calls_processor_until_success PASSED        [  6%]

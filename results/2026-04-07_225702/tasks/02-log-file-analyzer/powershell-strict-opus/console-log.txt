@@ -3,7 +3,7 @@
 I'll start by understanding the task and planning my approach, then follow TDD methodology.
 
 Let me first check the current working directory.
-[Tool: Bash] ls -la /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/
+[Tool: Bash] ls -la /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/
 [Result] total 28
 drwxr-xr-x 2 passp passp  4096 Apr  7 23:30 .
 drwxr-xr-x 5 passp passp  4096 Apr  7 23:30 ..
@@ -14,17 +14,17 @@ PowerShell 7.6.0
 [Assistant] Good. Let me start with TDD — first create the test fixtures, then write failing tests, then implement.
 
 **Step 1: Create sample log data (test fixtures)**
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/fixtures/sample.log", "content": "2024-01-15 08:23:01 INFO
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/fixtures/sample.log (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/fixtures/sample.log", "content": "2024-01-15 08:23:01 INFO
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/fixtures/sample.log (file state is current in your context — no need to Read it back)
 [Assistant] **Step 2: Write the first failing test — parsing syslog-style lines**
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.Tests.ps1", "content": "Set-StrictMode -Latest
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.Tests.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.Tests.ps1", "content": "Set-StrictMode -Latest
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.Tests.ps1 (file state is current in your context — no need to Read it back)
 [Assistant] **Step 3: Run tests to confirm they fail (RED phase)**
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path ./LogAnalyzer.Tests.ps1 -Output Detailed" 2>&1 | head -60
 [Result] [95mPester v5.7.1[0m
 [95m
 [95mStarting discovery in 1 files.[0m
-[91m[-] Discovery in /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.Tests.ps1 failed with:[0m
+[91m[-] Discovery in /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.Tests.ps1 failed with:[0m
 [91mSystem.Management.Automation.ParameterBindingException: A parameter cannot be found that matches parameter name 'Latest'.
 [91m   at System.Management.Automation.ExceptionHandlingOps.CheckActionPreference(FunctionContext funcContext, Exception exception) in /root/parts/powershell/build/src/System.Management.Automation/engine/runtime/Operations/MiscOps.cs:line 1786
 [91m   at System.Management.Automation.Interpreter.ActionCallInstruction`2.Run(InterpretedFrame frame) in /root/parts/powershell/build/src/System.Management.Automation/engine/interpreter/CallInstruction.Generated.cs:line 504
@@ -43,26 +43,26 @@ PowerShell 7.6.0
 [Tool: Bash] pwsh -Command "Set-StrictMode -Version Latest; Write-Output 'works'" 2>&1
 [Result] works
 [Assistant] So `-Version Latest` works but `-Latest` doesn't. The test file uses `Set-StrictMode -Latest` at the top level which Pester evaluates. Let me fix the test file and also understand - Pester runs the file-level code during discovery, so `Set-StrictMode` at the top of a test file can cause issues. I'll move it inside BeforeAll or remove it from the test file (strict mode should be in the module, not the test).
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.Tests.ps1", "old_string"
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.Tests.ps1", "old_string"
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Assistant] Now create the implementation file as a stub so Pester can discover tests (but they'll all fail):
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.ps1", "content": "Set-StrictMode -Version Late
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.ps1", "content": "Set-StrictMode -Version Late
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.ps1 (file state is current in your context — no need to Read it back)
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path ./LogAnalyzer.Tests.ps1 -Output Detailed" 2>&1 | tail -40
 [Result] [91m   CommandNotFoundException: The term 'Read-LogFile' is not recognized as a name of a cmdlet, function, script file, or executable program.
 [91m   Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
-[91m   at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.Tests.ps1:70[0m
+[91m   at <ScriptBlock>, /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.Tests.ps1:70[0m
 [32m  [+] throws on non-existent file[0m[90m 182ms (181ms|1ms)[0m
 [0m
 [92mDescribing Get-ErrorAndWarningEntries[0m
 [91m  [-] filters to only ERROR and WARN entries[0m[90m 101ms (98ms|2ms)[0m
 [91m   CommandNotFoundException: The term 'Get-ErrorAndWarningEntries' is not recognized as a name of a cmdlet, function, script file, or executable program.
 [91m   Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
-[91m   at <ScriptBlock>, /home/passp/repos/compare-agent-scripting-by-language/work
+[91m   at <ScriptBlock>, /home/passp/repos/GHA-bench/work
 [Assistant] Tests are RED: 14 failing, 1 passing (the "throws on non-existent file" test passes because calling a non-existent function also throws). Now let me implement each function.
 
 **Step 4: Implement all functions (GREEN phase)**
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.ps1"}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.ps1"}
 [Result] 1	Set-StrictMode -Version Latest
 2	$ErrorActionPreference = 'Stop'
 3	
@@ -70,8 +70,8 @@ PowerShell 7.6.0
 5	# extracts errors/warnings, and produces frequency analysis.
 6	# Stub file — functions will be implemented via TDD.
 7	
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.ps1", "content": "Set-StrictMode -Version Late
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.ps1", "content": "Set-StrictMode -Version Late
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Assistant] **Step 5: Run tests to see if they pass (GREEN phase)**
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path ./LogAnalyzer.Tests.ps1 -Output Detailed" 2>&1
 [Result] [95mPester v5.7.1[0m
@@ -80,7 +80,7 @@ PowerShell 7.6.0
 [95mDiscovery found 15 tests in 130ms.[0m
 [95mRunning tests.[0m
 [95m
-[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.Tests.ps1'[0m
+[95mRunning tests from '/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.Tests.ps1'[0m
 [92mDescribing ConvertFrom-SyslogLine[0m
 [32m  [+] parses a syslog-style ERROR line into a structured object[0m[90m 89ms (70ms|19ms)[0m
 [32m  [+] parses a syslog-style WARN line[0m[90m 5ms (4ms|1ms)[0m
@@ -100,7 +100,7 @@ PowerShell 7.6.0
 1. **JSON timestamp**: `ConvertFrom-Json` auto-converts timestamp strings to DateTime. I need to preserve the raw string.
 2. **Empty array `.Count`**: `$null` doesn't have `.Count` in strict mode.
 3. **Single-element JSON array**: `ConvertTo-Json` with a single element doesn't produce an array.
-[Tool: Read] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.ps1", "offset": 56, "limit": 30}
+[Tool: Read] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.ps1", "offset": 56, "limit": 30}
 [Result] 56	    if (-not $Line.TrimStart().StartsWith('{')) {
 57	        return $null
 58	    }
@@ -132,17 +132,17 @@ PowerShell 7.6.0
 84	        'unknown'
 85	    }
 [Assistant] Fix 1: Preserve raw timestamp from JSON by converting DateTime back to ISO string:
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.ps1", "old_string": "   
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.ps1", "old_string": "   
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Assistant] Fix 2: Return proper empty array from `Get-ErrorAndWarningEntries`:
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.ps1", "old_string": "   
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.ps1", "old_string": "   
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Assistant] Fix 3: Ensure `ConvertTo-Json` always writes an array (even for single items):
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.ps1", "old_string": "   
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.ps1", "old_string": "   
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Assistant] Also fix the test for empty array — use `.Count` safely:
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.Tests.ps1", "old_string"
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.Tests.ps1", "old_string"
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Assistant] **Run tests again:**
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path ./LogAnalyzer.Tests.ps1 -Output Detailed" 2>&1
 [Result] [95mPester v5.7.1[0m
@@ -151,7 +151,7 @@ PowerShell 7.6.0
 [95mDiscovery found 15 tests in 158ms.[0m
 [95mRunning tests.[0m
 [95m
-[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.Tests.ps1'[0m
+[95mRunning tests from '/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.Tests.ps1'[0m
 [92mDescribing ConvertFrom-SyslogLine[0m
 [32m  [+] parses a syslog-style ERROR line into a structured object[0m[90m 85ms (60ms|25ms)[0m
 [32m  [+] parses a syslog-style WARN line[0m[90m 5ms (4ms|1ms)[0m
@@ -188,8 +188,8 @@ Write-Output "Type: $($parsed.GetType().FullName)"
 Count: 3
 Type: System.Management.Automation.PSCustomObject
 [Assistant] The issue is that `ConvertFrom-Json` unwraps a single-element array into a single object, and `.Count` then returns the number of properties (3 is probably `NoteProperty` count — actually 4 properties but .Count returns something else). The fix is in the test — when reading back, force it into an array:
-[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.Tests.ps1", "old_string"
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Edit] {"replace_all": false, "file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.Tests.ps1", "old_string"
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.Tests.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Tool: Bash] pwsh -Command "Invoke-Pester -Path ./LogAnalyzer.Tests.ps1 -Output Detailed" 2>&1
 [Result] [95mPester v5.7.1[0m
 [95m
@@ -197,7 +197,7 @@ Type: System.Management.Automation.PSCustomObject
 [95mDiscovery found 15 tests in 145ms.[0m
 [95mRunning tests.[0m
 [95m
-[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.Tests.ps1'[0m
+[95mRunning tests from '/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.Tests.ps1'[0m
 [92mDescribing ConvertFrom-SyslogLine[0m
 [32m  [+] parses a syslog-style ERROR line into a structured object[0m[90m 91ms (65ms|26ms)[0m
 [32m  [+] parses a syslog-style WARN line[0m[90m 6ms (5ms|1ms)[0m
@@ -213,21 +213,21 @@ Type: System.Management.Automation.PSCustomObject
 [Assistant] All 15 tests pass. Now let me create the main entry-point script and do a quick demo run.
 
 **Step 6: Create the main script**
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/Analyze-Logs.ps1", "content": "#!/usr/bin/env pwsh\nSet-St
-[Result] File created successfully at: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/Analyze-Logs.ps1 (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/Analyze-Logs.ps1", "content": "#!/usr/bin/env pwsh\nSet-St
+[Result] File created successfully at: /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/Analyze-Logs.ps1 (file state is current in your context — no need to Read it back)
 [Assistant] **Step 7: Demo run**
 [Tool: Bash] pwsh -File ./Analyze-Logs.ps1 2>&1
 [Result ERROR] Exit code 1
-[31;1mParserError: [0m/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/Analyze-Logs.ps1:18[0m
+[31;1mParserError: [0m/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/Analyze-Logs.ps1:18[0m
 [31;1m[0m[36;1mLine |[0m
 [31;1m[0m[36;1m[36;1m  18 | [0m [36;1m[CmdletBinding()][0m
 [31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m     | [31;1m ~~~~~~~~~~~~~~~~~[0m
 [31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m[31;1m[31;1m[36;1m     | [31;1mUnexpected attribute 'CmdletBinding'.[0m
 [Assistant] The `[CmdletBinding()]` and `param()` block must come before any other statements (including `Set-StrictMode`). Let me fix the ordering:
-[Tool: Write] {"file_path": "/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/Analyze-Logs.ps1", "content": "#!/usr/bin/env pwsh\n<#\n.S
-[Result] The file /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/Analyze-Logs.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
+[Tool: Write] {"file_path": "/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/Analyze-Logs.ps1", "content": "#!/usr/bin/env pwsh\n<#\n.S
+[Result] The file /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/Analyze-Logs.ps1 has been updated successfully. (file state is current in your context — no need to Read it back)
 [Tool: Bash] pwsh -File ./Analyze-Logs.ps1 2>&1
-[Result] Analyzing log file: /home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/fixtures/sample.log
+[Result] Analyzing log file: /home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/fixtures/sample.log
 
 Error Type                                                    Count First Seen               Last Seen               
 ---------------------------------------------------------------------------------------------------------------------
@@ -297,7 +297,7 @@ ERROR
 [95mDiscovery found 15 tests in 142ms.[0m
 [95mRunning tests.[0m
 [95m
-[95mRunning tests from '/home/passp/repos/compare-agent-scripting-by-language/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.Tests.ps1'[0m
+[95mRunning tests from '/home/passp/repos/GHA-bench/workspaces/2026-04-07_225702/02-log-file-analyzer/powershell-strict-opus/LogAnalyzer.Tests.ps1'[0m
 [92mDescribing ConvertFrom-SyslogLine[0m
 [32m  [+] parses a syslog-style ERROR line into a structured object[0m[90m 90ms (71ms|19ms)[0m
 [32m  [+] parses a syslog-style WARN line[0m[90m 4ms (4ms|1ms)[0m

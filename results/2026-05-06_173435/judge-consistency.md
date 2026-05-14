@@ -5,7 +5,7 @@
 ## Notes
 
 - **Generated:** 2026-05-08 11:32:38 AM ET
-- **Source:** `/home/passp/repos/compare-agent-scripting-by-language/results/2026-05-06_173435`
+- **Source:** `/home/passp/repos/GHA-bench/results/2026-05-06_173435`
 - **Judges present:** haiku45, gemini31pro
 - **Score conventions:** Scores shown are the `overall` dimension from each judge (1-5). Δ column is the second judge minus the first; positive = second judge is more generous.
 
